@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,7 +62,7 @@ export function TenantStripeConfig() {
         }
       }
     } catch (error) {
-      console.error("Error loading Stripe configuration:", error);
+      logger.error("Error loading Stripe configuration:", error);
     }
   };
 
@@ -213,7 +214,7 @@ export function TenantStripeConfig() {
       // Reload to confirm
       await loadConfiguration();
     } catch (error: any) {
-      console.error("Error saving Stripe configuration:", error);
+      logger.error("Error saving Stripe configuration:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to save Stripe configuration",

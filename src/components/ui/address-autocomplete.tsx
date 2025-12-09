@@ -51,10 +51,10 @@ export function AddressAutocomplete({
     }
 
     setIsLoading(true);
-    
+
     try {
       const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
-      
+
       if (!mapboxToken) {
         logger.error("Mapbox token not configured");
         setIsLoading(false);
@@ -65,7 +65,7 @@ export function AddressAutocomplete({
       const response = await safeFetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
           query
-        )}.json?access_token=${mapboxToken}&autocomplete=true&limit=5&types=address,place`
+        )}.json?access_token=${mapboxToken}&autocomplete=true&proximity=ip&limit=5&types=address,place`
       );
 
       if (!response.ok) {
@@ -86,7 +86,7 @@ export function AddressAutocomplete({
   // Handle input change with debouncing
   const handleInputChange = (newValue: string) => {
     onChange(newValue);
-    
+
     // Clear existing timeout
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -103,7 +103,7 @@ export function AddressAutocomplete({
     onChange(suggestion.place_name);
     setShowSuggestions(false);
     setSuggestions([]);
-    
+
     if (onSelectAddress) {
       const [lng, lat] = suggestion.center;
       onSelectAddress(suggestion.place_name, lat, lng);

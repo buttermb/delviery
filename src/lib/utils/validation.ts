@@ -12,7 +12,7 @@ import { z } from 'zod';
  */
 export function sanitizeString(input: string, maxLength: number = 255): string {
   if (!input) return '';
-  
+
   return input
     .trim()
     .slice(0, maxLength)
@@ -24,7 +24,7 @@ export function sanitizeString(input: string, maxLength: number = 255): string {
  */
 export function validateEmail(email: string): boolean {
   if (!email) return false;
-  
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email) && email.length <= 255;
 }
@@ -34,7 +34,7 @@ export function validateEmail(email: string): boolean {
  */
 export function validateUUID(uuid: string): boolean {
   if (!uuid) return false;
-  
+
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return uuidRegex.test(uuid);
 }
@@ -44,9 +44,10 @@ export function validateUUID(uuid: string): boolean {
  */
 export function validatePhoneNumber(phone: string): boolean {
   if (!phone) return false;
-  
+
   const cleaned = phone.replace(/\D/g, '');
-  return cleaned.length === 10 || cleaned.length === 11;
+  // E.164 supports up to 15 digits, min length usually 7 for local numbers
+  return cleaned.length >= 7 && cleaned.length <= 15;
 }
 
 /**
@@ -54,7 +55,7 @@ export function validatePhoneNumber(phone: string): boolean {
  */
 export function validateURL(url: string): boolean {
   if (!url) return false;
-  
+
   try {
     new URL(url);
     return true;
@@ -69,7 +70,9 @@ export function validateURL(url: string): boolean {
 export const validationSchemas = {
   email: z.string().email().max(255),
   uuid: z.string().uuid(),
-  phone: z.string().regex(/^\+?1?\d{10}$/),
+  // Allow international phone numbers (E.164 supports up to 15 digits)
+  // Basic validation: 7-15 digits, optional leading plus
+  phone: z.string().regex(/^\+?[\d\s-().]{7,20}$/),
   url: z.string().url(),
   nonEmptyString: z.string().min(1).max(255),
   positiveNumber: z.number().positive(),
@@ -119,11 +122,11 @@ export function validateAndSanitize<T>(
   schema: z.ZodSchema<T>
 ): { success: true; data: T } | { success: false; errors: z.ZodError } {
   const result = schema.safeParse(input);
-  
+
   if (result.success) {
     return { success: true, data: result.data };
   }
-  
+
   return { success: false, errors: result.error };
 }
 

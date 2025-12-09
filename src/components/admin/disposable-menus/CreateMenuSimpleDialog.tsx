@@ -20,6 +20,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantLimits } from '@/hooks/useTenantLimits';
+import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
 
 interface CreateMenuSimpleDialogProps {
   open: boolean;
@@ -35,6 +36,7 @@ const STEPS = [
 export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleDialogProps) => {
   const { tenant } = useTenantAdminAuth();
   const { canCreate, getCurrent, getLimit } = useTenantLimits();
+  const { checkLimit, recordAction, limitsApply } = useFreeTierLimits();
   const [currentStep, setCurrentStep] = useState(1);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -112,7 +114,7 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
   const handleCreate = async () => {
     if (!name || selectedProducts.length === 0) return;
 
-    // Check menu limit before creating
+    // Check menu limit before creating (subscription limits)
     if (!canCreate('menus')) {
       const current = getCurrent('menus');
       const limit = getLimit('menus');
@@ -122,6 +124,17 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
           : `You've reached your menu limit (${current}/${limit === Infinity ? '∞' : limit}). Upgrade to Professional for unlimited menus.`,
       });
       return;
+    }
+
+    // Check free tier daily limit (users with purchased credits bypass limits)
+    if (limitsApply) {
+      const limitCheck = checkLimit('menus_per_day');
+      if (!limitCheck.allowed) {
+        toast.error('Daily Menu Limit Reached', {
+          description: limitCheck.message,
+        });
+        return;
+      }
     }
 
     try {
@@ -154,6 +167,11 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
           customer_ids: accessType === 'specific_customers' ? selectedCustomers : [],
         },
       });
+
+      // Record action for free tier limit tracking
+      if (limitsApply) {
+        await recordAction('menu');
+      }
 
       toast.success("Menu created successfully!");
       onOpenChange(false);

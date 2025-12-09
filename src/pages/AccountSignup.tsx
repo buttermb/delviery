@@ -252,7 +252,7 @@ export default function AccountSignup() {
                         type="email"
                         placeholder="you@company.com"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => setEmail(e.target.value.toLowerCase().trim())}
                         className="pl-10"
                         required
                       />
@@ -284,9 +284,25 @@ export default function AccountSignup() {
                         )}
                       </button>
                     </div>
-                    <p className="text-xs text-[hsl(var(--marketing-text-light))] mt-1">
-                      Must be at least 8 characters
-                    </p>
+                    {/* Real-time Password Requirements */}
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs font-medium text-[hsl(var(--marketing-text-light))] mb-1">Password must contain:</p>
+
+                      <div className={`flex items-center gap-2 text-xs ${password.length >= 8 ? "text-green-600" : "text-[hsl(var(--marketing-text-light))]"}`}>
+                        <div className={`h-1.5 w-1.5 rounded-full ${password.length >= 8 ? "bg-green-600" : "bg-gray-300"}`} />
+                        At least 8 characters
+                      </div>
+
+                      <div className={`flex items-center gap-2 text-xs ${/[A-Z]/.test(password) ? "text-green-600" : "text-[hsl(var(--marketing-text-light))]"}`}>
+                        <div className={`h-1.5 w-1.5 rounded-full ${/[A-Z]/.test(password) ? "bg-green-600" : "bg-gray-300"}`} />
+                        One uppercase letter
+                      </div>
+
+                      <div className={`flex items-center gap-2 text-xs ${/[0-9]/.test(password) ? "text-green-600" : "text-[hsl(var(--marketing-text-light))]"}`}>
+                        <div className={`h-1.5 w-1.5 rounded-full ${/[0-9]/.test(password) ? "bg-green-600" : "bg-gray-300"}`} />
+                        One number
+                      </div>
+                    </div>
                   </div>
 
                   <Button

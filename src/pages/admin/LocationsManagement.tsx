@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 export default function LocationsManagement() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
@@ -308,17 +309,16 @@ export default function LocationsManagement() {
       </div>
 
       {locations.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Building className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-lg font-semibold mb-2">No locations yet</h3>
-            <p className="text-muted-foreground mb-4">Add your first location to get started</p>
-            <Button onClick={() => setIsDialogOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Location
-            </Button>
-          </CardContent>
-        </Card>
+        <EnhancedEmptyState
+          icon={Building}
+          title="No Locations Yet"
+          description="Add your first location to get started."
+          primaryAction={{
+            label: "Add Location",
+            onClick: () => setIsDialogOpen(true),
+            icon: Plus
+          }}
+        />
       ) : (
         <div className="grid md:grid-cols-2 gap-6">
           {locations.map((location) => (

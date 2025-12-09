@@ -30,9 +30,12 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, Eye, EyeOff, Building2, User, Mail, Lock, Phone, MapPin, Briefcase, Users, Sparkles, Loader2, ChevronDown, ChevronUp, Check, Shield, Zap } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Building2, User, Mail, Lock, Phone, MapPin, Briefcase, Users, Sparkles, Loader2, ChevronDown, ChevronUp, Check, Shield, Zap, Coins } from 'lucide-react';
+import { FREE_TIER_MONTHLY_CREDITS } from '@/lib/credits';
+import { signupProtection } from '@/lib/signupProtection';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { SignupFeaturesShowcase } from '@/components/signup/SignupFeaturesShowcase';
+import { PhoneVerificationStep } from '@/components/signup/PhoneVerificationStep';
 import { TurnstileWrapper } from '@/components/signup/TurnstileWrapper';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 import { cn } from '@/lib/utils';
@@ -49,7 +52,7 @@ import { useAuthSafe } from '@/hooks/useClerkSafe';
 function ClerkAuthRedirect({ onNotSignedIn }: { onNotSignedIn: () => void }) {
   const { isSignedIn, isLoaded } = useAuthSafe();
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     if (isLoaded) {
       if (isSignedIn) {
@@ -59,7 +62,7 @@ function ClerkAuthRedirect({ onNotSignedIn }: { onNotSignedIn: () => void }) {
       }
     }
   }, [isLoaded, isSignedIn, navigate, onNotSignedIn]);
-  
+
   // Show loading while checking auth
   if (!isLoaded) {
     return (
@@ -68,7 +71,7 @@ function ClerkAuthRedirect({ onNotSignedIn }: { onNotSignedIn: () => void }) {
       </div>
     );
   }
-  
+
   return null;
 }
 
@@ -145,15 +148,10 @@ export default function SignUpPage() {
   const [clerkChecked, setClerkChecked] = useState(!clerkConfigured);
   const turnstileRef = useRef<TurnstileInstance | null>(null);
 
-  // Handle Clerk auth check callback
-  const handleClerkNotSignedIn = useCallback(() => {
-    setClerkChecked(true);
-  }, []);
-
-  // If Clerk is configured and we haven't checked auth yet, render the auth checker
-  if (clerkConfigured && !clerkChecked && !useClerkAuth) {
-    return <ClerkAuthRedirect onNotSignedIn={handleClerkNotSignedIn} />;
-  }
+  // Phone verification state
+  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
+  const [phoneHash, setPhoneHash] = useState<string | null>(null);
+  const [pendingFormData, setPendingFormData] = useState<SignupFormData | null>(null);
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -170,6 +168,53 @@ export default function SignUpPage() {
     },
     mode: 'onChange',
   });
+
+  // Handle Clerk auth check callback
+  const handleClerkNotSignedIn = useCallback(() => {
+    setClerkChecked(true);
+  }, []);
+
+  // Use defined hooks before any return
+  // Auto-save form data to localStorage with expiry
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      try {
+        const expiryTime = Date.now() + (DRAFT_EXPIRY_HOURS * 60 * 60 * 1000);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+        localStorage.setItem(STORAGE_EXPIRY_KEY, expiryTime.toString());
+      } catch (error) {
+        logger.error('Failed to save form data to localStorage', error);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
+  // Load saved form data on mount (with expiry check)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      const expiry = localStorage.getItem(STORAGE_EXPIRY_KEY);
+
+      if (saved && expiry) {
+        const expiryTime = parseInt(expiry, 10);
+        const now = Date.now();
+
+        if (now < expiryTime) {
+          // Data is still valid
+          const parsed = JSON.parse(saved);
+          form.reset(parsed);
+        }
+        // Note: Expired data is cleared when form is submitted successfully
+      }
+    } catch (error) {
+      logger.error('Failed to load form data from localStorage', error);
+    }
+  }, [form]);
+
+  // If Clerk is configured and we haven't checked auth yet, render the auth checker
+  if (clerkConfigured && !clerkChecked && !useClerkAuth) {
+    return <ClerkAuthRedirect onNotSignedIn={handleClerkNotSignedIn} />;
+  }
 
   // Auto-save form data to localStorage with expiry
   useEffect(() => {
@@ -239,6 +284,35 @@ export default function SignUpPage() {
 
     try {
       logger.info('[SIGNUP] Starting tenant signup', { component: 'SignUpPage' });
+
+      // Anti-abuse: Check signup eligibility
+      logger.info('[SIGNUP] Checking signup eligibility');
+      const eligibility = await signupProtection.checkEligibility(data.email);
+
+      if (!eligibility.allowed) {
+        logger.warn('[SIGNUP] Signup blocked', { reason: eligibility.blockReason });
+        toast({
+          title: 'Unable to Create Account',
+          description: eligibility.blockReason || 'Please contact support if you believe this is an error.',
+          variant: 'destructive',
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Log warnings for monitoring
+      if (eligibility.warnings.length > 0) {
+        logger.info('[SIGNUP] Eligibility warnings', { warnings: eligibility.warnings, riskScore: eligibility.riskScore });
+      }
+
+      // Phone verification required for high-risk signups
+      if (eligibility.requiresPhoneVerification && !phoneHash) {
+        logger.info('[SIGNUP] Phone verification required', { riskScore: eligibility.riskScore });
+        setPendingFormData(data);
+        setShowPhoneVerification(true);
+        setIsSubmitting(false);
+        return;
+      }
 
       // Clear saved form data
       try {
@@ -318,7 +392,7 @@ export default function SignUpPage() {
           logger.error('Account created but login failed. Please try logging in manually.', null, { component: 'SignUpPage' });
         } else {
           logger.info('[SIGNUP] Supabase session established');
-          
+
           // Verify session is actually active before proceeding (prevents race condition)
           let retries = 3;
           let sessionConfirmed = false;
@@ -333,7 +407,7 @@ export default function SignUpPage() {
               await new Promise(resolve => setTimeout(resolve, 200));
             }
           }
-          
+
           if (!sessionConfirmed) {
             logger.warn('[SIGNUP] Session not confirmed after retries, continuing anyway');
           }
@@ -385,6 +459,58 @@ export default function SignUpPage() {
         // Silently fail analytics
       }
 
+      // Auto-assign free tier for new signups (credit-based model)
+      try {
+        logger.info('[SIGNUP] Auto-assigning free tier');
+
+        // Update tenant to free tier
+        const { error: updateError } = await supabase
+          .from('tenants')
+          .update({
+            is_free_tier: true,
+            credits_enabled: true,
+          })
+          .eq('id', tenant.id);
+
+        if (updateError) {
+          logger.warn('[SIGNUP] Failed to set free tier status', updateError);
+        }
+
+        // Grant initial credits via RPC
+        const { error: creditError } = await supabase.rpc('grant_free_credits', {
+          p_tenant_id: tenant.id
+        });
+
+        if (creditError) {
+          logger.warn('[SIGNUP] Failed to grant initial credits', creditError);
+        } else {
+          logger.info('[SIGNUP] Initial credits granted', { tenantId: tenant.id });
+        }
+      } catch (freeTierError) {
+        logger.warn('[SIGNUP] Free tier assignment failed, continuing anyway', freeTierError);
+      }
+
+      // Record device fingerprint for anti-abuse tracking
+      try {
+        logger.info('[SIGNUP] Recording device fingerprint');
+        const fpResult = await signupProtection.recordFingerprint(tenant.id);
+
+        if (fpResult.success) {
+          // Update tenant with signup protection data
+          await signupProtection.updateTenantProtection(
+            tenant.id,
+            eligibility.riskScore,
+            false, // phoneVerified - will be updated if verified
+            fpResult.fingerprintId
+          );
+          logger.info('[SIGNUP] Fingerprint recorded', { fingerprintId: fpResult.fingerprintId });
+        } else {
+          logger.warn('[SIGNUP] Failed to record fingerprint', { error: fpResult.error });
+        }
+      } catch (fpError) {
+        logger.warn('[SIGNUP] Fingerprint recording failed, continuing anyway', fpError);
+      }
+
       // Prefetch dashboard data with visual feedback
       // Wait up to 800ms for prefetch to complete before navigating
       const prefetchPromise = prefetch(tenant.slug, tenant.id).catch((error) => {
@@ -395,16 +521,18 @@ export default function SignUpPage() {
 
       await Promise.race([prefetchPromise, timeoutPromise]);
 
-      // Navigate to plan selection for trial signup
-      navigate(`/select-plan?tenant_id=${tenant.id}`, {
+      // Navigate directly to dashboard with welcome flag (free-first model)
+      // Users start free with credits, can upgrade anytime
+      navigate(`/${tenant.slug}/admin/dashboard?welcome=true`, {
         replace: true,
         state: {
           fromSignup: true,
           tenantSlug: tenant.slug,
+          isFreeTier: true,
         },
       });
 
-      logger.info('[SIGNUP] Navigation complete', { slug: tenant.slug });
+      logger.info('[SIGNUP] Navigation complete - free tier', { slug: tenant.slug });
     } catch (error) {
       const message = handleError(error, {
         component: 'SignUpPage',
@@ -465,7 +593,7 @@ export default function SignUpPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20" />
         <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
         <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
-        
+
         <div className="max-w-md mx-auto relative z-10 pt-8">
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-emerald-500/10 backdrop-blur-sm border border-primary/20 mb-4">
@@ -477,7 +605,7 @@ export default function SignUpPage() {
             </h1>
             <p className="text-muted-foreground">Transform your cannabis distribution in minutes</p>
           </div>
-          
+
           <SignUp
             routing="path"
             path="/signup"
@@ -496,7 +624,7 @@ export default function SignUpPage() {
               },
             }}
           />
-          
+
           <div className="text-center mt-6">
             <button
               onClick={() => setUseClerkAuth(false)}
@@ -529,14 +657,14 @@ export default function SignUpPage() {
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-emerald-500/10 backdrop-blur-sm border border-primary/20 mb-4 animate-fade-in">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">14-Day Free Trial • No Credit Card Required</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/10 via-blue-500/10 to-purple-500/10 backdrop-blur-sm border border-emerald-500/20 mb-4 animate-fade-in">
+            <Coins className="h-4 w-4 text-emerald-600" />
+            <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Start Free with {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} Credits • No Card Required</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            Start Your Journey Today
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            Get Started Free Today
           </h1>
-          <p className="text-muted-foreground text-lg animate-fade-in" style={{ animationDelay: '0.2s' }}>Transform your cannabis distribution in minutes</p>
+          <p className="text-muted-foreground text-lg animate-fade-in" style={{ animationDelay: '0.2s' }}>Transform your wholesale distribution in minutes</p>
           <p className="text-sm text-muted-foreground mt-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             Already have an account?{' '}
             <Link to="/saas/login" className="text-primary font-medium hover:underline">
@@ -553,392 +681,435 @@ export default function SignUpPage() {
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-emerald-500/20 rounded-2xl blur-xl opacity-75" />
             <Card className="relative w-full shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/10">
               <CardContent className="p-6 sm:p-8">
-                {/* Form Content */}
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/* Phone Verification Step */}
+                {showPhoneVerification ? (
+                  <div className="space-y-6">
                     <div>
-                      <h2 className="text-2xl font-semibold mb-1">Create Your Account</h2>
+                      <h2 className="text-2xl font-semibold mb-1">Verify Your Phone</h2>
                       <p className="text-sm text-muted-foreground">
-                        Get started with your free 14-day trial
+                        For your security, please verify your phone number
                       </p>
                     </div>
-
-                    {/* Google OAuth - Prominent placement */}
-                    <div className="space-y-3">
-                      <GoogleSignInButton 
-                        className="w-full h-12"
-                      />
-
-                      {/* Clerk SSO Option */}
-                      {clerkConfigured && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setUseClerkAuth(true)}
-                          className="w-full h-12 border-2 hover:bg-muted"
-                        >
-                          <Sparkles className="mr-2 h-4 w-4" />
-                          Use Clerk SSO
-                        </Button>
-                      )}
-                      
-                      {/* Divider */}
-                      <div className="relative flex items-center py-2">
-                        <div className="flex-grow border-t border-border" />
-                        <span className="flex-shrink mx-4 text-xs text-muted-foreground uppercase tracking-wide">or continue with email</span>
-                        <div className="flex-grow border-t border-border" />
+                    <PhoneVerificationStep
+                      required={true}
+                      onVerified={(hash, phoneNumber) => {
+                        setPhoneHash(hash);
+                        setShowPhoneVerification(false);
+                        // Re-submit the form with verified phone
+                        if (pendingFormData) {
+                          logger.info('[SIGNUP] Phone verified, resubmitting form');
+                          form.handleSubmit(onSubmit)();
+                        }
+                      }}
+                      onSkip={() => {
+                        // If user skips, still allow signup but log it
+                        logger.warn('[SIGNUP] User skipped phone verification');
+                        setShowPhoneVerification(false);
+                        if (pendingFormData) {
+                          form.handleSubmit(onSubmit)();
+                        }
+                      }}
+                    />
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setShowPhoneVerification(false);
+                        setPendingFormData(null);
+                      }}
+                      className="w-full"
+                    >
+                      Back to Sign Up
+                    </Button>
+                  </div>
+                ) : (
+                  /* Form Content */
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                      <div>
+                        <h2 className="text-2xl font-semibold mb-1">Create Your Free Account</h2>
+                        <p className="text-sm text-muted-foreground">
+                          Get {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} free credits every month • Upgrade anytime
+                        </p>
                       </div>
-                    </div>
 
-                    {/* Required Fields */}
-                    <div className="space-y-5">
-                      <FormField
-                        control={form.control}
-                        name="business_name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-2">
-                              <Building2 className="h-4 w-4" />
-                              Business Name *
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input
-                                  placeholder="Big Mike's Wholesale"
-                                  {...field}
-                                  className={cn(
-                                    "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
-                                    field.value && !form.formState.errors.business_name && "border-emerald-500/50"
-                                  )}
-                                />
-                                {field.value && !form.formState.errors.business_name && (
-                                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
-                                )}
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      {/* Google OAuth - Prominent placement */}
+                      <div className="space-y-3">
+                        <GoogleSignInButton
+                          className="w-full h-12"
+                        />
 
-                      <FormField
-                        control={form.control}
-                        name="owner_name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-2">
-                              <User className="h-4 w-4" />
-                              Your Name *
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input 
-                                  placeholder="John Doe" 
-                                  {...field} 
-                                  className={cn(
-                                    "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
-                                    field.value && !form.formState.errors.owner_name && "border-emerald-500/50"
-                                  )}
-                                />
-                                {field.value && !form.formState.errors.owner_name && (
-                                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
-                                )}
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-2">
-                              <Mail className="h-4 w-4" />
-                              Email *
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input
-                                  type="email"
-                                  placeholder="you@business.com"
-                                  {...field}
-                                  className={cn(
-                                    "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
-                                    field.value && !form.formState.errors.email && "border-emerald-500/50"
-                                  )}
-                                />
-                                {field.value && !form.formState.errors.email && (
-                                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
-                                )}
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-2">
-                              <Lock className="h-4 w-4" />
-                              Password *
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input
-                                  type={showPassword ? "text" : "password"}
-                                  placeholder="••••••••"
-                                  {...field}
-                                  className="h-12 pr-10 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => setShowPassword(!showPassword)}
-                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                                  aria-label={showPassword ? "Hide password" : "Show password"}
-                                >
-                                  {showPassword ? (
-                                    <EyeOff className="h-4 w-4" />
-                                  ) : (
-                                    <Eye className="h-4 w-4" />
-                                  )}
-                                </button>
-                              </div>
-                            </FormControl>
-                            <PasswordStrengthIndicator password={field.value} />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* CAPTCHA Verification - Only render if configured */}
-                      {import.meta.env.VITE_TURNSTILE_SITE_KEY && (
-                        <div className="flex justify-center py-2">
-                          <TurnstileWrapper
-                            siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-                            onSuccess={(token) => setCaptchaToken(token)}
-                            onError={() => {
-                              setCaptchaToken('');
-                              toast({
-                                title: 'Verification Failed',
-                                description: 'CAPTCHA verification failed. Please try again.',
-                                variant: 'destructive',
-                              });
-                            }}
-                            onExpire={() => {
-                              setCaptchaToken('');
-                            }}
-                            turnstileRef={turnstileRef}
-                          />
-                        </div>
-                      )}
-
-                      {/* Optional Fields - Collapsible */}
-                      <Collapsible open={showOptionalFields} onOpenChange={setShowOptionalFields}>
-                        <CollapsibleTrigger asChild>
+                        {/* Clerk SSO Option */}
+                        {clerkConfigured && (
                           <Button
                             type="button"
-                            variant="ghost"
-                            className="w-full justify-between text-muted-foreground hover:text-foreground"
+                            variant="outline"
+                            onClick={() => setUseClerkAuth(true)}
+                            className="w-full h-12 border-2 hover:bg-muted"
                           >
-                            <span className="text-sm">Optional: Business Details</span>
-                            {showOptionalFields ? (
-                              <ChevronUp className="h-4 w-4" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4" />
-                            )}
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Use Clerk SSO
                           </Button>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="space-y-5 pt-2">
-                          <FormField
-                            control={form.control}
-                            name="phone"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="flex items-center gap-2">
-                                  <Phone className="h-4 w-4" />
-                                  Phone
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    placeholder="555-123-4567"
-                                    {...field}
-                                    className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="state"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="flex items-center gap-2">
-                                    <MapPin className="h-4 w-4" />
-                                    State
-                                  </FormLabel>
-                                  <Select onValueChange={field.onChange} value={field.value}>
-                                    <FormControl>
-                                      <SelectTrigger className="h-11">
-                                        <SelectValue placeholder="Select state" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      {US_STATES.map((state) => (
-                                        <SelectItem key={state} value={state}>
-                                          {state}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name="industry"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="flex items-center gap-2">
-                                    <Briefcase className="h-4 w-4" />
-                                    Industry
-                                  </FormLabel>
-                                  <Select onValueChange={field.onChange} value={field.value}>
-                                    <FormControl>
-                                      <SelectTrigger className="h-11">
-                                        <SelectValue placeholder="Select industry" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      {INDUSTRIES.map((industry) => (
-                                        <SelectItem key={industry.value} value={industry.value}>
-                                          {industry.label}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-
-                          <FormField
-                            control={form.control}
-                            name="company_size"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="flex items-center gap-2">
-                                  <Users className="h-4 w-4" />
-                                  Company Size
-                                </FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger className="h-11">
-                                      <SelectValue placeholder="Select company size" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {COMPANY_SIZES.map((size) => (
-                                      <SelectItem key={size.value} value={size.value}>
-                                        {size.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </CollapsibleContent>
-                      </Collapsible>
-
-                      {/* Terms Acceptance */}
-                      <FormField
-                        control={form.control}
-                        name="terms_accepted"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel className="text-sm font-normal cursor-pointer">
-                                I agree to the{' '}
-                                <a
-                                  href="/terms"
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-primary underline hover:text-primary/80"
-                                >
-                                  Terms of Service
-                                </a>{' '}
-                                and{' '}
-                                <a
-                                  href="/privacy"
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-primary underline hover:text-primary/80"
-                                >
-                                  Privacy Policy
-                                </a>
-                              </FormLabel>
-                              <FormMessage />
-                            </div>
-                          </FormItem>
                         )}
-                      />
-                    </div>
 
-                    {/* Submit Button */}
-                    <div className="space-y-4">
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full h-14 text-base font-semibold bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 hover:shadow-lg hover:shadow-emerald-500/25 hover:scale-[1.02] transition-all duration-200"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                            Creating Account...
-                          </>
-                        ) : (
-                          <>
-                            Start Free Trial
-                            <ArrowRight className="ml-2 h-5 w-5" />
-                          </>
-                        )}
-                      </Button>
-                      
-                      {/* Trust indicators below button */}
-                      <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1.5">
-                          <Shield className="h-3.5 w-3.5 text-emerald-500" />
-                          <span>Bank-level security</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Zap className="h-3.5 w-3.5 text-amber-500" />
-                          <span>Setup in 2 min</span>
+                        {/* Divider */}
+                        <div className="relative flex items-center py-2">
+                          <div className="flex-grow border-t border-border" />
+                          <span className="flex-shrink mx-4 text-xs text-muted-foreground uppercase tracking-wide">or continue with email</span>
+                          <div className="flex-grow border-t border-border" />
                         </div>
                       </div>
-                    </div>
-                  </form>
-                </Form>
+
+                      {/* Required Fields */}
+                      <div className="space-y-5">
+                        <FormField
+                          control={form.control}
+                          name="business_name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2">
+                                <Building2 className="h-4 w-4" />
+                                Business Name *
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Input
+                                    placeholder="Big Mike's Wholesale"
+                                    {...field}
+                                    className={cn(
+                                      "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
+                                      field.value && !form.formState.errors.business_name && "border-emerald-500/50"
+                                    )}
+                                  />
+                                  {field.value && !form.formState.errors.business_name && (
+                                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
+                                  )}
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="owner_name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                Your Name *
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Input
+                                    placeholder="John Doe"
+                                    {...field}
+                                    className={cn(
+                                      "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
+                                      field.value && !form.formState.errors.owner_name && "border-emerald-500/50"
+                                    )}
+                                  />
+                                  {field.value && !form.formState.errors.owner_name && (
+                                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
+                                  )}
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2">
+                                <Mail className="h-4 w-4" />
+                                Email *
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Input
+                                    type="email"
+                                    placeholder="you@business.com"
+                                    {...field}
+                                    className={cn(
+                                      "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
+                                      field.value && !form.formState.errors.email && "border-emerald-500/50"
+                                    )}
+                                  />
+                                  {field.value && !form.formState.errors.email && (
+                                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
+                                  )}
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2">
+                                <Lock className="h-4 w-4" />
+                                Password *
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Input
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    {...field}
+                                    className="h-12 pr-10 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                    aria-label={showPassword ? "Hide password" : "Show password"}
+                                  >
+                                    {showPassword ? (
+                                      <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                      <Eye className="h-4 w-4" />
+                                    )}
+                                  </button>
+                                </div>
+                              </FormControl>
+                              <PasswordStrengthIndicator password={field.value} />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* CAPTCHA Verification - Only render if configured */}
+                        {import.meta.env.VITE_TURNSTILE_SITE_KEY && (
+                          <div className="flex justify-center py-2">
+                            <TurnstileWrapper
+                              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                              onSuccess={(token) => setCaptchaToken(token)}
+                              onError={() => {
+                                setCaptchaToken('');
+                                toast({
+                                  title: 'Verification Failed',
+                                  description: 'CAPTCHA verification failed. Please try again.',
+                                  variant: 'destructive',
+                                });
+                              }}
+                              onExpire={() => {
+                                setCaptchaToken('');
+                              }}
+                              turnstileRef={turnstileRef}
+                            />
+                          </div>
+                        )}
+
+                        {/* Optional Fields - Collapsible */}
+                        <Collapsible open={showOptionalFields} onOpenChange={setShowOptionalFields}>
+                          <CollapsibleTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              className="w-full justify-between text-muted-foreground hover:text-foreground"
+                            >
+                              <span className="text-sm">Optional: Business Details</span>
+                              {showOptionalFields ? (
+                                <ChevronUp className="h-4 w-4" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="space-y-5 pt-2">
+                            <FormField
+                              control={form.control}
+                              name="phone"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="flex items-center gap-2">
+                                    <Phone className="h-4 w-4" />
+                                    Phone
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="555-123-4567"
+                                      {...field}
+                                      className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="state"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="flex items-center gap-2">
+                                      <MapPin className="h-4 w-4" />
+                                      State
+                                    </FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                      <FormControl>
+                                        <SelectTrigger className="h-11">
+                                          <SelectValue placeholder="Select state" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {US_STATES.map((state) => (
+                                          <SelectItem key={state} value={state}>
+                                            {state}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              <FormField
+                                control={form.control}
+                                name="industry"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="flex items-center gap-2">
+                                      <Briefcase className="h-4 w-4" />
+                                      Industry
+                                    </FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                      <FormControl>
+                                        <SelectTrigger className="h-11">
+                                          <SelectValue placeholder="Select industry" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {INDUSTRIES.map((industry) => (
+                                          <SelectItem key={industry.value} value={industry.value}>
+                                            {industry.label}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+
+                            <FormField
+                              control={form.control}
+                              name="company_size"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="flex items-center gap-2">
+                                    <Users className="h-4 w-4" />
+                                    Company Size
+                                  </FormLabel>
+                                  <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                      <SelectTrigger className="h-11">
+                                        <SelectValue placeholder="Select company size" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {COMPANY_SIZES.map((size) => (
+                                        <SelectItem key={size.value} value={size.value}>
+                                          {size.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </CollapsibleContent>
+                        </Collapsible>
+
+                        {/* Terms Acceptance */}
+                        <FormField
+                          control={form.control}
+                          name="terms_accepted"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <div className="space-y-1 leading-none">
+                                <FormLabel className="text-sm font-normal cursor-pointer">
+                                  I agree to the{' '}
+                                  <a
+                                    href="/terms"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary underline hover:text-primary/80"
+                                  >
+                                    Terms of Service
+                                  </a>{' '}
+                                  and{' '}
+                                  <a
+                                    href="/privacy"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary underline hover:text-primary/80"
+                                  >
+                                    Privacy Policy
+                                  </a>
+                                </FormLabel>
+                                <FormMessage />
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {/* Submit Button */}
+                      <div className="space-y-4">
+                        <Button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="w-full h-14 text-base font-semibold bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 hover:shadow-lg hover:shadow-emerald-500/25 hover:scale-[1.02] transition-all duration-200"
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                              Creating Your Account...
+                            </>
+                          ) : (
+                            <>
+                              <Coins className="mr-2 h-5 w-5" />
+                              Start Free with Credits
+                              <ArrowRight className="ml-2 h-5 w-5" />
+                            </>
+                          )}
+                        </Button>
+
+                        {/* Trust indicators below button */}
+                        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1.5">
+                            <Shield className="h-3.5 w-3.5 text-emerald-500" />
+                            <span>Bank-level security</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Zap className="h-3.5 w-3.5 text-amber-500" />
+                            <span>Setup in 2 min</span>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </Form>
+                )}
               </CardContent>
             </Card>
           </div>

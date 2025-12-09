@@ -2,16 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClients } from '@/hooks/crm/useClients';
 import { CreateClientDialog } from '@/components/crm/CreateClientDialog';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import {
     Select,
     SelectContent,
@@ -20,8 +11,20 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Loader2, User, Phone, Mail, DollarSign } from 'lucide-react';
+import { User, Phone, Mail, DollarSign, Users } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
+import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { SearchInput } from '@/components/shared/SearchInput';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+
+interface Client {
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    open_balance: number;
+    status: string;
+}
 
 export default function ClientsPage() {
     const navigate = useNavigate();
@@ -34,6 +37,109 @@ export default function ClientsPage() {
         client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (client.phone && client.phone.includes(searchTerm))
+    ) || [];
+
+    const columns: ResponsiveColumn<Client>[] = [
+        {
+            header: 'Name',
+            cell: (client) => (
+                <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="font-medium">{client.name}</div>
+                </div>
+            )
+        },
+        {
+            header: 'Contact',
+            cell: (client) => (
+                <div className="flex flex-col gap-1 text-sm">
+                    {client.email && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                            <Mail className="h-3 w-3" />
+                            {client.email}
+                        </div>
+                    )}
+                    {client.phone && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                            <Phone className="h-3 w-3" />
+                            {client.phone}
+                        </div>
+                    )}
+                </div>
+            )
+        },
+        {
+            header: 'Open Balance',
+            accessorKey: 'open_balance',
+            cell: (client) => (
+                <div className={`font-medium flex items-center gap-1 ${client.open_balance > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                    <DollarSign className="h-4 w-4" />
+                    {formatCurrency(client.open_balance)}
+                </div>
+            )
+        },
+        {
+            header: 'Status',
+            accessorKey: 'status',
+            cell: (client) => (
+                <Badge variant={client.status === 'active' ? 'default' : 'secondary'}>
+                    {client.status}
+                </Badge>
+            )
+        },
+        {
+            header: 'Actions',
+            cell: () => (
+                <div className="flex justify-end">
+                    <Button variant="ghost" size="sm">
+                        View Details
+                    </Button>
+                </div>
+            )
+        }
+    ];
+
+    const renderMobileCard = (client: Client) => (
+        <div className="space-y-3">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                        <div className="font-medium">{client.name}</div>
+                        <Badge variant={client.status === 'active' ? 'default' : 'secondary'} className="mt-1">
+                            {client.status}
+                        </Badge>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground">
+                {client.email && (
+                    <div className="flex items-center gap-2">
+                        <Mail className="h-3 w-3" />
+                        {client.email}
+                    </div>
+                )}
+                {client.phone && (
+                    <div className="flex items-center gap-2">
+                        <Phone className="h-3 w-3" />
+                        {client.phone}
+                    </div>
+                )}
+            </div>
+
+            <div className="pt-2 border-t flex items-center justify-between">
+                <div className={`font-medium flex items-center gap-1 ${client.open_balance > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                    <DollarSign className="h-4 w-4" />
+                    {formatCurrency(client.open_balance)}
+                </div>
+                <Button variant="outline" size="sm">View Details</Button>
+            </div>
+        </div>
     );
 
     return (
@@ -50,12 +156,10 @@ export default function ClientsPage() {
 
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div className="relative w-full md:w-96">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
+                    <SearchInput
                         placeholder="Search clients..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-8"
+                        onSearch={setSearchTerm}
+                        defaultValue={searchTerm}
                     />
                 </div>
                 <Select
@@ -72,83 +176,22 @@ export default function ClientsPage() {
                 </Select>
             </div>
 
-            <div className="border rounded-lg bg-card">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Contact</TableHead>
-                            <TableHead>Open Balance</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
-                            <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center">
-                                    <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                                </TableCell>
-                            </TableRow>
-                        ) : filteredClients?.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                                    No clients found.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            filteredClients?.map((client) => (
-                                <TableRow
-                                    key={client.id}
-                                    className="cursor-pointer hover:bg-muted/50"
-                                    onClick={() => navigate(`/admin/crm/clients/${client.id}`)}
-                                >
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                <User className="h-5 w-5 text-primary" />
-                                            </div>
-                                            <div className="font-medium">{client.name}</div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col gap-1 text-sm">
-                                            {client.email && (
-                                                <div className="flex items-center gap-2 text-muted-foreground">
-                                                    <Mail className="h-3 w-3" />
-                                                    {client.email}
-                                                </div>
-                                            )}
-                                            {client.phone && (
-                                                <div className="flex items-center gap-2 text-muted-foreground">
-                                                    <Phone className="h-3 w-3" />
-                                                    {client.phone}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className={`font-medium flex items-center gap-1 ${client.open_balance > 0 ? 'text-red-500' : 'text-green-500'}`}>
-                                            <DollarSign className="h-4 w-4" />
-                                            {formatCurrency(client.open_balance)}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={client.status === 'active' ? 'default' : 'secondary'}>
-                                            {client.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Button variant="ghost" size="sm">
-                                            View Details
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+            <ResponsiveTable
+                columns={columns}
+                data={filteredClients}
+                isLoading={isLoading}
+                onRowClick={(client) => navigate(`/admin/crm/clients/${client.id}`)}
+                mobileRenderer={renderMobileCard}
+                emptyState={{
+                    icon: Users,
+                    title: "No clients found",
+                    description: "No clients match your search criteria.",
+                    action: {
+                        label: "Clear Search",
+                        onClick: () => setSearchTerm('')
+                    }
+                }}
+            />
         </div>
     );
 }

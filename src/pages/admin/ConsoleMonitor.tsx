@@ -1,10 +1,12 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Download, Search, Filter } from 'lucide-react';
+import { Trash2, Download, Search, Filter, Terminal } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 interface LogEntry {
   id: number;
@@ -131,7 +133,7 @@ export default function ConsoleMonitor() {
                 />
               </div>
             </div>
-            
+
             <Select value={filter} onValueChange={setFilter}>
               <SelectTrigger className="w-[150px]">
                 <Filter className="h-4 w-4 mr-2" />
@@ -166,8 +168,13 @@ export default function ConsoleMonitor() {
 
           <div className="border rounded-lg h-[600px] overflow-auto bg-muted/30 font-mono text-sm">
             {filteredLogs.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                No logs to display
+              <div className="flex items-center justify-center h-full">
+                <EnhancedEmptyState
+                  icon={Terminal}
+                  title="No Logs to Display"
+                  description={search || filter !== 'all' ? "No logs match your filters." : "Console logs will appear here in real-time."}
+                  compact
+                />
               </div>
             ) : (
               <div className="p-4 space-y-2">

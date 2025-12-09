@@ -47,6 +47,9 @@ import { useCRMDashboard } from "@/hooks/crm/useCRMDashboard";
 import { ActivityTimeline } from "@/components/crm/ActivityTimeline";
 import { formatCurrency } from "@/utils/formatters";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { SearchInput } from '@/components/shared/SearchInput';
 
 interface Customer {
   id: string;
@@ -204,15 +207,11 @@ export default function CustomerCRMPage() {
         <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
           {/* Search */}
           <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search customers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 min-h-[44px] touch-manipulation"
-              />
-            </div>
+            <SearchInput
+              placeholder="Search customers..."
+              onSearch={setSearchTerm}
+              defaultValue={searchTerm}
+            />
           </div>
 
           {/* Lifecycle Filter */}
@@ -347,177 +346,144 @@ export default function CustomerCRMPage() {
         </TabsContent>
 
         <TabsContent value="overview" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Customers ({filteredCustomers.length})</CardTitle>
-              <CardDescription>
-                View customers with lifecycle stages and segments
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <>
-                  <div className="hidden md:flex items-center justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <ResponsiveTable
+            columns={[
+              {
+                header: 'Customer',
+                cell: (customer: any) => (
+                  <div className="font-medium">
+                    {customer.first_name} {customer.last_name}
+                    {customer.email && (
+                      <div className="text-xs text-muted-foreground">
+                        {customer.email}
+                      </div>
+                    )}
                   </div>
-                  <div className="md:hidden space-y-3 p-4">
-                    {[1, 2, 3].map((i) => (
-                      <Card key={i} className="p-4">
-                        <Skeleton className="h-5 w-3/4 mb-3" />
-                        <Skeleton className="h-4 w-1/2 mb-3" />
-                        <div className="grid grid-cols-2 gap-3 pt-2 border-t">
-                          <Skeleton className="h-6 w-20" />
-                          <Skeleton className="h-6 w-24" />
-                          <Skeleton className="h-6 w-16" />
-                          <Skeleton className="h-6 w-20" />
-                        </div>
-                      </Card>
-                    ))}
+                )
+              },
+              {
+                header: 'Lifecycle',
+                accessorKey: 'lifecycle',
+                cell: (customer: any) => (
+                  <Badge
+                    variant={
+                      customer.lifecycle === "active"
+                        ? "default"
+                        : customer.lifecycle === "at-risk"
+                          ? "destructive"
+                          : "secondary"
+                    }
+                  >
+                    {customer.lifecycle}
+                  </Badge>
+                )
+              },
+              {
+                header: 'Segment',
+                accessorKey: 'segment',
+                cell: (customer: any) => <Badge variant="outline">{customer.segment}</Badge>
+              },
+              {
+                header: 'RFM Score',
+                cell: (customer: any) => (
+                  <code className="text-sm bg-muted px-2 py-1 rounded">
+                    {customer.rfm.rfm}
+                  </code>
+                )
+              },
+              {
+                header: 'Total Spent',
+                accessorKey: 'total_spent',
+                cell: (customer: any) => (
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="h-3 w-3 text-muted-foreground" />
+                    {customer.total_spent.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </div>
-                </>
-              ) : filteredCustomers.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No customers found matching your filters.
+                )
+              },
+              {
+                header: 'Last Purchase',
+                accessorKey: 'last_purchase_at',
+                cell: (customer: any) => customer.last_purchase_at
+                  ? new Date(customer.last_purchase_at).toLocaleDateString()
+                  : "Never"
+              }
+            ]}
+            data={filteredCustomers}
+            isLoading={isLoading}
+            emptyState={{
+              icon: Users,
+              title: "No Customers Found",
+              description: "No customers match your current filters. Try adjusting your search or filter criteria.",
+              compact: true
+            }}
+            mobileRenderer={(customer: any) => (
+              <div className="space-y-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-base">
+                      {customer.first_name} {customer.last_name}
+                    </h3>
+                    {customer.email && (
+                      <p className="text-sm text-muted-foreground truncate mt-1">
+                        {customer.email}
+                      </p>
+                    )}
+                  </div>
+                  <Badge
+                    variant={
+                      customer.lifecycle === "active"
+                        ? "default"
+                        : customer.lifecycle === "at-risk"
+                          ? "destructive"
+                          : "secondary"
+                    }
+                    className="ml-2 flex-shrink-0"
+                  >
+                    {customer.lifecycle}
+                  </Badge>
                 </div>
-              ) : (
-                <>
-                  {/* Desktop Table View */}
-                  <div className="hidden md:block overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Customer</TableHead>
-                          <TableHead>Lifecycle</TableHead>
-                          <TableHead>Segment</TableHead>
-                          <TableHead>RFM Score</TableHead>
-                          <TableHead>Total Spent</TableHead>
-                          <TableHead>Last Purchase</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredCustomers.map((customer) => (
-                          <TableRow key={customer.id}>
-                            <TableCell className="font-medium">
-                              {customer.first_name} {customer.last_name}
-                              {customer.email && (
-                                <div className="text-xs text-muted-foreground">
-                                  {customer.email}
-                                </div>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={
-                                  customer.lifecycle === "active"
-                                    ? "default"
-                                    : customer.lifecycle === "at-risk"
-                                      ? "destructive"
-                                      : "secondary"
-                                }
-                              >
-                                {customer.lifecycle}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{customer.segment}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              <code className="text-sm bg-muted px-2 py-1 rounded">
-                                {customer.rfm.rfm}
-                              </code>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1">
-                                <DollarSign className="h-3 w-3 text-muted-foreground" />
-                                {customer.total_spent.toLocaleString("en-US", {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                                })}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {customer.last_purchase_at
-                                ? new Date(customer.last_purchase_at).toLocaleDateString()
-                                : "Never"}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
 
-                  {/* Mobile Card View */}
-                  <div className="md:hidden space-y-3 p-4">
-                    {filteredCustomers.map((customer) => (
-                      <Card key={customer.id} className="p-4">
-                        <div className="space-y-3">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-base">
-                                {customer.first_name} {customer.last_name}
-                              </h3>
-                              {customer.email && (
-                                <p className="text-sm text-muted-foreground truncate mt-1">
-                                  {customer.email}
-                                </p>
-                              )}
-                            </div>
-                            <Badge
-                              variant={
-                                customer.lifecycle === "active"
-                                  ? "default"
-                                  : customer.lifecycle === "at-risk"
-                                    ? "destructive"
-                                    : "secondary"
-                              }
-                              className="ml-2 flex-shrink-0"
-                            >
-                              {customer.lifecycle}
-                            </Badge>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-3 pt-2 border-t">
-                            <div>
-                              <p className="text-xs text-muted-foreground mb-1">Segment</p>
-                              <Badge variant="outline" className="text-xs">
-                                {customer.segment}
-                              </Badge>
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground mb-1">RFM Score</p>
-                              <code className="text-xs bg-muted px-2 py-1 rounded">
-                                {customer.rfm.rfm}
-                              </code>
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground mb-1">Total Spent</p>
-                              <div className="flex items-center gap-1">
-                                <DollarSign className="h-3 w-3 text-muted-foreground" />
-                                <span className="font-medium">
-                                  {customer.total_spent.toLocaleString("en-US", {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })}
-                                </span>
-                              </div>
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground mb-1">Last Purchase</p>
-                              <p className="text-sm font-medium">
-                                {customer.last_purchase_at
-                                  ? new Date(customer.last_purchase_at).toLocaleDateString()
-                                  : "Never"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
+                <div className="grid grid-cols-2 gap-3 pt-2 border-t">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Segment</p>
+                    <Badge variant="outline" className="text-xs">
+                      {customer.segment}
+                    </Badge>
                   </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">RFM Score</p>
+                    <code className="text-xs bg-muted px-2 py-1 rounded">
+                      {customer.rfm.rfm}
+                    </code>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Total Spent</p>
+                    <div className="flex items-center gap-1">
+                      <DollarSign className="h-3 w-3 text-muted-foreground" />
+                      <span className="font-medium">
+                        {customer.total_spent.toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Last Purchase</p>
+                    <p className="text-sm font-medium">
+                      {customer.last_purchase_at
+                        ? new Date(customer.last_purchase_at).toLocaleDateString()
+                        : "Never"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          />
         </TabsContent>
 
         <TabsContent value="segmentation" className="space-y-4">

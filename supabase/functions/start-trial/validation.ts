@@ -6,6 +6,7 @@ export const startTrialSchema = z.object({
   plan_id: z.string().uuid('Invalid plan ID format'),
   billing_cycle: z.enum(['monthly', 'yearly']).optional().default('monthly'),
   skip_trial: z.boolean().optional().default(false),
+  idempotency_key: z.string().optional(),
 });
 
 export type StartTrialInput = z.infer<typeof startTrialSchema>;

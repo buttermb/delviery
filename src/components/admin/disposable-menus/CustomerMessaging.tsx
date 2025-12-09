@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useMenuOrders } from '@/hooks/useDisposableMenus';
 import { toast } from '@/hooks/use-toast';
+import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
 import {
   Select,
   SelectContent,
@@ -30,6 +31,7 @@ import {
 export const CustomerMessaging = () => {
   const { data: orders } = useMenuOrders();
   const [sending, setSending] = useState(false);
+  const { checkLimit, recordAction, limitsApply } = useFreeTierLimits();
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [message, setMessage] = useState('');
   const [subject, setSubject] = useState('');
@@ -94,10 +96,32 @@ export const CustomerMessaging = () => {
       return;
     }
 
+    // Check free tier SMS/email limits (users with purchased credits bypass limits)
+    if (limitsApply) {
+      const limitType = channel === 'sms' ? 'sms_per_month' : 'emails_per_month';
+      const messageCount = filteredCustomers.length;
+      const limitCheck = checkLimit(limitType, messageCount);
+      if (!limitCheck.allowed) {
+        toast({
+          variant: 'destructive',
+          title: `Monthly ${channel.toUpperCase()} Limit Reached`,
+          description: limitCheck.message,
+        });
+        return;
+      }
+    }
+
     setSending(true);
     try {
       // Simulate sending (would call edge function in production)
       await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Record action for free tier limit tracking
+      if (limitsApply) {
+        for (let i = 0; i < filteredCustomers.length; i++) {
+          await recordAction(channel === 'sms' ? 'sms' : 'email');
+        }
+      }
 
       toast({
         title: 'Messages Sent',

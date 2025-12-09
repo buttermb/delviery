@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { LastUpdated } from '@/components/shared/LastUpdated';
 import { RecentItemsWidget } from "@/components/admin/dashboard/RecentItemsWidget";
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { BarChart3 } from 'lucide-react';
 
 export default function SalesDashboard() {
   const { tenant } = useTenantAdminAuth();
@@ -228,9 +230,12 @@ export default function SalesDashboard() {
                       </AreaChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                      No data available
-                    </div>
+                    <EnhancedEmptyState
+                      icon={BarChart3}
+                      title="No Revenue Data"
+                      description="Revenue data will appear here once orders are placed."
+                      compact
+                    />
                   )}
                 </div>
               </CardContent>
@@ -283,9 +288,12 @@ export default function SalesDashboard() {
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                      No data available
-                    </div>
+                    <EnhancedEmptyState
+                      icon={ShoppingCart}
+                      title="No Order Data"
+                      description="Order volume data will appear here once orders are placed."
+                      compact
+                    />
                   )}
                 </div>
               </CardContent>

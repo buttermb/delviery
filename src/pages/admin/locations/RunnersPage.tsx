@@ -15,6 +15,7 @@ import { Truck, MapPin, Phone, Mail } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 type ColumnDef<T> = {
   accessorKey?: keyof T | string;
@@ -36,8 +37,10 @@ interface Runner {
 export default function RunnersPage() {
   const navigate = useNavigate();
   const { account } = useAccount();
+  const { tenant } = useTenantAdminAuth();
 
   const { data: runners, isLoading } = useQuery({
+
     queryKey: ['runners', account?.id],
     queryFn: async () => {
       if (!account?.id) return [];
@@ -129,7 +132,7 @@ export default function RunnersPage() {
             variant="ghost"
             size="sm"
             onClick={() => {
-              navigate(`/admin/fleet-management?runner=${original.id}`);
+              tenant?.slug && navigate(`/${tenant.slug}/admin/fleet-management?runner=${original.id}`);
             }}
           >
             <MapPin className="h-4 w-4 mr-1" />

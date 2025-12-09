@@ -1,9 +1,5 @@
 import { logger } from '@/lib/logger';
-/**
- * Settings Page - Comprehensive settings management
- */
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,120 +9,219 @@ import { Switch } from '@/components/ui/switch';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Textarea } from '@/components/ui/textarea';
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Settings, Shield, Bell, Printer, Plug, Save,
-  Building, Lock, Key, AlertCircle, CheckCircle2, ArrowLeft, Layout, Sliders, Users, CreditCard
+  Building, Layout, Sliders, Users, CreditCard, ArrowLeft
 } from 'lucide-react';
-import { showSuccessToast, showErrorToast, showInfoToast } from '@/utils/toastHelpers';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
-
-type AccountUpdate = Database['public']['Tables']['accounts']['Update'];
 import { OperationSizeSelector } from '@/components/admin/sidebar/OperationSizeSelector';
-import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
-import { useToast } from "@/hooks/use-toast";
 import { SidebarCustomizer } from '@/components/admin/sidebar/SidebarCustomizer';
 import { StripeConnectSettings } from '@/components/settings/StripeConnectSettings';
 import { PaymentSettingsForm } from '@/components/settings/PaymentSettingsForm';
+import { useToast } from "@/hooks/use-toast";
+
+// --- Schemas ---
+
+const generalSchema = z.object({
+  companyName: z.string().min(2, "Company name must be at least 2 characters"),
+  email: z.string().email("Invalid email address").optional().or(z.literal('')),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+});
+
+const securitySchema = z.object({
+  twoFactorEnabled: z.boolean(),
+  requirePasswordChange: z.boolean(),
+  sessionTimeout: z.number().min(5).max(1440),
+  passwordMinLength: z.number().min(8).max(32),
+});
+
+const notificationSchema = z.object({
+  emailNotifications: z.boolean(),
+  smsNotifications: z.boolean(),
+  lowStockAlerts: z.boolean(),
+  overdueAlerts: z.boolean(),
+  orderAlerts: z.boolean(),
+});
+
+type GeneralFormValues = z.infer<typeof generalSchema>;
+type SecurityFormValues = z.infer<typeof securitySchema>;
+type NotificationFormValues = z.infer<typeof notificationSchema>;
 
 export default function SettingsPage() {
   const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
-  const { account } = useAccount();
+  const { account, accountSettings, refreshAccount } = useAccount();
+  const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') || 'general';
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [loading, setLoading] = useState(false);
 
-  // General Settings
-  const [generalSettings, setGeneralSettings] = useState({
-    companyName: account?.company_name || '',
-    email: '',
-    phone: '',
-    address: '',
-    timezone: 'America/New_York',
-    currency: 'USD',
+  // --- General Form ---
+  const generalForm = useForm<GeneralFormValues>({
+    resolver: zodResolver(generalSchema),
+    defaultValues: {
+      companyName: '',
+      email: '',
+      phone: '',
+      address: '',
+    }
   });
 
-  // Security Settings
-  const [securitySettings, setSecuritySettings] = useState({
-    twoFactorEnabled: false,
-    sessionTimeout: 30,
-    requirePasswordChange: false,
-    passwordMinLength: 8,
+  // --- Security Form ---
+  const securityForm = useForm<SecurityFormValues>({
+    resolver: zodResolver(securitySchema),
+    defaultValues: {
+      twoFactorEnabled: false,
+      requirePasswordChange: false,
+      sessionTimeout: 30,
+      passwordMinLength: 8,
+    }
   });
 
-  // Notification Settings
-  const [notificationSettings, setNotificationSettings] = useState({
-    emailNotifications: true,
-    smsNotifications: false,
-    lowStockAlerts: true,
-    overdueAlerts: true,
-    orderAlerts: true,
+  // --- Notification Form ---
+  const notificationForm = useForm<NotificationFormValues>({
+    resolver: zodResolver(notificationSchema),
+    defaultValues: {
+      emailNotifications: true,
+      smsNotifications: false,
+      lowStockAlerts: true,
+      overdueAlerts: true,
+      orderAlerts: true,
+    }
   });
 
-  // Printing Settings
-  const [printingSettings, setPrintingSettings] = useState({
-    defaultPrinter: '',
-    labelSize: '4x6',
-    autoPrint: false,
-    includeBarcode: true,
-    includeQRCode: true,
-  });
+  // Initialize forms with data
+  useEffect(() => {
+    if (account) {
+      generalForm.reset({
+        companyName: account.company_name,
+        email: account.billing_email || '',
+        phone: (account.metadata as any)?.phone || '',
+        address: (account.metadata as any)?.address || '',
+      });
 
-  const handleSave = async (section: string) => {
+      const secSettings = (account.metadata as any)?.security || {};
+      securityForm.reset({
+        twoFactorEnabled: secSettings.twoFactorEnabled || false,
+        requirePasswordChange: secSettings.requirePasswordChange || false,
+        sessionTimeout: secSettings.sessionTimeout || 30,
+        passwordMinLength: secSettings.passwordMinLength || 8,
+      });
+    }
+
+    if (accountSettings) {
+      const notifSettings = (accountSettings.notification_settings as any) || {};
+      notificationForm.reset({
+        emailNotifications: notifSettings.emailNotifications ?? true,
+        smsNotifications: notifSettings.smsNotifications ?? false,
+        lowStockAlerts: notifSettings.lowStockAlerts ?? true,
+        overdueAlerts: notifSettings.overdueAlerts ?? true,
+        orderAlerts: notifSettings.orderAlerts ?? true,
+      });
+    }
+  }, [account, accountSettings, generalForm, securityForm, notificationForm]);
+
+
+  // --- Submit Handlers ---
+
+  const onSaveGeneral = async (data: GeneralFormValues) => {
+    if (!account) return;
     setLoading(true);
     try {
-      if (!account?.id) {
-        throw new Error('No account selected');
-      }
+      const { error } = await supabase
+        .from('accounts')
+        .update({
+          company_name: data.companyName,
+          billing_email: data.email || null,
+          metadata: {
+            ...((account.metadata as object) || {}),
+            phone: data.phone,
+            address: data.address,
+          }
+        })
+        .eq('id', account.id);
 
-      // Save settings based on section
-      let updateData: AccountUpdate = {};
+      if (error) throw error;
 
-      switch (section) {
-        case 'General':
-          updateData = {
-            company_name: generalSettings.companyName,
-            // Add more general settings as needed
-          };
-          break;
-        case 'Security':
-          // Security settings would be saved to a separate table or user preferences
-          logger.debug('Saving security settings', { component: 'SettingsPage' });
-          break;
-        case 'Notifications':
-          // Save notification preferences
-          logger.debug('Saving notification settings', { component: 'SettingsPage' });
-          break;
-        case 'Printing':
-          // Save printing preferences
-          logger.debug('Saving printing settings', { component: 'SettingsPage' });
-          break;
-      }
-
-      // Update account if there's data to save
-      if (Object.keys(updateData).length > 0) {
-        const { error } = await supabase
-          .from('accounts')
-          .update(updateData)
-          .eq('id', account.id);
-
-        if (error) throw error;
-      }
-
-      showSuccessToast(`${section} settings saved successfully`);
-    } catch (error: unknown) {
-      const errorObj = error instanceof Error ? error : new Error(String(error));
-      logger.error(`Error saving ${section} settings`, errorObj, { section, component: 'SettingsPage' });
-      showErrorToast(errorObj.message || `Failed to save ${section} settings`);
+      await refreshAccount();
+      toast({ title: "Settings Saved", description: "General settings updated successfully." });
+    } catch (err) {
+      logger.error("Error saving general settings", err);
+      toast({ variant: "destructive", title: "Error", description: "Failed to save settings." });
     } finally {
       setLoading(false);
     }
   };
 
+  const onSaveSecurity = async (data: SecurityFormValues) => {
+    if (!account) return;
+    setLoading(true);
+    try {
+      // Saving security settings to account metadata as user profile preferences are separate
+      const { error } = await supabase
+        .from('accounts')
+        .update({
+          metadata: {
+            ...((account.metadata as object) || {}),
+            security: data,
+          }
+        })
+        .eq('id', account.id);
+
+      if (error) throw error;
+      await refreshAccount();
+      toast({ title: "Settings Saved", description: "Security settings updated successfully." });
+    } catch (err) {
+      logger.error("Error saving security settings", err);
+      toast({ variant: "destructive", title: "Error", description: "Failed to save settings." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onSaveNotifications = async (data: NotificationFormValues) => {
+    if (!account) return;
+    setLoading(true);
+    try {
+      if (accountSettings) {
+        // Update existing
+        const { error } = await supabase
+          .from('account_settings')
+          .update({
+            notification_settings: data as any
+          })
+          .eq('id', accountSettings.id);
+        if (error) throw error;
+      } else {
+        // Create new settings record
+        const { error } = await supabase
+          .from('account_settings')
+          .insert({
+            account_id: account.id,
+            notification_settings: data as any
+          });
+        if (error) throw error;
+      }
+
+      await refreshAccount();
+      toast({ title: "Settings Saved", description: "Notification preferences updated." });
+    } catch (err) {
+      logger.error("Error saving notification settings", err);
+      toast({ variant: "destructive", title: "Error", description: "Failed to save settings." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-2 sm:p-6 space-y-6">
       <div>
         <Button
           variant="ghost"
@@ -141,8 +236,7 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">Manage your account and system preferences</p>
       </div>
 
-      <Tabs defaultValue={defaultTab} className="space-y-6">
-        {/* Vertical tabs on mobile, horizontal on desktop */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="flex flex-col lg:flex-row w-full lg:w-auto h-auto lg:h-10 items-stretch lg:items-center gap-1 bg-muted p-1">
           <TabsTrigger value="general" className="justify-start lg:justify-center w-full lg:w-auto">
             <Settings className="h-4 w-4 mr-2" />
@@ -185,59 +279,55 @@ export default function SettingsPage() {
               <Building className="h-5 w-5" />
               General Settings
             </h3>
-            <div className="space-y-4">
+            <form onSubmit={generalForm.handleSubmit(onSaveGeneral)} className="space-y-4">
               <div>
                 <Label>Company Name</Label>
-                <Input
-                  value={generalSettings.companyName}
-                  onChange={(e) => setGeneralSettings({ ...generalSettings, companyName: e.target.value })}
-                />
+                <Input {...generalForm.register("companyName")} />
+                {generalForm.formState.errors.companyName && (
+                  <p className="text-sm text-destructive mt-1">{generalForm.formState.errors.companyName.message}</p>
+                )}
               </div>
               <div>
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  value={generalSettings.email}
-                  onChange={(e) => setGeneralSettings({ ...generalSettings, email: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Phone</Label>
-                <Input
-                  type="tel"
-                  value={generalSettings.phone}
-                  onChange={(e) => setGeneralSettings({ ...generalSettings, phone: e.target.value })}
-                />
+                <Label>Details</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Email</Label>
+                    <Input type="email" {...generalForm.register("email")} />
+                    {generalForm.formState.errors.email && (
+                      <p className="text-sm text-destructive">{generalForm.formState.errors.email.message}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Phone</Label>
+                    <Input type="tel" {...generalForm.register("phone")} />
+                  </div>
+                </div>
               </div>
               <div>
                 <Label>Address</Label>
-                <Textarea
-                  value={generalSettings.address}
-                  onChange={(e) => setGeneralSettings({ ...generalSettings, address: e.target.value })}
-                  rows={3}
-                />
+                <Textarea {...generalForm.register("address")} rows={3} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Timezone</Label>
-                  <Input value={generalSettings.timezone} disabled />
+                  <Input value="America/New_York" disabled />
                 </div>
                 <div>
                   <Label>Currency</Label>
-                  <Input value={generalSettings.currency} disabled />
+                  <Input value="USD" disabled />
                 </div>
               </div>
-              <Button onClick={() => handleSave('General')} disabled={loading}>
+              <Button type="submit" disabled={loading}>
                 <Save className="h-4 w-4 mr-2" />
                 Save General Settings
               </Button>
-              <div className="pt-4 border-t">
-                <h4 className="text-sm font-medium mb-2">Team Management</h4>
-                <Button variant="outline" onClick={() => navigateToAdmin('team-members')}>
-                  <Users className="h-4 w-4 mr-2" />
-                  Manage Team Members
-                </Button>
-              </div>
+            </form>
+            <div className="pt-4 border-t mt-6">
+              <h4 className="text-sm font-medium mb-2">Team Management</h4>
+              <Button variant="outline" onClick={() => navigateToAdmin('team-members')}>
+                <Users className="h-4 w-4 mr-2" />
+                Manage Team Members
+              </Button>
             </div>
           </Card>
         </TabsContent>
@@ -249,7 +339,7 @@ export default function SettingsPage() {
               <Shield className="h-5 w-5" />
               Security Settings
             </h3>
-            <div className="space-y-4">
+            <form onSubmit={securityForm.handleSubmit(onSaveSecurity)} className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <Label>Two-Factor Authentication</Label>
@@ -258,10 +348,8 @@ export default function SettingsPage() {
                   </p>
                 </div>
                 <Switch
-                  checked={securitySettings.twoFactorEnabled}
-                  onCheckedChange={(checked) =>
-                    setSecuritySettings({ ...securitySettings, twoFactorEnabled: checked })
-                  }
+                  checked={securityForm.watch("twoFactorEnabled")}
+                  onCheckedChange={(checked) => securityForm.setValue("twoFactorEnabled", checked)}
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -272,37 +360,35 @@ export default function SettingsPage() {
                   </p>
                 </div>
                 <Switch
-                  checked={securitySettings.requirePasswordChange}
-                  onCheckedChange={(checked) =>
-                    setSecuritySettings({ ...securitySettings, requirePasswordChange: checked })
-                  }
+                  checked={securityForm.watch("requirePasswordChange")}
+                  onCheckedChange={(checked) => securityForm.setValue("requirePasswordChange", checked)}
                 />
               </div>
               <div>
                 <Label>Session Timeout (minutes)</Label>
                 <Input
                   type="number"
-                  value={securitySettings.sessionTimeout}
-                  onChange={(e) =>
-                    setSecuritySettings({ ...securitySettings, sessionTimeout: parseInt(e.target.value) })
-                  }
+                  {...securityForm.register("sessionTimeout", { valueAsNumber: true })}
                 />
+                {securityForm.formState.errors.sessionTimeout && (
+                  <p className="text-sm text-destructive">{securityForm.formState.errors.sessionTimeout.message}</p>
+                )}
               </div>
               <div>
                 <Label>Minimum Password Length</Label>
                 <Input
                   type="number"
-                  value={securitySettings.passwordMinLength}
-                  onChange={(e) =>
-                    setSecuritySettings({ ...securitySettings, passwordMinLength: parseInt(e.target.value) })
-                  }
+                  {...securityForm.register("passwordMinLength", { valueAsNumber: true })}
                 />
+                {securityForm.formState.errors.passwordMinLength && (
+                  <p className="text-sm text-destructive">{securityForm.formState.errors.passwordMinLength.message}</p>
+                )}
               </div>
-              <Button onClick={() => handleSave('Security')} disabled={loading}>
+              <Button type="submit" disabled={loading}>
                 <Save className="h-4 w-4 mr-2" />
                 Save Security Settings
               </Button>
-            </div>
+            </form>
           </Card>
         </TabsContent>
 
@@ -313,17 +399,15 @@ export default function SettingsPage() {
               <Bell className="h-5 w-5" />
               Notification Settings
             </h3>
-            <div className="space-y-4">
+            <form onSubmit={notificationForm.handleSubmit(onSaveNotifications)} className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <Label>Email Notifications</Label>
                   <p className="text-sm text-muted-foreground">Receive notifications via email</p>
                 </div>
                 <Switch
-                  checked={notificationSettings.emailNotifications}
-                  onCheckedChange={(checked) =>
-                    setNotificationSettings({ ...notificationSettings, emailNotifications: checked })
-                  }
+                  checked={notificationForm.watch("emailNotifications")}
+                  onCheckedChange={(c) => notificationForm.setValue("emailNotifications", c)}
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -332,46 +416,38 @@ export default function SettingsPage() {
                   <p className="text-sm text-muted-foreground">Receive notifications via SMS</p>
                 </div>
                 <Switch
-                  checked={notificationSettings.smsNotifications}
-                  onCheckedChange={(checked) =>
-                    setNotificationSettings({ ...notificationSettings, smsNotifications: checked })
-                  }
+                  checked={notificationForm.watch("smsNotifications")}
+                  onCheckedChange={(c) => notificationForm.setValue("smsNotifications", c)}
                 />
               </div>
               <div className="pt-4 border-t space-y-3">
                 <div className="flex items-center justify-between">
                   <Label>Low Stock Alerts</Label>
                   <Switch
-                    checked={notificationSettings.lowStockAlerts}
-                    onCheckedChange={(checked) =>
-                      setNotificationSettings({ ...notificationSettings, lowStockAlerts: checked })
-                    }
+                    checked={notificationForm.watch("lowStockAlerts")}
+                    onCheckedChange={(c) => notificationForm.setValue("lowStockAlerts", c)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
                   <Label>Overdue Payment Alerts</Label>
                   <Switch
-                    checked={notificationSettings.overdueAlerts}
-                    onCheckedChange={(checked) =>
-                      setNotificationSettings({ ...notificationSettings, overdueAlerts: checked })
-                    }
+                    checked={notificationForm.watch("overdueAlerts")}
+                    onCheckedChange={(c) => notificationForm.setValue("overdueAlerts", c)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
                   <Label>Order Alerts</Label>
                   <Switch
-                    checked={notificationSettings.orderAlerts}
-                    onCheckedChange={(checked) =>
-                      setNotificationSettings({ ...notificationSettings, orderAlerts: checked })
-                    }
+                    checked={notificationForm.watch("orderAlerts")}
+                    onCheckedChange={(c) => notificationForm.setValue("orderAlerts", c)}
                   />
                 </div>
               </div>
-              <Button onClick={() => handleSave('Notifications')} disabled={loading}>
+              <Button type="submit" disabled={loading}>
                 <Save className="h-4 w-4 mr-2" />
                 Save Notification Settings
               </Button>
-            </div>
+            </form>
           </Card>
         </TabsContent>
 
@@ -382,62 +458,9 @@ export default function SettingsPage() {
               <Printer className="h-5 w-5" />
               Printing & Labels
             </h3>
-            <div className="space-y-4">
-              <div>
-                <Label>Default Printer</Label>
-                <Input
-                  value={printingSettings.defaultPrinter}
-                  onChange={(e) =>
-                    setPrintingSettings({ ...printingSettings, defaultPrinter: e.target.value })
-                  }
-                  placeholder="Select printer..."
-                />
-              </div>
-              <div>
-                <Label>Label Size</Label>
-                <select
-                  className="w-full p-2 border rounded-md"
-                  value={printingSettings.labelSize}
-                  onChange={(e) =>
-                    setPrintingSettings({ ...printingSettings, labelSize: e.target.value })
-                  }
-                >
-                  <option value="4x6">4x6 inches</option>
-                  <option value="3x4">3x4 inches</option>
-                  <option value="2x4">2x4 inches</option>
-                </select>
-              </div>
-              <div className="flex items-center justify-between">
-                <Label>Auto-Print on Create</Label>
-                <Switch
-                  checked={printingSettings.autoPrint}
-                  onCheckedChange={(checked) =>
-                    setPrintingSettings({ ...printingSettings, autoPrint: checked })
-                  }
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label>Include Barcode</Label>
-                <Switch
-                  checked={printingSettings.includeBarcode}
-                  onCheckedChange={(checked) =>
-                    setPrintingSettings({ ...printingSettings, includeBarcode: checked })
-                  }
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label>Include QR Code</Label>
-                <Switch
-                  checked={printingSettings.includeQRCode}
-                  onCheckedChange={(checked) =>
-                    setPrintingSettings({ ...printingSettings, includeQRCode: checked })
-                  }
-                />
-              </div>
-              <Button onClick={() => handleSave('Printing')} disabled={loading}>
-                <Save className="h-4 w-4 mr-2" />
-                Save Printing Settings
-              </Button>
+            <div className="p-4 border rounded-lg bg-muted/20 text-center text-muted-foreground">
+              <p>Printing preferences are currently managed via the Print Dialog.</p>
+              <p className="text-sm mt-2">More advanced label configuration coming soon.</p>
             </div>
           </Card>
         </TabsContent>
@@ -456,7 +479,7 @@ export default function SettingsPage() {
                     <h4 className="font-medium">QuickBooks</h4>
                     <p className="text-sm text-muted-foreground">Sync financial data</p>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => showInfoToast("QuickBooks", "QuickBooks integration coming soon")}>Connect</Button>
+                  <Button variant="outline" size="sm" disabled>Connect (Coming Soon)</Button>
                 </div>
               </div>
               <div className="p-0 border-0">
@@ -468,7 +491,7 @@ export default function SettingsPage() {
                     <h4 className="font-medium">Twilio</h4>
                     <p className="text-sm text-muted-foreground">SMS notifications</p>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => showInfoToast("Twilio", "Twilio integration coming soon")}>Connect</Button>
+                  <Button variant="outline" size="sm" disabled>Connect (Coming Soon)</Button>
                 </div>
               </div>
             </div>
@@ -495,10 +518,9 @@ export default function SettingsPage() {
 
         {/* Payment Settings */}
         <TabsContent value="payments">
-          <PaymentSettingsForm onSave={async () => {}} />
+          <PaymentSettingsForm onSave={async () => { }} />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
-

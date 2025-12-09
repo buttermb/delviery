@@ -1,7 +1,8 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, Plus } from "lucide-react";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 
 interface Recall {
   id: string;
@@ -17,9 +18,10 @@ interface RecallListProps {
   recalls: Recall[];
   isLoading: boolean;
   onSelect: (recall: Recall) => void;
+  onCreate?: () => void;
 }
 
-export function RecallList({ recalls, isLoading, onSelect }: RecallListProps) {
+export function RecallList({ recalls, isLoading, onSelect, onCreate }: RecallListProps) {
   const getSeverityColor = (severity: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (severity) {
       case "critical":
@@ -53,8 +55,8 @@ export function RecallList({ recalls, isLoading, onSelect }: RecallListProps) {
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <CardContent className="p-0">
+          <EnhancedLoadingState variant="spinner" message="Loading recalls..." className="py-12" />
         </CardContent>
       </Card>
     );
@@ -62,12 +64,16 @@ export function RecallList({ recalls, isLoading, onSelect }: RecallListProps) {
 
   if (recalls.length === 0) {
     return (
-      <Card>
-        <CardContent className="text-center py-12 text-muted-foreground">
-          <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>No recalls found.</p>
-        </CardContent>
-      </Card>
+      <EnhancedEmptyState
+        icon={AlertTriangle}
+        title="No Recalls Found"
+        description="No product recalls found. That's a good thing!"
+        primaryAction={onCreate ? {
+          label: "Create Recall",
+          onClick: onCreate,
+          icon: Plus
+        } : undefined}
+      />
     );
   }
 

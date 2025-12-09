@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,11 +21,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Users, Plus, Edit, Trash2, Mail, Shield } from 'lucide-react';
+import { Users, Plus, Edit, Trash2, Mail, Shield, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { PendingInvitations } from '@/components/admin/PendingInvitations';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 export default function TeamManagement() {
   const { tenant, loading: authLoading } = useTenantAdminAuth();
@@ -34,10 +36,11 @@ export default function TeamManagement() {
   const [pendingInvitations, setPendingInvitations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingMember, setEditingMember] = useState<any>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
+
+  // Invite Form
   const [formData, setFormData] = useState({
     email: '',
     full_name: '',
@@ -65,13 +68,19 @@ export default function TeamManagement() {
       if (tenantUsersError) throw tenantUsersError;
 
       // Also get the tenant owner
+      // In a real app we might fetch the owner from 'accounts' or 'profiles'
+      // constructing a dummy owner object for display if not in tenant_users
       const ownerData = {
         user_id: 'owner',
-        email: tenant.slug, // You might want to get actual owner email
+        email: tenant.slug,
         full_name: 'Owner',
-        role: 'owner'
+        role: 'owner',
+        status: 'active'
       };
 
+      // Filter out owner from tenantUsers if they are already there to avoid duplicates, 
+      // or just assume they are separate. Usually owner is a separate concept or has a role 'owner' in tenant_users.
+      // Based on previous code, it appended owner manually. We will stick to that.
       setTeamMembers([ownerData, ...(tenantUsers || [])]);
     } catch (error) {
       logger.error('Error loading team members', error, { component: 'TeamManagement' });
@@ -101,15 +110,13 @@ export default function TeamManagement() {
 
       if (error) throw error;
 
-      // Check for error in response body (some edge functions return 200 with error)
       if (data && typeof data === 'object' && 'error' in data && data.error) {
-        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to send invitation';
-        throw new Error(errorMessage);
+        throw new Error(typeof data.error === 'string' ? data.error : 'Failed to send invitation');
       }
 
       toast({
         title: 'Invitation Sent',
-        description: `Invitation sent to ${formData.email}. They can accept it to join your team.`
+        description: `Invitation sent to ${formData.email}.`
       });
 
       setIsDialogOpen(false);
@@ -128,7 +135,6 @@ export default function TeamManagement() {
 
   const loadPendingInvitations = async () => {
     if (!tenant) return;
-
     try {
       const { data, error } = await supabase.functions.invoke('tenant-invite', {
         body: {
@@ -138,11 +144,8 @@ export default function TeamManagement() {
       });
 
       if (error) throw error;
-
-      // Check for error in response body (some edge functions return 200 with error)
       if (data && typeof data === 'object' && 'error' in data && data.error) {
-        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to load invitations';
-        throw new Error(errorMessage);
+        throw new Error(typeof data.error === 'string' ? data.error : 'Failed to load invitations');
       }
 
       setPendingInvitations(data?.invitations || []);
@@ -160,19 +163,11 @@ export default function TeamManagement() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Success',
-        description: 'Role updated successfully'
-      });
-
+      toast({ title: 'Success', description: 'Role updated successfully' });
       loadTeamMembers();
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to remove team member';
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive'
-      });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update role';
+      toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
     }
   };
 
@@ -183,7 +178,6 @@ export default function TeamManagement() {
 
   const handleRemove = async () => {
     if (!memberToRemove) return;
-
     try {
       setIsRemoving(true);
       const { error } = await supabase
@@ -193,16 +187,12 @@ export default function TeamManagement() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Success',
-        description: 'Team member removed successfully'
-      });
-
+      toast({ title: 'Success', description: 'Team member removed successfully' });
       loadTeamMembers();
       setDeleteDialogOpen(false);
       setMemberToRemove(null);
     } catch (error: unknown) {
-      logger.error('Failed to remove team member', error, { component: 'TeamManagement', userId: memberToRemove.userId });
+      logger.error('Failed to remove team member', error, { component: 'TeamManagement' });
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to remove team member',
@@ -228,6 +218,70 @@ export default function TeamManagement() {
     ).join(' ');
   };
 
+  // --- Columns ---
+  const columns = useMemo<ResponsiveColumn<any>[]>(() => [
+    {
+      header: "Name",
+      cell: (row) => (
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+            <Users className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <div className="font-medium">{row.full_name || 'No Name'}</div>
+            <div className="text-xs text-muted-foreground">{row.email}</div>
+          </div>
+        </div>
+      )
+    },
+    {
+      header: "Role",
+      cell: (row) => (
+        <Badge className={getRoleBadgeColor(row.role)} variant="outline">
+          <Shield className="h-3 w-3 mr-1" />
+          {getRoleLabel(row.role)}
+        </Badge>
+      )
+    },
+    {
+      header: "Joined",
+      accessorKey: "created_at",
+      cell: (row) => row.created_at ? new Date(row.created_at).toLocaleDateString() : 'N/A'
+    },
+    {
+      header: "Actions",
+      cell: (row) => {
+        if (row.role === 'owner' || row.user_id === 'owner') return null;
+
+        return (
+          <div className="flex items-center gap-2">
+            <Select
+              value={row.role}
+              onValueChange={(value) => handleUpdateRole(row.user_id, value)}
+            >
+              <SelectTrigger className="h-8 w-[130px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="member">Member</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
+              onClick={() => handleRemoveClick(row.user_id, row.full_name || row.email)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        )
+      }
+    }
+  ], []);
+
+
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -236,14 +290,11 @@ export default function TeamManagement() {
     );
   }
 
-  const canManageTeam = true; // Tenant admins can always manage team
-
-  // Calculate user limit and usage
+  // Calculate limits
   const activeUserCount = teamMembers.filter(m => m.status !== 'deleted' && m.status !== 'suspended').length;
   const userLimit = (tenant?.limits as any)?.users || (tenant?.limits as any)?.team_members || 3;
   const isEnterprise = tenant?.subscription_plan === 'enterprise';
   const isLimitReached = !isEnterprise && activeUserCount >= userLimit;
-  const remainingUsers = isEnterprise ? Infinity : Math.max(0, userLimit - activeUserCount);
 
   return (
     <div className="space-y-6">
@@ -264,156 +315,107 @@ export default function TeamManagement() {
             )}
           </p>
           {isLimitReached && (
-            <p className="text-sm text-amber-600 mt-1">
+            <p className="text-sm text-amber-600 mt-1 flex items-center gap-1">
+              <AlertTriangle className="h-4 w-4" />
               User limit reached. Upgrade your plan to invite more team members.
             </p>
           )}
         </div>
 
-        {canManageTeam && (
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button disabled={isLimitReached}>
-                <Plus className="w-4 h-4 mr-2" />
-                Invite Member
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Invite Team Member</DialogTitle>
-              </DialogHeader>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button disabled={isLimitReached}>
+              <Plus className="w-4 h-4 mr-2" />
+              Invite Member
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Invite Team Member</DialogTitle>
+            </DialogHeader>
 
-              <form onSubmit={handleInvite} className="space-y-4">
-                <div>
-                  <Label htmlFor="email">Email Address *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="member@company.com"
-                    required
-                  />
-                </div>
+            <form onSubmit={handleInvite} className="space-y-4">
+              <div>
+                <Label htmlFor="email">Email Address *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="member@company.com"
+                  required
+                />
+              </div>
 
-                <div>
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    value={formData.full_name}
-                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                    placeholder="John Doe"
-                  />
-                </div>
+              <div>
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  value={formData.full_name}
+                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                  placeholder="John Doe"
+                />
+              </div>
 
-                <div>
-                  <Label htmlFor="role">Role</Label>
-                  <Select
-                    value={formData.role}
-                    onValueChange={(value) => setFormData({ ...formData, role: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="member">Member</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div>
+                <Label htmlFor="role">Role</Label>
+                <Select
+                  value={formData.role}
+                  onValueChange={(value) => setFormData({ ...formData, role: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="member">Member</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit">Send Invitation</Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        )}
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit">Send Invitation</Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Pending Invitations */}
       <PendingInvitations
         invitations={pendingInvitations}
-        tenantId={tenant.id}
+        tenantId={tenant?.id || ''}
         onInvitationsChange={loadPendingInvitations}
       />
 
       {/* Team Members */}
-      <div className="grid gap-4">
-        {teamMembers.map((member) => (
-          <Card key={member.user_id}>
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Users className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">{member.full_name || 'No name'}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        {member.email || member.user_id}
-                      </span>
-                    </div>
-                    <Badge className={`mt-2 ${getRoleBadgeColor(member.role)}`}>
-                      <Shield className="h-3 w-3 mr-1" />
-                      {getRoleLabel(member.role)}
-                    </Badge>
-                  </div>
-                </div>
+      <Card>
+        <div className="p-4 border-b">
+          <h3 className="font-semibold flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Active Users
+          </h3>
+        </div>
+        <ResponsiveTable
+          columns={columns}
+          data={teamMembers}
+          keyExtractor={(item) => item.user_id}
+          emptyState={{
+            title: "No team members",
+            description: "Invite your first team member to get started.",
+            icon: Users
+          }}
+          className="border-0 rounded-none"
+        />
+      </Card>
 
-                {canManageTeam && member.user_id !== 'owner' && (
-                  <div className="flex gap-2">
-                    <Select
-                      value={member.role}
-                      onValueChange={(value) => handleUpdateRole(member.user_id, value)}
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="member">Member</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleRemoveClick(member.user_id, member.full_name || member.email || 'team member')}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {teamMembers.length === 0 && (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-lg font-semibold mb-2">No team members yet</h3>
-            <p className="text-muted-foreground mb-4">Invite your first team member to get started</p>
-            {canManageTeam && (
-              <Button onClick={() => setIsDialogOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Invite Member
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       <ConfirmDeleteDialog
         open={deleteDialogOpen}

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { Component, ReactNode } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,7 @@ export class MarketingErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error(`[Marketing Error - ${this.props.section}]:`, error, errorInfo);
+    logger.error(`[Marketing Error - ${this.props.section}]:`, error, errorInfo);
   }
 
   render() {

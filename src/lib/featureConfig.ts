@@ -23,7 +23,7 @@ export interface Feature {
 }
 
 // Standardized categories matching sidebar structure
-export type FeatureCategory = 
+export type FeatureCategory =
   | 'Command Center'
   | 'Sales & Orders'
   | 'Inventory'
@@ -124,6 +124,14 @@ export const FEATURES: Record<FeatureId, Feature> = {
     tier: 'starter',
     category: 'Sales & Orders',
     route: '/admin/wholesale-orders',
+  },
+  'wholesale-pricing-tiers': {
+    id: 'wholesale-pricing-tiers',
+    name: 'Pricing Tiers',
+    description: 'Configure wholesale pricing levels and discounts',
+    tier: 'starter',
+    category: 'Sales & Orders',
+    route: '/admin/wholesale-pricing-tiers',
   },
   'loyalty-program': {
     id: 'loyalty-program',
@@ -839,7 +847,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
 export function getFeaturesForTier(tier: SubscriptionTier): Feature[] {
   const tierHierarchy: SubscriptionTier[] = ['starter', 'professional', 'enterprise'];
   const tierIndex = tierHierarchy.indexOf(tier);
-  
+
   return Object.values(FEATURES).filter(feature => {
     const featureTierIndex = tierHierarchy.indexOf(feature.tier);
     return featureTierIndex <= tierIndex;
@@ -852,11 +860,11 @@ export function getFeaturesForTier(tier: SubscriptionTier): Feature[] {
 export function hasFeatureAccess(currentTier: SubscriptionTier, featureId: FeatureId): boolean {
   const feature = FEATURES[featureId];
   if (!feature) return false;
-  
+
   const tierHierarchy: SubscriptionTier[] = ['starter', 'professional', 'enterprise'];
   const currentTierIndex = tierHierarchy.indexOf(currentTier);
   const requiredTierIndex = tierHierarchy.indexOf(feature.tier);
-  
+
   return currentTierIndex >= requiredTierIndex;
 }
 
@@ -879,16 +887,16 @@ export function getUpgradeRequirement(currentTier: SubscriptionTier, featureId: 
   if (!feature) {
     return { required: true, targetTier: null, priceDifference: 0 };
   }
-  
+
   const hasAccess = hasFeatureAccess(currentTier, featureId);
-  
+
   if (hasAccess) {
     return { required: false, targetTier: null, priceDifference: 0 };
   }
-  
+
   const targetTier = feature.tier;
   const priceDifference = TIER_PRICES[targetTier] - TIER_PRICES[currentTier];
-  
+
   return { required: true, targetTier, priceDifference };
 }
 
@@ -897,7 +905,7 @@ export function getUpgradeRequirement(currentTier: SubscriptionTier, featureId: 
  */
 export function getFeaturesByCategory(tier?: SubscriptionTier): Record<string, Feature[]> {
   const features = tier ? getFeaturesForTier(tier) : Object.values(FEATURES);
-  
+
   return features.reduce((acc, feature) => {
     if (!acc[feature.category]) {
       acc[feature.category] = [];
@@ -912,7 +920,7 @@ export function getFeaturesByCategory(tier?: SubscriptionTier): Record<string, F
  */
 export function getFeaturesByCategoryOrdered(tier?: SubscriptionTier): Array<{ category: FeatureCategory; features: Feature[] }> {
   const grouped = getFeaturesByCategory(tier);
-  
+
   return CATEGORY_ORDER
     .filter(cat => grouped[cat]?.length > 0)
     .map(cat => ({

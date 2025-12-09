@@ -40,6 +40,8 @@ import {
 import { RACreateForm } from "@/components/admin/returns/RACreateForm";
 import { RADetail } from "@/components/admin/returns/RADetail";
 import { queryKeys } from "@/lib/queryKeys";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 
 interface ReturnAuthorization {
   id: string;
@@ -242,21 +244,26 @@ export default function ReturnsManagementPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
+            <EnhancedLoadingState variant="spinner" message="Loading returns..." className="py-8" />
           ) : filteredReturns.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {returns && returns.length === 0 && searchTerm === "" && statusFilter === "all" ? (
-                <>
-                  <RotateCcw className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <p>No return authorizations found.</p>
-                  <p className="text-sm mt-2">Create your first return authorization to get started.</p>
-                </>
-              ) : (
-                "No returns match your search criteria."
-              )}
-            </div>
+            returns && returns.length === 0 && searchTerm === "" && statusFilter === "all" ? (
+              <EnhancedEmptyState
+                icon={RotateCcw}
+                title="No Return Authorizations"
+                description="Create your first return authorization to get started."
+                primaryAction={{
+                  label: "New Return Authorization",
+                  onClick: handleCreate,
+                  icon: Plus
+                }}
+              />
+            ) : (
+              <EnhancedEmptyState
+                icon={Search}
+                title="No Returns Found"
+                description="No returns match your search criteria."
+              />
+            )
           ) : (
             <div className="overflow-x-auto">
               <Table>

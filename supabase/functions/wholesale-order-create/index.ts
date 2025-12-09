@@ -1,12 +1,15 @@
 // @ts-nocheck - Type checking suppressed due to Supabase client type issues
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { validateWholesaleOrderCreate } from './validation.ts';
+import { withCreditGate, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Wrap with credit gating for free tier users
+  return withCreditGate(req, CREDIT_ACTIONS.CREATE_ORDER, async (creditTenantId, serviceClient) => {
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -118,6 +121,7 @@ serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
+  }); // End of withCreditGate
 });
 
 // Legacy order creation (fallback if atomic RPC not available)

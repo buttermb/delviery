@@ -38,6 +38,8 @@ import {
 import { format } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
 import { Loader2 } from 'lucide-react';
+import { useCreditGatedAction } from '@/hooks/useCredits';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 export default function BatchesPage() {
   const navigate = useNavigate();
@@ -45,7 +47,8 @@ export default function BatchesPage() {
   const tenantId = tenant?.id;
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+  const { execute: executeCreditAction } = useCreditGatedAction();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newBatch, setNewBatch] = useState({
@@ -76,7 +79,7 @@ export default function BatchesPage() {
           `)
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
-        
+
         // Gracefully handle missing table
         if (error && error.code === '42P01') {
           setTableMissing(true);
@@ -107,7 +110,7 @@ export default function BatchesPage() {
           .from('products')
           .select('id, name')
           .eq('tenant_id', tenantId);
-        
+
         // Gracefully handle missing table
         if (error && error.code === '42P01') {
           return [];
@@ -221,9 +224,9 @@ export default function BatchesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => navigate(-1)}
             className="mb-2"
           >
@@ -301,15 +304,16 @@ export default function BatchesPage() {
           </CardContent>
         </Card>
       ) : filteredBatches?.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No batches found</p>
-            <Button className="mt-4" onClick={() => setCreateDialogOpen(true)}>
-              Create Your First Batch
-            </Button>
-          </CardContent>
-        </Card>
+        <EnhancedEmptyState
+          icon={Package}
+          title="No Batches Found"
+          description="Create your first batch to track lot numbers and expiration dates."
+          primaryAction={{
+            label: "Create Your First Batch",
+            onClick: () => setCreateDialogOpen(true),
+            icon: Plus
+          }}
+        />
       ) : (
         <Card>
           <CardContent className="p-0">
@@ -488,12 +492,10 @@ export default function BatchesPage() {
               Cancel
             </Button>
             <Button
-              onClick={() => {
-                try {
-                  createBatch.mutate(newBatch);
-                } catch (error) {
-                  logger.error('Button click error', error, { component: 'BatchesPage' });
-                }
+              onClick={async () => {
+                await executeCreditAction('receiving_log', async () => {
+                  await createBatch.mutateAsync(newBatch);
+                });
               }}
               disabled={!newBatch.batch_number || !newBatch.product_id || !newBatch.quantity_lbs || createBatch.isPending}
             >

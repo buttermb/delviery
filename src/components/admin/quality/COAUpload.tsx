@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Loader2, Upload, FileText } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
+import { useCreditGatedAction } from "@/hooks/useCredits";
 
 interface Batch {
   id: string;
@@ -60,7 +61,7 @@ export function COAUpload({ open, onOpenChange, batch, onSuccess }: COAUploadPro
           notes: `COA: ${data.lab_name} - ${data.test_date}`,
         })
         .eq("id", batch.id);
-      
+
       // Also update the product with COA data if it exists
       if (batch.product_id) {
         await supabase
@@ -120,6 +121,8 @@ export function COAUpload({ open, onOpenChange, batch, onSuccess }: COAUploadPro
     }
   };
 
+  const { execute: executeCOAUpload } = useCreditGatedAction();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -128,36 +131,38 @@ export function COAUpload({ open, onOpenChange, batch, onSuccess }: COAUploadPro
       return;
     }
 
-    let coaUrl: string | undefined;
-    if (coaFile) {
-      try {
-        coaUrl = await handleFileUpload(coaFile);
-      } catch (error) {
-        toast.error("Failed to upload COA file");
-        return;
+    await executeCOAUpload('qc_log_check', async () => {
+      let coaUrl: string | undefined;
+      if (coaFile) {
+        try {
+          coaUrl = await handleFileUpload(coaFile);
+        } catch (error) {
+          toast.error("Failed to upload COA file");
+          throw error; // Re-throw to stop processing
+        }
       }
-    }
 
-    const testResults = {
-      thc: formData.thc_percent ? parseFloat(formData.thc_percent) : null,
-      cbd: formData.cbd_percent ? parseFloat(formData.cbd_percent) : null,
-      contaminants: formData.contaminants || null,
-      terpenes: formData.terpenes || null,
-      notes: formData.notes || null,
-    };
+      const testResults = {
+        thc: formData.thc_percent ? parseFloat(formData.thc_percent) : null,
+        cbd: formData.cbd_percent ? parseFloat(formData.cbd_percent) : null,
+        contaminants: formData.contaminants || null,
+        terpenes: formData.terpenes || null,
+        notes: formData.notes || null,
+      };
 
-    // Determine compliance status
-    let complianceStatus = "pending";
-    if (formData.thc_percent && parseFloat(formData.thc_percent) > 0) {
-      complianceStatus = "verified";
-    }
+      // Determine compliance status
+      let complianceStatus = "pending";
+      if (formData.thc_percent && parseFloat(formData.thc_percent) > 0) {
+        complianceStatus = "verified";
+      }
 
-    await uploadMutation.mutateAsync({
-      lab_name: formData.lab_name,
-      test_date: formData.test_date,
-      test_results: testResults,
-      coa_url: coaUrl,
-      compliance_status: complianceStatus,
+      await uploadMutation.mutateAsync({
+        lab_name: formData.lab_name,
+        test_date: formData.test_date,
+        test_results: testResults,
+        coa_url: coaUrl,
+        compliance_status: complianceStatus,
+      });
     });
   };
 

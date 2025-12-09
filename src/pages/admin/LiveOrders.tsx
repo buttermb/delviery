@@ -1,27 +1,20 @@
 import { logger } from '@/lib/logger';
-import { logOrderQuery, logOrderQueryError, logRealtime, logRealtimeError } from '@/lib/debug/logger';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Truck, Clock, CheckCircle, Package, RefreshCcw } from 'lucide-react';
+import { RefreshCw, Volume2, VolumeX } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { subscribeWithErrorTracking } from '@/utils/realtimeHelper';
 import { Button } from '@/components/ui/button';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useRealtimeSync } from '@/hooks/useRealtimeSync';
+import { LiveOrdersKanban, type LiveOrder } from '@/components/admin/live-orders/LiveOrdersKanban';
+import { playNewOrderSound, initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
+import { useUndo } from '@/hooks/useUndo';
+import { UndoToast } from '@/components/ui/undo-toast';
 
-interface LiveOrder {
-  id: string;
-  order_number: string;
-  status: string;
-  created_at: string;
-  user_id: string;
-  courier_id?: string;
-  source?: 'menu' | 'app';
-  menu_title?: string;
-}
-
-interface MenuOrder {
+// Type Definitions matching Supabase response
+interface MenuOrderRaw {
   id: string;
   created_at: string;
   status: string;
@@ -32,267 +25,277 @@ interface MenuOrder {
   } | null;
 }
 
-import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-
 export default function LiveOrders() {
   const { tenant } = useTenantAdminAuth();
-  const [orders, setOrders] = useState<LiveOrder[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [soundEnabled, setSoundEnabledState] = useState(isSoundEnabled);
+  const previousOrderCountRef = useRef<number>(0);
+  const isFirstLoadRef = useRef(true);
 
+  // Undo hook for status changes
+  const { pendingAction, timeRemaining, executeWithUndo, undo, commit } = useUndo<{
+    orderId: string;
+    previousStatus: string;
+    source: 'menu' | 'app';
+  }>({
+    timeout: 5000,
+    onUndo: () => {
+      toast.info('Status change undone');
+      queryClient.invalidateQueries({ queryKey: ['live-orders'] });
+    },
+    onCommit: () => {
+      // Action is finalized, no additional work needed
+    },
+  });
+
+  // Initialize audio on user interaction
   useEffect(() => {
-    if (tenant) {
-      loadLiveOrders();
+    const handleInteraction = () => {
+      initAudio();
+      window.removeEventListener('click', handleInteraction);
+    };
+    window.addEventListener('click', handleInteraction);
+    return () => window.removeEventListener('click', handleInteraction);
+  }, []);
 
-      // Debug: Log subscription setup
-      logRealtime('Setting up live orders subscriptions', {
-        tenantId: tenant.id,
-        source: 'LiveOrders'
-      });
-
-      // Subscribe to BOTH orders AND menu_orders tables with tenant_id filter
-      const ordersChannel = supabase
-        .channel('live-orders-main')
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'orders',
-          filter: `tenant_id=eq.${tenant.id}`
-        }, (payload) => {
-          logRealtime('Order update received', {
-            eventType: payload.eventType,
-            tenantId: tenant.id,
-            source: 'LiveOrders'
-          });
-          logger.info('Order update received', { component: 'LiveOrders' });
-          loadLiveOrders();
-        })
-        .subscribe((status) => {
-          logRealtime(`Orders channel status: ${status}`, {
-            channel: 'live-orders-main',
-            tenantId: tenant.id,
-            source: 'LiveOrders'
-          });
-          if (status === 'SUBSCRIBED') {
-            logger.debug('Orders channel subscribed', { component: 'LiveOrders' });
-          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-            logRealtimeError('Orders subscription failed', { status, tenantId: tenant.id });
-            logger.error('Orders subscription error', { status, component: 'LiveOrders' });
-            toast.error('Real-time order updates unavailable');
-          }
-        });
-
-      const menuOrdersChannel = supabase
-        .channel('live-menu-orders-secondary')
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'menu_orders',
-          filter: `tenant_id=eq.${tenant.id}`
-        }, (payload) => {
-          logRealtime('Menu order update received', {
-            eventType: payload.eventType,
-            tenantId: tenant.id,
-            source: 'LiveOrders'
-          });
-          logger.info('Menu Order update received', { component: 'LiveOrders' });
-          loadLiveOrders();
-        })
-        .subscribe((status) => {
-          logRealtime(`Menu orders channel status: ${status}`, {
-            channel: 'live-menu-orders-secondary',
-            tenantId: tenant.id,
-            source: 'LiveOrders'
-          });
-          if (status === 'SUBSCRIBED') {
-            logger.debug('Menu orders channel subscribed', { component: 'LiveOrders' });
-          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-            logRealtimeError('Menu orders subscription failed', { status, tenantId: tenant.id });
-            logger.error('Menu orders subscription error', { status, component: 'LiveOrders' });
-          }
-        });
-
-      return () => {
-        supabase.removeChannel(ordersChannel);
-        supabase.removeChannel(menuOrdersChannel);
-      };
-    }
-  }, [tenant]);
-
-  const handleManualRefresh = async () => {
-    setRefreshing(true);
-    await loadLiveOrders();
-    setRefreshing(false);
+  // Toggle sound
+  const handleToggleSound = () => {
+    const newState = !soundEnabled;
+    setSoundEnabledState(newState);
+    setSoundEnabled(newState);
+    initAudio(); // Ensure audio is initialized
   };
 
-  const loadLiveOrders = async () => {
-    if (!tenant) return;
+  // Enable Realtime Sync
+  useRealtimeSync({
+    tenantId: tenant?.id,
+    tables: ['orders', 'menu_orders'], // Listen to both tables
+    enabled: !!tenant?.id
+  });
 
-    // Debug: Log query initiation
-    logOrderQuery('Loading live orders', {
-      tenantId: tenant.id,
-      source: 'LiveOrders'
-    });
+  // Fetch Orders Query
+  const { data: orders = [], isLoading, refetch } = useQuery({
+    queryKey: ['live-orders', tenant?.id],
+    queryFn: async () => {
+      if (!tenant?.id) return [];
 
-    try {
-      // Query BOTH tables and union results
-      const [ordersResult, menuOrdersResult] = await Promise.all([
-        supabase
-          .from('orders')
-          .select('*')
-          .eq('tenant_id', tenant.id)
-          .in('status', ['pending', 'confirmed', 'rejected'])
-          .order('created_at', { ascending: false }),
+      try {
+        // Parallel fetch for speed
+        const [ordersRes, menuOrdersRes] = await Promise.all([
+          supabase
+            .from('orders')
+            .select('*')
+            .eq('tenant_id', tenant.id)
+            .in('status', ['pending', 'confirmed', 'preparing', 'ready_for_pickup', 'in_transit', 'delivered'])
+            .order('created_at', { ascending: false }),
 
-        supabase
-          .from('menu_orders')
-          .select(`
-            id,
-            created_at,
-            status,
-            total_amount,
-            synced_order_id,
-            disposable_menus (title)
-          `)
-          .eq('tenant_id', tenant.id)
-          .in('status', ['pending', 'confirmed', 'rejected'])
-          .order('created_at', { ascending: false })
-      ]);
+          supabase
+            .from('menu_orders')
+            .select(`
+              id, created_at, status, total_amount, synced_order_id,
+              disposable_menus (title)
+            `)
+            .eq('tenant_id', tenant.id)
+            .in('status', ['pending', 'confirmed', 'completed', 'rejected'])
+            .is('synced_order_id', null) // Only show unsynced
+            .order('created_at', { ascending: false })
+        ]);
 
-      if (ordersResult.error) {
-        logOrderQueryError('Orders query failed', {
-          tenantId: tenant.id,
-          error: ordersResult.error.message,
-          source: 'LiveOrders'
-        });
-        throw ordersResult.error;
-      }
-      if (menuOrdersResult.error) {
-        logOrderQueryError('Menu orders query failed', {
-          tenantId: tenant.id,
-          error: menuOrdersResult.error.message,
-          source: 'LiveOrders'
-        });
-        throw menuOrdersResult.error;
-      }
+        if (ordersRes.error) throw ordersRes.error;
+        if (menuOrdersRes.error) throw menuOrdersRes.error;
 
-      // Debug: Log successful queries
-      logOrderQuery('Live orders fetched', {
-        tenantId: tenant.id,
-        ordersCount: ordersResult.data?.length || 0,
-        menuOrdersCount: menuOrdersResult.data?.length || 0,
-        hasTenantFilter: true,
-        source: 'LiveOrders'
-      });
-
-      const normalizedOrders = ordersResult.data || [];
-
-      // Transform menu_orders but FILTER OUT those that are already synced 
-      // (because they are present in normalizedOrders)
-      // Use unknown cast first to avoid TS errors with Supabase types not matching local interface perfectly yet
-      const rawMenuOrders = (menuOrdersResult.data || []) as unknown as MenuOrder[];
-
-      const normalizedMenuOrders = rawMenuOrders
-        .filter(mo => !mo.synced_order_id) // Only show unsynced/pending sync orders
-        .map(mo => ({
-          id: mo.id,
-          order_number: 'MENU-' + mo.id.slice(0, 8).toUpperCase(),
-          status: mo.status,
-          created_at: mo.created_at,
-          user_id: 'guest', // Placeholder
-          source: 'menu' as const,
-          menu_title: mo.disposable_menus?.title
+        // Transform Regular Orders
+        const normOrders: LiveOrder[] = (ordersRes.data || []).map(o => ({
+          id: o.id,
+          order_number: o.order_number || o.id.slice(0, 8).toUpperCase(),
+          status: o.status,
+          created_at: o.created_at,
+          user_id: o.user_id,
+          source: 'app',
+          total_amount: Number(o.total_amount || 0)
         }));
 
-      // Combine and sort
-      const combined = [...normalizedOrders, ...normalizedMenuOrders].sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
+        // Transform Menu Orders
+        // Transform Menu Orders
+        const normMenuOrders: LiveOrder[] = (menuOrdersRes.data as unknown as MenuOrderRaw[] || []).map((mo) => ({
+          id: mo.id,
+          order_number: 'MENU-' + mo.id.slice(0, 5).toUpperCase(),
+          status: mo.status === 'completed' ? 'delivered' : mo.status, // Map completed -> delivered
+          created_at: mo.created_at,
+          user_id: 'guest',
+          source: 'menu',
+          menu_title: mo.disposable_menus?.title,
+          total_amount: Number(mo.total_amount || 0)
+        }));
 
-      setOrders(combined as LiveOrder[]);
+        // Combine
+        return [...normOrders, ...normMenuOrders].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+
+      } catch (err) {
+        logger.error('Failed to fetch live orders', err);
+        return [];
+      }
+    },
+    enabled: !!tenant?.id,
+    refetchInterval: 30000 // Fallback poll every 30s
+  });
+
+  // Play sound when new orders arrive
+  useEffect(() => {
+    if (isLoading) return;
+
+    const currentCount = orders.length;
+
+    // Skip first load - don't play sound when page opens
+    if (isFirstLoadRef.current) {
+      previousOrderCountRef.current = currentCount;
+      isFirstLoadRef.current = false;
+      return;
+    }
+
+    // Play sound if we have more orders than before
+    if (currentCount > previousOrderCountRef.current && soundEnabled) {
+      playNewOrderSound();
+      toast.info('🔔 New order received!', {
+        duration: 3000,
+      });
+    }
+
+    previousOrderCountRef.current = currentCount;
+  }, [orders.length, isLoading, soundEnabled]);
+
+  // Helper function to update status in database
+  const updateStatusInDb = async (
+    orderId: string,
+    newStatus: string,
+    source: 'menu' | 'app'
+  ) => {
+    const table = source === 'menu' ? 'menu_orders' : 'orders';
+    const dbStatus = (source === 'menu' && newStatus === 'delivered') ? 'completed' : newStatus;
+
+    const { error } = await supabase
+      .from(table)
+      .update({ status: dbStatus })
+      .eq('id', orderId)
+      .eq('tenant_id', tenant?.id);
+
+    if (error) throw error;
+  };
+
+  // Handle status change with undo support
+  const handleStatusChange = async (
+    orderId: string,
+    newStatus: string,
+    source: 'menu' | 'app'
+  ) => {
+    // Find the order to get previous status
+    const order = orders.find((o) => o.id === orderId);
+    if (!order) return;
+
+    const previousStatus = order.status;
+
+    try {
+      await executeWithUndo({
+        description: `Order moved to ${newStatus}`,
+        data: { orderId, previousStatus, source },
+        execute: async () => {
+          await updateStatusInDb(orderId, newStatus, source);
+          queryClient.invalidateQueries({ queryKey: ['live-orders'] });
+        },
+        undo: async () => {
+          await updateStatusInDb(orderId, previousStatus, source);
+        },
+      });
     } catch (error) {
-      logger.error('Error loading live orders', error, { component: 'LiveOrders' });
-      toast.error('Failed to load live orders');
-    } finally {
-      setLoading(false);
+      logger.error('Failed to update status', error);
+      toast.error('Failed to update status');
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'pending': return Clock;
-      case 'confirmed': return CheckCircle;
-      case 'preparing': return Package;
-      case 'in_transit': return Truck;
-      default: return Package;
-    }
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
   };
 
   return (
-    <>
+    <div className="flex flex-col h-screen overflow-hidden bg-slate-50 dark:bg-zinc-950">
       <SEOHead
-        title="Live Orders | Admin"
-        description="Real-time order tracking"
+        title="Live Orders | Command Center"
+        description="Real-time kitchen and delivery swimlanes"
       />
 
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold">Live Orders</h1>
-            <Badge variant="default" className="animate-pulse">Live</Badge>
+      {/* Header */}
+      <div className="flex-none px-6 py-4 border-b bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+        <div className="flex justify-between items-center max-w-[1800px] mx-auto">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-3">
+              Live Orders
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+              </span>
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              {orders.length} active orders • Swimlane View
+            </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleManualRefresh}
-            disabled={refreshing}
-            className="gap-2"
-          >
-            <RefreshCcw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
 
-        {loading ? (
-          <Card className="p-8 text-center">
-            <p>Loading live orders...</p>
-          </Card>
-        ) : orders.length === 0 ? (
-          <Card className="p-8 text-center">
-            <p className="text-muted-foreground">No active orders at the moment</p>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {orders.map((order) => {
-              const StatusIcon = getStatusIcon(order.status);
-              return (
-                <Card key={order.id} className="p-4 hover:shadow-lg transition-shadow">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <p className="font-bold">#{order.order_number || order.id.slice(0, 8)}</p>
-                      <p className="text-sm text-muted-foreground">Order</p>
-                    </div>
-                    <StatusIcon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <Badge variant="outline" className="capitalize">{order.status}</Badge>
-                      {order.source === 'menu' && (
-                        <Badge variant="secondary" className="text-xs">
-                          {order.menu_title || 'Disposable Menu'}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(order.created_at).toLocaleTimeString()}
-                    </p>
-                  </div>
-                </Card>
-              );
-            })}
+          <div className="flex items-center gap-3">
+            {/* Sound Toggle */}
+            <Button
+              variant={soundEnabled ? "default" : "outline"}
+              size="sm"
+              onClick={handleToggleSound}
+              className="gap-2"
+              title={soundEnabled ? "Sound alerts on" : "Sound alerts off"}
+            >
+              {soundEnabled ? (
+                <Volume2 className="h-4 w-4" />
+              ) : (
+                <VolumeX className="h-4 w-4" />
+              )}
+              {soundEnabled ? "Sound On" : "Sound Off"}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleManualRefresh}
+              disabled={isRefreshing || isLoading}
+              className="gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Refresh Board
+            </Button>
           </div>
-        )}
+        </div>
       </div>
-    </>
+
+      {/* Kanban Board Container */}
+      <div className="flex-1 overflow-hidden p-6">
+        <div className="max-w-[1800px] mx-auto h-full">
+          <LiveOrdersKanban
+            orders={orders}
+            isLoading={isLoading}
+            onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
+          />
+        </div>
+      </div>
+
+      {/* Undo Toast */}
+      {pendingAction && (
+        <UndoToast
+          description={pendingAction.description}
+          timeRemaining={timeRemaining}
+          totalTime={5000}
+          onUndo={undo}
+          onDismiss={commit}
+        />
+      )}
+    </div>
   );
 }

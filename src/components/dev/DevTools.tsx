@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from 'react';
 import { Bug, X, Trash2, Download, Terminal, Network, AlertTriangle, Database, Gauge, Copy, Filter, ArrowDown, Check, Pin, Maximize2, Minimize2, Zap, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';

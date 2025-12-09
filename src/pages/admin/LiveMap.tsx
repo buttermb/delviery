@@ -7,8 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { 
-  MapPin, Truck, Layers, Map as MapIcon, Search, 
+import {
+  MapPin, Truck, Layers, Map as MapIcon, Search,
   Phone, Navigation, Clock, Users, Activity,
   ChevronRight, RefreshCw, Maximize2, UserPlus, AlertCircle,
   CheckCircle, XCircle
@@ -19,6 +19,8 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { cn } from '@/lib/utils';
 import { AddCourierDialog } from '@/components/admin/AddCourierDialog';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 interface CourierLocation {
   id: string;
@@ -62,7 +64,7 @@ export default function LiveMap() {
   const filteredCouriers = useMemo(() => {
     const list = showOffline ? allCouriers : couriers;
     if (!searchQuery) return list;
-    return list.filter(c => 
+    return list.filter(c =>
       c.full_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [couriers, allCouriers, searchQuery, showOffline]);
@@ -84,7 +86,7 @@ export default function LiveMap() {
 
     try {
       setError(null);
-      
+
       // Load all couriers first (for total count)
       const { data: allData, error: allError } = await supabase
         .from('couriers')
@@ -99,13 +101,13 @@ export default function LiveMap() {
       setAllCouriers(allData || []);
 
       // Filter to online couriers with valid locations
-      const onlineCouriers = (allData || []).filter(c => 
+      const onlineCouriers = (allData || []).filter(c =>
         c.is_online && c.current_lat !== null && c.current_lng !== null
       );
-      
+
       setCouriers(onlineCouriers);
       setLastRefresh(new Date());
-      
+
       if (allData && allData.length === 0) {
         logger.info('No couriers found for tenant', { tenantId: tenant.id, component: 'LiveMap' });
       }
@@ -273,7 +275,7 @@ export default function LiveMap() {
       toast.error('No location data available for this courier');
       return;
     }
-    
+
     setSelectedCourier(courier.id);
     if (map.current) {
       map.current.flyTo({
@@ -329,7 +331,7 @@ export default function LiveMap() {
           </div>
         `;
 
-        const popup = new mapboxgl.Popup({ 
+        const popup = new mapboxgl.Popup({
           offset: 25,
           closeButton: false,
           className: 'courier-popup'
@@ -473,14 +475,14 @@ export default function LiveMap() {
               </div>
               <h3 className="text-xl font-semibold text-white">Map Configuration Required</h3>
               <p className="text-sm text-gray-400 max-w-md mx-auto">
-                The Mapbox token needs to be configured to enable real-time fleet tracking. 
+                The Mapbox token needs to be configured to enable real-time fleet tracking.
                 Please contact your administrator.
               </p>
             </div>
           </Card>
 
           {/* Still show courier list even without map */}
-          <CourierList 
+          <CourierList
             couriers={allCouriers}
             loading={loading}
             error={error}
@@ -540,9 +542,9 @@ export default function LiveMap() {
                 <p className="font-medium">Failed to load courier locations</p>
                 <p className="text-sm opacity-80">{error}</p>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={loadCourierLocations}
                 className="ml-auto"
               >
@@ -631,16 +633,14 @@ export default function LiveMap() {
             <Card className="max-h-[400px] overflow-y-auto">
               <CardContent className="p-2 space-y-2">
                 {loading ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <RefreshCw className="h-6 w-6 mx-auto animate-spin mb-2" />
-                    Loading drivers...
-                  </div>
+                  <EnhancedLoadingState variant="spinner" message="Loading drivers..." className="min-h-[200px]" />
                 ) : filteredCouriers.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm font-medium">No couriers found</p>
-                    <p className="text-xs mt-1">Add a courier to get started</p>
-                  </div>
+                  <EnhancedEmptyState
+                    icon={Users}
+                    title="No Couriers"
+                    description="No couriers match your filters."
+                    compact
+                  />
                 ) : (
                   filteredCouriers.map((courier) => (
                     <div
@@ -655,14 +655,14 @@ export default function LiveMap() {
                       <div className="flex items-center gap-3">
                         <div className={cn(
                           "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm",
-                          courier.is_online 
+                          courier.is_online
                             ? "bg-gradient-to-br from-emerald-400 to-emerald-600"
                             : "bg-gray-400"
                         )}>
                           {courier.full_name.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium truncate">{courier.full_name}</div>
+                          <div className="font-medium truncate" title={courier.full_name}>{courier.full_name}</div>
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <span className={cn(
                               "h-1.5 w-1.5 rounded-full",
@@ -785,13 +785,13 @@ export default function LiveMap() {
 }
 
 // Separate component for courier list (used when map is unavailable)
-function CourierList({ 
-  couriers, 
-  loading, 
-  error, 
+function CourierList({
+  couriers,
+  loading,
+  error,
   onRefresh,
-  stats 
-}: { 
+  stats
+}: {
   couriers: CourierLocation[];
   loading: boolean;
   error: string | null;
@@ -814,21 +814,19 @@ function CourierList({
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <RefreshCw className="h-6 w-6 mx-auto animate-spin mb-2" />
-            Loading...
-          </div>
+          <EnhancedLoadingState variant="spinner" message="Loading drivers..." className="min-h-[200px]" />
         ) : error ? (
           <div className="text-center py-8 text-red-500">
             <AlertCircle className="h-8 w-8 mx-auto mb-2" />
             <p>{error}</p>
           </div>
         ) : couriers.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>No couriers registered yet</p>
-            <p className="text-sm mt-1">Use the "Add Courier" button to register your first driver</p>
-          </div>
+          <EnhancedEmptyState
+            icon={Users}
+            title="No Couriers"
+            description="Use the 'Add Courier' button to register your first driver."
+            compact
+          />
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {couriers.map((courier) => (
@@ -841,7 +839,7 @@ function CourierList({
                     {courier.full_name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{courier.full_name}</div>
+                    <div className="font-medium truncate" title={courier.full_name}>{courier.full_name}</div>
                     <div className="flex items-center gap-1 text-xs">
                       <span className={cn(
                         "h-2 w-2 rounded-full",

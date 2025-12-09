@@ -2,6 +2,7 @@
 // Edge runtime types omitted to avoid OpenAI dependency
 import { serve, createClient, corsHeaders, z } from "../_shared/deps.ts";
 import { withZenProtection } from "../_shared/zen-firewall.ts";
+import { checkCreditsAvailable, CREDIT_ACTIONS } from "../_shared/creditGate.ts";
 
 // Request schema
 const MenuOcrRequestSchema = z.object({
@@ -169,6 +170,31 @@ serve(withZenProtection(async (req: Request) => {
         JSON.stringify({ error: "Unauthorized", details: authError?.message }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Get tenant and check credits for free tier users
+    const { data: tenantUser } = await supabase
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (tenantUser?.tenant_id) {
+      const creditCheck = await checkCreditsAvailable(supabase, tenantUser.tenant_id, CREDIT_ACTIONS.MENU_OCR);
+      if (creditCheck.isFreeTier && !creditCheck.hasCredits) {
+        return new Response(
+          JSON.stringify({
+            error: 'Insufficient credits',
+            code: 'INSUFFICIENT_CREDITS',
+            message: 'You do not have enough credits for OCR scanning. This feature costs 250 credits.',
+            creditsRequired: creditCheck.cost,
+            currentBalance: creditCheck.balance,
+          }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
+      // Consume credits if on free tier (after successful processing below)
     }
 
     // Parse and validate request body
@@ -386,6 +412,18 @@ serve(withZenProtection(async (req: Request) => {
     }
 
     console.log(`Successfully extracted ${enhancedProducts.length} products from image`);
+
+    // Consume credits after successful OCR for free tier users
+    if (tenantUser?.tenant_id) {
+      const creditCheck = await checkCreditsAvailable(supabase, tenantUser.tenant_id, CREDIT_ACTIONS.MENU_OCR);
+      if (creditCheck.isFreeTier) {
+        await supabase.rpc('consume_credits', {
+          p_tenant_id: tenantUser.tenant_id,
+          p_action_key: CREDIT_ACTIONS.MENU_OCR,
+          p_description: `OCR scan - extracted ${enhancedProducts.length} products`,
+        });
+      }
+    }
 
     return new Response(
       JSON.stringify({

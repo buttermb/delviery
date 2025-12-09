@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
-// @ts-nocheck
 import { useState, useEffect } from 'react';
 import { useCourier } from '@/contexts/CourierContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,12 +21,13 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 
 interface Order {
   id: string;
-  order_number: string;
-  customer_name: string;
+  order_number: string | null;
+  customer_name: string | null;
   delivery_address: string;
   total_amount: number;
-  created_at: string;
+  created_at: string; // Created at is usually present, but type says null. We'll handle it.
   status: string;
+  delivery_borough?: string | null;
 }
 
 interface Stats {
@@ -76,7 +75,7 @@ export default function CourierDashboardPage() {
               logger.warn('Invalid order payload received', { component: 'CourierDashboard' });
               return;
             }
-            
+
             // Only show notification if order is actually available (RLS filtered)
             if (payload.new.status === 'pending' && !payload.new.courier_id) {
               loadAvailableOrders();
@@ -290,7 +289,7 @@ export default function CourierDashboardPage() {
             <UnifiedDeliveryView
               courierOrders={availableOrders}
               onAcceptOrder={handleAcceptOrder}
-              onCompleteDelivery={() => {}}
+              onCompleteDelivery={() => { }}
             />
           </CardContent>
         </Card>

@@ -8,6 +8,7 @@
  * - Smart pattern detection for personalized quick actions
  * - Tier-specific views and data
  * - Real-time attention queue
+ * - Kanban view option for attention items
  */
 
 import { useState, useEffect, useMemo } from 'react';
@@ -41,6 +42,8 @@ import {
   Wallet,
   Calendar,
   MessageSquare,
+  LayoutGrid,
+  List,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -52,6 +55,7 @@ import { useTierDashboard } from '@/hooks/useTierDashboard';
 import { useFeatureTracking } from '@/hooks/useFeatureTracking';
 import { cn } from '@/lib/utils';
 import { generateGreeting } from '@/lib/presets/businessTiers';
+
 import {
   type QuickAction,
 } from '@/types/hotbox';
@@ -59,6 +63,8 @@ import {
   getCategoryColor,
 } from '@/lib/hotbox/attentionQueue';
 import { TierUpgradeCard } from './TierUpgradeCard';
+import { AttentionQueueKanban } from './AttentionQueueKanban';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Widgets
 import { StreetTierTips } from './widgets/StreetTierTips';
@@ -372,56 +378,9 @@ export function HotboxDashboard() {
         </CardContent>
       </Card>
 
-      {/* Attention Queue */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium flex items-center gap-2">
-            <span className="text-xl">⚡</span> NEEDS YOUR ATTENTION
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {attentionItems.map((item) => (
-            <div
-              key={item.id}
-              className={cn(
-                'flex items-center justify-between p-3 rounded-lg border transition-colors',
-                item.priority === 'critical' && 'bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800',
-                item.priority === 'important' && 'bg-yellow-50 border-yellow-200 dark:bg-yellow-950/30 dark:border-yellow-800',
-                item.priority === 'info' && 'bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-800',
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <PriorityIcon priority={item.priority} />
-                <div>
-                  <div className="font-medium flex items-center gap-2">
-                    {item.title}
-                    {item.category && (
-                      <Badge variant="outline" className={cn("text-[10px] px-1 h-4", getCategoryColor(item.category))}>
-                        {item.category}
-                      </Badge>
-                    )}
-                    {item.value && (
-                      <span className="ml-2 text-muted-foreground">({item.value})</span>
-                    )}
-                  </div>
-                  {item.description && (
-                    <div className="text-sm text-muted-foreground">{item.description}</div>
-                  )}
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(item.actionUrl)}
-                className="shrink-0"
-              >
-                {item.actionLabel}
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      {/* Attention Queue with View Toggle */}
+      <AttentionQueueKanban items={attentionItems} />
+
 
       {/* Quick Actions */}
       <Card>
@@ -467,23 +426,49 @@ export function HotboxDashboard() {
 
       {/* Tier-specific sections - Dynamic Rendering */}
 
-      {/* Street Tier Tips */}
-      {hasWidget('street-tips') && <StreetTierTips />}
+      <div className="space-y-6">
+        {/* Street Tier Tips */}
+        {hasWidget('street-tips') && (
+          <ErrorBoundary>
+            <StreetTierTips />
+          </ErrorBoundary>
+        )}
 
-      {/* Team Activity */}
-      {hasWidget('team-activity') && <TeamActivityWidget />}
+        {/* Team Activity */}
+        {hasWidget('team-activity') && (
+          <ErrorBoundary>
+            <TeamActivityWidget />
+          </ErrorBoundary>
+        )}
 
-      {/* Network Overview */}
-      {hasWidget('location-overview') && <LocationOverviewWidget />}
+        {/* Network Overview */}
+        {hasWidget('location-overview') && (
+          <ErrorBoundary>
+            <LocationOverviewWidget />
+          </ErrorBoundary>
+        )}
 
-      {/* Executive Summary */}
-      {hasWidget('executive-summary') && <ExecutiveSummaryWidget />}
+        {/* Executive Summary */}
+        {hasWidget('executive-summary') && (
+          <ErrorBoundary>
+            <ExecutiveSummaryWidget />
+          </ErrorBoundary>
+        )}
 
-      {/* Strategic Decisions */}
-      {hasWidget('strategic-decisions') && <StrategicDecisionsWidget />}
+        {/* Strategic Decisions */}
+        {hasWidget('strategic-decisions') && (
+          <ErrorBoundary>
+            <StrategicDecisionsWidget />
+          </ErrorBoundary>
+        )}
 
-      {/* Weekly Trends */}
-      {hasWidget('weekly-trends') && <WeeklyTrendsWidget />}
+        {/* Weekly Trends */}
+        {hasWidget('weekly-trends') && (
+          <ErrorBoundary>
+            <WeeklyTrendsWidget />
+          </ErrorBoundary>
+        )}
+      </div>
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { Sparkles, X } from "lucide-react";
 
 interface Product {
   id: string;
-  product_name: string;
+  name: string;
   category: string;
   strain_type?: string;
   image_url?: string | null;
@@ -46,7 +46,7 @@ export const BulkImageGenerator = ({ products }: BulkImageGeneratorProps) => {
     // Map products to the format expected by the hook
     const formattedProducts = productsWithoutImages.map(p => ({
       id: p.id,
-      name: p.product_name,
+      name: p.name,
       category: p.category,
       strain_type: p.strain_type
     }));
@@ -68,7 +68,7 @@ export const BulkImageGenerator = ({ products }: BulkImageGeneratorProps) => {
 
   return (
     <>
-      <Button 
+      <Button
         onClick={handleGenerate}
         disabled={productsWithoutImages.length === 0}
         className="gap-2"

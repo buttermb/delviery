@@ -39,6 +39,7 @@ import { COAUpload } from "@/components/admin/quality/COAUpload";
 import { TestResultsViewer } from "@/components/admin/quality/TestResultsViewer";
 import { QuarantineManager } from "@/components/admin/quality/QuarantineManager";
 import { queryKeys } from "@/lib/queryKeys";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 
 interface Batch {
   id: string;
@@ -190,10 +191,12 @@ export default function QualityControlPage() {
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : filteredBatches.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No batches found. Create batches in the Batches & Lots page.</p>
-            </div>
+            <EnhancedEmptyState
+              icon={Shield}
+              title="No Batches Found"
+              description="Create batches in the Batches & Lots page to track quality control."
+              compact
+            />
           ) : (
             <div className="overflow-x-auto">
               <Table>

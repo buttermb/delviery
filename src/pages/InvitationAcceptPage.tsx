@@ -70,6 +70,21 @@ export default function InvitationAcceptPage() {
           slug: data.invitation.tenant_slug
         }
       });
+
+      // Check for email mismatch if authenticated
+      if (session?.user?.email && session.user.email.toLowerCase() !== data.invitation.email.toLowerCase()) {
+        logger.warn('Invitation email mismatch - logging out current user', {
+          current: session.user.email,
+          invited: data.invitation.email
+        });
+        await supabase.auth.signOut();
+        setIsAuthenticated(false);
+        toast({
+          title: "Account Mismatch",
+          description: "You were logged in with a different email. Please log in with the invited email.",
+          duration: 6000,
+        });
+      }
     } catch (err) {
       logger.error('Error validating invitation', err, { component: 'InvitationAcceptPage' });
       setError('Failed to validate invitation');
@@ -84,7 +99,7 @@ export default function InvitationAcceptPage() {
     setAccepting(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
         toast({
           title: 'Authentication Required',
@@ -135,7 +150,7 @@ export default function InvitationAcceptPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/5">
-        <SEOHead 
+        <SEOHead
           title="Validating Invitation"
           description="Please wait while we validate your invitation"
         />
@@ -152,7 +167,7 @@ export default function InvitationAcceptPage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/5 p-4">
-        <SEOHead 
+        <SEOHead
           title="Invalid Invitation"
           description="This invitation is invalid or has expired"
         />
@@ -178,7 +193,7 @@ export default function InvitationAcceptPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/5 p-4">
-      <SEOHead 
+      <SEOHead
         title={`Join ${invitation?.tenant.business_name}`}
         description="Accept your team invitation"
       />
@@ -194,7 +209,7 @@ export default function InvitationAcceptPage() {
             Join {invitation?.tenant.business_name} as a team member
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
           <div className="space-y-4">
             <div className="bg-accent/50 p-4 rounded-lg space-y-2">
@@ -222,8 +237,8 @@ export default function InvitationAcceptPage() {
           </div>
 
           <div className="space-y-2">
-            <Button 
-              onClick={handleAcceptInvitation} 
+            <Button
+              onClick={handleAcceptInvitation}
               disabled={accepting}
               className="w-full"
               size="lg"
@@ -241,8 +256,8 @@ export default function InvitationAcceptPage() {
               )}
             </Button>
 
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               asChild
               className="w-full"
             >

@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/inventory/BarcodeScanner";
 import { ArrowLeft, Package, AlertTriangle, CheckCircle, Trash2 } from "lucide-react";
+import { useCreditGatedAction } from "@/hooks/useCredits";
 import {
   Select,
   SelectContent,
@@ -27,6 +28,16 @@ interface ScannedReturn {
 
 interface FrontedInventory {
   id: string;
+  quantity_returned?: number;
+  quantity_damaged?: number;
+  product_id?: string;
+  client_id?: string;
+  price_per_unit?: number;
+  products?: {
+    name?: string;
+    sku?: string;
+    barcode?: string;
+  };
   [key: string]: unknown;
 }
 
@@ -92,6 +103,8 @@ export default function RecordFrontedReturn() {
     setScannedReturns(scannedReturns.filter((r) => r.barcode !== barcode));
   };
 
+  const { execute: executeCreditAction } = useCreditGatedAction();
+
   const handleProcessReturn = async () => {
     if (!tenant?.id) {
       toast.error("Tenant not found");
@@ -103,110 +116,112 @@ export default function RecordFrontedReturn() {
       return;
     }
 
-    setProcessing(true);
-    try {
-      const goodReturns = scannedReturns.filter((r) => r.condition === "good").length;
-      const damagedReturns = scannedReturns.filter((r) => r.condition === "damaged").length;
+    await executeCreditAction('return_process', async () => {
+      setProcessing(true);
+      try {
+        const goodReturns = scannedReturns.filter((r) => r.condition === "good").length;
+        const damagedReturns = scannedReturns.filter((r) => r.condition === "damaged").length;
 
-      // Try atomic RPC first (handles inventory, balance update, and movement logging)
-      // @ts-ignore - RPC function not in auto-generated types
-      const { data: rpcResult, error: rpcError } = await supabase.rpc('process_fronted_return_atomic' as any, {
-        p_fronted_id: id,
-        p_good_returns: goodReturns,
-        p_damaged_returns: damagedReturns,
-        p_notes: notes || null
-      });
+        // Try atomic RPC first (handles inventory, balance update, and movement logging)
+        // @ts-ignore - RPC function 'process_fronted_return_atomic' is not yet in the auto-generated types
+        const { data: rpcResult, error: rpcError } = await supabase.rpc('process_fronted_return_atomic' as any, {
+          p_fronted_id: id,
+          p_good_returns: goodReturns,
+          p_damaged_returns: damagedReturns,
+          p_notes: notes || null
+        });
 
-      if (rpcError) {
-        // If RPC doesn't exist, fall back to legacy method
-        if (rpcError.code === 'PGRST202' || rpcError.message?.includes('function') || rpcError.message?.includes('does not exist')) {
-          // Legacy method
-          const { error: updateError } = await supabase
-            .from("fronted_inventory")
-            .update({
-              quantity_returned: ((front as any).quantity_returned || 0) + goodReturns,
-              quantity_damaged: ((front as any).quantity_damaged || 0) + damagedReturns,
-            })
-            .eq("id", id)
-            .eq("account_id", tenant.id);
+        if (rpcError) {
+          // If RPC doesn't exist, fall back to legacy method
+          if (rpcError.code === 'PGRST202' || rpcError.message?.includes('function') || rpcError.message?.includes('does not exist')) {
+            // Legacy method
+            const { error: updateError } = await supabase
+              .from("fronted_inventory")
+              .update({
+                quantity_returned: (front.quantity_returned || 0) + goodReturns,
+                quantity_damaged: (front.quantity_damaged || 0) + damagedReturns,
+              })
+              .eq("id", id)
+              .eq("account_id", tenant.id);
 
-          if (updateError) throw updateError;
+            if (updateError) throw updateError;
 
-          // Update product inventory for good returns
-          if (goodReturns > 0) {
-            const { data: product } = await supabase
-              .from("products")
-              .select("available_quantity, fronted_quantity")
-              .eq("id", (front as any).product_id)
-              .eq("tenant_id", tenant.id)
-              .maybeSingle();
-
-            if (product) {
-              await supabase
+            // Update product inventory for good returns
+            if (goodReturns > 0) {
+              const { data: product } = await supabase
                 .from("products")
-                .update({ 
-                  available_quantity: ((product as any).available_quantity || 0) + goodReturns,
-                  fronted_quantity: Math.max(0, ((product as any).fronted_quantity || 0) - goodReturns)
-                })
-                .eq("id", (front as any).product_id)
-                .eq("tenant_id", tenant.id);
-            }
+                .select("available_quantity, fronted_quantity")
+                .eq("id", front.product_id as string)
+                .eq("tenant_id", tenant.id)
+                .maybeSingle();
 
-            // Update client balance (return value reduces debt)
-            if ((front as any).client_id && (front as any).price_per_unit) {
-              const returnValue = goodReturns * (front as any).price_per_unit;
-              // @ts-ignore - RPC function not in auto-generated types
-              const { error: balanceError } = await supabase.rpc('adjust_client_balance' as any, {
-                p_client_id: (front as any).client_id,
-                p_amount: returnValue,
-                p_operation: 'subtract'
-              });
+              if (product) {
+                await supabase
+                  .from("products")
+                  .update({
+                    available_quantity: (product.available_quantity || 0) + goodReturns,
+                    fronted_quantity: Math.max(0, (product.fronted_quantity || 0) - goodReturns)
+                  })
+                  .eq("id", front.product_id)
+                  .eq("tenant_id", tenant.id);
+              }
 
-              if (balanceError) {
-                // Fallback to direct update
-                const { data: client } = await supabase
-                  .from('wholesale_clients')
-                  .select('outstanding_balance')
-                  .eq('id', (front as any).client_id)
-                  .maybeSingle();
+              // Update client balance (return value reduces debt)
+              if (front.client_id && front.price_per_unit) {
+                const returnValue = goodReturns * front.price_per_unit;
+                // @ts-ignore - RPC function 'adjust_client_balance' is not yet in the auto-generated types
+                const { error: balanceError } = await supabase.rpc('adjust_client_balance' as any, {
+                  p_client_id: front.client_id,
+                  p_amount: returnValue,
+                  p_operation: 'subtract'
+                });
 
-                if (client) {
-                  const newBalance = Math.max(0, (client.outstanding_balance || 0) - returnValue);
-                  await supabase
+                if (balanceError) {
+                  // Fallback to direct update
+                  const { data: client } = await supabase
                     .from('wholesale_clients')
-                    .update({ outstanding_balance: newBalance })
-                    .eq('id', (front as any).client_id);
+                    .select('outstanding_balance')
+                    .eq('id', front.client_id)
+                    .maybeSingle();
+
+                  if (client) {
+                    const newBalance = Math.max(0, (client.outstanding_balance || 0) - returnValue);
+                    await supabase
+                      .from('wholesale_clients')
+                      .update({ outstanding_balance: newBalance })
+                      .eq('id', front.client_id);
+                  }
                 }
               }
             }
+          } else {
+            throw rpcError;
           }
-        } else {
-          throw rpcError;
         }
-      }
 
-      // Create scan records (after either method)
-      for (const returnItem of scannedReturns) {
-        await supabase.from("fronted_inventory_scans").insert({
-          account_id: tenant.id,
-          fronted_inventory_id: id,
-          product_id: (front as any).product_id,
-          barcode: returnItem.barcode,
-          scan_type: returnItem.condition === "good" ? "return" : "damage",
-          quantity: 1,
-          notes: returnItem.reason || notes,
-        } as any);
-      }
+        // Create scan records (after either method)
+        for (const returnItem of scannedReturns) {
+          await supabase.from("fronted_inventory_scans").insert({
+            account_id: tenant.id,
+            fronted_inventory_id: id,
+            product_id: front.product_id,
+            barcode: returnItem.barcode,
+            scan_type: returnItem.condition === "good" ? "return" : "damage",
+            quantity: 1,
+            notes: returnItem.reason || notes,
+          } as any);
+        }
 
-      toast.success(
-        `Return processed: ${goodReturns} returned to inventory, ${damagedReturns} marked as damaged`
-      );
-      navigate(`/admin/inventory/fronted/${id}`);
-    } catch (error: unknown) {
-      toast.error("Failed to process return: " + (error instanceof Error ? error.message : 'Unknown error'));
-    } finally {
-      setProcessing(false);
-    }
+        toast.success(
+          `Return processed: ${goodReturns} returned to inventory, ${damagedReturns} marked as damaged`
+        );
+        navigate(`/${tenant?.slug}/admin/inventory/fronted/${id}`);
+      } catch (error: unknown) {
+        toast.error("Failed to process return: " + (error instanceof Error ? error.message : 'Unknown error'));
+      } finally {
+        setProcessing(false);
+      }
+    });
   };
 
   if (!front) return <div>Loading...</div>;
@@ -218,7 +233,7 @@ export default function RecordFrontedReturn() {
     <div className="container mx-auto p-4 max-w-4xl space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(`/admin/inventory/fronted/${id}`)}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(`/${tenant?.slug}/admin/inventory/fronted/${id}`)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
@@ -345,7 +360,7 @@ export default function RecordFrontedReturn() {
 
       {/* Actions */}
       <div className="flex justify-between">
-        <Button variant="outline" onClick={() => navigate(`/admin/inventory/fronted/${id}`)}>
+        <Button variant="outline" onClick={() => navigate(`/${tenant?.slug}/admin/inventory/fronted/${id}`)}>
           Cancel
         </Button>
         <Button onClick={handleProcessReturn} disabled={scannedReturns.length === 0 || processing}>

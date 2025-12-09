@@ -48,14 +48,77 @@ serve(async (req) => {
     // In a real implementation, you would:
     // 1. Get the user's FCM token from your database
     // 2. Use Firebase Admin SDK to send the push notification
-    // For now, we'll just log it and simulate success
 
-    console.log("Push notification would be sent:", {
-      userId,
-      title,
-      body,
-      data
-    });
+    // Get FCM tokens for the user from push_tokens table
+    const { data: tokens, error: tokenError } = await supabase
+      .from("push_tokens")
+      .select("token, platform")
+      .eq("user_id", userId)
+      .eq("is_active", true);
+
+    if (tokenError) {
+      console.error("Error fetching push tokens:", tokenError);
+    }
+
+    let sentCount = 0;
+    let failedCount = 0;
+
+    if (tokens && tokens.length > 0) {
+      const fcmServerKey = Deno.env.get("FCM_SERVER_KEY");
+
+      if (fcmServerKey) {
+        // Send to each registered device
+        for (const tokenRecord of tokens) {
+          try {
+            const fcmPayload = {
+              to: tokenRecord.token,
+              notification: {
+                title,
+                body,
+                click_action: "OPEN_APP",
+              },
+              data: {
+                ...data,
+                route: data?.route || "/",
+              },
+            };
+
+            const response = await fetch("https://fcm.googleapis.com/fcm/send", {
+              method: "POST",
+              headers: {
+                "Authorization": `key=${fcmServerKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(fcmPayload),
+            });
+
+            if (response.ok) {
+              sentCount++;
+              console.log(`Push sent to ${tokenRecord.platform} device`);
+            } else {
+              failedCount++;
+              const errorText = await response.text();
+              console.error(`FCM error for token: ${errorText}`);
+
+              // Mark token as inactive if it's invalid
+              if (errorText.includes("NotRegistered") || errorText.includes("InvalidRegistration")) {
+                await supabase
+                  .from("push_tokens")
+                  .update({ is_active: false })
+                  .eq("token", tokenRecord.token);
+              }
+            }
+          } catch (sendError) {
+            failedCount++;
+            console.error("Error sending to device:", sendError);
+          }
+        }
+      } else {
+        console.warn("FCM_SERVER_KEY not configured, skipping push send");
+      }
+    } else {
+      console.log("No active push tokens found for user:", userId);
+    }
 
     // Log the notification
     await supabase.from("notifications_log").insert({
@@ -63,16 +126,18 @@ serve(async (req) => {
       order_id: data?.orderId,
       notification_stage: data?.stage || 0,
       message_content: `${title}: ${body}`,
-      status: "sent",
+      status: sentCount > 0 ? "sent" : (tokens?.length ? "failed" : "no_tokens"),
       sent_at: new Date().toISOString()
     });
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Push notification sent successfully",
+        message: sentCount > 0 ? "Push notification sent" : "No tokens to send to",
         userId,
-        title
+        title,
+        sentCount,
+        failedCount,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

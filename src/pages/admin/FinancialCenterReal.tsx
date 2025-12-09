@@ -8,9 +8,11 @@ import { format, isToday, startOfWeek, endOfWeek, startOfMonth, endOfMonth } fro
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 
 export default function FinancialCenterReal() {
   const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<any>(null);
@@ -33,7 +35,7 @@ export default function FinancialCenterReal() {
   const monthEnd = endOfMonth(now);
 
   // Today's snapshot
-  const todayOrders = orders.filter(o => 
+  const todayOrders = orders.filter(o =>
     o.created_at && isToday(new Date(o.created_at))
   );
   const todayRevenue = todayOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
@@ -79,8 +81,8 @@ export default function FinancialCenterReal() {
       const revenue = clientOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
       const cost = clientOrders.reduce((sum, o) => sum + Number(o.total_amount * 0.65), 0);
       const profit = revenue - cost;
-      const warning = Number(c.outstanding_balance) > 10000 
-        ? `owes $${(Number(c.outstanding_balance) / 1000).toFixed(0)}k` 
+      const warning = Number(c.outstanding_balance) > 10000
+        ? `owes $${(Number(c.outstanding_balance) / 1000).toFixed(0)}k`
         : "";
 
       return {
@@ -176,7 +178,7 @@ export default function FinancialCenterReal() {
       {/* Credit Out (Who Owes You) */}
       <Card className="p-6 border-l-4 border-l-yellow-500">
         <h2 className="text-lg font-semibold mb-4">🔴 Credit Out (Who Owes You)</h2>
-        
+
         <div className="mb-4">
           <div className="text-3xl font-bold font-mono mb-1">
             ${totalOutstanding.toLocaleString()}
@@ -199,8 +201,8 @@ export default function FinancialCenterReal() {
                 return (
                   <div key={idx} className="flex items-center justify-between text-sm">
                     <span>• {client.client}: ${client.amount.toLocaleString()} ({client.days} days)</span>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="destructive"
                       onClick={() => {
                         if (clientData) {
@@ -219,15 +221,15 @@ export default function FinancialCenterReal() {
         )}
 
         <div className="flex gap-2">
-          <Button 
+          <Button
             className="bg-emerald-500 hover:bg-emerald-600"
-            onClick={() => navigate(`/${tenant?.slug}/admin/wholesale-clients`)}
+            onClick={() => navigateToAdmin('wholesale-clients')}
           >
             Collections Dashboard
           </Button>
-          <Button 
+          <Button
             variant="outline"
-            onClick={() => navigate(`/${tenant?.slug}/admin/wholesale-clients`)}
+            onClick={() => navigateToAdmin('wholesale-clients')}
           >
             Send Reminders
           </Button>

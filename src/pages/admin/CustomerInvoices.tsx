@@ -24,6 +24,8 @@ import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
 import { callAdminFunction } from '@/utils/adminFunctionHelper';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 const PAGE_SIZE = 25;
 
@@ -363,11 +365,7 @@ export default function CustomerInvoices() {
   };
 
   if (accountLoading || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="spinner" message="Loading invoices..." />;
   }
 
   return (
@@ -664,17 +662,16 @@ export default function CustomerInvoices() {
       )}
 
       {invoices.length === 0 && (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-lg font-semibold mb-2">No invoices yet</h3>
-            <p className="text-muted-foreground mb-4">Create your first invoice</p>
-            <Button onClick={() => setIsDialogOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Invoice
-            </Button>
-          </CardContent>
-        </Card>
+        <EnhancedEmptyState
+          icon={FileText}
+          title="No Invoices Yet"
+          description="Create your first invoice to get started."
+          primaryAction={{
+            label: "Create Invoice",
+            onClick: () => setIsDialogOpen(true),
+            icon: Plus
+          }}
+        />
       )}
     </div>
   );

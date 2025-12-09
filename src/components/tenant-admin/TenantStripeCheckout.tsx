@@ -48,7 +48,7 @@ export function TenantStripeCheckout() {
       const integrationSettings = settings?.integration_settings as any;
       setStripeConfigured(!!integrationSettings?.stripe_secret_key);
     } catch (error) {
-      console.error("Error checking Stripe configuration:", error);
+      logger.error("Error checking Stripe configuration:", error);
       setStripeConfigured(false);
     }
   };

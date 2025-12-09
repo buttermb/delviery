@@ -1,18 +1,19 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Package, Plus, ArrowRightLeft, TrendingUp, Clock, Truck } from "lucide-react";
-import { showInfoToast } from "@/utils/toastHelpers";
+import { Package, Plus, ArrowRightLeft, TrendingUp, Truck } from "lucide-react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useWholesaleInventory, useWholesaleDeliveries, useWholesaleOrders } from "@/hooks/useWholesaleData";
-import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
+import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 export default function WholesaleInventory() {
   const navigate = useNavigate();
@@ -68,6 +69,7 @@ export default function WholesaleInventory() {
     else if ((Number(item.quantity_lbs) || 0) < 25) status = "low";
 
     warehouse.inventory.push({
+      id: item.id || Math.random().toString(), // Ensure ID for keyExtractor
       strain: item.product_name,
       weight_lbs: Number(item.quantity_lbs) || 0,
       cost_per_lb: Number(item.cost_per_lb) || 0,
@@ -167,22 +169,57 @@ export default function WholesaleInventory() {
     return labels[status] || status;
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6 p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <Skeleton className="h-8 w-64 mb-2" />
-            <Skeleton className="h-4 w-48" />
-          </div>
-          <Skeleton className="h-10 w-32" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 w-full" />)}
-        </div>
-        <Skeleton className="h-96 w-full" />
+  const columns = useMemo<ResponsiveColumn<any>[]>(() => [
+    {
+      header: "Strain",
+      accessorKey: "strain",
+      className: "font-medium"
+    },
+    {
+      header: "Weight (lbs)",
+      accessorKey: "weight_lbs",
+    },
+    {
+      header: "Cost / lb",
+      cell: (item) => formatCurrency(item.cost_per_lb)
+    },
+    {
+      header: "Total Value",
+      cell: (item) => formatCurrency(item.value)
+    },
+    {
+      header: "Status",
+      cell: (item) => (
+        <Badge variant="outline" className={getStatusColor(item.status)}>
+          {getStatusLabel(item.status)}
+        </Badge>
+      )
+    }
+  ], []);
+
+  const renderMobileCard = (item: any) => (
+    <div className="flex flex-col gap-2">
+      <div className="flex justify-between items-start">
+        <span className="font-medium">{item.strain}</span>
+        <Badge variant="outline" className={getStatusColor(item.status)}>
+          {getStatusLabel(item.status)}
+        </Badge>
       </div>
-    );
+      <div className="grid grid-cols-2 gap-2 text-sm">
+        <div className="flex flex-col">
+          <span className="text-muted-foreground">Weight</span>
+          <span>{item.weight_lbs} lbs</span>
+        </div>
+        <div className="flex flex-col text-right">
+          <span className="text-muted-foreground">Value</span>
+          <span>{formatCurrency(item.value)}</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (isLoading) {
+    return <EnhancedLoadingState variant="dashboard" />;
   }
 
   return (
@@ -221,7 +258,7 @@ export default function WholesaleInventory() {
         </Card>
         <Card className="p-4 space-y-2">
           <div className="text-sm font-medium text-muted-foreground">Total Value</div>
-          <div className="text-2xl font-bold">${overview.total_value.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{formatCurrency(overview.total_value)}</div>
           <div className="text-xs text-emerald-500 flex items-center">
             <TrendingUp className="h-3 w-3 mr-1" />
             Asset Value
@@ -229,7 +266,7 @@ export default function WholesaleInventory() {
         </Card>
         <Card className="p-4 space-y-2">
           <div className="text-sm font-medium text-muted-foreground">Avg Cost / lb</div>
-          <div className="text-2xl font-bold">${overview.avg_cost_per_lb.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{formatCurrency(overview.avg_cost_per_lb)}</div>
           <div className="text-xs text-muted-foreground">Across all strains</div>
         </Card>
         <Card className="p-4 space-y-2">
@@ -279,50 +316,38 @@ export default function WholesaleInventory() {
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-medium">{warehouse.current_stock_lbs} / {warehouse.capacity_lbs} lbs</div>
-                    <div className="text-xs text-muted-foreground">${warehouse.value.toLocaleString()} value</div>
+                    <div className="text-xs text-muted-foreground">{formatCurrency(warehouse.value)} value</div>
                   </div>
                 </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Strain</TableHead>
-                      <TableHead>Weight (lbs)</TableHead>
-                      <TableHead>Cost / lb</TableHead>
-                      <TableHead>Total Value</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {warehouse.inventory.length > 0 ? (
-                      warehouse.inventory.map((item: any, idx: number) => (
-                        <TableRow key={idx}>
-                          <TableCell className="font-medium">{item.strain}</TableCell>
-                          <TableCell>{item.weight_lbs}</TableCell>
-                          <TableCell>${item.cost_per_lb.toLocaleString()}</TableCell>
-                          <TableCell>${item.value.toLocaleString()}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={getStatusColor(item.status)}>
-                              {getStatusLabel(item.status)}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
-                          No inventory in this warehouse
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                <ResponsiveTable
+                  columns={columns}
+                  data={warehouse.inventory}
+                  keyExtractor={(item) => item.id || item.strain}
+                  mobileRenderer={renderMobileCard}
+                  emptyState={{
+                    title: "No inventory",
+                    description: "No inventory in this warehouse.",
+                    icon: Package
+                  }}
+                  className="border-0 rounded-none border-t"
+                />
               </Card>
             ))}
 
           {warehouses.length === 0 && (
-            <Card className="p-8 text-center text-muted-foreground">
-              No inventory data found. Add stock to get started.
-            </Card>
+            <div className="flex justify-center py-8">
+              <EnhancedEmptyState
+                type="no_products"
+                title="No Inventory Found"
+                description="Your warehouses are empty. Start by adding stock to your inventory."
+                icon={Package}
+                primaryAction={{
+                  label: "Add Stock",
+                  onClick: () => navigateToAdmin('inventory-management'),
+                  icon: Plus
+                }}
+              />
+            </div>
           )}
         </div>
 
@@ -372,7 +397,7 @@ export default function WholesaleInventory() {
                 <div key={idx} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">{item.strain}</span>
-                    <span className="text-emerald-500 font-medium">${item.profit.toLocaleString()} profit</span>
+                    <span className="text-emerald-500 font-medium">{formatCurrency(item.profit)} profit</span>
                   </div>
                   <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
                     <div
@@ -382,7 +407,7 @@ export default function WholesaleInventory() {
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>{item.lbs_moved} lbs moved</span>
-                    <span>${item.revenue.toLocaleString()} rev</span>
+                    <span>{formatCurrency(item.revenue)} rev</span>
                   </div>
                 </div>
               ))}
@@ -406,7 +431,7 @@ export default function WholesaleInventory() {
                 <div>
                   <div className="font-medium">{idx + 1}. {item.strain} - {item.lbs_moved} lbs moved</div>
                   <div className="text-sm text-muted-foreground">
-                    ${(item.revenue / 1000).toFixed(0)}k revenue, ${(item.profit / 1000).toFixed(0)}k profit
+                    {formatCurrency(item.revenue)} revenue, {formatCurrency(item.profit)} profit
                   </div>
                 </div>
               </div>

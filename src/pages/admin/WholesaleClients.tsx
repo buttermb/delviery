@@ -32,6 +32,7 @@ import {
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
+import { ClientStatusBadge } from "@/components/admin/ClientStatusBadge";
 import { CreateClientDialog } from "@/components/admin/CreateClientDialog";
 import { toast } from "sonner";
 import { queryKeys } from "@/lib/queryKeys";
@@ -57,6 +58,7 @@ import { Link2 } from "lucide-react";
 import { customersTutorial } from "@/lib/tutorials/tutorialConfig";
 import { Database } from "@/integrations/supabase/types";
 import { CustomerQuickViewCard } from "@/components/tenant-admin/CustomerQuickViewCard";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 
 type WholesaleClientRow = Database['public']['Tables']['wholesale_clients']['Row'];
 
@@ -143,17 +145,7 @@ export default function WholesaleClients() {
     client.contact_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getStatusColor = (balance: number) => {
-    if (balance === 0) return "text-primary";
-    if (balance > 20000) return "text-destructive";
-    return "text-orange-600 dark:text-orange-400";
-  };
 
-  const getStatusIcon = (balance: number) => {
-    if (balance === 0) return "🟢";
-    if (balance > 20000) return "🔴";
-    return "🟡";
-  };
 
   const getClientTypeLabel = (type: string) => {
     const types: Record<string, string> = {
@@ -285,6 +277,7 @@ export default function WholesaleClients() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="text-xs sm:text-sm">Client</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Status</TableHead>
                     <TableHead className="text-xs sm:text-sm">Type</TableHead>
                     <TableHead className="text-xs sm:text-sm">Contact</TableHead>
                     <TableHead className="text-xs sm:text-sm">Credit Status</TableHead>
@@ -296,7 +289,7 @@ export default function WholesaleClients() {
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8">
+                      <TableCell colSpan={8} className="text-center py-8">
                         <div className="flex items-center justify-center">
                           <div className="animate-spin h-6 w-6 border-2 border-emerald-500 border-t-transparent rounded-full" />
                         </div>
@@ -307,12 +300,11 @@ export default function WholesaleClients() {
                       <TableRow
                         key={client.id}
                         className="cursor-pointer hover:bg-muted/50 touch-manipulation"
-                        onClick={() => navigate(`/admin/big-plug-clients/${client.id}`)}
+                        onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`)}
                       >
                         <TableCell className="text-xs sm:text-sm">
                           <div>
                             <div className="font-semibold text-foreground flex items-center gap-2">
-                              {getStatusIcon(client.outstanding_balance)}
                               <CustomerQuickViewCard customer={client}>
                                 <span className="truncate">{client.business_name}</span>
                               </CustomerQuickViewCard>
@@ -320,6 +312,9 @@ export default function WholesaleClients() {
                             </div>
                             <div className="text-xs text-muted-foreground truncate">{client.territory}</div>
                           </div>
+                        </TableCell>
+                        <TableCell className="text-xs sm:text-sm">
+                          <ClientStatusBadge status={client.status || 'active'} />
                         </TableCell>
                         <TableCell className="text-xs sm:text-sm">
                           <Select
@@ -359,21 +354,17 @@ export default function WholesaleClients() {
                           <Popover>
                             <PopoverTrigger asChild>
                               <div className="cursor-pointer hover:bg-muted/50 p-1 rounded transition-colors group/credit">
-                                <div className={`font-mono font-semibold text-xs sm:text-sm ${getStatusColor(client.outstanding_balance)}`}>
-                                  ${Number(client.outstanding_balance).toLocaleString()}
-                                </div>
+                                <ClientStatusBadge
+                                  status=""
+                                  type="credit"
+                                  balance={Number(client.outstanding_balance)}
+                                  creditLimit={Number(client.credit_limit || 0)}
+                                  className="mb-1"
+                                />
                                 <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                  Limit: ${Number(client.credit_limit || 0).toLocaleString()}
+                                  ${Number(client.outstanding_balance).toLocaleString()} / ${Number(client.credit_limit || 0).toLocaleString()}
                                   <Edit2 className="h-3 w-3 opacity-0 group-hover/credit:opacity-100 transition-opacity" />
                                 </div>
-                                {client.outstanding_balance > 0 ? (
-                                  <div className="text-xs text-destructive flex items-center gap-1 mt-1">
-                                    <AlertCircle className="h-3 w-3" />
-                                    Outstanding
-                                  </div>
-                                ) : (
-                                  <div className="text-xs text-emerald-500 mt-1">Paid in full ✅</div>
-                                )}
                               </div>
                             </PopoverTrigger>
                             <PopoverContent className="w-60">
@@ -388,8 +379,6 @@ export default function WholesaleClients() {
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
                                         handleUpdateClient(client.id, { credit_limit: Number(e.currentTarget.value) });
-                                        // Close popover? It's uncontrolled, so maybe not easily.
-                                        // But the update will trigger refresh.
                                       }
                                     }}
                                     onBlur={(e) => {
@@ -482,7 +471,9 @@ export default function WholesaleClients() {
                               className="min-h-[48px] touch-manipulation"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/admin/new-wholesale-order?clientId=${client.id}`);
+                                if (tenant?.slug) {
+                                  navigate(`/${tenant.slug}/admin/new-wholesale-order?clientId=${client.id}`);
+                                }
                               }}
                             >
                               <Package className="h-4 w-4 sm:mr-1" />
@@ -495,14 +486,17 @@ export default function WholesaleClients() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8">
-                        <div className="text-muted-foreground">
-                          {searchTerm ? "No clients found matching your search" : "No clients yet"}
-                        </div>
-                        <Button className="mt-4 min-h-[48px] touch-manipulation" onClick={() => setCreateClientDialogOpen(true)}>
-                          <Plus className="h-4 w-4 mr-2" />
-                          <span className="text-sm sm:text-base">Add Your First Client</span>
-                        </Button>
+                      <TableCell colSpan={8} className="h-96 text-center">
+                        <EnhancedEmptyState
+                          icon={Package}
+                          title={searchTerm ? "No Clients Found" : "No Clients Yet"}
+                          description={searchTerm ? "No clients found matching your search criteria." : "Get started by adding your first wholesale client."}
+                          primaryAction={{
+                            label: "Add Your First Client",
+                            onClick: () => setCreateClientDialogOpen(true),
+                            icon: Plus
+                          }}
+                        />
                       </TableCell>
                     </TableRow>
                   )}
@@ -539,13 +533,13 @@ export default function WholesaleClients() {
                 <Card
                   key={client.id}
                   className="overflow-hidden cursor-pointer hover:bg-muted/50 transition-colors active:scale-[0.98]"
-                  onClick={() => navigate(`/admin/big-plug-clients/${client.id}`)}
+                  onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`)}
                 >
                   <div className="p-4 space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          {getStatusIcon(client.outstanding_balance)}
+                          <ClientStatusBadge status={client.status || 'active'} showIcon={false} className="text-[10px] px-1.5 h-5" />
                           <h3 className="font-semibold text-base truncate">{client.business_name}</h3>
                         </div>
                         <p className="text-sm text-muted-foreground truncate">{client.territory}</p>
@@ -564,17 +558,15 @@ export default function WholesaleClients() {
 
                       <div className="flex flex-col gap-1">
                         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Credit Status</div>
-                        <div className={`font-mono font-semibold text-sm ${getStatusColor(client.outstanding_balance)}`}>
-                          ${Number(client.outstanding_balance).toLocaleString()}
+                        <ClientStatusBadge
+                          status=""
+                          type="credit"
+                          balance={Number(client.outstanding_balance)}
+                          creditLimit={Number(client.credit_limit || 0)}
+                        />
+                        <div className="text-xs text-muted-foreground mt-1 font-mono">
+                          ${Number(client.outstanding_balance).toLocaleString()} / ${Number(client.credit_limit || 0).toLocaleString()} limit
                         </div>
-                        {client.outstanding_balance > 0 ? (
-                          <div className="text-xs text-destructive flex items-center gap-1 mt-1">
-                            <AlertCircle className="h-3 w-3" />
-                            Outstanding
-                          </div>
-                        ) : (
-                          <div className="text-xs text-emerald-500 mt-1">Paid in full ✅</div>
-                        )}
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
@@ -638,7 +630,9 @@ export default function WholesaleClients() {
                           variant="default"
                           className="min-h-[48px] flex-1 min-w-[100px]"
                           onClick={() => {
-                            navigate(`/admin/new-wholesale-order?clientId=${client.id}`);
+                            if (tenant?.slug) {
+                              navigate(`/${tenant.slug}/admin/new-wholesale-order?clientId=${client.id}`);
+                            }
                           }}
                         >
                           <Package className="h-4 w-4 mr-2" />
@@ -650,14 +644,17 @@ export default function WholesaleClients() {
                 </Card>
               ))
             ) : (
-              <div className="text-center py-12">
-                <div className="text-muted-foreground mb-4">
-                  {searchTerm ? "No clients found matching your search" : "No clients yet"}
-                </div>
-                <Button className="min-h-[48px] touch-manipulation" onClick={() => setCreateClientDialogOpen(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  <span className="text-sm sm:text-base">Add Your First Client</span>
-                </Button>
+              <div className="py-8">
+                <EnhancedEmptyState
+                  icon={Package}
+                  title={searchTerm ? "No Clients Found" : "No Clients Yet"}
+                  description={searchTerm ? "No clients found matching your search criteria." : "Get started by adding your first wholesale client."}
+                  primaryAction={{
+                    label: "Add Your First Client",
+                    onClick: () => setCreateClientDialogOpen(true),
+                    icon: Plus
+                  }}
+                />
               </div>
             )}
           </div>

@@ -221,9 +221,9 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       }
 
       // Skip token refresh on login/signup pages - user is trying to authenticate
-      const isAuthPage = location.pathname.includes('/login') || 
-                         location.pathname.includes('/signup') || 
-                         location.pathname.includes('/forgot-password');
+      const isAuthPage = location.pathname.includes('/login') ||
+        location.pathname.includes('/signup') ||
+        location.pathname.includes('/forgot-password');
       if (isAuthPage) {
         // Clear any stale tokens on auth pages to prevent refresh loops
         safeStorage.removeItem(ACCESS_TOKEN_KEY);
@@ -1082,6 +1082,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         const errorData = await response.json().catch(() => ({ error: "Login failed" }));
         const error: AuthError = new Error(errorData.error || "Login failed");
         error.status = response.status;
+
+        // Extract retry-after header if present
+        const retryAfter = response.headers.get("Retry-After");
+        if (retryAfter) {
+          (error as any).retryAfter = retryAfter;
+        }
+
         authFlowLogger.failFlow(flowId, error, category);
         throw error;
       }
@@ -1192,7 +1199,20 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         errorMessage = 'Access denied. Your account may be suspended. Please contact support.';
         errorCode = 'ACCESS_DENIED';
       } else if ('status' in errorObj && errorObj.status === 429) {
-        errorMessage = 'Too many login attempts. Please wait a few minutes and try again.';
+        const retryAfter = (errorObj as any).retryAfter;
+        errorMessage = 'Account locked due to too many attempts.';
+        if (retryAfter) {
+          const seconds = parseInt(retryAfter, 10);
+          if (!isNaN(seconds)) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            errorMessage += ` Try again in ${minutes}:${remainingSeconds.toString().padStart(2, '0')}.`;
+          } else {
+            errorMessage += ' Please wait a few minutes and try again.';
+          }
+        } else {
+          errorMessage += ' Please wait a few minutes and try again.';
+        }
         errorCode = 'RATE_LIMITED';
       } else if ('status' in errorObj && typeof errorObj.status === 'number' && errorObj.status >= 500) {
         errorMessage = 'Server error. We\'re working on it. Please try again in a few minutes.';
@@ -1209,11 +1229,59 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   };
 
 
+
+  // Listen for auth events from other tabs
+  useEffect(() => {
+    const channel = new BroadcastChannel('tenant_auth_channel');
+
+    channel.onmessage = (event) => {
+      if (event.data.type === 'LOGOUT') {
+        logger.info('[AUTH] Received remote logout event', { component: 'TenantAdminAuthContext' });
+
+        // Clear only local state, don't trigger API logout (already done by other tab)
+        clearAuthState();
+
+        // Destroy encryption session
+        clientEncryption.destroy();
+
+        // Clear user ID from storage
+        sessionStorage.removeItem('floraiq_user_id');
+        safeStorage.removeItem('floraiq_user_id');
+
+        toast.info("You have been logged out from another tab.", {
+          duration: 5000,
+        });
+
+        // Redirect if we have tenant slug, but do not replace history to allow back navigation if desired, or replace to prevent loop? 
+        // Replace is better for logout.
+        if (tenant?.slug) {
+          navigate(`/${tenant.slug}/admin/login`, { replace: true });
+        } else if (window.location.pathname.includes('/admin')) {
+          // Fallback if tenant slug is missing but we're in admin
+          navigate('/');
+        }
+      }
+    };
+
+    return () => {
+      channel.close();
+    };
+  }, [tenant?.slug, navigate]);
+
   const logout = async () => {
     // Clear refresh timer
     if (refreshTimerRef.current) {
       clearTimeout(refreshTimerRef.current);
       refreshTimerRef.current = null;
+    }
+
+    // Notify other tabs immediately
+    try {
+      const channel = new BroadcastChannel('tenant_auth_channel');
+      channel.postMessage({ type: 'LOGOUT' });
+      channel.close();
+    } catch (e) {
+      logger.warn('[AUTH] Failed to broadcast logout event', e);
     }
 
     try {
@@ -1530,7 +1598,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         const updatedTenant = freshTenant as unknown as Tenant;
         setTenant(updatedTenant);
         safeStorage.setItem(TENANT_KEY, JSON.stringify(updatedTenant));
-        logger.info('[AUTH] Tenant data refreshed', { 
+        logger.info('[AUTH] Tenant data refreshed', {
           tenantId: updatedTenant.id,
           paymentMethodAdded: updatedTenant.payment_method_added,
           subscriptionStatus: updatedTenant.subscription_status

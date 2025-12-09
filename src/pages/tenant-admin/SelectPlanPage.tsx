@@ -6,13 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, Loader2, Crown, Sparkles, Shield, Clock, Zap } from "lucide-react";
+import { Check, Loader2, Crown, Sparkles, Shield, Clock, Zap, Coins, ArrowRight } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { handleError } from '@/utils/errorHandling/handlers';
 import { cn } from "@/lib/utils";
+import { FREE_TIER_MONTHLY_CREDITS } from "@/lib/credits";
 
 type BillingCycle = 'monthly' | 'yearly';
 
@@ -44,6 +45,21 @@ export default function SelectPlanPage() {
   const [retryPlanId, setRetryPlanId] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [skipTrial, setSkipTrial] = useState(false);
+  const [isFreeTier, setIsFreeTier] = useState(false);
+
+  // Check if tenant is on free tier
+  useEffect(() => {
+    const checkFreeTier = async () => {
+      if (!tenant?.id) return;
+      const { data } = await supabase
+        .from('tenants')
+        .select('is_free_tier')
+        .eq('id', tenant.id)
+        .maybeSingle();
+      setIsFreeTier((data as any)?.is_free_tier || false);
+    };
+    checkFreeTier();
+  }, [tenant?.id]);
 
   // Check if user already completed payment and redirect to dashboard
   useEffect(() => {
@@ -172,6 +188,47 @@ export default function SelectPlanPage() {
     }
 
     return skipTrial ? `Subscribe - $${price}${period}` : 'Start Free Trial';
+  };
+
+  const handleSelectFreeTier = async () => {
+    if (!tenant?.id) {
+      toast.error("Missing tenant information");
+      return;
+    }
+
+    setLoading('free');
+    setError(null);
+
+    try {
+      // Update tenant to free tier
+      const { error: updateError } = await supabase
+        .from('tenants')
+        .update({ is_free_tier: true })
+        .eq('id', tenant.id);
+
+      if (updateError) throw updateError;
+
+      // Grant initial credits via RPC
+      const { error: creditError } = await supabase.rpc('grant_free_credits', {
+        p_tenant_id: tenant.id
+      });
+
+      if (creditError) {
+        logger.warn('[SELECT_PLAN] Failed to grant initial credits', creditError);
+        // Don't fail the whole operation, credits can be granted later
+      }
+
+      toast.success("Welcome to the Free tier! You've received your credits.");
+      navigate(`/${tenant.slug}/admin/dashboard`);
+    } catch (error) {
+      handleError(error, {
+        component: 'SelectPlanPage',
+        toastTitle: 'Failed to switch to free tier',
+        context: { tenantId: tenant.id }
+      });
+    } finally {
+      setLoading(null);
+    }
   };
 
   const handleSelectPlan = async (planId: string, isRetry = false) => {
@@ -381,7 +438,101 @@ export default function SelectPlanPage() {
         )}
 
         {/* Plan Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Free Tier Card */}
+          <Card
+            className={cn(
+              "relative overflow-hidden transition-all duration-300 border-dashed",
+              isFreeTier
+                ? "border-emerald-500 shadow-xl scale-[1.02] ring-2 ring-emerald-500"
+                : "border-emerald-500/50 bg-emerald-500/5 hover:shadow-lg hover:scale-[1.01]"
+            )}
+          >
+            {isFreeTier && (
+              <div className="absolute top-0 right-0 bg-emerald-500 text-white px-4 py-1 text-xs font-bold rounded-bl-lg">
+                CURRENT PLAN
+              </div>
+            )}
+            {!isFreeTier && (
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <Badge className="bg-emerald-500 text-white px-3 py-1">
+                  <Coins className="h-3 w-3 mr-1" />
+                  FREE
+                </Badge>
+              </div>
+            )}
+
+            <CardHeader className="pb-4 pt-6">
+              <div className="flex items-center gap-2">
+                <Coins className="h-5 w-5 text-emerald-500" />
+                <CardTitle className="text-2xl">Free</CardTitle>
+              </div>
+              <CardDescription className="min-h-[40px]">
+                Try everything with monthly credits
+              </CardDescription>
+
+              <div className="mt-4 space-y-1">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-bold">$0</span>
+                  <span className="text-muted-foreground">/month</span>
+                </div>
+                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                  {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} credits/month
+                </p>
+              </div>
+            </CardHeader>
+
+            <CardContent className="pb-4">
+              <ul className="space-y-3">
+                {[
+                  `${FREE_TIER_MONTHLY_CREDITS.toLocaleString()} credits/month`,
+                  "All core features",
+                  "50 customers",
+                  "100 products",
+                  "1 location",
+                  "Email support",
+                  "Credits auto-refresh monthly",
+                ].map((feature, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+
+            <CardFooter className="flex-col gap-3 pt-0">
+              <Button
+                className={cn(
+                  "w-full h-12 text-base font-semibold",
+                  isFreeTier ? "" : "bg-emerald-600 hover:bg-emerald-700"
+                )}
+                size="lg"
+                onClick={handleSelectFreeTier}
+                disabled={loading !== null || isFreeTier}
+                variant={isFreeTier ? "outline" : "default"}
+              >
+                {loading === 'free' ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : isFreeTier ? (
+                  "Current Plan"
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Switch to Free
+                  </>
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground text-center">
+                No credit card required
+              </p>
+            </CardFooter>
+          </Card>
+
+          {/* Paid Plan Cards */}
           {plans.map((plan) => {
             const isCurrent = isCurrentPlan(plan);
             const isUpgradePlan = isUpgrade(plan);
@@ -434,6 +585,13 @@ export default function SelectPlanPage() {
                           Save ${savings.amount}/year ({savings.percent}% off)
                         </p>
                       </div>
+                    )}
+                    
+                    {!billingCycle && (
+                      <p className="text-sm font-medium text-primary">
+                        <ArrowRight className="h-3 w-3 inline mr-1" />
+                        Unlimited usage
+                      </p>
                     )}
                   </div>
                 </CardHeader>
@@ -499,6 +657,10 @@ export default function SelectPlanPage() {
 
         {/* Trust Indicators */}
         <div className="flex flex-wrap justify-center gap-6 mb-8">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Coins className="h-4 w-4 text-emerald-500" />
+            <span>Free tier available</span>
+          </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Shield className="h-4 w-4 text-green-500" />
             <span>Bank-level security</span>

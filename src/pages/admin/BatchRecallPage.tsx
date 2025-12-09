@@ -122,6 +122,10 @@ export default function BatchRecallPage() {
               recalls={recalls || []}
               isLoading={isLoading}
               onSelect={(recall) => setSelectedRecall(recall as any)}
+              onCreate={() => {
+                setSelectedRecall(null);
+                setIsFormOpen(true);
+              }}
             />
           )}
         </TabsContent>

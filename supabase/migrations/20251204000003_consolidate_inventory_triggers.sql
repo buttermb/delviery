@@ -322,3 +322,9 @@ COMMENT ON VIEW public.inventory_trigger_status IS
 
 
 
+
+
+
+
+
+

@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, User, Package, ShoppingCart, MapPin, Mail, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatStatus } from "@/utils/stringHelpers";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 
 interface UserSearchResult {
   id: string;
@@ -61,6 +62,7 @@ interface AddressSearchResult {
 }
 
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 
 const GlobalSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -157,12 +159,14 @@ const GlobalSearch = () => {
         </CardHeader>
         <CardContent>
           {searchTerm.length < 2 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Enter at least 2 characters to search</p>
-            </div>
+            <EnhancedEmptyState
+              icon={Search}
+              title="Global Search"
+              description="Enter at least 2 characters to search across users, orders, products, and addresses."
+              compact
+            />
           ) : isLoading ? (
-            <div className="text-center py-12">Loading...</div>
+            <EnhancedLoadingState variant="spinner" message="Searching across the platform..." className="py-12" />
           ) : searchResults && searchResults.totalResults > 0 ? (
             <Tabs defaultValue="users" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
@@ -182,7 +186,7 @@ const GlobalSearch = () => {
 
               <TabsContent value="users" className="space-y-4">
                 {searchResults.users.map((user: UserSearchResult) => (
-                  <Card key={user.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/users/${user.user_id}`)}>
+                  <Card key={user.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/${tenant?.slug}/admin/users/${user.user_id}`)}>
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between">
                         <div className="space-y-2">
@@ -211,7 +215,7 @@ const GlobalSearch = () => {
                             Orders: {user.total_orders || 0} • Risk: {user.risk_score || "N/A"}
                           </div>
                         </div>
-                        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/admin/users/${user.user_id}`); }}>View Profile</Button>
+                        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/${tenant?.slug}/admin/users/${user.user_id}`); }}>View Profile</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -220,7 +224,7 @@ const GlobalSearch = () => {
 
               <TabsContent value="orders" className="space-y-4">
                 {searchResults.orders.map((order: OrderSearchResult) => (
-                  <Card key={order.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/orders`)}>
+                  <Card key={order.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/${tenant?.slug}/admin/orders`)}>
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between">
                         <div className="space-y-2">
@@ -238,7 +242,7 @@ const GlobalSearch = () => {
                             <span>{new Date(order.created_at).toLocaleDateString()}</span>
                           </div>
                         </div>
-                        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/admin/orders`); }}>View Order</Button>
+                        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/${tenant?.slug}/admin/orders`); }}>View Order</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -247,7 +251,7 @@ const GlobalSearch = () => {
 
               <TabsContent value="products" className="space-y-4">
                 {searchResults.products.map((product: ProductSearchResult) => (
-                  <Card key={product.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/products`)}>
+                  <Card key={product.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/${tenant?.slug}/admin/products`)}>
                     <CardContent className="pt-6">
                       <div className="flex items-start gap-4">
                         {product.image_url && (
@@ -268,7 +272,7 @@ const GlobalSearch = () => {
                             {product.average_rating && <span>⭐ {product.average_rating.toFixed(1)}</span>}
                           </div>
                         </div>
-                        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/admin/products`); }}>Edit Product</Button>
+                        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/${tenant?.slug}/admin/products`); }}>Edit Product</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -277,7 +281,7 @@ const GlobalSearch = () => {
 
               <TabsContent value="addresses" className="space-y-4">
                 {searchResults.addresses.map((address: AddressSearchResult) => (
-                  <Card key={address.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/users/${address.user_id}`)}>
+                  <Card key={address.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/${tenant?.slug}/admin/users/${address.user_id}`)}>
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between">
                         <div className="space-y-2">
@@ -302,7 +306,7 @@ const GlobalSearch = () => {
                             </Badge>
                           )}
                         </div>
-                        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/admin/users/${address.user_id}`); }}>View User</Button>
+                        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/${tenant?.slug}/admin/users/${address.user_id}`); }}>View User</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -310,10 +314,12 @@ const GlobalSearch = () => {
               </TabsContent>
             </Tabs>
           ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No results found for "{searchTerm}"</p>
-            </div>
+            <EnhancedEmptyState
+              icon={Search}
+              title="No Results Found"
+              description={`No results found for "${searchTerm}". Try a different search term.`}
+              compact
+            />
           )}
         </CardContent>
       </Card>

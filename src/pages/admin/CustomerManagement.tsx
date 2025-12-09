@@ -40,6 +40,7 @@ import { cn } from "@/lib/utils";
 import { CustomerImportDialog } from "@/components/admin/CustomerImportDialog";
 import { VirtualList } from "@/components/ui/virtual-list";
 import { useSwipeBack, useLongPress } from "@/hooks/useGestures";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 
 interface Customer {
   id: string;
@@ -524,15 +525,15 @@ export default function CustomerManagement() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => navigate(`/admin/customers/${customer.id}`)}>
+                          <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${customer.id}`)}>
                             <Eye className="w-4 h-4 mr-2" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(`/admin/customer-management/${customer.id}/edit`)}>
+                          <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customer-management/${customer.id}/edit`)}>
                             <Edit className="w-4 h-4 mr-2" />
                             Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(`/admin/pos?customer=${customer.id}`)}>
+                          <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${customer.id}`)}>
                             <DollarSign className="w-4 h-4 mr-2" />
                             New Order
                           </DropdownMenuItem>
@@ -552,16 +553,16 @@ export default function CustomerManagement() {
             </table>
 
             {filteredCustomers.length === 0 && (
-              <div className="text-center py-12">
-                <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <p className="text-muted-foreground mb-4">
-                  {searchTerm ? "No customers found matching your search" : "No customers yet"}
-                </p>
-                <Button onClick={() => navigateToAdmin('customers/new')}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Your First Customer
-                </Button>
-              </div>
+              <EnhancedEmptyState
+                icon={Users}
+                title={searchTerm ? "No Customers Found" : "No Customers Yet"}
+                description={searchTerm ? "No customers match your search." : "Add your first customer to get started."}
+                primaryAction={!searchTerm ? {
+                  label: "Add Your First Customer",
+                  onClick: () => navigateToAdmin('customers/new'),
+                  icon: Plus
+                } : undefined}
+              />
             )}
           </div>
         </CardContent>
@@ -570,16 +571,16 @@ export default function CustomerManagement() {
       {/* Mobile Swipeable List View */}
       <div className="md:hidden space-y-3">
         {filteredCustomers.length === 0 ? (
-          <div className="text-center py-12">
-            <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <p className="text-muted-foreground mb-4">
-              {searchTerm ? "No customers found matching your search" : "No customers yet"}
-            </p>
-            <Button onClick={() => navigateToAdmin('customers/new')} className="min-h-[48px]">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Your First Customer
-            </Button>
-          </div>
+          <EnhancedEmptyState
+            icon={Users}
+            title={searchTerm ? "No Customers Found" : "No Customers Yet"}
+            description={searchTerm ? "No customers match your search." : "Add your first customer to get started."}
+            primaryAction={!searchTerm ? {
+              label: "Add Your First Customer",
+              onClick: () => navigateToAdmin('customers/new'),
+              icon: Plus
+            } : undefined}
+          />
         ) : (
           <AnimatePresence>
             {filteredCustomers.map((customer) => (
@@ -595,7 +596,7 @@ export default function CustomerManagement() {
                   icon: <Eye className="h-5 w-5" />,
                   color: 'bg-blue-500',
                   label: 'View',
-                  onClick: () => navigate(`/admin/customers/${customer.id}`)
+                  onClick: () => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${customer.id}`)
                 }}
               >
                 <div
@@ -710,15 +711,15 @@ export default function CustomerManagement() {
                 </div>
 
                 <div className="pt-4 border-t">
-                  <Button className="w-full mb-2" onClick={() => navigate(`/admin/pos?customer=${selectedCustomerForDrawer.id}`)}>
+                  <Button className="w-full mb-2" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${selectedCustomerForDrawer.id}`)}>
                     <DollarSign className="w-4 h-4 mr-2" />
                     Create New Order
                   </Button>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button variant="secondary" onClick={() => navigate(`/admin/customers/${selectedCustomerForDrawer.id}`)}>
+                    <Button variant="secondary" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${selectedCustomerForDrawer.id}`)}>
                       View Profile
                     </Button>
-                    <Button variant="secondary" onClick={() => navigate(`/admin/customer-management/${selectedCustomerForDrawer.id}/edit`)}>
+                    <Button variant="secondary" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customer-management/${selectedCustomerForDrawer.id}/edit`)}>
                       Edit Details
                     </Button>
                   </div>

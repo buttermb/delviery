@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { useVendorAuth } from '@/contexts/VendorAuthContext';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -14,25 +15,31 @@ export default function VendorLoginPage() {
     email: "",
     password: "",
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useVendorAuth();
+  const { vendor, isAuthenticated } = useVendorAuth();
+
+  // Redirect if already logged in
+  if (isAuthenticated && vendor) {
+    navigate("/vendor/dashboard");
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Vendor authentication would go here
-      // For now, this is a placeholder
       logger.info('Vendor login attempt', { component: 'VendorLoginPage' });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await login(formData.email, formData.password);
 
       toast.success("Login successful");
+      // Navigation happens automatically via useEffect or the ProtectedRoute logic, 
+      // but explicit navigate is safer for UX response
       navigate("/vendor/dashboard");
-    } catch (error: unknown) {
+    } catch (error: any) {
       logger.error('Vendor login failed', error, { component: 'VendorLoginPage' });
-      toast.error("Invalid credentials");
+      toast.error(error.message || "Invalid credentials");
     } finally {
       setIsLoading(false);
     }

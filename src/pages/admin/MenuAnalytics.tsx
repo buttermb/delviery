@@ -2,12 +2,14 @@ import { useParams } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Eye, Users, ShoppingCart, DollarSign, MapPin, Clock, 
-  Shield, AlertTriangle, TrendingUp 
+import {
+  Eye, Users, ShoppingCart, DollarSign, MapPin, Clock,
+  Shield, AlertTriangle, TrendingUp
 } from 'lucide-react';
 import { useMenuAccessLogs, useMenuOrders, useMenuSecurityEvents } from '@/hooks/useDisposableMenus';
 import { format } from 'date-fns';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 const MenuAnalytics = () => {
   const { menuId } = useParams();
@@ -87,9 +89,14 @@ const MenuAnalytics = () => {
             <h3 className="text-lg font-bold mb-4">Recent Access Activity</h3>
             <div className="space-y-3">
               {logsLoading ? (
-                <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                <EnhancedLoadingState variant="spinner" message="Loading logs..." className="min-h-[200px]" />
               ) : accessLogs?.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">No access logs yet</div>
+                <EnhancedEmptyState
+                  icon={Eye}
+                  title="No Access Logs Yet"
+                  description="Access logs will appear here when customers view this menu."
+                  compact
+                />
               ) : (
                 accessLogs?.map((log) => (
                   <div key={log.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
@@ -126,9 +133,14 @@ const MenuAnalytics = () => {
             <h3 className="text-lg font-bold mb-4">Order History</h3>
             <div className="space-y-3">
               {ordersLoading ? (
-                <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                <EnhancedLoadingState variant="spinner" message="Loading orders..." className="min-h-[200px]" />
               ) : orders?.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">No orders yet</div>
+                <EnhancedEmptyState
+                  icon={ShoppingCart}
+                  title="No Orders Yet"
+                  description="Orders will appear here when customers make purchases."
+                  compact
+                />
               ) : (
                 orders?.map((order) => (
                   <div key={order.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
@@ -167,21 +179,22 @@ const MenuAnalytics = () => {
             <h3 className="text-lg font-bold mb-4">Security Events</h3>
             <div className="space-y-3">
               {eventsLoading ? (
-                <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                <EnhancedLoadingState variant="spinner" message="Loading events..." className="min-h-[200px]" />
               ) : securityEvents?.length === 0 ? (
-                <div className="text-center py-8 text-green-600">
-                  <Shield className="h-8 w-8 mx-auto mb-2" />
-                  No security events detected
-                </div>
+                <EnhancedEmptyState
+                  icon={Shield}
+                  title="All Clear"
+                  description="No security events detected. Great job!"
+                  compact
+                />
               ) : (
                 securityEvents?.map((event) => (
                   <div key={event.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <AlertTriangle className={`h-4 w-4 ${
-                        event.severity === 'high' ? 'text-destructive' :
+                      <AlertTriangle className={`h-4 w-4 ${event.severity === 'high' ? 'text-destructive' :
                         event.severity === 'medium' ? 'text-yellow-500' :
-                        'text-muted-foreground'
-                      }`} />
+                          'text-muted-foreground'
+                        }`} />
                       <div>
                         <div className="font-medium">{event.event_type}</div>
                         <div className="text-sm text-muted-foreground">

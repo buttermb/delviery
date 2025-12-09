@@ -62,8 +62,7 @@ export default function MapboxAddressAutocomplete({
       const response = await safeFetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
         `access_token=${MAPBOX_TOKEN}&` +
-        `bbox=${bbox}&` +
-        `proximity=-73.935242,40.730610&` + // NYC center
+        `proximity=ip&` + // Bias results to user's location
         `types=address&` +
         `limit=5`
       );
@@ -98,10 +97,10 @@ export default function MapboxAddressAutocomplete({
 
   const handleSelectSuggestion = (suggestion: AddressSuggestion) => {
     const [lng, lat] = suggestion.center;
-    
+
     // Extract borough from context (only Brooklyn, Queens, Manhattan)
     let borough = "";
-    
+
     // Check context array for borough info
     if (suggestion.context) {
       // Try place context first
@@ -112,7 +111,7 @@ export default function MapboxAddressAutocomplete({
         else if (boroughName.includes("queens")) borough = "queens";
         else if (boroughName.includes("manhattan")) borough = "manhattan";
       }
-      
+
       // If not found, try locality context
       if (!borough) {
         const localityContext = suggestion.context.find(c => c.id.startsWith("locality"));
@@ -124,7 +123,7 @@ export default function MapboxAddressAutocomplete({
         }
       }
     }
-    
+
     // Fallback: check the full place_name
     if (!borough) {
       const placeName = suggestion.place_name.toLowerCase();

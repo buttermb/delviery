@@ -11,9 +11,11 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, CheckCircle2, ArrowRight, Store, Truck, Users } from "lucide-react";
+import { Loader2, CheckCircle2, ArrowRight, Store, Truck, Users, Coins } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useCredits } from "@/hooks/useCredits";
+import { CreditSystemExplainer } from "@/components/signup/CreditSystemExplainer";
 
 interface OnboardingWizardProps {
     open: boolean;
@@ -26,8 +28,10 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
     const { toast } = useToast();
     const { tenant } = useTenantAdminAuth();
     const navigate = useNavigate();
+    const { isFreeTier } = useCredits();
 
-    const totalSteps = 3;
+    // Free tier users get an extra "credits" step
+    const totalSteps = isFreeTier ? 4 : 3;
 
     const handleComplete = async () => {
         if (!tenant?.id) return;
@@ -257,7 +261,25 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                         </div>
                     )}
 
-                    {step === 3 && (
+                    {/* Credits Step - Only for free tier users */}
+                    {step === 3 && isFreeTier && (
+                        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="p-3 bg-emerald-100 dark:bg-emerald-900/20 rounded-full">
+                                    <Coins className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold">Your Free Credits</h3>
+                                    <p className="text-muted-foreground">Understanding how credits work.</p>
+                                </div>
+                            </div>
+
+                            <CreditSystemExplainer variant="compact" />
+                        </div>
+                    )}
+
+                    {/* Team & Access Step - Step 3 for paid, Step 4 for free */}
+                    {((step === 3 && !isFreeTier) || (step === 4 && isFreeTier)) && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                             <div className="flex items-center gap-4 mb-6">
                                 <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-full">

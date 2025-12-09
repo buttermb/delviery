@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Dashboard Widget Grid
  * Manages the layout and rendering of dashboard widgets based on user preference
@@ -61,7 +62,7 @@ export function DashboardWidgetGrid() {
                 });
                 setWidgets(merged.sort((a, b) => a.order - b.order));
             } catch (e) {
-                console.error('Failed to parse widget config', e);
+                logger.error('Failed to parse widget config', e);
             }
         }
         setIsLoaded(true);

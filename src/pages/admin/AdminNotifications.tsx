@@ -13,12 +13,12 @@ import { Send, Mail, MessageSquare, Loader2 } from "lucide-react";
 const AdminNotifications = () => {
   const [smsLoading, setSmsLoading] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
-  
+
   const [smsData, setSmsData] = useState({
     phone: "",
     message: ""
   });
-  
+
   const [emailData, setEmailData] = useState({
     to: "",
     subject: "",
@@ -26,17 +26,47 @@ const AdminNotifications = () => {
     text: ""
   });
 
+  // Phone validation helper
+  const isValidPhone = (phone: string): boolean => {
+    // Must start with + and have 10-15 digits
+    const phoneRegex = /^\+[1-9]\d{9,14}$/;
+    return phoneRegex.test(phone.replace(/\s/g, ''));
+  };
+
   const handleTestSms = async () => {
-    if (!smsData.phone || !smsData.message) {
-      toast.error("Phone number and message are required");
+    // Validate phone format
+    if (!smsData.phone) {
+      toast.error("Phone number required", {
+        description: "Please enter a phone number to send SMS"
+      });
       return;
+    }
+
+    if (!isValidPhone(smsData.phone)) {
+      toast.error("Invalid phone format", {
+        description: "Phone must start with country code (e.g., +1 for US) and contain 10-15 digits"
+      });
+      return;
+    }
+
+    if (!smsData.message) {
+      toast.error("Message required", {
+        description: "Please enter a message to send"
+      });
+      return;
+    }
+
+    if (smsData.message.length > 160) {
+      toast.warning("Message may be split", {
+        description: `Your message is ${smsData.message.length} characters. SMS over 160 chars may be split.`
+      });
     }
 
     setSmsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('send-klaviyo-sms', {
         body: {
-          phone: smsData.phone,
+          phone: smsData.phone.replace(/\s/g, ''), // Clean phone
           message: smsData.message,
           metadata: {
             test: true,
@@ -56,15 +86,32 @@ const AdminNotifications = () => {
       toast.success("SMS sent successfully!", {
         description: `Message ID: ${data?.messageId || 'N/A'}`
       });
-      
+
       // Clear form
       setSmsData({ phone: "", message: "" });
     } catch (error: unknown) {
-      logger.error("SMS send error", error, { component: 'AdminNotifications' });
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-      toast.error("Failed to send SMS", {
-        description: errorMessage
-      });
+
+      // Categorize error for better UX
+      let userMessage = errorMessage;
+      let title = "Failed to send SMS";
+
+      if (errorMessage.toLowerCase().includes('invalid') && errorMessage.toLowerCase().includes('phone')) {
+        userMessage = "The phone number is not valid. Check country code and format.";
+        title = "Invalid Phone Number";
+      } else if (errorMessage.toLowerCase().includes('api') || errorMessage.toLowerCase().includes('klaviyo')) {
+        userMessage = "Klaviyo API error. Check API configuration in settings.";
+        title = "API Configuration Error";
+      } else if (errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('limit')) {
+        userMessage = "SMS quota exceeded. Upgrade your Klaviyo plan or wait until quota resets.";
+        title = "Quota Exceeded";
+      } else if (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('fetch')) {
+        userMessage = "Network error. Check your connection and try again.";
+        title = "Connection Error";
+      }
+
+      logger.error("SMS send error", error, { component: 'AdminNotifications', phone: smsData.phone });
+      toast.error(title, { description: userMessage });
     } finally {
       setSmsLoading(false);
     }
@@ -104,7 +151,7 @@ const AdminNotifications = () => {
       toast.success("Email sent successfully!", {
         description: `Message ID: ${data.messageId || 'N/A'}`
       });
-      
+
       // Clear form
       setEmailData({ to: "", subject: "", html: "", text: "" });
     } catch (error: unknown) {
@@ -178,8 +225,8 @@ const AdminNotifications = () => {
                 </p>
               </div>
 
-              <Button 
-                onClick={handleTestSms} 
+              <Button
+                onClick={handleTestSms}
                 disabled={smsLoading}
                 className="w-full"
               >
@@ -260,8 +307,8 @@ const AdminNotifications = () => {
                 </p>
               </div>
 
-              <Button 
-                onClick={handleTestEmail} 
+              <Button
+                onClick={handleTestEmail}
                 disabled={emailLoading}
                 className="w-full"
               >

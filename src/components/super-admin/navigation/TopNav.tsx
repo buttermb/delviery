@@ -18,6 +18,7 @@ import {
   Bell,
   ChevronDown,
   User,
+  Users,
   Moon,
   LogOut,
   AlertTriangle,
@@ -48,6 +49,8 @@ import {
   Lock,
   Eye,
   Key,
+  Coins,
+  Gift,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -353,6 +356,52 @@ export function TopNav({
                   value="$180"
                   change="+5%"
                   trend="up"
+                />
+              </MenuSection>
+            </MegaMenu>
+          </NavDropdown>
+
+          {/* Credits Management */}
+          <NavDropdown icon={Coins} label="Credits" shortcut="⌘$">
+            <MegaMenu columns={2}>
+              <MenuSection title="Management">
+                <MenuItem
+                  icon={LayoutDashboard}
+                  label="Overview"
+                  to="/super-admin/credits"
+                />
+                <MenuItem
+                  icon={Users}
+                  label="Tenant Credits"
+                  to="/super-admin/credits/tenants"
+                />
+                <MenuItem
+                  icon={Activity}
+                  label="Transaction Log"
+                  to="/super-admin/credits/transactions"
+                />
+                <MenuItem
+                  icon={Gift}
+                  label="Promo Codes"
+                  to="/super-admin/credits/promo-codes"
+                />
+              </MenuSection>
+
+              <MenuSection title="Configuration">
+                <MenuItem
+                  icon={CreditCard}
+                  label="Credit Packages"
+                  to="/super-admin/credits/packages"
+                />
+                <MenuItem
+                  icon={TrendingUp}
+                  label="Analytics"
+                  to="/super-admin/credits/analytics"
+                />
+                <MenuItem
+                  icon={Users}
+                  label="Referral Program"
+                  to="/super-admin/credits/referrals"
                 />
               </MenuSection>
             </MegaMenu>

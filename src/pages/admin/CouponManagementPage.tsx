@@ -81,7 +81,7 @@ export default function CouponManagementPage() {
       }
 
       const { data, error } = await query;
-      
+
       if (error) {
         logger.error('Failed to fetch coupons', error, { component: 'CouponManagementPage' });
         throw error;

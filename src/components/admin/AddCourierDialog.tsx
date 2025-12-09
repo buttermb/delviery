@@ -49,8 +49,25 @@ const courierSchema = z.object({
 
 type CourierFormData = z.infer<typeof courierSchema>;
 
-export const AddCourierDialog = ({ onSuccess }: { onSuccess: () => void }) => {
-  const [open, setOpen] = useState(false);
+export const AddCourierDialog = ({
+  onSuccess,
+  open: controlledOpen,
+  onOpenChange
+}: {
+  onSuccess: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void
+}) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = (newOpen: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(newOpen);
+    } else {
+      setInternalOpen(newOpen);
+    }
+  };
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { tenant } = useTenantAdminAuth();
@@ -74,7 +91,7 @@ export const AddCourierDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     setIsSubmitting(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
         throw new Error("Not authenticated");
       }

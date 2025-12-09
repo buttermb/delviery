@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Truck, Plus, Package } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 
 export default function InventoryTransfers() {
   const { tenant } = useTenantAdminAuth();
@@ -165,14 +166,16 @@ export default function InventoryTransfers() {
           ))}
         </div>
       ) : (
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center text-muted-foreground">
-              <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No inventory transfers found. Create your first transfer to get started.</p>
-            </div>
-          </CardContent>
-        </Card>
+        <EnhancedEmptyState
+          icon={Package}
+          title="No Transfers Found"
+          description="No inventory transfers found. Create your first transfer to get started."
+          primaryAction={{
+            label: "Create Transfer",
+            onClick: () => setIsDialogOpen(true),
+            icon: Plus
+          }}
+        />
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

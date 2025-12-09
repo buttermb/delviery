@@ -14,6 +14,7 @@ import { useProductsForMenu } from '@/hooks/useProductsForMenu';
 import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
 import { useTenantLimits } from '@/hooks/useTenantLimits';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 import { MenuTemplates, type MenuTemplate } from '@/components/admin/disposable-menus/MenuTemplates';
 import { Eye, CheckCircle2, Shield, Calendar, Lock, Search, X, Loader2, Sparkles, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
@@ -52,6 +53,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
 
   const { data: inventory, isLoading: inventoryLoading } = useProductsForMenu(tenant?.id);
   const createMenu = useCreateDisposableMenu();
+  const { execute: executeWithCredits } = useCreditGatedAction();
 
   // Generate 8-character alphanumeric code
   const generateAccessCode = () => {
@@ -80,7 +82,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
   const filteredProducts = useMemo(() => {
     if (!inventory) return [];
     if (!searchQuery.trim()) return inventory;
-    
+
     const query = searchQuery.toLowerCase();
     return (inventory as InventoryProduct[]).filter((p) =>
       p.name?.toLowerCase().includes(query) ||
@@ -152,7 +154,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
 
   const handleCreate = async () => {
     const isForumMenu = selectedTemplate?.menuType === 'forum';
-    
+
     // Validate based on menu type
     if (!name) return;
     if (!isForumMenu && selectedProducts.length === 0) {
@@ -172,15 +174,15 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
       return;
     }
 
-    try {
-      const expirationDate = expirationDays !== 'unlimited'
-        ? new Date(Date.now() + parseInt(expirationDays) * 24 * 60 * 60 * 1000).toISOString()
-        : null;
+    const expirationDate = expirationDays !== 'unlimited'
+      ? new Date(Date.now() + parseInt(expirationDays) * 24 * 60 * 60 * 1000).toISOString()
+      : null;
 
+    await executeWithCredits('menu_create', async () => {
       await createMenu.mutateAsync({
         tenant_id: tenant?.id || '',
         name,
-        description: isForumMenu 
+        description: isForumMenu
           ? (description || 'Community Forum Access Menu')
           : description,
         product_ids: isForumMenu ? [] : selectedProducts, // Empty for forum menus
@@ -201,11 +203,6 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
         },
       });
 
-      toast.success('Menu Created', {
-        description: isForumMenu 
-          ? 'Forum menu created! Customers will be redirected to the community forum.'
-          : 'Your disposable menu has been created successfully',
-      });
       onOpenChange(false);
       // Reset form
       setCurrentStep(1);
@@ -222,11 +219,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
       setRequirePassword(false);
       setPassword('');
       setAccessCode(generateAccessCode());
-    } catch (error: unknown) {
-      toast.error('Failed to create menu', {
-        description: error instanceof Error ? error.message : 'An error occurred'
-      });
-    }
+    });
   };
 
   const generateNewCode = () => {
@@ -358,7 +351,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                     ) : (
                       filteredProducts.map((product: InventoryProduct) => {
                         const isSelected = selectedProducts.includes(product.id);
-                        
+
                         return (
                           <div
                             key={product.id}

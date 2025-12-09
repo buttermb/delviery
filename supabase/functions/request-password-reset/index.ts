@@ -48,8 +48,26 @@ serve(async (req) => {
       .eq('status', 'active')
       .maybeSingle();
 
-    // Always return success (prevent email enumeration)
+    // Always return success (prevent email enumeration) - unless they are an admin!
     if (customerError || !customerUser) {
+      // Check if they are a tenant admin instead
+      const { data: adminUser } = await supabase
+        .from('tenant_users')
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .eq('tenant_id', tenant.id)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (adminUser) {
+        return new Response(
+          JSON.stringify({
+            error: 'It looks like you have an Admin account. Please use the Admin Portal to reset your password.',
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       return new Response(
         JSON.stringify({
           success: true,

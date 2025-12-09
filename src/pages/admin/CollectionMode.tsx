@@ -11,12 +11,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { differenceInDays, format } from 'date-fns';
-import { 
-  Phone, 
-  MessageSquare, 
-  Mail, 
-  DollarSign, 
-  Clock, 
+import {
+  Phone,
+  MessageSquare,
+  Mail,
+  DollarSign,
+  Clock,
   AlertCircle,
   ChevronDown,
   ChevronUp,
@@ -59,6 +59,9 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { useRecordPayment } from '@/hooks/useRecordPayment';
+import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { SearchInput } from '@/components/shared/SearchInput';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 // Types
 interface CollectionClient {
@@ -100,12 +103,12 @@ interface PaymentPlan {
 // Hook to fetch collection data
 function useCollectionData() {
   const { tenant } = useTenantAdminAuth();
-  
+
   return useQuery({
     queryKey: ['collection-mode', tenant?.id],
     queryFn: async () => {
       const now = new Date();
-      
+
       // Fetch clients with outstanding balance
       const { data: clients, error } = await supabase
         .from('wholesale_clients')
@@ -123,34 +126,34 @@ function useCollectionData() {
         .eq('tenant_id', tenant?.id)
         .gt('outstanding_balance', 0)
         .order('outstanding_balance', { ascending: false });
-      
+
       if (error) throw error;
-      
+
       // Fetch total payments per client
       // @ts-ignore - Type instantiation too deep
       const { data: payments } = await supabase
         .from('wholesale_payments' as any)
         .select('client_id, amount')
         .eq('tenant_id', tenant?.id);
-      
+
       const paymentsByClient: Record<string, number> = {};
       (payments as any[])?.forEach((p: any) => {
         paymentsByClient[p.client_id] = (paymentsByClient[p.client_id] || 0) + Number(p.amount || 0);
       });
-      
+
       // Categorize clients
       const collectionClients: CollectionClient[] = (clients || []).map(c => {
-        const daysSincePayment = c.last_payment_date 
+        const daysSincePayment = c.last_payment_date
           ? differenceInDays(now, new Date(c.last_payment_date))
           : 999;
         const paymentTerms = c.payment_terms || 30;
         const isOverdue = daysSincePayment > paymentTerms;
         const isDueThisWeek = !isOverdue && daysSincePayment > paymentTerms - 7;
-        
+
         let status: 'overdue' | 'due_this_week' | 'upcoming' = 'upcoming';
         if (isOverdue) status = 'overdue';
         else if (isDueThisWeek) status = 'due_this_week';
-        
+
         return {
           id: c.id,
           name: c.contact_name || 'Unknown',
@@ -167,12 +170,12 @@ function useCollectionData() {
           notes: c.notes
         };
       });
-      
+
       // Calculate totals
       const overdue = collectionClients.filter(c => c.status === 'overdue');
       const dueThisWeek = collectionClients.filter(c => c.status === 'due_this_week');
       const upcoming = collectionClients.filter(c => c.status === 'upcoming');
-      
+
       return {
         clients: collectionClients,
         totalOutstanding: collectionClients.reduce((sum, c) => sum + c.amount, 0),
@@ -192,25 +195,25 @@ function useCollectionData() {
 // Hook to fetch activity history for a client
 function useClientActivities(clientId: string | null) {
   const { tenant } = useTenantAdminAuth();
-  
+
   return useQuery({
     queryKey: ['collection-activities', clientId],
     queryFn: async () => {
       if (!clientId) return [];
-      
+
       const { data, error } = await supabase
         .from('collection_activities')
         .select('*')
         .eq('client_id', clientId)
         .order('created_at', { ascending: false })
         .limit(20);
-      
+
       if (error) {
         // Table might not exist, return empty
         logger.warn('Collection activities table not found', { error });
         return [];
       }
-      
+
       return (data || []).map(a => ({
         id: a.id,
         clientId: a.client_id,
@@ -230,7 +233,7 @@ function useCollectionActions() {
   const queryClient = useQueryClient();
   const { tenant } = useTenantAdminAuth();
   const { recordPayment: recordPaymentService, isRecordingPayment } = useRecordPayment();
-  
+
   const logActivity = useMutation({
     mutationFn: async (data: {
       clientId: string;
@@ -239,7 +242,7 @@ function useCollectionActions() {
       amount?: number;
     }) => {
       const user = (await supabase.auth.getUser()).data.user;
-      
+
       const { error } = await supabase
         .from('collection_activities')
         .insert({
@@ -250,7 +253,7 @@ function useCollectionActions() {
           performed_by: user?.id,
           tenant_id: tenant?.id
         });
-      
+
       if (error) throw error;
     },
     onSuccess: (_, variables) => {
@@ -258,7 +261,7 @@ function useCollectionActions() {
       queryClient.invalidateQueries({ queryKey: ['collection-mode'] });
     }
   });
-  
+
   // Use centralized payment service instead of direct DB operations
   const recordPayment = useMutation({
     mutationFn: async (data: {
@@ -275,11 +278,11 @@ function useCollectionActions() {
         context: 'collection',
         showToast: false // We handle toast manually
       });
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Payment failed');
       }
-      
+
       // Log activity for collection history
       await logActivity.mutateAsync({
         clientId: data.clientId,
@@ -287,7 +290,7 @@ function useCollectionActions() {
         amount: data.amount,
         notes: data.notes
       });
-      
+
       return result;
     },
     onSuccess: () => {
@@ -299,7 +302,7 @@ function useCollectionActions() {
       toast.error('Failed to record payment');
     }
   });
-  
+
   const addNote = useMutation({
     mutationFn: async (data: { clientId: string; notes: string }) => {
       await logActivity.mutateAsync({
@@ -312,7 +315,7 @@ function useCollectionActions() {
       toast.success('Note added');
     }
   });
-  
+
   return { logActivity, recordPayment, addNote, isRecordingPayment };
 }
 
@@ -334,9 +337,9 @@ interface ClientCardProps {
   onAddNote: () => void;
 }
 
-function ClientCard({ 
-  client, 
-  isExpanded, 
+function ClientCard({
+  client,
+  isExpanded,
   onToggle,
   onCall,
   onText,
@@ -345,19 +348,19 @@ function ClientCard({
   onAddNote
 }: ClientCardProps) {
   const { data: activities, isLoading: activitiesLoading } = useClientActivities(isExpanded ? client.id : null);
-  
+
   const statusColors = {
     overdue: 'bg-red-500/20 text-red-400 border-red-500/30',
     due_this_week: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
     upcoming: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
   };
-  
+
   const statusLabels = {
     overdue: 'Overdue',
     due_this_week: 'Due This Week',
     upcoming: 'Upcoming'
   };
-  
+
   return (
     <Card className={cn(
       "bg-zinc-900/80 border-zinc-800/50 backdrop-blur-xl transition-all",
@@ -374,7 +377,7 @@ function ClientCard({
               </Badge>
             </div>
             <p className="text-sm text-zinc-400 truncate">{client.name}</p>
-            
+
             <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-zinc-500">
               {client.phone && (
                 <span className="flex items-center gap-1">
@@ -389,14 +392,14 @@ function ClientCard({
                 </span>
               )}
             </div>
-            
+
             {client.status === 'overdue' && client.daysOverdue > 0 && (
               <div className="flex items-center gap-1 mt-2 text-xs text-red-400">
                 <AlertCircle className="h-3 w-3" />
                 {client.daysOverdue} days overdue
               </div>
             )}
-            
+
             {client.lastPaymentDate && (
               <div className="flex items-center gap-1 mt-1 text-xs text-zinc-500">
                 <Clock className="h-3 w-3" />
@@ -404,61 +407,61 @@ function ClientCard({
               </div>
             )}
           </div>
-          
+
           {/* Amount */}
           <div className="text-right flex-shrink-0">
             <div className={cn(
               "text-2xl font-bold font-mono",
-              client.status === 'overdue' ? 'text-red-400' : 
-              client.status === 'due_this_week' ? 'text-amber-400' : 'text-emerald-400'
+              client.status === 'overdue' ? 'text-red-400' :
+                client.status === 'due_this_week' ? 'text-amber-400' : 'text-emerald-400'
             )}>
               ${client.amount.toLocaleString()}
             </div>
             <div className="text-xs text-zinc-500">outstanding</div>
           </div>
         </div>
-        
+
         {/* Quick Actions */}
         <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-zinc-800">
-          <Button 
-            size="sm" 
-            variant="ghost" 
+          <Button
+            size="sm"
+            variant="ghost"
             className="h-8 px-2 text-xs hover:bg-emerald-500/20 hover:text-emerald-400"
             onClick={onCall}
           >
             <Phone className="h-3.5 w-3.5 mr-1" />
             Call
           </Button>
-          <Button 
-            size="sm" 
-            variant="ghost" 
+          <Button
+            size="sm"
+            variant="ghost"
             className="h-8 px-2 text-xs hover:bg-blue-500/20 hover:text-blue-400"
             onClick={onText}
           >
             <MessageSquare className="h-3.5 w-3.5 mr-1" />
             Text
           </Button>
-          <Button 
-            size="sm" 
-            variant="ghost" 
+          <Button
+            size="sm"
+            variant="ghost"
             className="h-8 px-2 text-xs hover:bg-amber-500/20 hover:text-amber-400"
             onClick={onEmail}
           >
             <Mail className="h-3.5 w-3.5 mr-1" />
             Email
           </Button>
-          <Button 
-            size="sm" 
-            variant="default" 
+          <Button
+            size="sm"
+            variant="default"
             className="h-8 px-2 text-xs bg-emerald-600 hover:bg-emerald-700"
             onClick={onRecordPayment}
           >
             <DollarSign className="h-3.5 w-3.5 mr-1" />
             Record Payment
           </Button>
-          <Button 
-            size="sm" 
-            variant="outline" 
+          <Button
+            size="sm"
+            variant="outline"
             className="h-8 px-2 text-xs border-zinc-700 ml-auto"
             onClick={onToggle}
           >
@@ -475,7 +478,7 @@ function ClientCard({
             )}
           </Button>
         </div>
-        
+
         {/* Expanded Details */}
         {isExpanded && (
           <div className="mt-4 pt-4 border-t border-zinc-800 space-y-4">
@@ -494,7 +497,7 @@ function ClientCard({
                   Payment Plan
                 </TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="history" className="mt-3">
                 {activitiesLoading ? (
                   <div className="space-y-2">
@@ -504,17 +507,17 @@ function ClientCard({
                 ) : activities && activities.length > 0 ? (
                   <div className="space-y-2 max-h-48 overflow-y-auto">
                     {activities.map((activity) => (
-                      <div 
+                      <div
                         key={activity.id}
                         className="flex items-start gap-3 p-2 rounded-lg bg-zinc-800/30"
                       >
                         <div className={cn(
                           "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
                           activity.type === 'payment' ? 'bg-emerald-500/20' :
-                          activity.type === 'call' ? 'bg-blue-500/20' :
-                          activity.type === 'text' ? 'bg-purple-500/20' :
-                          activity.type === 'email' ? 'bg-amber-500/20' :
-                          'bg-zinc-700'
+                            activity.type === 'call' ? 'bg-blue-500/20' :
+                              activity.type === 'text' ? 'bg-purple-500/20' :
+                                activity.type === 'email' ? 'bg-amber-500/20' :
+                                  'bg-zinc-700'
                         )}>
                           {activity.type === 'payment' && <DollarSign className="h-4 w-4 text-emerald-400" />}
                           {activity.type === 'call' && <Phone className="h-4 w-4 text-blue-400" />}
@@ -546,7 +549,7 @@ function ClientCard({
                   </div>
                 )}
               </TabsContent>
-              
+
               <TabsContent value="notes" className="mt-3">
                 <div className="space-y-3">
                   {client.notes && (
@@ -554,8 +557,8 @@ function ClientCard({
                       {client.notes}
                     </div>
                   )}
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="outline"
                     className="w-full border-zinc-700"
                     onClick={onAddNote}
@@ -565,7 +568,7 @@ function ClientCard({
                   </Button>
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="payment-plan" className="mt-3">
                 <div className="text-center py-6">
                   <CreditCard className="h-8 w-8 mx-auto text-zinc-600 mb-2" />
@@ -596,7 +599,7 @@ interface RecordPaymentDialogProps {
 function RecordPaymentDialog({ open, onOpenChange, client, onSubmit, isLoading }: RecordPaymentDialogProps) {
   const [amount, setAmount] = useState('');
   const [notes, setNotes] = useState('');
-  
+
   const handleSubmit = () => {
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
@@ -607,7 +610,7 @@ function RecordPaymentDialog({ open, onOpenChange, client, onSubmit, isLoading }
     setAmount('');
     setNotes('');
   };
-  
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-zinc-900 border-zinc-800">
@@ -617,7 +620,7 @@ function RecordPaymentDialog({ open, onOpenChange, client, onSubmit, isLoading }
             Record a payment from {client?.businessName}
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4 py-4">
           <div className="p-3 rounded-lg bg-zinc-800/50">
             <div className="text-sm text-zinc-400">Outstanding Balance</div>
@@ -625,7 +628,7 @@ function RecordPaymentDialog({ open, onOpenChange, client, onSubmit, isLoading }
               ${client?.amount.toLocaleString() || 0}
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label>Payment Amount</Label>
             <div className="relative">
@@ -639,7 +642,7 @@ function RecordPaymentDialog({ open, onOpenChange, client, onSubmit, isLoading }
               />
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label>Notes (optional)</Label>
             <Textarea
@@ -650,12 +653,12 @@ function RecordPaymentDialog({ open, onOpenChange, client, onSubmit, isLoading }
             />
           </div>
         </div>
-        
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-zinc-700">
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleSubmit}
             disabled={isLoading}
             className="bg-emerald-600 hover:bg-emerald-700"
@@ -679,7 +682,7 @@ interface AddNoteDialogProps {
 
 function AddNoteDialog({ open, onOpenChange, client, onSubmit, isLoading }: AddNoteDialogProps) {
   const [notes, setNotes] = useState('');
-  
+
   const handleSubmit = () => {
     if (!notes.trim()) {
       toast.error('Please enter a note');
@@ -688,7 +691,7 @@ function AddNoteDialog({ open, onOpenChange, client, onSubmit, isLoading }: AddN
     onSubmit(notes);
     setNotes('');
   };
-  
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-zinc-900 border-zinc-800">
@@ -698,7 +701,7 @@ function AddNoteDialog({ open, onOpenChange, client, onSubmit, isLoading }: AddN
             Add a note for {client?.businessName}
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="py-4">
           <Textarea
             placeholder="Enter your note..."
@@ -707,12 +710,12 @@ function AddNoteDialog({ open, onOpenChange, client, onSubmit, isLoading }: AddN
             className="bg-zinc-800 border-zinc-700 min-h-[120px]"
           />
         </div>
-        
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-zinc-700">
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleSubmit}
             disabled={isLoading}
           >
@@ -729,18 +732,22 @@ export default function CollectionMode() {
   const { navigateToAdmin } = useTenantNavigation();
   const { data, isLoading } = useCollectionData();
   const { logActivity, recordPayment, addNote } = useCollectionActions();
-  
+
   const [activeTab, setActiveTab] = useState<'all' | 'overdue' | 'due_this_week' | 'upcoming'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [expandedClientId, setExpandedClientId] = useState<string | null>(null);
   const [paymentDialogClient, setPaymentDialogClient] = useState<CollectionClient | null>(null);
   const [noteDialogClient, setNoteDialogClient] = useState<CollectionClient | null>(null);
-  
-  // Filter clients based on active tab
-  const filteredClients = data?.clients.filter(client => {
-    if (activeTab === 'all') return true;
-    return client.status === activeTab;
-  }) || [];
-  
+
+  // Filter clients based on active tab and search query
+  const filteredClients = (data?.clients || []).filter(client => {
+    const matchesTab = activeTab === 'all' || client.status === activeTab;
+    const matchesSearch = !searchQuery.trim() ||
+      client.businessName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      client.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesTab && matchesSearch;
+  });
+
   const handleCall = (client: CollectionClient) => {
     if (client.phone) {
       window.location.href = `tel:${client.phone}`;
@@ -749,7 +756,7 @@ export default function CollectionMode() {
       toast.error('No phone number available');
     }
   };
-  
+
   const handleText = (client: CollectionClient) => {
     if (client.phone) {
       window.location.href = `sms:${client.phone}`;
@@ -758,7 +765,7 @@ export default function CollectionMode() {
       toast.error('No phone number available');
     }
   };
-  
+
   const handleEmail = (client: CollectionClient) => {
     if (client.email) {
       const subject = encodeURIComponent(`Payment Reminder - ${client.businessName}`);
@@ -769,7 +776,7 @@ export default function CollectionMode() {
       toast.error('No email address available');
     }
   };
-  
+
   const handleRecordPayment = (amount: number, notes: string) => {
     if (paymentDialogClient) {
       recordPayment.mutate({
@@ -783,7 +790,7 @@ export default function CollectionMode() {
       });
     }
   };
-  
+
   const handleAddNote = (notes: string) => {
     if (noteDialogClient) {
       addNote.mutate({
@@ -796,174 +803,229 @@ export default function CollectionMode() {
       });
     }
   };
-  
-  if (isLoading) {
-    return (
-      <div className="p-4 md:p-6 space-y-6">
-        <Skeleton className="h-10 w-48 bg-zinc-800/50" />
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Skeleton className="h-24 bg-zinc-800/50" />
-          <Skeleton className="h-24 bg-zinc-800/50" />
-          <Skeleton className="h-24 bg-zinc-800/50" />
-          <Skeleton className="h-24 bg-zinc-800/50" />
+
+  const columns: ResponsiveColumn<CollectionClient>[] = [
+    {
+      header: 'Client',
+      cell: (client) => (
+        <div>
+          <div className="font-medium text-foreground">{client.businessName}</div>
+          <div className="text-sm text-muted-foreground">{client.name}</div>
         </div>
-        <Skeleton className="h-[400px] bg-zinc-800/50" />
-      </div>
-    );
-  }
-  
-  return (
-    <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigateToAdmin('command-center')}
-            className="h-9 w-9"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-100">Collection Mode</h1>
-            <p className="text-sm text-zinc-400">Manage outstanding receivables</p>
-          </div>
-        </div>
-        
+      )
+    },
+    {
+      header: 'Status',
+      cell: (client) => {
+        const statusColors = {
+          overdue: 'bg-red-500/10 text-red-500 border-red-500/20',
+          due_this_week: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+          upcoming: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+        };
+        const statusLabels = {
+          overdue: 'Overdue',
+          due_this_week: 'Due This Week',
+          upcoming: 'Upcoming'
+        };
+        return (
+          <Badge variant="outline" className={statusColors[client.status]}>
+            {statusLabels[client.status]}
+          </Badge>
+        );
+      }
+    },
+    {
+      header: 'Balance',
+      className: 'text-right',
+      cell: (client) => (
         <div className="text-right">
-          <div className="text-sm text-zinc-400">Total Outstanding</div>
-          <div className="text-3xl font-bold text-red-400 font-mono">
-            ${data?.totalOutstanding.toLocaleString() || 0}
+          <div className={cn(
+            "font-mono font-bold",
+            client.status === 'overdue' ? 'text-red-500' : 'text-foreground'
+          )}>
+            ${client.amount.toLocaleString()}
+          </div>
+          {client.daysOverdue > 0 && (
+            <div className="text-xs text-red-400">{client.daysOverdue} days overdue</div>
+          )}
+        </div>
+      )
+    },
+    {
+      header: 'Last Payment',
+      className: 'text-right hidden md:table-cell',
+      cell: (client) => (
+        <div className="text-right text-sm text-muted-foreground">
+          {client.lastPaymentDate ? format(client.lastPaymentDate, 'MMM d, yyyy') : '-'}
+        </div>
+      )
+    },
+    {
+      header: '',
+      className: 'text-right',
+      cell: (client) => (
+        <div className="flex justify-end gap-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              if (expandedClientId === client.id) setExpandedClientId(null);
+              else setExpandedClientId(client.id);
+            }}
+          >
+            Details
+          </Button>
+          <Button
+            size="sm"
+            className="bg-emerald-600 hover:bg-emerald-700"
+            onClick={() => setPaymentDialogClient(client)}
+          >
+            <DollarSign className="h-3.5 w-3.5 mr-1" />
+            Pay
+          </Button>
+        </div>
+      )
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-black/95 pb-20 md:pb-8">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-xl border-b border-zinc-800">
+        <div className="container p-4">
+          <div className="flex items-center gap-4 mb-4">
+            <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('command-center')}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-xl font-bold flex items-center gap-2">
+                <DollarSign className="h-6 w-6 text-emerald-500" />
+                Collection Mode
+              </h1>
+              <p className="text-sm text-zinc-400">Manage outstanding receivables</p>
+            </div>
+          </div>
+
+          {/* Stats Bar */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+            <Card className="bg-zinc-900/50 border-zinc-800">
+              <CardContent className="p-3">
+                <div className="text-xs text-zinc-500 mb-1">Total Outstanding</div>
+                <div className="text-lg font-bold font-mono text-zinc-200">
+                  {formatCurrency(data?.totalOutstanding || 0)}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-red-500/10 border-red-500/20">
+              <CardContent className="p-3">
+                <div className="text-xs text-red-400/80 mb-1">Overdue ({data?.overdueCount || 0})</div>
+                <div className="text-lg font-bold font-mono text-red-500">
+                  {formatCurrency(data?.overdueAmount || 0)}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-amber-500/10 border-amber-500/20">
+              <CardContent className="p-3">
+                <div className="text-xs text-amber-400/80 mb-1">Due Week ({data?.dueThisWeekCount || 0})</div>
+                <div className="text-lg font-bold font-mono text-amber-500">
+                  {formatCurrency(data?.dueThisWeekAmount || 0)}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-emerald-500/10 border-emerald-500/20">
+              <CardContent className="p-3">
+                <div className="text-xs text-emerald-400/80 mb-1">Upcoming ({data?.upcomingCount || 0})</div>
+                <div className="text-lg font-bold font-mono text-emerald-500">
+                  {formatCurrency(data?.upcomingAmount || 0)}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Filters & Search */}
+          <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-end">
+            <Tabs
+              defaultValue="all"
+              value={activeTab}
+              onValueChange={(v) => setActiveTab(v as any)}
+              className="w-full md:w-auto"
+            >
+              <TabsList className="bg-zinc-900 border border-zinc-800 w-full md:w-auto grid grid-cols-4 md:flex">
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="overdue" className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400">
+                  Overdue
+                </TabsTrigger>
+                <TabsTrigger value="due_this_week" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400">
+                  Due Soon
+                </TabsTrigger>
+                <TabsTrigger value="upcoming" className="data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400">
+                  Upcoming
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            <div className="w-full md:w-72">
+              <SearchInput
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search clients..."
+                className="bg-black/50 border-zinc-800"
+              />
+            </div>
           </div>
         </div>
       </div>
-      
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <Card className="bg-zinc-900/80 border-zinc-800/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-red-500" />
-              <span className="text-xs text-zinc-400 uppercase">Overdue</span>
-            </div>
-            <div className="text-2xl font-bold text-red-400 font-mono">
-              {formatCurrency(data?.overdueAmount || 0)}
-            </div>
-            <div className="text-xs text-zinc-500">{data?.overdueCount || 0} clients</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-zinc-900/80 border-zinc-800/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-amber-500" />
-              <span className="text-xs text-zinc-400 uppercase">Due This Week</span>
-            </div>
-            <div className="text-2xl font-bold text-amber-400 font-mono">
-              {formatCurrency(data?.dueThisWeekAmount || 0)}
-            </div>
-            <div className="text-xs text-zinc-500">{data?.dueThisWeekCount || 0} clients</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-zinc-900/80 border-zinc-800/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-xs text-zinc-400 uppercase">Upcoming</span>
-            </div>
-            <div className="text-2xl font-bold text-emerald-400 font-mono">
-              {formatCurrency(data?.upcomingAmount || 0)}
-            </div>
-            <div className="text-xs text-zinc-500">{data?.upcomingCount || 0} clients</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-zinc-900/80 border-zinc-800/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-zinc-500" />
-              <span className="text-xs text-zinc-400 uppercase">Total Clients</span>
-            </div>
-            <div className="text-2xl font-bold text-zinc-100 font-mono">
-              {data?.clients.length || 0}
-            </div>
-            <div className="text-xs text-zinc-500">with balance</div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* Filter Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-        <TabsList className="bg-zinc-800/50">
-          <TabsTrigger value="all">
-            All ({data?.clients.length || 0})
-          </TabsTrigger>
-          <TabsTrigger value="overdue" className="text-red-400 data-[state=active]:text-red-400">
-            Overdue ({data?.overdueCount || 0})
-          </TabsTrigger>
-          <TabsTrigger value="due_this_week" className="text-amber-400 data-[state=active]:text-amber-400">
-            Due This Week ({data?.dueThisWeekCount || 0})
-          </TabsTrigger>
-          <TabsTrigger value="upcoming" className="text-emerald-400 data-[state=active]:text-emerald-400">
-            Upcoming ({data?.upcomingCount || 0})
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-      
-      {/* Client List */}
-      <div className="space-y-3">
-        {filteredClients.length === 0 ? (
-          <Card className="bg-zinc-900/80 border-zinc-800/50">
-            <CardContent className="p-8 text-center">
-              <CheckCircle2 className="h-12 w-12 mx-auto text-emerald-500 mb-3" />
-              <h3 className="text-lg font-semibold text-zinc-100 mb-1">All caught up!</h3>
-              <p className="text-sm text-zinc-400">
-                {activeTab === 'all' 
-                  ? 'No outstanding balances to collect'
-                  : `No ${activeTab.replace('_', ' ')} balances`
-                }
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          filteredClients.map(client => (
+
+      {/* Content */}
+      <div className="container p-4">
+        <ResponsiveTable
+          columns={columns}
+          data={filteredClients}
+          isLoading={isLoading}
+          keyExtractor={(client) => client.id}
+          onRowClick={(client) => {
+            // For desktop table, maybe toggle details or navigation?
+            // Leaving empty to rely on specific action buttons
+          }}
+          mobileRenderer={(client) => (
             <ClientCard
-              key={client.id}
               client={client}
               isExpanded={expandedClientId === client.id}
-              onToggle={() => setExpandedClientId(
-                expandedClientId === client.id ? null : client.id
-              )}
+              onToggle={() => setExpandedClientId(expandedClientId === client.id ? null : client.id)}
               onCall={() => handleCall(client)}
               onText={() => handleText(client)}
               onEmail={() => handleEmail(client)}
               onRecordPayment={() => setPaymentDialogClient(client)}
               onAddNote={() => setNoteDialogClient(client)}
             />
-          ))
-        )}
+          )}
+          emptyState={{
+            icon: DollarSign,
+            title: isLoading ? "Loading clients..." : "No clients found",
+            description: "Try adjusting your filters or search query.",
+            primaryAction: {
+              label: "Clear Filters",
+              onClick: () => { setSearchQuery(''); setActiveTab('all'); }
+            }
+          }}
+        />
       </div>
-      
-      {/* Dialogs */}
+
       <RecordPaymentDialog
         open={!!paymentDialogClient}
         onOpenChange={(open) => !open && setPaymentDialogClient(null)}
         client={paymentDialogClient}
         onSubmit={handleRecordPayment}
-        isLoading={recordPayment.isPending}
+        isLoading={false}
       />
-      
+
       <AddNoteDialog
         open={!!noteDialogClient}
         onOpenChange={(open) => !open && setNoteDialogClient(null)}
         client={noteDialogClient}
         onSubmit={handleAddNote}
-        isLoading={addNote.isPending}
+        isLoading={false}
       />
     </div>
   );
 }
-
-

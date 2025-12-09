@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
-import { useState, useMemo, useCallback } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useState, useMemo, useCallback, useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,10 +35,12 @@ import {
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useWholesaleCouriers, useProductsForWholesale } from '@/hooks/useWholesaleData';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useCreditGatedAction } from "@/hooks/useCredits";
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { SmartClientPicker } from '@/components/wholesale/SmartClientPicker';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 type OrderStep = 'client' | 'products' | 'payment' | 'delivery' | 'review';
 
@@ -59,6 +61,7 @@ interface OrderProduct {
   name: string;
   qty: number;
   price: number;
+  basePrice: number;
 }
 
 interface OrderData {
@@ -70,6 +73,7 @@ interface OrderData {
   scheduledTime: string;
   collectOutstanding: boolean;
   notes: string;
+  tierId: string;
 }
 
 const QUICK_QTY_PRESETS = [1, 5, 10, 25];
@@ -78,7 +82,23 @@ export default function NewWholesaleOrder() {
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
-  
+
+  // Fetch pricing tiers
+  const { data: pricingTiers = [] } = useQuery({
+    queryKey: ['wholesale-pricing-tiers', tenant?.id],
+    queryFn: async () => {
+      if (!tenant?.id) return [];
+      const { data } = await supabase
+        .from('integration_settings')
+        .select('settings')
+        .eq('tenant_id', tenant.id) // Ensure tenant isolation
+        .eq('integration_id', 'wholesale_pricing_tiers')
+        .single();
+      return data?.settings?.tiers || [];
+    },
+    enabled: !!tenant?.id,
+  });
+
   // Products catalog for wholesale orders
   const { data: inventory = [], isLoading: isInventoryLoading } = useProductsForWholesale();
   const { data: couriers = [], isLoading: couriersLoading } = useWholesaleCouriers();
@@ -95,6 +115,7 @@ export default function NewWholesaleOrder() {
     scheduledTime: '',
     collectOutstanding: false,
     notes: '',
+    tierId: '',
   });
 
   // Steps configuration
@@ -128,18 +149,18 @@ export default function NewWholesaleOrder() {
     const estimatedCost = subtotal * 0.6;
     const estimatedProfit = subtotal - estimatedCost;
     const margin = subtotal > 0 ? (estimatedProfit / subtotal) * 100 : 0;
-    
+
     return { subtotal, totalWeight, estimatedCost, estimatedProfit, margin };
   }, [orderData.products]);
 
   // Calculate credit impact
   const creditImpact = useMemo(() => {
     if (!orderData.client) return null;
-    
+
     const currentBalance = orderData.client.outstanding_balance;
     const creditLimit = orderData.client.credit_limit;
     const orderTotal = totals.subtotal;
-    
+
     // If paying cash, no credit impact
     if (orderData.paymentTerms === 'cash') {
       return {
@@ -149,12 +170,12 @@ export default function NewWholesaleOrder() {
         overLimitAmount: 0,
       };
     }
-    
+
     const newBalance = currentBalance + orderTotal;
     const available = creditLimit - newBalance;
     const overLimit = newBalance > creditLimit;
     const overLimitAmount = overLimit ? newBalance - creditLimit : 0;
-    
+
     return { newBalance, available, overLimit, overLimitAmount };
   }, [orderData.client, orderData.paymentTerms, totals.subtotal]);
 
@@ -185,6 +206,15 @@ export default function NewWholesaleOrder() {
     setTimeout(() => handleNext(), 300);
   }, [handleNext]);
 
+  // Helper to calculate tiered price
+  const calculatePrice = useCallback((basePrice: number, tierId: string) => {
+    if (!tierId) return basePrice;
+    const tier = pricingTiers.find((t: any) => t.id === tierId);
+    if (!tier || !tier.discount_percentage) return basePrice;
+    const discount = tier.discount_percentage / 100;
+    return basePrice * (1 - discount);
+  }, [pricingTiers]);
+
   // Product handlers
   const handleAddProduct = useCallback((product: any) => {
     setOrderData((prev) => {
@@ -197,6 +227,7 @@ export default function NewWholesaleOrder() {
           ),
         };
       }
+      const basePrice = product.base_price || 0;
       return {
         ...prev,
         products: [
@@ -205,12 +236,25 @@ export default function NewWholesaleOrder() {
             id: product.id,
             name: product.product_name,
             qty: 1,
-            price: product.base_price || 0,
+            price: calculatePrice(basePrice, prev.tierId),
+            basePrice: basePrice,
           },
         ],
       };
     });
-  }, []);
+  }, [calculatePrice]);
+
+  // Update prices when tier changes
+  const handleTierChange = (tierId: string) => {
+    setOrderData((prev) => ({
+      ...prev,
+      tierId,
+      products: prev.products.map((p) => ({
+        ...p,
+        price: calculatePrice(p.basePrice, tierId),
+      })),
+    }));
+  };
 
   const handleUpdateQty = useCallback((productId: string, qty: number) => {
     if (qty <= 0) {
@@ -237,8 +281,15 @@ export default function NewWholesaleOrder() {
     }));
   }, []);
 
-  // Submit handler
-  const handleSubmit = async () => {
+  // Submit handler with retry capability
+  const [lastError, setLastError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 2;
+
+  const { execute: executeCreditAction } = useCreditGatedAction();
+  const attemptIdRef = useRef<string>('');
+
+  const handleSubmit = async (isRetry = false) => {
     if (!orderData.client) {
       showErrorToast('Please select a client first');
       return;
@@ -250,43 +301,121 @@ export default function NewWholesaleOrder() {
     }
 
     setIsSubmitting(true);
+    setLastError(null);
 
-    try {
-      const { data, error } = await supabase.functions.invoke('wholesale-order-create', {
-        body: {
-          client_id: orderData.client.id,
-          items: orderData.products.map((p) => ({
-            product_name: p.name,
-            quantity: Number(p.qty),
-            unit_price: Number(p.price),
-          })),
-          payment_method: orderData.paymentTerms,
-          runner_id: orderData.runnerId || null,
-          delivery_address: orderData.deliveryAddress || orderData.client.address || 'No address provided',
-          delivery_notes: orderData.notes || '',
-          collect_outstanding: orderData.collectOutstanding,
-          scheduled_time: orderData.scheduledTime || null,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data && typeof data === 'object' && 'error' in data && data.error) {
-        throw new Error(typeof data.error === 'string' ? data.error : 'Failed to create order');
-      }
-
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['wholesale-clients'] });
-
-      showSuccessToast('Order Created', `Order #${data.order_number} created successfully`);
-      navigateToAdmin('wholesale-orders');
-    } catch (error) {
-      logger.error('Order creation error:', error);
-      showErrorToast('Order Failed', error instanceof Error ? error.message : 'Failed to create order');
-    } finally {
-      setIsSubmitting(false);
+    // If this is a new attempt (not a retry), generate a new ID
+    if (!isRetry) {
+      attemptIdRef.current = crypto.randomUUID();
     }
+
+    await executeCreditAction('wholesale_order_place', async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('wholesale-order-create', {
+          body: {
+            client_id: orderData.client!.id, // Non-null assertion safe due to check above
+            items: orderData.products.map((p) => ({
+              product_name: p.name,
+              quantity: Number(p.qty),
+              unit_price: Number(p.price),
+            })),
+            payment_method: orderData.paymentTerms,
+            runner_id: orderData.runnerId || null,
+            delivery_address: orderData.deliveryAddress || orderData.client!.address || 'No address provided',
+            delivery_notes: orderData.notes || '',
+            collect_outstanding: orderData.collectOutstanding,
+            scheduled_time: orderData.scheduledTime || null,
+          },
+        });
+
+        if (error) throw error;
+
+        if (data && typeof data === 'object' && 'error' in data && data.error) {
+          throw new Error(typeof data.error === 'string' ? data.error : 'Failed to create order');
+        }
+
+        // Invalidate queries to refresh data
+        queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
+        queryClient.invalidateQueries({ queryKey: ['wholesale-clients'] });
+
+        setRetryCount(0);
+        showSuccessToast('Order Created', `Order #${data.order_number} created successfully`);
+        navigateToAdmin('wholesale-orders');
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to create order';
+
+        // Categorize errors and provide specific guidance
+        let userFriendlyMessage = errorMessage;
+        let errorTitle = 'Order Failed';
+        let canRetry = false;
+
+        if (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('fetch') || errorMessage.toLowerCase().includes('timeout')) {
+          userFriendlyMessage = 'Network connection issue. Please check your internet and try again.';
+          errorTitle = 'Connection Error';
+          canRetry = true;
+        } else if (errorMessage.toLowerCase().includes('inventory') || errorMessage.toLowerCase().includes('stock') || errorMessage.toLowerCase().includes('quantity')) {
+          userFriendlyMessage = 'Insufficient inventory for one or more products. Please adjust quantities.';
+          errorTitle = 'Inventory Issue';
+        } else if (errorMessage.toLowerCase().includes('credit') || errorMessage.toLowerCase().includes('limit')) {
+          userFriendlyMessage = 'This order would exceed the client\'s credit limit. Consider switching to cash payment.';
+          errorTitle = 'Credit Limit';
+        } else if (errorMessage.toLowerCase().includes('client') || errorMessage.toLowerCase().includes('not found')) {
+          userFriendlyMessage = 'Client not found or has been deactivated. Please select a different client.';
+          errorTitle = 'Client Error';
+        } else if (errorMessage.toLowerCase().includes('duplicate')) {
+          userFriendlyMessage = 'A similar order was just created. Please check existing orders.';
+          errorTitle = 'Duplicate Order';
+        } else {
+          // Generic network errors can be retried
+          canRetry = retryCount < MAX_RETRIES;
+        }
+
+        setLastError(userFriendlyMessage);
+
+        logger.error('Order creation error', error instanceof Error ? error : new Error(errorMessage), {
+          component: 'NewWholesaleOrder',
+          clientId: orderData.client!.id,
+          retryCount,
+        });
+
+        // Auto-retry for network errors (up to MAX_RETRIES)
+        // IMPORTANT: We need to handle this carefully with the credit wrapper.
+        // Since we are inside the closure, simply calling handleSubmit(true) recursively
+        // works because executeCreditAction handles the idempotency via referenceId.
+        if (canRetry && isRetry === false && retryCount < MAX_RETRIES) {
+          setRetryCount((prev) => prev + 1);
+          showErrorToast(errorTitle, `${userFriendlyMessage} Retrying...`);
+          setTimeout(() => handleSubmit(true), 1500);
+          return; // Exit this execution
+        }
+
+        showErrorToast(errorTitle, userFriendlyMessage);
+      } finally {
+        // Only set not submitting if we are NOT retrying
+        // Actually we should set it false here, and let the retry process set it true again?
+        // handleSubmit calls setIsSubmitting(true) at start.
+        if (!((retryCount < MAX_RETRIES) && (lastError?.includes('Network') || false) && isRetry === false)) {
+          setIsSubmitting(false);
+        }
+      }
+    }, {
+      referenceId: attemptIdRef.current,
+      // If credits fail, we don't want to swallow that error inside the hook, 
+      // but the hook returns null on failure. 
+      // So if it returns null, we should probably stop.
+      // execute returns Promise<T | null>.
+    });
+
+    // Check if execute returned null (credit failure)
+    // The hook handles the toast for credit failure.
+    // We just need to ensure loading state is cleared if it failed before running our action.
+    // However, execute wraps our action. If our action runs, it handles its own finally.
+    // If our action DOES NOT ran (credit fail), we need to clear loading.
+    // We can do this by checking if it returned null?
+    // Actually, simply:
+    setIsSubmitting(false);
+    // Wait, if it was a retry, handleSubmit(true) was called, which sets isSubmitting(true) again.
+    // This setIsSubmitting(false) here runs after the await.
+    // Correct.
   };
 
   // Get payment term label
@@ -402,6 +531,32 @@ export default function NewWholesaleOrder() {
                 onSelect={handleClientSelect}
                 onClear={() => setOrderData((prev) => ({ ...prev, client: null }))}
               />
+
+              {/* Pricing Tier Selection */}
+              {orderData.client && pricingTiers.length > 0 && (
+                <div className="mt-4 pt-4 border-t">
+                  <Label className="mb-2 block">Pricing Tier applied to this order</Label>
+                  <Select
+                    value={orderData.tierId}
+                    onValueChange={handleTierChange}
+                  >
+                    <SelectTrigger className="w-full sm:w-[280px]">
+                      <SelectValue placeholder="Select Pricing Tier (Optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No Tier (Standard Price)</SelectItem>
+                      {pricingTiers.map((tier: any) => (
+                        <SelectItem key={tier.id} value={tier.id}>
+                          {tier.name} ({tier.discount_percentage}% Off)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Select a pricing tier to automatically apply discounts to products.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -424,7 +579,7 @@ export default function NewWholesaleOrder() {
                     </h3>
                     <Badge variant="outline">{inventory.length} items</Badge>
                   </div>
-                  
+
                   {/* Search */}
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -444,9 +599,12 @@ export default function NewWholesaleOrder() {
                   ) : (
                     <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
                       {filteredInventory.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                          {productSearch ? 'No products match your search' : 'No inventory available'}
-                        </div>
+                        <EnhancedEmptyState
+                          icon={Search}
+                          title={productSearch ? 'No Products Match' : 'No Inventory'}
+                          description={productSearch ? 'Try a different search term.' : 'No inventory available for wholesale orders.'}
+                          compact
+                        />
                       ) : (
                         filteredInventory.map((product: any) => {
                           const inCart = orderData.products.find((p) => p.id === product.id);
@@ -496,13 +654,12 @@ export default function NewWholesaleOrder() {
                   </h3>
 
                   {orderData.products.length === 0 ? (
-                    <div className="text-center py-12 bg-muted/20 rounded-lg border border-dashed">
-                      <Package className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-muted-foreground">No products selected</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Click products on the left to add them
-                      </p>
-                    </div>
+                    <EnhancedEmptyState
+                      icon={Package}
+                      title="No Products Selected"
+                      description="Click products on the left to add them to the order."
+                      compact
+                    />
                   ) : (
                     <>
                       <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
@@ -655,7 +812,7 @@ export default function NewWholesaleOrder() {
                       )}>
                         {creditImpact.overLimit ? 'Over Credit Limit' : 'Credit Balance Update'}
                       </div>
-                      
+
                       <div className="mt-2 space-y-1 text-sm">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Current Balance:</span>
@@ -744,7 +901,7 @@ export default function NewWholesaleOrder() {
                                 </Badge>
                               )}
                               {courier.status && (
-                                <Badge 
+                                <Badge
                                   variant={courier.status === 'available' ? 'default' : 'secondary'}
                                   className="text-xs"
                                 >
@@ -929,7 +1086,7 @@ export default function NewWholesaleOrder() {
           >
             ← Back
           </Button>
-          
+
           <div className="flex gap-2">
             <Button
               variant="ghost"
@@ -937,11 +1094,11 @@ export default function NewWholesaleOrder() {
             >
               Cancel
             </Button>
-            
+
             {currentStep === 'review' ? (
               <Button
                 className="bg-emerald-600 hover:bg-emerald-700 gap-2"
-                onClick={handleSubmit}
+                onClick={() => handleSubmit()}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Clerk Provider Wrapper
  * Wraps the application with Clerk authentication provider
@@ -30,7 +31,7 @@ export function ClerkProviderWrapper({ children }: ClerkProviderWrapperProps) {
   
   // If Clerk is not configured, render children without auth
   if (!CLERK_PUBLISHABLE_KEY) {
-    console.warn('[Clerk] No publishable key found. Auth features disabled.');
+    logger.warn('[Clerk] No publishable key found. Auth features disabled.');
     return <>{children}</>;
   }
 

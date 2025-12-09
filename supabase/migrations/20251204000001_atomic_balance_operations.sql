@@ -375,3 +375,9 @@ CREATE INDEX IF NOT EXISTS idx_inventory_movements_created
 
 
 
+
+
+
+
+
+

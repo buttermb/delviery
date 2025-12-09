@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * usePaymentSettings - Hook to fetch and manage payment settings
  * Fetches tenant-level defaults and merges with per-menu overrides
@@ -84,7 +85,7 @@ export function useTenantPaymentSettings() {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching payment settings:', error);
+        logger.error('Error fetching payment settings:', error);
         return DEFAULT_SETTINGS;
       }
 
@@ -114,7 +115,7 @@ export function useMenuPaymentSettings(menuId: string | undefined) {
         .single();
 
       if (menuError || !menu) {
-        console.error('Error fetching menu:', menuError);
+        logger.error('Error fetching menu:', menuError);
         return DEFAULT_SETTINGS;
       }
 
@@ -127,7 +128,7 @@ export function useMenuPaymentSettings(menuId: string | undefined) {
         .maybeSingle();
 
       if (settingsError) {
-        console.error('Error fetching tenant payment settings:', settingsError);
+        logger.error('Error fetching tenant payment settings:', settingsError);
         return DEFAULT_SETTINGS;
       }
 

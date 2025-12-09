@@ -4,10 +4,10 @@ const config: CapacitorConfig = {
   appId: 'com.floraiq.app',
   appName: 'FloraIQ',
   webDir: 'dist',
-  server: {
-    url: 'https://localhost',
-    cleartext: true
-  },
+  // server: {
+  //   url: 'https://localhost',
+  //   cleartext: true
+  // },
   plugins: {
     Geolocation: {
       enableBackgroundLocation: true

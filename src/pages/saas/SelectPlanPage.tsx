@@ -6,11 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, Loader2, Sparkles, Zap, Shield, Clock } from "lucide-react";
+import { Check, Loader2, Sparkles, Zap, Shield, Clock, Coins } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { SUBSCRIPTION_PLANS } from "@/utils/subscriptionPlans";
 import { handleError } from '@/utils/errorHandling/handlers';
 import { cn } from "@/lib/utils";
+import { FREE_TIER_MONTHLY_CREDITS } from "@/lib/credits";
 
 type BillingCycle = 'monthly' | 'yearly';
 
@@ -75,13 +76,13 @@ export default function SelectPlanPage() {
   useEffect(() => {
     const checkAuth = async () => {
       logger.debug('[SELECT_PLAN] Starting auth check', { fromSignup, tenantId });
-      
+
       const isFromSignupFlow = fromSignup || !!tenantId;
-      
+
       if (isFromSignupFlow) {
         await new Promise(resolve => setTimeout(resolve, 500));
       }
-      
+
       let session = null;
       for (let i = 0; i < 3; i++) {
         const { data } = await supabase.auth.getSession();
@@ -102,6 +103,35 @@ export default function SelectPlanPage() {
 
     checkAuth();
   }, [navigate, fromSignup, tenantId]);
+
+  // Check for existing active subscription
+  useEffect(() => {
+    async function checkExistingSubscription() {
+      if (!isAuthenticated || !tenantId) return;
+
+      const { data: tenant, error } = await supabase
+        .from('tenants')
+        .select('subscription_status, subscription_plan, slug')
+        .eq('id', tenantId)
+        .single();
+
+      if (error || !tenant) return;
+
+      // If active and not free tier, redirect to billing or show message
+      // Note: 'free' plan is technically 'active' status usually, so we check plan too.
+      // Assuming 'free' plan is named 'free' or similar.
+      const isPaidPlan = tenant.subscription_plan !== 'free' && tenant.subscription_plan !== 'starter'; // Verify plan names?
+      // Actually 'starter' might be paid.
+      // Let's check if status is active.
+
+      if (tenant.subscription_status === 'active' && tenant.subscription_plan !== 'free') {
+        toast.info("You already have an active subscription. Redirecting to billing...");
+        navigate(`/${tenant.slug}/admin/settings/billing`);
+      }
+    }
+
+    checkExistingSubscription();
+  }, [isAuthenticated, tenantId, navigate]);
 
   // Calculate savings
   const getSavings = (plan: Plan) => {
@@ -137,6 +167,8 @@ export default function SelectPlanPage() {
 
     setLoading(planId);
 
+    const idempotencyKey = crypto.randomUUID();
+
     try {
       // Call start-trial edge function with billing cycle and skip trial options
       const { data, error } = await supabase.functions.invoke("start-trial", {
@@ -145,6 +177,7 @@ export default function SelectPlanPage() {
           plan_id: planId,
           billing_cycle: billingCycle,
           skip_trial: skipTrial,
+          idempotency_key: idempotencyKey,
         },
       });
 
@@ -157,6 +190,61 @@ export default function SelectPlanPage() {
       }
     } catch (error) {
       handleError(error, { component: 'SelectPlanPage', toastTitle: 'Failed to start checkout' });
+      setLoading(null);
+    }
+  };
+
+  // Handle selecting the free tier
+  const handleSelectFreeTier = async () => {
+    if (!tenantId) {
+      toast.error("Missing tenant information");
+      return;
+    }
+
+    if (!isAuthenticated) {
+      toast.error("Please log in first");
+      return;
+    }
+
+    setLoading('free');
+
+    try {
+      // Set tenant to free tier and grant initial credits
+      const { error: updateError } = await supabase
+        .from('tenants')
+        .update({
+          is_free_tier: true,
+          subscription_status: 'active',
+          subscription_plan: 'free',
+        })
+        .eq('id', tenantId);
+
+      if (updateError) throw updateError;
+
+      // Grant initial credits
+      const { error: creditError } = await supabase
+        .rpc('grant_free_credits', {
+          p_tenant_id: tenantId,
+          p_amount: FREE_TIER_MONTHLY_CREDITS,
+        });
+
+      if (creditError) {
+        logger.warn('[SELECT_PLAN] Failed to grant initial credits', creditError);
+      }
+
+      // Get tenant slug for redirect
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('slug')
+        .eq('id', tenantId)
+        .maybeSingle();
+
+      toast.success(`You've been granted ${FREE_TIER_MONTHLY_CREDITS.toLocaleString()} free credits!`);
+
+      // Redirect to dashboard
+      navigate(`/${tenant?.slug || 'admin'}/admin/dashboard`, { replace: true });
+    } catch (error) {
+      handleError(error, { component: 'SelectPlanPage', toastTitle: 'Failed to start free tier' });
       setLoading(null);
     }
   };
@@ -248,18 +336,98 @@ export default function SelectPlanPage() {
         </div>
 
         {/* Plan Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          {/* Free Tier Card */}
+          <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.01] border-dashed">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 rounded-lg bg-emerald-500/10">
+                  <Coins className="h-5 w-5 text-emerald-500" />
+                </div>
+                <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600">
+                  FREE
+                </Badge>
+              </div>
+              <CardTitle className="text-2xl">Free Forever</CardTitle>
+              <CardDescription className="min-h-[40px]">
+                Get started with credits. Perfect for trying out the platform.
+              </CardDescription>
+
+              <div className="mt-4 space-y-1">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-bold">$0</span>
+                  <span className="text-muted-foreground">/month</span>
+                </div>
+                <p className="text-sm text-emerald-600 font-medium">
+                  {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} credits/month
+                </p>
+              </div>
+            </CardHeader>
+
+            <CardContent className="pb-4">
+              <ul className="space-y-3">
+                {[
+                  `${FREE_TIER_MONTHLY_CREDITS.toLocaleString()} free credits monthly`,
+                  "All core features unlocked",
+                  "Email support",
+                  "Buy more credits anytime",
+                  "No credit card required",
+                ].map((feature, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Credit usage hint */}
+              <div className="mt-4 p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+                <p className="text-xs text-muted-foreground">
+                  💡 <span className="font-medium">Tip:</span> {FREE_TIER_MONTHLY_CREDITS} credits ≈ 1 day of active use.
+                  Upgrade for unlimited!
+                </p>
+              </div>
+            </CardContent>
+
+            <CardFooter className="flex-col gap-3 pt-0">
+              <Button
+                className="w-full h-12 text-base font-semibold"
+                size="lg"
+                onClick={handleSelectFreeTier}
+                disabled={loading !== null}
+                variant="outline"
+              >
+                {loading === 'free' ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Setting up...
+                  </>
+                ) : (
+                  <>
+                    <Coins className="mr-2 h-4 w-4" />
+                    Start Free
+                  </>
+                )}
+              </Button>
+
+              <p className="text-xs text-muted-foreground text-center">
+                Upgrade anytime for unlimited access
+              </p>
+            </CardFooter>
+          </Card>
+
+          {/* Paid Plan Cards */}
           {plans.map((plan) => {
             const savings = getSavings(plan);
             const effectiveMonthly = getEffectiveMonthly(plan);
-            
+
             return (
               <Card
                 key={plan.id}
                 className={cn(
                   "relative overflow-hidden transition-all duration-300",
-                  plan.popular 
-                    ? "border-primary shadow-xl scale-[1.02] ring-2 ring-primary/20" 
+                  plan.popular
+                    ? "border-primary shadow-xl scale-[1.02] ring-2 ring-primary/20"
                     : "hover:shadow-lg hover:scale-[1.01]"
                 )}
               >
@@ -268,11 +436,11 @@ export default function SelectPlanPage() {
                     MOST POPULAR
                   </div>
                 )}
-                
+
                 <CardHeader className="pb-4">
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>
                   <CardDescription className="min-h-[40px]">{plan.description}</CardDescription>
-                  
+
                   <div className="mt-4 space-y-1">
                     <div className="flex items-baseline gap-1">
                       <span className="text-4xl font-bold">
@@ -282,7 +450,7 @@ export default function SelectPlanPage() {
                         /{billingCycle === 'yearly' ? 'year' : 'month'}
                       </span>
                     </div>
-                    
+
                     {billingCycle === 'yearly' && (
                       <div className="space-y-1">
                         <p className="text-sm text-muted-foreground">
@@ -295,7 +463,7 @@ export default function SelectPlanPage() {
                     )}
                   </div>
                 </CardHeader>
-                
+
                 <CardContent className="pb-4">
                   <ul className="space-y-3">
                     {plan.features.slice(0, 8).map((feature, idx) => (
@@ -311,7 +479,7 @@ export default function SelectPlanPage() {
                     )}
                   </ul>
                 </CardContent>
-                
+
                 <CardFooter className="flex-col gap-3 pt-0">
                   <Button
                     className={cn(
@@ -332,7 +500,7 @@ export default function SelectPlanPage() {
                       getButtonText(plan)
                     )}
                   </Button>
-                  
+
                   {!skipTrial && (
                     <p className="text-xs text-muted-foreground text-center">
                       No charges until trial ends

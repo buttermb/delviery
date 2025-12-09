@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Adaptive Sidebar Component
  * 
@@ -41,6 +40,7 @@ import { UpgradeModal } from '@/components/tenant-admin/UpgradeModal';
 import { useState, Suspense } from 'react';
 import type { FeatureId } from '@/lib/featureConfig';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CreditBalance } from '@/components/credits';
 
 interface AdaptiveSidebarInnerProps {
   collapsible?: "offcanvas" | "icon" | "none";
@@ -151,6 +151,11 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
           </DropdownMenu>
         </SidebarHeader>
 
+        {/* Credit Balance for Free Tier Users */}
+        <div className="px-3 py-2 border-b">
+          <CreditBalance variant="default" showLabel={true} />
+        </div>
+
         <SidebarContent>
           <Suspense fallback={
             <div className="p-4 space-y-2">
@@ -223,7 +228,10 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
           </Suspense>
         </SidebarContent>
 
-        <SidebarFooter className="p-4 border-t">
+        <SidebarFooter className="p-4 border-t space-y-3">
+          {/* Credit Balance for free tier users */}
+          <CreditBalance variant="default" />
+
           <div className="text-xs text-muted-foreground text-center py-1">
             Press <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">⌘B</kbd> to toggle
           </div>

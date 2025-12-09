@@ -18,6 +18,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { queryKeys } from '@/lib/queryKeys';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 
 interface Product {
   id: string;
@@ -38,6 +39,7 @@ export default function CashRegister() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { triggerSuccess, triggerLight, triggerError } = useHapticFeedback();
+  const { execute: executeCreditAction } = useCreditGatedAction();
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
@@ -224,10 +226,56 @@ export default function CashRegister() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Cash Register</h1>
-        <p className="text-muted-foreground">Point of sale transaction management</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <CreditCard className="h-8 w-8 text-primary" />
+            Cash Register
+          </h1>
+          <p className="text-muted-foreground">Point of sale transaction management</p>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          Press <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">Space</kbd> to add item
+        </div>
       </div>
+
+      {/* Quick Add Section */}
+      {products.length > 0 && (
+        <Card className="bg-gradient-to-r from-primary/5 to-background">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Quick Add
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {products.slice(0, 8).map((product) => (
+                <Button
+                  key={product.id}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addToCart(product)}
+                  disabled={product.stock_quantity <= 0}
+                  className="h-auto py-2 px-3 flex flex-col items-start gap-0.5 min-w-[100px] hover:border-primary hover:bg-primary/5"
+                >
+                  <span className="font-medium text-xs truncate max-w-[80px]">{product.name}</span>
+                  <span className="text-xs text-muted-foreground">${product.price}</span>
+                </Button>
+              ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setProductDialogOpen(true)}
+                className="h-auto py-2 px-3"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                More...
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
@@ -322,7 +370,11 @@ export default function CashRegister() {
               <Button
                 className="flex-1"
                 variant="default"
-                onClick={() => processPayment.mutate()}
+                onClick={async () => {
+                  await executeCreditAction('pos_process_sale', async () => {
+                    await processPayment.mutateAsync();
+                  });
+                }}
                 disabled={cart.length === 0 || processPayment.isPending}
               >
                 <DollarSign className="h-4 w-4 mr-2" />

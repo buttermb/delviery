@@ -241,6 +241,48 @@ export const navigationSections: NavSection[] = [
     ]
   },
 
+  // 🏪 MARKETPLACE
+  {
+    title: 'Marketplace',
+    items: [
+      {
+        title: 'Sourcing (Buy)',
+        href: '/admin/marketplace/browse',
+        icon: ShoppingCart
+      },
+      {
+        title: 'My Cart',
+        href: '/admin/marketplace/cart',
+        icon: ShoppingCart
+      },
+      {
+        title: 'My Purchases',
+        href: '/admin/marketplace/purchases',
+        icon: Package
+      },
+      {
+        title: 'My Listings',
+        href: '/admin/marketplace/listings',
+        icon: Store
+      },
+      {
+        title: 'Sales Orders',
+        href: '/admin/marketplace/orders',
+        icon: FileText
+      },
+      {
+        title: 'Seller Profile',
+        href: '/admin/marketplace/profile',
+        icon: Building2
+      },
+      {
+        title: 'Financials',
+        href: '/admin/marketplace/financials',
+        icon: Wallet
+      }
+    ]
+  },
+
   // 📚 CATALOG
   {
     title: 'Catalog',
@@ -382,21 +424,9 @@ export const navigationSections: NavSection[] = [
         tier: 'professional'
       },
       {
-        title: 'User Management',
-        href: '/admin/user-management',
-        icon: UserPlus,
-        tier: 'enterprise'
-      },
-      {
         title: 'Role Management',
         href: '/admin/role-management',
         icon: Shield,
-        tier: 'enterprise'
-      },
-      {
-        title: 'Permissions',
-        href: '/admin/permissions',
-        icon: Lock,
         tier: 'enterprise'
       },
       {

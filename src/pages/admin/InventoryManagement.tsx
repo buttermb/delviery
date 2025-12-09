@@ -1,47 +1,200 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { logger } from "@/lib/logger";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Package, TrendingUp, ArrowUpDown, Settings } from "lucide-react";
-import { useWholesaleInventory } from "@/hooks/useWholesaleData";
+import { Package, TrendingUp, ArrowUpDown, Settings, AlertTriangle, CheckCircle } from "lucide-react";
 import { StockAdjustmentDialog } from "@/components/admin/StockAdjustmentDialog";
 import { InventoryMovementLog } from "@/components/admin/InventoryMovementLog";
 import { BulkImageGenerator } from "@/components/admin/products/BulkImageGenerator";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
+import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { inventoryTutorial } from "@/lib/tutorials/tutorialConfig";
+
+
+interface Product {
+  id: string;
+  tenant_id: string;
+  name: string;
+  sku: string;
+  batch_number: string;
+  available_quantity: number;
+  low_stock_alert: number;
+  warehouse_location?: string;
+  category: string;
+}
 
 export default function InventoryManagement() {
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
-  const { data: inventory = [], isLoading } = useWholesaleInventory(tenant?.id);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  useEffect(() => {
+    async function loadInventory() {
+      if (!tenant?.id) return;
+
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('tenant_id', tenant.id)
+          .order('name');
+
+        if (error) throw error;
+        setProducts(data || []);
+      } catch (error) {
+        logger.error('Error loading inventory', error, { component: 'InventoryManagement' });
+        toast.error("Failed to load inventory");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadInventory();
+  }, [tenant?.id]);
 
   // Memoize grouped inventory to prevent recalculation
   const groupedInventory = useMemo(() => {
-    return inventory.reduce((acc, item) => {
-      const warehouse = (item as any).warehouse_location || "Warehouse A";
+    return products.reduce((acc, item) => {
+      const warehouse = item.warehouse_location || "Warehouse A";
       if (!acc[warehouse]) {
         acc[warehouse] = [];
       }
       acc[warehouse].push(item);
       return acc;
-    }, {} as Record<string, typeof inventory>);
-  }, [inventory]);
+    }, {} as Record<string, Product[]>);
+  }, [products]);
 
-  const totalStock = inventory.reduce((sum, item) => sum + Number(item.quantity_lbs || 0), 0);
+  const filteredProducts = products.filter(p => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      p.name?.toLowerCase().includes(searchLower) ||
+      p.sku?.toLowerCase().includes(searchLower) ||
+      p.batch_number?.toLowerCase().includes(searchLower)
+    );
+  });
+
+  const totalStock = products.reduce((sum, item) => sum + Number(item.available_quantity || 0), 0);
   // Calculate estimated value at $3000/lb average
   const avgCostPerLb = 3000;
   const totalValue = totalStock * avgCostPerLb;
 
   const getStockStatus = (qty: number, reorderPoint: number = 20) => {
-    if (qty <= 10) return { status: "critical", color: "destructive" };
-    if (qty <= reorderPoint) return { status: "low", color: "warning" };
-    return { status: "good", color: "default" };
+    if (qty <= 10) return { status: "critical", color: "destructive", label: "CRITICAL" };
+    if (qty <= reorderPoint) return { status: "low", color: "warning", label: "LOW" };
+    return { status: "good", color: "default", label: "GOOD" };
   };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'critical': return <AlertTriangle className="h-3 w-3 mr-1" />;
+      case 'low': return <ArrowUpDown className="h-3 w-3 mr-1" />;
+      default: return <CheckCircle className="h-3 w-3 mr-1" />;
+    }
+  }
+
+  const columns: ResponsiveColumn<any>[] = [
+    {
+      header: 'Product',
+      accessorKey: 'name',
+      cell: (item) => <div className="font-medium truncate max-w-[150px] sm:max-w-none">{item.name}</div>
+    },
+    {
+      header: 'Weight',
+      accessorKey: 'available_quantity',
+      className: 'text-right',
+      cell: (item) => <div className="font-mono">{Number(item.available_quantity || 0).toFixed(1)} lbs</div>
+    },
+    {
+      header: 'Cost/lb',
+      className: 'text-right',
+      cell: () => <div className="font-mono">${avgCostPerLb.toLocaleString()}</div>
+    },
+    {
+      header: 'Total Value',
+      className: 'text-right',
+      cell: (item) => <div className="font-mono">${(Number(item.available_quantity || 0) * avgCostPerLb).toLocaleString()}</div>
+    },
+    {
+      header: 'Status',
+      className: 'text-center',
+      cell: (item) => {
+        const status = getStockStatus(Number(item.available_quantity || 0), item.low_stock_alert);
+        return (
+          <Badge variant={status.color as any} className="inline-flex items-center">
+            {getStatusIcon(status.status)}
+            {status.label}
+          </Badge>
+        );
+      }
+    },
+    {
+      header: 'Actions',
+      className: 'text-center',
+      cell: (item) => (
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            setSelectedProduct(item);
+            setAdjustmentDialogOpen(true);
+          }}
+        >
+          <Settings className="h-4 w-4" />
+          <span className="sr-only">Adjust</span>
+        </Button>
+      )
+    }
+  ];
+
+  const renderMobileCard = (item: any) => {
+    const status = getStockStatus(Number(item.available_quantity || 0), item.low_stock_alert);
+
+    return (
+      <div className="space-y-3">
+        <div className="flex items-start justify-between">
+          <div className="font-medium text-base">{item.name}</div>
+          <Badge variant={status.color as any} className="flex-shrink-0">
+            {status.label}
+          </Badge>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <div>
+            <span className="text-muted-foreground block text-xs">Weight</span>
+            <span className="font-mono font-medium">{Number(item.available_quantity || 0).toFixed(1)} lbs</span>
+          </div>
+          <div>
+            <span className="text-muted-foreground block text-xs">Total Value</span>
+            <span className="font-mono font-medium">${(Number(item.available_quantity || 0) * avgCostPerLb).toLocaleString()}</span>
+          </div>
+        </div>
+
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-full mt-2"
+          onClick={() => {
+            setSelectedProduct(item);
+            setAdjustmentDialogOpen(true);
+          }}
+        >
+          <Settings className="h-4 w-4 mr-2" />
+          Adjust Levels
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6">
@@ -52,7 +205,7 @@ export default function InventoryManagement() {
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">Wholesale scale inventory across multiple warehouses</p>
         </div>
         <div className="flex gap-2 flex-wrap w-full sm:w-auto">
-          <BulkImageGenerator products={inventory} />
+          <BulkImageGenerator products={products} />
           <Button
             className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation flex-1 sm:flex-initial text-sm sm:text-base min-w-[100px]"
             data-tutorial="add-product"
@@ -108,24 +261,25 @@ export default function InventoryManagement() {
       </div>
 
       {/* Warehouses */}
-      {isLoading ? (
+      {loading ? (
         <Card className="p-8 text-center">
+          <Package className="h-10 w-10 animate-bounce text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground">Loading inventory...</p>
         </Card>
       ) : Object.keys(groupedInventory).length === 0 ? (
         <Card className="p-8 text-center">
           <Package className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground">No inventory data. Set up sample data to get started.</p>
+          <p className="text-muted-foreground">No inventory data. Add products to get started.</p>
         </Card>
       ) : (
         Object.entries(groupedInventory).map(([warehouseName, products]) => {
-          // Calculate warehouse totals (memoized at component level via groupedInventory)
-          const warehouseTotal = products.reduce((sum, p) => sum + Number(p.quantity_lbs || 0), 0);
+          // Calculate warehouse totals
+          const warehouseTotal = products.reduce((sum, p) => sum + Number(p.available_quantity || 0), 0);
           const warehouseValue = warehouseTotal * avgCostPerLb;
           const capacity = 500; // Default capacity
 
           return (
-            <Card key={warehouseName} className="p-3 sm:p-4 md:p-6">
+            <Card key={warehouseName} className="p-3 sm:p-4 md:p-6 overflow-hidden">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 sm:mb-4 gap-2 sm:gap-0">
                 <div className="min-w-0 flex-1">
                   <h3 className="text-base sm:text-lg font-semibold text-foreground">🏢 {warehouseName}</h3>
@@ -138,62 +292,14 @@ export default function InventoryManagement() {
                 </Badge>
               </div>
 
-              <div className="hidden md:block overflow-x-auto">
-                <div className="inline-block min-w-full align-middle">
-                  <table className="w-full" data-tutorial="product-list">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2 sm:py-3 text-xs sm:text-sm font-semibold text-foreground">Product</th>
-                        <th className="text-right py-2 sm:py-3 text-xs sm:text-sm font-semibold text-foreground">Weight</th>
-                        <th className="text-right py-2 sm:py-3 text-xs sm:text-sm font-semibold text-foreground">Cost/lb</th>
-                        <th className="text-right py-2 sm:py-3 text-xs sm:text-sm font-semibold text-foreground">Total Value</th>
-                        <th className="text-center py-2 sm:py-3 text-xs sm:text-sm font-semibold text-foreground">Status</th>
-                        <th className="text-center py-2 sm:py-3 text-xs sm:text-sm font-semibold text-foreground">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {products.map((product) => {
-                        const qty = Number(product.quantity_lbs || 0);
-                        const estimatedCost = avgCostPerLb;
-                        const stockStatus = getStockStatus(qty, product.reorder_point || 20);
-
-                        return (
-                          <tr key={product.id} className="border-b last:border-0 touch-manipulation">
-                            <td className="py-2 sm:py-3 text-xs sm:text-sm font-medium text-foreground truncate max-w-[150px] sm:max-w-none">{product.product_name}</td>
-                            <td className="py-2 sm:py-3 text-right text-xs sm:text-sm font-mono text-foreground">{qty.toFixed(1)} lbs</td>
-                            <td className="py-2 sm:py-3 text-right text-xs sm:text-sm font-mono text-foreground">${estimatedCost.toLocaleString()}</td>
-                            <td className="py-2 sm:py-3 text-right text-xs sm:text-sm font-mono text-foreground">${(qty * estimatedCost).toLocaleString()}</td>
-                            <td className="py-2 sm:py-3 text-center">
-                              <Badge variant={stockStatus.color as any} className="text-xs">
-                                {stockStatus.status === "critical" && "🔴 CRITICAL"}
-                                {stockStatus.status === "low" && "🟡 LOW"}
-                                {stockStatus.status === "good" && "🟢 GOOD"}
-                              </Badge>
-                            </td>
-                            <td className="py-2 sm:py-3">
-                              <div className="flex items-center justify-center gap-1">
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="min-h-[48px] min-w-[48px] px-2 text-xs sm:text-sm touch-manipulation"
-                                  onClick={() => {
-                                    setSelectedProduct(product);
-                                    setAdjustmentDialogOpen(true);
-                                  }}
-                                  data-tutorial="stock-adjustments"
-                                >
-                                  <Settings className="h-3 w-3 sm:mr-1" />
-                                  <span className="hidden sm:inline">Adjust</span>
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+              <ResponsiveTable
+                columns={columns}
+                data={products}
+                isLoading={false}
+                mobileRenderer={renderMobileCard}
+                keyExtractor={(item) => item.id}
+                className="mt-4"
+              />
             </Card>
           );
         })
@@ -206,8 +312,8 @@ export default function InventoryManagement() {
       {selectedProduct && (
         <StockAdjustmentDialog
           productId={selectedProduct.id}
-          productName={selectedProduct.product_name}
-          currentQuantity={Number(selectedProduct.quantity_lbs || 0)}
+          productName={selectedProduct.name}
+          currentQuantity={Number(selectedProduct.available_quantity || 0)}
           warehouse={selectedProduct.warehouse_location || "Warehouse A"}
           open={adjustmentDialogOpen}
           onOpenChange={setAdjustmentDialogOpen}

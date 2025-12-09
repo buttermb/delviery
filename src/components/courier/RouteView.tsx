@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 // @ts-expect-error - react-map-gl type definitions
-import Map, { Marker, Source, Layer } from 'react-map-gl';
+import Map, { Marker, Source, Layer } from 'react-map-gl/mapbox';
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,9 +48,9 @@ export function RouteView({ deliveries, currentLat, currentLng }: RouteViewProps
       try {
         // Create waypoints array
         const waypoints = deliveries.map(d => `${d.dropoff_lng},${d.dropoff_lat}`);
-        
+
         // Add current location if available
-        const coordinates = currentLat && currentLng 
+        const coordinates = currentLat && currentLng
           ? [`${currentLng},${currentLat}`, ...waypoints]
           : waypoints;
 
@@ -59,7 +59,7 @@ export function RouteView({ deliveries, currentLat, currentLng }: RouteViewProps
         const response = await safeFetch(
           `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates.join(';')}?geometries=geojson&access_token=${mapboxToken}`
         );
-        
+
         const data = await response.json();
         if (data.routes && data.routes[0]) {
           setRoute(data.routes[0]);
@@ -77,7 +77,7 @@ export function RouteView({ deliveries, currentLat, currentLng }: RouteViewProps
     const url = isIOS
       ? `maps://maps.apple.com/?daddr=${delivery.dropoff_lat},${delivery.dropoff_lng}&dirflg=d`
       : `https://www.google.com/maps/dir/?api=1&destination=${delivery.dropoff_lat},${delivery.dropoff_lng}&travelmode=driving`;
-    
+
     window.open(url, '_blank');
   };
 
@@ -153,23 +153,23 @@ export function RouteView({ deliveries, currentLat, currentLng }: RouteViewProps
             Deliveries ({deliveries.length})
           </h3>
           {deliveries.map((delivery, index) => (
-              <Card key={delivery.id} className="p-4">
+            <Card key={delivery.id} className="p-4">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
                   {index + 1}
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-semibold truncate">{delivery.customer_name}</span>
                     <Badge variant="secondary" className="flex-shrink-0">{delivery.order_number}</Badge>
                   </div>
-                  
+
                   <div className="flex items-start gap-1 text-sm text-muted-foreground mb-2">
                     <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
                     <span className="break-words">{delivery.delivery_address}</span>
                   </div>
-                  
+
                   {delivery.eta && (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="w-3 h-3" />
@@ -177,7 +177,7 @@ export function RouteView({ deliveries, currentLat, currentLng }: RouteViewProps
                     </div>
                   )}
                 </div>
-                
+
                 <div className="text-right flex-shrink-0">
                   <div className="font-bold text-primary mb-2">${delivery.total_amount.toFixed(2)}</div>
                   <div className="flex gap-2">

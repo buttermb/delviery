@@ -125,7 +125,7 @@ export default function TenantAdminSettingsPage() {
   useEffect(() => {
     const container = tabsContainerRef.current;
     if (!container) return;
-    
+
     const activeButton = container.querySelector(`[data-section="${activeSection}"]`);
     if (activeButton) {
       activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
@@ -225,7 +225,7 @@ export default function TenantAdminSettingsPage() {
       {/* Content - All sections rendered, visibility controlled via CSS */}
       {/* This prevents re-mounting and preserves component state */}
       <div className="min-h-[50vh]">
-        <Suspense fallback={<SettingsLoadingFallback />}>
+      <Suspense fallback={<SettingsLoadingFallback />}>
           <div className={cn(activeSection === 'account' ? 'block' : 'hidden')}>
             <AccountSettings />
           </div>
@@ -249,8 +249,8 @@ export default function TenantAdminSettingsPage() {
           </div>
           <div className={cn(activeSection === 'appearance' ? 'block' : 'hidden')}>
             <AppearanceSettings />
-          </div>
-        </Suspense>
+        </div>
+      </Suspense>
       </div>
     </div>
   );

@@ -31,7 +31,7 @@ class Logger {
   info(message: string, data?: unknown, sourceOrContext?: string | Record<string, unknown>): void {
     if (this.isDev) {
       const context = typeof sourceOrContext === 'string' ? sourceOrContext : sourceOrContext;
-      console.info(`[INFO] ${message}`, data || '', context || '');
+      console.log(`[INFO] ${message}`, data || '', context || '');
     }
   }
 

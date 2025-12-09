@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { MenuAccessDetails } from './MenuAccessDetails';
 import { useTenantLimits } from '@/hooks/useTenantLimits';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
 
 interface CreateMenuDialogProps {
   open: boolean;
@@ -37,6 +38,7 @@ const STEPS = [
 export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) => {
   const { tenant } = useTenantAdminAuth();
   const { canCreate, getCurrent, getLimit } = useTenantLimits();
+  const { checkLimit, recordAction, limitsApply } = useFreeTierLimits();
   const [currentStep, setCurrentStep] = useState(1);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -142,7 +144,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
   const handleCreate = async () => {
     if (!name || selectedProducts.length === 0) return;
 
-    // Check menu limit before creating
+    // Check menu limit before creating (subscription limits)
     if (!canCreate('menus')) {
       const current = getCurrent('menus');
       const limit = getLimit('menus');
@@ -152,6 +154,17 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
           : `You've reached your menu limit (${current}/${limit === Infinity ? '∞' : limit}). Upgrade to Professional for unlimited menus.`,
       });
       return;
+    }
+
+    // Check free tier daily limit (users with purchased credits bypass limits)
+    if (limitsApply) {
+      const limitCheck = checkLimit('menus_per_day');
+      if (!limitCheck.allowed) {
+        toast.error('Daily Menu Limit Reached', {
+          description: limitCheck.message,
+        });
+        return;
+      }
     }
 
     try {
@@ -192,6 +205,11 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
           custom_message: customMessage,
         }
       });
+
+      // Record action for free tier limit tracking
+      if (limitsApply) {
+        await recordAction('menu');
+      }
 
       // Show access details if available
       if (result.access_code && result.shareable_url) {

@@ -15,6 +15,28 @@ import { Loader2, Mail, ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { apiFetch } from '@/lib/utils/apiClient';
 
+function ResendButton({ onResend }: { onResend: () => void }) {
+  const [cooldown, setCooldown] = useState(60);
+
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
+
+  return (
+    <Button
+      onClick={onResend}
+      variant="outline"
+      className="w-full min-h-[44px]"
+      disabled={cooldown > 0}
+    >
+      {cooldown > 0 ? `Resend available in ${cooldown}s` : "Send Another Link"}
+    </Button>
+  );
+}
+
 export default function CustomerForgotPasswordPage() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
@@ -113,19 +135,13 @@ export default function CustomerForgotPasswordPage() {
               <h2 className="text-2xl font-bold">Check Your Email</h2>
               <p className="text-muted-foreground">
                 If an account exists with <strong>{email}</strong>, we've sent a password reset link.
-                Please check your inbox and click the link to reset your password.
+                Please check your inbox <strong>and spam folder</strong> and click the link to reset your password.
               </p>
               <p className="text-sm text-muted-foreground">
                 The link will expire in 24 hours.
               </p>
               <div className="pt-4 space-y-2">
-                <Button
-                  onClick={() => setSent(false)}
-                  variant="outline"
-                  className="w-full min-h-[44px]"
-                >
-                  Send Another Link
-                </Button>
+                <ResendButton onResend={() => setSent(false)} />
                 <Link
                   to={`/${tenantSlug}/customer/login`}
                   className="block text-center text-sm text-muted-foreground hover:text-foreground"

@@ -35,6 +35,12 @@ const WEBHOOK_EVENTS = [
   'payment.failed',
 ];
 
+import { type Database } from '@/integrations/supabase/types';
+
+// Workaround for missing table types
+type TableKey = keyof Database['public']['Tables'];
+const TABLE_WEBHOOKS = 'webhooks' as unknown as TableKey;
+
 export default function Webhooks() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
@@ -57,7 +63,7 @@ export default function Webhooks() {
 
       try {
         const { data, error } = await supabase
-          .from('webhooks' as any)
+          .from(TABLE_WEBHOOKS)
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -78,7 +84,7 @@ export default function Webhooks() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('webhooks' as any)
+        .from(TABLE_WEBHOOKS)
         .insert({
           tenant_id: tenantId,
           name: webhook.name,
@@ -117,7 +123,7 @@ export default function Webhooks() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('webhooks' as any)
+        .from(TABLE_WEBHOOKS)
         .update({
           name: webhook.name,
           url: webhook.url,

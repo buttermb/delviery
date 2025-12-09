@@ -81,26 +81,9 @@ export default function TenantDetailPage() {
     enabled: !!tenantId && isValidUUID,
   });
 
-  // Early return for invalid UUID
-  if (!isValidUUID) {
-    return (
-      <div className="container py-8">
-        <Card>
-          <CardContent className="py-8 text-center">
-            <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Invalid Tenant ID</h2>
-            <p className="text-muted-foreground mb-4">
-              The tenant ID in the URL is not valid.
-            </p>
-            <Button onClick={() => navigate('/super-admin/tenants')}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Tenants
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Early return for invalid UUID logic handled in render
+  // Hooks below are disabled if !isValidUUID, so they won't run network requests
+  // but we must not return early to satisfy rules-of-hooks
 
   // Fetch subscription plan
   const { data: plan } = useQuery({
@@ -251,6 +234,26 @@ export default function TenantDetailPage() {
       });
     },
   });
+
+  if (!isValidUUID) {
+    return (
+      <div className="container py-8">
+        <Card>
+          <CardContent className="py-8 text-center">
+            <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Invalid Tenant ID</h2>
+            <p className="text-muted-foreground mb-4">
+              The tenant ID in the URL is not valid.
+            </p>
+            <Button onClick={() => navigate('/super-admin/tenants')}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Tenants
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -679,7 +682,7 @@ export default function TenantDetailPage() {
                           const { data: sessionData, error: sessionError } = await supabase.functions.invoke('stripe-customer-portal', {
                             body: { customerId: tenant.stripe_customer_id }
                           });
-                          
+
                           if (sessionError) throw sessionError;
                           if (sessionData?.url) {
                             window.open(sessionData.url, '_blank');
@@ -1023,7 +1026,7 @@ export default function TenantDetailPage() {
                         const { error } = await supabase.from('tenants').update({
                           mrr: (tenant.mrr || 0) - Number(credit)
                         }).eq('id', tenantId);
-                        
+
                         if (!error) {
                           showInfoToast("Credit Applied", `$${credit} credit applied to account`);
                           queryClient.invalidateQueries({ queryKey: ["super-admin-tenant", tenantId] });

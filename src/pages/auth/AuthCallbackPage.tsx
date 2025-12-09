@@ -11,14 +11,46 @@ interface AuthCallbackPageProps {
   portal: AuthPortal;
 }
 
+import { Button } from "@/components/ui/button";
+
 export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "success" | "error" | "loop_detected">("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check for redirect loop
+    const checkLoop = () => {
+      try {
+        const key = 'auth_redirect_timestamps';
+        const now = Date.now();
+        const timestampsStr = sessionStorage.getItem(key);
+        let timestamps: number[] = timestampsStr ? JSON.parse(timestampsStr) : [];
+
+        // Filter out timestamps older than 10 seconds
+        timestamps = timestamps.filter(t => now - t < 10000);
+
+        // Add current timestamp
+        timestamps.push(now);
+        sessionStorage.setItem(key, JSON.stringify(timestamps));
+
+        if (timestamps.length >= 3) {
+          logger.warn("Redirect loop detected", { timestamps });
+          return true;
+        }
+        return false;
+      } catch (e) {
+        return false;
+      }
+    };
+
+    if (checkLoop()) {
+      setStatus("loop_detected");
+      return;
+    }
+
     const handleCallback = async () => {
       try {
         // Get the session from the URL hash (Supabase OAuth callback)
@@ -42,7 +74,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
 
         // Check MFA status
         const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-        
+
         if (aalError) {
           logger.warn("Failed to check AAL level", aalError);
         }
@@ -51,7 +83,10 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
         if (aalData && aalData.currentLevel === "aal1" && aalData.nextLevel === "aal2") {
           logger.info("MFA verification required after OAuth login");
           setStatus("success");
-          
+
+          // Clear redirect timestamps on success
+          sessionStorage.removeItem('auth_redirect_timestamps');
+
           // Redirect to MFA challenge page based on portal
           setTimeout(() => {
             switch (portal) {
@@ -71,6 +106,9 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
 
         // Success - redirect to dashboard
         setStatus("success");
+        // Clear redirect timestamps on success
+        sessionStorage.removeItem('auth_redirect_timestamps');
+
         toast({
           title: "Welcome!",
           description: "You've been signed in with Google.",
@@ -93,7 +131,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
         logger.error("Auth callback error", error, { component: "AuthCallbackPage", portal });
         setStatus("error");
         setErrorMessage(error instanceof Error ? error.message : "Authentication failed");
-        
+
         toast({
           variant: "destructive",
           title: "Authentication failed",
@@ -120,6 +158,21 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
     handleCallback();
   }, [navigate, portal, tenantSlug, searchParams]);
 
+  const handleManualReset = async () => {
+    // Clear all sessions and storage
+    await supabase.auth.signOut();
+    sessionStorage.clear();
+    localStorage.removeItem('supabase.auth.token'); // Attempt to clear persisted token
+
+    const loginUrl = portal === "tenant-admin"
+      ? `/${tenantSlug}/admin/login`
+      : portal === "super-admin"
+        ? "/super-admin/login"
+        : `/${tenantSlug}/customer/login`;
+
+    window.location.href = loginUrl;
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="text-center space-y-6 p-8">
@@ -129,6 +182,26 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
             <div className="space-y-2">
               <h2 className="text-2xl font-semibold text-white">Completing sign in...</h2>
               <p className="text-slate-400">Please wait while we verify your credentials</p>
+            </div>
+          </>
+        )}
+
+        {status === "loop_detected" && (
+          <>
+            <XCircle className="h-16 w-16 text-yellow-500 mx-auto" />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold text-white">Login Issue Detected</h2>
+                <p className="text-slate-400">We detected too many redirect attempts.</p>
+                <p className="text-slate-500 text-sm">Please try clearing your session manually.</p>
+              </div>
+              <Button
+                onClick={handleManualReset}
+                variant="destructive"
+                className="w-full"
+              >
+                Clear Session & Retry Login
+              </Button>
             </div>
           </>
         )}

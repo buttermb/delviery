@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Package, TrendingDown } from 'lucide-react';
+import { AlertTriangle, Package, TrendingDown, CheckCircle } from 'lucide-react';
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 
 export default function StockAlerts() {
   const { tenant } = useTenantAdminAuth();
@@ -113,9 +114,8 @@ export default function StockAlerts() {
               {alerts.map((alert: any) => (
                 <div
                   key={alert.id}
-                  className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 p-3 sm:p-4 border rounded-lg touch-manipulation ${
-                    alert.severity === 'critical' ? 'border-red-500 bg-red-50 dark:bg-red-950' : 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950'
-                  }`}
+                  className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 p-3 sm:p-4 border rounded-lg touch-manipulation ${alert.severity === 'critical' ? 'border-red-500 bg-red-50 dark:bg-red-950' : 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950'
+                    }`}
                 >
                   <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                     <AlertTriangle className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${alert.severity === 'critical' ? 'text-red-500' : 'text-yellow-500'}`} />
@@ -133,9 +133,11 @@ export default function StockAlerts() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-6 sm:py-8 text-xs sm:text-sm text-muted-foreground">
-              No stock alerts at this time. All inventory levels are healthy.
-            </div>
+            <EnhancedEmptyState
+              icon={CheckCircle}
+              title="All Stock Levels Healthy"
+              description="No low stock items detected. Great job keeping inventory stocked!"
+            />
           )}
         </CardContent>
       </Card>

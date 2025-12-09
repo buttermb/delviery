@@ -25,6 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { calculateExpectedProfit } from '@/utils/barcodeHelpers';
 import { useQuery } from '@tanstack/react-query';
 import { addDays, format } from 'date-fns';
+import { useCreditGatedAction } from '@/hooks/useCredits';
 
 interface ScannedProduct {
   barcode: string;
@@ -59,6 +60,7 @@ export default function DispatchInventory() {
   const [searchParams] = useSearchParams();
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
+  const { execute: executeCreditAction } = useCreditGatedAction();
   const { toast } = useToast();
   const [scannedProducts, setScannedProducts] = useState<ScannedProduct[]>([]);
   const [selectedClient, setSelectedClient] = useState<SelectedClient | null>(null);
@@ -243,68 +245,70 @@ export default function DispatchInventory() {
 
     if (!tenant) return;
 
-    setLoading(true);
+    await executeCreditAction('dispatch_create', async () => {
+      setLoading(true);
 
-    try {
-      // Prepare items for atomic RPC
-      const items = scannedProducts.map((product) => ({
-        product_id: product.product_id,
-        quantity: product.quantity,
-        cost_per_unit: product.cost_per_unit,
-        price_per_unit: product.price_per_unit
-      }));
-
-      // Try atomic RPC first (preferred method - prevents race conditions)
-      // @ts-ignore - RPC function not in auto-generated types
-      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_fronted_inventory_atomic' as any, {
-        p_tenant_id: tenant.id,
-        p_client_id: selectedClient.id,
-        p_items: items,
-        p_payment_due_date: paymentDueDate,
-        p_notes: notes || null,
-        p_deal_type: dealType
-      });
-
-      if (rpcError) {
-        // If RPC doesn't exist yet, fall back to legacy method
-        if (rpcError.code === 'PGRST202' || rpcError.message?.includes('function') || rpcError.message?.includes('does not exist')) {
-          logger.warn('Atomic RPC not available, using legacy method');
-          await handleDispatchLegacy();
-          return;
-        }
-        throw rpcError;
-      }
-
-      // RPC succeeded
-      const result = rpcResult as { success: boolean; total_expected_revenue: number; client_name: string };
-      
-      // Create scan records for audit trail
-      for (const product of scannedProducts) {
-        await supabase.from('fronted_inventory_scans').insert({
-          account_id: tenant.id,
+      try {
+        // Prepare items for atomic RPC
+        const items = scannedProducts.map((product) => ({
           product_id: product.product_id,
-          barcode: product.barcode,
-          scan_type: 'dispatch',
           quantity: product.quantity,
+          cost_per_unit: product.cost_per_unit,
+          price_per_unit: product.price_per_unit
+        }));
+
+        // Try atomic RPC first (preferred method - prevents race conditions)
+        // @ts-ignore - RPC function not in auto-generated types
+        const { data: rpcResult, error: rpcError } = await supabase.rpc('create_fronted_inventory_atomic' as any, {
+          p_tenant_id: tenant.id,
+          p_client_id: selectedClient.id,
+          p_items: items,
+          p_payment_due_date: paymentDueDate,
+          p_notes: notes || null,
+          p_deal_type: dealType
         });
+
+        if (rpcError) {
+          // If RPC doesn't exist yet, fall back to legacy method
+          if (rpcError.code === 'PGRST202' || rpcError.message?.includes('function') || rpcError.message?.includes('does not exist')) {
+            logger.warn('Atomic RPC not available, using legacy method');
+            await handleDispatchLegacy();
+            return;
+          }
+          throw rpcError;
+        }
+
+        // RPC succeeded
+        const result = rpcResult as { success: boolean; total_expected_revenue: number; client_name: string };
+
+        // Create scan records for audit trail
+        for (const product of scannedProducts) {
+          await supabase.from('fronted_inventory_scans').insert({
+            account_id: tenant.id,
+            product_id: product.product_id,
+            barcode: product.barcode,
+            scan_type: 'dispatch',
+            quantity: product.quantity,
+          });
+        }
+
+        toast({
+          title: 'Success!',
+          description: `${calculateTotals().totalUnits} units dispatched to ${result.client_name}. Expected revenue: $${result.total_expected_revenue.toFixed(2)}`
+        });
+
+        navigateToAdmin('inventory/fronted');
+      } catch (error) {
+        logger.error('Error dispatching inventory:', error);
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to dispatch inventory',
+          variant: 'destructive'
+        });
+      } finally {
+        setLoading(false);
       }
-
-      toast({
-        title: 'Success!',
-        description: `${calculateTotals().totalUnits} units dispatched to ${result.client_name}. Expected revenue: $${result.total_expected_revenue.toFixed(2)}`
-      });
-
-      navigateToAdmin('inventory/fronted');
-    } catch (error) {
-      logger.error('Error dispatching inventory:', error);
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to dispatch inventory',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   // Legacy dispatch method (fallback if atomic RPC not available)
@@ -479,7 +483,7 @@ export default function DispatchInventory() {
               selectedClient={selectedClient}
               onSelect={(client) => setSelectedClient(client as SelectedClient)}
             />
-            
+
             {selectedClient && (
               <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 space-y-3">
                 <div className="flex items-center justify-between">
@@ -510,9 +514,9 @@ export default function DispatchInventory() {
                     )}
                   </div>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="text-muted-foreground"
                   onClick={() => setSelectedClient(null)}
                 >

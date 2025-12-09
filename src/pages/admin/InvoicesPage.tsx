@@ -39,6 +39,7 @@ import { formatCurrency } from "@/utils/formatters";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { CRMInvoice } from "@/types/crm";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 
 export default function InvoicesPage() {
     const navigate = useNavigate();
@@ -267,8 +268,18 @@ export default function InvoicesPage() {
                                 </TableRow>
                             ) : filteredInvoices?.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center">
-                                        No invoices found.
+                                    <TableCell colSpan={7} className="h-64">
+                                        <EnhancedEmptyState
+                                            icon={FileText}
+                                            title={searchQuery || statusFilter ? "No Invoices Found" : "No Invoices Yet"}
+                                            description={searchQuery || statusFilter ? "No invoices match your current filters." : "Create your first invoice to get started."}
+                                            primaryAction={!searchQuery && !statusFilter ? {
+                                                label: "Create Invoice",
+                                                onClick: () => navigate(`/${tenantSlug}/admin/crm/invoices/new`),
+                                                icon: Plus
+                                            } : undefined}
+                                            compact
+                                        />
                                     </TableCell>
                                 </TableRow>
                             ) : (

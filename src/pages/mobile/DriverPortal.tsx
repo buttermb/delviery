@@ -74,7 +74,8 @@ export default function DriverPortal() {
         .from("fronted_inventory")
         .select(`
           *,
-          products (name, sku, wholesale_price)
+          products (name, sku, wholesale_price),
+          tenants:account_id (slug)
         `)
         .eq("fronted_to_user_id", user.id)
         .eq("status", "active")
@@ -180,13 +181,12 @@ export default function DriverPortal() {
 
             {daysUntilDue !== null && (
               <div
-                className={`flex items-center gap-2 text-sm ${
-                  daysUntilDue < 0
+                className={`flex items-center gap-2 text-sm ${daysUntilDue < 0
                     ? "text-red-500"
                     : daysUntilDue < 7
-                    ? "text-yellow-500"
-                    : "text-green-500"
-                }`}
+                      ? "text-yellow-500"
+                      : "text-green-500"
+                  }`}
               >
                 <Calendar className="h-4 w-4" />
                 {daysUntilDue < 0 ? (
@@ -206,7 +206,12 @@ export default function DriverPortal() {
             className="h-20 flex-col gap-2"
             onClick={() => {
               if (myFronts.length > 0) {
-                navigate(`/admin/inventory/fronted/${myFronts[0].id}/sale`);
+                const slug = myFronts[0].tenants?.slug;
+                if (slug) {
+                  navigate(`/${slug}/admin/inventory/fronted/${myFronts[0].id}/sale`);
+                } else {
+                  toast.error("Tenant information missing");
+                }
               } else {
                 toast.error("No active fronts");
               }
@@ -222,7 +227,12 @@ export default function DriverPortal() {
             className="h-20 flex-col gap-2"
             onClick={() => {
               if (myFronts.length > 0) {
-                navigate(`/admin/inventory/fronted/${myFronts[0].id}/return`);
+                const slug = myFronts[0].tenants?.slug;
+                if (slug) {
+                  navigate(`/${slug}/admin/inventory/fronted/${myFronts[0].id}/return`);
+                } else {
+                  toast.error("Tenant information missing");
+                }
               } else {
                 toast.error("No active fronts");
               }
@@ -236,7 +246,7 @@ export default function DriverPortal() {
         {/* Active Fronts */}
         <div className="space-y-3">
           <h2 className="font-semibold">Your Active Inventory</h2>
-          
+
           {myFronts.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
@@ -254,7 +264,11 @@ export default function DriverPortal() {
                 <Card
                   key={front.id}
                   className="cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => navigate(`/admin/inventory/fronted/${front.id}`)}
+                  onClick={() => {
+                    if (front.tenants?.slug) {
+                      navigate(`/${front.tenants.slug}/admin/inventory/fronted/${front.id}`);
+                    }
+                  }}
                 >
                   <CardContent className="p-4 space-y-3">
                     <div className="flex items-start justify-between">
@@ -302,7 +316,9 @@ export default function DriverPortal() {
                         className="flex-1"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/admin/inventory/fronted/${front.id}/sale`);
+                          if (front.tenants?.slug) {
+                            navigate(`/${front.tenants.slug}/admin/inventory/fronted/${front.id}/sale`);
+                          }
                         }}
                       >
                         <CheckCircle className="h-4 w-4 mr-1" />
@@ -313,7 +329,9 @@ export default function DriverPortal() {
                         variant="outline"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/admin/inventory/fronted/${front.id}`);
+                          if (front.tenants?.slug) {
+                            navigate(`/${front.tenants.slug}/admin/inventory/fronted/${front.id}`);
+                          }
                         }}
                       >
                         View Details

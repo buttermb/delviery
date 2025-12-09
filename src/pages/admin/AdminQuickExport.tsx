@@ -56,6 +56,38 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
       if (customStartDate) startDate = customStartDate;
       if (customEndDate) endDate = customEndDate;
 
+      if (exportType === 'orders') {
+        let query = supabase
+          .from('orders')
+          .select('*, order_items(quantity, unit_price, product:products(name))') // Attempt deep join
+          .order('created_at', { ascending: false });
+
+        if (startDate) query = query.gte('created_at', startDate.toISOString());
+        query = query.lte('created_at', endDate.toISOString());
+
+        const { data: orders, error } = await query.limit(5000); // Cap at 5000 for client-safety
+        if (error) throw error;
+
+        // Fetch profiles manually for accuracy
+        const userIds = [...new Set(orders.map((o: any) => o.user_id).filter(Boolean))];
+        let profilesMap: Record<string, any> = {};
+
+        if (userIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('user_id, full_name, email')
+            .in('user_id', userIds);
+
+          profiles?.forEach(p => { profilesMap[p.user_id] = p; });
+        }
+
+        return orders.map((o: any) => ({
+          ...o,
+          user_profile: profilesMap[o.user_id]
+        }));
+      }
+
+      // Default fallback for other types
       const baseQuery = supabase
         .from(exportType as any)
         .select('*')
@@ -76,22 +108,40 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
   const handleExport = async () => {
     try {
       const data = exportData || [];
+      if (data.length === 0) {
+        toast({ title: "No data to export", variant: "destructive" });
+        return;
+      }
 
       let csvContent = '';
       let filename = '';
 
       if (exportType === 'orders') {
         filename = `orders-${dateRange}-${new Date().toISOString().split('T')[0]}.csv`;
-        csvContent = [
-          'Order ID,User,Status,Total,Created At',
-          ...data.map((order: any) => [
+        // Prepare CSV with new fields
+        const header = 'Order ID,Order Number,Status,Total,Customer Name,Customer Email,Items Summary,Created At';
+        const rows = data.map((order: any) => {
+          const customerName = order.user_profile?.full_name || 'N/A';
+          const customerEmail = order.user_profile?.email || 'N/A';
+
+          // Format Items Summary: "2x Burger, 1x Coke"
+          const itemsSummary = order.order_items?.map((item: any) => {
+            const productName = item.product?.name || item.product_name || 'Unknown Item';
+            return `${item.quantity}x ${productName}`;
+          }).join('; ') || '';
+
+          return [
             order.id,
-            order.user_id || 'N/A',
+            order.order_number || order.id.slice(0, 8),
             order.status,
             order.total_amount || 0,
+            `"${customerName}"`,
+            `"${customerEmail}"`,
+            `"${itemsSummary.replace(/"/g, '""')}"`, // Escape quotes in items
             order.created_at
-          ].join(','))
-        ].join('\n');
+          ].join(',');
+        });
+        csvContent = [header, ...rows].join('\n');
       } else if (exportType === 'users') {
         filename = `users-${dateRange}-${new Date().toISOString().split('T')[0]}.csv`;
         csvContent = [

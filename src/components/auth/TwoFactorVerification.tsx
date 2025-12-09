@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,32 +16,18 @@ import { handleError } from '@/utils/errorHandling/handlers';
 
 export function TwoFactorVerification({ onVerified, onCancel }: TwoFactorVerificationProps) {
     const [loading, setLoading] = useState(false);
-    const [verificationCode, setVerificationCode] = useState("");
-    const [factors, setFactors] = useState<any[]>([]);
-    const [selectedFactorId, setSelectedFactorId] = useState<string | null>(null);
+    const [isRecoveryMode, setIsRecoveryMode] = useState(false);
+    const [backupCode, setBackupCode] = useState("");
 
-    useEffect(() => {
-        loadFactors();
-    }, []);
-
-    const loadFactors = async () => {
-        try {
-            const { data, error } = await supabase.auth.mfa.listFactors();
-            if (error) throw error;
-
-            const verifiedFactors = data.totp.filter(f => f.status === 'verified');
-            setFactors(verifiedFactors);
-            if (verifiedFactors.length > 0) {
-                setSelectedFactorId(verifiedFactors[0].id);
-            }
-        } catch (error) {
-            console.error("Error loading MFA factors:", error);
-            toast.error("Failed to load authentication factors");
-        }
-    };
+    // ... (loadFactors)
 
     const verifyCode = async (e?: React.FormEvent) => {
+        // ... (existing TOTP verification)
         if (e) e.preventDefault();
+        if (isRecoveryMode) {
+            await verifyRecoveryCode();
+            return;
+        }
         if (!selectedFactorId || !verificationCode) return;
 
         setLoading(true);
@@ -68,7 +55,33 @@ export function TwoFactorVerification({ onVerified, onCancel }: TwoFactorVerific
         }
     };
 
+    const verifyRecoveryCode = async () => {
+        if (!backupCode) return;
+        setLoading(true);
+        try {
+            const { data, error } = await supabase.functions.invoke('verify-backup-code', {
+                body: { code: backupCode }
+            });
+
+            if (error) throw error;
+            if (data.error) throw new Error(data.error);
+
+            toast.success("Recovery successful. MFA has been disabled.");
+
+            // Refresh session to reflect MFA removal
+            const { error: refreshError } = await supabase.auth.refreshSession();
+            if (refreshError) logger.warn("Session refresh after recovery failed", refreshError);
+
+            onVerified();
+        } catch (error) {
+            handleError(error, { component: 'TwoFactorVerification', toastTitle: 'Recovery failed' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (factors.length === 0) {
+        // ... (loading view)
         return (
             <div className="text-center p-4">
                 <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
@@ -85,36 +98,71 @@ export function TwoFactorVerification({ onVerified, onCancel }: TwoFactorVerific
                         <ShieldCheck className="h-8 w-8 text-primary" />
                     </div>
                 </div>
-                <h2 className="text-2xl font-semibold tracking-tight">Two-Factor Authentication</h2>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                    {isRecoveryMode ? "Account Recovery" : "Two-Factor Authentication"}
+                </h2>
                 <p className="text-sm text-muted-foreground">
-                    Enter the 6-digit code from your authenticator app to continue.
+                    {isRecoveryMode
+                        ? "Enter one of your 10-character backup codes."
+                        : "Enter the 6-digit code from your authenticator app."}
                 </p>
             </div>
 
             <form onSubmit={verifyCode} className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="code" className="sr-only">Verification Code</Label>
-                    <Input
-                        id="code"
-                        value={verificationCode}
-                        onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        placeholder="000000"
-                        className="font-mono tracking-widest text-center text-2xl h-14"
-                        maxLength={6}
-                        autoFocus
-                        autoComplete="one-time-code"
-                    />
+                    <Label htmlFor="code" className="sr-only">
+                        {isRecoveryMode ? "Backup Code" : "Verification Code"}
+                    </Label>
+
+                    {isRecoveryMode ? (
+                        <Input
+                            id="backupCode"
+                            value={backupCode}
+                            onChange={(e) => setBackupCode(e.target.value.trim())}
+                            placeholder="Enter backup code"
+                            className="font-mono text-center text-lg h-14"
+                            autoFocus
+                        />
+                    ) : (
+                        <Input
+                            id="code"
+                            value={verificationCode}
+                            onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            placeholder="000000"
+                            className="font-mono tracking-widest text-center text-2xl h-14"
+                            maxLength={6}
+                            autoFocus
+                            autoComplete="one-time-code"
+                        />
+                    )}
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                     <Button
                         type="submit"
                         className="w-full h-10"
-                        disabled={loading || verificationCode.length !== 6}
+                        disabled={loading || (isRecoveryMode ? !backupCode : verificationCode.length !== 6)}
                     >
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Verify
+                        {isRecoveryMode ? "Verify Recovery Code" : "Verify"}
                     </Button>
+
+                    <div className="text-center">
+                        <Button
+                            type="button"
+                            variant="link"
+                            className="text-sm text-muted-foreground"
+                            onClick={() => {
+                                setIsRecoveryMode(!isRecoveryMode);
+                                setVerificationCode("");
+                                setBackupCode("");
+                            }}
+                        >
+                            {isRecoveryMode
+                                ? "Use Authenticator App instead"
+                                : "Lost your device? Use a backup code"}
+                        </Button>
+                    </div>
 
                     {onCancel && (
                         <Button

@@ -8,6 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useCreditGatedAction } from "@/hooks/useCredits";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,15 +58,19 @@ export function QuarantineManager({
     },
   });
 
+  const { execute: executeQuarantine } = useCreditGatedAction();
+
   const handleQuarantine = async () => {
     if (!reason.trim()) {
       toast.error("Please provide a reason for quarantine");
       return;
     }
 
-    await quarantineMutation.mutateAsync({
-      status: "quarantined",
-      notes: reason,
+    await executeQuarantine('qc_log_check', async () => {
+      await quarantineMutation.mutateAsync({
+        status: "quarantined",
+        notes: reason,
+      });
     });
   };
 

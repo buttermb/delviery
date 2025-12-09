@@ -1,5 +1,6 @@
 import { createClient, corsHeaders } from '../_shared/deps.ts';
 import { validateCreateOrder, type CreateOrderInput } from './validation.ts';
+import { withCreditGate, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
 
 Deno.serve(async (req) => {
   // Handle CORS
@@ -7,7 +8,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
-  try {
+  // Wrap the handler with credit gating for free tier users
+  return withCreditGate(req, CREDIT_ACTIONS.CREATE_ORDER, async (tenantId, serviceClient) => {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -132,4 +134,5 @@ Deno.serve(async (req) => {
       }
     )
   }
+  }); // End of withCreditGate
 })

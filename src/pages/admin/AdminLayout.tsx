@@ -8,7 +8,7 @@ import { MobileBottomNav } from "@/components/admin/MobileBottomNav";
 import { AccountSwitcher } from "@/components/admin/AccountSwitcher";
 import { ChevronRight, Search, Keyboard } from "lucide-react";
 import InstallPWA from "@/components/InstallPWA";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { LoadingFallback } from "@/components/LoadingFallback";
 
 import { AdminNotificationCenter } from "@/components/admin/AdminNotificationCenter";
@@ -16,6 +16,7 @@ import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { AdminKeyboardShortcutsDialog } from "@/components/admin/AdminKeyboardShortcutsDialog";
+import { useCommandPaletteStore } from "@/components/tenant-admin/CommandPalette";
 import { TenantAdminCommandPalette } from "@/components/tenant-admin/CommandPalette";
 import { MobileNav } from "@/components/admin/MobileNav";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,13 @@ import { TutorialProvider } from "@/components/tutorial/TutorialProvider";
 import { logRouteState } from "@/utils/routeDebugger";
 import { useEffect } from "react";
 import { QuickActionsButton } from "@/components/QuickActionsButton";
+import { LowCreditWarning } from "@/components/credits/LowCreditWarning";
+import { CreditToastContainer } from "@/components/credits/CreditDeductionToast";
+import { SubscriptionStatusBadge } from "@/components/credits/SubscriptionStatusBadge";
+import { useCredits } from "@/contexts/CreditContext";
+import { CreditPurchaseModal } from "@/components/credits/CreditPurchaseModal";
+import { CreditBalance } from '@/components/credits/CreditBalance';
+import { OfflineStatusIndicator } from '@/components/offline/OfflineStatus';
 
 /**
  * Admin Layout Component - v2.1.1
@@ -39,7 +47,14 @@ import { QuickActionsButton } from "@/components/QuickActionsButton";
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
+  const { setOpen } = useCommandPaletteStore();
+  const {
+    credits,
+    showLowCreditWarning,
+    dismissLowCreditWarning,
+    isPurchaseModalOpen,
+    setIsPurchaseModalOpen
+  } = useCredits();
 
   // Enable keyboard shortcuts
   const { shortcutsVisible, setShortcutsVisible } = useAdminKeyboardShortcuts();
@@ -56,18 +71,8 @@ const AdminLayout = () => {
     }
   }, [tenantSlug, location.pathname]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      const searchPath = tenantSlug
-        ? `/${tenantSlug}/admin/global-search?q=${encodeURIComponent(searchQuery)}`
-        : `/admin/search?q=${encodeURIComponent(searchQuery)}`;
-      navigate(searchPath);
-      setSearchQuery("");
-    }
-  };
-
   const getBreadcrumbs = () => {
+    // ... existing ...
     const paths = location.pathname.split('/').filter(Boolean);
 
     // Skip tenant slug in breadcrumbs
@@ -100,6 +105,23 @@ const AdminLayout = () => {
       {/* Impersonation Banner */}
       <ImpersonationBanner />
 
+      {/* Low Credit Warning */}
+      <LowCreditWarning
+        open={showLowCreditWarning}
+        onOpenChange={(open) => !open && dismissLowCreditWarning()}
+        onBuyCredits={() => {
+          dismissLowCreditWarning();
+          setIsPurchaseModalOpen(true);
+        }}
+        currentBalance={credits}
+      />
+
+      {/* Purchase Modal */}
+      <CreditPurchaseModal
+        open={isPurchaseModalOpen}
+        onOpenChange={setIsPurchaseModalOpen}
+      />
+
       {/* Command Palette */}
       <TenantAdminCommandPalette />
 
@@ -116,7 +138,7 @@ const AdminLayout = () => {
               <SidebarTrigger className="h-12 w-12 min-h-[48px] min-w-[48px] touch-manipulation active:scale-95 transition-transform z-50 -ml-1 sm:ml-0 flex items-center justify-center" />
 
               {/* Breadcrumbs - hidden on mobile */}
-              <nav className="hidden md:flex items-center gap-1.5 text-sm overflow-x-auto scrollbar-hide flex-1 min-w-0">
+              <nav className="hidden md:flex items-center gap-1.5 text-sm overflow-x-auto scrollbar-hide mr-4">
                 {breadcrumbs.map((crumb, index) => (
                   <div key={crumb.url} className="flex items-center gap-1.5 flex-shrink-0">
                     {index > 0 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />}
@@ -143,8 +165,48 @@ const AdminLayout = () => {
                 )}
               </div>
 
+              {/* Search Trigger Bar (Desktop) */}
+              <div className="hidden md:flex flex-1 max-w-md ml-auto mr-2">
+                <div
+                  onClick={() => setOpen(true)}
+                  className="relative w-full cursor-pointer group"
+                >
+                  <div className="flex items-center h-9 w-full rounded-md border border-input bg-muted/50 px-3 py-1 text-sm shadow-sm transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
+                    <Search className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Search...</span>
+                    <kbd className="pointer-events-none absolute right-2 top-[50%] -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 sm:flex">
+                      <span className="text-xs">⌘</span>K
+                    </kbd>
+                  </div>
+                </div>
+              </div>
+
               {/* Header Actions */}
               <div className="flex items-center gap-1 sm:gap-2 ml-auto flex-shrink-0">
+
+                {/* Credit Balance Display */}
+                <div className="hidden sm:block">
+                  <CreditBalance />
+                </div>
+
+                {/* Mobile Search Icon */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="md:hidden h-10 w-10 min-h-[44px] min-w-[44px]"
+                  onClick={() => setOpen(true)}
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+
+                {/* Subscription Status Badge - shows free tier vs paid */}
+                <div className="hidden sm:block">
+                  <SubscriptionStatusBadge variant="default" />
+                </div>
+                <div className="sm:hidden">
+                  <SubscriptionStatusBadge variant="compact" />
+                </div>
+
                 {/* Keyboard shortcuts - hidden on mobile */}
                 <TooltipProvider>
                   <Tooltip>
@@ -172,10 +234,15 @@ const AdminLayout = () => {
                 <div className="[&>button]:h-10 [&>button]:w-10 [&>button]:min-h-[44px] [&>button]:min-w-[44px]">
                   <AdminNotificationCenter />
                 </div>
-                
+
                 {/* Theme toggle - optimized touch target */}
                 <div className="[&>button]:h-10 [&>button]:w-10 [&>button]:min-h-[44px] [&>button]:min-w-[44px]">
                   <ThemeToggle />
+                </div>
+
+                {/* Offline Status Indicator */}
+                <div className="hidden sm:block">
+                  <OfflineStatusIndicator />
                 </div>
               </div>
             </header>
@@ -207,6 +274,9 @@ const AdminLayout = () => {
 
       {/* PWA install */}
       <InstallPWA />
+
+      {/* Credit deduction toasts */}
+      <CreditToastContainer />
     </TutorialProvider>
   );
 };

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -77,7 +78,7 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
             });
             onClose();
         } catch (error: any) {
-            console.error('Failed to create client:', error);
+            logger.error('Failed to create client:', error);
             toast.error(error.message || 'Failed to create client');
         } finally {
             setLoading(false);

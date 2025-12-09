@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, CheckCircle2, Sparkles, Lock, Mail, Wifi, WifiOff, AlertCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Sparkles, Lock, Mail, Wifi, WifiOff, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -96,6 +96,9 @@ export default function LoginPage() {
 
     setIsSubmitting(true);
     setRetryCount(0);
+
+    // Normalize email to case-insensitive
+    data.email = data.email.toLowerCase().trim();
 
     const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { email: data.email });
 
@@ -250,6 +253,9 @@ export default function LoginPage() {
         description: getErrorMessage(category, errorObj) || errorObj.message || 'Invalid email or password',
         variant: 'destructive',
       });
+
+      // Clear password field to prevent autofill issues
+      form.setValue('password', '');
     } finally {
       setIsSubmitting(false);
       setRetryCount(0);
@@ -575,29 +581,69 @@ export default function LoginPage() {
             <FormField
               control={form.control}
               name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Lock className="h-4 w-4 text-muted-foreground" />
-                    Password
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="••••••••"
-                      className="h-11 bg-background/50 border-2 focus:border-primary transition-colors"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const [capsLockOn, setCapsLockOn] = useState(false);
+
+                const handleKeyDown = (e: React.KeyboardEvent) => {
+                  if (e.getModifierState("CapsLock")) {
+                    setCapsLockOn(true);
+                  } else {
+                    setCapsLockOn(false);
+                  }
+                };
+
+                const [showPassword, setShowPassword] = useState(false);
+
+                return (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Lock className="h-4 w-4 text-muted-foreground" />
+                      Password
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          className="h-11 bg-background/50 border-2 focus:border-primary transition-colors pr-10"
+                          {...field}
+                          onKeyDown={handleKeyDown}
+                          onKeyUp={handleKeyDown}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground focus:outline-none"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                        {capsLockOn && (
+                          <div className="absolute right-10 top-3 text-yellow-600 flex items-center gap-1 text-xs font-medium animate-pulse">
+                            <AlertCircle className="h-3 w-3" />
+                            CAPS LOCK ON
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <Button
               type="submit"
               className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all hover-scale mt-8"
               disabled={isSubmitting}
+              onClick={() => {
+                // Normalize email to lowercase before submission handled by RHF if possible, 
+                // but since we are inside RHF submission we might need to rely on the submit handler transformation.
+                // However, RHF validates on change, so better to handle normalization in onSubmit.
+              }}
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">

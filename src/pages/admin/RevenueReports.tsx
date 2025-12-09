@@ -1,17 +1,27 @@
 import { logger } from '@/lib/logger';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { DollarSign, TrendingUp, Calendar } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Cell, ComposedChart, Area
+} from 'recharts';
+import { DollarSign, TrendingUp, Calendar, ShoppingBag, Activity } from 'lucide-react';
+import { subDays, startOfYear, format, parseISO, isSameDay } from 'date-fns';
+import { cn } from '@/lib/utils';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
+
+const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 export default function RevenueReports() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
+  const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'ytd' | 'all'>('30d');
 
   // Realtime Subscription for Revenue Updates
   useEffect(() => {
@@ -19,14 +29,8 @@ export default function RevenueReports() {
       .channel('revenue-reports-updates')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'orders'
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['revenue-reports'] });
-        }
+        { event: '*', schema: 'public', table: 'orders' },
+        () => queryClient.invalidateQueries({ queryKey: ['revenue-reports'] })
       )
       .subscribe((status) => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
@@ -34,121 +38,325 @@ export default function RevenueReports() {
         }
       });
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [queryClient]);
 
-  const { data: orders, isLoading } = useQuery({
-    queryKey: ['revenue-reports', tenantId],
+  const { data: rawOrders, isLoading } = useQuery({
+    queryKey: ['revenue-reports', tenantId, dateRange],
     queryFn: async () => {
       if (!tenantId) return [];
 
-      try {
-        const { data, error } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('tenant_id', tenantId)
-          .order('created_at', { ascending: false })
-          .limit(1000);
+      let query = supabase
+        .from('orders')
+        .select(`
+          *,
+          order_items (
+            product_name,
+            quantity,
+            price
+          )
+        `)
+        .eq('tenant_id', tenantId)
+        .order('created_at', { ascending: true }); // Ascending for easier chart mapping
 
-        if (error && error.code === '42P01') return [];
+      // Apply Date Filter
+      const now = new Date();
+      if (dateRange === '7d') query = query.gte('created_at', subDays(now, 7).toISOString());
+      if (dateRange === '30d') query = query.gte('created_at', subDays(now, 30).toISOString());
+      if (dateRange === '90d') query = query.gte('created_at', subDays(now, 90).toISOString());
+      if (dateRange === 'ytd') query = query.gte('created_at', startOfYear(now).toISOString());
+
+      // Limit to prevent browser crash, but high enough for analytics
+      query = query.limit(2000);
+
+      try {
+        const { data, error } = await query;
         if (error) throw error;
         return data || [];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
-        throw error;
+        logger.error("Failed to fetch orders", error);
+        return [];
       }
     },
     enabled: !!tenantId,
   });
 
+  // Analytics Processing
+  const analytics = useMemo(() => {
+    if (!rawOrders || rawOrders.length === 0) return null;
+
+    let totalRevenue = 0;
+    let orderCount = rawOrders.length;
+    let productSales: Record<string, number> = {};
+    let statusCounts: Record<string, number> = {};
+    let revenueByDate: Record<string, { date: string; revenue: number; orders: number }> = {};
+
+    rawOrders.forEach(order => {
+      // Revenue
+      const orderTotal = parseFloat(order.total_amount?.toString() || order.total?.toString() || '0');
+      totalRevenue += orderTotal;
+
+      // Status
+      const status = order.status || 'unknown';
+      statusCounts[status] = (statusCounts[status] || 0) + 1;
+
+      // Products
+      // @ts-ignore - Supabase type inference for join is tricky
+      if (order.order_items && Array.isArray(order.order_items)) {
+        // @ts-ignore
+        order.order_items.forEach(item => {
+          const name = item.product_name || 'Unknown Product';
+          productSales[name] = (productSales[name] || 0) + (item.quantity || 0);
+        });
+      }
+
+      // Chart Data Grouping
+      const dateKey = format(parseISO(order.created_at || new Date().toISOString()), 'yyyy-MM-dd');
+      if (!revenueByDate[dateKey]) {
+        revenueByDate[dateKey] = { date: dateKey, revenue: 0, orders: 0 };
+      }
+      revenueByDate[dateKey].revenue += orderTotal;
+      revenueByDate[dateKey].orders += 1;
+    });
+
+    // Format Chart Data
+    const chartData = Object.values(revenueByDate).sort((a, b) => a.date.localeCompare(b.date));
+
+    // Format Top Products
+    const topProducts = Object.entries(productSales)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // Format Status Data
+    const statusData = Object.entries(statusCounts)
+      .map(([name, value]) => ({ name, value }));
+
+    const avgOrderValue = totalRevenue / orderCount;
+
+    return {
+      totalRevenue,
+      orderCount,
+      avgOrderValue,
+      chartData,
+      topProducts,
+      statusData
+    };
+
+  }, [rawOrders]);
+
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="text-center">Loading revenue reports...</div>
+      <div className="flex items-center justify-center p-12">
+        <Activity className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
-  const monthlyRevenue = (orders || []).reduce((acc: any, order: any) => {
-    const month = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    const existing = acc.find((item: any) => item.month === month);
-    const revenue = parseFloat(order.total || 0);
-    if (existing) {
-      existing.revenue += revenue;
-      existing.orders += 1;
-    } else {
-      acc.push({ month, revenue, orders: 1 });
-    }
-    return acc;
-  }, []).sort((a: any, b: any) => new Date(a.month).getTime() - new Date(b.month).getTime());
-
-  const totalRevenue = orders?.reduce((sum: number, o: any) => sum + parseFloat(o.total || 0), 0) || 0;
-  const avgRevenue = monthlyRevenue.length > 0 ? totalRevenue / monthlyRevenue.length : 0;
+  const { totalRevenue, orderCount, avgOrderValue, chartData, topProducts, statusData } = analytics || {
+    totalRevenue: 0, orderCount: 0, avgOrderValue: 0, chartData: [], topProducts: [], statusData: []
+  };
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Revenue Reports</h1>
-        <p className="text-muted-foreground">Comprehensive revenue analysis and trends</p>
+    <div className="p-4 sm:p-6 space-y-6 max-w-[1600px] mx-auto">
+      {/* Header & Controls */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
+          <p className="text-muted-foreground">Real-time revenue and operational insights</p>
+        </div>
+        <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg">
+          {(['7d', '30d', '90d', 'ytd', 'all'] as const).map((range) => (
+            <button
+              key={range}
+              onClick={() => setDateRange(range)}
+              className={cn(
+                "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                dateRange === range
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
+              )}
+            >
+              {range === 'ytd' ? 'Year to Date' : range.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </div>
 
+      {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <DollarSign className="h-4 w-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground">
+              in selected period
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Monthly</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Orders</CardTitle>
+            <ShoppingBag className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${avgRevenue.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{orderCount}</div>
+            <p className="text-xs text-muted-foreground">
+              Avg. Value: ${avgOrderValue.toFixed(2)}
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Period</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Sales Velocity</CardTitle>
+            <TrendingUp className="h-4 w-4 text-indigo-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{monthlyRevenue.length}</div>
-            <p className="text-xs text-muted-foreground">Months</p>
+            <div className="text-2xl font-bold">
+              {analytics && Math.round(orderCount / (chartData.length || 1))}
+            </div>
+            <p className="text-xs text-muted-foreground">Orders per day (avg)</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Monthly Revenue Trend</CardTitle>
-          <CardDescription>Revenue by month</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {monthlyRevenue.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyRevenue}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="revenue" fill="hsl(var(--chart-1))" />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">No revenue data available</div>
-          )}
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 md:grid-cols-7">
+        {/* Main Chart */}
+        <Card className="md:col-span-4 lg:col-span-5">
+          <CardHeader>
+            <CardTitle>Revenue Trend</CardTitle>
+            <CardDescription>Daily revenue and order volume</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {chartData.length > 0 ? (
+              <div className="h-[350px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={chartData}>
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                    <XAxis
+                      dataKey="date"
+                      tickFormatter={(str) => {
+                        const date = parseISO(str);
+                        return format(date, 'MMM d');
+                      }}
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
+                    <YAxis
+                      yAxisId="left"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      tickFormatter={(val) => `$${val}`}
+                    />
+                    <YAxis
+                      yAxisId="right"
+                      orientation="right"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
+                    <RechartsTooltip
+                      contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
+                      labelStyle={{ color: 'hsl(var(--foreground))' }}
+                    />
+                    <Legend />
+                    <Area
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#10b981"
+                      fillOpacity={1}
+                      fill="url(#colorRevenue)"
+                      name="Revenue"
+                    />
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="orders"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Orders"
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-[350px] flex items-center justify-center text-muted-foreground border-2 border-dashed rounded-lg">
+                No data for this period
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Side Charts */}
+        <div className="md:col-span-3 lg:col-span-2 space-y-6">
+          {/* Top Products */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Top Products</CardTitle>
+              <CardDescription>By quantity sold</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {topProducts.map((product, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                        {i + 1}
+                      </div>
+                      <span className="text-sm font-medium truncate max-w-[150px]">{product.name}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">{product.count} sold</span>
+                  </div>
+                ))}
+                {topProducts.length === 0 && <p className="text-sm text-muted-foreground">No product data</p>}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Status Distribution */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Order Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={statusData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {statusData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip />
+                    <Legend layout="vertical" align="right" verticalAlign="middle" iconSize={8} wrapperStyle={{ fontSize: '12px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

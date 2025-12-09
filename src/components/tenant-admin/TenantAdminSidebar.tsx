@@ -21,7 +21,13 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   LayoutDashboard,
+  ChevronDown,
   Settings,
   LogOut,
   Menu,
@@ -93,18 +99,19 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   'notifications': Bell,
   'realtime-dashboard': Activity,
   'live-map': MapPin,
-  
+
   // Sales & Orders
   'basic-orders': ShoppingCart,
   'disposable-menus': Menu,
   'wholesale-orders': FileText,
+  'wholesale-pricing-tiers': Tag,
   'loyalty-program': Star,
   'coupons': Tag,
   'menu-migration': Download,
   'marketplace': Globe,
   'sales-dashboard': DollarSign,
   'pos-system': Store,
-  
+
   // Inventory
   'products': Package,
   'inventory-dashboard': Warehouse,
@@ -116,7 +123,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   'operations': Warehouse,
   'dispatch-inventory': Truck,
   'vendor-management': Building2,
-  
+
   // Customers
   'customers': Users,
   'customer-crm': Users,
@@ -125,7 +132,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   'marketing-automation': Mail,
   'customer-analytics': BarChart3,
   'live-chat': MessageSquare,
-  
+
   // Operations
   'suppliers': Building2,
   'purchase-orders': FileText,
@@ -139,7 +146,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   'locations': Building,
   'user-management': UserCog,
   'permissions': Key,
-  
+
   // Delivery & Fleet
   'delivery-management': Truck,
   'fleet-management': Building2,
@@ -147,12 +154,12 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   'route-optimization': MapPinned,
   'delivery-tracking': MapPin,
   'delivery-analytics': BarChart3,
-  
+
   // Point of Sale
   'cash-register': Wallet,
   'pos-analytics': PieChart,
   'location-analytics': MapPin,
-  
+
   // Analytics & Finance
   'reports': FileSpreadsheet,
   'analytics': BarChart3,
@@ -169,7 +176,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   'custom-reports': FileText,
   'data-export': Download,
   'risk-management': Shield,
-  
+
   // Integrations
   'bulk-operations': Box,
   'vendor-portal': Building2,
@@ -178,13 +185,13 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   'custom-integrations': Zap,
   'automation': Zap,
   'ai': Brain,
-  
+
   // Security & Compliance
   'batch-recall': AlertCircle,
   'compliance-vault': FileText,
   'audit-trail': ScrollText,
   'compliance': Shield,
-  
+
   // Settings
   'settings': Settings,
   'billing': CreditCard,
@@ -209,7 +216,7 @@ const SIDEBAR_CATEGORIES: SidebarCategory[] = [
   },
   {
     label: 'Sales & Orders',
-    features: ['basic-orders', 'disposable-menus', 'wholesale-orders', 'loyalty-program', 'coupons', 'menu-migration', 'marketplace', 'sales-dashboard', 'pos-system'],
+    features: ['basic-orders', 'disposable-menus', 'wholesale-orders', 'wholesale-pricing-tiers', 'loyalty-program', 'coupons', 'menu-migration', 'marketplace', 'sales-dashboard', 'pos-system'],
   },
   {
     label: 'Inventory',
@@ -258,14 +265,9 @@ export function TenantAdminSidebar() {
   const { canAccess, currentTier, subscriptionValid } = useFeatureAccess();
   const [upgradeFeatureId, setUpgradeFeatureId] = useState<FeatureId | null>(null);
 
-  // Guard against missing tenant slug
-  if (!tenantSlug) {
-    logger.error('TenantAdminSidebar rendered without tenantSlug', new Error('Missing tenantSlug'), { component: 'TenantAdminSidebar' });
-    return null;
-  }
-
   // Build filtered sidebar based on current tier
   const filteredCategories = useMemo(() => {
+    if (!tenantSlug) return []; // Early return inside useMemo is fine
     return SIDEBAR_CATEGORIES.map(category => {
       // Get features user has access to
       const accessibleFeatures = category.features.filter(featureId => {
@@ -365,78 +367,95 @@ export function TenantAdminSidebar() {
         </SidebarHeader>
 
         <SidebarContent>
-          {filteredCategories.map((category) => (
-            <SidebarGroup key={category.label}>
-              <SidebarGroupLabel className="flex items-center justify-between">
-                <span>{category.label}</span>
-                {category.hasLockedFeatures && category.lockedFeatures.length > 2 && (
-                  <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 opacity-50">
-                    +{category.lockedFeatures.length}
-                  </Badge>
-                )}
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {/* Accessible features */}
-                  {category.accessibleFeatures.map((featureId) => {
-                    const feature = FEATURES[featureId];
-                    if (!feature) return null;
-                    
-                    const Icon = getIcon(featureId);
-                    const itemIsActive = isActive(feature.route);
+          {filteredCategories.map((category, index) => {
+            const isDefaultOpen = index < 2; // Open first two categories by default
 
-                    return (
-                      <SidebarMenuItem key={featureId}>
-                        <SidebarMenuButton asChild isActive={itemIsActive}>
-                          <NavLink to={`/${tenantSlug}${feature.route}`}>
-                            <Icon className="h-4 w-4" />
-                            <span className="truncate min-w-0">{feature.name}</span>
-                          </NavLink>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
+            return (
+              <Collapsible
+                key={category.label}
+                defaultOpen={isDefaultOpen}
+                className="group/collapsible"
+              >
+                <SidebarGroup>
+                  <SidebarGroupLabel asChild>
+                    <CollapsibleTrigger className="flex w-full items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span>{category.label}</span>
+                        {category.hasLockedFeatures && category.lockedFeatures.length > 2 && (
+                          <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 opacity-50">
+                            +{category.lockedFeatures.length}
+                          </Badge>
+                        )}
+                      </div>
+                      <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                    </CollapsibleTrigger>
+                  </SidebarGroupLabel>
+                  <CollapsibleContent>
+                    <SidebarGroupContent>
+                      <SidebarMenu>
+                        {/* Accessible features */}
+                        {category.accessibleFeatures.map((featureId) => {
+                          const feature = FEATURES[featureId];
+                          if (!feature) return null;
 
-                  {/* Upgrade hint features (locked) */}
-                  {category.upgradeHints.map((featureId) => {
-                    const feature = FEATURES[featureId];
-                    if (!feature) return null;
-                    
-                    const Icon = getIcon(featureId);
+                          const Icon = getIcon(featureId);
+                          const itemIsActive = isActive(feature.route);
 
-                    return (
-                      <SidebarMenuItem key={`locked-${featureId}`}>
-                        <SidebarMenuButton
-                          onClick={() => handleLockedItemClick(featureId)}
-                          className="cursor-pointer opacity-50 hover:opacity-80 transition-opacity"
-                        >
-                          <Icon className="h-4 w-4" />
-                          <span className="truncate min-w-0">{feature.name}</span>
-                          <Lock className="h-3 w-3 ml-auto text-muted-foreground" />
-                          {getTierBadge(feature.tier)}
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
+                          return (
+                            <SidebarMenuItem key={featureId}>
+                              <SidebarMenuButton asChild isActive={itemIsActive}>
+                                <NavLink to={`/${tenantSlug}${feature.route}`}>
+                                  <Icon className="h-4 w-4" />
+                                  <span className="truncate min-w-0">{feature.name}</span>
+                                </NavLink>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          );
+                        })}
 
-                  {/* Show "View more" if there are additional locked features */}
-                  {category.lockedFeatures.length > 2 && (
-                    <SidebarMenuItem>
-                      <SidebarMenuButton
-                        onClick={() => handleLockedItemClick(category.lockedFeatures[0])}
-                        className="cursor-pointer opacity-40 hover:opacity-60 text-xs"
-                      >
-                        <ChevronUp className="h-3 w-3 rotate-180" />
-                        <span className="text-muted-foreground">
-                          Upgrade to unlock {category.lockedFeatures.length - 2} more
-                        </span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          ))}
+                        {/* Upgrade hint features (locked) */}
+                        {category.upgradeHints.map((featureId) => {
+                          const feature = FEATURES[featureId];
+                          if (!feature) return null;
+
+                          const Icon = getIcon(featureId);
+
+                          return (
+                            <SidebarMenuItem key={`locked-${featureId}`}>
+                              <SidebarMenuButton
+                                onClick={() => handleLockedItemClick(featureId)}
+                                className="cursor-pointer opacity-50 hover:opacity-80 transition-opacity"
+                              >
+                                <Icon className="h-4 w-4" />
+                                <span className="truncate min-w-0">{feature.name}</span>
+                                <Lock className="h-3 w-3 ml-auto text-muted-foreground" />
+                                {getTierBadge(feature.tier)}
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          );
+                        })}
+
+                        {/* Show "View more" if there are additional locked features */}
+                        {category.lockedFeatures.length > 2 && (
+                          <SidebarMenuItem>
+                            <SidebarMenuButton
+                              onClick={() => handleLockedItemClick(category.lockedFeatures[0])}
+                              className="cursor-pointer opacity-40 hover:opacity-60 text-xs"
+                            >
+                              <ChevronUp className="h-3 w-3 rotate-180" />
+                              <span className="text-muted-foreground">
+                                Upgrade to unlock {category.lockedFeatures.length - 2} more
+                              </span>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        )}
+                      </SidebarMenu>
+                    </SidebarGroupContent>
+                  </CollapsibleContent>
+                </SidebarGroup>
+              </Collapsible>
+            );
+          })}
         </SidebarContent>
 
         <SidebarFooter className="p-3 sm:p-4 border-t">

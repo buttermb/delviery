@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSubscriptionStatus } from '@/hooks/useSubscriptionStatus';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
@@ -46,6 +46,8 @@ import {
   ChevronUp,
   XCircle,
   ArrowUp,
+  Coins,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -55,6 +57,10 @@ import { TIER_PRICES, TIER_NAMES, getFeaturesByCategory, type SubscriptionTier }
 import { businessTierToSubscriptionTier } from '@/lib/tierMapping';
 import { AddPaymentMethodDialog } from '@/components/billing/AddPaymentMethodDialog';
 import type { Database } from '@/integrations/supabase/types';
+import { useCredits } from '@/hooks/useCredits';
+import { CreditBalance, CreditUsageStats } from '@/components/credits';
+import { FREE_TIER_MONTHLY_CREDITS } from '@/lib/credits';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 
@@ -97,6 +103,7 @@ export default function BillingSettings() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
@@ -108,6 +115,17 @@ export default function BillingSettings() {
   const comparisonRef = useRef<HTMLDivElement>(null);
 
   const tenantId = tenant?.id;
+
+  // Credit system hook for free tier users
+  const {
+    balance: creditBalance,
+    isFreeTier,
+    isLowCredits,
+    isCriticalCredits,
+    isOutOfCredits,
+    nextFreeGrantAt,
+    lifetimeSpent,
+  } = useCredits();
 
   // Handle Stripe redirect success
   useEffect(() => {
@@ -545,7 +563,7 @@ export default function BillingSettings() {
       )}
 
       {/* Annual Savings Banner - for monthly subscribers */}
-      {!isTrial && (tenant as any)?.billing_cycle !== 'yearly' && (
+      {!isTrial && !isFreeTier && (tenant as any)?.billing_cycle !== 'yearly' && (
         <div className="bg-gradient-to-r from-green-500/10 via-green-500/5 to-transparent border border-green-500/20 rounded-xl p-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
@@ -569,6 +587,105 @@ export default function BillingSettings() {
             </Button>
           </div>
         </div>
+      )}
+
+      {/* Free Tier Credit Section */}
+      {isFreeTier && (
+        <SettingsSection
+          title="Credits"
+          description="Your monthly credits and usage analytics"
+          icon={Coins}
+        >
+          <Tabs defaultValue="balance" className="w-full">
+            <TabsList className="grid w-full max-w-md grid-cols-2 mb-4">
+              <TabsTrigger value="balance">Balance</TabsTrigger>
+              <TabsTrigger value="usage">Usage History</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="balance">
+              <SettingsCard className="border-emerald-500/50 bg-emerald-500/5">
+                <div className="flex items-start justify-between pb-4 border-b flex-wrap gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-bold">Free Tier</h3>
+                      <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                        {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} credits/month
+                      </Badge>
+                    </div>
+                    <p className="text-3xl font-bold mt-2 text-emerald-600">
+                      {creditBalance.toLocaleString()}
+                      <span className="text-sm font-normal text-muted-foreground ml-2">
+                        credits remaining
+                      </span>
+                    </p>
+                    {nextFreeGrantAt && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        <Sparkles className="h-3 w-3 inline mr-1" />
+                        Refreshes on {nextFreeGrantAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                      </p>
+                    )}
+                  </div>
+                  <CreditBalance variant="badge" />
+                </div>
+
+                {/* Credit Progress Bar */}
+                <div className="py-4 space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Credits used</span>
+                    <span className={cn(
+                      "font-medium",
+                      isOutOfCredits ? "text-red-600" :
+                      isCriticalCredits ? "text-orange-600" :
+                      isLowCredits ? "text-yellow-600" :
+                      "text-emerald-600"
+                    )}>
+                      {lifetimeSpent.toLocaleString()} / {FREE_TIER_MONTHLY_CREDITS.toLocaleString()}
+                    </span>
+                  </div>
+                  <Progress 
+                    value={Math.min(100, (creditBalance / FREE_TIER_MONTHLY_CREDITS) * 100)} 
+                    className={cn(
+                      "h-2",
+                      isOutOfCredits ? '[&>div]:bg-red-500' :
+                      isCriticalCredits ? '[&>div]:bg-orange-500' :
+                      isLowCredits ? '[&>div]:bg-yellow-500' :
+                      '[&>div]:bg-emerald-500'
+                    )}
+                  />
+                </div>
+
+                {/* Low credit warning */}
+                {(isLowCredits || isCriticalCredits || isOutOfCredits) && (
+                  <Alert variant={isOutOfCredits ? 'destructive' : 'default'} className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      {isOutOfCredits 
+                        ? "You're out of credits! Upgrade to a paid plan for unlimited usage."
+                        : "Running low on credits. Upgrade for unlimited access to all features."}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="flex gap-3">
+                  <Button
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                    onClick={() => navigate(`/${tenant?.slug}/admin/select-plan`)}
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Upgrade for Unlimited
+                  </Button>
+                </div>
+              </SettingsCard>
+            </TabsContent>
+
+            <TabsContent value="usage">
+              <CreditUsageStats 
+                showUpgradeButton={true}
+                onUpgradeClick={() => navigate(`/${tenant?.slug}/admin/select-plan`)}
+              />
+            </TabsContent>
+          </Tabs>
+        </SettingsSection>
       )}
 
       {/* Current Plan & Usage */}

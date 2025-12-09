@@ -8,6 +8,8 @@
  *   import { useAuth, useUser } from '@/hooks/useUnifiedAuth';
  */
 
+import * as ClerkReact from '@clerk/clerk-react';
+
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const isClerkConfigured = !!CLERK_PUBLISHABLE_KEY;
 
@@ -35,12 +37,10 @@ export function useAuth() {
     return defaultAuth;
   }
   
-  // Dynamic import to avoid errors when Clerk isn't available
+  // Use try-catch to safely call Clerk hooks
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useAuth: useClerkAuth } = require('@clerk/clerk-react');
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useClerkAuth();
+    return ClerkReact.useAuth();
   } catch {
     return defaultAuth;
   }
@@ -56,10 +56,8 @@ export function useUser() {
   }
   
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useUser: useClerkUser } = require('@clerk/clerk-react');
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useClerkUser();
+    return ClerkReact.useUser();
   } catch {
     return defaultUser;
   }
@@ -74,10 +72,8 @@ export function useClerk() {
   }
   
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useClerk: useClerkInstance } = require('@clerk/clerk-react');
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useClerkInstance();
+    return ClerkReact.useClerk();
   } catch {
     return null;
   }
@@ -95,4 +91,3 @@ export function isClerkEnabled(): boolean {
  * These will only render when Clerk is configured
  */
 export { SignIn, SignUp } from '@clerk/clerk-react';
-

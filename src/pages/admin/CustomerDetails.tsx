@@ -23,6 +23,7 @@ import { ActivityTimeline } from '@/components/crm/ActivityTimeline';
 import { CommunicationHistory } from '@/components/crm/CommunicationHistory';
 import { ContactCard } from '@/components/crm/ContactCard';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 interface Customer {
   id: string;
@@ -416,14 +417,14 @@ export default function CustomerDetails() {
                       <label className="text-sm font-medium text-muted-foreground">Loyalty Status</label>
                       <Badge className={
                         (customer.loyalty_points || 0) >= 1000 ? 'bg-amber-100 text-amber-800' :
-                        (customer.loyalty_points || 0) >= 500 ? 'bg-purple-100 text-purple-800' :
-                        (customer.loyalty_points || 0) >= 100 ? 'bg-blue-100 text-blue-800' :
-                        'bg-gray-100 text-gray-800'
+                          (customer.loyalty_points || 0) >= 500 ? 'bg-purple-100 text-purple-800' :
+                            (customer.loyalty_points || 0) >= 100 ? 'bg-blue-100 text-blue-800' :
+                              'bg-gray-100 text-gray-800'
                       }>
                         {(customer.loyalty_points || 0) >= 1000 ? '⭐ VIP' :
-                         (customer.loyalty_points || 0) >= 500 ? '🥇 Gold' :
-                         (customer.loyalty_points || 0) >= 100 ? '🥈 Silver' :
-                         '🥉 Bronze'}
+                          (customer.loyalty_points || 0) >= 500 ? '🥇 Gold' :
+                            (customer.loyalty_points || 0) >= 100 ? '🥈 Silver' :
+                              '🥉 Bronze'}
                       </Badge>
                     </div>
                   </CardContent>
@@ -440,7 +441,12 @@ export default function CustomerDetails() {
                 <CardContent>
                   <div className="space-y-4">
                     {orders.length === 0 ? (
-                      <p className="text-center text-muted-foreground py-8">No orders yet</p>
+                      <EnhancedEmptyState
+                        icon={ShoppingBag}
+                        title="No Orders Yet"
+                        description="This customer hasn't placed any orders yet."
+                        compact
+                      />
                     ) : (
                       orders.map(order => (
                         <div key={order.id} className="border rounded-lg p-4">
@@ -535,7 +541,12 @@ export default function CustomerDetails() {
 
                     <div className="space-y-3">
                       {payments.length === 0 ? (
-                        <p className="text-center text-muted-foreground py-8">No payments recorded</p>
+                        <EnhancedEmptyState
+                          icon={CreditCard}
+                          title="No Payments Recorded"
+                          description="No payment history for this customer."
+                          compact
+                        />
                       ) : (
                         payments.map(payment => (
                           <div key={payment.id} className="flex items-center justify-between p-3 border rounded-lg">
@@ -665,7 +676,12 @@ export default function CustomerDetails() {
                 <CardContent>
                   <div className="space-y-3">
                     {notes.length === 0 ? (
-                      <p className="text-center text-muted-foreground py-8">No notes yet</p>
+                      <EnhancedEmptyState
+                        icon={MessageSquare}
+                        title="No Notes Yet"
+                        description="Add the first note about this customer."
+                        compact
+                      />
                     ) : (
                       notes.map(note => (
                         <div key={note.id} className="border rounded-lg p-4">

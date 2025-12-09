@@ -1,10 +1,10 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,10 +12,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from '@/hooks/use-toast';
 import {
   Truck, MapPin, Clock, CheckCircle2, XCircle,
-  Navigation, Phone, User, Package, Search
+  Navigation, Phone, User, Package
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { SearchInput } from '@/components/shared/SearchInput';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 interface Delivery {
   id: string;
@@ -39,30 +44,19 @@ interface Delivery {
   } | null;
 }
 
-import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-
 export default function DeliveryManagement() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { tenant } = useTenantAdminAuth();
-  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
-  const [couriers, setCouriers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (tenant) {
-      loadData();
-    }
-  }, [tenant]);
+  // Fetch Deliveries
+  const { data: deliveries = [], isLoading: loadingDeliveries, refetch } = useQuery({
+    queryKey: ['deliveries', tenant?.id],
+    queryFn: async () => {
+      if (!tenant?.id) return [];
 
-  const loadData = async () => {
-    if (!tenant) return;
-
-    try {
-      // Load deliveries
       const response: any = await (supabase as any)
         .from('orders')
         .select(`
@@ -80,10 +74,9 @@ export default function DeliveryManagement() {
         .in('status', ['pending', 'confirmed', 'out_for_delivery', 'delivered'])
         .order('delivery_scheduled_at', { ascending: false });
 
-      const { data: deliveryData } = response;
+      if (response.error) throw response.error;
 
-      // Map to Delivery interface
-      const mappedDeliveries: Delivery[] = (deliveryData || []).map((d: any) => ({
+      return (response.data || []).map((d: any) => ({
         id: d.id,
         order_id: d.id,
         courier_id: d.courier_id,
@@ -100,25 +93,28 @@ export default function DeliveryManagement() {
         },
         couriers: d.couriers
       }));
+    },
+    enabled: !!tenant?.id,
+  });
 
-      setDeliveries(mappedDeliveries);
-
-      // Load couriers
-      const courierResponse: any = await (supabase as any)
+  // Fetch Couriers
+  const { data: couriers = [] } = useQuery({
+    queryKey: ['active-couriers', tenant?.id],
+    queryFn: async () => {
+      if (!tenant?.id) return [];
+      const { data, error } = await supabase
         .from('couriers')
         .select('id, full_name, phone, vehicle_type, is_online')
         .eq('tenant_id', tenant.id)
         .eq('is_active', true);
 
-      const { data: courierData } = courierResponse;
-      setCouriers(courierData || []);
-    } catch (error) {
-      logger.error('Error loading data:', error);
-      toast({ title: 'Error loading deliveries', variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!tenant?.id,
+  });
+
+  const loading = loadingDeliveries;
 
   const assignCourier = async (deliveryId: string, courierId: string) => {
     if (!tenant) return;
@@ -130,11 +126,10 @@ export default function DeliveryManagement() {
         .eq('tenant_id', tenant.id);
 
       if (error) throw error;
-
       toast({ title: 'Courier assigned successfully' });
-      loadData();
+      refetch();
     } catch (error) {
-      logger.error('Error assigning courier:', error);
+      logger.error('Error assigning courier:', error as Error);
       toast({ title: 'Error assigning courier', variant: 'destructive' });
     }
   };
@@ -154,11 +149,10 @@ export default function DeliveryManagement() {
         .eq('tenant_id', tenant.id);
 
       if (error) throw error;
-
       toast({ title: 'Status updated successfully' });
-      loadData();
+      refetch();
     } catch (error) {
-      logger.error('Error updating status:', error);
+      logger.error('Error updating status:', error as Error);
       toast({ title: 'Error updating status', variant: 'destructive' });
     }
   };
@@ -200,13 +194,195 @@ export default function DeliveryManagement() {
     onlineCouriers: couriers.filter(c => c.is_online).length
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  // --- COLUMNS FOR TABS ---
+
+  const commonColumns: ResponsiveColumn<Delivery>[] = [
+    {
+      header: 'Order',
+      cell: (d) => <span className="font-mono font-medium">#{d.order_id.slice(0, 8)}</span>
+    },
+    {
+      header: 'Address',
+      accessorKey: 'address',
+      className: 'max-w-[200px] truncate'
+    },
+    {
+      header: 'Total',
+      cell: (d) => `$${d.orders.total_amount?.toFixed(2) || '0.00'}`
+    }
+  ];
+
+  const queueColumns: ResponsiveColumn<Delivery>[] = [
+    ...commonColumns,
+    {
+      header: 'Scheduled',
+      cell: (d) => format(new Date(d.scheduled_at), 'MMM d, h:mm a')
+    },
+    {
+      header: 'Status',
+      cell: (d) => (
+        <Badge variant="outline" className={getStatusColor(d.status)}>
+          {getStatusIcon(d.status)}
+          <span className="ml-1 capitalize">{d.status.replace('_', ' ')}</span>
+        </Badge>
+      )
+    },
+    {
+      header: 'Courier',
+      cell: (d) => d.couriers ? (
+        <div className="flex flex-col text-sm">
+          <span>{d.couriers.full_name}</span>
+          <span className="text-muted-foreground text-xs">{d.couriers.phone}</span>
+        </div>
+      ) : <span className="text-muted-foreground italic">Unassigned</span>
+    },
+    {
+      header: 'Actions',
+      cell: (d) => (
+        <div className="flex gap-2 justify-end">
+          {!d.courier_id ? (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline">
+                  <User className="w-4 h-4 mr-2" />
+                  Assign
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Assign Courier</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  {couriers.map(courier => (
+                    <div
+                      key={courier.id}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:border-primary cursor-pointer"
+                      onClick={() => assignCourier(d.id, courier.id)}
+                    >
+                      <div>
+                        <p className="font-medium">{courier.full_name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {courier.vehicle_type} • {courier.phone}
+                        </p>
+                      </div>
+                      {courier.is_online && (
+                        <Badge variant="default">Online</Badge>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+          ) : (
+            <Button
+              size="sm"
+              onClick={() => updateDeliveryStatus(d.id, 'out_for_delivery')}
+            >
+              Start Delivery
+            </Button>
+          )}
+        </div>
+      )
+    }
+  ];
+
+  const activeColumns: ResponsiveColumn<Delivery>[] = [
+    ...commonColumns,
+    {
+      header: 'Courier',
+      cell: (d) => d.couriers ? (
+        <div className="flex flex-col text-sm">
+          <span>{d.couriers.full_name}</span>
+          <span className="text-muted-foreground text-xs">{d.couriers.phone}</span>
+        </div>
+      ) : '-'
+    },
+    {
+      header: 'Actions',
+      cell: (d) => (
+        <div className="flex gap-2 justify-end">
+          <Button
+            size="sm"
+            onClick={() => updateDeliveryStatus(d.id, 'delivered')}
+          >
+            Mark Delivered
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => navigate(`/admin/delivery-tracking/${d.id}`)}
+          >
+            Track Live
+          </Button>
+        </div>
+      )
+    }
+  ];
+
+  const completedColumns: ResponsiveColumn<Delivery>[] = [
+    ...commonColumns,
+    {
+      header: 'Delivered At',
+      cell: (d) => d.delivered_at ? format(new Date(d.delivered_at), 'MMM d, h:mm a') : '-'
+    },
+    {
+      header: 'Courier',
+      cell: (d) => d.couriers?.full_name || '-'
+    },
+    {
+      header: 'Actions',
+      cell: () => (
+        <Button size="sm" variant="outline">
+          View Proof
+        </Button>
+      )
+    }
+  ];
+
+  // Mobile Renderer
+  const renderMobileCard = (d: Delivery, type: 'queue' | 'active' | 'completed') => (
+    <div className="space-y-3">
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="font-semibold">#{d.order_id.slice(0, 8)}</h3>
+            <Badge variant="outline" className={getStatusColor(d.status)}>
+              {d.status.replace('_', ' ')}
+            </Badge>
+          </div>
+          <p className="text-sm">{d.address}</p>
+        </div>
       </div>
-    );
-  }
+
+      <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-1">
+          <Package className="h-3 w-3" /> ${d.orders.total_amount?.toFixed(2)}
+        </div>
+        {d.couriers && (
+          <div className="flex items-center gap-1">
+            <User className="h-3 w-3" /> {d.couriers.full_name}
+          </div>
+        )}
+      </div>
+
+      <div className="pt-2 border-t flex gap-2 justify-end">
+        {/* Reuse action buttons logic roughly or simplify */}
+        {type === 'queue' && (
+          !d.courier_id ? (
+            <Button size="sm" variant="outline" className="w-full">Assign</Button>
+          ) : (
+            <Button size="sm" className="w-full" onClick={() => updateDeliveryStatus(d.id, 'out_for_delivery')}>Start</Button>
+          )
+        )}
+        {type === 'active' && (
+          <Button size="sm" className="w-full" onClick={() => updateDeliveryStatus(d.id, 'delivered')}>Mark Delivered</Button>
+        )}
+        {type === 'completed' && (
+          <Button size="sm" variant="outline" className="w-full">View Proof</Button>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -281,12 +457,10 @@ export default function DeliveryManagement() {
         <CardContent className="pt-6">
           <div className="flex gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
+              <SearchInput
                 placeholder="Search by address..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                onSearch={setSearchQuery}
+                defaultValue={searchQuery}
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -314,224 +488,53 @@ export default function DeliveryManagement() {
         </TabsList>
 
         <TabsContent value="queue" className="space-y-4">
-          {filteredDeliveries
-            .filter(d => d.status === 'pending' || d.status === 'confirmed')
-            .map(delivery => (
-              <Card key={delivery.id} className="hover:border-primary/50 transition-colors">
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <h3 className="font-semibold">Order #{delivery.order_id.slice(0, 8)}</h3>
-                        <Badge className={getStatusColor(delivery.status)}>
-                          {getStatusIcon(delivery.status)}
-                          <span className="ml-1">{delivery.status.replace('_', ' ')}</span>
-                        </Badge>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="flex items-start gap-2">
-                          <MapPin className="w-4 h-4 text-muted-foreground mt-1" />
-                          <div>
-                            <p className="text-sm font-medium">Delivery Address</p>
-                            <p className="text-sm text-muted-foreground">{delivery.address}</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-start gap-2">
-                          <Clock className="w-4 h-4 text-muted-foreground mt-1" />
-                          <div>
-                            <p className="text-sm font-medium">Scheduled</p>
-                            <p className="text-sm text-muted-foreground">
-                              {format(new Date(delivery.scheduled_at), 'MMM d, h:mm a')}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-start gap-2">
-                          <Package className="w-4 h-4 text-muted-foreground mt-1" />
-                          <div>
-                            <p className="text-sm font-medium">Order Total</p>
-                            <p className="text-sm text-muted-foreground">
-                              ${delivery.orders.total_amount?.toFixed(2) || '0.00'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {delivery.couriers && (
-                        <div className="mt-3 flex items-center gap-2 text-sm">
-                          <User className="w-4 h-4" />
-                          <span className="font-medium">{delivery.couriers.full_name}</span>
-                          <span className="text-muted-foreground">({delivery.couriers.vehicle_type})</span>
-                          <Phone className="w-3 h-3 ml-2" />
-                          <span className="text-muted-foreground">{delivery.couriers.phone}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      {!delivery.courier_id ? (
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button size="sm">
-                              <User className="w-4 h-4 mr-2" />
-                              Assign Courier
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Assign Courier</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-3">
-                              {couriers.map(courier => (
-                                <div
-                                  key={courier.id}
-                                  className="flex items-center justify-between p-3 border rounded-lg hover:border-primary cursor-pointer"
-                                  onClick={() => {
-                                    assignCourier(delivery.id, courier.id);
-                                  }}
-                                >
-                                  <div>
-                                    <p className="font-medium">{courier.full_name}</p>
-                                    <p className="text-sm text-muted-foreground">
-                                      {courier.vehicle_type} • {courier.phone}
-                                    </p>
-                                  </div>
-                                  {courier.is_online && (
-                                    <Badge variant="default">Online</Badge>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      ) : (
-                        <Button
-                          size="sm"
-                          onClick={() => updateDeliveryStatus(delivery.id, 'out_for_delivery')}
-                        >
-                          <Truck className="w-4 h-4 mr-2" />
-                          Start Delivery
-                        </Button>
-                      )}
-                      <Button size="sm" variant="outline">
-                        <Navigation className="w-4 h-4 mr-2" />
-                        Route
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <ResponsiveTable
+            columns={queueColumns}
+            data={filteredDeliveries.filter(d => d.status === 'pending' || d.status === 'confirmed')}
+            isLoading={loading}
+            keyExtractor={(d) => d.id}
+            emptyState={{
+              icon: Package,
+              title: "No deliveries in queue",
+              description: "New orders will appear here.",
+              compact: true
+            }}
+            mobileRenderer={(d) => renderMobileCard(d, 'queue')}
+          />
         </TabsContent>
 
         <TabsContent value="active" className="space-y-4">
-          {filteredDeliveries
-            .filter(d => d.status === 'out_for_delivery')
-            .map(delivery => (
-              <Card key={delivery.id} className="border-purple-500/50">
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <h3 className="font-semibold">Order #{delivery.order_id.slice(0, 8)}</h3>
-                        <Badge className={getStatusColor(delivery.status)}>
-                          {getStatusIcon(delivery.status)}
-                          <span className="ml-1">Out for Delivery</span>
-                        </Badge>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                        <div className="flex items-start gap-2">
-                          <MapPin className="w-4 h-4 text-muted-foreground mt-1" />
-                          <div>
-                            <p className="text-sm font-medium">Delivery Address</p>
-                            <p className="text-sm text-muted-foreground">{delivery.address}</p>
-                          </div>
-                        </div>
-
-                        {delivery.couriers && (
-                          <div className="flex items-start gap-2">
-                            <User className="w-4 h-4 text-muted-foreground mt-1" />
-                            <div>
-                              <p className="text-sm font-medium">{delivery.couriers.full_name}</p>
-                              <p className="text-sm text-muted-foreground">{delivery.couriers.phone}</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => updateDeliveryStatus(delivery.id, 'delivered')}
-                      >
-                        <CheckCircle2 className="w-4 h-4 mr-2" />
-                        Mark Delivered
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => navigate(`/admin/delivery-tracking/${delivery.id}`)}
-                      >
-                        <Navigation className="w-4 h-4 mr-2" />
-                        Track Live
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <ResponsiveTable
+            columns={activeColumns}
+            data={filteredDeliveries.filter(d => d.status === 'out_for_delivery')}
+            isLoading={loading}
+            keyExtractor={(d) => d.id}
+            emptyState={{
+              icon: Truck,
+              title: "No active deliveries",
+              description: "Start a delivery from the queue to see it here.",
+              compact: true
+            }}
+            mobileRenderer={(d) => renderMobileCard(d, 'active')}
+          />
         </TabsContent>
 
         <TabsContent value="completed" className="space-y-4">
-          {filteredDeliveries
-            .filter(d => d.status === 'delivered')
-            .slice(0, 20)
-            .map(delivery => (
-              <Card key={delivery.id}>
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold">Order #{delivery.order_id.slice(0, 8)}</h3>
-                        <Badge className={getStatusColor(delivery.status)}>
-                          {getStatusIcon(delivery.status)}
-                          <span className="ml-1">Delivered</span>
-                        </Badge>
-                      </div>
-
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>{delivery.address}</span>
-                        {delivery.delivered_at && (
-                          <span>Delivered: {format(new Date(delivery.delivered_at), 'MMM d, h:mm a')}</span>
-                        )}
-                        {delivery.couriers && (
-                          <span>By: {delivery.couriers.full_name}</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <Button size="sm" variant="outline">
-                      View Proof
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <ResponsiveTable
+            columns={completedColumns}
+            data={filteredDeliveries.filter(d => d.status === 'delivered').slice(0, 20)}
+            isLoading={loading}
+            keyExtractor={(d) => d.id}
+            emptyState={{
+              icon: CheckCircle2,
+              title: "No completed deliveries",
+              description: "Delivered orders will appear here.",
+              compact: true
+            }}
+            mobileRenderer={(d) => renderMobileCard(d, 'completed')}
+          />
         </TabsContent>
       </Tabs>
-
-      {filteredDeliveries.length === 0 && (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Truck className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <p className="text-muted-foreground">No deliveries found</p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

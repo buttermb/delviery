@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 interface BulkOperation {
   id: string;
@@ -97,7 +98,7 @@ export default function BulkOperations() {
   const tenantId = tenant?.id;
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [selectedOperation, setSelectedOperation] = useState<string | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [operationDialogOpen, setOperationDialogOpen] = useState(false);
@@ -115,7 +116,7 @@ export default function BulkOperations() {
           .select('id, name, price, stock_quantity')
           .eq('tenant_id', tenantId)
           .order('name');
-        
+
         // Gracefully handle missing table
         if (error && error.code === '42P01') {
           return [];
@@ -395,9 +396,12 @@ export default function BulkOperations() {
           {isLoading ? (
             <div className="text-center py-12">Loading products...</div>
           ) : products?.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              No products found
-            </div>
+            <EnhancedEmptyState
+              icon={Package}
+              title="No Products Found"
+              description="Add products to your inventory to use bulk operations."
+              compact
+            />
           ) : (
             <div className="space-y-2">
               {products?.map((product) => (
@@ -438,12 +442,12 @@ export default function BulkOperations() {
           </DialogHeader>
           <div className="space-y-4">
             {selectedProducts.size === 0 ? (
-              <div className="text-center py-8">
-                <AlertTriangle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">
-                  Please select at least one product to proceed.
-                </p>
-              </div>
+              <EnhancedEmptyState
+                icon={AlertTriangle}
+                title="No Products Selected"
+                description="Please select at least one product to proceed."
+                compact
+              />
             ) : (
               getOperationParams()
             )}

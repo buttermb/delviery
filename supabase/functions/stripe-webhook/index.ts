@@ -38,6 +38,55 @@ serve(async (req) => {
     switch (type) {
       case 'checkout.session.completed': {
         const tenantId = object.metadata?.tenant_id;
+        const checkoutType = object.metadata?.type;
+
+        // Handle credit purchase
+        if (checkoutType === 'credit_purchase') {
+          const credits = parseInt(object.metadata?.credits || '0', 10);
+          const packageSlug = object.metadata?.package_slug;
+
+          if (!tenantId || !credits) {
+            console.error('[STRIPE-WEBHOOK] Credit purchase missing data:', { tenantId, credits });
+            return new Response('Missing tenant_id or credits', { status: 400 });
+          }
+
+          console.log('[STRIPE-WEBHOOK] Processing credit purchase:', { tenantId, credits, packageSlug });
+
+          // Grant credits to tenant
+          await supabase.rpc('purchase_credits', {
+            p_tenant_id: tenantId,
+            p_amount: credits,
+            p_stripe_payment_id: object.payment_intent as string,
+          });
+
+          // Track analytics
+          await supabase.from('credit_analytics').insert({
+            tenant_id: tenantId,
+            event_type: 'credits_purchased',
+            credits_at_event: credits,
+            metadata: {
+              package_slug: packageSlug,
+              payment_intent: object.payment_intent,
+              amount_paid: object.amount_total,
+            },
+          });
+
+          // Reset warning flags so user gets notified again if they run low
+          await supabase
+            .from('tenant_credits')
+            .update({
+              warning_25_sent: false,
+              warning_10_sent: false,
+              warning_5_sent: false,
+              warning_0_sent: false,
+            })
+            .eq('tenant_id', tenantId);
+
+          console.log(`[STRIPE-WEBHOOK] Granted ${credits} credits to tenant ${tenantId}`);
+          break;
+        }
+
+        // Handle subscription checkout
         const planId = object.metadata?.plan_id;
         const billingCycleFromMetadata = object.metadata?.billing_cycle || 'monthly';
         const skipTrialFromMetadata = object.metadata?.skip_trial === 'true';
@@ -119,6 +168,7 @@ serve(async (req) => {
         });
 
         // Update tenant subscription with the TIER NAME and billing cycle
+        // CRITICAL: Set is_free_tier = false when subscribing to a paid plan
         await supabase
           .from('tenants')
           .update({
@@ -130,6 +180,8 @@ serve(async (req) => {
             trial_started_at: trialEndsAt ? new Date().toISOString() : null,
             payment_method_added: paymentMethodAdded,
             billing_cycle: billingCycle,
+            is_free_tier: false, // Switch off free tier when subscribing
+            credits_enabled: false, // Disable credit consumption for paid users
             updated_at: new Date().toISOString(),
           })
           .eq('id', tenantId);
@@ -198,7 +250,8 @@ serve(async (req) => {
         const tenantId = object.metadata?.tenant_id;
 
         if (tenantId) {
-          const status = type.includes('deleted') ? 'cancelled' : object.status;
+          const isDeleted = type.includes('deleted');
+          const status = isDeleted ? 'cancelled' : object.status;
           
           // Check if trial converted to active
           const wasTrialing = object.status === 'active' && object.trial_end;
@@ -208,9 +261,11 @@ serve(async (req) => {
             updated_at: new Date().toISOString(),
           };
 
-          // If trial converted to active
+          // If trial converted to active - ensure is_free_tier stays false
           if (wasTrialing) {
             updateData.trial_converted_at = new Date().toISOString();
+            updateData.is_free_tier = false;
+            updateData.credits_enabled = false;
             
             await supabase.from('trial_events').insert({
               tenant_id: tenantId,
@@ -220,6 +275,21 @@ serve(async (req) => {
                 converted_at: new Date().toISOString(),
               },
             });
+          }
+
+          // If subscription is cancelled or deleted, revert to free tier
+          // This allows them to continue using the platform with credits
+          if (isDeleted || status === 'cancelled' || status === 'unpaid') {
+            updateData.is_free_tier = true;
+            updateData.credits_enabled = true;
+            
+            // Grant them free credits when reverting to free tier
+            await supabase.rpc('grant_free_credits', {
+              p_tenant_id: tenantId,
+              p_amount: 10000,
+            });
+
+            console.log('[STRIPE-WEBHOOK] Subscription ended, reverted to free tier:', { tenantId, status });
           }
 
           await supabase
@@ -234,6 +304,7 @@ serve(async (req) => {
               status,
               subscription_id: object.id,
               trial_converted: wasTrialing,
+              reverted_to_free_tier: isDeleted || status === 'cancelled',
             },
           });
         }

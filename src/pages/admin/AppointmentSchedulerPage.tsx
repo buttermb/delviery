@@ -45,8 +45,9 @@ export default function AppointmentSchedulerPage() {
       if (!tenant?.id) return [];
 
       try {
+        // @ts-expect-error - Type instantiation is excessively deep
         const { data, error } = await supabase
-          .from("appointments" as any)
+          .from("appointments")
           .select("*")
           .eq("tenant_id", tenant.id)
           .order("scheduled_at", { ascending: true });
@@ -56,9 +57,9 @@ export default function AppointmentSchedulerPage() {
           return [];
         }
 
-        return (data || []).map((apt: any) => ({
+        return (data || []).map((apt) => ({
           ...apt,
-          type: apt.appointment_type || apt.type
+          type: apt.appointment_type
         })) as Appointment[];
       } catch {
         return [];

@@ -6,7 +6,7 @@
 
 import { memo } from 'react';
 import { NavLink } from 'react-router-dom';
-import { SidebarMenuButton, SidebarMenuItem as UISidebarMenuItem } from '@/components/ui/sidebar';
+import { SidebarMenuButton, SidebarMenuItem as UISidebarMenuItem, useSidebar as useUiSidebar } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
 import { Lock, Star } from 'lucide-react';
 import { useParams } from 'react-router-dom';
@@ -39,16 +39,19 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
   const safeFavorites = Array.isArray(favorites) ? favorites : [];
   const isFavorite = safeFavorites.includes(item.id);
 
+  // Use UI Sidebar context for mobile control
+  // We need to aliasing import because of naming conflict
+  const { setOpenMobile, isMobile } = useUiSidebar(); // Imported as useUiSidebar
+
   const handleClick = () => {
     if (item.featureId) {
       trackFeatureClick(item.featureId);
     }
     onItemClick(item.id, item.featureId);
 
-    // Dispatch custom event to close mobile sheet if open
-    // This ensures immediate feedback on mobile devices
-    if (window.innerWidth < 1024) {
-      window.dispatchEvent(new CustomEvent('mobile-nav-close'));
+    // Close mobile sheet if open
+    if (isMobile) {
+      setOpenMobile(false);
     }
   };
 
@@ -81,7 +84,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
   }
 
   const IconComponent = item.icon;
-  
+
   return (
     <UISidebarMenuItem>
       <SidebarMenuButton

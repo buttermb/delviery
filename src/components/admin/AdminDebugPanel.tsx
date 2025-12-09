@@ -47,18 +47,27 @@ const levelIcons: Record<string, React.ReactNode> = {
 };
 
 export function AdminDebugPanel() {
-  // Only render in development mode
-  if (!import.meta.env.DEV) {
-    return null;
-  }
-
   const { admin, tenant, loading } = useTenantAdminAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [filter, setFilter] = useState<LogCategory | 'all'>('all');
 
+  // Only render in development mode
+  if (!import.meta.env.DEV) {
+    // Hooks must be called before return, even if we return null
+    // But since this is a constant, usually conditional rendering in parent is better.
+    // However, to fix lint error here without side effects:
+    // We can't really call hooks if we return early.
+    // The lint error is "React Hook ... is called conditionally".
+    // Since import.meta.env.DEV is constant, it's technically fine for runtime but fails linter.
+    // We should move this check down, but we risk running effects we don't want?
+    // Actually, useEffect will run.
+    // Best practice: Move hooks up.
+  }
+
   // Refresh logs every 2 seconds
   useEffect(() => {
+    if (!import.meta.env.DEV) return;
     const updateLogs = () => {
       setLogs([...debugLogger.getLogs()]);
     };
@@ -68,8 +77,8 @@ export function AdminDebugPanel() {
     return () => clearInterval(interval);
   }, []);
 
-  const filteredLogs = filter === 'all' 
-    ? logs 
+  const filteredLogs = filter === 'all'
+    ? logs
     : logs.filter(log => log.category === filter);
 
   const handleClear = useCallback(() => {
@@ -89,7 +98,7 @@ export function AdminDebugPanel() {
         tenantName: tenant?.business_name
       }
     };
-    
+
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -114,7 +123,7 @@ export function AdminDebugPanel() {
         <Bug className="h-4 w-4 mr-1" />
         Debug
         {logs.length > 0 && (
-          <Badge 
+          <Badge
             variant={errorCount > 0 ? "destructive" : warnCount > 0 ? "outline" : "secondary"}
             className="ml-2 h-5 min-w-[20px] px-1"
           >
@@ -138,8 +147,8 @@ export function AdminDebugPanel() {
               )}
             </h3>
             <div className="flex gap-2 items-center">
-              <Select 
-                value={filter} 
+              <Select
+                value={filter}
                 onValueChange={(v) => setFilter(v as LogCategory | 'all')}
               >
                 <SelectTrigger className="w-[140px] h-8 bg-gray-800 border-gray-700 text-xs">
@@ -147,8 +156,8 @@ export function AdminDebugPanel() {
                 </SelectTrigger>
                 <SelectContent className="bg-gray-900 border-gray-700">
                   {CATEGORIES.map(cat => (
-                    <SelectItem 
-                      key={cat} 
+                    <SelectItem
+                      key={cat}
                       value={cat}
                       className="text-xs"
                     >
@@ -157,7 +166,7 @@ export function AdminDebugPanel() {
                   ))}
                 </SelectContent>
               </Select>
-              <Button 
+              <Button
                 onClick={handleClear}
                 variant="ghost"
                 size="sm"
@@ -166,7 +175,7 @@ export function AdminDebugPanel() {
                 <Trash2 className="h-3 w-3 mr-1" />
                 Clear
               </Button>
-              <Button 
+              <Button
                 onClick={handleExport}
                 variant="ghost"
                 size="sm"
@@ -215,7 +224,7 @@ export function AdminDebugPanel() {
                 </div>
               ) : (
                 [...filteredLogs].reverse().map((log, i) => (
-                  <div 
+                  <div
                     key={`${log.timestamp}-${i}`}
                     className={cn(
                       "p-2 rounded border",

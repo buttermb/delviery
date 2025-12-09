@@ -40,6 +40,7 @@ import {
 } from '@/utils/barcodeService';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 type BarcodeType = 'CODE128' | 'EAN13' | 'CODE39' | 'QR';
 type LabelType = 'product' | 'small_package' | 'batch' | 'custom';
@@ -596,7 +597,8 @@ export default function GenerateBarcodes() {
       </Tabs>
 
       {/* Generated Barcodes Preview */}
-      {generatedBarcodes.length > 0 && (
+      {/* Generated Barcodes Preview */}
+      {generatedBarcodes.length > 0 ? (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -751,6 +753,12 @@ export default function GenerateBarcodes() {
             )}
           </CardContent>
         </Card>
+      ) : (
+        <EnhancedEmptyState
+          icon={Barcode}
+          title="No Barcodes Generated"
+          description="Use the forms above to generate products, packages, batches, or custom barcodes."
+        />
       )}
     </div>
   );

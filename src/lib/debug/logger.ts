@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Enhanced Production Logger with Category-Based Logging
  * 
@@ -55,7 +56,7 @@ class ProductionLogger {
 
     // In development, log everything. In production, only log errors and warnings
     if (this.isDev || entry.level === 'error' || entry.level === 'warn') {
-      console.log(
+      logger.info(
         `${emoji[entry.level]} [${entry.category}] ${entry.message}`,
         entry.data || ''
       );

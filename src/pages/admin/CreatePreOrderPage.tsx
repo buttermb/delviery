@@ -22,6 +22,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon, ArrowLeft, Loader2, Save } from "lucide-react";
 import { format, addDays } from "date-fns";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { cn } from "@/lib/utils";
 import { useCreatePreOrder } from "@/hooks/crm/usePreOrders";
 import { useLogActivity } from "@/hooks/crm/useActivityLog";
@@ -40,6 +41,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function CreatePreOrderPage() {
+    const { tenant } = useTenantAdminAuth();
     const navigate = useNavigate();
     const createPreOrder = useCreatePreOrder();
     const logActivity = useLogActivity();
@@ -82,7 +84,9 @@ export default function CreatePreOrderPage() {
             });
 
             toast.success("Pre-order created successfully");
-            navigate(`/admin/crm/pre-orders/${preOrder.id}`);
+            if (tenant?.slug) {
+                navigate(`/${tenant.slug}/admin/crm/pre-orders/${preOrder.id}`);
+            }
         } catch (error) {
             // Error handled by hook
         }

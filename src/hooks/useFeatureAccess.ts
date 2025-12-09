@@ -131,7 +131,7 @@ export function useFeatureAccess() {
     }
 
     const upgradeInfo = getUpgradeRequirement(currentTier, featureId);
-    
+
     return {
       required: upgradeInfo.required,
       targetTier: upgradeInfo.targetTier,

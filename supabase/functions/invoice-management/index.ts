@@ -3,10 +3,12 @@
  * Handles CRUD operations for invoices with proper authentication
  * Phase 5: Advanced Invoice Management
  * Updated: 2025-11-17 - Added retry logic for invoice number generation
+ * Updated: 2025-12-06 - Added credit gating for free tier users
  */
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { validateInvoiceManagement, type InvoiceManagementInput } from './validation.ts';
+import { checkCreditsAvailable, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -164,6 +166,31 @@ serve(async (req) => {
           JSON.stringify({ error: 'Invoice data is required' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
+      }
+
+      // Check and consume credits for free tier users
+      const creditCheck = await checkCreditsAvailable(serviceClient, tenantId, CREDIT_ACTIONS.GENERATE_INVOICE);
+      if (creditCheck.isFreeTier && !creditCheck.hasCredits) {
+        return new Response(
+          JSON.stringify({
+            error: 'Insufficient credits',
+            code: 'INSUFFICIENT_CREDITS',
+            message: 'You do not have enough credits to create an invoice',
+            creditsRequired: creditCheck.cost,
+            currentBalance: creditCheck.balance,
+          }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      // Consume credits if on free tier
+      if (creditCheck.isFreeTier) {
+        await serviceClient.rpc('consume_credits', {
+          p_tenant_id: tenantId,
+          p_action_key: CREDIT_ACTIONS.GENERATE_INVOICE,
+          p_reference_type: 'invoice',
+          p_description: 'Invoice creation',
+        });
       }
 
       // Generate invoice number via robust DB generator (fallback to timestamp if RPC fails)

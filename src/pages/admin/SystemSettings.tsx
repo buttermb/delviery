@@ -114,7 +114,7 @@ const SystemSettings = () => {
       const usersPromise = supabase.from("profiles").select("id", { count: "exact", head: true }).eq("account_id", tenantId);
       const ordersPromise = supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
       const productsPromise = supabase.from("products").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
-      
+
       // Break type inference for complex query
       const fraudBase: any = supabase.from("fraud_flags").select("id", { count: "exact", head: true });
       const fraudFlagsPromise = fraudBase.eq("tenant_id", tenantId);

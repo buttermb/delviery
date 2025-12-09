@@ -1,11 +1,10 @@
 import { useState, useMemo, Suspense, lazy } from 'react';
-import { 
-  Plus, Search, Settings, LayoutGrid, ShoppingBag, Eye, Users, DollarSign, 
+import {
+  Plus, Search, Settings, LayoutGrid, ShoppingBag, Eye, Users, DollarSign,
   RefreshCw, Filter, TrendingUp, Flame, Clock, Shield, ChevronRight,
   Zap, Target, AlertCircle, CheckCircle, BarChart3, Copy, ExternalLink
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -26,6 +25,9 @@ import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { format, formatDistanceToNow } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
+import { ResponsiveGrid } from '@/components/shared/ResponsiveGrid';
+import { SearchInput } from '@/components/shared/SearchInput';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 // Lazy load heavy components
 const SecurityAlertsPanel = lazy(() => import('./SecurityAlertsPanel').then(m => ({ default: m.SecurityAlertsPanel })));
@@ -85,9 +87,9 @@ function OrderCard({ order, onStatusChange }: { order: any; onStatusChange?: (id
         {/* Quick Actions */}
         {order.status === 'pending' && onStatusChange && (
           <div className="flex gap-2 pt-2 border-t">
-            <Button 
-              size="sm" 
-              variant="outline" 
+            <Button
+              size="sm"
+              variant="outline"
               className="flex-1 h-8 text-xs"
               onClick={(e) => {
                 e.stopPropagation();
@@ -97,9 +99,9 @@ function OrderCard({ order, onStatusChange }: { order: any; onStatusChange?: (id
               <CheckCircle className="h-3 w-3 mr-1" />
               Confirm
             </Button>
-            <Button 
-              size="sm" 
-              variant="ghost" 
+            <Button
+              size="sm"
+              variant="ghost"
               className="h-8 text-xs text-red-600 hover:text-red-700"
               onClick={(e) => {
                 e.stopPropagation();
@@ -131,8 +133,8 @@ function OrdersTab() {
     total: orders.length,
     pending: ordersByStatus.pending.length,
     revenue: orders.reduce((sum: number, o: any) => sum + Number(o.total_amount || 0), 0),
-    avgOrder: orders.length > 0 
-      ? orders.reduce((sum: number, o: any) => sum + Number(o.total_amount || 0), 0) / orders.length 
+    avgOrder: orders.length > 0
+      ? orders.reduce((sum: number, o: any) => sum + Number(o.total_amount || 0), 0) / orders.length
       : 0,
     todayOrders: orders.filter((o: any) => {
       const orderDate = new Date(o.created_at);
@@ -415,8 +417,8 @@ function SetupTab() {
               <p className="text-xs text-muted-foreground">Encrypt unencrypted menus for security</p>
             </div>
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             className="border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
             onClick={() => setMigrationOpen(true)}
@@ -455,10 +457,10 @@ function SetupTab() {
 
       {/* Migration Tool Dialog */}
       <Suspense fallback={null}>
-        <EncryptionMigrationTool 
-          open={migrationOpen} 
-          onOpenChange={setMigrationOpen} 
-          tenantId={tenant?.id || ''} 
+        <EncryptionMigrationTool
+          open={migrationOpen}
+          onOpenChange={setMigrationOpen}
+          tenantId={tenant?.id || ''}
         />
       </Suspense>
     </div>
@@ -485,21 +487,21 @@ export function SmartDashboard() {
     const pendingOrders = orders.filter((o: any) => o.status === 'pending').length;
     const conversionRate = totalViews > 0 ? ((totalOrders / totalViews) * 100).toFixed(1) : '0';
 
-    return { 
-      activeMenus: activeMenus.length, 
+    return {
+      activeMenus: activeMenus.length,
       burnedMenus: burnedMenus.length,
-      totalViews, 
-      totalOrders, 
-      totalRevenue, 
+      totalViews,
+      totalOrders,
+      totalRevenue,
       pendingOrders,
-      conversionRate 
+      conversionRate
     };
   }, [menus, orders]);
 
   // Filter menus
   const filteredMenus = useMemo(() => {
     return menus.filter((menu: any) => {
-      const matchesSearch = !searchQuery || 
+      const matchesSearch = !searchQuery ||
         menu.name?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === 'all' ||
         (statusFilter === 'active' && menu.status === 'active') ||
@@ -573,7 +575,7 @@ export function SmartDashboard() {
             {/* Actions */}
             <div className="flex items-center gap-2">
               <PanicModeButton />
-              
+
               {/* Desktop Create Button */}
               <Button
                 onClick={() => setWizardOpen(true)}
@@ -665,12 +667,11 @@ export function SmartDashboard() {
             {/* Search & Filter Bar */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search menus..."
+                <SearchInput
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-background"
+                  onChange={setSearchQuery}
+                  placeholder="Search menus..."
+                  className="bg-background"
                 />
               </div>
               <div className="flex gap-2">
@@ -700,42 +701,25 @@ export function SmartDashboard() {
             </div>
 
             {/* Menu Grid */}
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <Skeleton key={i} className="h-64" />
-                ))}
-              </div>
-            ) : filteredMenus.length === 0 ? (
-              <Card className="p-12 text-center bg-gradient-to-b from-muted/30 to-muted/10">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-violet-500/10 flex items-center justify-center mb-4">
-                  <LayoutGrid className="h-8 w-8 text-violet-500" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">
-                  {searchQuery || statusFilter !== 'all' ? 'No menus found' : 'Create Your First Menu'}
-                </h3>
-                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                  {searchQuery || statusFilter !== 'all' 
-                    ? 'Try adjusting your search or filters'
-                    : 'Disposable menus are secure, time-limited catalogs that you can share with clients. They auto-destruct after use.'}
-                </p>
-                {!searchQuery && statusFilter === 'all' && (
-                  <Button 
-                    onClick={() => setWizardOpen(true)}
-                    className="bg-gradient-to-r from-violet-600 to-indigo-600"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Your First Menu
-                  </Button>
-                )}
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredMenus.map((menu: any) => (
-                  <MenuCard key={menu.id} menu={menu} />
-                ))}
-              </div>
-            )}
+            <ResponsiveGrid
+              data={filteredMenus}
+              isLoading={isLoading}
+              keyExtractor={(menu) => menu.id}
+              renderItem={(menu) => <MenuCard menu={menu} />}
+              columns={{ default: 1, md: 2, lg: 3 }}
+              emptyState={{
+                icon: LayoutGrid,
+                title: searchQuery || statusFilter !== 'all' ? 'No menus found' : 'Create Your First Menu',
+                description: searchQuery || statusFilter !== 'all'
+                  ? 'Try adjusting your search or filters'
+                  : 'Disposable menus are secure, time-limited catalogs that you can share with clients. They auto-destruct after use.',
+                primaryAction: (!searchQuery && statusFilter === 'all') ? {
+                  label: 'Create Your First Menu',
+                  onClick: () => setWizardOpen(true),
+                  icon: Plus
+                } : undefined
+              }}
+            />
           </TabsContent>
 
           {/* Orders Tab */}

@@ -7,10 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMenuOrders } from '@/hooks/useDisposableMenus';
 import { format } from 'date-fns';
-import { 
-  ShoppingBag, 
-  Search, 
-  Download, 
+import {
+  ShoppingBag,
+  Search,
+  Download,
   Eye,
   CheckCircle,
   Clock,
@@ -25,6 +25,7 @@ import { showSuccessToast } from '@/utils/toastHelpers';
 import { OrderDetailsDialog } from '@/components/admin/disposable-menus/OrderDetailsDialog';
 import { OrderStatusBadge } from '@/components/admin/disposable-menus/OrderStatusBadge';
 import { ConvertToInvoiceDialog } from '@/components/admin/disposable-menus/ConvertToInvoiceDialog';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 const DisposableMenuOrders = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,13 +39,13 @@ const DisposableMenuOrders = () => {
 
   // Filter orders
   const filteredOrders = orders?.filter(order => {
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch = searchQuery === '' ||
       order.whitelist?.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.contact_phone?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.menu?.name?.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   }) || [];
 
@@ -56,8 +57,8 @@ const DisposableMenuOrders = () => {
     completed: orders?.filter(o => o.status === 'confirmed').length || 0,
     cancelled: orders?.filter(o => o.status === 'rejected').length || 0,
     totalRevenue: orders?.reduce((sum, o) => sum + parseFloat(String(o.total_amount || 0)), 0) || 0,
-    avgOrderValue: orders && orders.length > 0 
-      ? orders.reduce((sum, o) => sum + parseFloat(String(o.total_amount || 0)), 0) / orders.length 
+    avgOrderValue: orders && orders.length > 0
+      ? orders.reduce((sum, o) => sum + parseFloat(String(o.total_amount || 0)), 0) / orders.length
       : 0
   };
 
@@ -249,10 +250,12 @@ const DisposableMenuOrders = () => {
                 Loading orders...
               </div>
             ) : filteredOrders.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <ShoppingBag className="h-12 w-12 mx-auto mb-2 opacity-20" />
-                <p>No orders found</p>
-              </div>
+              <EnhancedEmptyState
+                icon={ShoppingBag}
+                title="No Orders Found"
+                description={searchQuery || statusFilter !== 'all' ? "No orders match your current filters." : "No orders have been placed yet."}
+                compact
+              />
             ) : (
               <div className="space-y-3">
                 {filteredOrders.map((order) => (
@@ -285,8 +288,8 @@ const DisposableMenuOrders = () => {
                         </div>
                         <div className="flex gap-2 justify-end">
                           {!order.converted_to_invoice_id && (
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="outline"
                               onClick={(e) => {
                                 e.stopPropagation();

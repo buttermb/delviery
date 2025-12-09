@@ -218,7 +218,7 @@ export default function CustomerForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         <SEOHead
           title={isEdit ? 'Edit Customer' : 'Add Customer'}
@@ -233,10 +233,10 @@ export default function CustomerForm() {
               Back
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-foreground">
                 {isEdit ? 'Edit Customer' : 'Add New Customer'}
               </h1>
-              <p className="text-gray-500 mt-1">
+              <p className="text-muted-foreground mt-1">
                 {isEdit ? 'Update customer information' : 'Create a new customer profile'}
               </p>
             </div>
@@ -247,9 +247,9 @@ export default function CustomerForm() {
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
             {/* Basic Information */}
-            <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-[hsl(var(--tenant-text))]">Basic Information</CardTitle>
+                <CardTitle>Basic Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -336,9 +336,9 @@ export default function CustomerForm() {
             </Card>
 
             {/* Customer Type */}
-            <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-[hsl(var(--tenant-text))]">Customer Type</CardTitle>
+                <CardTitle>Customer Type</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -387,7 +387,6 @@ export default function CustomerForm() {
                 type="button"
                 variant="outline"
                 onClick={() => navigateToAdmin('customer-management')}
-                className="border-gray-300"
               >
                 Cancel
               </Button>

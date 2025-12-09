@@ -3,6 +3,7 @@
  * Returns default values when ClerkProvider is not available
  */
 import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
+import * as ClerkReact from '@clerk/clerk-react';
 
 interface GetTokenOptions {
   template?: string;
@@ -19,7 +20,7 @@ interface SafeAuthReturn {
 }
 
 interface SafeUserReturn {
-  user: any | null;
+  user: unknown | null;
   isLoaded: boolean;
 }
 
@@ -47,12 +48,10 @@ export function useAuthSafe(): SafeAuthReturn {
     return defaultAuth;
   }
   
-  // Use try-catch with dynamic require to safely call Clerk hooks
+  // Use try-catch to safely call Clerk hooks
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useAuth } = require('@clerk/clerk-react');
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const auth = useAuth();
+    const auth = ClerkReact.useAuth();
     return {
       isSignedIn: auth.isSignedIn,
       isLoaded: auth.isLoaded,
@@ -76,10 +75,8 @@ export function useUserSafe(): SafeUserReturn {
   }
   
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useUser } = require('@clerk/clerk-react');
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const { user, isLoaded } = useUser();
+    const { user, isLoaded } = ClerkReact.useUser();
     return { user, isLoaded };
   } catch {
     return defaultUser;

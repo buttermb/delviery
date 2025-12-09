@@ -1,10 +1,9 @@
-// @ts-nocheck - Purchase orders table types not yet regenerated
 import { logger } from '@/lib/logger';
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import {
   Package,
   FileText,
@@ -12,134 +11,193 @@ import {
   TrendingUp,
   Loader2,
   Eye,
+  LogOut,
 } from "lucide-react";
-import { queryKeys } from "@/lib/queryKeys";
+import { useVendorAuth } from '@/contexts/VendorAuthContext';
+
+interface MarketplaceOrder {
+  id: string;
+  order_number: string;
+  buyer_business_name: string | null;
+  status: string;
+  total_amount: number;
+  payment_status: string;
+  created_at: string;
+}
 
 export default function VendorDashboardPage() {
-  // This would use a vendor auth context in a real implementation
-  const vendorId = "current-vendor-id"; // Placeholder
+  const { vendor, logout } = useVendorAuth();
+  const navigate = useNavigate();
 
-  const { data: purchaseOrders, isLoading } = useQuery({
-    queryKey: queryKeys.vendor.purchaseOrders(vendorId),
+  const { data: orders, isLoading } = useQuery({
+    queryKey: ['vendor-orders', vendor?.tenant_id],
+    enabled: !!vendor?.tenant_id,
     queryFn: async () => {
+      if (!vendor?.tenant_id) return [];
+
       try {
         const { data, error } = await supabase
-          .from("purchase_orders")
+          .from("marketplace_orders")
           .select("*")
-          .eq("supplier_id", vendorId)
+          .eq("seller_tenant_id", vendor.tenant_id)
           .order("created_at", { ascending: false })
-          .limit(10);
+          .limit(20);
 
-        if (error && error.code !== "42P01") {
-          logger.error('Failed to fetch purchase orders', error, { component: 'VendorDashboardPage' });
-          return [];
+        if (error) {
+          logger.error('Failed to fetch marketplace orders', error, { component: 'VendorDashboardPage' });
+          throw error;
         }
 
-        return data || [];
-      } catch {
+        return data as MarketplaceOrder[];
+      } catch (err) {
+        logger.error('Error fetching orders', err);
         return [];
       }
     },
   });
 
+  // Calculate stats
+  const activeOrders = orders?.filter(o => ['pending', 'accepted', 'processing', 'shipped'].includes(o.status)).length || 0;
+
+  // Pending payment: delivered but not paid
+  const pendingPayment = orders?.filter(o => o.payment_status !== 'paid' && o.status !== 'cancelled').reduce((sum, o) => sum + Number(o.total_amount), 0) || 0;
+
+  const totalRevenue = orders?.filter(o => o.payment_status === 'paid').reduce((sum, o) => sum + Number(o.total_amount), 0) || 0;
+
   return (
-    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
-            🏭 Vendor Portal
+      <header className="border-b bg-card">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <span className="text-2xl">🏭</span>
+            Vendor Portal
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            View purchase orders, upload invoices, and track payments
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-muted-foreground hidden sm:block">
+              {vendor?.business_name}
+            </div>
+            <Button variant="ghost" size="sm" onClick={logout} className="gap-2">
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8 space-y-6">
+        {/* Welcome Section */}
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground">
+            Manage your wholesale orders and track your revenue.
           </p>
         </div>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active POs</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {purchaseOrders?.filter((po: any) => po.status === "pending" || po.status === "approved").length || 0}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Payment</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$0.00</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$0.00</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Products</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Orders</CardTitle>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {activeOrders}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending Payment</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${pendingPayment.toFixed(2)}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Marketplace Status</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold capitalize text-primary text-sm">
+                {vendor?.marketplace_status || 'Unknown'}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Purchase Orders */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Purchase Orders</CardTitle>
-          <CardDescription>
-            View and manage purchase orders from your customers
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : purchaseOrders && purchaseOrders.length > 0 ? (
-            <div className="space-y-2">
-              {purchaseOrders.map((po: any) => (
-                <div
-                  key={po.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div>
-                    <div className="text-sm font-medium">PO #{po.po_number}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(po.created_at).toLocaleDateString()}
+        {/* Purchase Orders */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Orders</CardTitle>
+            <CardDescription>
+              View and manage wholesale orders from retailers.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : orders && orders.length > 0 ? (
+              <div className="space-y-4">
+                {orders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors gap-4"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-lg">#{order.order_number}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${order.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                          order.status === 'accepted' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                            order.status === 'delivered' ? 'bg-green-50 text-green-700 border-green-200' :
+                              'bg-gray-50 text-gray-700 border-gray-200'
+                          }`}>
+                          {order.status.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {order.buyer_business_name || 'Unknown Buyer'} • {new Date(order.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="font-bold">${Number(order.total_amount).toFixed(2)}</div>
+                        <div className={`text-xs ${order.payment_status === 'paid' ? 'text-green-600' : 'text-amber-600'}`}>
+                          {order.payment_status === 'paid' ? 'Paid' : 'Unpaid'}
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm" className="h-9" onClick={() => navigate(`/vendor/order/${order.id}`)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View
+                      </Button>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" className="min-h-[44px] touch-manipulation">
-                    <Eye className="h-4 w-4 mr-2" />
-                    View
-                  </Button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No purchase orders found.</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                <h3 className="text-lg font-medium text-foreground">No orders yet</h3>
+                <p>When retailers place orders, they will appear here.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </main>
     </div>
   );
 }
-

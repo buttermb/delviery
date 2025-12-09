@@ -159,7 +159,7 @@ export default function UnifiedActiveDeliveryPage() {
         </div>
       </header>
 
-      <main className="container px-4 py-6 space-y-6">
+      <main className="container px-4 py-6 space-y-6 pb-40">
         {/* Contact Info */}
         <Card>
           <CardHeader>
@@ -281,7 +281,7 @@ export default function UnifiedActiveDeliveryPage() {
         />
 
         {/* Action Buttons */}
-        <div className="space-y-3 sticky bottom-0 pb-6">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t space-y-3 z-40 safe-area-bottom shadow-lg">
           <Button onClick={openNavigation} className="w-full gap-2" size="lg">
             <Navigation className="h-5 w-5" />
             Navigate to Address

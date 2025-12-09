@@ -18,6 +18,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { supabase } from '@/integrations/supabase/client';
 import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
 import { 
   ChevronDown, ChevronUp, Loader2, Check, Package, Users, 
   Shield, Calendar, Copy, ExternalLink, Sparkles
@@ -34,6 +35,7 @@ interface QuickCreateMenuProps {
 export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
   const { tenant } = useTenantAdminAuth();
   const createMenu = useCreateDisposableMenu();
+  const { checkLimit, recordAction, limitsApply } = useFreeTierLimits();
 
   // Form state
   const [name, setName] = useState('');
@@ -115,6 +117,17 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
       return;
     }
 
+    // Check free tier daily limit (users with purchased credits bypass limits)
+    if (limitsApply) {
+      const limitCheck = checkLimit('menus_per_day');
+      if (!limitCheck.allowed) {
+        toast.error('Daily Menu Limit Reached', {
+          description: limitCheck.message,
+        });
+        return;
+      }
+    }
+
     try {
       await createMenu.mutateAsync({
         tenant_id: tenant.id,
@@ -131,6 +144,11 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
           max_views: maxViews,
         },
       });
+
+      // Record action for free tier limit tracking
+      if (limitsApply) {
+        await recordAction('menu');
+      }
 
       // Reset and close
       setName('');

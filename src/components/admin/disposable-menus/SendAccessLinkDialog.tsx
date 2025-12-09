@@ -16,6 +16,8 @@ import { Mail, MessageSquare, Loader2, Copy, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
+import { CreditCostBadge, CreditCostIndicator } from '@/components/credits';
+import { useCredits } from '@/hooks/useCredits';
 
 interface SendAccessLinkDialogProps {
   open: boolean;
@@ -40,12 +42,28 @@ export function SendAccessLinkDialog({
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<{ message?: string; [key: string]: unknown } | null>(null);
   const [copied, setCopied] = useState(false);
+  const { isFreeTier, performAction } = useCredits();
 
   const accessUrl = `${window.location.origin}/menu/${whitelistEntry.unique_access_token}`;
 
   const handleSend = async () => {
     setLoading(true);
     try {
+      // Consume credits for the action
+      const actionKey = method === 'email' ? 'send_email' : 'send_sms';
+      if (isFreeTier) {
+        const creditResult = await performAction(actionKey, whitelistEntry.id, 'menu_access');
+        if (!creditResult.success) {
+          toast({
+            variant: 'destructive',
+            title: 'Insufficient Credits',
+            description: creditResult.errorMessage || 'Not enough credits for this action',
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('send-menu-access-link', {
         body: {
           whitelistId: whitelistEntry.id,
@@ -106,12 +124,14 @@ export function SendAccessLinkDialog({
         <div className="space-y-6">
           {/* Access URL Display */}
           <div className="space-y-2">
-            <Label>Access Link</Label>
+            <Label htmlFor="access-link">Access Link</Label>
             <div className="flex gap-2">
               <input
+                id="access-link"
                 type="text"
                 value={accessUrl}
                 readOnly
+                aria-label="Menu access link"
                 className="flex-1 px-3 py-2 border rounded-md bg-muted text-sm"
               />
               <Button
@@ -134,18 +154,20 @@ export function SendAccessLinkDialog({
             <RadioGroup value={method} onValueChange={(v) => setMethod(v as 'email' | 'sms')}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="email" id="email" disabled={!canSendEmail} />
-                <Label htmlFor="email" className="flex items-center gap-2">
+                <Label htmlFor="email" className="flex items-center gap-2 flex-wrap">
                   <Mail className="h-4 w-4" />
                   Email {whitelistEntry.customer_email && `(${whitelistEntry.customer_email})`}
                   {!canSendEmail && <span className="text-xs text-muted-foreground">(No email on file)</span>}
+                  {isFreeTier && canSendEmail && <CreditCostBadge actionKey="send_email" compact />}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="sms" id="sms" disabled={!canSendSMS} />
-                <Label htmlFor="sms" className="flex items-center gap-2">
+                <Label htmlFor="sms" className="flex items-center gap-2 flex-wrap">
                   <MessageSquare className="h-4 w-4" />
                   SMS {whitelistEntry.customer_phone && `(${whitelistEntry.customer_phone})`}
                   {!canSendSMS && <span className="text-xs text-muted-foreground">(No phone on file)</span>}
+                  {isFreeTier && canSendSMS && <CreditCostBadge actionKey="send_sms" compact />}
                 </Label>
               </div>
             </RadioGroup>
@@ -175,6 +197,12 @@ export function SendAccessLinkDialog({
         </div>
 
         <DialogFooter className="gap-2">
+          {/* Credit cost indicator */}
+          {isFreeTier && (canSendEmail || canSendSMS) && (
+            <div className="flex-1">
+              <CreditCostIndicator actionKey={method === 'email' ? 'send_email' : 'send_sms'} />
+            </div>
+          )}
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>
@@ -186,7 +214,16 @@ export function SendAccessLinkDialog({
                   Sending...
                 </>
               ) : (
-                `Send via ${method === 'email' ? 'Email' : 'SMS'}`
+                <>
+                  Send via {method === 'email' ? 'Email' : 'SMS'}
+                  {isFreeTier && (
+                    <CreditCostBadge 
+                      actionKey={method === 'email' ? 'send_email' : 'send_sms'} 
+                      className="ml-2" 
+                      showTooltip={false}
+                    />
+                  )}
+                </>
               )}
             </Button>
           )}

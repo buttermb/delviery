@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Shield, Plus, Edit, Trash2 } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
+import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface Role {
   id: string;
@@ -42,7 +44,7 @@ export default function RoleManagement() {
     permissions: [] as string[],
   });
 
-  const { data: roles, isLoading } = useQuery({
+  const { data: roles = [], isLoading } = useQuery({
     queryKey: ['roles', tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
@@ -208,16 +210,83 @@ export default function RoleManagement() {
     }));
   };
 
+  const columns = useMemo<ResponsiveColumn<Role>[]>(() => [
+    {
+      header: 'Role Name',
+      accessorKey: 'name',
+      cell: (role) => (
+        <div className="flex items-center gap-2 font-medium">
+          <Shield className="h-4 w-4 text-muted-foreground" />
+          {role.name}
+        </div>
+      )
+    },
+    {
+      header: 'Description',
+      accessorKey: 'description',
+      cell: (role) => <span className="text-muted-foreground">{role.description || '-'}</span>
+    },
+    {
+      header: 'Permissions',
+      cell: (role) => {
+        if (!role.permissions?.length) return <span className="text-xs text-muted-foreground">None</span>;
+
+        const displayCount = 2;
+        const visiblePermissions = role.permissions.slice(0, displayCount);
+        const remainingCount = role.permissions.length - displayCount;
+
+        return (
+          <div className="flex flex-wrap gap-1 items-center">
+            {visiblePermissions.map((p) => (
+              <Badge key={p} variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+                {p}
+              </Badge>
+            ))}
+            {remainingCount > 0 && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 cursor-help">
+                      +{remainingCount} more
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="flex flex-col gap-1">
+                      {role.permissions.slice(displayCount).map(p => (
+                        <div key={p}>{p}</div>
+                      ))}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+        );
+      }
+    },
+    {
+      header: 'Actions',
+      cell: (role) => (
+        <div className="flex justify-end">
+          <Button variant="ghost" size="sm" onClick={() => handleEdit(role)}>
+            <Edit className="h-4 w-4" />
+            <span className="sr-only">Edit</span>
+          </Button>
+        </div>
+      )
+    }
+  ], []);
+
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="text-center">Loading roles...</div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Role Management</h1>
@@ -229,52 +298,19 @@ export default function RoleManagement() {
         </Button>
       </div>
 
-      {roles && roles.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {roles.map((role) => (
-            <Card key={role.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    <CardTitle>{role.name}</CardTitle>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => handleEdit(role)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <CardDescription>{role.description || 'No description'}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium">Permissions:</div>
-                  <div className="flex flex-wrap gap-2">
-                    {role.permissions.length > 0 ? (
-                      role.permissions.map((perm) => (
-                        <Badge key={perm} variant="secondary">
-                          {perm}
-                        </Badge>
-                      ))
-                    ) : (
-                      <span className="text-sm text-muted-foreground">No permissions</span>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center text-muted-foreground">
-              No roles found. Create your first role to get started.
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <Card>
+        <ResponsiveTable
+          columns={columns}
+          data={roles}
+          keyExtractor={(role) => role.id}
+          emptyState={{
+            title: "No roles found",
+            description: "Create your first role to get started.",
+            icon: Shield
+          }}
+          className="border-0 rounded-none"
+        />
+      </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -337,4 +373,3 @@ export default function RoleManagement() {
     </div>
   );
 }
-

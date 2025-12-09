@@ -6,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, Phone, MessageSquare, Package, DollarSign, AlertCircle, Star, Edit, Flag, Trash2, Truck } from "lucide-react";
 import { ClientNotesPanel } from "@/components/admin/ClientNotesPanel";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
@@ -19,6 +18,8 @@ import { format } from "date-fns";
 import { useState } from "react";
 import { showInfoToast, showSuccessToast } from "@/utils/toastHelpers";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 export default function ClientDetail() {
   const { id, tenantSlug } = useParams<{ id: string; tenantSlug: string }>();
@@ -57,11 +58,11 @@ export default function ClientDetail() {
   // Calculate metrics from real data
   const paidOrders = orders.filter(o => o.status === "delivered");
   const totalSpent = paidOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
-  const avgOrderSize = orders.length > 0 
-    ? orders.reduce((sum, o) => sum + Number(o.total_amount), 0) / orders.length 
+  const avgOrderSize = orders.length > 0
+    ? orders.reduce((sum, o) => sum + Number(o.total_amount), 0) / orders.length
     : 0;
 
-  const unpaidOrders = orders.filter(o => 
+  const unpaidOrders = orders.filter(o =>
     o.status === "pending" || o.status === "assigned" || o.status === "in_transit"
   );
 
@@ -104,15 +105,15 @@ export default function ClientDetail() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(tenantSlug ? `/${tenantSlug}/admin/big-plug-clients` : "/admin/wholesale-clients")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/big-plug-clients")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-foreground">{displayClient.business_name}</h1>
             <div className="flex items-center gap-3 mt-1">
               <Badge variant="outline">{getClientTypeLabel(displayClient.client_type)}</Badge>
-              <CustomerRiskBadge 
-                score={(client as any).risk_score ?? null} 
+              <CustomerRiskBadge
+                score={(client as { risk_score?: number } & typeof client).risk_score ?? null}
                 showLabel={true}
               />
               <span className="text-sm text-muted-foreground">{displayClient.address}</span>
@@ -121,8 +122,8 @@ export default function ClientDetail() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => {
               if (displayClient.phone) {
@@ -133,32 +134,32 @@ export default function ClientDetail() {
             <Phone className="h-4 w-4 mr-2" />
             Call
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => setSmsDialogOpen(true)}
           >
             <MessageSquare className="h-4 w-4 mr-2" />
             Message
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => setEditDialogOpen(true)}
           >
             <Edit className="h-4 w-4 mr-2" />
             Edit
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => showInfoToast("Flag Client", `${displayClient.business_name} marked for review`)}
           >
             <Flag className="h-4 w-4 mr-2" />
             Flag
           </Button>
-          <Button 
-            variant="destructive" 
+          <Button
+            variant="destructive"
             size="sm"
             onClick={() => setRemoveDialogOpen(true)}
           >
@@ -186,7 +187,7 @@ export default function ClientDetail() {
       {/* Financial Overview */}
       <Card className="p-6">
         <h2 className="text-lg font-semibold mb-4">💰 Financial Overview</h2>
-        
+
         {displayClient.outstanding_balance > 0 && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-4">
             <div className="flex items-center justify-between mb-3">
@@ -200,14 +201,14 @@ export default function ClientDetail() {
             </div>
 
             <div className="flex gap-2">
-              <Button 
+              <Button
                 className="bg-emerald-500 hover:bg-emerald-600"
                 onClick={() => setPaymentDialogOpen(true)}
               >
                 <DollarSign className="h-4 w-4 mr-2" />
                 Record Payment
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => {
                   if (displayClient.phone) {
@@ -219,7 +220,7 @@ export default function ClientDetail() {
                 <Phone className="h-4 w-4 mr-2" />
                 Call for Collection
               </Button>
-              <Button 
+              <Button
                 variant="destructive"
                 onClick={() => {
                   showSuccessToast("Escalated", `${displayClient.business_name} escalated to collections team`);
@@ -262,11 +263,10 @@ export default function ClientDetail() {
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`h-4 w-4 ${
-                    i < Math.floor(displayClient.reliability_score / 20)
-                      ? "fill-yellow-500 text-yellow-500"
-                      : "text-muted-foreground"
-                  }`}
+                  className={`h-4 w-4 ${i < Math.floor(displayClient.reliability_score / 20)
+                    ? "fill-yellow-500 text-yellow-500"
+                    : "text-muted-foreground"
+                    }`}
                 />
               ))}
             </div>
@@ -293,29 +293,36 @@ export default function ClientDetail() {
       {/* Recent Orders */}
       <Card className="p-6">
         <h2 className="text-lg font-semibold mb-4">📋 Recent Orders</h2>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order #</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Weight</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders.slice(0, 10).map((order) => {
-              const orderDate = order.created_at ? format(new Date(order.created_at), "MMM d") : "";
-              const isDelivered = order.status === "delivered";
-              const isPending = order.status === "pending" || order.status === "assigned" || order.status === "in_transit";
+        <ResponsiveTable
+          columns={[
+            {
+              header: 'Order #',
+              accessorKey: 'order_number',
+              cell: (order: any) => <span className="font-mono">{order.order_number}</span>
+            },
+            {
+              header: 'Date',
+              accessorKey: 'created_at',
+              cell: (order: any) => order.created_at ? format(new Date(order.created_at), "MMM d") : ""
+            },
+            {
+              header: 'Weight',
+              cell: () => "-"
+            },
+            {
+              header: 'Amount',
+              accessorKey: 'total_amount',
+              cell: (order: any) => <span className="font-mono">${Number(order.total_amount).toLocaleString()}</span>
+            },
+            {
+              header: 'Status',
+              accessorKey: 'status',
+              cell: (order: any) => {
+                const isDelivered = order.status === "delivered";
+                const isPending = order.status === "pending" || order.status === "assigned" || order.status === "in_transit";
 
-              return (
-                <TableRow key={order.id}>
-                  <TableCell className="font-mono">{order.order_number}</TableCell>
-                  <TableCell>{orderDate}</TableCell>
-                  <TableCell>-</TableCell>
-                  <TableCell className="font-mono">${Number(order.total_amount).toLocaleString()}</TableCell>
-                  <TableCell>
+                return (
+                  <>
                     {isPending && (
                       <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
                         ⚠️ PENDING
@@ -329,12 +336,54 @@ export default function ClientDetail() {
                     {order.status === "cancelled" && (
                       <Badge variant="destructive">❌ Cancelled</Badge>
                     )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                    {!isPending && !isDelivered && order.status !== "cancelled" && (
+                      <Badge variant="outline">{order.status}</Badge>
+                    )}
+                  </>
+                );
+              }
+            }
+          ]}
+          data={orders.slice(0, 10)}
+          isLoading={ordersLoading}
+          emptyState={{
+            icon: Package,
+            title: "No Recent Orders",
+            description: "This client hasn't placed any orders yet.",
+            compact: true
+          }}
+          mobileRenderer={(order: any) => (
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="font-mono font-semibold">{order.order_number}</span>
+                <span className="text-sm text-muted-foreground">
+                  {order.created_at ? format(new Date(order.created_at), "MMM d") : ""}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-mono font-medium">${Number(order.total_amount).toLocaleString()}</span>
+                <div>
+                  {order.status === "pending" && (
+                    <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 text-xs">
+                      ⚠️ PENDING
+                    </Badge>
+                  )}
+                  {order.status === "delivered" && (
+                    <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-xs">
+                      ✅ Delivered
+                    </Badge>
+                  )}
+                  {order.status === "cancelled" && (
+                    <Badge variant="destructive" className="text-xs">❌ Cancelled</Badge>
+                  )}
+                  {order.status !== "pending" && order.status !== "delivered" && order.status !== "cancelled" && (
+                    <Badge variant="outline" className="text-xs">{order.status}</Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        />
       </Card>
 
       {/* Client Notes */}
@@ -342,21 +391,21 @@ export default function ClientDetail() {
 
       {/* Actions */}
       <div className="flex flex-wrap gap-2">
-        <Button 
+        <Button
           className="bg-emerald-500 hover:bg-emerald-600"
           onClick={() => navigate("/admin/wholesale-orders/new", { state: { clientId: id, clientName: displayClient.business_name } })}
         >
           <Package className="h-4 w-4 mr-2" />
           New Order
         </Button>
-        <Button 
+        <Button
           className="bg-amber-600 hover:bg-amber-700"
           onClick={() => navigate(`/admin/dispatch-inventory?clientId=${id}`)}
         >
           <Truck className="h-4 w-4 mr-2" />
           Front Inventory
         </Button>
-        <Button 
+        <Button
           variant="outline"
           onClick={() => {
             const newLimit = prompt(`Enter new credit limit for ${displayClient.business_name} (current: $${displayClient.credit_limit.toLocaleString()}):`);
@@ -368,7 +417,7 @@ export default function ClientDetail() {
           <DollarSign className="h-4 w-4 mr-2" />
           Adjust Credit Limit
         </Button>
-        <Button 
+        <Button
           variant="destructive"
           onClick={() => setSuspendDialogOpen(true)}
         >
@@ -415,8 +464,7 @@ export default function ClientDetail() {
         onConfirm={async () => {
           try {
             showSuccessToast("Client Removed", `${displayClient.business_name} has been removed`);
-            const path = tenantSlug ? `/${tenantSlug}/admin/big-plug-clients` : "/admin/wholesale-clients";
-            navigate(path);
+            navigate("/admin/big-plug-clients");
           } catch (error: unknown) {
             logger.error("Failed to remove client", error, { component: "ClientDetail", clientId: id });
           }

@@ -32,3 +32,30 @@ export type MarketplaceListing = Database['public']['Tables']['marketplace_listi
   favorites_count?: number;
   published_at?: string | null;
 };
+
+export type MarketplaceProfile = {
+  id: string;
+  tenant_id: string;
+  business_name: string;
+  business_description?: string | null;
+  logo_url?: string | null;
+  cover_image_url?: string | null;
+  license_number?: string | null;
+  license_type?: string | null;
+  license_state?: string | null;
+  license_expiry_date?: string | null;
+  license_document_url?: string | null;
+  license_verified?: boolean;
+  license_verified_at?: string | null;
+  marketplace_status: 'pending' | 'active' | 'suspended' | 'rejected';
+  can_sell?: boolean;
+  verified_badge?: boolean;
+  shipping_states?: string[];
+  shipping_policy?: string | null;
+  return_policy?: string | null;
+  average_rating?: number;
+  total_reviews?: number;
+  total_orders?: number;
+  created_at?: string;
+  updated_at?: string;
+};

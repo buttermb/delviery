@@ -22,13 +22,22 @@ import {
   Plus,
   CheckCircle2,
   Circle,
+  Coins,
+  Sparkles,
 } from "lucide-react";
+import { useCredits } from "@/hooks/useCredits";
+import { CreditBalance } from "@/components/credits/CreditBalance";
+import { CreditPurchaseCelebration } from "@/components/credits/CreditPurchaseCelebration";
+import { FREE_TIER_MONTHLY_CREDITS } from "@/lib/credits";
+import { useSearchParams } from "react-router-dom";
 import { UnifiedAnalyticsDashboard } from "@/components/analytics/UnifiedAnalyticsDashboard";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { Link } from "react-router-dom";
 import { LimitGuard } from "@/components/whitelabel/LimitGuard";
 import { useTenantLimits } from "@/hooks/useTenantLimits";
+import { useFreeTierLimits } from "@/hooks/useFreeTierLimits";
+import { FREE_TIER_LIMITS } from "@/lib/credits";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
 import { dashboardTutorial } from "@/lib/tutorials/tutorialConfig";
@@ -37,6 +46,7 @@ import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBann
 import { DataSetupBanner } from "@/components/admin/DataSetupBanner";
 import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
 import { useToast } from "@/hooks/use-toast";
+import { formatSmartDate } from "@/lib/utils/formatDate";
 import { handleError } from "@/utils/errorHandling/handlers";
 import { TrialExpirationBanner } from '@/components/billing/TrialExpirationBanner';
 import { DashboardWidgetGrid } from '@/components/tenant-admin/DashboardWidgetGrid';
@@ -62,6 +72,7 @@ export default function TenantAdminDashboardPage() {
   const location = useLocation();
   const { admin, tenant, logout, loading: authLoading } = useTenantAdminAuth();
   const { getLimit, getCurrent } = useTenantLimits();
+  const { usage, hasPurchasedCredits, hasActiveCredits, limitsApply } = useFreeTierLimits();
   const tenantId = tenant?.id;
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showQuickStart, setShowQuickStart] = useState(false);
@@ -76,8 +87,38 @@ export default function TenantAdminDashboardPage() {
   const hasPaymentMethod = tenant?.payment_method_added === true;
   const isTrialActive = tenant?.subscription_status === 'trial';
 
+  // Credit system for free tier users
+  const {
+    balance: creditBalance,
+    isFreeTier,
+    isLowCredits,
+    isCriticalCredits,
+    isOutOfCredits,
+    nextFreeGrantAt,
+    lifetimeSpent,
+  } = useCredits();
+
   const [generatingDemoData, setGeneratingDemoData] = useState(false);
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Credit purchase celebration state
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationCredits, setCelebrationCredits] = useState(0);
+
+  // Handle credits_purchased URL parameter
+  useEffect(() => {
+    if (searchParams.get('credits_purchased') === 'true') {
+      // Show celebration modal
+      setShowCelebration(true);
+      setCelebrationCredits(creditBalance); // Use current balance as approximate
+
+      // Clean up URL
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('credits_purchased');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, creditBalance, setSearchParams]);
 
   // Enable real-time sync for dashboard data (MOVED BEFORE EARLY RETURN)
   useRealtimeSync({
@@ -481,19 +522,6 @@ export default function TenantAdminDashboardPage() {
     }
   }, [authLoading, tenantId, tenant]);
 
-  // Early return if auth loading takes too long (NOW SAFE - ALL HOOKS ABOVE)
-  if (authLoading) {
-    // Show loading fallback, but with timeout protection
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
   // Memoize trial calculations
   const trialInfo = useMemo(() => {
     const trialEndsAt = (tenant as any)?.trial_ends_at;
@@ -521,6 +549,19 @@ export default function TenantAdminDashboardPage() {
   const onboardingProgress = onboardingSteps.length > 0
     ? (completedSteps / onboardingSteps.length) * 100
     : 100;
+
+  // Early return if auth loading takes too long
+  if (authLoading) {
+    // Show loading fallback, but with timeout protection
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -584,13 +625,173 @@ export default function TenantAdminDashboardPage() {
         {/* Email Verification Banner */}
         <EmailVerificationBanner />
 
+        {/* Free Tier Credit Balance Widget */}
+        {isFreeTier && (
+          <Card className={`border-2 ${isOutOfCredits
+            ? 'border-red-500 bg-red-50/50 dark:bg-red-950/20'
+            : isCriticalCredits
+              ? 'border-orange-400 bg-orange-50/50 dark:bg-orange-950/20'
+              : isLowCredits
+                ? 'border-yellow-400 bg-yellow-50/50 dark:bg-yellow-950/20'
+                : 'border-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20'
+            }`}>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className={`h-12 w-12 rounded-full flex items-center justify-center ${isOutOfCredits
+                    ? 'bg-red-100 dark:bg-red-900/30'
+                    : isCriticalCredits
+                      ? 'bg-orange-100 dark:bg-orange-900/30'
+                      : isLowCredits
+                        ? 'bg-yellow-100 dark:bg-yellow-900/30'
+                        : 'bg-emerald-100 dark:bg-emerald-900/30'
+                    }`}>
+                    <Coins className={`h-6 w-6 ${isOutOfCredits
+                      ? 'text-red-600'
+                      : isCriticalCredits
+                        ? 'text-orange-600'
+                        : isLowCredits
+                          ? 'text-yellow-600'
+                          : 'text-emerald-600'
+                      }`} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-2xl font-bold ${isOutOfCredits
+                        ? 'text-red-700 dark:text-red-300'
+                        : isCriticalCredits
+                          ? 'text-orange-700 dark:text-orange-300'
+                          : isLowCredits
+                            ? 'text-yellow-700 dark:text-yellow-300'
+                            : 'text-emerald-700 dark:text-emerald-300'
+                        }`}>
+                        {creditBalance.toLocaleString()}
+                      </span>
+                      <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                        Free Tier
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      of {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} credits this month
+                      {nextFreeGrantAt && (
+                        <> · Refresh on {nextFreeGrantAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</>
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <CreditBalance variant="badge" className="hidden sm:flex" />
+                  <Button
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto"
+                    onClick={() => navigate(`/${tenant?.slug}/admin/select-plan`)}
+                  >
+                    <Sparkles className="h-4 w-4 mr-1" />
+                    Upgrade for Unlimited
+                  </Button>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div className="mt-4">
+                <Progress
+                  value={Math.min(100, (creditBalance / FREE_TIER_MONTHLY_CREDITS) * 100)}
+                  className={`h-2 ${isOutOfCredits ? '[&>div]:bg-red-500' :
+                    isCriticalCredits ? '[&>div]:bg-orange-500' :
+                      isLowCredits ? '[&>div]:bg-yellow-500' :
+                        '[&>div]:bg-emerald-500'
+                    }`}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>{lifetimeSpent.toLocaleString()} credits used</span>
+                  <span>{creditBalance.toLocaleString()} remaining</span>
+                </div>
+              </div>
+
+              {/* Warning message */}
+              {(isLowCredits || isCriticalCredits || isOutOfCredits) && (
+                <p className={`text-sm mt-3 ${isOutOfCredits
+                  ? 'text-red-600 dark:text-red-400'
+                  : isCriticalCredits
+                    ? 'text-orange-600 dark:text-orange-400'
+                    : 'text-yellow-600 dark:text-yellow-400'
+                  }`}>
+                  {isOutOfCredits
+                    ? "⚠️ You're out of credits! Some actions may be unavailable until you upgrade or your credits refresh."
+                    : isCriticalCredits
+                      ? "⚠️ Credits almost depleted! Consider upgrading for unlimited access."
+                      : "💡 Running low on credits. Upgrade to a paid plan for unlimited usage."}
+                </p>
+              )}
+
+              {/* Daily/Monthly Usage Summary - Context-aware messaging */}
+              {hasActiveCredits ? (
+                // User has purchased credits AND has balance > 0
+                <div className="mt-4 pt-4 border-t border-muted-foreground/20">
+                  <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <p className="text-sm font-medium">Full Access Unlocked</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    No daily limits — use all features freely while you have credits!
+                  </p>
+                </div>
+              ) : hasPurchasedCredits && !hasActiveCredits ? (
+                // User has purchased before BUT credits exhausted
+                <div className="mt-4 pt-4 border-t border-muted-foreground/20">
+                  <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400">
+                    <AlertTriangle className="h-4 w-4" />
+                    <p className="text-sm font-medium">Credits Exhausted</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Your purchased credits have run out. Daily limits are now active.
+                    <br />
+                    <span className="text-orange-600 font-medium">Buy more credits to restore unlimited access!</span>
+                  </p>
+                </div>
+              ) : usage && limitsApply && (
+                // Never purchased - show limits with tip
+                <div className="mt-4 pt-4 border-t border-muted-foreground/20">
+                  <p className="text-xs text-muted-foreground mb-2 font-medium">Today's Usage Limits</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="text-center p-2 rounded bg-muted/50">
+                      <span className="text-lg font-semibold">{usage.menus_today || 0}</span>
+                      <span className="text-muted-foreground">/{FREE_TIER_LIMITS.max_menus_per_day}</span>
+                      <p className="text-[10px] text-muted-foreground">Menus</p>
+                    </div>
+                    <div className="text-center p-2 rounded bg-muted/50">
+                      <span className="text-lg font-semibold">{usage.orders_today || 0}</span>
+                      <span className="text-muted-foreground">/{FREE_TIER_LIMITS.max_orders_per_day}</span>
+                      <p className="text-[10px] text-muted-foreground">Orders</p>
+                    </div>
+                    <div className="text-center p-2 rounded bg-muted/50">
+                      <span className="text-lg font-semibold">{usage.sms_this_month || 0}</span>
+                      <span className="text-muted-foreground">/{FREE_TIER_LIMITS.max_sms_per_month}</span>
+                      <p className="text-[10px] text-muted-foreground">SMS/mo</p>
+                    </div>
+                    <div className="text-center p-2 rounded bg-muted/50">
+                      <span className="text-lg font-semibold">{usage.exports_this_month || 0}</span>
+                      <span className="text-muted-foreground">/{FREE_TIER_LIMITS.max_exports_per_month}</span>
+                      <p className="text-[10px] text-muted-foreground">Exports/mo</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-emerald-600 mt-2">
+                    💡 Tip: Buy credits to remove all daily limits!
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Data Setup Banner - Prominent for empty accounts */}
         <DataSetupBanner />
 
         {/* Onboarding Checklist - For new users */}
         {tenant?.slug && isTrialActive && (
-          <OnboardingChecklist 
-            tenantSlug={tenant.slug} 
+          <OnboardingChecklist
+            tenantSlug={tenant.slug}
             className="mb-4"
           />
         )}
@@ -951,7 +1152,7 @@ export default function TenantAdminDashboardPage() {
                         • {activity.message}
                       </p>
                       <p className="text-xs text-[hsl(var(--tenant-text-light))] mt-1">
-                        {new Date(activity.timestamp).toLocaleString()}
+                        {formatSmartDate(activity.timestamp, { includeTime: true })}
                       </p>
                     </div>
                   </div>
@@ -1012,6 +1213,14 @@ export default function TenantAdminDashboardPage() {
       <TrialWelcomeModal
         tenantSlug={tenant?.slug}
         businessName={tenant?.business_name}
+      />
+
+      {/* Credit Purchase Celebration */}
+      <CreditPurchaseCelebration
+        open={showCelebration}
+        onOpenChange={setShowCelebration}
+        creditsAdded={celebrationCredits}
+        newBalance={creditBalance}
       />
 
       {/* Quick Start Wizard for empty accounts */}

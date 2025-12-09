@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +36,7 @@ import { cn } from "@/lib/utils";
 import { useCreateInvoice } from "@/hooks/crm/useInvoices";
 import { useLogActivity } from "@/hooks/crm/useActivityLog";
 import { useAccountIdSafe } from "@/hooks/crm/useAccountId";
+import { useCreditGatedAction } from "@/hooks/useCredits";
 import { logger } from '@/lib/logger';
 import { ClientSelector } from "@/components/crm/ClientSelector";
 import { LineItemsEditor } from "@/components/crm/LineItemsEditor";
@@ -54,6 +56,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function CreateInvoicePage() {
+    const { tenant } = useTenantAdminAuth();
     const navigate = useNavigate();
     const accountId = useAccountIdSafe();
     const createInvoice = useCreateInvoice();
@@ -77,6 +80,8 @@ export default function CreateInvoicePage() {
     const taxAmount = subtotal * (taxRate / 100);
     const total = subtotal + taxAmount;
 
+    const { execute: executeCreditAction } = useCreditGatedAction();
+
     const onSubmit = async (values: FormValues) => {
         if (!accountId) {
             toast.error('Account information not available');
@@ -88,39 +93,46 @@ export default function CreateInvoicePage() {
             return;
         }
 
-        try {
-            const invoice = await createInvoice.mutateAsync({
-                account_id: accountId,
-                client_id: values.client_id,
-                invoice_date: values.issue_date.toISOString().split('T')[0],
-                due_date: values.due_date.toISOString().split('T')[0],
-                status: values.status,
-                line_items: lineItems,
-                subtotal,
-                tax_rate: taxRate,
-                tax_amount: taxAmount,
-                total,
-                notes: values.notes,
-            });
+        await executeCreditAction('invoice_create', async () => {
+            try {
+                const invoice = await createInvoice.mutateAsync({
+                    account_id: accountId,
+                    client_id: values.client_id,
+                    invoice_date: values.issue_date.toISOString().split('T')[0],
+                    due_date: values.due_date.toISOString().split('T')[0],
+                    status: values.status,
+                    line_items: lineItems,
+                    subtotal,
+                    tax_rate: taxRate,
+                    tax_amount: taxAmount,
+                    total,
+                    notes: values.notes,
+                });
 
-            // Log activity
-            logActivity.mutate({
-                client_id: values.client_id,
-                activity_type: "invoice_created",
-                description: `Invoice #${invoice.invoice_number} created`,
-                reference_id: invoice.id,
-                reference_type: "crm_invoices",
-            });
+                // Log activity
+                logActivity.mutate({
+                    client_id: values.client_id,
+                    activity_type: "invoice_created",
+                    description: `Invoice #${invoice.invoice_number} created`,
+                    reference_id: invoice.id,
+                    reference_type: "crm_invoices",
+                });
 
-            toast.success("Invoice created successfully");
-            navigate(`/admin/crm/invoices/${invoice.id}`);
-        } catch (error: unknown) {
-            logger.error('Failed to create invoice', error, { 
-                component: 'CreateInvoicePage',
-                clientId: values.client_id 
-            });
-            // Error also handled by hook
-        }
+                toast.success("Invoice created successfully");
+                if (tenant?.slug) {
+                    navigate(`/${tenant.slug}/admin/crm/invoices/${invoice.id}`);
+                }
+            } catch (error: unknown) {
+                logger.error('Failed to create invoice', error, {
+                    component: 'CreateInvoicePage',
+                    clientId: values.client_id
+                });
+                throw error; // Re-throw to be handled by executeCreditAction if desired, though hook handles generic errors, we might want to let toast propagate from here?
+                // Actually the existing code had a try/catch logging error.
+                // useCreditGatedAction catches unexpected errors.
+                // But createInvoice hook might throw specific errors.
+            }
+        });
     };
 
     return (

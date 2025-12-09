@@ -40,6 +40,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { queryKeys } from '@/lib/queryKeys';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 export default function CategoriesPage() {
   const navigate = useNavigate();
@@ -374,15 +375,16 @@ export default function CategoriesPage() {
           </CardContent>
         </Card>
       ) : categoryTree.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Tag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No categories found</p>
-            <Button className="mt-4" onClick={() => setCreateDialogOpen(true)}>
-              Create Your First Category
-            </Button>
-          </CardContent>
-        </Card>
+        <EnhancedEmptyState
+          icon={Tag}
+          title="No Categories Found"
+          description="Create your first category to organize products."
+          primaryAction={{
+            label: "Create Your First Category",
+            onClick: () => setCreateDialogOpen(true),
+            icon: Plus
+          }}
+        />
       ) : (
         <Card>
           <CardContent className="p-6">

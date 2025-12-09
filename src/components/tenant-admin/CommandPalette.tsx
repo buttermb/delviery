@@ -12,6 +12,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { create } from 'zustand';
 import {
   CommandDialog,
   CommandEmpty,
@@ -57,6 +58,19 @@ import { STORAGE_KEYS } from '@/constants/storageKeys';
 // Recent items storage key
 const RECENT_ITEMS_KEY = 'commandPalette_recentItems';
 
+// Global state for command palette visibility
+interface CommandPaletteState {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  toggle: () => void;
+}
+
+export const useCommandPaletteStore = create<CommandPaletteState>((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  toggle: () => set((state) => ({ open: !state.open })),
+}));
+
 interface RecentItem {
   id: string;
   type: 'page' | 'order' | 'client' | 'product';
@@ -86,7 +100,9 @@ export function TenantAdminCommandPalette() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { tenant } = useTenantAdminAuth();
-  const [open, setOpen] = useState(false);
+
+  // Use global state
+  const { open, setOpen, toggle } = useCommandPaletteStore();
   const [search, setSearch] = useState('');
 
   // Recent items from localStorage
@@ -118,7 +134,7 @@ export function TenantAdminCommandPalette() {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        toggle();
       }
     };
 

@@ -106,7 +106,9 @@ export default function RecordFrontedSale() {
       await supabase.from('fronted_inventory_scans').insert(scanRecords);
 
       toast({ title: 'Success!', description: `${totalSold} units recorded as sold` });
-      navigate(`/admin/inventory/fronted/${id}`);
+      if (tenant?.slug) {
+        navigate(`/${tenant.slug}/admin/inventory/fronted/${id}`);
+      }
     } catch (error) {
       logger.error('Error recording sale', error, { component: 'RecordFrontedSale', frontedInventoryId: id });
       toast({ title: 'Error', description: 'Failed to record sales', variant: 'destructive' });

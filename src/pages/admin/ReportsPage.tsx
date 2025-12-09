@@ -2,23 +2,27 @@
  * Reports Page - Comprehensive reporting and analytics
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import {
   BarChart3, FileText, Package, DollarSign, Download,
-  Calendar, TrendingUp, Loader2, ArrowLeft
+  TrendingUp, Loader2, ArrowLeft
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { format, startOfMonth, endOfMonth, subMonths, subWeeks, subDays } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths, subWeeks } from 'date-fns';
 import { useWholesaleClients, useWholesaleOrders, useWholesalePayments, useWholesaleInventory } from '@/hooks/useWholesaleData';
 import { useExport } from '@/hooks/useExport';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
 import { reportsTutorial } from '@/lib/tutorials/tutorialConfig';
+import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { SearchInput } from '@/components/shared/SearchInput';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 export default function ReportsPage() {
   const navigate = useNavigate();
@@ -26,6 +30,7 @@ export default function ReportsPage() {
   const { tenant } = useTenantAdminAuth();
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter' | 'year' | 'custom'>('month');
   const [reportType, setReportType] = useState<string>('business');
+  const [searchQuery, setSearchQuery] = useState('');
   const { exportCSV } = useExport();
 
   const { data: clients = [], isLoading: clientsLoading } = useWholesaleClients();
@@ -55,15 +60,23 @@ export default function ReportsPage() {
   const { start: startDate, end: endDate } = getDateRange();
 
   // Filter data by date range
-  const filteredOrders = orders.filter(o => {
+  const filteredOrders = useMemo(() => orders.filter(o => {
     const orderDate = new Date(o.created_at);
-    return orderDate >= startDate && orderDate <= endDate;
-  });
+    const matchesDate = orderDate >= startDate && orderDate <= endDate;
+    const matchesSearch = !searchQuery ||
+      o.order_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      o.client?.business_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesDate && matchesSearch;
+  }), [orders, startDate, endDate, searchQuery]);
 
-  const filteredPayments = payments.filter(p => {
+  const filteredPayments = useMemo(() => payments.filter(p => {
     const paymentDate = new Date(p.created_at);
-    return paymentDate >= startDate && paymentDate <= endDate;
-  });
+    const matchesDate = paymentDate >= startDate && paymentDate <= endDate;
+    const matchesSearch = !searchQuery ||
+      p.client?.business_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.payment_method?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesDate && matchesSearch;
+  }), [payments, startDate, endDate, searchQuery]);
 
   // Calculate metrics
   const totalRevenue = filteredOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
@@ -118,6 +131,29 @@ export default function ReportsPage() {
     }
   };
 
+  // Define Columns
+  const businessColumns = useMemo<ResponsiveColumn<any>[]>(() => [
+    { header: 'Order #', accessorKey: 'order_number', className: 'font-mono' },
+    { header: 'Date', cell: (item) => format(new Date(item.created_at), 'MMM d, yyyy') },
+    { header: 'Client', cell: (item) => item.client?.business_name || 'N/A' },
+    { header: 'Amount', cell: (item) => formatCurrency(item.total_amount), className: 'text-right' },
+    { header: 'Status', cell: (item) => <Badge variant="outline">{item.status}</Badge> }
+  ], []);
+
+  const inventoryColumns = useMemo<ResponsiveColumn<any>[]>(() => [
+    { header: 'Product', accessorKey: 'product_name', className: 'font-medium' },
+    { header: 'Quantity (lbs)', accessorKey: 'quantity_lbs' },
+    { header: 'Warehouse', cell: (item) => item.warehouse_location || 'Unassigned' },
+    { header: 'Category', accessorKey: 'category' }
+  ], []);
+
+  const financialColumns = useMemo<ResponsiveColumn<any>[]>(() => [
+    { header: 'Date', cell: (item) => format(new Date(item.created_at), 'MMM d, yyyy') },
+    { header: 'Client', cell: (item) => item.client?.business_name || 'N/A' },
+    { header: 'Amount', cell: (item) => formatCurrency(item.amount), className: 'text-right' },
+    { header: 'Method', cell: (item) => <Badge variant="secondary">{item.payment_method}</Badge> }
+  ], []);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -143,6 +179,13 @@ export default function ReportsPage() {
           <p className="text-xs sm:text-sm text-muted-foreground">Business intelligence and analytics</p>
         </div>
         <div className="flex gap-2 flex-wrap w-full sm:w-auto">
+          <div className="w-full sm:w-[200px]">
+            <SearchInput
+              placeholder="Search..."
+              onSearch={setSearchQuery}
+              defaultValue={searchQuery}
+            />
+          </div>
           <Select value={timeRange} onValueChange={(v: any) => setTimeRange(v)} data-tutorial="date-range">
             <SelectTrigger className="w-full sm:w-[180px] min-h-[44px] touch-manipulation text-sm sm:text-base">
               <SelectValue />
@@ -195,11 +238,11 @@ export default function ReportsPage() {
         </TabsList>
 
         {/* Business Intelligence */}
-        <TabsContent value="business">
+        <TabsContent value="business" className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6">
             <Card className="p-3 sm:p-4 md:p-6">
               <div className="text-xs sm:text-sm text-muted-foreground mb-1">Total Revenue</div>
-              <div className="text-xl sm:text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
+              <div className="text-xl sm:text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
               <div className={`text-xs sm:text-sm flex items-center gap-1 mt-1 ${revenueGrowth >= 0 ? 'text-emerald-600' : 'text-destructive'}`}>
                 <TrendingUp className="h-3 w-3" />
                 {revenueGrowth >= 0 ? '+' : ''}{revenueGrowth.toFixed(1)}% vs last period
@@ -214,7 +257,7 @@ export default function ReportsPage() {
             </Card>
             <Card className="p-3 sm:p-4 md:p-6 sm:col-span-2 md:col-span-1">
               <div className="text-xs sm:text-sm text-muted-foreground mb-1">Avg Order Value</div>
-              <div className="text-xl sm:text-2xl font-bold">${Math.round(avgOrderValue).toLocaleString()}</div>
+              <div className="text-xl sm:text-2xl font-bold">{formatCurrency(avgOrderValue)}</div>
               <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 Per order
               </div>
@@ -223,14 +266,14 @@ export default function ReportsPage() {
 
           <Card className="p-6" data-tutorial="analytics-dashboard">
             <h3 className="text-lg font-semibold mb-4">Performance Overview</h3>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <div className="text-sm text-muted-foreground mb-2">Revenue Collected</div>
                 <div className="text-3xl font-bold text-emerald-500">
-                  ${totalCollected.toLocaleString()}
+                  {formatCurrency(totalCollected)}
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">
-                  {((totalCollected / totalRevenue) * 100).toFixed(1)}% collection rate
+                  {totalRevenue > 0 ? ((totalCollected / totalRevenue) * 100).toFixed(1) : 0}% collection rate
                 </div>
               </div>
               <div>
@@ -241,6 +284,19 @@ export default function ReportsPage() {
                 </div>
               </div>
             </div>
+          </Card>
+
+          <Card className="overflow-hidden">
+            <div className="p-4 border-b">
+              <h3 className="font-semibold">Recent Orders</h3>
+            </div>
+            <ResponsiveTable
+              columns={businessColumns}
+              data={filteredOrders}
+              keyExtractor={item => item.id}
+              emptyState={{ title: "No orders", description: "No orders found for this period.", icon: FileText }}
+              className="border-0 rounded-none"
+            />
           </Card>
         </TabsContent>
 
@@ -296,7 +352,7 @@ export default function ReportsPage() {
         </TabsContent>
 
         {/* Inventory Reports */}
-        <TabsContent value="inventory">
+        <TabsContent value="inventory" className="space-y-6">
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Inventory Reports</h3>
             <div className="space-y-4">
@@ -310,35 +366,28 @@ export default function ReportsPage() {
                   Export
                 </Button>
               </div>
-              <div className="p-4 border rounded-lg">
-                <h4 className="font-medium mb-2">Movement History</h4>
-                <p className="text-sm text-muted-foreground mb-3">
-                  All inventory movements and transfers
-                </p>
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <h4 className="font-medium mb-2">Low Stock Alerts</h4>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Items below reorder point
-                </p>
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-              </div>
             </div>
+          </Card>
+
+          <Card className="overflow-hidden">
+            <div className="p-4 border-b">
+              <h3 className="font-semibold">Current Inventory</h3>
+            </div>
+            <ResponsiveTable
+              columns={inventoryColumns}
+              data={inventory}
+              keyExtractor={item => item.id || Math.random().toString()}
+              emptyState={{ title: "No inventory", description: "No inventory found.", icon: Package }}
+              className="border-0 rounded-none"
+            />
           </Card>
         </TabsContent>
 
         {/* Financial Reports */}
-        <TabsContent value="financial">
+        <TabsContent value="financial" className="space-y-6">
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Financial Reports</h3>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 border rounded-lg">
                 <h4 className="font-medium mb-2">P&L Statement</h4>
                 <p className="text-sm text-muted-foreground mb-3">
@@ -359,21 +408,23 @@ export default function ReportsPage() {
                   Export
                 </Button>
               </div>
-              <div className="p-4 border rounded-lg">
-                <h4 className="font-medium mb-2">Credit Report</h4>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Outstanding credit and collections
-                </p>
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-              </div>
             </div>
+          </Card>
+
+          <Card className="overflow-hidden">
+            <div className="p-4 border-b">
+              <h3 className="font-semibold">Recent Payments</h3>
+            </div>
+            <ResponsiveTable
+              columns={financialColumns}
+              data={filteredPayments}
+              keyExtractor={item => item.id}
+              emptyState={{ title: "No payments", description: "No payments found for this period.", icon: DollarSign }}
+              className="border-0 rounded-none"
+            />
           </Card>
         </TabsContent>
       </Tabs>
     </div>
   );
 }
-

@@ -5,11 +5,9 @@ import {
   Edit,
   Trash2,
   Package,
-  DollarSign,
   TrendingUp,
-  AlertTriangle,
 } from "lucide-react";
-import { InventoryStatusBadge } from "../tenant-admin/InventoryStatusBadge";
+import { InventoryStatusBadge } from "@/components/admin/InventoryStatusBadge";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import {
   DropdownMenu,
@@ -28,6 +26,7 @@ interface Product {
   in_stock?: boolean;
   image_url?: string;
   sku?: string;
+  low_stock_alert?: number;
   [key: string]: unknown; // Allow additional properties
 }
 
@@ -48,7 +47,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const availableQty = Number(product.available_quantity || 0);
   const isInStock = availableQty > 0;
-  const isLowStock = isInStock && availableQty < 10;
+  const reorderPoint = typeof product.low_stock_alert === 'number' ? product.low_stock_alert : 10;
   const stockQuantity = availableQty;
 
   const profitMargin = (cost: number, price: number) => {
@@ -195,7 +194,7 @@ export function ProductCard({
           </div>
           <InventoryStatusBadge
             quantity={stockQuantity}
-            reorderPoint={10} // Default reorder point if not provided
+            lowStockThreshold={reorderPoint}
           />
         </div>
 

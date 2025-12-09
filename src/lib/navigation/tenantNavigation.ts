@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useParams, useNavigate } from 'react-router-dom';
 
 /**
@@ -25,7 +26,7 @@ export function useTenantNavigation() {
     const navigate = useNavigate();
 
     if (!tenantSlug) {
-        console.error('[useTenantNavigation] Called outside tenant context - tenant slug is missing');
+        logger.error('[useTenantNavigation] Called outside tenant context - tenant slug is missing');
     }
 
     /**
@@ -39,7 +40,7 @@ export function useTenantNavigation() {
      */
     const navigateToAdmin = (path: string) => {
         if (!tenantSlug) {
-            console.error('[navigateToAdmin] Cannot navigate without tenant slug');
+            logger.error('[navigateToAdmin] Cannot navigate without tenant slug');
             return;
         }
 
@@ -67,7 +68,7 @@ export function useTenantNavigation() {
      */
     const buildAdminUrl = (path: string): string => {
         if (!tenantSlug) {
-            console.error('[buildAdminUrl] Cannot build URL without tenant slug');
+            logger.error('[buildAdminUrl] Cannot build URL without tenant slug');
             return '#';
         }
 
@@ -120,7 +121,7 @@ export function useTenantNavigation() {
  */
 export function buildTenantAdminUrl(tenantSlug: string, path: string): string {
     if (!tenantSlug) {
-        console.error('[buildTenantAdminUrl] Tenant slug is required');
+        logger.error('[buildTenantAdminUrl] Tenant slug is required');
         return '#';
     }
 

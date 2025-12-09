@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Download, Database, FileSpreadsheet } from 'lucide-react';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
+import { CreditCostBadge, CreditCostIndicator, useCreditConfirm, CreditConfirmDialog } from '@/components/credits';
+import { useCredits } from '@/hooks/useCredits';
 
 export default function DataExport() {
   const { tenant } = useTenantAdminAuth();
@@ -16,6 +18,7 @@ export default function DataExport() {
   const { toast } = useToast();
   const [exportType, setExportType] = useState<string>('');
   const [format, setFormat] = useState<string>('csv');
+  const { isFreeTier, balance, performAction } = useCredits();
 
   const { data: exportHistory } = useQuery({
     queryKey: ['data-export-history', tenantId],
@@ -51,11 +54,86 @@ export default function DataExport() {
       return;
     }
 
-    toast({
-      title: 'Export Started',
-      description: `Exporting ${exportType} as ${format}...`,
-    });
+    if (!tenantId) return;
+
+    // Consume credits for export action
+    const actionKey = format === 'csv' ? 'export_csv' : 'export_pdf';
+    if (isFreeTier) {
+      const result = await performAction(actionKey, undefined, 'export');
+      if (!result.success) {
+        toast({
+          title: 'Insufficient Credits',
+          description: result.errorMessage || 'Not enough credits for this action',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
+    try {
+      toast({
+        title: 'Export Started',
+        description: `Preparing ${exportType} export...`,
+      });
+
+      // 1. Create Job Record
+      const { data: job, error: dbError } = await supabase
+        .from('data_exports')
+        .insert({
+          tenant_id: tenantId,
+          // user_id: auth.user.id, // need auth context but let's rely on RLS/defaults or ignore if not critical
+          data_type: exportType,
+          format: format,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (dbError) throw dbError;
+
+      // 2. Invoke Edge Function (Async Trigger)
+      // We don't await the result of the processing, just the triggering.
+      // Actually, we should probably catch errors if invocation fails entirely.
+      const { error: invokeError } = await supabase.functions.invoke('process-data-export', {
+        body: { exportId: job.id }
+      });
+
+      if (invokeError) {
+        // If trigger fails, mark as failed in UI at least ? 
+        // Or assume it might retry. But better to warn.
+        logger.error("Failed to trigger export function", invokeError);
+        toast({
+          title: "Warning",
+          description: "Export job created but processing might be delayed.",
+          variant: "default"
+        });
+      } else {
+        toast({
+          title: 'Export Processing',
+          description: 'Your export is running in the background. It will appear in the history list below when complete.',
+        });
+      }
+
+      // Refresh history
+      /* refetch() if we had the query handle handy, but react-query will re-fetch on window focus 
+         or we can invalidate queries */
+
+    } catch (error: any) {
+      logger.error("Export initiation failed", error);
+      toast({
+        title: "Export Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
+
+  // Credit confirmation for exports
+  const { trigger: triggerExport, dialogProps } = useCreditConfirm({
+    actionKey: format === 'csv' ? 'export_csv' : 'export_pdf',
+    actionDescription: `Export ${exportType || 'data'} as ${format.toUpperCase()}`,
+    onConfirm: handleExport,
+  });
 
   return (
     <div className="p-6 space-y-6">
@@ -99,12 +177,21 @@ export default function DataExport() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={handleExport} className="w-full">
+            {/* Credit cost indicator for free tier users */}
+            {isFreeTier && exportType && (
+              <CreditCostIndicator actionKey={format === 'csv' ? 'export_csv' : 'export_pdf'} />
+            )}
+
+            <Button onClick={triggerExport} className="w-full" disabled={!exportType}>
               <Download className="h-4 w-4 mr-2" />
               Export Data
+              {isFreeTier && <CreditCostBadge actionKey={format === 'csv' ? 'export_csv' : 'export_pdf'} className="ml-2" />}
             </Button>
           </CardContent>
         </Card>
+
+        {/* Credit confirmation dialog */}
+        <CreditConfirmDialog {...dialogProps} />
 
         <Card>
           <CardHeader>

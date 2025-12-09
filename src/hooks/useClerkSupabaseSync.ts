@@ -7,18 +7,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
 import { useAuthSafe, useUserSafe } from '@/hooks/useClerkSafe';
+import * as ClerkReact from '@clerk/clerk-react';
 
-// Conditionally import Clerk session hook
+// Conditionally use Clerk session hook
 const useSessionSafe = () => {
   const clerkConfigured = useClerkConfigured();
   if (!clerkConfigured) {
     return { session: null, isLoaded: true };
   }
-  // Dynamic import to avoid hook call when not configured
-  // eslint-disable-next-line react-hooks/rules-of-hooks, @typescript-eslint/no-var-requires
-  const { useSession } = require('@clerk/clerk-react');
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  return useSession();
+  // Use try-catch to safely call Clerk hooks
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return ClerkReact.useSession();
+  } catch {
+    return { session: null, isLoaded: true };
+  }
 };
 
 interface SyncedUser {
@@ -53,7 +56,7 @@ export function useClerkSupabaseSync(): UseClerkSupabaseSyncReturn {
   const { user, isLoaded: userLoaded } = useUserSafe();
   const { session, isLoaded: sessionLoaded } = useSessionSafe();
   const { getToken } = useAuthSafe();
-  
+
   const [syncedUser, setSyncedUser] = useState<SyncedUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSynced, setIsSynced] = useState(false);
@@ -65,7 +68,7 @@ export function useClerkSupabaseSync(): UseClerkSupabaseSyncReturn {
       logger.debug('[ClerkSync] Clerk not configured, skipping sync');
       return;
     }
-    
+
     if (!user || !session) {
       logger.debug('[ClerkSync] No user or session to sync');
       return;
@@ -82,11 +85,11 @@ export function useClerkSupabaseSync(): UseClerkSupabaseSyncReturn {
       const tenantId = (user.publicMetadata?.tenant_id as string) || null;
       const imageUrl = user.imageUrl || null;
 
-      logger.debug('[ClerkSync] Syncing user', { 
-        clerkId: user.id, 
-        email, 
-        role, 
-        tenantId 
+      logger.debug('[ClerkSync] Syncing user', {
+        clerkId: user.id,
+        email,
+        role,
+        tenantId
       });
 
       // Check if user exists in Supabase
@@ -163,7 +166,7 @@ export function useClerkSupabaseSync(): UseClerkSupabaseSyncReturn {
       } else {
         // User exists in Clerk but no tenant - might be super admin or new signup
         logger.debug('[ClerkSync] User has no tenant_id, checking super_admin_users');
-        
+
         // @ts-ignore - Type instantiation too deep, using direct query
         const { data: superAdmin } = await supabase
           .from('super_admin_users')
@@ -243,7 +246,7 @@ export function useClerkSupabaseClient() {
     try {
       // Get Clerk JWT token (if getToken is available)
       const token = getToken ? await getToken({ template: 'supabase' }) : null;
-      
+
       if (!token) {
         logger.warn('[ClerkSupabase] No token available');
         return supabase;
@@ -270,10 +273,10 @@ export function useClerkRole() {
 
   const hasRole = useCallback((requiredRole: string | string[]): boolean => {
     if (!user) return false;
-    
+
     const userRole = (user.publicMetadata?.role as string) || 'member';
     const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
-    
+
     return roles.includes(userRole);
   }, [user]);
 

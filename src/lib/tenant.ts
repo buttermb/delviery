@@ -15,6 +15,12 @@ export interface Tenant {
   owner_email: string;
   owner_name?: string;
   phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  tax_id?: string;
+  website?: string;
   subscription_plan: 'starter' | 'professional' | 'enterprise';
   subscription_status: 'trial' | 'active' | 'past_due' | 'cancelled' | 'suspended';
   trial_ends_at?: string;

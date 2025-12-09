@@ -20,6 +20,8 @@ import {
   Loader2,
   Settings,
   ArrowLeft,
+  Coins,
+  Sparkles,
 } from "lucide-react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
@@ -37,6 +39,11 @@ import { TrialCountdown } from "@/components/tenant-admin/TrialCountdown";
 import { AddPaymentMethodDialog } from "@/components/billing/AddPaymentMethodDialog";
 import { useStripeRedirectHandler } from "@/hooks/useStripeRedirectHandler";
 import { IntegrationStatus } from "@/components/integrations/IntegrationStatus";
+import { useCredits } from "@/hooks/useCredits";
+import { CreditBalance } from "@/components/credits/CreditBalance";
+import { CreditUsageChart } from "@/components/credits/CreditUsageChart";
+import { CreditPurchaseModal } from "@/components/credits/CreditPurchaseModal";
+import { FREE_TIER_MONTHLY_CREDITS, CREDIT_PACKAGES } from "@/lib/credits";
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 type InvoiceLineItem = {
@@ -58,6 +65,7 @@ export default function TenantAdminBillingPage() {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionTier | null>(null);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [creditPurchaseOpen, setCreditPurchaseOpen] = useState(false);
   const navigate = useNavigate();
 
   // Handle Stripe redirect success
@@ -186,6 +194,17 @@ export default function TenantAdminBillingPage() {
   const limits = (tenant?.limits as Record<string, number>) || {};
   const usage = (tenant?.usage as Record<string, number>) || {};
 
+  // Credit system hook for free tier users
+  const {
+    balance: creditBalance,
+    isFreeTier,
+    isLowCredits,
+    isCriticalCredits,
+    isOutOfCredits,
+    nextFreeGrantAt,
+    lifetimeSpent,
+  } = useCredits();
+
   const getUsagePercentage = (resource: string) => {
     const limit = limits[resource] === -1 ? Infinity : (limits[resource] || 0);
     const current = usage[resource] || 0;
@@ -270,6 +289,42 @@ export default function TenantAdminBillingPage() {
         variant: 'destructive',
       });
       return;
+    }
+
+    // Check for downgrade limits
+    const targetPlanObj = subscriptionPlans.find(p => p.name.toLowerCase() === targetPlan.toLowerCase());
+    if (targetPlanObj && targetPlanObj.limits) {
+      const violations: string[] = [];
+      const limits = targetPlanObj.limits as Record<string, number>;
+      const currentUsage = usage as Record<string, number>;
+
+      for (const [resource, limit] of Object.entries(limits)) {
+        if (limit === -1) continue; // Unlimited
+        const current = currentUsage[resource] || 0;
+        if (current > limit) {
+          violations.push(`${resource}: ${current} (Limit: ${limit})`);
+        }
+      }
+
+      if (violations.length > 0) {
+        toast({
+          title: "Cannot Downgrade Yet",
+          description: (
+            <div className="flex flex-col gap-2">
+              <p>Your current usage exceeds the limits of the {targetPlanObj.name} plan:</p>
+              <ul className="list-disc pl-4 text-xs">
+                {violations.map((v, i) => (
+                  <li key={i}>{v}</li>
+                ))}
+              </ul>
+              <p className="text-xs mt-1">Please archive or delete items to proceed.</p>
+            </div>
+          ),
+          variant: "destructive",
+          duration: 10000,
+        });
+        return;
+      }
     }
 
     const isUpgrade = targetIndex > currentIndex;
@@ -454,18 +509,164 @@ export default function TenantAdminBillingPage() {
         )}
 
         <Tabs defaultValue="current" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 h-auto">
-            <TabsTrigger value="current" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">Current Plan</TabsTrigger>
-            <TabsTrigger value="plans" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">Compare Plans</TabsTrigger>
-            <TabsTrigger value="billing" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">Billing History</TabsTrigger>
-            <TabsTrigger value="integrations" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">Integrations</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-4 sm:w-full h-auto gap-1 sm:gap-0">
+              <TabsTrigger value="current" className="min-h-[44px] touch-manipulation text-xs sm:text-sm whitespace-nowrap flex-shrink-0">Current Plan</TabsTrigger>
+              <TabsTrigger value="plans" className="min-h-[44px] touch-manipulation text-xs sm:text-sm whitespace-nowrap flex-shrink-0">Compare Plans</TabsTrigger>
+              <TabsTrigger value="billing" className="min-h-[44px] touch-manipulation text-xs sm:text-sm whitespace-nowrap flex-shrink-0">Billing</TabsTrigger>
+              <TabsTrigger value="integrations" className="min-h-[44px] touch-manipulation text-xs sm:text-sm whitespace-nowrap flex-shrink-0">Integrations</TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* CURRENT PLAN TAB */}
           <TabsContent value="current" className="space-y-6">
             {/* Trial Countdown */}
             {isOnTrial && tenant?.trial_ends_at && trialDaysRemaining > 0 && (
               <TrialCountdown trialEndsAt={tenant.trial_ends_at} />
+            )}
+
+            {/* Free Tier Credit Balance */}
+            {isFreeTier && (
+              <Card className="border-emerald-500/50 bg-emerald-500/5">
+                <CardHeader className="p-3 sm:p-4 md:p-6">
+                  <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
+                    <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
+                    Credit Balance
+                    <Badge variant="outline" className="ml-2 bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                      Free Tier
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 p-3 sm:p-4 md:p-6 pt-0">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-3xl font-bold text-emerald-600">
+                        {creditBalance.toLocaleString()}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        of {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} monthly credits
+                      </p>
+                    </div>
+                    <CreditBalance variant="badge" />
+                  </div>
+
+                  {/* Credit Progress Bar */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Used this month</span>
+                      <span className="font-medium">
+                        {lifetimeSpent.toLocaleString()} credits
+                      </span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all ${isOutOfCredits ? 'bg-red-500' :
+                          isCriticalCredits ? 'bg-orange-500' :
+                            isLowCredits ? 'bg-yellow-500' :
+                              'bg-emerald-500'
+                          }`}
+                        style={{
+                          width: `${Math.min(100, (creditBalance / FREE_TIER_MONTHLY_CREDITS) * 100)}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Next refresh */}
+                  {nextFreeGrantAt && (
+                    <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3">
+                      <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                        <Sparkles className="h-4 w-4 inline mr-1" />
+                        Credits refresh on{' '}
+                        <strong>
+                          {nextFreeGrantAt.toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </strong>
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Low credit warning */}
+                  {(isLowCredits || isCriticalCredits || isOutOfCredits) && (
+                    <Alert variant={isOutOfCredits ? 'destructive' : 'default'} className="border-amber-500/50 bg-amber-500/10">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        {isOutOfCredits
+                          ? "You're out of credits! Purchase more or upgrade to continue using all features."
+                          : "Running low on credits. Consider upgrading for unlimited usage."}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Value comparison */}
+                  <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
+                    <p className="text-xs text-amber-700 dark:text-amber-300">
+                      💡 <strong>Did you know?</strong> Starter plan ($79/mo) gives you unlimited usage.
+                      That's better value than buying just 2 credit packs!
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      className="bg-emerald-600 hover:bg-emerald-700"
+                      onClick={() => navigate(`/${tenant?.slug}/admin/select-plan`)}
+                    >
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Upgrade for Unlimited
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setCreditPurchaseOpen(true)}
+                    >
+                      <Coins className="h-4 w-4 mr-2" />
+                      Buy Credits
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Credit Packages (for free tier) */}
+            {isFreeTier && (
+              <Card>
+                <CardHeader className="p-3 sm:p-4 md:p-6">
+                  <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
+                    <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />
+                    Credit Packages
+                    <Badge variant="secondary" className="ml-2">Pay As You Go</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Need more credits? Purchase a pack anytime. No commitment required.
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {CREDIT_PACKAGES.map((pkg) => (
+                      <div
+                        key={pkg.id}
+                        className="relative border rounded-lg p-3 text-center hover:border-purple-500/50 transition-colors cursor-pointer"
+                        onClick={() => setCreditPurchaseOpen(true)}
+                      >
+                        {pkg.badge && (
+                          <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 text-xs">
+                            {pkg.badge}
+                          </Badge>
+                        )}
+                        <div className="text-xl font-bold text-purple-600 mt-2">
+                          {pkg.credits.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-muted-foreground mb-1">credits</div>
+                        <div className="font-semibold">${(pkg.priceCents / 100).toFixed(2)}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-center text-muted-foreground mt-3">
+                    ⚠️ Credit packs cost more per-action than subscription plans
+                  </p>
+                </CardContent>
+              </Card>
             )}
 
             {/* Current Plan */}
@@ -488,6 +689,10 @@ export default function TenantAdminBillingPage() {
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
                     {plan?.description || "Your current subscription plan"}
+                  </p>
+
+                  <p className="text-xs text-muted-foreground mt-1 mb-2">
+                    Subscriptions auto-renew monthly/yearly. Cancel anytime before renewal date.
                   </p>
 
                   {/* Platform Fee Notice */}
@@ -999,6 +1204,14 @@ export default function TenantAdminBillingPage() {
         onOpenChange={setPaymentDialogOpen}
         tenantId={tenantId || ''}
       />
+
+      {/* Credit Purchase Modal */}
+      {isFreeTier && (
+        <CreditPurchaseModal
+          open={creditPurchaseOpen}
+          onOpenChange={setCreditPurchaseOpen}
+        />
+      )}
     </div >
   );
 }

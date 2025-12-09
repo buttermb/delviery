@@ -15,9 +15,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  MessageSquare, 
-  Search, 
+import {
+  MessageSquare,
+  Search,
   Send,
   Package,
   ShoppingCart,
@@ -81,18 +81,14 @@ export default function MessagesPage() {
   const [replyText, setReplyText] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
-  // Fetch all messages (sent and received) for this tenant as seller
-  // @ts-ignore - Deep instantiation error from Supabase types
+  // Fetch all messages (sent and received) for this tenant
   const { data: messages = [], isLoading } = useQuery<Message[]>({
     queryKey: ['marketplace-messages', tenantId],
     queryFn: async (): Promise<Message[]> => {
       if (!tenantId) return [];
 
-      // Get messages where this tenant is the receiver (seller receiving from buyers)
-      // @ts-ignore - Schema mismatch until migrations are applied
-      const { data: received, error: receivedError } = await supabase
-        // @ts-ignore
-        .from('marketplace_messages')
+      const { data, error } = await supabase
+        .from('marketplace_messages' as any) // Cast table name to any if types are missing
         .select(`
           *,
           sender_tenant:tenants!marketplace_messages_sender_tenant_id_fkey (
@@ -113,26 +109,26 @@ export default function MessagesPage() {
           )
         `)
         .or(`receiver_tenant_id.eq.${tenantId},sender_tenant_id.eq.${tenantId}`)
-        .order('created_at', { ascending: false }) as any;
+        .order('created_at', { ascending: false });
 
-      if (receivedError) {
-        logger.error('Failed to fetch messages', receivedError, { component: 'MessagesPage' });
-        throw receivedError;
+      if (error) {
+        logger.error('Failed to fetch messages', error, { component: 'MessagesPage' });
+        throw error;
       }
 
-      return (received || []) as Message[];
+      return (data || []) as unknown as Message[];
     },
     enabled: !!tenantId,
-    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
+    refetchInterval: 30000,
   });
 
   // Group messages into conversations
   const conversations = messages.reduce((acc: Conversation[], message: Message) => {
     // Determine buyer tenant ID (the one that's not the current tenant)
-    const buyerTenantId = message.sender_tenant_id === tenantId 
-      ? message.receiver_tenant_id 
+    const buyerTenantId = message.sender_tenant_id === tenantId
+      ? message.receiver_tenant_id
       : message.sender_tenant_id;
-    
+
     const buyerName = message.sender_tenant_id === tenantId
       ? message.receiver_tenant?.business_name || 'Unknown Buyer'
       : message.sender_tenant?.business_name || 'Unknown Buyer';
@@ -151,7 +147,7 @@ export default function MessagesPage() {
 
     const conversation = acc.find(c => c.buyerTenantId === buyerTenantId)!;
     conversation.messages.push(message);
-    
+
     // Update last message if this is newer
     if (new Date(message.created_at) > new Date(conversation.lastMessage.created_at)) {
       conversation.lastMessage = message;
@@ -183,21 +179,19 @@ export default function MessagesPage() {
 
   // Get selected conversation messages
   const selectedConv = conversations.find(c => c.buyerTenantId === selectedConversation);
-  const selectedMessages = selectedConv?.messages.sort((a, b) => 
+  const selectedMessages = selectedConv?.messages.sort((a, b) =>
     new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   ) || [];
 
   // Mark messages as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: async (messageIds: string[]) => {
-      // @ts-ignore - Schema mismatch until migrations are applied
       const { error } = await supabase
-        // @ts-ignore
-        .from('marketplace_messages')
+        .from('marketplace_messages' as any)
         .update({
           read: true,
           read_at: new Date().toISOString()
-        } as any)
+        })
         .in('id', messageIds);
 
       if (error) throw error;
@@ -209,8 +203,8 @@ export default function MessagesPage() {
 
   // Send reply mutation
   const sendReplyMutation = useMutation({
-    mutationFn: async ({ buyerTenantId, text, listingId, orderId }: { 
-      buyerTenantId: string; 
+    mutationFn: async ({ buyerTenantId, text, listingId, orderId }: {
+      buyerTenantId: string;
       text: string;
       listingId?: string;
       orderId?: string;
@@ -218,10 +212,8 @@ export default function MessagesPage() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       // TODO: Encrypt message_text with AES-256
-      // @ts-ignore - Schema mismatch until migrations are applied
       const { data, error } = await supabase
-        // @ts-ignore
-        .from('marketplace_messages')
+        .from('marketplace_messages' as any)
         .insert({
           sender_tenant_id: tenantId,
           receiver_tenant_id: buyerTenantId,
@@ -230,7 +222,7 @@ export default function MessagesPage() {
           subject: selectedConv?.lastMessage.subject || undefined,
           listing_id: listingId || selectedConv?.listingId || null,
           order_id: orderId || selectedConv?.orderId || null,
-        } as any)
+        })
         .select()
         .maybeSingle();
 
@@ -259,13 +251,13 @@ export default function MessagesPage() {
   // Handle conversation selection
   const handleSelectConversation = (buyerTenantId: string) => {
     setSelectedConversation(buyerTenantId);
-    
+
     // Mark unread messages as read
     const conv = conversations.find(c => c.buyerTenantId === buyerTenantId);
     const unreadIds = conv?.messages
       .filter(m => m.receiver_tenant_id === tenantId && !m.read)
       .map(m => m.id) || [];
-    
+
     if (unreadIds.length > 0) {
       markAsReadMutation.mutate(unreadIds);
     }
@@ -356,9 +348,8 @@ export default function MessagesPage() {
                     <button
                       key={conv.buyerTenantId}
                       onClick={() => handleSelectConversation(conv.buyerTenantId)}
-                      className={`w-full text-left p-4 hover:bg-muted/50 transition-colors ${
-                        selectedConversation === conv.buyerTenantId ? 'bg-muted' : ''
-                      }`}
+                      className={`w-full text-left p-4 hover:bg-muted/50 transition-colors ${selectedConversation === conv.buyerTenantId ? 'bg-muted' : ''
+                        }`}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
@@ -453,11 +444,10 @@ export default function MessagesPage() {
                           className={`flex ${isFromMe ? 'justify-end' : 'justify-start'}`}
                         >
                           <div
-                            className={`max-w-[80%] rounded-lg p-3 ${
-                              isFromMe
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted'
-                            }`}
+                            className={`max-w-[80%] rounded-lg p-3 ${isFromMe
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted'
+                              }`}
                           >
                             {message.subject && (
                               <div className="font-semibold mb-1 text-sm">
@@ -467,9 +457,8 @@ export default function MessagesPage() {
                             <p className="text-sm whitespace-pre-wrap">
                               {message.message_text}
                             </p>
-                            <div className={`flex items-center gap-2 mt-2 text-xs ${
-                              isFromMe ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                            }`}>
+                            <div className={`flex items-center gap-2 mt-2 text-xs ${isFromMe ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                              }`}>
                               <Clock className="h-3 w-3" />
                               {formatSmartDate(message.created_at)}
                               {isFromMe && message.read && (

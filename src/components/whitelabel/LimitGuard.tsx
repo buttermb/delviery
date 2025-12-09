@@ -34,26 +34,17 @@ export function LimitGuard({
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [dialogType, setDialogType] = useState<'limit' | 'trial'>('limit');
 
-  // Don't show limits UI while loading tenant data
-  if (loading || !tenant) {
-    return <>{children}</>;
-  }
-
   const current = getCurrent(resource);
   const limit = getLimit(resource);
   const remaining = getRemaining(resource);
-  
+
   // Use checkLimit logic: Infinity means unlimited, 0 means no limit set (should be treated as unlimited for top-tier plans)
   // But we check limit > 0 to avoid division by zero and (0/0) display issues
   const unlimited = limit === Infinity || limit <= 0;
 
-  // If unlimited, don't show limits UI
-  if (unlimited) {
-    return <>{children}</>;
-  }
-
   // Calculate percentage safely (limit should always be > 0 here)
   const percentage = limit > 0 ? (current / limit) * 100 : 0;
+
   const showLimitWarning = showWarning && percentage >= warningThreshold && canCreate(resource);
   const showLimitError = !canCreate(resource);
 
@@ -65,7 +56,7 @@ export function LimitGuard({
       setShowUpgradeDialog(false);
       return;
     }
-    
+
     // Only check limit error after loading is complete
     if (!loading && showLimitError) {
       setShowUpgradeDialog(true);
@@ -74,6 +65,16 @@ export function LimitGuard({
       setShowUpgradeDialog(false);
     }
   }, [showLimitError, loading, tenant, unlimited]);
+
+  // Don't show limits UI while loading tenant data
+  if (loading || !tenant) {
+    return <>{children}</>;
+  }
+
+  // If unlimited, don't show limits UI
+  if (unlimited) {
+    return <>{children}</>;
+  }
 
   const getResourceLabel = () => {
     const labels: Record<string, string> = {

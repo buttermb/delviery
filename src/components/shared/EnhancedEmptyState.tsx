@@ -4,16 +4,16 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
 import { LucideIcon } from "lucide-react";
 
-export type EmptyStateType = 
-  | "no_tenants" 
-  | "no_orders" 
-  | "no_menus" 
-  | "no_products" 
+export type EmptyStateType =
+  | "no_tenants"
+  | "no_orders"
+  | "no_menus"
+  | "no_products"
   | "no_customers"
   | "no_data"
   | "generic";
 
-interface EnhancedEmptyStateProps {
+export interface EnhancedEmptyStateProps {
   /** Pre-configured type with default icon/title/description */
   type?: EmptyStateType;
   /** Custom title (overrides type default) */
@@ -106,7 +106,7 @@ export function EnhancedEmptyState({
   const config = emptyStateConfig[type];
   const finalTitle = title || config.defaultTitle;
   const finalDescription = description || config.defaultDescription;
-  
+
   // Handle different icon types
   const renderIcon = () => {
     if (!icon) {
@@ -116,13 +116,13 @@ export function EnhancedEmptyState({
         </div>
       );
     }
-    
+
     // If it's a LucideIcon component, render it
     if (isLucideIcon(icon)) {
       const IconComponent = icon;
       return <IconComponent className="h-12 w-12 text-muted-foreground" />;
     }
-    
+
     // Otherwise it's already a ReactNode
     return icon;
   };
@@ -165,7 +165,7 @@ export function EnhancedEmptyState({
       "flex flex-col items-center justify-center",
       compact ? "py-8 px-4" : "space-y-6"
     )}>
-      <div 
+      <div
         className={cn(
           "inline-flex items-center justify-center rounded-full",
           compact ? "w-16 h-16 bg-muted/50 mb-4" : "w-24 h-24 bg-gradient-to-br from-opacity-10 to-opacity-5 mb-4"
@@ -219,7 +219,7 @@ export function EnhancedEmptyState({
   }
 
   return (
-    <Card 
+    <Card
       className={cn("p-12 text-center max-w-md mx-auto", bgColor, borderColor, className)}
       role="status"
       aria-live="polite"

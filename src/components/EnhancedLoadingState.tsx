@@ -1,14 +1,19 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface EnhancedLoadingStateProps {
-  variant?: 'card' | 'list' | 'table' | 'hero' | 'grid';
+  variant?: 'card' | 'list' | 'table' | 'hero' | 'grid' | 'spinner' | 'dashboard';
   count?: number;
+  message?: string;
+  className?: string;
 }
 
-export const EnhancedLoadingState = ({ 
-  variant = 'card', 
-  count = 3 
+export const EnhancedLoadingState = ({
+  variant = 'card',
+  count = 3,
+  message = "Loading...",
+  className
 }: EnhancedLoadingStateProps) => {
   if (variant === 'hero') {
     return (
@@ -75,6 +80,36 @@ export const EnhancedLoadingState = ({
     );
   }
 
+  if (variant === 'spinner') {
+    return (
+      <div className={cn("flex flex-col items-center justify-center min-h-[400px] gap-4", className)}>
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-full blur-xl animate-pulse" />
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent relative z-10" />
+        </div>
+        <p className="text-muted-foreground animate-pulse font-medium">{message}</p>
+      </div>
+    );
+  }
+
+  if (variant === 'dashboard') {
+    return (
+      <div className={cn("space-y-6 p-6", className)}>
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-8 w-64 mb-2" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 w-full" />)}
+        </div>
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {Array.from({ length: count }).map((_, i) => (
@@ -88,3 +123,4 @@ export const EnhancedLoadingState = ({
     </div>
   );
 };
+

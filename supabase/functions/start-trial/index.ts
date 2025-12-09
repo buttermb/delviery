@@ -22,9 +22,9 @@ serve(async (req) => {
     }
 
     const rawBody = await req.json();
-    const { tenant_id, plan_id, billing_cycle, skip_trial } = validateStartTrial(rawBody);
+    const { tenant_id, plan_id, billing_cycle, skip_trial, idempotency_key } = validateStartTrial(rawBody);
 
-    console.log('[START-TRIAL] Request:', { tenant_id, plan_id, billing_cycle, skip_trial });
+    console.log('[START-TRIAL] Request:', { tenant_id, plan_id, billing_cycle, skip_trial, hasIdempotencyKey: !!idempotency_key });
 
     // Get tenant
     const { data: tenant, error: tenantError } = await supabaseClient
@@ -48,8 +48,8 @@ serve(async (req) => {
       .maybeSingle();
 
     // Get the appropriate Stripe price ID based on billing cycle
-    const stripePriceId = billing_cycle === 'yearly' 
-      ? plan?.stripe_price_id_yearly 
+    const stripePriceId = billing_cycle === 'yearly'
+      ? plan?.stripe_price_id_yearly
       : plan?.stripe_price_id;
 
     if (!plan || !stripePriceId) {
@@ -136,12 +136,14 @@ serve(async (req) => {
     }
 
     // Create checkout session
-    const session = await stripe.checkout.sessions.create(sessionOptions);
+    const session = await stripe.checkout.sessions.create(sessionOptions, idempotency_key ? {
+      idempotencyKey: idempotency_key
+    } : undefined);
 
-    console.log('[START-TRIAL] Created session:', { 
-      sessionId: session.id, 
-      hasTrial: !skip_trial, 
-      billing_cycle 
+    console.log('[START-TRIAL] Created session:', {
+      sessionId: session.id,
+      hasTrial: !skip_trial,
+      billing_cycle
     });
 
     // Log the event
@@ -158,7 +160,7 @@ serve(async (req) => {
     });
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         url: session.url,
         billing_cycle: billing_cycle,
         has_trial: !skip_trial,

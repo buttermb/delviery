@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Vitest Test Setup
  * Global test configuration and mocks
