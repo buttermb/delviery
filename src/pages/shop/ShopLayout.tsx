@@ -72,7 +72,7 @@ export default function ShopLayout() {
   // Fetch store by slug
   const { data: store, isLoading, error } = useQuery({
     queryKey: ['shop-store', storeSlug],
-    queryFn: async () => {
+    queryFn: async (): Promise<StoreInfo | null> => {
       if (!storeSlug) return null;
 
       const { data, error } = await supabase
@@ -83,7 +83,12 @@ export default function ShopLayout() {
         throw error;
       }
 
-      return data?.[0] as StoreInfo | null;
+      // Return null instead of undefined if no store found
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        return null;
+      }
+
+      return data[0] as StoreInfo;
     },
     enabled: !!storeSlug,
     retry: false,
