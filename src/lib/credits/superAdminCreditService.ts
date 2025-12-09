@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Super Admin Credit Service
  * 

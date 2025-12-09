@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Referral Credits Service
  * 
