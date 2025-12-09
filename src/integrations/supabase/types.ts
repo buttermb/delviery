@@ -13530,6 +13530,26 @@ export type Database = {
           purchases: number
         }[]
       }
+      get_marketplace_products: {
+        Args: { p_store_id: string }
+        Returns: {
+          category: string
+          compare_at_price: number
+          description: string
+          display_price: number
+          image_url: string
+          images: string[]
+          in_stock: boolean
+          is_featured: boolean
+          marketplace_category_id: string
+          marketplace_category_name: string
+          name: string
+          price: number
+          product_id: string
+          short_description: string
+          tags: string[]
+        }[]
+      }
       get_marketplace_store_by_slug: {
         Args: { p_slug: string }
         Returns: {
