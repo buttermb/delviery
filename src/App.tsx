@@ -821,7 +821,15 @@ const App = () => {
                                             path="storefront"
                                             element={
                                               <FeatureProtectedRoute featureId="storefront">
-                                                <StorefrontSettings />
+                                                <StorefrontDashboard />
+                                              </FeatureProtectedRoute>
+                                            }
+                                          />
+                                          <Route
+                                            path="storefront/dashboard"
+                                            element={
+                                              <FeatureProtectedRoute featureId="storefront">
+                                                <StorefrontDashboard />
                                               </FeatureProtectedRoute>
                                             }
                                           />

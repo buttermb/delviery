@@ -208,6 +208,14 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     category: 'Sales & Orders',
     minTier: 'enterprise',
   },
+  'storefront': {
+    id: 'storefront',
+    name: 'Storefront',
+    icon: Store,
+    path: '/admin/storefront',
+    category: 'Sales & Orders',
+    minTier: 'professional',
+  },
 
   // ==========================================================================
   // INVENTORY
