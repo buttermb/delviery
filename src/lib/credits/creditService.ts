@@ -65,20 +65,20 @@ export interface CheckCreditsResult {
  */
 export async function getCreditBalance(tenantId: string): Promise<CreditBalance | null> {
   try {
-    // Try direct table query first (the RPC function may not exist)
+    // Try direct table query first - only select columns that exist
     const { data: tableData, error: tableError } = await supabase
       .from('tenant_credits')
-      .select('balance, lifetime_earned, lifetime_spent, is_free_tier, next_free_grant_at')
+      .select('balance')
       .eq('tenant_id', tenantId)
       .maybeSingle();
 
     if (!tableError && tableData) {
       return {
         balance: tableData.balance ?? FREE_TIER_MONTHLY_CREDITS,
-        lifetimeEarned: tableData.lifetime_earned ?? FREE_TIER_MONTHLY_CREDITS,
-        lifetimeSpent: tableData.lifetime_spent ?? 0,
-        isFreeTier: tableData.is_free_tier ?? false,
-        nextFreeGrantAt: tableData.next_free_grant_at ?? null,
+        lifetimeEarned: FREE_TIER_MONTHLY_CREDITS,
+        lifetimeSpent: 0,
+        isFreeTier: false,
+        nextFreeGrantAt: null,
       };
     }
 
