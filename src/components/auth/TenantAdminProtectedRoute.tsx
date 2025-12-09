@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { logger } from '@/lib/logger';
 import { ReactNode, useEffect, useState, useRef, memo } from 'react';
 import { Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';

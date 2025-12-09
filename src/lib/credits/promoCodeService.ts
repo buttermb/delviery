@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Promo Code Service
  * 

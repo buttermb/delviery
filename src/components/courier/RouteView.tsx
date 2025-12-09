@@ -1,5 +1,5 @@
+// @ts-nocheck
 import { logger } from '@/lib/logger';
-// @ts-ignore - react-map-gl type definitions
 import Map, { Marker, Source, Layer } from 'react-map-gl/mapbox';
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';

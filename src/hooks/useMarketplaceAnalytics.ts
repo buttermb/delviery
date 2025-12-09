@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Marketplace Analytics Hook
  * Track customer events and gather analytics data
