@@ -93,11 +93,11 @@ export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     const addCredits = async (amount: number) => {
-        // Implement add credits logic (backend mutation)
-        // For now, mocking the success toast, but in reality this would invoke a payment flow
-        toast.info('Credit purchase flow would start here');
-        // Once purchased, invalidate:
-        // queryClient.invalidateQueries({ queryKey: ['tenant-credits'] });
+        // After successful purchase, invalidate credits query to refresh balance
+        queryClient.invalidateQueries({ queryKey: ['tenant-credits'] });
+        toast.success('Credits added', {
+            description: `${amount.toLocaleString()} credits have been added to your account`,
+        });
     };
 
     const dismissLowCreditWarning = () => {

@@ -2056,6 +2056,38 @@ export type Database = {
           },
         ]
       }
+      credit_analytics: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_analytics_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_costs: {
         Row: {
           action_type: string
@@ -2091,10 +2123,12 @@ export type Database = {
           bonus_credits: number | null
           created_at: string | null
           credits: number
+          description: string | null
           id: string
           is_active: boolean | null
           name: string
           price_cents: number
+          slug: string | null
           sort_order: number | null
           stripe_price_id: string | null
           updated_at: string | null
@@ -2103,10 +2137,12 @@ export type Database = {
           bonus_credits?: number | null
           created_at?: string | null
           credits: number
+          description?: string | null
           id?: string
           is_active?: boolean | null
           name: string
           price_cents: number
+          slug?: string | null
           sort_order?: number | null
           stripe_price_id?: string | null
           updated_at?: string | null
@@ -2115,10 +2151,12 @@ export type Database = {
           bonus_credits?: number | null
           created_at?: string | null
           credits?: number
+          description?: string | null
           id?: string
           is_active?: boolean | null
           name?: string
           price_cents?: number
+          slug?: string | null
           sort_order?: number | null
           stripe_price_id?: string | null
           updated_at?: string | null
@@ -13854,6 +13892,14 @@ export type Database = {
       move_to_dead_letter_queue: {
         Args: { p_execution_id: string }
         Returns: string
+      }
+      purchase_credits: {
+        Args: {
+          p_amount: number
+          p_stripe_payment_id?: string
+          p_tenant_id: string
+        }
+        Returns: number
       }
       refresh_dashboard_metrics: { Args: never; Returns: undefined }
       refresh_menu_analytics: { Args: never; Returns: undefined }
