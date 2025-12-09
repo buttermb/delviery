@@ -101,13 +101,17 @@ export default function StorefrontDashboard() {
       if (!store?.id) return [];
 
       const { data, error } = await supabase
-        .from('marketplace_orders')
+        .from('storefront_orders')
         .select('id, order_number, customer_name, total, status, created_at')
         .eq('store_id', store.id)
         .order('created_at', { ascending: false })
         .limit(5);
 
       if (error) {
+        // View may not exist yet - gracefully handle
+        if (error.code === 'PGRST204' || error.code === '42P01') {
+          return [];
+        }
         logger.error('Failed to fetch recent orders', error, { component: 'StorefrontDashboard' });
         return [];
       }
