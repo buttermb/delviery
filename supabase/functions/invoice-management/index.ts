@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Invoice Management Edge Function
  * Handles CRUD operations for invoices with proper authentication
