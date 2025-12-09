@@ -111,7 +111,7 @@ const NUDGE_CONFIGS: Record<NudgeType, Omit<UpgradeNudge, 'type' | 'metadata'>> 
     urgency: 'low',
     title: "How's It Going?",
     message: "You've been exploring for a while. Ready to unlock the full experience?",
-    cta: 'See What You're Missing',
+    cta: "See What You're Missing",
     dismissable: true,
     showModal: false,
   },

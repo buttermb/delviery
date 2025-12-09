@@ -26,12 +26,16 @@ export function SearchInput({
     const debouncedValue = useDebounce(value, delay);
 
     useEffect(() => {
-        onSearch(debouncedValue);
+        if (typeof onSearch === 'function') {
+            onSearch(debouncedValue);
+        }
     }, [debouncedValue, onSearch]);
 
     const handleClear = () => {
         setValue("");
-        onSearch("");
+        if (typeof onSearch === 'function') {
+            onSearch("");
+        }
     };
 
     return (
