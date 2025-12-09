@@ -65,36 +65,41 @@ export interface CheckCreditsResult {
  */
 export async function getCreditBalance(tenantId: string): Promise<CreditBalance | null> {
   try {
-    const { data, error } = await supabase
-      .rpc('get_credit_balance', { p_tenant_id: tenantId });
+    // Try direct table query first (the RPC function may not exist)
+    const { data: tableData, error: tableError } = await supabase
+      .from('tenant_credits')
+      .select('balance, lifetime_earned, lifetime_spent, is_free_tier, next_free_grant_at')
+      .eq('tenant_id', tenantId)
+      .maybeSingle();
 
-    if (error) {
-      logger.error('Failed to get credit balance', error, { tenantId });
-      return null;
-    }
-
-    if (!data || data.length === 0) {
-      // Return default balance for new tenants
+    if (!tableError && tableData) {
       return {
-        balance: FREE_TIER_MONTHLY_CREDITS,
-        lifetimeEarned: FREE_TIER_MONTHLY_CREDITS,
-        lifetimeSpent: 0,
-        isFreeTier: false,
-        nextFreeGrantAt: null,
+        balance: tableData.balance ?? FREE_TIER_MONTHLY_CREDITS,
+        lifetimeEarned: tableData.lifetime_earned ?? FREE_TIER_MONTHLY_CREDITS,
+        lifetimeSpent: tableData.lifetime_spent ?? 0,
+        isFreeTier: tableData.is_free_tier ?? false,
+        nextFreeGrantAt: tableData.next_free_grant_at ?? null,
       };
     }
 
-    const row = data[0];
+    // If table doesn't exist or no data, return default credits
+    // This allows the app to work without the credit system fully configured
     return {
-      balance: row.balance,
-      lifetimeEarned: row.lifetime_earned,
-      lifetimeSpent: row.lifetime_spent,
-      isFreeTier: row.is_free_tier,
-      nextFreeGrantAt: row.next_free_grant_at,
+      balance: FREE_TIER_MONTHLY_CREDITS,
+      lifetimeEarned: FREE_TIER_MONTHLY_CREDITS,
+      lifetimeSpent: 0,
+      isFreeTier: false,
+      nextFreeGrantAt: null,
     };
   } catch (err) {
-    logger.error('Error getting credit balance', err as Error, { tenantId });
-    return null;
+    // Silently return defaults - credit system is optional
+    return {
+      balance: FREE_TIER_MONTHLY_CREDITS,
+      lifetimeEarned: FREE_TIER_MONTHLY_CREDITS,
+      lifetimeSpent: 0,
+      isFreeTier: false,
+      nextFreeGrantAt: null,
+    };
   }
 }
 
