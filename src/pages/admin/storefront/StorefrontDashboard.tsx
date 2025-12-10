@@ -1,15 +1,16 @@
 // @ts-nocheck
 /**
  * Storefront Dashboard
- * Main hub for managing the white-label online store
+ * Main hub for managing multi-store white-label online stores
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useActiveStore } from '@/hooks/useActiveStore';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -23,15 +24,13 @@ import {
   Package,
   Settings,
   ExternalLink,
-  TrendingUp,
-  Eye,
   Plus,
   BarChart3,
   Palette,
   Globe,
   Percent,
-  Bell,
-  Trash2
+  Trash2,
+  LayoutGrid
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
@@ -39,6 +38,8 @@ import { StorePreviewButton } from '@/components/admin/storefront/StorePreviewBu
 import { StorefrontFunnel } from '@/components/admin/storefront/StorefrontFunnel';
 import { DeleteStoreDialog } from '@/components/admin/storefront/DeleteStoreDialog';
 import { CreateStoreDialog } from '@/components/admin/storefront/CreateStoreDialog';
+import { StoreSelector } from '@/components/admin/storefront/StoreSelector';
+import { StoreListView } from '@/components/admin/storefront/StoreListView';
 
 interface MarketplaceStore {
   id: string;
@@ -70,51 +71,71 @@ interface RecentOrder {
 export default function StorefrontDashboard() {
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
   
+  const { activeStoreId, selectStore, clearSelection } = useActiveStore(tenantId);
+  const [showListView, setShowListView] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [storeToDelete, setStoreToDelete] = useState<{ id: string; store_name: string } | null>(null);
 
-  // Fetch store data
-  const { data: store, isLoading: storeLoading } = useQuery({
-    queryKey: ['marketplace-store', tenantId],
+  // Check URL params for view mode
+  useEffect(() => {
+    if (searchParams.get('view') === 'all') {
+      setShowListView(true);
+    }
+  }, [searchParams]);
+
+  // Fetch ALL stores for the tenant
+  const { data: stores = [], isLoading: storesLoading } = useQuery({
+    queryKey: ['marketplace-stores', tenantId],
     queryFn: async () => {
-      if (!tenantId) return null;
+      if (!tenantId) return [];
 
       const { data, error } = await supabase
         .from('marketplace_stores')
         .select('*')
         .eq('tenant_id', tenantId)
-        .maybeSingle();
+        .order('created_at', { ascending: false });
 
-      if (error && error.code !== 'PGRST116') {
-        logger.error('Failed to fetch store', error, { component: 'StorefrontDashboard' });
+      if (error) {
+        logger.error('Failed to fetch stores', error, { component: 'StorefrontDashboard' });
         throw error;
       }
 
-      return data as MarketplaceStore | null;
+      return data as MarketplaceStore[];
     },
     enabled: !!tenantId,
   });
 
-  // Fetch recent orders
+  // Auto-select first store if none selected and stores exist
+  useEffect(() => {
+    if (stores.length > 0 && !activeStoreId) {
+      selectStore(stores[0].id);
+    }
+  }, [stores, activeStoreId, selectStore]);
+
+  // Get active store object
+  const activeStore = stores.find(s => s.id === activeStoreId) || null;
+
+  // Fetch recent orders for active store
   const { data: recentOrders = [] } = useQuery({
-    queryKey: ['marketplace-recent-orders', store?.id],
+    queryKey: ['marketplace-recent-orders', activeStoreId],
     queryFn: async () => {
-      if (!store?.id) return [];
+      if (!activeStoreId) return [];
 
       const { data, error } = await supabase
         .from('storefront_orders')
         .select('id, order_number, customer_name, total, status, created_at')
-        .eq('store_id', store.id)
+        .eq('store_id', activeStoreId)
         .order('created_at', { ascending: false })
         .limit(5);
 
       if (error) {
-        // View may not exist yet - gracefully handle
         if (error.code === 'PGRST204' || error.code === '42P01') {
           return [];
         }
@@ -124,19 +145,19 @@ export default function StorefrontDashboard() {
 
       return data as RecentOrder[];
     },
-    enabled: !!store?.id,
+    enabled: !!activeStoreId,
   });
 
-  // Fetch product count
+  // Fetch product count for active store
   const { data: productStats } = useQuery({
-    queryKey: ['marketplace-product-stats', store?.id],
+    queryKey: ['marketplace-product-stats', activeStoreId, tenantId],
     queryFn: async () => {
-      if (!store?.id) return { total: 0, visible: 0 };
+      if (!activeStoreId || !tenantId) return { total: 0, visible: 0 };
 
       const { count: visible } = await supabase
         .from('marketplace_product_settings')
         .select('*', { count: 'exact', head: true })
-        .eq('store_id', store.id)
+        .eq('store_id', activeStoreId)
         .eq('is_visible', true);
 
       const { count: total } = await supabase
@@ -146,61 +167,23 @@ export default function StorefrontDashboard() {
 
       return { total: total || 0, visible: visible || 0 };
     },
-    enabled: !!store?.id && !!tenantId,
-  });
-
-  // Create store mutation
-  const createStoreMutation = useMutation({
-    mutationFn: async () => {
-      if (!tenantId || !tenant) throw new Error('No tenant');
-
-      const { data, error } = await supabase
-        .from('marketplace_stores')
-        .insert({
-          tenant_id: tenantId,
-          store_name: tenant.business_name || 'My Store',
-          slug: tenant.slug || `store-${Date.now()}`,
-          tagline: 'Welcome to our store',
-          is_active: false,
-          is_public: false,
-        })
-        .select()
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
-      toast({
-        title: 'Store created!',
-        description: 'Your online store has been set up. Configure it to go live.',
-      });
-    },
-    onError: (error) => {
-      logger.error('Failed to create store', error, { component: 'StorefrontDashboard' });
-      toast({
-        title: 'Error',
-        description: 'Failed to create store. Please try again.',
-        variant: 'destructive',
-      });
-    },
+    enabled: !!activeStoreId && !!tenantId,
   });
 
   // Toggle store status
   const toggleStoreMutation = useMutation({
     mutationFn: async (isActive: boolean) => {
-      if (!store?.id) throw new Error('No store');
+      if (!activeStoreId) throw new Error('No store');
 
       const { error } = await supabase
         .from('marketplace_stores')
         .update({ is_active: isActive })
-        .eq('id', store.id);
+        .eq('id', activeStoreId);
 
       if (error) throw error;
     },
     onSuccess: (_, isActive) => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
+      queryClient.invalidateQueries({ queryKey: ['marketplace-stores'] });
       toast({
         title: isActive ? 'Store is now live!' : 'Store paused',
         description: isActive
@@ -212,26 +195,32 @@ export default function StorefrontDashboard() {
 
   // Delete store mutation
   const deleteStoreMutation = useMutation({
-    mutationFn: async () => {
-      if (!store?.id) throw new Error('No store');
-
+    mutationFn: async (storeId: string) => {
       // Delete related data first
       await supabase
         .from('marketplace_product_settings')
         .delete()
-        .eq('store_id', store.id);
+        .eq('store_id', storeId);
 
       // Delete the store
       const { error } = await supabase
         .from('marketplace_stores')
         .delete()
-        .eq('id', store.id);
+        .eq('id', storeId);
 
       if (error) throw error;
+      return storeId;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
+    onSuccess: (deletedStoreId) => {
+      queryClient.invalidateQueries({ queryKey: ['marketplace-stores'] });
       setDeleteDialogOpen(false);
+      setStoreToDelete(null);
+      
+      // If deleted active store, clear selection
+      if (deletedStoreId === activeStoreId) {
+        clearSelection();
+      }
+      
       toast({
         title: 'Store deleted',
         description: 'Your store has been permanently deleted.',
@@ -247,7 +236,7 @@ export default function StorefrontDashboard() {
     },
   });
 
-  // Create new store with custom data
+  // Create new store mutation
   const createNewStoreMutation = useMutation({
     mutationFn: async (data: { storeName: string; slug: string; tagline: string }) => {
       if (!tenantId) throw new Error('No tenant');
@@ -263,14 +252,16 @@ export default function StorefrontDashboard() {
           is_public: false,
         })
         .select()
-        .maybeSingle();
+        .single();
 
       if (error) throw error;
       return newStore;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
+    onSuccess: (newStore) => {
+      queryClient.invalidateQueries({ queryKey: ['marketplace-stores'] });
       setCreateDialogOpen(false);
+      selectStore(newStore.id);
+      setShowListView(false);
       toast({
         title: 'Store created!',
         description: 'Your new store has been set up. Configure it to go live.',
@@ -289,10 +280,63 @@ export default function StorefrontDashboard() {
     },
   });
 
-  const storeUrl = store ? `${window.location.origin}/shop/${store.slug}` : null;
+  // Handlers
+  const handleSelectStore = (storeId: string) => {
+    selectStore(storeId);
+    setShowListView(false);
+    setSearchParams({});
+  };
 
-  // No store yet - show setup
-  if (!storeLoading && !store) {
+  const handlePreviewStore = (slug: string) => {
+    window.open(`/shop/${slug}`, '_blank');
+  };
+
+  const handleSettingsStore = (storeId: string) => {
+    selectStore(storeId);
+    navigate(`/${tenantSlug}/admin/storefront/settings`);
+  };
+
+  const handleDeleteStore = (store: { id: string; store_name: string }) => {
+    setStoreToDelete(store);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleViewAllStores = () => {
+    setShowListView(true);
+    setSearchParams({ view: 'all' });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-500';
+      case 'confirmed': return 'bg-blue-500';
+      case 'preparing': return 'bg-purple-500';
+      case 'ready': return 'bg-indigo-500';
+      case 'out_for_delivery': return 'bg-orange-500';
+      case 'delivered': return 'bg-green-500';
+      case 'cancelled': return 'bg-red-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  // Loading state
+  if (storesLoading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="space-y-6">
+          <Skeleton className="h-10 w-64" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-32" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No stores - show create CTA
+  if (stores.length === 0) {
     return (
       <div className="container mx-auto p-6 max-w-4xl">
         <Card className="border-dashed">
@@ -343,60 +387,98 @@ export default function StorefrontDashboard() {
     );
   }
 
-  if (storeLoading) {
+  // Show list view
+  if (showListView) {
     return (
       <div className="container mx-auto p-6">
-        <div className="space-y-6">
-          <Skeleton className="h-10 w-64" />
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-32" />
-            ))}
-          </div>
+        <div className="mb-6">
+          <Button 
+            variant="ghost" 
+            onClick={() => {
+              setShowListView(false);
+              setSearchParams({});
+            }}
+          >
+            ← Back to Dashboard
+          </Button>
         </div>
+        
+        <StoreListView
+          stores={stores}
+          activeStoreId={activeStoreId}
+          onSelectStore={handleSelectStore}
+          onPreviewStore={handlePreviewStore}
+          onSettingsStore={handleSettingsStore}
+          onDeleteStore={handleDeleteStore}
+          onCreateStore={() => setCreateDialogOpen(true)}
+        />
+
+        <DeleteStoreDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onConfirm={() => storeToDelete && deleteStoreMutation.mutate(storeToDelete.id)}
+          storeName={storeToDelete?.store_name || ''}
+          isDeleting={deleteStoreMutation.isPending}
+        />
+
+        <CreateStoreDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          onSubmit={(data) => createNewStoreMutation.mutate(data)}
+          isCreating={createNewStoreMutation.isPending}
+          defaultStoreName={tenant?.business_name || ''}
+        />
       </div>
     );
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-500';
-      case 'confirmed': return 'bg-blue-500';
-      case 'preparing': return 'bg-purple-500';
-      case 'ready': return 'bg-indigo-500';
-      case 'out_for_delivery': return 'bg-orange-500';
-      case 'delivered': return 'bg-green-500';
-      case 'cancelled': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
+  // Show store dashboard
+  const storeUrl = activeStore ? `${window.location.origin}/shop/${activeStore.slug}` : null;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold">{store?.store_name}</h1>
-            <Badge variant={store?.is_active ? 'default' : 'secondary'}>
-              {store?.is_active ? 'Live' : 'Draft'}
-            </Badge>
+        <div className="flex items-center gap-4">
+          {/* Store Selector */}
+          {stores.length > 1 && (
+            <StoreSelector
+              stores={stores}
+              activeStoreId={activeStoreId}
+              onSelectStore={handleSelectStore}
+              onViewAllStores={handleViewAllStores}
+              onCreateStore={() => setCreateDialogOpen(true)}
+            />
+          )}
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold">{activeStore?.store_name}</h1>
+              <Badge variant={activeStore?.is_active ? 'default' : 'secondary'}>
+                {activeStore?.is_active ? 'Live' : 'Draft'}
+              </Badge>
+            </div>
+            <p className="text-muted-foreground">{activeStore?.tagline || 'Your online storefront'}</p>
           </div>
-          <p className="text-muted-foreground">{store?.tagline || 'Your online storefront'}</p>
         </div>
         <div className="flex items-center gap-2">
-          {store?.slug && (
+          {stores.length > 1 && (
+            <Button variant="outline" onClick={handleViewAllStores}>
+              <LayoutGrid className="w-4 h-4 mr-2" />
+              All Stores
+            </Button>
+          )}
+          {activeStore?.slug && (
             <StorePreviewButton
-              storeSlug={store.slug}
-              storeName={store.store_name}
+              storeSlug={activeStore.slug}
+              storeName={activeStore.store_name}
             />
           )}
           <Button
-            variant={store?.is_active ? 'secondary' : 'default'}
-            onClick={() => toggleStoreMutation.mutate(!store?.is_active)}
+            variant={activeStore?.is_active ? 'secondary' : 'default'}
+            onClick={() => toggleStoreMutation.mutate(!activeStore?.is_active)}
             disabled={toggleStoreMutation.isPending}
           >
-            {store?.is_active ? 'Pause Store' : 'Go Live'}
+            {activeStore?.is_active ? 'Pause Store' : 'Go Live'}
           </Button>
           <Button
             variant="outline"
@@ -409,29 +491,11 @@ export default function StorefrontDashboard() {
             variant="outline"
             size="icon"
             className="text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={() => setDeleteDialogOpen(true)}
+            onClick={() => activeStore && handleDeleteStore(activeStore)}
           >
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
-
-        {/* Delete Store Dialog */}
-        <DeleteStoreDialog
-          open={deleteDialogOpen}
-          onOpenChange={setDeleteDialogOpen}
-          onConfirm={() => deleteStoreMutation.mutate()}
-          storeName={store?.store_name || ''}
-          isDeleting={deleteStoreMutation.isPending}
-        />
-
-        {/* Create Store Dialog */}
-        <CreateStoreDialog
-          open={createDialogOpen}
-          onOpenChange={setCreateDialogOpen}
-          onSubmit={(data) => createNewStoreMutation.mutate(data)}
-          isCreating={createNewStoreMutation.isPending}
-          defaultStoreName={tenant?.business_name || ''}
-        />
       </div>
 
       {/* Quick Stats */}
@@ -441,7 +505,7 @@ export default function StorefrontDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-2xl font-bold">{formatCurrency(store?.total_revenue || 0)}</p>
+                <p className="text-2xl font-bold">{formatCurrency(activeStore?.total_revenue || 0)}</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
                 <DollarSign className="w-6 h-6 text-green-500" />
@@ -455,7 +519,7 @@ export default function StorefrontDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Orders</p>
-                <p className="text-2xl font-bold">{store?.total_orders || 0}</p>
+                <p className="text-2xl font-bold">{activeStore?.total_orders || 0}</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
                 <ShoppingCart className="w-6 h-6 text-blue-500" />
@@ -469,7 +533,7 @@ export default function StorefrontDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Customers</p>
-                <p className="text-2xl font-bold">{store?.total_customers || 0}</p>
+                <p className="text-2xl font-bold">{activeStore?.total_customers || 0}</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center">
                 <Users className="w-6 h-6 text-purple-500" />
@@ -499,10 +563,10 @@ export default function StorefrontDashboard() {
       </div>
 
       {/* Sales Funnel Analytics */}
-      {store?.id && (
+      {activeStoreId && (
         <StorefrontFunnel
-          storeId={store.id}
-          primaryColor={store.primary_color}
+          storeId={activeStoreId}
+          primaryColor={activeStore?.primary_color || '#000'}
         />
       )}
 
@@ -651,11 +715,23 @@ export default function StorefrontDashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* Dialogs */}
+      <DeleteStoreDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => storeToDelete && deleteStoreMutation.mutate(storeToDelete.id)}
+        storeName={storeToDelete?.store_name || ''}
+        isDeleting={deleteStoreMutation.isPending}
+      />
+
+      <CreateStoreDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSubmit={(data) => createNewStoreMutation.mutate(data)}
+        isCreating={createNewStoreMutation.isPending}
+        defaultStoreName={tenant?.business_name || ''}
+      />
     </div>
   );
 }
-
-
-
-
-
