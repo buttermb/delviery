@@ -7,12 +7,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { HeroSection } from '@/components/shop/sections/HeroSection';
 import { FeaturesSection } from '@/components/shop/sections/FeaturesSection';
 import { ProductGridSection } from '@/components/shop/sections/ProductGridSection';
+import { LuxuryHeroSection } from '@/components/shop/sections/LuxuryHeroSection';
+import { LuxuryProductGridSection } from '@/components/shop/sections/LuxuryProductGridSection';
+import { LuxuryFeaturesSection } from '@/components/shop/sections/LuxuryFeaturesSection';
 
 // Map section types to components
 const SECTION_COMPONENTS: Record<string, any> = {
   hero: HeroSection,
   features: FeaturesSection,
   product_grid: ProductGridSection,
+  // Luxury theme sections
+  luxury_hero: LuxuryHeroSection,
+  luxury_products: LuxuryProductGridSection,
+  luxury_features: LuxuryFeaturesSection,
 };
 
 export default function StorefrontPage() {

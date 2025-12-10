@@ -1,0 +1,299 @@
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
+import { useParams, Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Search, ShoppingCart, Star } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import ProductImage from '@/components/ProductImage';
+import { cleanProductName } from '@/utils/productName';
+import { useShop } from '@/pages/shop/ShopLayout';
+
+export interface LuxuryProductGridSectionProps {
+  content?: {
+    heading?: string;
+    subheading?: string;
+    show_search?: boolean;
+    max_products?: number;
+  };
+  styles?: {
+    accent_color?: string;
+  };
+  storeId?: string;
+}
+
+interface MarketplaceProduct {
+  product_id: string;
+  product_name: string;
+  category: string;
+  strain_type: string;
+  price: number;
+  description: string;
+  image_url: string | null;
+  thc_content: number | null;
+  cbd_content: number | null;
+  is_visible: boolean;
+  display_order: number;
+}
+
+export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryProductGridSectionProps) {
+  const { storeSlug } = useParams();
+  const { isPreviewMode } = useShop();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const {
+    heading = "Our Collection",
+    subheading = "Premium curated strains",
+    show_search = true,
+    max_products = 12
+  } = content || {};
+
+  const accentColor = styles?.accent_color || '#10b981';
+
+  // Fetch products
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ['luxury-products', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+
+      const { data, error } = await supabase
+        .rpc('get_marketplace_products' as any, { p_store_id: storeId });
+
+      if (error) throw error;
+      return (data as MarketplaceProduct[]) || [];
+    },
+    enabled: !!storeId,
+  });
+
+  // Get unique categories
+  const categories = useMemo(() => {
+    const cats = [...new Set(products.map(p => p.category).filter(Boolean))];
+    return cats;
+  }, [products]);
+
+  // Filter products
+  const filteredProducts = useMemo(() => {
+    let filtered = products;
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p =>
+        p.product_name?.toLowerCase().includes(query) ||
+        p.category?.toLowerCase().includes(query) ||
+        p.strain_type?.toLowerCase().includes(query)
+      );
+    }
+
+    if (selectedCategory) {
+      filtered = filtered.filter(p => p.category === selectedCategory);
+    }
+
+    return filtered.slice(0, max_products);
+  }, [products, searchQuery, selectedCategory, max_products]);
+
+  const strainTypeColors: Record<string, string> = {
+    'Indica': 'from-purple-400/20 to-purple-600/20 text-purple-300',
+    'Sativa': 'from-blue-400/20 to-blue-600/20 text-blue-300',
+    'Hybrid': 'from-emerald-400/20 to-emerald-600/20 text-emerald-300'
+  };
+
+  return (
+    <section className="relative py-24 bg-black" id="products">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-neutral-950 to-black" />
+
+      <div className="container mx-auto px-6 relative z-10">
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-white font-extralight text-4xl md:text-5xl tracking-tight mb-4">
+            {heading}
+          </h2>
+          <p className="text-white/50 text-lg font-light">
+            {subheading}
+          </p>
+        </motion.div>
+
+        {/* Search & Filters */}
+        {show_search && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="flex flex-col md:flex-row gap-4 mb-12 max-w-3xl mx-auto"
+          >
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+              <Input
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-12 bg-white/[0.02] border-white/10 text-white placeholder:text-white/30 rounded-full h-12 focus:border-white/20"
+              />
+            </div>
+
+            {/* Category Pills */}
+            <div className="flex gap-2 flex-wrap justify-center">
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className={`px-4 py-2 rounded-full text-sm font-light transition-all ${
+                  !selectedCategory
+                    ? 'bg-white text-black'
+                    : 'bg-white/[0.02] text-white/60 border border-white/10 hover:border-white/20'
+                }`}
+              >
+                All
+              </button>
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-4 py-2 rounded-full text-sm font-light transition-all ${
+                    selectedCategory === cat
+                      ? 'bg-white text-black'
+                      : 'bg-white/[0.02] text-white/60 border border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Products Grid */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <Skeleton key={i} className="h-96 rounded-2xl bg-white/5" />
+            ))}
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-white/50 text-lg">No products found</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredProducts.map((product, index) => {
+              const colorClass = strainTypeColors[product.strain_type] || strainTypeColors['Hybrid'];
+              const cleanedName = cleanProductName(product.product_name);
+
+              return (
+                <motion.div
+                  key={product.product_id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.05 }}
+                >
+                  <Link
+                    to={`/shop/${storeSlug}/product/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`}
+                    className="group block"
+                  >
+                    <div className="relative bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] hover:border-white/10 rounded-2xl overflow-hidden transition-all duration-500 hover:scale-[1.02]">
+                      {/* Glow effect on hover */}
+                      <div
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none"
+                        style={{
+                          background: `radial-gradient(circle at center, ${accentColor}10 0%, transparent 70%)`
+                        }}
+                      />
+
+                      {/* Image container */}
+                      <div className="relative h-56 overflow-hidden">
+                        <ProductImage
+                          src={product.image_url}
+                          alt={cleanedName}
+                          className="h-56 group-hover:scale-110 transition-transform duration-700"
+                        />
+                        {/* Overlay gradient */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+
+                        {/* Strain type badge */}
+                        {product.strain_type && (
+                          <div className={`absolute bottom-4 left-4 px-3 py-1.5 bg-gradient-to-r ${colorClass} backdrop-blur-xl rounded-full border border-white/10 z-10`}>
+                            <span className="text-xs font-light tracking-wider">{product.strain_type}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-5">
+                        {/* Category */}
+                        {product.category && (
+                          <p className="text-white/40 text-xs font-light tracking-wider uppercase mb-2">
+                            {product.category}
+                          </p>
+                        )}
+
+                        {/* Name */}
+                        <h3 className="text-white text-lg font-light tracking-tight mb-2 line-clamp-1">
+                          {cleanedName}
+                        </h3>
+
+                        {/* THC/CBD */}
+                        {(product.thc_content || product.cbd_content) && (
+                          <div className="flex gap-3 mb-4 text-white/40 text-xs">
+                            {product.thc_content && (
+                              <span>THC: {product.thc_content}%</span>
+                            )}
+                            {product.cbd_content && (
+                              <span>CBD: {product.cbd_content}%</span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Price & CTA */}
+                        <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                          <div>
+                            <div className="text-white/30 text-[10px] font-light tracking-wider uppercase mb-1">From</div>
+                            <div className="text-white text-xl font-light">${product.price?.toFixed(2) || '0.00'}</div>
+                          </div>
+                          <Button
+                            size="sm"
+                            className="px-4 py-2 bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 hover:border-white rounded-full text-xs font-light tracking-wide transition-all duration-300"
+                          >
+                            View
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* View All Button */}
+        {products.length > max_products && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-center mt-12"
+          >
+            <Link to={`/shop/${storeSlug}/products${isPreviewMode ? '?preview=true' : ''}`}>
+              <Button
+                variant="outline"
+                className="px-8 py-3 h-auto text-white border-white/10 hover:border-white/30 hover:bg-white/5 rounded-full text-sm font-light"
+              >
+                View All Products
+              </Button>
+            </Link>
+          </motion.div>
+        )}
+      </div>
+    </section>
+  );
+}
