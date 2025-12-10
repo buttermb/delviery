@@ -229,8 +229,8 @@ export default function ShopLayout() {
     );
   }
 
-  // Determine if using luxury theme
-  const isLuxuryTheme = store.theme_config?.theme === 'luxury';
+  // Determine if using luxury theme - defensive null check
+  const isLuxuryTheme = store?.theme_config?.theme === 'luxury';
 
   // Age verification gate (skip in preview mode)
   if (store.require_age_verification && !ageVerified && !isPreviewMode) {

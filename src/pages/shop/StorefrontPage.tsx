@@ -48,8 +48,12 @@ export default function StorefrontPage() {
   if (!store) return null;
 
   // Use layout_config from store if available, otherwise fallback to default layout
-  const sections = store.layout_config && (store.layout_config as any[]).length > 0
-    ? (store.layout_config as any[])
+  // Defensive check: ensure layout_config is an array with items
+  const layoutConfig = store.layout_config;
+  const hasValidLayout = Array.isArray(layoutConfig) && layoutConfig.length > 0;
+  
+  const sections = hasValidLayout
+    ? layoutConfig
     : [
       // Default Layout if none configured
       {
