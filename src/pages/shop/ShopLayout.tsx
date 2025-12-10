@@ -1,6 +1,7 @@
 /**
  * Shop Layout
  * Customer-facing storefront layout wrapper with navigation
+ * Supports multiple themes including luxury dark theme
  */
 
 import { useEffect, useState, createContext, useContext } from 'react';
@@ -21,6 +22,10 @@ import {
 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { MobileBottomNav } from '@/components/shop/MobileBottomNav';
+import { LuxuryNav } from '@/components/shop/LuxuryNav';
+import { LuxuryFooter } from '@/components/shop/LuxuryFooter';
+import { FloatingCartButton } from '@/components/shop/FloatingCartButton';
+import { LuxuryAgeVerification } from '@/components/shop/LuxuryAgeVerification';
 
 interface StoreInfo {
   id: string;
@@ -36,7 +41,15 @@ interface StoreInfo {
   require_age_verification: boolean;
   minimum_age: number;
   layout_config?: any[] | null;
-  theme_config?: any | null;
+  theme_config?: {
+    theme?: 'default' | 'luxury' | 'minimal';
+    colors?: {
+      primary?: string;
+      secondary?: string;
+      accent?: string;
+      background?: string;
+    };
+  } | null;
   operating_hours: Record<string, { open: string; close: string; closed: boolean }>;
 }
 
@@ -206,8 +219,24 @@ export default function ShopLayout() {
     );
   }
 
+  // Determine if using luxury theme
+  const isLuxuryTheme = store.theme_config?.theme === 'luxury';
+
   // Age verification gate (skip in preview mode)
   if (store.require_age_verification && !ageVerified && !isPreviewMode) {
+    // Use luxury age verification for luxury theme
+    if (isLuxuryTheme) {
+      return (
+        <LuxuryAgeVerification
+          storeName={store.store_name}
+          logoUrl={store.logo_url}
+          minimumAge={store.minimum_age}
+          storeId={store.id}
+          onVerify={(verified) => handleAgeVerification(verified)}
+        />
+      );
+    }
+    
     return (
       <div
         className="min-h-screen flex items-center justify-center"
@@ -255,6 +284,55 @@ export default function ShopLayout() {
 
   // Theme styles applied inline
 
+  // Luxury theme layout
+  if (isLuxuryTheme) {
+    return (
+      <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode }}>
+        <div className="min-h-screen bg-black text-white" style={themeStyles}>
+          {/* Admin Preview Banner */}
+          {isPreviewMode && (
+            <div className="bg-amber-500 text-amber-950 px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              <span>Preview Mode - This store is not yet live</span>
+              {!store.is_active && (
+                <Badge variant="secondary" className="ml-2 bg-amber-600 text-white">
+                  Draft
+                </Badge>
+              )}
+            </div>
+          )}
+
+          {/* Luxury Navigation */}
+          <LuxuryNav
+            cartItemCount={cartItemCount}
+          />
+
+          {/* Main Content */}
+          <main>
+            <Outlet />
+          </main>
+
+          {/* Luxury Footer */}
+          <LuxuryFooter />
+
+          {/* Floating Cart Button - hide in preview mode */}
+          {!isPreviewMode && (
+            <FloatingCartButton />
+          )}
+
+          {/* Mobile Bottom Navigation - hide in preview mode */}
+          {!isPreviewMode && (
+            <MobileBottomNav
+              cartItemCount={cartItemCount}
+              primaryColor="#10b981"
+            />
+          )}
+        </div>
+      </ShopContext.Provider>
+    );
+  }
+
+  // Default theme layout
   return (
     <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode }}>
       <div className="min-h-screen bg-background" style={themeStyles}>
