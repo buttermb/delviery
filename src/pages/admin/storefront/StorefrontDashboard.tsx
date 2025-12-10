@@ -30,12 +30,15 @@ import {
   Palette,
   Globe,
   Percent,
-  Bell
+  Bell,
+  Trash2
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { StorePreviewButton } from '@/components/admin/storefront/StorePreviewButton';
 import { StorefrontFunnel } from '@/components/admin/storefront/StorefrontFunnel';
+import { DeleteStoreDialog } from '@/components/admin/storefront/DeleteStoreDialog';
+import { CreateStoreDialog } from '@/components/admin/storefront/CreateStoreDialog';
 
 interface MarketplaceStore {
   id: string;
@@ -71,6 +74,9 @@ export default function StorefrontDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
+  
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   // Fetch store data
   const { data: store, isLoading: storeLoading } = useQuery({
@@ -204,6 +210,85 @@ export default function StorefrontDashboard() {
     },
   });
 
+  // Delete store mutation
+  const deleteStoreMutation = useMutation({
+    mutationFn: async () => {
+      if (!store?.id) throw new Error('No store');
+
+      // Delete related data first
+      await supabase
+        .from('marketplace_product_settings')
+        .delete()
+        .eq('store_id', store.id);
+
+      // Delete the store
+      const { error } = await supabase
+        .from('marketplace_stores')
+        .delete()
+        .eq('id', store.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
+      setDeleteDialogOpen(false);
+      toast({
+        title: 'Store deleted',
+        description: 'Your store has been permanently deleted.',
+      });
+    },
+    onError: (error) => {
+      logger.error('Failed to delete store', error, { component: 'StorefrontDashboard' });
+      toast({
+        title: 'Error',
+        description: 'Failed to delete store. Please try again.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Create new store with custom data
+  const createNewStoreMutation = useMutation({
+    mutationFn: async (data: { storeName: string; slug: string; tagline: string }) => {
+      if (!tenantId) throw new Error('No tenant');
+
+      const { data: newStore, error } = await supabase
+        .from('marketplace_stores')
+        .insert({
+          tenant_id: tenantId,
+          store_name: data.storeName,
+          slug: data.slug,
+          tagline: data.tagline || 'Welcome to our store',
+          is_active: false,
+          is_public: false,
+        })
+        .select()
+        .maybeSingle();
+
+      if (error) throw error;
+      return newStore;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
+      setCreateDialogOpen(false);
+      toast({
+        title: 'Store created!',
+        description: 'Your new store has been set up. Configure it to go live.',
+      });
+    },
+    onError: (error: any) => {
+      logger.error('Failed to create store', error, { component: 'StorefrontDashboard' });
+      const message = error?.message?.includes('duplicate')
+        ? 'A store with this URL already exists.'
+        : 'Failed to create store. Please try again.';
+      toast({
+        title: 'Error',
+        description: message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   const storeUrl = store ? `${window.location.origin}/shop/${store.slug}` : null;
 
   // No store yet - show setup
@@ -239,14 +324,21 @@ export default function StorefrontDashboard() {
             </div>
             <Button
               size="lg"
-              onClick={() => createStoreMutation.mutate()}
-              disabled={createStoreMutation.isPending}
+              onClick={() => setCreateDialogOpen(true)}
             >
               <Plus className="w-4 h-4 mr-2" />
-              {createStoreMutation.isPending ? 'Creating...' : 'Create Store'}
+              Create Store
             </Button>
           </CardContent>
         </Card>
+        
+        <CreateStoreDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          onSubmit={(data) => createNewStoreMutation.mutate(data)}
+          isCreating={createNewStoreMutation.isPending}
+          defaultStoreName={tenant?.business_name || ''}
+        />
       </div>
     );
   }
@@ -313,7 +405,33 @@ export default function StorefrontDashboard() {
             <Settings className="w-4 h-4 mr-2" />
             Settings
           </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={() => setDeleteDialogOpen(true)}
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
         </div>
+
+        {/* Delete Store Dialog */}
+        <DeleteStoreDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onConfirm={() => deleteStoreMutation.mutate()}
+          storeName={store?.store_name || ''}
+          isDeleting={deleteStoreMutation.isPending}
+        />
+
+        {/* Create Store Dialog */}
+        <CreateStoreDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          onSubmit={(data) => createNewStoreMutation.mutate(data)}
+          isCreating={createNewStoreMutation.isPending}
+          defaultStoreName={tenant?.business_name || ''}
+        />
       </div>
 
       {/* Quick Stats */}
