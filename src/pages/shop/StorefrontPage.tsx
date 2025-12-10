@@ -51,7 +51,7 @@ export default function StorefrontPage() {
   // Defensive check: ensure layout_config is an array with items
   const layoutConfig = store.layout_config;
   const hasValidLayout = Array.isArray(layoutConfig) && layoutConfig.length > 0;
-  
+
   const sections = hasValidLayout
     ? layoutConfig
     : [
@@ -99,14 +99,21 @@ export default function StorefrontPage() {
           return null;
         }
 
-        return (
-          <Component
-            key={section.id}
-            content={section.content}
-            styles={section.styles}
-            storeId={store.id} // Pass storeId for data fetching
-          />
-        );
+        // Wrap each section in error boundary - graceful degradation
+        try {
+          return (
+            <Component
+              key={section.id}
+              content={section.content}
+              styles={section.styles}
+              storeId={store.id} // Pass storeId for data fetching
+            />
+          );
+        } catch (error) {
+          console.error(`Error rendering section ${section.id}:`, error);
+          // Return null to gracefully skip broken sections
+          return null;
+        }
       })}
     </div>
   );

@@ -22,10 +22,12 @@ import {
   Phone,
   Mail,
   XCircle,
-  ArrowLeft
+  ArrowLeft,
+  RefreshCw
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import { logger } from '@/lib/logger';
 
 interface OrderDetails {
   order_id: string;
@@ -60,19 +62,35 @@ export default function OrderTrackingPage() {
   const { store } = useShop();
   const { isLuxuryTheme, accentColor, cardBg, cardBorder } = useLuxuryTheme();
 
-  // Fetch order details
-  const { data: order, isLoading, error } = useQuery({
+  // Fetch order details with retry and auto-refresh
+  const { data: order, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ['order-tracking', trackingToken],
     queryFn: async () => {
       if (!trackingToken) return null;
 
-      const { data, error } = await supabase
-        .rpc('get_marketplace_order_by_token' as any, { p_tracking_token: trackingToken });
+      try {
+        const { data, error } = await supabase
+          .rpc('get_marketplace_order_by_token' as any, { p_tracking_token: trackingToken });
 
-      if (error) throw error;
-      return data?.[0] as OrderDetails | null;
+        if (error) {
+          logger.error('Order tracking fetch failed', error, { trackingToken });
+          throw error;
+        }
+        return data?.[0] as OrderDetails | null;
+      } catch (err) {
+        logger.error('Order tracking error', err, { trackingToken });
+        throw err;
+      }
     },
     enabled: !!trackingToken,
+    retry: 2, // Retry failed requests
+    refetchInterval: (query) => {
+      // Auto-refresh every 30s for pending/in-progress orders
+      const data = query.state.data as OrderDetails | null | undefined;
+      if (!data) return false;
+      const activeStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery'];
+      return activeStatuses.includes(data.status) ? 30000 : false;
+    },
   });
 
   if (isLoading) {
@@ -92,9 +110,15 @@ export default function OrderTrackingPage() {
         <p className="text-muted-foreground mb-6">
           We couldn't find an order with this tracking code. Please check the code and try again.
         </p>
-        <Link to={`/shop/${storeSlug}`}>
-          <Button>Return to Store</Button>
-        </Link>
+        <div className="flex gap-3 justify-center">
+          <Button variant="outline" onClick={() => refetch()}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Try Again
+          </Button>
+          <Link to={`/shop/${storeSlug}`}>
+            <Button>Return to Store</Button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -105,14 +129,25 @@ export default function OrderTrackingPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
-      {/* Back Link */}
-      <Link
-        to={`/shop/${storeSlug}/account`}
-        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
-      >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Back to Account
-      </Link>
+      {/* Back Link + Refresh */}
+      <div className="flex items-center justify-between mb-6">
+        <Link
+          to={`/shop/${storeSlug}/account`}
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Account
+        </Link>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => refetch()}
+          disabled={isFetching}
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+          {isFetching ? 'Refreshing...' : 'Refresh'}
+        </Button>
+      </div>
 
       {/* Order Header */}
       <Card className="mb-6">

@@ -422,8 +422,14 @@ function WishlistSection({
   const { toast } = useToast();
   const { setCartItemCount } = useShop();
 
-  // Get wishlist from localStorage
-  const wishlistIds: string[] = JSON.parse(localStorage.getItem(`shop_wishlist_${storeId}`) || '[]');
+  // Get wishlist from localStorage with error handling
+  let wishlistIds: string[] = [];
+  try {
+    wishlistIds = JSON.parse(localStorage.getItem(`shop_wishlist_${storeId}`) || '[]');
+    if (!Array.isArray(wishlistIds)) wishlistIds = [];
+  } catch {
+    wishlistIds = [];
+  }
 
   // Fetch wishlist products
   const { data: products = [], isLoading, refetch } = useQuery({
@@ -441,34 +447,44 @@ function WishlistSection({
     enabled: wishlistIds.length > 0,
   });
 
-  // Remove from wishlist
+  // Remove from wishlist with error handling
   const removeFromWishlist = (productId: string) => {
-    const newWishlist = wishlistIds.filter((id) => id !== productId);
-    localStorage.setItem(`shop_wishlist_${storeId}`, JSON.stringify(newWishlist));
-    refetch();
-    toast({ title: 'Removed from wishlist' });
+    try {
+      const newWishlist = wishlistIds.filter((id) => id !== productId);
+      localStorage.setItem(`shop_wishlist_${storeId}`, JSON.stringify(newWishlist));
+      refetch();
+      toast({ title: 'Removed from wishlist' });
+    } catch {
+      toast({ title: 'Removed from wishlist', description: 'Changes may not persist' });
+      refetch();
+    }
   };
 
-  // Add to cart
+  // Add to cart with error handling
   const addToCart = (product: any) => {
-    const cart = JSON.parse(localStorage.getItem(`shop_cart_${storeId}`) || '[]');
-    const existingIndex = cart.findIndex((item: any) => item.productId === product.product_id);
+    try {
+      const cart = JSON.parse(localStorage.getItem(`shop_cart_${storeId}`) || '[]');
+      const existingIndex = cart.findIndex((item: any) => item.productId === product.product_id);
 
-    if (existingIndex >= 0) {
-      cart[existingIndex].quantity += 1;
-    } else {
-      cart.push({
-        productId: product.product_id,
-        quantity: 1,
-        price: product.display_price,
-        name: product.name,
-        imageUrl: product.image_url,
-      });
+      if (existingIndex >= 0) {
+        cart[existingIndex].quantity += 1;
+      } else {
+        cart.push({
+          productId: product.product_id,
+          quantity: 1,
+          price: product.display_price,
+          name: product.name,
+          imageUrl: product.image_url,
+        });
+      }
+
+      localStorage.setItem(`shop_cart_${storeId}`, JSON.stringify(cart));
+      setCartItemCount(cart.reduce((sum: number, item: any) => sum + item.quantity, 0));
+      toast({ title: 'Added to cart' });
+    } catch (error) {
+      logger.error('Failed to add to cart from wishlist', error);
+      toast({ title: 'Failed to add to cart', variant: 'destructive' });
     }
-
-    localStorage.setItem(`shop_cart_${storeId}`, JSON.stringify(cart));
-    setCartItemCount(cart.reduce((sum: number, item: any) => sum + item.quantity, 0));
-    toast({ title: 'Added to cart' });
   };
 
   if (isLoading) {

@@ -27,6 +27,7 @@ import { LuxuryNav } from '@/components/shop/LuxuryNav';
 import { LuxuryFooter } from '@/components/shop/LuxuryFooter';
 import { FloatingCartButton } from '@/components/shop/FloatingCartButton';
 import { LuxuryAgeVerification } from '@/components/shop/LuxuryAgeVerification';
+import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
 
 interface StoreInfo {
   id: string;
@@ -126,18 +127,36 @@ export default function ShopLayout() {
     }
   }, [store?.store_name, store?.tagline]);
 
-  // Load cart from localStorage
+  // Load cart from localStorage and listen for updates
   useEffect(() => {
     if (store?.id) {
-      const cart = localStorage.getItem(`shop_cart_${store.id}`);
-      if (cart) {
-        try {
-          const items = JSON.parse(cart);
-          setCartItemCount(items.reduce((sum: number, item: any) => sum + item.quantity, 0));
-        } catch {
-          // Invalid cart data
+      // Initial load
+      const loadCart = () => {
+        const cart = localStorage.getItem(`shop_cart_${store.id}`);
+        if (cart) {
+          try {
+            const items = JSON.parse(cart);
+            setCartItemCount(items.reduce((sum: number, item: any) => sum + item.quantity, 0));
+          } catch {
+            // Invalid cart data
+          }
         }
-      }
+      };
+
+      loadCart();
+
+      // Listen for cart updates from useShopCart hook
+      const handleCartUpdate = (event: CustomEvent) => {
+        if (event.detail?.storeId === store.id && typeof event.detail?.count === 'number') {
+          setCartItemCount(event.detail.count);
+        } else {
+          // Fallback: reload from localStorage
+          loadCart();
+        }
+      };
+
+      window.addEventListener('cartUpdated', handleCartUpdate as EventListener);
+      return () => window.removeEventListener('cartUpdated', handleCartUpdate as EventListener);
     }
   }, [store?.id]);
 
@@ -343,6 +362,9 @@ export default function ShopLayout() {
               primaryColor="#10b981"
             />
           )}
+
+          {/* Offline Indicator */}
+          <OfflineIndicator position="top" showSyncStatus />
         </div>
       </ShopContext.Provider>
     );
@@ -540,6 +562,9 @@ export default function ShopLayout() {
             primaryColor={store.primary_color}
           />
         )}
+
+        {/* Offline Indicator */}
+        <OfflineIndicator position="top" showSyncStatus />
       </div>
     </ShopContext.Provider>
   );

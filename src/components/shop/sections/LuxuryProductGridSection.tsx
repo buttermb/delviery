@@ -5,13 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, RefreshCw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductImage from '@/components/ProductImage';
 import { cleanProductName } from '@/utils/productName';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { useShopCart } from '@/hooks/useShopCart';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 export interface LuxuryProductGridSectionProps {
   content?: {
@@ -61,19 +62,28 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
 
   const accentColor = styles?.accent_color || '#10b981';
 
-  // Fetch products
-  const { data: products = [], isLoading } = useQuery({
+  // Fetch products with error handling
+  const { data: products = [], isLoading, error, refetch } = useQuery({
     queryKey: ['luxury-products', storeId],
     queryFn: async () => {
       if (!storeId) return [];
 
-      const { data, error } = await supabase
-        .rpc('get_marketplace_products' as any, { p_store_id: storeId });
+      try {
+        const { data, error } = await supabase
+          .rpc('get_marketplace_products' as any, { p_store_id: storeId });
 
-      if (error) throw error;
-      return (data as MarketplaceProduct[]) || [];
+        if (error) {
+          logger.error('Failed to fetch luxury products', error, { storeId });
+          throw error;
+        }
+        return (data as MarketplaceProduct[]) || [];
+      } catch (err) {
+        logger.error('Error in luxury products query', err, { storeId });
+        throw err;
+      }
     },
     enabled: !!storeId,
+    retry: 2, // Retry failed requests up to 2 times
   });
 
   // Get unique categories
@@ -112,20 +122,29 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
     e.preventDefault();
     e.stopPropagation();
 
-    addItem({
-      productId: product.product_id,
-      name: product.product_name,
-      price: product.price,
-      imageUrl: product.image_url,
-      quantity: 1,
-      variant: product.strain_type // Default to strain type if no variants
-    });
+    try {
+      addItem({
+        productId: product.product_id,
+        name: product.product_name,
+        price: product.price,
+        imageUrl: product.image_url,
+        quantity: 1,
+        variant: product.strain_type // Default to strain type if no variants
+      });
 
-    toast({
-      title: "Added to cart",
-      description: `${product.product_name} has been added to your cart.`,
-      duration: 3000,
-    });
+      toast({
+        title: "Added to cart",
+        description: `${product.product_name} has been added to your cart.`,
+        duration: 3000,
+      });
+    } catch (error) {
+      logger.error('Quick add to cart failed', error, { productId: product.product_id });
+      toast({
+        title: "Failed to add",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -174,8 +193,8 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
               <button
                 onClick={() => setSelectedCategory(null)}
                 className={`px-4 py-2 rounded-full text-sm font-light transition-all ${!selectedCategory
-                    ? 'bg-white text-black'
-                    : 'bg-white/[0.02] text-white/60 border border-white/10 hover:border-white/20'
+                  ? 'bg-white text-black'
+                  : 'bg-white/[0.02] text-white/60 border border-white/10 hover:border-white/20'
                   }`}
               >
                 All
@@ -185,8 +204,8 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-4 py-2 rounded-full text-sm font-light transition-all ${selectedCategory === cat
-                      ? 'bg-white text-black'
-                      : 'bg-white/[0.02] text-white/60 border border-white/10 hover:border-white/20'
+                    ? 'bg-white text-black'
+                    : 'bg-white/[0.02] text-white/60 border border-white/10 hover:border-white/20'
                     }`}
                 >
                   {cat}
@@ -196,12 +215,24 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
           </motion.div>
         )}
 
-        {/* Products Grid */}
+        {/* Products Grid with error handling */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <Skeleton key={i} className="h-96 rounded-2xl bg-white/5" />
             ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-16">
+            <p className="text-white/50 text-lg mb-4">Unable to load products</p>
+            <Button
+              variant="outline"
+              onClick={() => refetch()}
+              className="text-white border-white/20 hover:bg-white/10"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Try Again
+            </Button>
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-16">

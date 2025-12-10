@@ -41,6 +41,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { CRMInvoice } from "@/types/crm";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function InvoicesPage() {
     const navigate = useNavigate();
@@ -66,6 +67,11 @@ export default function InvoicesPage() {
         markAsPaid.mutate(id, {
             onSuccess: () => {
                 toast.success("Invoice marked as paid");
+            },
+            onError: (error: unknown) => {
+                const message = error instanceof Error ? error.message : "Failed to update invoice";
+                toast.error("Update failed", { description: message });
+                logger.error('Failed to mark invoice as paid', error, { component: 'InvoicesPage', invoiceId: id });
             },
         });
     };
@@ -262,11 +268,18 @@ export default function InvoicesPage() {
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center">
-                                        Loading invoices...
-                                    </TableCell>
-                                </TableRow>
+                                // Skeleton loading state
+                                [...Array(5)].map((_, i) => (
+                                    <TableRow key={i}>
+                                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                        <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
+                                        <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                                        <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded" /></TableCell>
+                                    </TableRow>
+                                ))
                             ) : filteredInvoices?.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={7} className="h-64">

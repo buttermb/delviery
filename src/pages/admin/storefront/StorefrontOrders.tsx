@@ -152,22 +152,38 @@ export default function StorefrontOrders() {
     );
   });
 
-  // Update order status mutation
+  // Update order status mutation with retry logic
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
+    mutationFn: async ({ orderId, status, retryCount = 0 }: { orderId: string; status: string; retryCount?: number }) => {
+      const MAX_RETRIES = 2;
       const updates: any = { status };
-      
+
       // Set delivered_at timestamp when marking as delivered
       if (status === 'delivered') {
         updates.delivered_at = new Date().toISOString();
       }
 
-      const { error } = await supabase
-        .from('marketplace_orders')
-        .update(updates)
-        .eq('id', orderId);
+      try {
+        const { error } = await supabase
+          .from('marketplace_orders')
+          .update(updates)
+          .eq('id', orderId);
 
-      if (error) throw error;
+        if (error) throw error;
+      } catch (error) {
+        const isNetworkError = error instanceof Error &&
+          (error.message.toLowerCase().includes('network') ||
+            error.message.toLowerCase().includes('fetch') ||
+            error.message.toLowerCase().includes('timeout'));
+
+        // Retry on network errors
+        if (isNetworkError && retryCount < MAX_RETRIES) {
+          toast({ title: 'Connection issue, retrying...' });
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return updateStatusMutation.mutateAsync({ orderId, status, retryCount: retryCount + 1 });
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
@@ -177,7 +193,7 @@ export default function StorefrontOrders() {
       logger.error('Failed to update order status', error, { component: 'StorefrontOrders' });
       toast({
         title: 'Error',
-        description: 'Failed to update order status.',
+        description: error instanceof Error ? error.message : 'Failed to update order status.',
         variant: 'destructive',
       });
     },

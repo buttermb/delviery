@@ -49,6 +49,7 @@ import { EditPurchaseOrderDialog } from '@/components/wholesale/EditPurchaseOrde
 import { CancelPurchaseOrderDialog } from '@/components/wholesale/CancelPurchaseOrderDialog';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface WholesaleOrder {
   id: string;
@@ -284,7 +285,8 @@ export default function WholesaleOrdersPage() {
     );
   };
 
-  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+  const handleStatusUpdate = async (orderId: string, newStatus: string, retryCount = 0) => {
+    const MAX_RETRIES = 2;
     try {
       const table = viewMode === 'selling' ? 'wholesale_orders' : 'purchase_orders';
       const { error } = await supabase
@@ -298,8 +300,22 @@ export default function WholesaleOrdersPage() {
       queryClient.invalidateQueries({ queryKey: [viewMode === 'selling' ? 'wholesale-orders' : 'purchase-orders'] });
       handleRefresh();
     } catch (error) {
-      logger.error('Failed to update order status', error, { component: 'WholesaleOrdersPage' });
-      toast.error('Failed to update status');
+      const isNetworkError = error instanceof Error &&
+        (error.message.toLowerCase().includes('network') ||
+          error.message.toLowerCase().includes('fetch') ||
+          error.message.toLowerCase().includes('timeout'));
+
+      // Retry on network errors
+      if (isNetworkError && retryCount < MAX_RETRIES) {
+        toast.info('Connection issue, retrying...');
+        setTimeout(() => handleStatusUpdate(orderId, newStatus, retryCount + 1), 1000);
+        return;
+      }
+
+      logger.error('Failed to update order status', error, { component: 'WholesaleOrdersPage', orderId, newStatus, retryCount });
+      toast.error('Failed to update status', {
+        description: error instanceof Error ? error.message : 'Please try again'
+      });
     }
   };
 

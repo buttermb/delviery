@@ -84,6 +84,36 @@ export default function CheckoutPage() {
   });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
+  const [orderRetryCount, setOrderRetryCount] = useState(0);
+
+  // Form persistence key
+  const formStorageKey = store?.id ? `checkout_form_${store.id}` : null;
+
+  // Load saved form data on mount
+  useEffect(() => {
+    if (formStorageKey) {
+      try {
+        const saved = localStorage.getItem(formStorageKey);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setFormData((prev) => ({ ...prev, ...parsed }));
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+  }, [formStorageKey]);
+
+  // Save form data when it changes
+  useEffect(() => {
+    if (formStorageKey && formData.email) {
+      try {
+        localStorage.setItem(formStorageKey, JSON.stringify(formData));
+      } catch {
+        // Ignore storage errors
+      }
+    }
+  }, [formData, formStorageKey]);
 
   // Use unified cart hook
   const { cartItems, cartCount, subtotal, clearCart, isInitialized } = useShopCart({
@@ -164,7 +194,8 @@ export default function CheckoutPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Place order mutation
+  // Place order mutation with retry logic
+  const MAX_ORDER_RETRIES = 3;
   const placeOrderMutation = useMutation({
     mutationFn: async () => {
       if (!store?.id) throw new Error('No store');
@@ -178,47 +209,72 @@ export default function CheckoutPage() {
         image_url: item.imageUrl,
       }));
 
-      try {
-        const { data, error } = await supabase.rpc('create_marketplace_order', {
-          p_store_id: store.id,
-          p_items: orderItems,
-          p_customer_name: `${formData.firstName} ${formData.lastName}`,
-          p_customer_email: formData.email,
-          p_customer_phone: formData.phone,
-          p_delivery_address: {
-            street: formData.street,
-            apartment: formData.apartment,
-            city: formData.city,
-            state: formData.state,
-            zip: formData.zip,
-          },
-          p_delivery_notes: formData.deliveryNotes,
-          p_payment_method: formData.paymentMethod,
-        });
+      const attemptOrder = async (attempt: number): Promise<any> => {
+        try {
+          const { data, error } = await supabase.rpc('create_marketplace_order', {
+            p_store_id: store.id,
+            p_items: orderItems,
+            p_customer_name: `${formData.firstName} ${formData.lastName}`,
+            p_customer_email: formData.email,
+            p_customer_phone: formData.phone,
+            p_delivery_address: {
+              street: formData.street,
+              apartment: formData.apartment,
+              city: formData.city,
+              state: formData.state,
+              zip: formData.zip,
+            },
+            p_delivery_notes: formData.deliveryNotes,
+            p_payment_method: formData.paymentMethod,
+          });
 
-        if (error) {
-          // Handle case where RPC function doesn't exist
-          if (error.message?.includes('function') || error.code === '42883') {
-            throw new Error('Order system is not configured. Please contact the store.');
+          if (error) {
+            // Handle case where RPC function doesn't exist - don't retry
+            if (error.message?.includes('function') || error.code === '42883') {
+              throw new Error('Order system is not configured. Please contact the store.');
+            }
+            throw error;
           }
-          throw error;
-        }
 
-        const result = data?.[0];
-        if (!result?.success) {
-          throw new Error(result?.error_message || 'Failed to place order');
-        }
+          const result = data?.[0];
+          if (!result?.success) {
+            throw new Error(result?.error_message || 'Failed to place order');
+          }
 
-        return result;
-      } catch (err: any) {
-        logger.error('Order RPC error', err);
-        throw err;
-      }
+          return result;
+        } catch (err: any) {
+          const isNetworkError = err instanceof Error &&
+            (err.message.toLowerCase().includes('network') ||
+              err.message.toLowerCase().includes('fetch') ||
+              err.message.toLowerCase().includes('timeout') ||
+              err.message.toLowerCase().includes('failed to fetch'));
+
+          // Retry on network errors
+          if (isNetworkError && attempt < MAX_ORDER_RETRIES) {
+            setOrderRetryCount(attempt);
+            toast({
+              title: `Connection issue, retrying (${attempt}/${MAX_ORDER_RETRIES})...`,
+            });
+            // Exponential backoff: 1s, 2s, 4s
+            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
+            return attemptOrder(attempt + 1);
+          }
+
+          logger.error('Order RPC error', err, { attempt, component: 'CheckoutPage' });
+          throw err;
+        }
+      };
+
+      return attemptOrder(1);
     },
     onSuccess: (data) => {
-      // Clear cart
+      setOrderRetryCount(0);
+      // Clear cart and saved form data
       if (store?.id) {
         localStorage.removeItem(`shop_cart_${store.id}`);
+        if (formStorageKey) {
+          localStorage.removeItem(formStorageKey);
+        }
         setCartItemCount(0);
       }
       // Navigate to confirmation
@@ -231,11 +287,30 @@ export default function CheckoutPage() {
       });
     },
     onError: (error: any) => {
+      setOrderRetryCount(0);
       logger.error('Failed to place order', error, { component: 'CheckoutPage' });
+
+      const errorMessage = error?.message || 'Something went wrong. Please try again.';
+      const isNetworkError = errorMessage.toLowerCase().includes('network') ||
+        errorMessage.toLowerCase().includes('fetch') ||
+        errorMessage.toLowerCase().includes('timeout');
+
       toast({
         title: 'Order failed',
-        description: error?.message || 'Something went wrong. Please try again.',
+        description: isNetworkError
+          ? 'Network connection issue. Check your connection and try again.'
+          : errorMessage,
         variant: 'destructive',
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePlaceOrder()}
+            className="ml-2"
+          >
+            Retry
+          </Button>
+        ),
       });
     },
   });

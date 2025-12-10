@@ -28,9 +28,11 @@ import {
   Grid3X3,
   List,
   X,
-  SlidersHorizontal
+  SlidersHorizontal,
+  RefreshCw
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { logger } from '@/lib/logger';
 import {
   Sheet,
   SheetContent,
@@ -125,8 +127,8 @@ export default function ProductCatalogPage() {
   const [inStockOnly, setInStockOnly] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
 
-  // Fetch products with error handling for missing RPC
-  const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery({
+  // Fetch products with error handling
+  const { data: products = [], isLoading: productsLoading, error: productsError, refetch: refetchProducts } = useQuery({
     queryKey: ['shop-products', store?.id],
     queryFn: async () => {
       if (!store?.id) return [];
@@ -138,38 +140,48 @@ export default function ProductCatalogPage() {
         // Handle missing RPC function gracefully
         if (error) {
           if (error.code === 'PGRST202' || error.message?.includes('does not exist')) {
-            console.warn('get_marketplace_products RPC not found, returning empty array');
+            logger.warn('get_marketplace_products RPC not found', { storeId: store.id });
             return [];
           }
+          logger.error('Products fetch failed', error, { storeId: store.id });
           throw error;
         }
         return (data || []).map((item: RpcProduct) => transformProduct(item));
       } catch (err) {
-        console.error('Error fetching products:', err);
-        return [];
+        logger.error('Error fetching products', err, { storeId: store.id });
+        throw err;
       }
     },
     enabled: !!store?.id,
-    retry: false,
+    retry: 2,
   });
 
-  // Fetch categories
-  const { data: categories = [] } = useQuery({
+  // Fetch categories with error handling
+  const { data: categories = [], error: categoriesError } = useQuery({
     queryKey: ['shop-categories', store?.id],
     queryFn: async () => {
       if (!store?.id) return [];
 
-      const { data, error } = await supabase
-        .from('marketplace_categories')
-        .select('*')
-        .eq('store_id', store.id)
-        .eq('is_active', true)
-        .order('display_order');
+      try {
+        const { data, error } = await supabase
+          .from('marketplace_categories')
+          .select('*')
+          .eq('store_id', store.id)
+          .eq('is_active', true)
+          .order('display_order');
 
-      if (error) throw error;
-      return data;
+        if (error) {
+          logger.error('Categories fetch failed', error, { storeId: store.id });
+          throw error;
+        }
+        return data;
+      } catch (err) {
+        logger.error('Error fetching categories', err);
+        return [];
+      }
     },
     enabled: !!store?.id,
+    retry: 2,
   });
 
   // Filter and sort products
@@ -383,6 +395,18 @@ export default function ProductCatalogPage() {
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <Skeleton key={i} className="h-64 rounded-lg" />
           ))}
+        </div>
+      ) : productsError ? (
+        <div className="text-center py-16">
+          <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+          <h2 className="text-xl font-semibold mb-2">Unable to load products</h2>
+          <p className="text-muted-foreground mb-4">
+            There was a problem loading the products. Please try again.
+          </p>
+          <Button onClick={() => refetchProducts()}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Try Again
+          </Button>
         </div>
       ) : filteredProducts.length === 0 ? (
         <div className="text-center py-16">

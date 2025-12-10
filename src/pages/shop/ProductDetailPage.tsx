@@ -171,7 +171,7 @@ export default function ProductDetailPage() {
           logger.error('Failed to fetch product', error);
           return null;
         }
-        
+
         const products = (data || []).map((item: RpcProduct) => transformProduct(item));
         return products.find((p: ProductDetails) => p.product_id === productId) || null;
       } catch (err) {
@@ -257,23 +257,32 @@ export default function ProductDetailPage() {
     setQuantity((prev) => Math.max(1, Math.min(99, prev + delta)));
   };
 
-  // Toggle wishlist
+  // Toggle wishlist with error handling
   const toggleWishlist = () => {
     if (!store?.id || !productId) return;
 
-    const wishlist = JSON.parse(localStorage.getItem(`shop_wishlist_${store.id}`) || '[]');
-    let newWishlist;
+    try {
+      const wishlist = JSON.parse(localStorage.getItem(`shop_wishlist_${store.id}`) || '[]');
+      let newWishlist;
 
-    if (isWishlisted) {
-      newWishlist = wishlist.filter((id: string) => id !== productId);
-      toast({ title: 'Removed from wishlist' });
-    } else {
-      newWishlist = [...wishlist, productId];
-      toast({ title: 'Added to wishlist', description: 'View in your account' });
+      if (isWishlisted) {
+        newWishlist = wishlist.filter((id: string) => id !== productId);
+        toast({ title: 'Removed from wishlist' });
+      } else {
+        newWishlist = [...wishlist, productId];
+        toast({ title: 'Added to wishlist', description: 'View in your account' });
+      }
+
+      localStorage.setItem(`shop_wishlist_${store.id}`, JSON.stringify(newWishlist));
+      setIsWishlisted(!isWishlisted);
+    } catch (error) {
+      logger.error('Wishlist operation failed', error);
+      toast({
+        title: isWishlisted ? 'Removed from wishlist' : 'Added to wishlist',
+        description: 'Changes may not persist across sessions'
+      });
+      setIsWishlisted(!isWishlisted);
     }
-
-    localStorage.setItem(`shop_wishlist_${store.id}`, JSON.stringify(newWishlist));
-    setIsWishlisted(!isWishlisted);
   };
 
   // Add to cart using the unified hook
@@ -320,8 +329,19 @@ export default function ProductDetailPage() {
     const text = `Check out ${product?.name} at ${store?.store_name}`;
 
     if (platform === 'copy') {
-      await navigator.clipboard.writeText(url);
-      toast({ title: 'Link copied!' });
+      try {
+        await navigator.clipboard.writeText(url);
+        toast({ title: 'Link copied!' });
+      } catch {
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        toast({ title: 'Link copied!' });
+      }
       return;
     }
 

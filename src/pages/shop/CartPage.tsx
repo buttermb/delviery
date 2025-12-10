@@ -88,8 +88,9 @@ export default function CartPage() {
     toast({ title: 'Cart cleared' });
   };
 
-  // Apply coupon
-  const applyCoupon = async () => {
+  // Apply coupon with retry logic
+  const MAX_COUPON_RETRIES = 2;
+  const applyCoupon = async (retryCount = 0) => {
     if (!couponCode.trim() || !store?.id) return;
 
     setIsApplyingCoupon(true);
@@ -130,11 +131,26 @@ export default function CartPage() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      const isNetworkError = error instanceof Error &&
+        (error.message.toLowerCase().includes('network') ||
+          error.message.toLowerCase().includes('fetch') ||
+          error.message.toLowerCase().includes('timeout'));
+
+      // Retry on network errors
+      if (isNetworkError && retryCount < MAX_COUPON_RETRIES) {
+        toast({ title: 'Connection issue, retrying...' });
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setIsApplyingCoupon(false); // Reset to try again
+        return applyCoupon(retryCount + 1);
+      }
+
       logger.error('Error applying coupon', error);
       toast({
         title: 'Error',
-        description: 'Failed to apply coupon. Please try again.',
+        description: isNetworkError
+          ? 'Network issue. Check your connection and try again.'
+          : 'Failed to apply coupon. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -313,7 +329,7 @@ export default function CartPage() {
                   />
                   <Button
                     variant="outline"
-                    onClick={applyCoupon}
+                    onClick={() => applyCoupon()}
                     disabled={isApplyingCoupon || !!appliedCoupon || !couponCode.trim()}
                     className={isLuxuryTheme ? buttonOutline : ''}
                   >

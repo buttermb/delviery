@@ -26,6 +26,7 @@ import { OrderDetailsDialog } from '@/components/admin/disposable-menus/OrderDet
 import { OrderStatusBadge } from '@/components/admin/disposable-menus/OrderStatusBadge';
 import { ConvertToInvoiceDialog } from '@/components/admin/disposable-menus/ConvertToInvoiceDialog';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const DisposableMenuOrders = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -246,8 +247,31 @@ const DisposableMenuOrders = () => {
         <CardContent>
           <ScrollArea className="h-[600px]">
             {isLoading ? (
-              <div className="text-center py-12 text-muted-foreground">
-                Loading orders...
+              // Skeleton loading state
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="border rounded-lg p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <Skeleton className="h-5 w-40" />
+                          <Skeleton className="h-5 w-20 rounded-full" />
+                        </div>
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-4 w-28" />
+                        </div>
+                      </div>
+                      <div className="text-right space-y-2">
+                        <Skeleton className="h-6 w-16 ml-auto" />
+                        <div className="flex gap-2 justify-end">
+                          <Skeleton className="h-8 w-20" />
+                          <Skeleton className="h-8 w-16" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : filteredOrders.length === 0 ? (
               <EnhancedEmptyState

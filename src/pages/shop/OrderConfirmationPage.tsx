@@ -3,14 +3,15 @@
  * Success page after placing an order
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useShop } from './ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Package, Clock, Mail, MapPin } from 'lucide-react';
+import { CheckCircle, Package, Clock, Mail, MapPin, Copy, Check } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { useToast } from '@/hooks/use-toast';
 
 export default function OrderConfirmationPage() {
   const { storeSlug } = useParams();
@@ -18,6 +19,8 @@ export default function OrderConfirmationPage() {
   const navigate = useNavigate();
   const { store } = useShop();
   const { isLuxuryTheme, accentColor, cardBg, cardBorder } = useLuxuryTheme();
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
 
   const { orderNumber, trackingToken, total } = (location.state || {}) as {
     orderNumber?: string;
@@ -104,11 +107,37 @@ export default function OrderConfirmationPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  navigator.clipboard.writeText(trackingUrl);
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(trackingUrl);
+                    setCopied(true);
+                    toast({ title: 'Tracking link copied!' });
+                    setTimeout(() => setCopied(false), 2000);
+                  } catch {
+                    // Fallback for browsers without clipboard API
+                    const textarea = document.createElement('textarea');
+                    textarea.value = trackingUrl;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    setCopied(true);
+                    toast({ title: 'Tracking link copied!' });
+                    setTimeout(() => setCopied(false), 2000);
+                  }
                 }}
               >
-                Copy
+                {copied ? (
+                  <>
+                    <Check className="w-4 h-4 mr-1" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4 mr-1" />
+                    Copy
+                  </>
+                )}
               </Button>
             </div>
           </div>
