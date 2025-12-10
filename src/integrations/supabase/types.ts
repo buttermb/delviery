@@ -13661,21 +13661,24 @@ export type Database = {
       get_marketplace_products: {
         Args: { p_store_id: string }
         Returns: {
+          brand: string
           category: string
-          compare_at_price: number
+          cbd_content: number
+          created_at: string
           description: string
-          display_price: number
           image_url: string
           images: string[]
-          in_stock: boolean
           is_featured: boolean
-          marketplace_category_id: string
-          marketplace_category_name: string
-          name: string
+          is_on_sale: boolean
           price: number
           product_id: string
-          short_description: string
-          tags: string[]
+          product_name: string
+          sale_price: number
+          sku: string
+          sort_order: number
+          stock_quantity: number
+          strain_type: string
+          thc_content: number
         }[]
       }
       get_marketplace_store_by_slug: {

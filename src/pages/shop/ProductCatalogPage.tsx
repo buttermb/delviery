@@ -41,6 +41,27 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 
+interface RpcProduct {
+  product_id: string;
+  product_name: string;
+  description: string | null;
+  category: string | null;
+  brand: string | null;
+  sku: string | null;
+  price: number;
+  sale_price: number | null;
+  image_url: string | null;
+  images: string[] | null;
+  is_featured: boolean;
+  is_on_sale: boolean;
+  stock_quantity: number;
+  strain_type: string | null;
+  thc_content: number | null;
+  cbd_content: number | null;
+  sort_order: number;
+  created_at: string;
+}
+
 interface ProductWithSettings {
   product_id: string;
   name: string;
@@ -57,6 +78,38 @@ interface ProductWithSettings {
   marketplace_category_id: string | null;
   marketplace_category_name: string | null;
   tags: string[];
+  // New fields from RPC
+  brand: string | null;
+  sku: string | null;
+  strain_type: string | null;
+  thc_content: number | null;
+  cbd_content: number | null;
+}
+
+// Transform RPC response to component interface
+function transformProduct(rpc: RpcProduct): ProductWithSettings {
+  return {
+    product_id: rpc.product_id,
+    name: rpc.product_name,
+    description: rpc.description,
+    short_description: rpc.description?.substring(0, 150) || null,
+    category: rpc.category,
+    price: rpc.price,
+    display_price: rpc.sale_price || rpc.price,
+    compare_at_price: rpc.sale_price ? rpc.price : null,
+    image_url: rpc.image_url,
+    images: rpc.images || [],
+    in_stock: rpc.stock_quantity > 0,
+    is_featured: rpc.is_featured,
+    marketplace_category_id: null,
+    marketplace_category_name: rpc.category,
+    tags: [],
+    brand: rpc.brand,
+    sku: rpc.sku,
+    strain_type: rpc.strain_type,
+    thc_content: rpc.thc_content,
+    cbd_content: rpc.cbd_content,
+  };
 }
 
 export default function ProductCatalogPage() {
@@ -90,7 +143,7 @@ export default function ProductCatalogPage() {
           }
           throw error;
         }
-        return (data || []) as ProductWithSettings[];
+        return (data || []).map((item: RpcProduct) => transformProduct(item));
       } catch (err) {
         console.error('Error fetching products:', err);
         return [];
