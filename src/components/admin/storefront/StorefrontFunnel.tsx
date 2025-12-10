@@ -155,50 +155,50 @@ export function StorefrontFunnel({ storeId, primaryColor = '#6366f1' }: Storefro
                 )}
 
                 {/* Stage bar */}
-                <div className="relative">
+                <div
+                  className={cn(
+                    'relative h-16 rounded-lg overflow-hidden transition-all w-full',
+                    index === stages.length - 1 ? 'bg-green-100' : 'bg-muted'
+                  )}
+                >
+                  {/* Visual width indicator bar */}
                   <div
                     className={cn(
-                      'relative h-16 rounded-lg overflow-hidden transition-all',
-                      index === stages.length - 1 ? 'bg-green-100' : 'bg-muted'
+                      'absolute inset-y-0 left-0 opacity-20 transition-all',
+                      index === stages.length - 1 ? 'bg-green-500' : ''
                     )}
-                    style={{ width: `${Math.max(width, 10)}%` }}
-                  >
-                    <div
+                    style={{
+                      width: `${Math.max(width, 5)}%`,
+                      backgroundColor: index < stages.length - 1 ? primaryColor : undefined,
+                    }}
+                  />
+                  {/* Content - always full width */}
+                  <div className="absolute inset-0 flex items-center px-4">
+                    <Icon
                       className={cn(
-                        'absolute inset-0 opacity-20',
-                        index === stages.length - 1 ? 'bg-green-500' : ''
+                        'w-5 h-5 mr-3 flex-shrink-0',
+                        index === stages.length - 1 ? 'text-green-600' : ''
                       )}
                       style={{
-                        backgroundColor: index < stages.length - 1 ? primaryColor : undefined,
+                        color: index < stages.length - 1 ? primaryColor : undefined,
                       }}
                     />
-                    <div className="absolute inset-0 flex items-center px-4">
-                      <Icon
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">{stage.name}</p>
+                      <p className="text-xs text-muted-foreground">{stage.description}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p
                         className={cn(
-                          'w-5 h-5 mr-3',
+                          'text-xl font-bold',
                           index === stages.length - 1 ? 'text-green-600' : ''
                         )}
                         style={{
                           color: index < stages.length - 1 ? primaryColor : undefined,
                         }}
-                      />
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{stage.name}</p>
-                        <p className="text-xs text-muted-foreground">{stage.description}</p>
-                      </div>
-                      <div className="text-right">
-                        <p
-                          className={cn(
-                            'text-xl font-bold',
-                            index === stages.length - 1 ? 'text-green-600' : ''
-                          )}
-                          style={{
-                            color: index < stages.length - 1 ? primaryColor : undefined,
-                          }}
-                        >
-                          {stage.value.toLocaleString()}
-                        </p>
-                      </div>
+                      >
+                        {stage.value.toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 </div>
