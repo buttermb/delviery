@@ -13695,7 +13695,7 @@ export type Database = {
           logo_url: string
           minimum_age: number
           operating_hours: Json
-          payment_methods: string[]
+          payment_methods: Json
           primary_color: string
           require_age_verification: boolean
           secondary_color: string
