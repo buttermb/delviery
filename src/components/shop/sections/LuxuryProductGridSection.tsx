@@ -5,11 +5,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Star } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductImage from '@/components/ProductImage';
 import { cleanProductName } from '@/utils/productName';
 import { useShop } from '@/pages/shop/ShopLayout';
+import { useShopCart } from '@/hooks/useShopCart';
+import { useToast } from '@/hooks/use-toast';
 
 export interface LuxuryProductGridSectionProps {
   content?: {
@@ -43,6 +45,12 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
   const { isPreviewMode } = useShop();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const { addItem } = useShopCart({
+    storeId,
+    onCartChange: () => { },
+  });
 
   const {
     heading = "Our Collection",
@@ -100,6 +108,26 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
     'Hybrid': 'from-emerald-400/20 to-emerald-600/20 text-emerald-300'
   };
 
+  const handleQuickAdd = (e: React.MouseEvent, product: MarketplaceProduct) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    addItem({
+      productId: product.product_id,
+      name: product.product_name,
+      price: product.price,
+      imageUrl: product.image_url,
+      quantity: 1,
+      variant: product.strain_type // Default to strain type if no variants
+    });
+
+    toast({
+      title: "Added to cart",
+      description: `${product.product_name} has been added to your cart.`,
+      duration: 3000,
+    });
+  };
+
   return (
     <section className="relative py-24 bg-black" id="products">
       {/* Background gradient */}
@@ -114,10 +142,10 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <h2 className="text-white font-extralight text-4xl md:text-5xl tracking-tight mb-4">
+          <h2 className="text-white font-serif italic text-5xl md:text-6xl tracking-tight mb-4">
             {heading}
           </h2>
-          <p className="text-white/50 text-lg font-light">
+          <p className="text-white/50 text-lg font-light font-sans tracking-wide">
             {subheading}
           </p>
         </motion.div>
@@ -137,7 +165,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 bg-white/[0.02] border-white/10 text-white placeholder:text-white/30 rounded-full h-12 focus:border-white/20"
+                className="pl-12 bg-white/[0.02] border-white/10 text-white placeholder:text-white/30 rounded-full h-12 focus:border-white/20 transition-all focus:bg-white/[0.05]"
               />
             </div>
 
@@ -145,11 +173,10 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
             <div className="flex gap-2 flex-wrap justify-center">
               <button
                 onClick={() => setSelectedCategory(null)}
-                className={`px-4 py-2 rounded-full text-sm font-light transition-all ${
-                  !selectedCategory
+                className={`px-4 py-2 rounded-full text-sm font-light transition-all ${!selectedCategory
                     ? 'bg-white text-black'
                     : 'bg-white/[0.02] text-white/60 border border-white/10 hover:border-white/20'
-                }`}
+                  }`}
               >
                 All
               </button>
@@ -157,11 +184,10 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-light transition-all ${
-                    selectedCategory === cat
+                  className={`px-4 py-2 rounded-full text-sm font-light transition-all ${selectedCategory === cat
                       ? 'bg-white text-black'
                       : 'bg-white/[0.02] text-white/60 border border-white/10 hover:border-white/20'
-                  }`}
+                    }`}
                 >
                   {cat}
                 </button>
@@ -209,19 +235,19 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                       />
 
                       {/* Image container */}
-                      <div className="relative h-56 overflow-hidden">
+                      <div className="relative h-64 overflow-hidden">
                         <ProductImage
                           src={product.image_url}
                           alt={cleanedName}
-                          className="h-56 group-hover:scale-110 transition-transform duration-700"
+                          className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
                         />
                         {/* Overlay gradient */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
 
                         {/* Strain type badge */}
                         {product.strain_type && (
-                          <div className={`absolute bottom-4 left-4 px-3 py-1.5 bg-gradient-to-r ${colorClass} backdrop-blur-xl rounded-full border border-white/10 z-10`}>
-                            <span className="text-xs font-light tracking-wider">{product.strain_type}</span>
+                          <div className={`absolute top-4 left-4 px-3 py-1 bg-black/40 backdrop-blur-xl rounded-full border border-white/10 z-10`}>
+                            <span className="text-[10px] font-medium tracking-widest uppercase text-white/90">{product.strain_type}</span>
                           </div>
                         )}
                       </div>
@@ -230,19 +256,19 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                       <div className="p-5">
                         {/* Category */}
                         {product.category && (
-                          <p className="text-white/40 text-xs font-light tracking-wider uppercase mb-2">
+                          <p className="text-white/40 text-[10px] font-light tracking-widest uppercase mb-2">
                             {product.category}
                           </p>
                         )}
 
                         {/* Name */}
-                        <h3 className="text-white text-lg font-light tracking-tight mb-2 line-clamp-1">
+                        <h3 className="text-white text-lg font-serif font-light tracking-tight mb-2 line-clamp-1 group-hover:text-emerald-400 transition-colors">
                           {cleanedName}
                         </h3>
 
                         {/* THC/CBD */}
                         {(product.thc_content || product.cbd_content) && (
-                          <div className="flex gap-3 mb-4 text-white/40 text-xs">
+                          <div className="flex gap-3 mb-4 text-white/40 text-[10px] tracking-wider">
                             {product.thc_content && (
                               <span>THC: {product.thc_content}%</span>
                             )}
@@ -256,13 +282,15 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                         <div className="flex items-center justify-between pt-4 border-t border-white/5">
                           <div>
                             <div className="text-white/30 text-[10px] font-light tracking-wider uppercase mb-1">From</div>
-                            <div className="text-white text-xl font-light">${product.price?.toFixed(2) || '0.00'}</div>
+                            <div className="text-white text-xl font-light font-serif italic">${product.price?.toFixed(2) || '0.00'}</div>
                           </div>
+
                           <Button
                             size="sm"
-                            className="px-4 py-2 bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 hover:border-white rounded-full text-xs font-light tracking-wide transition-all duration-300"
+                            onClick={(e) => handleQuickAdd(e, product)}
+                            className="px-5 py-2 bg-white text-black hover:bg-neutral-200 border-none rounded-full text-xs font-bold tracking-wider uppercase transition-all duration-300 transform active:scale-95 shadow-lg shadow-white/5"
                           >
-                            View
+                            <Plus className="w-3 h-3 mr-1" /> Add
                           </Button>
                         </div>
                       </div>
@@ -286,9 +314,9 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
             <Link to={`/shop/${storeSlug}/products${isPreviewMode ? '?preview=true' : ''}`}>
               <Button
                 variant="outline"
-                className="px-8 py-3 h-auto text-white border-white/10 hover:border-white/30 hover:bg-white/5 rounded-full text-sm font-light"
+                className="px-10 py-4 h-auto text-white border-white/10 hover:border-white/30 hover:bg-white/5 rounded-full text-sm font-light tracking-widest uppercase transition-all duration-300"
               >
-                View All Products
+                View Collection
               </Button>
             </Link>
           </motion.div>

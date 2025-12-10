@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 export interface LuxuryHeroSectionProps {
@@ -34,188 +34,201 @@ export function LuxuryHeroSection({ content, styles }: LuxuryHeroSectionProps) {
     trust_badges = true
   } = content || {};
 
-  const accentColor = styles?.accent_color || '#10b981'; // emerald-500
+  const accentColor = styles?.accent_color || '#10b981';
 
-  // Subtle parallax mouse movement
+  // Mouse spotlight effect state
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!heroRef.current) return;
-      const { clientX, clientY } = e;
-      const x = (clientX / window.innerWidth - 0.5) * 20;
-      const y = (clientY / window.innerHeight - 0.5) * 20;
-      heroRef.current.style.transform = `translate(${x}px, ${y}px)`;
+      const rect = heroRef.current.getBoundingClientRect();
+      setMousePosition({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-black">
-      {/* Ambient background - ultra subtle */}
-      <div className="absolute inset-0">
-        {/* Gradient base */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-neutral-950 to-black" />
+  // Text reveal variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.3
+      }
+    }
+  };
 
-        {/* Floating orbs - parallax effect */}
-        <div ref={heroRef} className="absolute inset-0 transition-transform duration-1000 ease-out">
+  const letterVariants = {
+    hidden: { y: 20, opacity: 0, filter: 'blur(10px)' },
+    visible: {
+      y: 0,
+      opacity: 1,
+      filter: 'blur(0px)',
+      transition: { duration: 0.8, ease: [0.2, 0.65, 0.3, 0.9] as any }
+    }
+  };
+
+  return (
+    <section ref={heroRef} className="relative min-h-[95vh] flex items-center justify-center overflow-hidden bg-black selection:bg-white/20">
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-neutral-950 via-black to-neutral-950" />
+
+        {/* Spotlight Effect */}
+        <div
+          className="absolute inset-0 opacity-40 pointer-events-none transition-opacity duration-500"
+          style={{
+            background: `radial-gradient(1000px circle at ${mousePosition.x}px ${mousePosition.y}px, ${accentColor}15, transparent 40%)`
+          }}
+        />
+
+        {/* Ambient Orbs */}
+        <div className="absolute inset-0 overflow-hidden">
           <motion.div
-            initial={{ opacity: 0.05 }}
+            initial={{ opacity: 0.1, scale: 0.8 }}
             animate={{
-              opacity: [0.05, 0.08, 0.05],
-              scale: [1, 1.05, 1]
+              opacity: [0.1, 0.15, 0.1],
+              scale: [0.8, 1.1, 0.8],
+              x: [0, 30, 0],
+              y: [0, -30, 0]
             }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full blur-3xl"
-            style={{ backgroundColor: accentColor }}
+            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+            className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full blur-[120px]"
+            style={{ backgroundColor: `${accentColor}10` }}
           />
           <motion.div
-            initial={{ opacity: 0.05 }}
+            initial={{ opacity: 0.05, scale: 1 }}
             animate={{
-              opacity: [0.05, 0.08, 0.05],
-              scale: [1, 1.05, 1]
+              opacity: [0.05, 0.1, 0.05],
+              scale: [1, 1.2, 1],
+              x: [0, -50, 0]
             }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 1
-            }}
-            className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full blur-3xl"
-            style={{ backgroundColor: accentColor }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear", delay: 2 }}
+            className="absolute -bottom-[20%] -right-[10%] w-[60vw] h-[60vw] rounded-full blur-[100px]"
+            style={{ backgroundColor: `white`, opacity: 0.03 }}
           />
         </div>
 
-        {/* Noise texture for depth */}
-        <div
-          className="absolute inset-0 opacity-[0.015]"
-          style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'3\' numOctaves=\'4\' /%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' /%3E%3C/svg%3E")' }}
-        />
+        {/* Grain Texture */}
+        <div className="absolute inset-0 opacity-[0.03] animate-grain bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       </div>
 
-      {/* Content - ultra minimal */}
+      {/* Content */}
       <div className="container mx-auto px-6 relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-5xl mx-auto text-center">
 
-          {/* Small overline - subtle */}
+          {/* Badge */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="inline-flex items-center gap-2 px-4 py-2 mb-12 bg-white/[0.02] backdrop-blur-2xl rounded-full border border-white/[0.05]"
+            transition={{ duration: 1, delay: 0.1 }}
+            className="inline-flex items-center gap-3 px-5 py-2.5 mb-16 bg-white/[0.03] backdrop-blur-xl rounded-full border border-white/[0.08] hover:border-white/[0.15] transition-colors cursor-default"
           >
-            <div
-              className="w-1.5 h-1.5 rounded-full animate-pulse"
-              style={{ backgroundColor: accentColor }}
-            />
-            <span className="text-xs text-white/50 font-light tracking-[0.2em] uppercase">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: accentColor }}></span>
+              <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: accentColor }}></span>
+            </span>
+            <span className="text-xs text-white/70 font-medium tracking-[0.2em] uppercase font-sans">
               NYC Licensed Delivery
             </span>
           </motion.div>
 
-          {/* Main headline - ultra clean */}
-          <motion.h1
-            className="mb-8"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+          {/* Headline - Split for reveal effect */}
+          <motion.div
+            className="mb-10 relative"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
           >
-            <span className="block text-white font-extralight text-[clamp(3rem,12vw,7rem)] leading-[0.95] tracking-[-0.02em] mb-4">
-              {heading_line_1}
-            </span>
-            <span
-              className="block bg-clip-text text-transparent font-light text-[clamp(3rem,12vw,7rem)] leading-[0.95] tracking-[-0.02em]"
-              style={{
-                backgroundImage: `linear-gradient(to right, ${accentColor}, ${adjustColor(accentColor, 40)})`
-              }}
-            >
-              {heading_line_2}
-            </span>
-          </motion.h1>
+            <h1 className="flex flex-col items-center justify-center leading-[0.9]">
+              <div className="overflow-hidden mb-2">
+                <span className="block text-white font-serif italic text-[clamp(4rem,13vw,8.5rem)] tracking-[-0.03em]">
+                  {heading_line_1.split("").map((char, i) => (
+                    <motion.span key={i} variants={letterVariants} className="inline-block relative">
+                      {char === " " ? "\u00A0" : char}
+                    </motion.span>
+                  ))}
+                </span>
+              </div>
 
-          {/* Subheadline - generous spacing */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-white/50 text-lg md:text-xl font-light leading-relaxed mb-16 max-w-2xl mx-auto"
-            dangerouslySetInnerHTML={{ __html: subheading }}
-          />
+              <div className="overflow-hidden">
+                <span
+                  className="block font-serif text-[clamp(4rem,13vw,8.5rem)] tracking-[-0.03em]"
+                  style={{ color: 'transparent', WebkitTextStroke: '1px rgba(255,255,255,0.7)' }}
+                >
+                  <motion.span variants={letterVariants} className="inline-block">
+                    {/* Gradient Text Overlay */}
+                    <span className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-white/40 bg-clip-text text-transparent fill-mode-forwards" style={{ WebkitTextStroke: '0px' }}>
+                      {heading_line_2}
+                    </span>
+                    {heading_line_2}
+                  </motion.span>
+                </span>
+              </div>
+            </h1>
+          </motion.div>
 
-          {/* CTA - minimal but prominent */}
+          {/* Subheading */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            transition={{ duration: 1, delay: 1 }}
+            className="text-white/60 text-lg md:text-xl font-light leading-relaxed mb-16 max-w-2xl mx-auto font-sans"
+          >
+            <p dangerouslySetInnerHTML={{ __html: subheading }} />
+          </motion.div>
+
+          {/* CTA Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 1.2 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-6"
           >
             <Link to={cta_primary_link}>
               <Button
-                className="group relative px-10 py-4 bg-white text-black text-sm font-light tracking-wide rounded-full hover:bg-white/90 transition-all duration-300 overflow-hidden h-auto"
+                className="group relative px-12 py-7 bg-white text-black text-sm font-medium tracking-widest uppercase rounded-none hover:bg-neutral-200 transition-all duration-300 overflow-hidden"
               >
-                <span className="relative z-10">{cta_primary_text}</span>
+                <div className="absolute inset-0 bg-white/0 group-hover:bg-black/5 transition-colors" />
+                <span className="relative z-10 flex items-center gap-3">
+                  {cta_primary_text}
+                  <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="square" strokeLinejoin="miter" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </span>
               </Button>
             </Link>
 
             <Link to={cta_secondary_link}>
               <Button
                 variant="outline"
-                className="px-10 py-4 text-white text-sm font-light tracking-wide rounded-full border border-white/10 hover:border-white/30 hover:bg-white/5 transition-all duration-300 h-auto"
+                className="px-12 py-7 text-white text-sm font-medium tracking-widest uppercase rounded-none border border-white/20 hover:border-white hover:bg-white/5 transition-all duration-300 backdrop-blur-sm"
               >
                 {cta_secondary_text}
               </Button>
             </Link>
           </motion.div>
 
-          {/* Trust indicators - ultra minimal */}
-          {trust_badges && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
-              className="flex items-center justify-center gap-8 mt-20 text-white/30 text-xs font-light tracking-wider flex-wrap"
-            >
-              <span className="flex items-center gap-2">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" style={{ color: accentColor }}>
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Licensed
-              </span>
-              <span className="flex items-center gap-2">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" style={{ color: accentColor }}>
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Lab Verified
-              </span>
-              <span className="flex items-center gap-2">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" style={{ color: accentColor }}>
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Same-Day
-              </span>
-            </motion.div>
-          )}
-
         </div>
       </div>
 
-      {/* Scroll indicator - minimal */}
+      {/* Scroll Indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 1 }}
-        className="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce"
+        transition={{ duration: 1, delay: 2 }}
+        className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
       >
-        <div className="flex flex-col items-center gap-2 text-white/20">
-          <span className="text-[10px] font-light tracking-widest uppercase">Scroll</span>
-          <div className="w-[1px] h-12 bg-gradient-to-b from-white/20 to-transparent" />
-        </div>
+        <span className="text-[10px] text-white/30 tracking-[0.3em] uppercase writing-vertical-rl">Scroll</span>
+        <div className="w-[1px] h-16 bg-gradient-to-b from-white/0 via-white/20 to-white/0" />
       </motion.div>
-
     </section>
   );
 }
