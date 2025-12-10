@@ -56,13 +56,33 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
+interface RpcProduct {
+  product_id: string;
+  product_name: string;
+  description: string | null;
+  category: string | null;
+  brand: string | null;
+  sku: string | null;
+  price: number;
+  sale_price: number | null;
+  image_url: string | null;
+  images: string[] | null;
+  is_featured: boolean;
+  is_on_sale: boolean;
+  stock_quantity: number;
+  strain_type: string | null;
+  thc_content: number | null;
+  cbd_content: number | null;
+  sort_order: number;
+  created_at: string;
+}
+
 interface ProductDetails {
   product_id: string;
   name: string;
   description: string | null;
   short_description: string | null;
   category: string | null;
-  sku?: string | null;
   price: number;
   display_price: number;
   compare_at_price: number | null;
@@ -71,8 +91,39 @@ interface ProductDetails {
   in_stock: boolean;
   is_featured: boolean;
   marketplace_category_name: string | null;
-  variants?: any[];
+  variants: any[];
   tags: string[];
+  brand: string | null;
+  sku: string | null;
+  strain_type: string | null;
+  thc_content: number | null;
+  cbd_content: number | null;
+}
+
+// Transform RPC response to component interface
+function transformProduct(rpc: RpcProduct): ProductDetails {
+  return {
+    product_id: rpc.product_id,
+    name: rpc.product_name,
+    description: rpc.description,
+    short_description: rpc.description?.substring(0, 150) || null,
+    category: rpc.category,
+    price: rpc.price,
+    display_price: rpc.sale_price || rpc.price,
+    compare_at_price: rpc.sale_price ? rpc.price : null,
+    image_url: rpc.image_url,
+    images: rpc.images || [],
+    in_stock: rpc.stock_quantity > 0,
+    is_featured: rpc.is_featured,
+    marketplace_category_name: rpc.category,
+    variants: [],
+    tags: [],
+    brand: rpc.brand,
+    sku: rpc.sku,
+    strain_type: rpc.strain_type,
+    thc_content: rpc.thc_content,
+    cbd_content: rpc.cbd_content,
+  };
 }
 
 interface ProductReview {
@@ -114,15 +165,15 @@ export default function ProductDetailPage() {
 
       try {
         const { data, error } = await supabase
-          .rpc('get_marketplace_products', { p_store_id: store.id })
-          .eq('product_id', productId)
-          .maybeSingle();
+          .rpc('get_marketplace_products', { p_store_id: store.id });
 
         if (error) {
           logger.error('Failed to fetch product', error);
           return null;
         }
-        return data as ProductDetails | null;
+        
+        const products = (data || []).map((item: RpcProduct) => transformProduct(item));
+        return products.find((p: ProductDetails) => p.product_id === productId) || null;
       } catch (err) {
         logger.error('Error fetching product', err);
         return null;
@@ -162,8 +213,9 @@ export default function ProductDetailPage() {
         .rpc('get_marketplace_products', { p_store_id: store.id });
 
       if (error) throw error;
-      return (data as ProductDetails[])
-        .filter((p) => p.product_id !== productId && p.category === product.category)
+      return (data || [])
+        .map((item: RpcProduct) => transformProduct(item))
+        .filter((p: ProductDetails) => p.product_id !== productId && p.category === product.category)
         .slice(0, 4);
     },
     enabled: !!store?.id && !!product?.category,
