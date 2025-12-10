@@ -18,6 +18,7 @@ interface StatCardProps {
   icon?: React.ReactNode;
   color?: 'blue' | 'green' | 'orange' | 'red' | 'purple';
   href?: string;
+  onClick?: () => void;
 }
 
 const colorClasses = {
@@ -44,60 +45,66 @@ export function StatCard({
   icon,
   color = 'blue',
   href,
+  onClick,
 }: StatCardProps) {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const Component = href ? Link : 'div';
   
   // Build the full path with tenant slug if href is provided
   const fullPath = href 
     ? href.startsWith('/admin') && tenantSlug
       ? `/${tenantSlug}${href}`
       : href
-    : '#';
+    : undefined;
 
-  return (
-    <Component
-      to={fullPath}
-      className={cn(href && 'cursor-pointer')}
-    >
-      <Card className={cn(
+  const isClickable = !!onClick || !!fullPath;
+  
+  const cardContent = (
+    <Card 
+      className={cn(
         'p-6 border-2 hover:shadow-lg transition-all',
         colorClasses[color],
-        href && 'hover:scale-[1.02]'
-      )}>
-        <div className="flex items-center justify-between mb-3">
-          <div className={cn('p-2 rounded-lg', iconColors[color])}>
-            {icon}
-          </div>
-          <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+        isClickable && 'hover:scale-[1.02] cursor-pointer'
+      )}
+      onClick={onClick}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <div className={cn('p-2 rounded-lg', iconColors[color])}>
+          {icon}
         </div>
+        <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+      </div>
 
-        <div className="text-2xl font-bold mb-1">{value}</div>
+      <div className="text-2xl font-bold mb-1">{value}</div>
 
-        {(change || subtitle) && (
-          <div className="flex items-center gap-2 text-sm">
-            {change && (
-              <span
-                className={cn(
-                  'flex items-center gap-1 font-medium',
-                  change.type === 'increase' ? 'text-primary' : 'text-destructive'
-                )}
-              >
-                {change.type === 'increase' ? (
-                  <ArrowUp className="h-3 w-3" />
-                ) : (
-                  <ArrowDown className="h-3 w-3" />
-                )}
-                {change.value.toFixed(1)}%
-              </span>
-            )}
-            {subtitle && (
-              <span className="text-muted-foreground">{subtitle}</span>
-            )}
-          </div>
-        )}
-      </Card>
-    </Component>
+      {(change || subtitle) && (
+        <div className="flex items-center gap-2 text-sm">
+          {change && (
+            <span
+              className={cn(
+                'flex items-center gap-1 font-medium',
+                change.type === 'increase' ? 'text-primary' : 'text-destructive'
+              )}
+            >
+              {change.type === 'increase' ? (
+                <ArrowUp className="h-3 w-3" />
+              ) : (
+                <ArrowDown className="h-3 w-3" />
+              )}
+              {change.value.toFixed(1)}%
+            </span>
+          )}
+          {subtitle && (
+            <span className="text-muted-foreground">{subtitle}</span>
+          )}
+        </div>
+      )}
+    </Card>
   );
+
+  if (fullPath) {
+    return <Link to={fullPath}>{cardContent}</Link>;
+  }
+
+  return cardContent;
 }
 
