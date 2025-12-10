@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Product Detail Page
  * Full product view with gallery, variants, reviews, and add-to-cart
@@ -6,10 +5,11 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
+import { useShopCart } from '@/hooks/useShopCart';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +19,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import {
-  ArrowLeft,
   ShoppingCart,
   Heart,
   Share2,
@@ -63,7 +62,7 @@ interface ProductDetails {
   description: string | null;
   short_description: string | null;
   category: string | null;
-  sku: string | null;
+  sku?: string | null;
   price: number;
   display_price: number;
   compare_at_price: number | null;
@@ -72,7 +71,7 @@ interface ProductDetails {
   in_stock: boolean;
   is_featured: boolean;
   marketplace_category_name: string | null;
-  variants: any[];
+  variants?: any[];
   tags: string[];
 }
 
@@ -86,22 +85,18 @@ interface ProductReview {
   created_at: string;
 }
 
-interface CartItem {
-  productId: string;
-  quantity: number;
-  price: number;
-  name: string;
-  imageUrl: string | null;
-  variant?: string;
-}
-
 export default function ProductDetailPage() {
   const { storeSlug, productId } = useParams();
   const navigate = useNavigate();
-  const { store, cartItemCount, setCartItemCount } = useShop();
+  const { store, setCartItemCount } = useShop();
   const { isLuxuryTheme, accentColor, cardBg, cardBorder, textPrimary, textMuted } = useLuxuryTheme();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+
+  // Use unified cart hook
+  const { addItem } = useShopCart({
+    storeId: store?.id,
+    onCartChange: setCartItemCount,
+  });
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -229,36 +224,21 @@ export default function ProductDetailPage() {
     setIsWishlisted(!isWishlisted);
   };
 
-  // Add to cart
+  // Add to cart using the unified hook
   const handleAddToCart = () => {
     if (!store?.id || !product) return;
 
     setIsAddingToCart(true);
 
-    // Get current cart
-    const cart: CartItem[] = JSON.parse(localStorage.getItem(`shop_cart_${store.id}`) || '[]');
-
-    // Check if product already in cart
-    const existingIndex = cart.findIndex(
-      (item) => item.productId === product.product_id && item.variant === selectedVariant
-    );
-
-    if (existingIndex >= 0) {
-      cart[existingIndex].quantity += quantity;
-    } else {
-      cart.push({
-        productId: product.product_id,
-        quantity,
-        price: product.display_price,
-        name: product.name,
-        imageUrl: product.image_url,
-        variant: selectedVariant || undefined,
-      });
-    }
-
-    // Save cart
-    localStorage.setItem(`shop_cart_${store.id}`, JSON.stringify(cart));
-    setCartItemCount(cart.reduce((sum, item) => sum + item.quantity, 0));
+    // Use unified cart hook
+    addItem({
+      productId: product.product_id,
+      quantity,
+      price: product.display_price,
+      name: product.name,
+      imageUrl: product.image_url,
+      variant: selectedVariant || undefined,
+    });
 
     // Show animation
     setShowAddedAnimation(true);

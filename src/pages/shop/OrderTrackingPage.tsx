@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Order Tracking Page
  * Track order status with timeline
@@ -68,7 +67,7 @@ export default function OrderTrackingPage() {
       if (!trackingToken) return null;
 
       const { data, error } = await supabase
-        .rpc('get_marketplace_order_by_token', { p_tracking_token: trackingToken });
+        .rpc('get_marketplace_order_by_token' as any, { p_tracking_token: trackingToken });
 
       if (error) throw error;
       return data?.[0] as OrderDetails | null;
@@ -193,8 +192,8 @@ export default function OrderTrackingPage() {
                         }`}
                       style={{
                         backgroundColor: isComplete ? store?.primary_color : '#e5e7eb',
-                        ringColor: isCurrent ? `${store?.primary_color}40` : undefined,
-                      }}
+                        '--tw-ring-color': isCurrent ? `${store?.primary_color}40` : undefined,
+                      } as React.CSSProperties}
                     >
                       <Icon
                         className={`w-5 h-5 ${isComplete ? 'text-white' : 'text-gray-400'}`}
@@ -251,7 +250,7 @@ export default function OrderTrackingPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {order.items.map((item: any, index: number) => (
+              {(order.items || []).map((item: any, index: number) => (
                 <div key={index} className="flex justify-between text-sm">
                   <div>
                     <p className="font-medium">{item.name}</p>

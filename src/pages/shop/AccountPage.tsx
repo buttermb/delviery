@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Account Page
  * Customer account management and order history
@@ -43,10 +42,11 @@ interface CustomerOrder {
   id: string;
   order_number: string;
   status: string;
-  total: number;
-  items: any[];
+  total_amount?: number;
+  total?: number;
+  items?: any[];
   created_at: string;
-  tracking_token: string;
+  tracking_token?: string;
 }
 
 export default function AccountPage() {
@@ -340,14 +340,14 @@ export default function AccountPage() {
                             <div>
                               <p className="font-medium">{order.order_number}</p>
                               <p className="text-sm text-muted-foreground">
-                                {formatSmartDate(order.created_at)} • {order.items.length} item
-                                {order.items.length !== 1 ? 's' : ''}
+                                {formatSmartDate(order.created_at)} • {order.items?.length || 0} item
+                                {(order.items?.length || 0) !== 1 ? 's' : ''}
                               </p>
                             </div>
                           </Link>
                           <div className="flex items-center gap-4">
                             <div className="text-right">
-                              <p className="font-semibold">{formatCurrency(order.total)}</p>
+                              <p className="font-semibold">{formatCurrency(order.total || order.total_amount || 0)}</p>
                               {getStatusBadge(order.status)}
                             </div>
                             <QuickReorderButton
@@ -599,7 +599,7 @@ function QuickReorderButton({
       const cart = JSON.parse(localStorage.getItem(`shop_cart_${storeId}`) || '[]');
 
       // Add order items to cart
-      order.items.forEach((item: any) => {
+      (order.items || []).forEach((item: any) => {
         const existingIndex = cart.findIndex((c: any) => c.productId === item.product_id);
 
         if (existingIndex >= 0) {
@@ -621,7 +621,7 @@ function QuickReorderButton({
 
       toast({
         title: 'Items added to cart',
-        description: `${order.items.length} item(s) from order ${order.order_number}`,
+        description: `${order.items?.length || 0} item(s) from order ${order.order_number}`,
       });
 
       // Navigate to cart

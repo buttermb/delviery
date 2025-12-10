@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Checkout Page
  * Multi-step checkout flow
@@ -10,6 +9,7 @@ import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
+import { useShopCart, ShopCartItem } from '@/hooks/useShopCart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,7 +19,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast'
+import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import {
   ArrowLeft,
@@ -34,13 +34,8 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
-interface CartItem {
-  productId: string;
-  quantity: number;
-  price: number;
-  name: string;
-  imageUrl: string | null;
-}
+// Email validation regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface CheckoutData {
   // Contact
@@ -74,7 +69,6 @@ export default function CheckoutPage() {
   const { toast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [formData, setFormData] = useState<CheckoutData>({
     firstName: '',
     lastName: '',
@@ -91,29 +85,21 @@ export default function CheckoutPage() {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
 
-  // Load cart from localStorage
+  // Use unified cart hook
+  const { cartItems, cartCount, subtotal, clearCart, isInitialized } = useShopCart({
+    storeId: store?.id,
+    onCartChange: setCartItemCount,
+  });
+
+  // Redirect to cart if empty
   useEffect(() => {
-    if (store?.id) {
-      const savedCart = localStorage.getItem(`shop_cart_${store.id}`);
-      if (savedCart) {
-        try {
-          const items = JSON.parse(savedCart);
-          if (items.length === 0) {
-            navigate(`/shop/${storeSlug}/cart`);
-          } else {
-            setCartItems(items);
-          }
-        } catch {
-          navigate(`/shop/${storeSlug}/cart`);
-        }
-      } else {
-        navigate(`/shop/${storeSlug}/cart`);
-      }
+    if (isInitialized && cartItems.length === 0) {
+      toast({ title: 'Your cart is empty', description: 'Add some items before checkout.' });
+      navigate(`/shop/${storeSlug}/cart`);
     }
-  }, [store?.id, navigate, storeSlug]);
+  }, [isInitialized, cartItems.length, navigate, storeSlug, toast]);
 
   // Calculate totals
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const freeDeliveryThreshold = store?.free_delivery_threshold || 100;
   const deliveryFee = subtotal >= freeDeliveryThreshold ? 0 : (store?.default_delivery_fee || 5);
   const total = subtotal + deliveryFee;
@@ -132,7 +118,11 @@ export default function CheckoutPage() {
           toast({ title: 'Please fill in all required fields', variant: 'destructive' });
           return false;
         }
-        if (store?.checkout_settings?.require_phone && !formData.phone) {
+        if (!EMAIL_REGEX.test(formData.email)) {
+          toast({ title: 'Invalid email address', description: 'Please enter a valid email.', variant: 'destructive' });
+          return false;
+        }
+        if ((store as any)?.checkout_settings?.require_phone && !formData.phone) {
           toast({ title: 'Phone number is required', variant: 'destructive' });
           return false;
         }

@@ -52,6 +52,15 @@ interface StoreInfo {
     };
   } | null;
   operating_hours: Record<string, { open: string; close: string; closed: boolean }>;
+  // Delivery settings
+  free_delivery_threshold?: number;
+  default_delivery_fee?: number;
+  // Checkout settings
+  checkout_settings?: {
+    require_phone?: boolean;
+    show_delivery_notes?: boolean;
+  };
+  payment_methods?: string[];
 }
 
 interface ShopContextType {
