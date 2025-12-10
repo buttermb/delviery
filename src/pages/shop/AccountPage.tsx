@@ -81,9 +81,10 @@ export default function AccountPage() {
   // Fetch customer orders
   const { data: orders = [], isLoading: ordersLoading } = useQuery({
     queryKey: ['customer-orders', store?.id, customerId],
-    queryFn: async () => {
+    queryFn: async (): Promise<CustomerOrder[]> => {
       if (!store?.id || !customerId) return [];
 
+      // @ts-ignore - Supabase types issue with marketplace_orders
       const { data, error } = await supabase
         .from('marketplace_orders')
         .select('*')
@@ -92,7 +93,7 @@ export default function AccountPage() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as CustomerOrder[];
+      return (data as unknown as CustomerOrder[]) || [];
     },
     enabled: !!store?.id && !!customerId,
   });
