@@ -104,7 +104,7 @@ interface UseUnifiedOrdersOptions {
 export const unifiedOrdersKeys = {
   all: ['unified-orders'] as const,
   lists: () => [...unifiedOrdersKeys.all, 'list'] as const,
-  list: (tenantId: string, filters: Record<string, unknown>) => 
+  list: (tenantId: string, filters: Record<string, unknown>) =>
     [...unifiedOrdersKeys.lists(), tenantId, filters] as const,
   details: () => [...unifiedOrdersKeys.all, 'detail'] as const,
   detail: (id: string) => [...unifiedOrdersKeys.details(), id] as const,
@@ -218,11 +218,15 @@ export function useUnifiedOrder(orderId: string | undefined) {
         `)
         .eq('id', orderId)
         .eq('tenant_id', tenant.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to fetch order', { orderId, error });
         throw error;
+      }
+
+      if (!data) {
+        throw new Error('Order not found');
       }
 
       return data as UnifiedOrder;
@@ -336,8 +340,8 @@ export function useCancelOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ orderId, reason, reverseBalance = false }: { 
-      orderId: string; 
+    mutationFn: async ({ orderId, reason, reverseBalance = false }: {
+      orderId: string;
       reason: string;
       reverseBalance?: boolean;
     }) => {
@@ -350,9 +354,10 @@ export function useCancelOrder() {
         .select('order_type, wholesale_client_id, total_amount')
         .eq('id', orderId)
         .eq('tenant_id', tenant.id)
-        .single();
+        .maybeSingle();
 
       if (fetchError) throw fetchError;
+      if (!order) throw new Error('Order not found');
 
       // Update order status
       // @ts-ignore - Table exists after unified architecture migration

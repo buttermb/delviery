@@ -6,6 +6,7 @@
 import { useEffect } from 'react';
 import { Link, useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useShop } from './ShopLayout';
+import { useLuxuryTheme } from '@/components/shop/luxury';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Package, Clock, Mail, MapPin } from 'lucide-react';
@@ -16,6 +17,7 @@ export default function OrderConfirmationPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { store } = useShop();
+  const { isLuxuryTheme, accentColor, cardBg, cardBorder } = useLuxuryTheme();
 
   const { orderNumber, trackingToken, total } = (location.state || {}) as {
     orderNumber?: string;

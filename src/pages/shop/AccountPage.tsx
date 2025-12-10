@@ -9,6 +9,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
+import { useLuxuryTheme } from '@/components/shop/luxury';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,6 +53,7 @@ export default function AccountPage() {
   const { storeSlug } = useParams();
   const navigate = useNavigate();
   const { store } = useShop();
+  const { isLuxuryTheme, accentColor, cardBg, cardBorder, textMuted } = useLuxuryTheme();
   const { toast } = useToast();
 
   const [email, setEmail] = useState('');

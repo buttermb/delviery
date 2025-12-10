@@ -94,7 +94,7 @@ export default function NewWholesaleOrder() {
         .select('settings')
         .eq('tenant_id', tenant.id) // Ensure tenant isolation
         .eq('integration_id', 'wholesale_pricing_tiers')
-        .single();
+        .maybeSingle();
       return data?.settings?.tiers || [];
     },
     enabled: !!tenant?.id,

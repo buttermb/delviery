@@ -18,7 +18,8 @@ import {
   User,
   Search,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  Leaf
 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { MobileBottomNav } from '@/components/shop/MobileBottomNav';
@@ -236,7 +237,7 @@ export default function ShopLayout() {
         />
       );
     }
-    
+
     return (
       <div
         className="min-h-screen flex items-center justify-center"
@@ -282,7 +283,13 @@ export default function ShopLayout() {
     '--store-accent': store.accent_color,
   } as React.CSSProperties;
 
-  // Theme styles applied inline
+  // Get accent color for theme elements
+  const accentColor = store.theme_config?.colors?.accent || store.accent_color || '#10b981';
+
+  // Handler for floating cart checkout
+  const handleCartCheckout = () => {
+    navigate(`/shop/${storeSlug}/checkout`);
+  };
 
   // Luxury theme layout
   if (isLuxuryTheme) {
@@ -335,7 +342,10 @@ export default function ShopLayout() {
   // Default theme layout
   return (
     <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode }}>
-      <div className="min-h-screen bg-background" style={themeStyles}>
+      <div
+        className={`min-h-screen ${isLuxuryTheme ? 'bg-black' : 'bg-background'}`}
+        style={themeStyles}
+      >
         {/* Admin Preview Banner */}
         {isPreviewMode && (
           <div className="bg-amber-500 text-amber-950 px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
@@ -349,8 +359,8 @@ export default function ShopLayout() {
           </div>
         )}
 
-        {/* Header */}
-        <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
+        {/* Header - Luxury vs Standard */}
+        <header className={`sticky top-0 z-50 ${isLuxuryTheme ? 'bg-black/80 backdrop-blur-xl border-b border-white/5' : 'bg-white border-b shadow-sm'}`}>
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
               {/* Logo / Store Name */}
@@ -361,6 +371,13 @@ export default function ShopLayout() {
                     alt={store.store_name}
                     className="h-10 object-contain"
                   />
+                ) : isLuxuryTheme ? (
+                  <div className="flex items-center gap-2">
+                    <Leaf className="w-6 h-6" style={{ color: accentColor }} />
+                    <span className="text-xl font-light text-white">
+                      {store.store_name}
+                    </span>
+                  </div>
                 ) : (
                   <span
                     className="text-xl font-bold"
@@ -375,12 +392,12 @@ export default function ShopLayout() {
               <nav className="hidden md:flex items-center gap-6">
                 <Link
                   to={`/shop/${storeSlug}/products${isPreviewMode ? '?preview=true' : ''}`}
-                  className="text-sm font-medium hover:text-primary transition-colors"
+                  className={`text-sm font-medium transition-colors ${isLuxuryTheme ? 'text-white/70 hover:text-white' : 'hover:text-primary'}`}
                 >
                   Products
                 </Link>
                 {!isStoreOpen() && !isPreviewMode && (
-                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                  <Badge variant="secondary" className={isLuxuryTheme ? 'bg-white/10 text-white/70' : 'bg-yellow-100 text-yellow-800'}>
                     <Clock className="w-3 h-3 mr-1" />
                     Currently Closed
                   </Badge>
@@ -389,7 +406,7 @@ export default function ShopLayout() {
 
               {/* Actions */}
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="hidden md:flex">
+                <Button variant="ghost" size="icon" className={`hidden md:flex ${isLuxuryTheme ? 'text-white/70 hover:text-white hover:bg-white/10' : ''}`}>
                   <Search className="w-5 h-5" />
                 </Button>
                 {!isPreviewMode && (
@@ -467,36 +484,48 @@ export default function ShopLayout() {
           <Outlet />
         </main>
 
-        {/* Footer */}
-        <footer className="border-t mt-16 bg-muted/50 pb-20 md:pb-0">
-          <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <div className="text-center md:text-left">
-                <p className="font-semibold">{store.store_name}</p>
-                {store.tagline && (
-                  <p className="text-sm text-muted-foreground">{store.tagline}</p>
+        {/* Footer - Luxury vs Standard */}
+        {isLuxuryTheme ? (
+          <LuxuryFooter accentColor={accentColor} />
+        ) : (
+          <footer className="border-t mt-16 bg-muted/50 pb-24 md:pb-0">
+            <div className="container mx-auto px-4 py-8">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="text-center md:text-left">
+                  <p className="font-semibold">{store.store_name}</p>
+                  {store.tagline && (
+                    <p className="text-sm text-muted-foreground">{store.tagline}</p>
+                  )}
+                </div>
+                {!isPreviewMode && (
+                  <div className="flex gap-4 text-sm text-muted-foreground">
+                    <Link to={`/shop/${storeSlug}/orders`} className="hover:underline">
+                      Track Order
+                    </Link>
+                    <span>•</span>
+                    <Link to={`/shop/${storeSlug}/account`} className="hover:underline">
+                      Account
+                    </Link>
+                  </div>
                 )}
               </div>
-              {!isPreviewMode && (
-                <div className="flex gap-4 text-sm text-muted-foreground">
-                  <Link to={`/shop/${storeSlug}/orders`} className="hover:underline">
-                    Track Order
-                  </Link>
-                  <span>•</span>
-                  <Link to={`/shop/${storeSlug}/account`} className="hover:underline">
-                    Account
-                  </Link>
-                </div>
-              )}
+              <div className="mt-6 pt-6 border-t text-center text-xs text-muted-foreground">
+                © {new Date().getFullYear()} {store.store_name}. All rights reserved.
+              </div>
             </div>
-            <div className="mt-6 pt-6 border-t text-center text-xs text-muted-foreground">
-              © {new Date().getFullYear()} {store.store_name}. All rights reserved.
-            </div>
-          </div>
-        </footer>
+          </footer>
+        )}
 
-        {/* Mobile Bottom Navigation - hide in preview mode */}
-        {!isPreviewMode && (
+        {/* Floating Cart Button for Luxury Theme */}
+        {isLuxuryTheme && !isPreviewMode && (
+          <FloatingCartButton
+            primaryColor={accentColor}
+            onCheckout={handleCartCheckout}
+          />
+        )}
+
+        {/* Mobile Bottom Navigation - hide in preview mode and luxury theme */}
+        {!isPreviewMode && !isLuxuryTheme && (
           <MobileBottomNav
             cartItemCount={cartItemCount}
             primaryColor={store.primary_color}

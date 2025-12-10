@@ -8,6 +8,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
+import { useLuxuryTheme } from '@/components/shop/luxury';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -58,6 +59,7 @@ const STATUS_STEPS = [
 export default function OrderTrackingPage() {
   const { storeSlug, trackingToken } = useParams();
   const { store } = useShop();
+  const { isLuxuryTheme, accentColor, cardBg, cardBorder } = useLuxuryTheme();
 
   // Fetch order details
   const { data: order, isLoading, error } = useQuery({
@@ -170,16 +172,14 @@ export default function OrderTrackingPage() {
                 return (
                   <div
                     key={step.status}
-                    className={`flex items-start gap-4 ${
-                      index < STATUS_STEPS.length - 1 ? 'pb-8' : ''
-                    }`}
+                    className={`flex items-start gap-4 ${index < STATUS_STEPS.length - 1 ? 'pb-8' : ''
+                      }`}
                   >
                     {/* Timeline line */}
                     {index < STATUS_STEPS.length - 1 && (
                       <div
-                        className={`absolute left-5 w-0.5 h-8 mt-10 ${
-                          isComplete ? '' : 'bg-muted'
-                        }`}
+                        className={`absolute left-5 w-0.5 h-8 mt-10 ${isComplete ? '' : 'bg-muted'
+                          }`}
                         style={{
                           top: `${index * 80 + 40}px`,
                           backgroundColor: isComplete ? store?.primary_color : undefined,
@@ -189,9 +189,8 @@ export default function OrderTrackingPage() {
 
                     {/* Icon */}
                     <div
-                      className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        isCurrent ? 'ring-4 ring-offset-2' : ''
-                      }`}
+                      className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isCurrent ? 'ring-4 ring-offset-2' : ''
+                        }`}
                       style={{
                         backgroundColor: isComplete ? store?.primary_color : '#e5e7eb',
                         ringColor: isCurrent ? `${store?.primary_color}40` : undefined,
@@ -205,9 +204,8 @@ export default function OrderTrackingPage() {
                     {/* Content */}
                     <div className="flex-1 pt-2">
                       <p
-                        className={`font-medium ${
-                          isComplete ? '' : 'text-muted-foreground'
-                        }`}
+                        className={`font-medium ${isComplete ? '' : 'text-muted-foreground'
+                          }`}
                         style={{ color: isCurrent ? store?.primary_color : undefined }}
                       >
                         {step.label}

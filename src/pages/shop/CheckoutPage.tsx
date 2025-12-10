@@ -9,6 +9,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
+import { useLuxuryTheme } from '@/components/shop/luxury';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +19,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast'
 import { logger } from '@/lib/logger';
 import {
   ArrowLeft,
@@ -69,6 +70,7 @@ export default function CheckoutPage() {
   const { storeSlug } = useParams();
   const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
+  const { isLuxuryTheme, accentColor, cardBg, cardBorder, textPrimary, textMuted, inputBg, inputBorder, inputText } = useLuxuryTheme();
   const { toast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -87,6 +89,7 @@ export default function CheckoutPage() {
     paymentMethod: 'cash',
   });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [showErrors, setShowErrors] = useState(false);
 
   // Load cart from localStorage
   useEffect(() => {
@@ -122,6 +125,7 @@ export default function CheckoutPage() {
 
   // Validate current step
   const validateStep = () => {
+    setShowErrors(true);
     switch (currentStep) {
       case 1:
         if (!formData.firstName || !formData.lastName || !formData.email) {
@@ -255,8 +259,10 @@ export default function CheckoutPage() {
 
   if (!store) return null;
 
+  const themeColor = isLuxuryTheme ? accentColor : store.primary_color;
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
+    <div className={`container mx-auto px-4 py-8 max-w-5xl ${isLuxuryTheme ? 'min-h-screen' : ''}`}>
       {/* Steps */}
       <div className="mb-8">
         <nav className="flex justify-between">
@@ -268,21 +274,20 @@ export default function CheckoutPage() {
             return (
               <div
                 key={step.id}
-                className={`flex-1 flex flex-col items-center relative ${
-                  index < STEPS.length - 1 ? 'after:content-[\"\"] after:absolute after:top-5 after:left-[calc(50%+20px)] after:w-[calc(100%-40px)] after:h-0.5 after:bg-muted' : ''
-                } ${isComplete ? 'after:bg-primary' : ''}`}
+                className={`flex-1 flex flex-col items-center relative ${index < STEPS.length - 1 ? `after:content-[""] after:absolute after:top-5 after:left-[calc(50%+20px)] after:w-[calc(100%-40px)] after:h-0.5 ${isLuxuryTheme ? 'after:bg-white/10' : 'after:bg-muted'}` : ''
+                  } ${isComplete ? (isLuxuryTheme ? 'after:bg-white/30' : 'after:bg-primary') : ''}`}
               >
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center z-10 ${
-                    isActive
-                      ? 'ring-2 ring-offset-2'
-                      : ''
-                  }`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center z-10 ${isActive
+                    ? 'ring-2 ring-offset-2'
+                    : ''
+                    } ${!isComplete && !isActive ? (isLuxuryTheme ? 'bg-white/10 text-white/50' : 'bg-muted text-muted-foreground') : ''}`}
                   style={{
-                    backgroundColor: isComplete || isActive ? store.primary_color : undefined,
+                    backgroundColor: isComplete || isActive ? themeColor : undefined,
                     color: isComplete || isActive ? 'white' : undefined,
-                    ringColor: isActive ? store.primary_color : undefined,
-                  }}
+                    ringColor: isActive ? themeColor : undefined,
+                    '--tw-ring-offset-color': isLuxuryTheme ? '#000' : undefined,
+                  } as React.CSSProperties}
                 >
                   {isComplete ? (
                     <Check className="w-5 h-5" />
@@ -291,10 +296,9 @@ export default function CheckoutPage() {
                   )}
                 </div>
                 <span
-                  className={`text-sm mt-2 font-medium ${
-                    isActive ? '' : 'text-muted-foreground'
-                  }`}
-                  style={{ color: isActive ? store.primary_color : undefined }}
+                  className={`text-sm mt-2 font-medium ${isActive ? '' : (isLuxuryTheme ? 'text-white/40' : 'text-muted-foreground')
+                    }`}
+                  style={{ color: isActive ? themeColor : undefined }}
                 >
                   {step.name}
                 </span>
@@ -307,12 +311,12 @@ export default function CheckoutPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Form */}
         <div className="lg:col-span-2">
-          <Card>
+          <Card className={isLuxuryTheme ? `${cardBg} ${cardBorder}` : ''}>
             <CardContent className="pt-6">
               {/* Step 1: Contact Information */}
               {currentStep === 1 && (
                 <div className="space-y-4">
-                  <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+                  <h2 className={`text-xl font-semibold mb-4 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>Contact Information</h2>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name *</Label>
@@ -321,7 +325,11 @@ export default function CheckoutPage() {
                         value={formData.firstName}
                         onChange={(e) => updateField('firstName', e.target.value)}
                         placeholder="John"
+                        className={showErrors && !formData.firstName ? "border-red-500 focus-visible:ring-red-500" : ""}
                       />
+                      {showErrors && !formData.firstName && (
+                        <p className="text-xs text-red-500">Required</p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name *</Label>
@@ -330,7 +338,11 @@ export default function CheckoutPage() {
                         value={formData.lastName}
                         onChange={(e) => updateField('lastName', e.target.value)}
                         placeholder="Doe"
+                        className={showErrors && !formData.lastName ? "border-red-500 focus-visible:ring-red-500" : ""}
                       />
+                      {showErrors && !formData.lastName && (
+                        <p className="text-xs text-red-500">Required</p>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -341,7 +353,11 @@ export default function CheckoutPage() {
                       value={formData.email}
                       onChange={(e) => updateField('email', e.target.value)}
                       placeholder="john@example.com"
+                      className={showErrors && !formData.email ? "border-red-500 focus-visible:ring-red-500" : ""}
                     />
+                    {showErrors && !formData.email && (
+                      <p className="text-xs text-red-500">Required</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">

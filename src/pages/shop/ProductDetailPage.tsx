@@ -9,6 +9,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
+import { useLuxuryTheme } from '@/components/shop/luxury';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -37,7 +38,8 @@ import {
   Copy,
   Facebook,
   Twitter,
-  MessageCircle
+  MessageCircle,
+  Loader2
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
@@ -97,6 +99,7 @@ export default function ProductDetailPage() {
   const { storeSlug, productId } = useParams();
   const navigate = useNavigate();
   const { store, cartItemCount, setCartItemCount } = useShop();
+  const { isLuxuryTheme, accentColor, cardBg, cardBorder, textPrimary, textMuted } = useLuxuryTheme();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -615,7 +618,12 @@ export default function ProductDetailPage() {
               disabled={!product.in_stock || isAddingToCart}
               onClick={handleAddToCart}
             >
-              {showAddedAnimation ? (
+              {isAddingToCart && !showAddedAnimation ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Adding...
+                </span>
+              ) : showAddedAnimation ? (
                 <span className="flex items-center gap-2">
                   <Check className="w-5 h-5" />
                   Added!

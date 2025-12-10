@@ -9,6 +9,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
+import { useLuxuryTheme } from '@/components/shop/luxury';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -63,6 +64,7 @@ export default function ProductCatalogPage() {
   const { storeSlug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const { store } = useShop();
+  const { isLuxuryTheme, accentColor, cardBg, cardBorder, textMuted } = useLuxuryTheme();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -217,12 +219,12 @@ export default function ProductCatalogPage() {
         </div>
 
         {/* Category Filter */}
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+        <Select value={selectedCategory || "all"} onValueChange={(val) => setSelectedCategory(val === "all" ? "" : val)}>
           <SelectTrigger className="w-full md:w-[180px]">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Categories</SelectItem>
+            <SelectItem value="all">All Categories</SelectItem>
             {productCategories.map((cat) => (
               <SelectItem key={cat} value={cat}>
                 {cat}
@@ -415,7 +417,7 @@ function ProductCard({
         </div>
         <CardContent className="p-4">
           <p className="text-xs text-muted-foreground mb-1">
-            {product.marketplace_category_name || product.category}
+            {product.marketplace_category_name || product.category || "Uncategorized"}
           </p>
           <h3 className="font-medium line-clamp-2 mb-2 group-hover:text-primary transition-colors">
             {product.name}

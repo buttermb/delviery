@@ -9,6 +9,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
+import { useLuxuryTheme } from '@/components/shop/luxury';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +24,8 @@ import {
   ArrowRight,
   Package,
   Truck,
-  Tag
+  Tag,
+  Loader2
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
@@ -47,6 +49,7 @@ export default function CartPage() {
   const { storeSlug } = useParams();
   const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
+  const { isLuxuryTheme, accentColor, cardBg, cardBorder, textPrimary, textMuted, inputBg, inputBorder, inputText, buttonOutline } = useLuxuryTheme();
   const { toast } = useToast();
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -90,7 +93,7 @@ export default function CartPage() {
       }
       return item;
     }).filter((item) => item.quantity > 0);
-    
+
     saveCart(newItems);
   };
 
@@ -180,19 +183,19 @@ export default function CartPage() {
   if (!store) return null;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
+    <div className={`container mx-auto px-4 py-8 ${isLuxuryTheme ? 'min-h-screen' : ''}`}>
+      <h1 className={`text-3xl font-bold mb-8 ${isLuxuryTheme ? 'text-white font-extralight' : ''}`}>Shopping Cart</h1>
 
       {cartItems.length === 0 ? (
-        <Card>
+        <Card className={isLuxuryTheme ? `${cardBg} ${cardBorder}` : ''}>
           <CardContent className="py-16 text-center">
-            <ShoppingCart className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">Your cart is empty</h2>
-            <p className="text-muted-foreground mb-6">
+            <ShoppingCart className={`w-16 h-16 mx-auto mb-4 ${isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground'}`} />
+            <h2 className={`text-xl font-semibold mb-2 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>Your cart is empty</h2>
+            <p className={`mb-6 ${textMuted}`}>
               Add some products to get started
             </p>
             <Link to={`/shop/${storeSlug}/products`}>
-              <Button style={{ backgroundColor: store.primary_color }}>
+              <Button style={{ backgroundColor: isLuxuryTheme ? accentColor : store.primary_color }}>
                 Browse Products
               </Button>
             </Link>
@@ -204,7 +207,7 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-4">
             {/* Free Delivery Progress */}
             {deliveryFee > 0 && (
-              <Card className="bg-primary/5">
+              <Card className={isLuxuryTheme ? `${cardBg} ${cardBorder}` : 'bg-primary/5'}>
                 <CardContent className="py-4">
                   <div className="flex items-center gap-3 mb-2">
                     <Truck className="w-5 h-5" style={{ color: store.primary_color }} />
@@ -315,9 +318,13 @@ export default function CartPage() {
                   <Button
                     variant="outline"
                     onClick={applyCoupon}
-                    disabled={isApplyingCoupon || !!appliedCoupon}
+                    disabled={isApplyingCoupon || !!appliedCoupon || !couponCode.trim()}
                   >
-                    Apply
+                    {isApplyingCoupon ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "Apply"
+                    )}
                   </Button>
                 </div>
 
