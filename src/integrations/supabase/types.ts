@@ -13681,49 +13681,31 @@ export type Database = {
       get_marketplace_store_by_slug: {
         Args: { p_slug: string }
         Returns: {
-          accent_color: string | null
-          banner_url: string | null
-          checkout_settings: Json | null
-          created_at: string | null
-          custom_domain: string | null
-          default_delivery_fee: number | null
-          delivery_zones: Json | null
-          description: string | null
-          encrypted_url_token: string | null
-          favicon_url: string | null
-          font_family: string | null
-          free_delivery_threshold: number | null
+          accent_color: string
+          banner_url: string
+          checkout_settings: Json
+          created_at: string
+          default_delivery_fee: number
+          description: string
+          free_delivery_threshold: number
           id: string
-          is_active: boolean | null
-          is_public: boolean | null
-          layout_config: Json | null
-          logo_url: string | null
-          meta_description: string | null
-          meta_title: string | null
-          minimum_age: number | null
-          og_image_url: string | null
-          operating_hours: Json | null
-          payment_methods: Json | null
-          primary_color: string | null
-          require_account: boolean | null
-          require_age_verification: boolean | null
-          secondary_color: string | null
+          is_active: boolean
+          is_public: boolean
+          layout_config: Json
+          logo_url: string
+          minimum_age: number
+          operating_hours: Json
+          payment_methods: string[]
+          primary_color: string
+          require_age_verification: boolean
+          secondary_color: string
           slug: string
           store_name: string
-          tagline: string | null
+          tagline: string
           tenant_id: string
-          theme_config: Json | null
-          total_customers: number | null
-          total_orders: number | null
-          total_revenue: number | null
-          updated_at: string | null
+          theme_config: Json
+          updated_at: string
         }[]
-        SetofOptions: {
-          from: "*"
-          to: "marketplace_stores"
-          isOneToOne: false
-          isSetofReturn: true
-        }
       }
       get_menu_encryption_key: { Args: never; Returns: string }
       get_order_by_tracking_code: { Args: { code: string }; Returns: Json }
