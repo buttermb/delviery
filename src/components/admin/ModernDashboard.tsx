@@ -8,6 +8,7 @@ import { DollarSign, Package, Truck, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, subDays } from 'date-fns';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { StatCard } from './dashboard/StatCard';
 import { RecentOrdersWidget } from './dashboard/RecentOrdersWidget';
 import { InventoryAlertsWidget } from './dashboard/InventoryAlertsWidget';
@@ -20,19 +21,24 @@ import { RevenueChartWidget } from './dashboard/RevenueChartWidget';
 import { RevenuePredictionWidget } from './dashboard/RevenuePredictionWidget';
 import { TopProductsWidget } from './dashboard/TopProductsWidget';
 import { ActionableInsights } from '@/components/admin/ActionableInsights';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card } from '@/components/ui/card';
+
+interface DashboardData {
+  revenue: number;
+  revenueChange: number;
+  orders: number;
+  transfers: number;
+  alerts: number;
+}
 
 export function ModernDashboard() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
+  const navigateTenant = useTenantNavigate();
 
-  // Fetch dashboard data
-  const { data: dashboardData } = useQuery<{
-    revenue: number;
-    revenueChange: number;
-    orders: number;
-    transfers: number;
-    alerts: number;
-  }>({
+  // Fetch dashboard data with proper error handling
+  const { data: dashboardData, isLoading, error } = useQuery<DashboardData | null>({
     queryKey: ['modern-dashboard', tenantId],
     queryFn: async () => {
       if (!tenantId) return null;
@@ -42,39 +48,37 @@ export function ModernDashboard() {
       const weekStart = startOfWeek(today);
       const lastWeekStart = startOfWeek(subDays(today, 7));
 
-      // Execute queries - using proper types instead of any
-      const todayOrdersResult = await supabase
-        .from('wholesale_orders')
-        .select('total_amount')
-        .eq('tenant_id', tenantId)
-        .gte('created_at', today.toISOString());
+      // Execute queries with proper error handling
+      const [todayOrdersResult, lastWeekOrdersResult, activeOrdersResult, transfersResult, lowStockResult] = await Promise.all([
+        supabase
+          .from('wholesale_orders')
+          .select('total_amount')
+          .eq('tenant_id', tenantId)
+          .gte('created_at', today.toISOString()),
+        supabase
+          .from('wholesale_orders')
+          .select('total_amount')
+          .eq('tenant_id', tenantId)
+          .gte('created_at', lastWeekStart.toISOString())
+          .lt('created_at', weekStart.toISOString()),
+        supabase
+          .from('wholesale_orders')
+          .select('id')
+          .eq('tenant_id', tenantId)
+          .in('status', ['pending', 'assigned', 'in_transit']),
+        supabase
+          .from('wholesale_deliveries')
+          .select('id, status')
+          .eq('tenant_id', tenantId)
+          .in('status', ['assigned', 'picked_up', 'in_transit']),
+        supabase
+          .from('products')
+          .select('id')
+          .eq('tenant_id', tenantId)
+          .lt('stock_quantity', 30)
+      ]);
 
-      const lastWeekOrdersResult = await supabase
-        .from('wholesale_orders')
-        .select('total_amount')
-        .eq('tenant_id', tenantId)
-        .gte('created_at', lastWeekStart.toISOString())
-        .lt('created_at', weekStart.toISOString());
-
-      const activeOrdersResult = await supabase
-        .from('wholesale_orders')
-        .select('id')
-        .eq('tenant_id', tenantId)
-        .in('status', ['pending', 'assigned', 'in_transit']);
-      
-      const transfersResult = await supabase
-        .from('wholesale_deliveries')
-        .select('id, status')
-        .eq('tenant_id', tenantId)
-        .in('status', ['assigned', 'picked_up', 'in_transit']);
-
-      const lowStockResult = await supabase
-        .from('products')
-        .select('id')
-        .eq('tenant_id', tenantId)
-        .lt('stock_quantity', 30);
-
-      // Revenue calculation
+      // Revenue calculation with safe defaults
       const todayRevenue = (todayOrdersResult.data || []).reduce((sum: number, o: { total_amount?: number | null }) => 
         sum + Number(o.total_amount || 0), 0);
 
@@ -95,6 +99,33 @@ export function ModernDashboard() {
     refetchInterval: 60000,
   });
 
+  // Handle navigation with tenant context
+  const handleNavigate = (path: string) => {
+    navigateTenant(path);
+  };
+
+  // Loading skeleton
+  if (isLoading) {
+    return (
+      <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="p-4">
+              <Skeleton className="h-6 w-24 mb-2" />
+              <Skeleton className="h-8 w-32" />
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Header */}
@@ -110,11 +141,11 @@ export function ModernDashboard() {
       {/* Quick Actions Bar */}
       <QuickActionsBar />
 
-      {/* Stat Cards */}
+      {/* Stat Cards with tenant-aware navigation */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title="Revenue"
-          value={`$${dashboardData?.revenue.toLocaleString() || '0'}`}
+          value={`$${(dashboardData?.revenue || 0).toLocaleString()}`}
           change={dashboardData?.revenueChange ? {
             value: Math.abs(dashboardData.revenueChange),
             type: dashboardData.revenueChange > 0 ? 'increase' : 'decrease',
@@ -122,7 +153,7 @@ export function ModernDashboard() {
           subtitle="vs last week"
           icon={<DollarSign className="h-5 w-5" />}
           color="green"
-          href="/admin/big-plug-financial"
+          onClick={() => handleNavigate('big-plug-financial')}
         />
         
         <StatCard
@@ -130,7 +161,7 @@ export function ModernDashboard() {
           value={`${dashboardData?.orders || 0} Active`}
           icon={<Package className="h-5 w-5" />}
           color="blue"
-          href="/admin/wholesale-orders"
+          onClick={() => handleNavigate('wholesale-orders')}
         />
 
         <StatCard
@@ -138,15 +169,15 @@ export function ModernDashboard() {
           value={`${dashboardData?.transfers || 0} In Transit`}
           icon={<Truck className="h-5 w-5" />}
           color="orange"
-          href="/admin/fleet-management"
+          onClick={() => handleNavigate('fleet-management')}
         />
 
         <StatCard
           title="Alerts"
           value={`${dashboardData?.alerts || 0} Items`}
           icon={<AlertTriangle className="h-5 w-5" />}
-          color={dashboardData && dashboardData.alerts > 0 ? 'red' : 'green'}
-          href="/admin/inventory-dashboard"
+          color={(dashboardData?.alerts || 0) > 0 ? 'red' : 'green'}
+          onClick={() => handleNavigate('inventory-dashboard')}
         />
       </div>
 
