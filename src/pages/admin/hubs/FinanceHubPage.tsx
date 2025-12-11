@@ -1,0 +1,94 @@
+/**
+ * Finance Hub Page
+ * Consolidated financial management with tabs:
+ * - Overview: Financial dashboard
+ * - Invoices: Invoice management
+ * - Expenses: Expense tracking
+ * - Revenue: Revenue reports
+ * - Commissions: Commission tracking
+ */
+
+import { useSearchParams } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+    DollarSign,
+    FileText,
+    CreditCard,
+    TrendingUp,
+    Percent
+} from 'lucide-react';
+import { lazy, Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const FinancialCenter = lazy(() => import('@/pages/admin/FinancialCenterReal'));
+const InvoicesPage = lazy(() => import('@/pages/admin/InvoicesPage'));
+const ExpenseTracking = lazy(() => import('@/pages/admin/ExpenseTracking'));
+const RevenueReportsPage = lazy(() => import('@/pages/tenant-admin/RevenueReportsPage'));
+const CommissionTrackingPage = lazy(() => import('@/pages/tenant-admin/CommissionTrackingPage'));
+
+const TabSkeleton = () => (
+    <div className="p-6 space-y-4">
+        <Skeleton className="h-8 w-1/3" />
+        <Skeleton className="h-64 w-full" />
+    </div>
+);
+
+const tabs = [
+    { id: 'overview', label: 'Overview', icon: DollarSign },
+    { id: 'invoices', label: 'Invoices', icon: FileText },
+    { id: 'expenses', label: 'Expenses', icon: CreditCard },
+    { id: 'revenue', label: 'Revenue', icon: TrendingUp },
+    { id: 'commissions', label: 'Commissions', icon: Percent },
+] as const;
+
+type TabId = typeof tabs[number]['id'];
+
+export default function FinanceHubPage() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const activeTab = (searchParams.get('tab') as TabId) || 'overview';
+
+    const handleTabChange = (tab: string) => {
+        setSearchParams({ tab });
+    };
+
+    return (
+        <div className="min-h-screen bg-background">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                <div className="border-b bg-card px-4 py-4">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <h1 className="text-2xl font-bold">Finance</h1>
+                            <p className="text-muted-foreground text-sm">
+                                Financial management and reporting
+                            </p>
+                        </div>
+                    </div>
+                    <TabsList className="grid w-full max-w-2xl grid-cols-5">
+                        {tabs.map((tab) => (
+                            <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                <tab.icon className="h-4 w-4" />
+                                <span className="hidden sm:inline">{tab.label}</span>
+                            </TabsTrigger>
+                        ))}
+                    </TabsList>
+                </div>
+
+                <TabsContent value="overview" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><FinancialCenter /></Suspense>
+                </TabsContent>
+                <TabsContent value="invoices" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><InvoicesPage /></Suspense>
+                </TabsContent>
+                <TabsContent value="expenses" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><ExpenseTracking /></Suspense>
+                </TabsContent>
+                <TabsContent value="revenue" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><RevenueReportsPage /></Suspense>
+                </TabsContent>
+                <TabsContent value="commissions" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><CommissionTrackingPage /></Suspense>
+                </TabsContent>
+            </Tabs>
+        </div>
+    );
+}

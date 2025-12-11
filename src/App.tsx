@@ -323,6 +323,10 @@ const OrdersHubPage = lazy(() => import("./pages/admin/hubs/OrdersHubPage"));
 const InventoryHubPage = lazy(() => import("./pages/admin/hubs/InventoryHubPage"));
 const CustomerHubPage = lazy(() => import("./pages/admin/hubs/CustomerHubPage"));
 const AnalyticsHubPage = lazy(() => import("./pages/admin/hubs/AnalyticsHubPage"));
+const DeliveryHubPage = lazy(() => import("./pages/admin/hubs/DeliveryHubPage"));
+const FinanceHubPage = lazy(() => import("./pages/admin/hubs/FinanceHubPage"));
+const IntegrationsHubPage = lazy(() => import("./pages/admin/hubs/IntegrationsHubPage"));
+const StorefrontHubPage = lazy(() => import("./pages/admin/hubs/StorefrontHubPage"));
 const RoleManagement = lazy(() => import("./pages/admin/RoleManagement"));
 const ActivityLogsPage = lazy(() => import("./pages/tenant-admin/ActivityLogsPage"));
 const LocationAnalyticsPage = lazy(() => import("./pages/tenant-admin/LocationAnalyticsPage"));
@@ -885,6 +889,10 @@ const App = () => {
                                           <Route path="fronted-inventory" element={<FeatureProtectedRoute featureId="fronted-inventory"><FrontedInventory /></FeatureProtectedRoute>} />
                                           <Route path="invoice-management" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
                                           <Route path="fleet-management" element={<FeatureProtectedRoute featureId="fleet-management"><FleetManagement /></FeatureProtectedRoute>} />
+                                          <Route path="delivery-hub" element={<FeatureProtectedRoute featureId="delivery-management"><DeliveryHubPage /></FeatureProtectedRoute>} />
+                                          <Route path="finance-hub" element={<FeatureProtectedRoute featureId="financial-center"><FinanceHubPage /></FeatureProtectedRoute>} />
+                                          <Route path="integrations-hub" element={<FeatureProtectedRoute featureId="api-access"><IntegrationsHubPage /></FeatureProtectedRoute>} />
+                                          <Route path="storefront-hub" element={<FeatureProtectedRoute featureId="storefront"><StorefrontHubPage /></FeatureProtectedRoute>} />
                                           <Route path="delivery-management" element={<FeatureProtectedRoute featureId="delivery-management"><DeliveryManagement /></FeatureProtectedRoute>} />
                                           <Route path="live-map" element={<FeatureProtectedRoute featureId="live-map"><LiveMap /></FeatureProtectedRoute>} />
                                           <Route path="gps-tracking" element={<FeatureProtectedRoute featureId="fleet-management"><RunnerLocationTracking /></FeatureProtectedRoute>} />
