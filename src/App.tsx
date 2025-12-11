@@ -171,32 +171,24 @@ const HelpPage = lazy(() => import("./pages/HelpPage"));
 
 // Tenant Admin Feature Pages
 const DisposableMenus = lazy(() => import("./pages/admin/DisposableMenus"));
-const DisposableMenuOrders = lazy(() => import("./pages/admin/DisposableMenuOrders"));
 const DisposableMenuAnalytics = lazy(() => import("./pages/admin/DisposableMenuAnalytics"));
 const MenuAnalytics = lazy(() => import("./pages/admin/MenuAnalytics"));
 const MenuMigration = lazy(() => import("./pages/admin/MenuMigration").then(m => ({ default: m.MenuMigration })));
-const ProductManagement = lazy(() => import("./pages/admin/ProductManagement"));
-const BigPlugClients = lazy(() => import("./pages/admin/CustomerManagement"));
+// const ProductManagement = lazy(() => import("./pages/admin/ProductManagement")); // Moved to InventoryHub
 const ClientDetail = lazy(() => import("./pages/admin/ClientDetail"));
 const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));
-const AdminWholesaleOrdersPage = lazy(() => import("./pages/admin/WholesaleOrdersPage"));
 const NewWholesaleOrder = lazy(() => import("./pages/admin/NewWholesaleOrder"));
 const NewPurchaseOrder = lazy(() => import("./pages/admin/NewPurchaseOrder"));
-const InventoryDashboard = lazy(() => import("./pages/admin/InventoryDashboard"));
 const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
 const BoardReportPage = lazy(() => import("./pages/admin/BoardReportPage"));
 const StrategicDashboardPage = lazy(() => import("./pages/admin/StrategicDashboardPage"));
 const ExpansionAnalysisPage = lazy(() => import("./pages/admin/ExpansionAnalysisPage"));
 
 // Built pages missing routes (currently locked in sidebar)
-const LiveOrders = lazy(() => import("./pages/admin/LiveOrders"));
 const TeamManagement = lazy(() => import("./pages/admin/TeamManagement"));
-const InventoryManagement = lazy(() => import("./pages/admin/InventoryManagement"));
 const FrontedInventory = lazy(() => import("./pages/admin/FrontedInventory"));
 const CustomerInvoices = lazy(() => import("./pages/admin/CustomerInvoices"));
-const FleetManagement = lazy(() => import("./pages/admin/FleetManagement"));
 const RunnerLocationTracking = lazy(() => import("./pages/admin/RunnerLocationTracking"));
-const DeliveryManagement = lazy(() => import("./pages/admin/DeliveryManagement"));
 const LiveMap = lazy(() => import("./pages/admin/LiveMap"));
 const PointOfSale = lazy(() => import("./pages/admin/PointOfSale"));
 const LocationsManagement = lazy(() => import("./pages/admin/LocationsManagement"));
@@ -208,10 +200,7 @@ const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications")
 const OrderAnalyticsPage = lazy(() => import("./pages/tenant-admin/OrderAnalyticsPage"));
 const SalesDashboardPage = lazy(() => import("./pages/tenant-admin/SalesDashboardPage"));
 const CustomerInsightsPage = lazy(() => import("./pages/tenant-admin/CustomerInsightsPage"));
-const Couriers = lazy(() => import("./pages/admin/Couriers"));
-const CustomerDetails = lazy(() => import("./pages/admin/CustomerDetails"));
 const CustomerReports = lazy(() => import("./pages/admin/CustomerReports"));
-const DeliveryTracking = lazy(() => import("./pages/admin/DeliveryTracking"));
 const DispatchInventory = lazy(() => import("./pages/admin/DispatchInventory"));
 const FinancialCenter = lazy(() => import("./pages/admin/FinancialCenterReal"));
 const FrontedInventoryAnalytics = lazy(() => import("./pages/admin/FrontedInventoryAnalytics"));
@@ -221,13 +210,11 @@ const ReturnsManagementPage = lazy(() => import("./pages/admin/ReturnsManagement
 const LoyaltyProgramPage = lazy(() => import("./pages/admin/LoyaltyProgramPage"));
 const CouponManagementPage = lazy(() => import("./pages/admin/CouponManagementPage"));
 const QualityControlPage = lazy(() => import("./pages/admin/QualityControlPage"));
-const CustomerCRMPage = lazy(() => import("./pages/admin/CustomerCRMPage"));
 const ClientsPage = lazy(() => import("./pages/admin/ClientsPage"));
 const ClientDetailPage = lazy(() => import("./pages/admin/ClientDetailPage"));
 const InvoicesPage = lazy(() => import("./pages/admin/InvoicesPage"));
 const CreateInvoicePage = lazy(() => import("./pages/admin/CreateInvoicePage"));
 const InvoiceDetailPage = lazy(() => import("./pages/admin/InvoiceDetailPage"));
-const PreOrdersPage = lazy(() => import("./pages/admin/PreOrdersPage"));
 const CreatePreOrderPage = lazy(() => import("./pages/admin/CreatePreOrderPage"));
 const PreOrderDetailPage = lazy(() => import("./pages/admin/PreOrderDetailPage"));
 const CRMSettingsPage = lazy(() => import("./pages/admin/CRMSettingsPage"));
@@ -256,7 +243,7 @@ const WarehousesPage = lazy(() => import("./pages/admin/locations/WarehousesPage
 const RunnersPage = lazy(() => import("./pages/admin/locations/RunnersPage"));
 const AdminPricingPage = lazy(() => import("./pages/admin/sales/PricingPage"));
 const PricingTiersPage = lazy(() => import("./pages/admin/wholesale/PricingTiersPage"));
-const InventoryMonitoringPage = lazy(() => import("./pages/admin/InventoryMonitoringPage"));
+// const InventoryMonitoringPage = lazy(() => import("./pages/admin/InventoryMonitoringPage")); // Moved to InventoryHub
 const DeveloperTools = lazy(() => import("./pages/admin/DeveloperTools"));
 const ButtonTester = lazy(() => import("./pages/admin/ButtonTester"));
 
@@ -297,20 +284,6 @@ const ShopCheckoutPage = lazy(() => import("./pages/shop/CheckoutPage"));
 const ShopOrderConfirmationPage = lazy(() => import("./pages/shop/OrderConfirmationPage"));
 const ShopAccountPage = lazy(() => import("./pages/shop/AccountPage"));
 const ShopOrderTrackingPage = lazy(() => import("./pages/shop/OrderTrackingPage"));
-const EncryptedStorePage = lazy(() => import("./pages/shop/EncryptedStorePage"));
-
-// Coming Soon Pages - Professional & Enterprise Features
-const StockAlertsPage = lazy(() => import("./pages/tenant-admin/StockAlertsPage"));
-const InventoryTransfersPage = lazy(() => import("./pages/tenant-admin/InventoryTransfersPage"));
-const CustomerAnalyticsPage = lazy(() => import("./pages/tenant-admin/CustomerAnalyticsPage"));
-
-// Credit Purchase Pages
-const CreditPurchaseSuccessPage = lazy(() => import("./pages/tenant-admin/credits/CreditPurchaseSuccessPage"));
-const CreditPurchaseCancelledPage = lazy(() => import("./pages/tenant-admin/credits/CreditPurchaseCancelledPage"));
-const AdvancedAnalyticsPage = lazy(() => import("./pages/tenant-admin/AdvancedAnalyticsPage"));
-const RealtimeDashboardPage = lazy(() => import("./pages/tenant-admin/RealtimeDashboardPage"));
-const CustomReportsPage = lazy(() => import("./pages/tenant-admin/CustomReportsPage"));
-const CommissionTrackingPage = lazy(() => import("./pages/tenant-admin/CommissionTrackingPage"));
 const RevenueReportsPage = lazy(() => import("./pages/tenant-admin/RevenueReportsPage"));
 const RouteOptimizationPage = lazy(() => import("./pages/tenant-admin/RouteOptimizationPage"));
 const DeliveryAnalyticsPage = lazy(() => import("./pages/tenant-admin/DeliveryAnalyticsPage"));
@@ -760,11 +733,11 @@ const App = () => {
                                           <Route path="big-plug-inventory" element={<Navigate to="inventory-dashboard" replace />} />
                                           <Route path="big-plug-financial" element={<Navigate to="financial-center" replace />} />
                                           {/* Common URL aliases - redirect to correct routes */}
-                                          <Route path="product-catalog" element={<Navigate to="../inventory/products" replace />} />
-                                          <Route path="wholesale-clients" element={<Navigate to="../big-plug-clients" replace />} />
-                                          <Route path="products" element={<Navigate to="../inventory/products" replace />} />
-                                          <Route path="clients" element={<Navigate to="../big-plug-clients" replace />} />
-                                          <Route path="customers" element={<Navigate to="../big-plug-clients" replace />} />
+                                          <Route path="product-catalog" element={<Navigate to="../inventory-hub?tab=products" replace />} />
+                                          <Route path="wholesale-clients" element={<Navigate to="../customer-hub?tab=contacts" replace />} />
+                                          <Route path="products" element={<Navigate to="../inventory-hub?tab=products" replace />} />
+                                          <Route path="clients" element={<Navigate to="../customer-hub?tab=contacts" replace />} />
+                                          <Route path="customers" element={<Navigate to="../customer-hub?tab=contacts" replace />} />
                                           <Route path="inventory/dispatch" element={<Navigate to="../dispatch-inventory" replace />} />
                                           <Route path="admin-notifications" element={<Navigate to="notifications" replace />} />
                                           <Route path="reports-new" element={<Navigate to="reports" replace />} />
@@ -772,35 +745,41 @@ const App = () => {
                                           <Route path="risk-factors" element={<Navigate to="risk-management" replace />} />
                                           <Route path="inventory/barcodes" element={<Navigate to="../generate-barcodes" replace />} />
                                           {/* Folder redirects for breadcrumbs */}
-                                          <Route path="inventory" element={<Navigate to="inventory-dashboard" replace />} />
-                                          <Route path="crm" element={<Navigate to="customer-crm" replace />} />
+                                          <Route path="inventory" element={<Navigate to="inventory-hub" replace />} />
+                                          <Route path="crm" element={<Navigate to="customer-hub?tab=crm" replace />} />
                                           <Route path="sales" element={<Navigate to="sales-dashboard" replace />} />
                                           <Route path="marketplace" element={<Navigate to="marketplace/listings" replace />} />
-                                          <Route path="catalog" element={<Navigate to="inventory/products" replace />} />
+                                          <Route path="catalog" element={<Navigate to="inventory-hub?tab=products" replace />} />
 
                                           <Route path="analytics-hub" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsHubPage /></FeatureProtectedRoute>} />
                                           <Route path="analytics/comprehensive" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />
                                           <Route path="disposable-menus" element={<FeatureProtectedRoute featureId="disposable-menus"><DisposableMenus /></FeatureProtectedRoute>} />
                                           <Route path="menu-migration" element={<FeatureProtectedRoute featureId="menu-migration"><MenuMigration /></FeatureProtectedRoute>} />
                                           <Route path="orders" element={<FeatureProtectedRoute featureId="basic-orders"><OrdersHubPage /></FeatureProtectedRoute>} />
-                                          <Route path="disposable-menu-orders" element={<FeatureProtectedRoute featureId="basic-orders"><DisposableMenuOrders /></FeatureProtectedRoute>} />
+
+                                          {/* Orders Hub Redirects */}
+                                          <Route path="disposable-menu-orders" element={<Navigate to="orders?tab=menu" replace />} />
                                           <Route path="disposable-menu-analytics" element={<FeatureProtectedRoute featureId="disposable-menu-analytics"><DisposableMenuAnalytics /></FeatureProtectedRoute>} />
                                           <Route path="menu-analytics" element={<FeatureProtectedRoute featureId="menu-analytics"><MenuAnalytics /></FeatureProtectedRoute>} />
-                                          <Route path="inventory/products" element={<FeatureProtectedRoute featureId="products"><ProductManagement /></FeatureProtectedRoute>} />
+
+                                          {/* Inventory Hub Redirects */}
+                                          <Route path="inventory/products" element={<Navigate to="../inventory-hub?tab=products" replace />} />
                                           <Route path="catalog/images" element={<FeatureProtectedRoute featureId="products"><ImagesPage /></FeatureProtectedRoute>} />
                                           <Route path="catalog/batches" element={<FeatureProtectedRoute featureId="products"><BatchesPage /></FeatureProtectedRoute>} />
                                           <Route path="catalog/categories" element={<FeatureProtectedRoute featureId="products"><CategoriesPage /></FeatureProtectedRoute>} />
+
                                           <Route path="customer-hub" element={<FeatureProtectedRoute featureId="customers"><CustomerHubPage /></FeatureProtectedRoute>} />
-                                          <Route path="big-plug-clients" element={<FeatureProtectedRoute featureId="customers"><BigPlugClients /></FeatureProtectedRoute>} />
+                                          <Route path="big-plug-clients" element={<Navigate to="customer-hub?tab=contacts" replace />} />
                                           <Route path="big-plug-clients/:id" element={<FeatureProtectedRoute featureId="customers"><ClientDetail /></FeatureProtectedRoute>} />
                                           <Route path="generate-barcodes" element={<FeatureProtectedRoute featureId="generate-barcodes"><GenerateBarcodes /></FeatureProtectedRoute>} />
-                                          {/* @ts-ignore - Component renamed to avoid duplicate import */}
-                                          <Route path="wholesale-orders" element={<FeatureProtectedRoute featureId="wholesale-orders"><AdminWholesaleOrdersPage /></FeatureProtectedRoute>} />
+
+                                          <Route path="wholesale-orders" element={<Navigate to="orders?tab=wholesale" replace />} />
                                           <Route path="wholesale-orders/new" element={<FeatureProtectedRoute featureId="wholesale-orders"><NewWholesaleOrder /></FeatureProtectedRoute>} />
                                           <Route path="wholesale-orders/new-po" element={<FeatureProtectedRoute featureId="wholesale-orders"><NewPurchaseOrder /></FeatureProtectedRoute>} />
+
                                           <Route path="inventory-hub" element={<FeatureProtectedRoute featureId="inventory-dashboard"><InventoryHubPage /></FeatureProtectedRoute>} />
-                                          <Route path="inventory-dashboard" element={<FeatureProtectedRoute featureId="inventory-dashboard"><InventoryDashboard /></FeatureProtectedRoute>} />
-                                          <Route path="inventory-monitoring" element={<FeatureProtectedRoute featureId="inventory-monitoring"><InventoryMonitoringPage /></FeatureProtectedRoute>} />
+                                          <Route path="inventory-dashboard" element={<Navigate to="inventory-hub?tab=stock" replace />} />
+                                          <Route path="inventory-monitoring" element={<Navigate to="inventory-hub?tab=monitoring" replace />} />
                                           <Route path="reports" element={<FeatureProtectedRoute featureId="reports"><ReportsPage /></FeatureProtectedRoute>} />
                                           {/* Billing redirects to Settings */}
                                           <Route path="billing" element={<Navigate to="../settings?section=billing" replace />} />
@@ -881,19 +860,18 @@ const App = () => {
                                           <Route path="marketplace/sync" element={<FeatureProtectedRoute featureId="marketplace-product-sync"><ProductSyncPage /></FeatureProtectedRoute>} />
 
 
-
-                                          <Route path="live-orders" element={<FeatureProtectedRoute featureId="live-orders"><LiveOrders /></FeatureProtectedRoute>} />
+                                          <Route path="live-orders" element={<Navigate to="orders?tab=live" replace />} />
                                           <Route path="staff-management" element={<FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute>} />
                                           <Route path="team-members" element={<FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute>} />
-                                          <Route path="advanced-inventory" element={<FeatureProtectedRoute featureId="advanced-inventory"><InventoryManagement /></FeatureProtectedRoute>} />
+                                          <Route path="advanced-inventory" element={<Navigate to="inventory-hub?tab=adjustments" replace />} />
                                           <Route path="fronted-inventory" element={<FeatureProtectedRoute featureId="fronted-inventory"><FrontedInventory /></FeatureProtectedRoute>} />
                                           <Route path="invoice-management" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
-                                          <Route path="fleet-management" element={<FeatureProtectedRoute featureId="fleet-management"><FleetManagement /></FeatureProtectedRoute>} />
+                                          <Route path="fleet-management" element={<Navigate to="delivery-hub?tab=fleet" replace />} />
                                           <Route path="delivery-hub" element={<FeatureProtectedRoute featureId="delivery-management"><DeliveryHubPage /></FeatureProtectedRoute>} />
                                           <Route path="finance-hub" element={<FeatureProtectedRoute featureId="financial-center"><FinanceHubPage /></FeatureProtectedRoute>} />
                                           <Route path="integrations-hub" element={<FeatureProtectedRoute featureId="api-access"><IntegrationsHubPage /></FeatureProtectedRoute>} />
                                           <Route path="storefront-hub" element={<FeatureProtectedRoute featureId="storefront"><StorefrontHubPage /></FeatureProtectedRoute>} />
-                                          <Route path="delivery-management" element={<FeatureProtectedRoute featureId="delivery-management"><DeliveryManagement /></FeatureProtectedRoute>} />
+                                          <Route path="delivery-management" element={<Navigate to="delivery-hub?tab=dashboard" replace />} />
                                           <Route path="live-map" element={<FeatureProtectedRoute featureId="live-map"><LiveMap /></FeatureProtectedRoute>} />
                                           <Route path="gps-tracking" element={<FeatureProtectedRoute featureId="fleet-management"><RunnerLocationTracking /></FeatureProtectedRoute>} />
                                           <Route path="pos-system" element={<FeatureProtectedRoute featureId="pos-system"><POSHubPage /></FeatureProtectedRoute>} />
@@ -905,10 +883,10 @@ const App = () => {
                                           {/* 13 Hidden gem pages */}
                                           <Route path="live-chat" element={<FeatureProtectedRoute featureId="live-chat"><AdminLiveChat /></FeatureProtectedRoute>} />
                                           <Route path="notifications" element={<FeatureProtectedRoute featureId="notifications"><AdminNotifications /></FeatureProtectedRoute>} />
-                                          <Route path="couriers" element={<FeatureProtectedRoute featureId="couriers"><Couriers /></FeatureProtectedRoute>} />
+                                          <Route path="couriers" element={<Navigate to="delivery-hub?tab=couriers" replace />} />
                                           <Route path="customer-details" element={<FeatureProtectedRoute featureId="customer-details"><CustomerDetails /></FeatureProtectedRoute>} />
                                           <Route path="customer-reports" element={<FeatureProtectedRoute featureId="customer-reports"><CustomerReports /></FeatureProtectedRoute>} />
-                                          <Route path="delivery-tracking" element={<FeatureProtectedRoute featureId="delivery-tracking"><DeliveryTracking /></FeatureProtectedRoute>} />
+                                          <Route path="delivery-tracking" element={<Navigate to="delivery-hub?tab=tracking" replace />} />
                                           <Route path="dispatch-inventory" element={<FeatureProtectedRoute featureId="dispatch-inventory"><DispatchInventory /></FeatureProtectedRoute>} />
                                           <Route path="financial-center" element={<Navigate to="command-center" replace />} />
                                           <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory-analytics"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />
@@ -919,13 +897,13 @@ const App = () => {
                                           <Route path="loyalty-program" element={<FeatureProtectedRoute featureId="loyalty-program"><LoyaltyProgramPage /></FeatureProtectedRoute>} />
                                           <Route path="coupons" element={<FeatureProtectedRoute featureId="coupons"><CouponManagementPage /></FeatureProtectedRoute>} />
                                           <Route path="quality-control" element={<FeatureProtectedRoute featureId="quality-control"><QualityControlPage /></FeatureProtectedRoute>} />
-                                          <Route path="customer-crm" element={<FeatureProtectedRoute featureId="customer-crm"><CustomerCRMPage /></FeatureProtectedRoute>} />
+                                          <Route path="customer-crm" element={<Navigate to="customer-hub?tab=crm" replace />} />
                                           <Route path="crm/clients" element={<FeatureProtectedRoute featureId="customer-crm"><ClientsPage /></FeatureProtectedRoute>} />
                                           <Route path="crm/clients/:clientId" element={<FeatureProtectedRoute featureId="customer-crm"><ClientDetailPage /></FeatureProtectedRoute>} />
                                           <Route path="crm/invoices" element={<FeatureProtectedRoute featureId="customer-crm"><InvoicesPage /></FeatureProtectedRoute>} />
                                           <Route path="crm/invoices/new" element={<FeatureProtectedRoute featureId="customer-crm"><CreateInvoicePage /></FeatureProtectedRoute>} />
                                           <Route path="crm/invoices/:invoiceId" element={<FeatureProtectedRoute featureId="customer-crm"><InvoiceDetailPage /></FeatureProtectedRoute>} />
-                                          <Route path="crm/pre-orders" element={<FeatureProtectedRoute featureId="customer-crm"><PreOrdersPage /></FeatureProtectedRoute>} />
+                                          <Route path="crm/pre-orders" element={<Navigate to="orders?tab=preorders" replace />} />
                                           <Route path="crm/pre-orders/new" element={<FeatureProtectedRoute featureId="customer-crm"><CreatePreOrderPage /></FeatureProtectedRoute>} />
                                           <Route path="crm/pre-orders/:preOrderId" element={<FeatureProtectedRoute featureId="customer-crm"><PreOrderDetailPage /></FeatureProtectedRoute>} />
                                           <Route path="crm/settings" element={<FeatureProtectedRoute featureId="customer-crm"><CRMSettingsPage /></FeatureProtectedRoute>} />
@@ -945,7 +923,7 @@ const App = () => {
                                           {/* Professional Tier - Analytics */}
                                           <Route path="order-analytics" element={<FeatureProtectedRoute featureId="order-analytics"><OrderAnalyticsPage /></FeatureProtectedRoute>} />
                                           <Route path="sales-dashboard" element={<FeatureProtectedRoute featureId="sales-dashboard"><SalesDashboardPage /></FeatureProtectedRoute>} />
-                                          <Route path="customer-insights" element={<FeatureProtectedRoute featureId="customer-insights"><CustomerInsightsPage /></FeatureProtectedRoute>} />
+                                          <Route path="customer-insights" element={<Navigate to="customer-hub?tab=insights" replace />} />
 
                                           {/* Additional routes that don't need FeatureProtectedRoute or need different paths */}
                                           <Route path="risk-management" element={<FeatureProtectedRoute featureId="risk-management"><RiskFactorManagement /></FeatureProtectedRoute>} />
