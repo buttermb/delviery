@@ -219,7 +219,7 @@ const SIDEBAR_CATEGORIES: SidebarCategory[] = [
   },
   {
     label: 'Sales & Orders',
-    features: ['basic-orders', 'wholesale-orders', 'wholesale-pricing-tiers', 'loyalty-program', 'coupons', 'marketplace', 'marketplace-product-sync', 'sales-dashboard', 'pos-system'],
+    features: ['basic-orders', 'pos-system', 'wholesale-orders', 'marketplace', 'sales-dashboard'],
   },
   {
     label: 'Menus',
@@ -227,43 +227,35 @@ const SIDEBAR_CATEGORIES: SidebarCategory[] = [
   },
   {
     label: 'Inventory',
-    features: ['products', 'inventory-dashboard', 'stock-alerts', 'generate-barcodes', 'advanced-inventory', 'inventory-transfers', 'fronted-inventory', 'operations', 'dispatch-inventory'],
+    features: ['products', 'inventory-dashboard', 'advanced-inventory', 'operations'],
   },
   {
     label: 'Customers',
-    features: ['customers', 'customer-crm', 'crm-invoices', 'customer-insights', 'marketing-automation', 'customer-analytics', 'live-chat'],
+    features: ['customers', 'customer-crm', 'marketing-automation'],
   },
   {
     label: 'Operations',
-    features: ['suppliers', 'purchase-orders', 'returns', 'team-members', 'role-management', 'activity-logs', 'quality-control', 'appointments', 'support-tickets', 'locations', 'user-management', 'permissions'],
+    features: ['suppliers', 'purchase-orders', 'team-members', 'role-management', 'locations'],
   },
   {
-    label: 'Delivery & Fleet',
-    features: ['delivery-management', 'fleet-management', 'couriers', 'route-optimization', 'delivery-tracking', 'delivery-analytics'],
-    showForTiers: ['enterprise'], // Only show this category if any enterprise feature is accessible
-  },
-  {
-    label: 'Point of Sale',
-    features: ['pos-system', 'cash-register', 'pos-analytics', 'location-analytics'],
+    label: 'Delivery',
+    features: ['delivery-management', 'fleet-management'],
     showForTiers: ['enterprise'],
   },
   {
     label: 'Analytics & Finance',
-    features: ['reports', 'analytics', 'revenue-reports', 'financial-center', 'collections', 'invoice-management', 'commission-tracking', 'expense-tracking', 'menu-analytics', 'order-analytics', 'advanced-reporting', 'predictive-analytics', 'advanced-analytics', 'custom-reports', 'data-export', 'risk-management'],
+    features: ['analytics', 'financial-center', 'reports'],
   },
   {
     label: 'Integrations',
-    features: ['bulk-operations', 'vendor-portal', 'api-access', 'webhooks', 'custom-integrations', 'automation', 'ai'],
-  },
-  {
-    label: 'Security & Compliance',
-    features: ['batch-recall', 'compliance-vault', 'audit-trail', 'compliance'],
+    features: ['api-access', 'automation', 'bulk-operations'],
   },
   {
     label: 'Settings',
-    features: ['settings', 'billing', 'help', 'white-label', 'custom-domain', 'system-settings', 'priority-support'],
+    features: ['settings', 'billing', 'help'],
   },
 ];
+
 
 export function TenantAdminSidebar() {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
