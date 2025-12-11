@@ -129,9 +129,25 @@ export default function CheckoutPage() {
     }
   }, [isInitialized, cartItems.length, navigate, storeSlug, toast]);
 
+  // Get delivery fee based on zip code (from delivery zones or default)
+  const getDeliveryFee = () => {
+    if (subtotal >= (store?.free_delivery_threshold || 100)) return 0;
+
+    // Check if zip matches a delivery zone
+    const deliveryZones = (store as any)?.delivery_zones || [];
+    const matchingZone = deliveryZones.find((zone: any) => zone.zip_code === formData.zip);
+
+    if (matchingZone) {
+      return matchingZone.fee || store?.default_delivery_fee || 5;
+    }
+
+    // Fall back to default delivery fee
+    return store?.default_delivery_fee || 5;
+  };
+
   // Calculate totals
   const freeDeliveryThreshold = store?.free_delivery_threshold || 100;
-  const deliveryFee = subtotal >= freeDeliveryThreshold ? 0 : (store?.default_delivery_fee || 5);
+  const deliveryFee = getDeliveryFee();
   const total = subtotal + deliveryFee;
 
   // Update form field
@@ -161,6 +177,28 @@ export default function CheckoutPage() {
         if (!formData.street || !formData.city || !formData.zip) {
           toast({ title: 'Please fill in your delivery address', variant: 'destructive' });
           return false;
+        }
+        // Validate delivery zone if zones are configured
+        const deliveryZones = (store as any)?.delivery_zones || [];
+        if (deliveryZones.length > 0) {
+          const matchingZone = deliveryZones.find((zone: any) => zone.zip_code === formData.zip);
+          if (!matchingZone) {
+            toast({
+              title: 'Delivery not available',
+              description: `We don't currently deliver to zip code ${formData.zip}. Please try a different address.`,
+              variant: 'destructive'
+            });
+            return false;
+          }
+          // Check minimum order if zone has one
+          if (matchingZone.min_order && subtotal < matchingZone.min_order) {
+            toast({
+              title: 'Minimum order not met',
+              description: `This delivery zone requires a minimum order of $${matchingZone.min_order}.`,
+              variant: 'destructive'
+            });
+            return false;
+          }
         }
         return true;
       case 3:
@@ -199,6 +237,32 @@ export default function CheckoutPage() {
   const placeOrderMutation = useMutation({
     mutationFn: async () => {
       if (!store?.id) throw new Error('No store');
+
+      // Validate inventory before placing order
+      const productIds = cartItems.map((item) => item.productId);
+      const { data: products, error: stockError } = await supabase
+        .from('products')
+        .select('id, name, stock_quantity, available_quantity')
+        .in('id', productIds);
+
+      if (stockError) {
+        logger.warn('Failed to check inventory', stockError, { component: 'CheckoutPage' });
+        // Continue anyway - don't block orders on stock check failure
+      } else if (products) {
+        const outOfStock: string[] = [];
+        for (const item of cartItems) {
+          const product = products.find((p) => p.id === item.productId);
+          if (product) {
+            const available = product.available_quantity ?? product.stock_quantity ?? 0;
+            if (available < item.quantity) {
+              outOfStock.push(`${item.name} (only ${available} available)`);
+            }
+          }
+        }
+        if (outOfStock.length > 0) {
+          throw new Error(`Some items are out of stock: ${outOfStock.join(', ')}`);
+        }
+      }
 
       // Prepare items for order
       const orderItems = cartItems.map((item) => ({
@@ -267,8 +331,59 @@ export default function CheckoutPage() {
 
       return attemptOrder(1);
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setOrderRetryCount(0);
+
+      // For card payments, redirect to Stripe checkout
+      if (formData.paymentMethod === 'card' && store?.id) {
+        try {
+          const checkoutItems = cartItems.map((item) => ({
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image_url: item.imageUrl,
+          }));
+
+          const origin = window.location.origin;
+          const successUrl = `${origin}/shop/${storeSlug}/order-confirmation?order=${data.order_number}&token=${data.tracking_token}`;
+          const cancelUrl = `${origin}/shop/${storeSlug}/checkout`;
+
+          const response = await supabase.functions.invoke('storefront-checkout', {
+            body: {
+              store_id: store.id,
+              order_id: data.order_id,
+              items: checkoutItems,
+              customer_email: formData.email,
+              customer_name: `${formData.firstName} ${formData.lastName}`,
+              subtotal,
+              delivery_fee: deliveryFee,
+              success_url: successUrl,
+              cancel_url: cancelUrl,
+            },
+          });
+
+          if (response.error) {
+            throw new Error(response.error.message || 'Payment initialization failed');
+          }
+
+          const { url } = response.data;
+          if (url) {
+            // Redirect to Stripe checkout
+            window.location.href = url;
+            return;
+          }
+        } catch (stripeError: any) {
+          logger.error('Stripe checkout error', stripeError, { component: 'CheckoutPage' });
+          toast({
+            title: 'Payment setup failed',
+            description: stripeError.message || 'Unable to initialize payment. Please try again or choose a different payment method.',
+            variant: 'destructive',
+          });
+          return;
+        }
+      }
+
+      // For cash/other payments, go directly to confirmation
       // Clear cart and saved form data
       if (store?.id) {
         localStorage.removeItem(`shop_cart_${store.id}`);
@@ -277,6 +392,30 @@ export default function CheckoutPage() {
         }
         setCartItemCount(0);
       }
+
+      // Send order confirmation email (fire and forget)
+      const origin = window.location.origin;
+      supabase.functions.invoke('send-order-confirmation', {
+        body: {
+          order_id: data.order_id,
+          customer_email: formData.email,
+          customer_name: `${formData.firstName} ${formData.lastName}`,
+          order_number: data.order_number,
+          items: cartItems.map((item) => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+          subtotal,
+          delivery_fee: deliveryFee,
+          total: data.total,
+          store_name: store?.store_name || 'Store',
+          tracking_url: `${origin}/shop/${storeSlug}/order-tracking?token=${data.tracking_token}`,
+        },
+      }).catch((err) => {
+        logger.warn('Failed to send order confirmation email', err, { component: 'CheckoutPage' });
+      });
+
       // Navigate to confirmation
       navigate(`/shop/${storeSlug}/order-confirmation`, {
         state: {

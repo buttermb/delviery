@@ -48,6 +48,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { ReviewForm } from '@/components/shop/ReviewForm';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -769,21 +770,38 @@ export default function ProductDetailPage() {
                   <div className="text-center py-8">
                     <Star className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                     <p className="text-muted-foreground">No reviews yet</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground mb-4">
                       Be the first to review this product
                     </p>
+                    {store && product && (
+                      <ReviewForm
+                        storeId={store.id}
+                        productId={product.product_id}
+                        productName={product.name}
+                        primaryColor={store.primary_color || '#10b981'}
+                      />
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {/* Rating Summary */}
-                    <div className="flex items-center gap-4 pb-6 border-b">
-                      <div className="text-center">
-                        <p className="text-4xl font-bold">{averageRating.toFixed(1)}</p>
-                        {renderStars(averageRating, 'w-5 h-5')}
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {reviews.length} review{reviews.length !== 1 ? 's' : ''}
-                        </p>
+                    <div className="flex items-center justify-between pb-6 border-b">
+                      <div className="flex items-center gap-4">
+                        <div className="text-center">
+                          <p className="text-4xl font-bold">{averageRating.toFixed(1)}</p>
+                          {renderStars(averageRating, 'w-5 h-5')}
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {reviews.length} review{reviews.length !== 1 ? 's' : ''}
+                          </p>
+                        </div>
                       </div>
+                      {store && product && (
+                        <ReviewForm
+                          storeId={store.id}
+                          productId={product.product_id}
+                          productName={product.name}
+                          primaryColor={store.primary_color || '#10b981'}
+                        />
+                      )}
                     </div>
 
                     {/* Review List */}

@@ -42,6 +42,7 @@ import { FREE_TIER_LIMITS } from "@/lib/credits";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
 import { dashboardTutorial } from "@/lib/tutorials/tutorialConfig";
+import { useStorefrontOrderAlerts } from '@/hooks/useStorefrontOrderAlerts';
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import { DataSetupBanner } from "@/components/admin/DataSetupBanner";
@@ -127,6 +128,9 @@ export default function TenantAdminDashboardPage() {
     tables: ['wholesale_orders', 'products', 'disposable_menus', 'customers'],
     enabled: !!tenantId,
   });
+
+  // Enable storefront order alerts (shows toast when new orders arrive)
+  useStorefrontOrderAlerts({ enabled: !!tenantId });
 
   // Memoized helper functions for handling unlimited limits (MOVED BEFORE EARLY RETURN)
   const isUnlimited = useCallback((resource: 'customers' | 'menus' | 'products') => {
