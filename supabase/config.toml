@@ -183,6 +183,15 @@ verify_jwt = false
 [functions.create-marketplace-profile]
 verify_jwt = false
 
+[functions.storefront-checkout]
+verify_jwt = false
+
+[functions.send-order-confirmation]
+verify_jwt = false
+
+[functions.storefront-stripe-webhook]
+verify_jwt = false
+
 # ===========================================
 # PROTECTED ENDPOINTS (JWT required)
 # ===========================================
