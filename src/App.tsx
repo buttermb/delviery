@@ -318,6 +318,11 @@ const CashRegisterPage = lazy(() => import("./pages/tenant-admin/CashRegisterPag
 const POSAnalyticsPage = lazy(() => import("./pages/tenant-admin/POSAnalyticsPage"));
 const POSShiftsPage = lazy(() => import("./pages/tenant-admin/POSShiftsPage"));
 const ZReportPage = lazy(() => import("./pages/tenant-admin/ZReportPage"));
+const POSHubPage = lazy(() => import("./pages/admin/hubs/POSHubPage"));
+const OrdersHubPage = lazy(() => import("./pages/admin/hubs/OrdersHubPage"));
+const InventoryHubPage = lazy(() => import("./pages/admin/hubs/InventoryHubPage"));
+const CustomerHubPage = lazy(() => import("./pages/admin/hubs/CustomerHubPage"));
+const AnalyticsHubPage = lazy(() => import("./pages/admin/hubs/AnalyticsHubPage"));
 const RoleManagement = lazy(() => import("./pages/admin/RoleManagement"));
 const ActivityLogsPage = lazy(() => import("./pages/tenant-admin/ActivityLogsPage"));
 const LocationAnalyticsPage = lazy(() => import("./pages/tenant-admin/LocationAnalyticsPage"));
@@ -769,9 +774,11 @@ const App = () => {
                                           <Route path="marketplace" element={<Navigate to="marketplace/listings" replace />} />
                                           <Route path="catalog" element={<Navigate to="inventory/products" replace />} />
 
+                                          <Route path="analytics-hub" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsHubPage /></FeatureProtectedRoute>} />
                                           <Route path="analytics/comprehensive" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />
                                           <Route path="disposable-menus" element={<FeatureProtectedRoute featureId="disposable-menus"><DisposableMenus /></FeatureProtectedRoute>} />
                                           <Route path="menu-migration" element={<FeatureProtectedRoute featureId="menu-migration"><MenuMigration /></FeatureProtectedRoute>} />
+                                          <Route path="orders" element={<FeatureProtectedRoute featureId="basic-orders"><OrdersHubPage /></FeatureProtectedRoute>} />
                                           <Route path="disposable-menu-orders" element={<FeatureProtectedRoute featureId="basic-orders"><DisposableMenuOrders /></FeatureProtectedRoute>} />
                                           <Route path="disposable-menu-analytics" element={<FeatureProtectedRoute featureId="disposable-menu-analytics"><DisposableMenuAnalytics /></FeatureProtectedRoute>} />
                                           <Route path="menu-analytics" element={<FeatureProtectedRoute featureId="menu-analytics"><MenuAnalytics /></FeatureProtectedRoute>} />
@@ -779,6 +786,7 @@ const App = () => {
                                           <Route path="catalog/images" element={<FeatureProtectedRoute featureId="products"><ImagesPage /></FeatureProtectedRoute>} />
                                           <Route path="catalog/batches" element={<FeatureProtectedRoute featureId="products"><BatchesPage /></FeatureProtectedRoute>} />
                                           <Route path="catalog/categories" element={<FeatureProtectedRoute featureId="products"><CategoriesPage /></FeatureProtectedRoute>} />
+                                          <Route path="customer-hub" element={<FeatureProtectedRoute featureId="customers"><CustomerHubPage /></FeatureProtectedRoute>} />
                                           <Route path="big-plug-clients" element={<FeatureProtectedRoute featureId="customers"><BigPlugClients /></FeatureProtectedRoute>} />
                                           <Route path="big-plug-clients/:id" element={<FeatureProtectedRoute featureId="customers"><ClientDetail /></FeatureProtectedRoute>} />
                                           <Route path="generate-barcodes" element={<FeatureProtectedRoute featureId="generate-barcodes"><GenerateBarcodes /></FeatureProtectedRoute>} />
@@ -786,6 +794,7 @@ const App = () => {
                                           <Route path="wholesale-orders" element={<FeatureProtectedRoute featureId="wholesale-orders"><AdminWholesaleOrdersPage /></FeatureProtectedRoute>} />
                                           <Route path="wholesale-orders/new" element={<FeatureProtectedRoute featureId="wholesale-orders"><NewWholesaleOrder /></FeatureProtectedRoute>} />
                                           <Route path="wholesale-orders/new-po" element={<FeatureProtectedRoute featureId="wholesale-orders"><NewPurchaseOrder /></FeatureProtectedRoute>} />
+                                          <Route path="inventory-hub" element={<FeatureProtectedRoute featureId="inventory-dashboard"><InventoryHubPage /></FeatureProtectedRoute>} />
                                           <Route path="inventory-dashboard" element={<FeatureProtectedRoute featureId="inventory-dashboard"><InventoryDashboard /></FeatureProtectedRoute>} />
                                           <Route path="inventory-monitoring" element={<FeatureProtectedRoute featureId="inventory-monitoring"><InventoryMonitoringPage /></FeatureProtectedRoute>} />
                                           <Route path="reports" element={<FeatureProtectedRoute featureId="reports"><ReportsPage /></FeatureProtectedRoute>} />
@@ -879,7 +888,7 @@ const App = () => {
                                           <Route path="delivery-management" element={<FeatureProtectedRoute featureId="delivery-management"><DeliveryManagement /></FeatureProtectedRoute>} />
                                           <Route path="live-map" element={<FeatureProtectedRoute featureId="live-map"><LiveMap /></FeatureProtectedRoute>} />
                                           <Route path="gps-tracking" element={<FeatureProtectedRoute featureId="fleet-management"><RunnerLocationTracking /></FeatureProtectedRoute>} />
-                                          <Route path="pos-system" element={<FeatureProtectedRoute featureId="pos-system"><PointOfSale /></FeatureProtectedRoute>} />
+                                          <Route path="pos-system" element={<FeatureProtectedRoute featureId="pos-system"><POSHubPage /></FeatureProtectedRoute>} />
                                           <Route path="locations" element={<FeatureProtectedRoute featureId="locations"><LocationsManagement /></FeatureProtectedRoute>} />
                                           <Route path="locations/warehouses" element={<FeatureProtectedRoute featureId="locations"><WarehousesPage /></FeatureProtectedRoute>} />
                                           <Route path="locations/runners" element={<FeatureProtectedRoute featureId="locations"><RunnersPage /></FeatureProtectedRoute>} />

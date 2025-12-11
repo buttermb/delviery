@@ -553,6 +553,12 @@
       <priority>0.8</priority>
     </url>
     <url>
+      <loc>https://floraiqcrm.com/analytics-hub</loc>
+      <lastmod>2025-12-11</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>0.8</priority>
+    </url>
+    <url>
       <loc>https://floraiqcrm.com/analytics/comprehensive</loc>
       <lastmod>2025-12-11</lastmod>
       <changefreq>weekly</changefreq>
@@ -566,6 +572,12 @@
     </url>
     <url>
       <loc>https://floraiqcrm.com/menu-migration</loc>
+      <lastmod>2025-12-11</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>0.8</priority>
+    </url>
+    <url>
+      <loc>https://floraiqcrm.com/orders</loc>
       <lastmod>2025-12-11</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
@@ -613,6 +625,12 @@
       <priority>0.8</priority>
     </url>
     <url>
+      <loc>https://floraiqcrm.com/customer-hub</loc>
+      <lastmod>2025-12-11</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>0.8</priority>
+    </url>
+    <url>
       <loc>https://floraiqcrm.com/big-plug-clients</loc>
       <lastmod>2025-12-11</lastmod>
       <changefreq>weekly</changefreq>
@@ -638,6 +656,12 @@
     </url>
     <url>
       <loc>https://floraiqcrm.com/wholesale-orders/new-po</loc>
+      <lastmod>2025-12-11</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>0.8</priority>
+    </url>
+    <url>
+      <loc>https://floraiqcrm.com/inventory-hub</loc>
       <lastmod>2025-12-11</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
