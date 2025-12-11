@@ -284,6 +284,7 @@ const ShopCheckoutPage = lazy(() => import("./pages/shop/CheckoutPage"));
 const ShopOrderConfirmationPage = lazy(() => import("./pages/shop/OrderConfirmationPage"));
 const ShopAccountPage = lazy(() => import("./pages/shop/AccountPage"));
 const ShopOrderTrackingPage = lazy(() => import("./pages/shop/OrderTrackingPage"));
+const EncryptedStorePage = lazy(() => import("./pages/shop/EncryptedStorePage"));
 const RevenueReportsPage = lazy(() => import("./pages/tenant-admin/RevenueReportsPage"));
 const RouteOptimizationPage = lazy(() => import("./pages/tenant-admin/RouteOptimizationPage"));
 const DeliveryAnalyticsPage = lazy(() => import("./pages/tenant-admin/DeliveryAnalyticsPage"));
@@ -314,6 +315,16 @@ const CompliancePage = lazy(() => import("./pages/tenant-admin/CompliancePage"))
 const WhiteLabelPage = lazy(() => import("./pages/tenant-admin/WhiteLabelPage"));
 const CustomDomainPage = lazy(() => import("./pages/tenant-admin/CustomDomainPage"));
 const PrioritySupportPage = lazy(() => import("./pages/tenant-admin/PrioritySupportPage"));
+const CreditPurchaseSuccessPage = lazy(() => import("./pages/tenant-admin/credits/CreditPurchaseSuccessPage"));
+const CreditPurchaseCancelledPage = lazy(() => import("./pages/tenant-admin/credits/CreditPurchaseCancelledPage"));
+const CustomerDetails = lazy(() => import("./pages/admin/CustomerDetails"));
+const StockAlertsPage = lazy(() => import("./pages/tenant-admin/StockAlertsPage"));
+const InventoryTransfersPage = lazy(() => import("./pages/tenant-admin/InventoryTransfersPage"));
+const CustomerAnalyticsPage = lazy(() => import("./pages/tenant-admin/CustomerAnalyticsPage"));
+const AdvancedAnalyticsPage = lazy(() => import("./pages/tenant-admin/AdvancedAnalyticsPage"));
+const RealtimeDashboardPage = lazy(() => import("./pages/tenant-admin/RealtimeDashboardPage"));
+const CustomReportsPage = lazy(() => import("./pages/tenant-admin/CustomReportsPage"));
+const CommissionTrackingPage = lazy(() => import("./pages/tenant-admin/CommissionTrackingPage"));
 
 // Marketplace Pages
 const SellerProfilePage = lazy(() => import("./pages/tenant-admin/marketplace/SellerProfilePage"));
