@@ -31,10 +31,34 @@ import {
   Save,
   Eye,
   Upload,
-  Share2
+  Share2,
+  MapPin,
+  Plus,
+  Trash2,
+  Sparkles
 } from 'lucide-react';
 import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog';
 import { generateUrlToken } from '@/utils/menuHelpers';
+
+interface DeliveryZone {
+  zip_code: string;
+  fee: number;
+  min_order?: number;
+}
+
+interface TimeSlot {
+  label: string;
+  start: string;
+  end: string;
+  enabled: boolean;
+}
+
+interface ThemeConfig {
+  theme: 'standard' | 'luxury';
+  colors?: {
+    accent?: string;
+  };
+}
 
 interface StoreSettings {
   id: string;
@@ -59,8 +83,10 @@ interface StoreSettings {
   require_account: boolean;
   require_age_verification: boolean;
   minimum_age: number;
-  delivery_zones: any[];
+  delivery_zones: DeliveryZone[];
   payment_methods: string[];
+  time_slots: TimeSlot[];
+  theme_config: ThemeConfig | null;
   free_delivery_threshold: number;
   default_delivery_fee: number;
   checkout_settings: {
@@ -75,6 +101,22 @@ interface StoreSettings {
 }
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+const DEFAULT_TIME_SLOTS: TimeSlot[] = [
+  { label: '9am - 12pm', start: '09:00', end: '12:00', enabled: true },
+  { label: '12pm - 3pm', start: '12:00', end: '15:00', enabled: true },
+  { label: '3pm - 6pm', start: '15:00', end: '18:00', enabled: true },
+  { label: '6pm - 9pm', start: '18:00', end: '21:00', enabled: true },
+];
+
+const PAYMENT_METHOD_OPTIONS = [
+  { id: 'cash', label: 'Cash', icon: '💵' },
+  { id: 'card', label: 'Credit/Debit Card', icon: '💳' },
+  { id: 'apple_pay', label: 'Apple Pay', icon: '🍎' },
+  { id: 'google_pay', label: 'Google Pay', icon: '📱' },
+  { id: 'venmo', label: 'Venmo', icon: '💸' },
+  { id: 'zelle', label: 'Zelle', icon: '🏦' },
+];
 
 export default function StorefrontSettings() {
   const { tenant } = useTenantAdminAuth();
@@ -179,6 +221,8 @@ export default function StorefrontSettings() {
           minimum_age: formData.minimum_age,
           delivery_zones: formData.delivery_zones,
           payment_methods: formData.payment_methods,
+          time_slots: formData.time_slots,
+          theme_config: formData.theme_config,
           free_delivery_threshold: formData.free_delivery_threshold,
           default_delivery_fee: formData.default_delivery_fee,
           checkout_settings: formData.checkout_settings,
@@ -212,7 +256,7 @@ export default function StorefrontSettings() {
       if (!store?.id) throw new Error('No store');
 
       const newToken = generateUrlToken();
-      
+
       const { error } = await supabase
         .from('marketplace_stores')
         .update({ encrypted_url_token: newToken })
@@ -322,10 +366,13 @@ export default function StorefrontSettings() {
 
       {/* Settings Tabs */}
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-9">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="branding">Branding</TabsTrigger>
           <TabsTrigger value="delivery">Delivery</TabsTrigger>
+          <TabsTrigger value="zones">Zones</TabsTrigger>
+          <TabsTrigger value="timeslots">Time Slots</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="checkout">Checkout</TabsTrigger>
           <TabsTrigger value="hours">Hours</TabsTrigger>
           <TabsTrigger value="seo">SEO</TabsTrigger>
@@ -560,6 +607,51 @@ export default function StorefrontSettings() {
                   </div>
                 </div>
               </div>
+
+              <Separator />
+
+              {/* Theme Selector */}
+              <div className="space-y-4">
+                <h3 className="font-medium flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  Store Theme
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div
+                    className={`p-4 border rounded-lg cursor-pointer transition-all ${(formData.theme_config?.theme || 'standard') === 'standard'
+                      ? 'border-primary ring-2 ring-primary/20'
+                      : 'border-muted hover:border-primary/50'
+                      }`}
+                    onClick={() => updateField('theme_config', { theme: 'standard' } as ThemeConfig)}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-8 h-8 rounded bg-white border" />
+                      <div>
+                        <p className="font-medium">Standard Theme</p>
+                        <p className="text-xs text-muted-foreground">Clean, light design</p>
+                      </div>
+                    </div>
+                    <div className="h-16 rounded bg-gradient-to-r from-gray-100 to-gray-200" />
+                  </div>
+
+                  <div
+                    className={`p-4 border rounded-lg cursor-pointer transition-all ${formData.theme_config?.theme === 'luxury'
+                      ? 'border-primary ring-2 ring-primary/20'
+                      : 'border-muted hover:border-primary/50'
+                      }`}
+                    onClick={() => updateField('theme_config', { theme: 'luxury' } as ThemeConfig)}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-8 h-8 rounded bg-black border border-yellow-500" />
+                      <div>
+                        <p className="font-medium">Luxury Theme</p>
+                        <p className="text-xs text-muted-foreground">Premium, dark design</p>
+                      </div>
+                    </div>
+                    <div className="h-16 rounded bg-gradient-to-r from-gray-900 to-black" />
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -601,6 +693,222 @@ export default function StorefrontSettings() {
                   </p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Delivery Zones Tab */}
+        <TabsContent value="zones">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                Delivery Zones
+              </CardTitle>
+              <CardDescription>Set custom delivery fees by zip code</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                {(formData.delivery_zones || []).map((zone, index) => (
+                  <div key={index} className="flex items-center gap-4">
+                    <Input
+                      placeholder="Zip code"
+                      value={zone.zip_code || ''}
+                      onChange={(e) => {
+                        const zones = [...(formData.delivery_zones || [])];
+                        zones[index] = { ...zones[index], zip_code: e.target.value };
+                        updateField('delivery_zones', zones);
+                      }}
+                      className="w-32"
+                    />
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Fee: $</span>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={zone.fee || 0}
+                        onChange={(e) => {
+                          const zones = [...(formData.delivery_zones || [])];
+                          zones[index] = { ...zones[index], fee: parseFloat(e.target.value) };
+                          updateField('delivery_zones', zones);
+                        }}
+                        className="w-24"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Min: $</span>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={zone.min_order || 0}
+                        onChange={(e) => {
+                          const zones = [...(formData.delivery_zones || [])];
+                          zones[index] = { ...zones[index], min_order: parseFloat(e.target.value) };
+                          updateField('delivery_zones', zones);
+                        }}
+                        className="w-24"
+                      />
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const zones = (formData.delivery_zones || []).filter((_, i) => i !== index);
+                        updateField('delivery_zones', zones);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const zones = [...(formData.delivery_zones || []), { zip_code: '', fee: 5, min_order: 0 }];
+                    updateField('delivery_zones', zones);
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Zone
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                If a customer's zip code isn't listed, the default delivery fee will be used.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Time Slots Tab */}
+        <TabsContent value="timeslots">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                Delivery Time Slots
+              </CardTitle>
+              <CardDescription>Let customers choose their delivery window</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Enable Scheduled Delivery</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Allow customers to select a delivery time slot
+                  </p>
+                </div>
+                <Switch
+                  checked={(formData.time_slots || []).length > 0}
+                  onCheckedChange={(checked) => {
+                    updateField('time_slots', checked ? DEFAULT_TIME_SLOTS : []);
+                  }}
+                />
+              </div>
+
+              {(formData.time_slots || []).length > 0 && (
+                <div className="space-y-4">
+                  <Separator />
+                  <h4 className="font-medium">Available Time Slots</h4>
+                  {(formData.time_slots || []).map((slot, index) => (
+                    <div key={index} className="flex items-center gap-4">
+                      <Switch
+                        checked={slot.enabled}
+                        onCheckedChange={(checked) => {
+                          const slots = [...(formData.time_slots || [])];
+                          slots[index] = { ...slots[index], enabled: checked };
+                          updateField('time_slots', slots);
+                        }}
+                      />
+                      <Input
+                        value={slot.label}
+                        onChange={(e) => {
+                          const slots = [...(formData.time_slots || [])];
+                          slots[index] = { ...slots[index], label: e.target.value };
+                          updateField('time_slots', slots);
+                        }}
+                        className="flex-1"
+                      />
+                      <Input
+                        type="time"
+                        value={slot.start}
+                        onChange={(e) => {
+                          const slots = [...(formData.time_slots || [])];
+                          slots[index] = { ...slots[index], start: e.target.value };
+                          updateField('time_slots', slots);
+                        }}
+                        className="w-28"
+                      />
+                      <span className="text-muted-foreground">to</span>
+                      <Input
+                        type="time"
+                        value={slot.end}
+                        onChange={(e) => {
+                          const slots = [...(formData.time_slots || [])];
+                          slots[index] = { ...slots[index], end: e.target.value };
+                          updateField('time_slots', slots);
+                        }}
+                        className="w-28"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const slots = (formData.time_slots || []).filter((_, i) => i !== index);
+                          updateField('time_slots', slots);
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const slots = [...(formData.time_slots || []), { label: 'New Slot', start: '09:00', end: '12:00', enabled: true }];
+                      updateField('time_slots', slots);
+                    }}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Time Slot
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Payment Methods Tab */}
+        <TabsContent value="payments">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                Payment Methods
+              </CardTitle>
+              <CardDescription>Select which payment methods to accept</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {PAYMENT_METHOD_OPTIONS.map((method) => (
+                <div key={method.id} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{method.icon}</span>
+                    <Label>{method.label}</Label>
+                  </div>
+                  <Switch
+                    checked={(formData.payment_methods || ['cash', 'card']).includes(method.id)}
+                    onCheckedChange={(checked) => {
+                      const current = formData.payment_methods || ['cash', 'card'];
+                      const updated = checked
+                        ? [...current, method.id]
+                        : current.filter((m) => m !== method.id);
+                      updateField('payment_methods', updated);
+                    }}
+                  />
+                </div>
+              ))}
+              <p className="text-xs text-muted-foreground mt-4">
+                At least one payment method must be enabled.
+              </p>
             </CardContent>
           </Card>
         </TabsContent>

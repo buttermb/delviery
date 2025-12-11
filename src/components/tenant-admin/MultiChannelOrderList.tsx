@@ -167,6 +167,44 @@ export function MultiChannelOrderList() {
                 logger.error('Error fetching unified orders', error, { component: 'MultiChannelOrderList' });
             }
 
+            // 4. Fetch Storefront Orders (from marketplace stores)
+            try {
+                // First get the stores for this tenant
+                const { data: stores } = await supabase
+                    .from('marketplace_stores')
+                    .select('id, store_name')
+                    .eq('tenant_id', tenantId);
+
+                if (stores && stores.length > 0) {
+                    const storeIds = stores.map(s => s.id);
+                    const storeNameMap = Object.fromEntries(stores.map(s => [s.id, s.store_name]));
+
+                    const { data: sfOrders, error: sfError } = await supabase
+                        .from('storefront_orders')
+                        .select('id, total, status, created_at, order_number, customer_name, store_id')
+                        .in('store_id', storeIds)
+                        .order('created_at', { ascending: false })
+                        .limit(20);
+
+                    if (sfError) {
+                        logger.warn('Failed to fetch storefront orders', sfError, { component: 'MultiChannelOrderList' });
+                    } else if (sfOrders) {
+                        const storefrontOrders = sfOrders.map((o: any) => ({
+                            id: o.id,
+                            channel: 'online' as OrderChannel,
+                            customer_name: o.customer_name || 'Storefront Customer',
+                            total_amount: Number(o.total) || 0,
+                            status: o.status || 'pending',
+                            created_at: o.created_at,
+                            order_number: o.order_number || `SF-${o.id.substring(0, 6).toUpperCase()}`
+                        }));
+                        unifiedOrders.push(...storefrontOrders);
+                    }
+                }
+            } catch (error) {
+                logger.error('Error fetching storefront orders', error, { component: 'MultiChannelOrderList' });
+            }
+
             // Sort all orders by date (newest first)
             return unifiedOrders.sort((a, b) =>
                 new Date(b.created_at).getTime() - new Date(a.created_at).getTime()

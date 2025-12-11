@@ -10,6 +10,7 @@ import { RealtimeSalesWidget } from '@/components/tenant-admin/RealtimeSalesWidg
 import { InventoryForecastWidget } from '@/components/tenant-admin/InventoryForecastWidget';
 import { RevenueForecastWidget } from '@/components/tenant-admin/RevenueForecastWidget';
 import { MultiChannelOrderList } from '@/components/tenant-admin/MultiChannelOrderList';
+import { StorefrontPerformanceWidget } from '@/components/tenant-admin/StorefrontPerformanceWidget';
 import { Button } from '@/components/ui/button';
 import { Settings2 } from 'lucide-react';
 import {
@@ -24,7 +25,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
-export type WidgetId = 'quick_actions' | 'realtime_sales' | 'inventory_forecast' | 'revenue_forecast' | 'recent_orders';
+export type WidgetId = 'quick_actions' | 'realtime_sales' | 'inventory_forecast' | 'revenue_forecast' | 'recent_orders' | 'storefront_summary';
 
 interface WidgetConfig {
     id: WidgetId;
@@ -36,9 +37,10 @@ interface WidgetConfig {
 const DEFAULT_CONFIG: WidgetConfig[] = [
     { id: 'quick_actions', visible: true, order: 0, label: 'Quick Actions' },
     { id: 'realtime_sales', visible: true, order: 1, label: 'Real-Time Sales' },
-    { id: 'inventory_forecast', visible: true, order: 2, label: 'Inventory Forecast' },
-    { id: 'revenue_forecast', visible: true, order: 3, label: 'Revenue Forecast' },
-    { id: 'recent_orders', visible: true, order: 4, label: 'Recent Orders' },
+    { id: 'storefront_summary', visible: true, order: 2, label: 'Storefront' },
+    { id: 'inventory_forecast', visible: true, order: 3, label: 'Inventory Forecast' },
+    { id: 'revenue_forecast', visible: true, order: 4, label: 'Revenue Forecast' },
+    { id: 'recent_orders', visible: true, order: 5, label: 'Recent Orders' },
 ];
 
 export function DashboardWidgetGrid() {
@@ -100,6 +102,7 @@ export function DashboardWidgetGrid() {
         switch (id) {
             case 'quick_actions': return <QuickActionsHub />;
             case 'realtime_sales': return <RealtimeSalesWidget />;
+            case 'storefront_summary': return <StorefrontPerformanceWidget />;
             case 'inventory_forecast': return <InventoryForecastWidget />;
             case 'revenue_forecast': return <RevenueForecastWidget />;
             case 'recent_orders': return <MultiChannelOrderList />;
