@@ -115,7 +115,7 @@ export default function TeamSettings() {
       if (userIds.length > 0) {
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, email')
+          .select('id, first_name, last_name')
           .in('id', userIds);
 
         if (profiles) {
@@ -125,7 +125,7 @@ export default function TeamSettings() {
 
       return data.map((u: any) => ({
         ...u,
-        email: profilesMap[u.user_id]?.email || 'Unknown Email',
+        email: u.email || 'No email on file',
         full_name: `${profilesMap[u.user_id]?.first_name || ''} ${profilesMap[u.user_id]?.last_name || ''}`.trim() || 'Team Member',
         status: u.accepted_at ? 'active' : (u.status || 'invited')
       })) as TenantUser[];
