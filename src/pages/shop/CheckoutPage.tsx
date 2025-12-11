@@ -275,20 +275,18 @@ export default function CheckoutPage() {
 
       const attemptOrder = async (attempt: number): Promise<any> => {
         try {
-          const { data, error } = await supabase.rpc('create_marketplace_order', {
+          const { data: orderId, error } = await supabase.rpc('create_marketplace_order', {
             p_store_id: store.id,
             p_items: orderItems,
             p_customer_name: `${formData.firstName} ${formData.lastName}`,
             p_customer_email: formData.email,
-            p_customer_phone: formData.phone,
-            p_delivery_address: {
-              street: formData.street,
-              apartment: formData.apartment,
-              city: formData.city,
-              state: formData.state,
-              zip: formData.zip,
-            },
-            p_delivery_notes: formData.deliveryNotes,
+            p_customer_phone: formData.phone || null,
+            p_delivery_address: `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`,
+            p_delivery_notes: formData.deliveryNotes || null,
+            p_subtotal: subtotal,
+            p_tax: 0,
+            p_delivery_fee: deliveryFee,
+            p_total: total,
             p_payment_method: formData.paymentMethod,
           });
 
@@ -300,12 +298,11 @@ export default function CheckoutPage() {
             throw error;
           }
 
-          const result = data?.[0];
-          if (!result?.success) {
-            throw new Error(result?.error_message || 'Failed to place order');
+          if (!orderId) {
+            throw new Error('Failed to create order');
           }
 
-          return result;
+          return { order_id: orderId };
         } catch (err: any) {
           const isNetworkError = err instanceof Error &&
             (err.message.toLowerCase().includes('network') ||

@@ -6187,8 +6187,11 @@ export type Database = {
           customer_name: string | null
           customer_phone: string | null
           delivered_at: string | null
+          delivery_notes: string | null
           id: string
+          items: Json | null
           order_number: string
+          paid_at: string | null
           payment_status: string | null
           payment_terms: string | null
           platform_fee: number | null
@@ -6201,10 +6204,13 @@ export type Database = {
           shipping_method: string | null
           status: string | null
           store_id: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
           subtotal: number
           tax: number | null
           total_amount: number
           tracking_number: string | null
+          tracking_token: string | null
           updated_at: string | null
         }
         Insert: {
@@ -6217,8 +6223,11 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           delivered_at?: string | null
+          delivery_notes?: string | null
           id?: string
+          items?: Json | null
           order_number: string
+          paid_at?: string | null
           payment_status?: string | null
           payment_terms?: string | null
           platform_fee?: number | null
@@ -6231,10 +6240,13 @@ export type Database = {
           shipping_method?: string | null
           status?: string | null
           store_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
           subtotal?: number
           tax?: number | null
           total_amount?: number
           tracking_number?: string | null
+          tracking_token?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -6247,8 +6259,11 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           delivered_at?: string | null
+          delivery_notes?: string | null
           id?: string
+          items?: Json | null
           order_number?: string
+          paid_at?: string | null
           payment_status?: string | null
           payment_terms?: string | null
           platform_fee?: number | null
@@ -6261,10 +6276,13 @@ export type Database = {
           shipping_method?: string | null
           status?: string | null
           store_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
           subtotal?: number
           tax?: number | null
           total_amount?: number
           tracking_number?: string | null
+          tracking_token?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -13197,16 +13215,23 @@ export type Database = {
           customer_email: string | null
           customer_id: string | null
           customer_name: string | null
+          customer_phone: string | null
           delivery_address: Json | null
           delivery_fee: number | null
+          delivery_notes: string | null
           id: string | null
+          items: Json | null
           order_number: string | null
+          paid_at: string | null
           payment_status: string | null
           status: string | null
           store_id: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
           subtotal: number | null
           tax_amount: number | null
           total: number | null
+          tracking_token: string | null
           updated_at: string | null
         }
         Insert: {
@@ -13214,16 +13239,23 @@ export type Database = {
           customer_email?: never
           customer_id?: string | null
           customer_name?: never
+          customer_phone?: never
           delivery_address?: Json | null
           delivery_fee?: never
+          delivery_notes?: string | null
           id?: string | null
+          items?: Json | null
           order_number?: string | null
+          paid_at?: string | null
           payment_status?: string | null
           status?: string | null
           store_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
           subtotal?: number | null
           tax_amount?: never
           total?: number | null
+          tracking_token?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -13231,16 +13263,23 @@ export type Database = {
           customer_email?: never
           customer_id?: string | null
           customer_name?: never
+          customer_phone?: never
           delivery_address?: Json | null
           delivery_fee?: never
+          delivery_notes?: string | null
           id?: string | null
+          items?: Json | null
           order_number?: string | null
+          paid_at?: string | null
           payment_status?: string | null
           status?: string | null
           store_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
           subtotal?: number | null
           tax_amount?: never
           total?: number | null
+          tracking_token?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -13487,20 +13526,17 @@ export type Database = {
           p_customer_email: string
           p_customer_name: string
           p_customer_phone?: string
-          p_delivery_address?: Json
+          p_delivery_address?: string
+          p_delivery_fee?: number
           p_delivery_notes?: string
-          p_items: Json
+          p_items?: Json
           p_payment_method?: string
           p_store_id: string
+          p_subtotal?: number
+          p_tax?: number
+          p_total?: number
         }
-        Returns: {
-          error_message: string
-          order_id: string
-          order_number: string
-          success: boolean
-          total: number
-          tracking_token: string
-        }[]
+        Returns: string
       }
       create_super_admin_with_password: {
         Args: {
