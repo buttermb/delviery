@@ -194,7 +194,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Basic customer list and contact management',
     tier: 'starter',
     category: 'Customers',
-    route: '/admin/big-plug-clients',
+    route: '/admin/customer-hub',
   },
 
   // --- Operations (Starter) ---
@@ -320,7 +320,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Manage your white-label online store with products, orders, and customers',
     tier: 'professional',
     category: 'Sales & Orders',
-    route: '/admin/storefront',
+    route: '/admin/storefront-hub',
   },
 
   // --- Inventory (Professional) ---
@@ -464,7 +464,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Comprehensive business analytics dashboard',
     tier: 'professional',
     category: 'Analytics & Finance',
-    route: '/admin/analytics/comprehensive',
+    route: '/admin/analytics-hub',
   },
   'revenue-reports': {
     id: 'revenue-reports',
@@ -480,7 +480,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Cash flow, P&L, and financial management',
     tier: 'professional',
     category: 'Analytics & Finance',
-    route: '/admin/financial-center',
+    route: '/admin/finance-hub',
   },
   'collections': {
     id: 'collections',
@@ -666,7 +666,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Coordinate deliveries and driver assignments',
     tier: 'enterprise',
     category: 'Delivery & Fleet',
-    route: '/admin/delivery-management',
+    route: '/admin/delivery-hub',
   },
   'fleet-management': {
     id: 'fleet-management',
@@ -674,7 +674,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Manage delivery vehicles and fleet operations',
     tier: 'enterprise',
     category: 'Delivery & Fleet',
-    route: '/admin/fleet-management',
+    route: '/admin/delivery-hub?tab=fleet',
   },
   'couriers': {
     id: 'couriers',
@@ -776,7 +776,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Developer API access and webhook integrations',
     tier: 'enterprise',
     category: 'Integrations',
-    route: '/admin/api-access',
+    route: '/admin/integrations-hub',
   },
   'webhooks': {
     id: 'webhooks',
