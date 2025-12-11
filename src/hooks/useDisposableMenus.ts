@@ -263,7 +263,6 @@ export const useMenuOrders = (menuId?: string) => {
         .select(`
           *,
           menu:disposable_menus(name),
-          whitelist:menu_access_whitelist(customer_name, customer_phone),
           items:menu_order_items(*)
         `)
         .order('created_at', { ascending: false });
@@ -290,8 +289,7 @@ export const useMenuSecurityEvents = (menuId?: string) => {
         .from('menu_security_events')
         .select(`
           *,
-          menu:disposable_menus(name),
-          whitelist:menu_access_whitelist(customer_name)
+          menu:disposable_menus(name)
         `)
         .order('created_at', { ascending: false })
         .limit(50);
@@ -315,10 +313,7 @@ export const useMenuAccessLogs = (menuId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('menu_access_logs')
-        .select(`
-          *,
-          whitelist:menu_access_whitelist(customer_name, customer_phone)
-        `)
+        .select('*')
         .eq('menu_id', menuId)
         .order('accessed_at', { ascending: false })
         .limit(100);

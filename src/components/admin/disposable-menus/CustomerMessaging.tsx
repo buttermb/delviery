@@ -46,26 +46,20 @@ export const CustomerMessaging = () => {
     status: string;
   }
 
-  interface OrderWithWhitelist {
-    whitelist?: {
-      customer_name: string;
-      customer_phone: string;
-      customer_email?: string | null;
-    } | null;
+  interface OrderData {
+    contact_phone?: string | null;
     created_at: string;
     status: string;
   }
 
-  // Get unique customers from orders
-  const customers = orders?.reduce((acc: Customer[], order: OrderWithWhitelist) => {
-    if (order.whitelist && !acc.find(c => c.phone === order.whitelist.customer_phone)) {
+  // Get unique customers from orders using contact_phone
+  const customers = orders?.reduce((acc: Customer[], order: OrderData) => {
+    if (order.contact_phone && !acc.find(c => c.phone === order.contact_phone)) {
       acc.push({
-        name: order.whitelist.customer_name,
-        phone: order.whitelist.customer_phone,
-        email: order.whitelist.customer_email,
-        orderCount: orders.filter(o => 
-          o.whitelist?.customer_phone === order.whitelist.customer_phone
-        ).length,
+        name: order.contact_phone,
+        phone: order.contact_phone,
+        email: null,
+        orderCount: orders.filter(o => o.contact_phone === order.contact_phone).length,
         lastOrder: order.created_at,
         status: order.status
       });

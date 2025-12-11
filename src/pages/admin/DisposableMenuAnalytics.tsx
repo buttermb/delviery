@@ -304,7 +304,7 @@ const DisposableMenuAnalytics = () => {
               {accessLogs?.slice(0, 20).map(log => (
                 <div key={log.id} className="flex justify-between items-center p-3 border rounded">
                   <div>
-                    <p className="font-medium">{log.whitelist?.customer_name || 'Anonymous'}</p>
+                    <p className="font-medium">{log.ip_address || 'Anonymous'}</p>
                     <p className="text-sm text-muted-foreground">
                       {format(parseISO(log.accessed_at), 'MMM dd, yyyy HH:mm')}
                     </p>

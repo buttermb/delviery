@@ -104,7 +104,7 @@ const MenuAnalytics = () => {
                       <Clock className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <div className="font-medium">
-                          {log.whitelist?.customer_name || 'Unknown Customer'}
+                          {log.ip_address || 'Unknown Visitor'}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {format(new Date(log.accessed_at), 'MMM dd, yyyy HH:mm')}
@@ -148,7 +148,7 @@ const MenuAnalytics = () => {
                       <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <div className="font-medium">
-                          {order.whitelist?.customer_name || 'Unknown Customer'}
+                          {order.contact_phone || 'Unknown Customer'}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {format(new Date(order.created_at), 'MMM dd, yyyy HH:mm')}
