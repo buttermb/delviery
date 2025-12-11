@@ -364,7 +364,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Customer lifecycle, RFM analysis, and segmentation',
     tier: 'professional',
     category: 'Customers',
-    route: '/admin/crm/clients',
+    route: '/admin/customer-hub?tab=crm',
   },
   'crm-invoices': {
     id: 'crm-invoices',
@@ -380,7 +380,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Customer behavior, segments, and lifetime value analysis',
     tier: 'professional',
     category: 'Customers',
-    route: '/admin/customer-insights',
+    route: '/admin/customer-hub?tab=insights',
   },
   'marketing-automation': {
     id: 'marketing-automation',
@@ -504,7 +504,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Track and manage team commissions',
     tier: 'professional',
     category: 'Analytics & Finance',
-    route: '/admin/commission-tracking',
+    route: '/admin/finance-hub?tab=commissions',
   },
   'expense-tracking': {
     id: 'expense-tracking',
@@ -512,7 +512,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Track and categorize business expenses',
     tier: 'professional',
     category: 'Analytics & Finance',
-    route: '/admin/expense-tracking',
+    route: '/admin/finance-hub?tab=expenses',
   },
   'menu-analytics': {
     id: 'menu-analytics',
@@ -520,7 +520,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Menu performance and product insights',
     tier: 'professional',
     category: 'Analytics & Finance',
-    route: '/admin/menu-analytics',
+    route: '/admin/analytics-hub?tab=menu',
   },
   'order-analytics': {
     id: 'order-analytics',
@@ -528,7 +528,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Order trends, patterns, and performance',
     tier: 'professional',
     category: 'Analytics & Finance',
-    route: '/admin/order-analytics',
+    route: '/admin/analytics-hub?tab=orders',
   },
   'advanced-reporting': {
     id: 'advanced-reporting',
@@ -572,7 +572,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Mass update products, prices, and inventory',
     tier: 'professional',
     category: 'Integrations',
-    route: '/admin/bulk-operations',
+    route: '/admin/integrations-hub?tab=bulk',
   },
   'vendor-portal': {
     id: 'vendor-portal',
@@ -682,7 +682,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Manage delivery drivers and couriers',
     tier: 'enterprise',
     category: 'Delivery & Fleet',
-    route: '/admin/couriers',
+    route: '/admin/delivery-hub?tab=couriers',
   },
   'route-optimization': {
     id: 'route-optimization',
@@ -690,7 +690,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'AI-powered delivery route planning',
     tier: 'enterprise',
     category: 'Delivery & Fleet',
-    route: '/admin/route-optimizer',
+    route: '/admin/delivery-hub?tab=routes',
   },
   'delivery-tracking': {
     id: 'delivery-tracking',
@@ -698,7 +698,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Track individual delivery status and ETAs',
     tier: 'enterprise',
     category: 'Delivery & Fleet',
-    route: '/admin/delivery-tracking',
+    route: '/admin/delivery-hub?tab=tracking',
   },
   'delivery-analytics': {
     id: 'delivery-analytics',
@@ -784,7 +784,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Real-time event notifications to external systems',
     tier: 'enterprise',
     category: 'Integrations',
-    route: '/admin/webhooks',
+    route: '/admin/integrations-hub?tab=webhooks',
   },
   'custom-integrations': {
     id: 'custom-integrations',
@@ -800,7 +800,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Automate business workflows and processes',
     tier: 'enterprise',
     category: 'Integrations',
-    route: '/admin/workflow-automation',
+    route: '/admin/integrations-hub?tab=automation',
   },
   'ai': {
     id: 'ai',
