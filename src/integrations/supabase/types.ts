@@ -13810,6 +13810,10 @@ export type Database = {
         Returns: number
       }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
+      get_user_tenant_ids_safe: {
+        Args: { user_uuid: string }
+        Returns: string[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -13844,6 +13848,14 @@ export type Database = {
       }
       is_ip_blocked: { Args: { _ip_address: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      is_tenant_admin_safe: {
+        Args: { check_tenant_id: string; user_uuid: string }
+        Returns: boolean
+      }
+      is_tenant_member_safe: {
+        Args: { check_tenant_id: string; user_uuid: string }
+        Returns: boolean
+      }
       is_tenant_owner: { Args: { p_tenant_id: string }; Returns: boolean }
       is_trial_active: { Args: { p_tenant_id: string }; Returns: boolean }
       log_document_access: {
