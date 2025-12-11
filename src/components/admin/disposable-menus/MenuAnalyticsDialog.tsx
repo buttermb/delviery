@@ -179,7 +179,7 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
                         <div key={order.id} className="border rounded-lg p-3">
                           <div className="flex items-start justify-between">
                             <div>
-                              <div className="font-semibold">{order.whitelist?.customer_name || order.contact_phone || 'Unknown'}</div>
+                              <div className="font-semibold">{order.contact_phone || 'Unknown'}</div>
                               <div className="text-xs text-muted-foreground">
                                 {format(new Date(order.created_at), 'MMM dd, yyyy HH:mm')}
                               </div>
@@ -255,7 +255,7 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
                           <div key={log.id} className="border rounded-lg p-3 text-sm">
                             <div className="flex items-start justify-between">
                               <div>
-                                <div className="font-semibold">{log.whitelist?.customer_name || 'Anonymous'}</div>
+                                <div className="font-semibold">{log.ip_address || 'Anonymous'}</div>
                                 <div className="text-xs text-muted-foreground">
                                   {format(new Date(log.accessed_at), 'MMM dd, yyyy HH:mm:ss')}
                                 </div>
@@ -296,7 +296,7 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
                           <div key={order.id} className="border rounded-lg p-3">
                             <div className="flex items-start justify-between">
                               <div>
-                                <div className="font-semibold">{order.whitelist?.customer_name || order.contact_phone || 'Unknown'}</div>
+                                <div className="font-semibold">{order.contact_phone || 'Unknown'}</div>
                                 <div className="text-xs text-muted-foreground">
                                   {format(new Date(order.created_at), 'MMM dd, yyyy HH:mm')}
                                 </div>
