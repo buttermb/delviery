@@ -56,23 +56,22 @@ export default function ProductSyncPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [syncingIds, setSyncingIds] = useState<Set<string>>(new Set());
 
-    // 1. Fetch Store Profile (Needed for store_id)
-    const { data: profile, isLoading: isLoadingProfile } = useQuery({
-        queryKey: ['marketplace-profile', tenant?.id],
+    // 1. Fetch Store (Needed for store_id)
+    const { data: store, isLoading: isLoadingStore } = useQuery({
+        queryKey: ['marketplace-store', tenant?.id],
         queryFn: async () => {
             if (!tenant?.id) return null;
-            // @ts-ignore - marketplace_profiles table may not be in generated types
             const { data, error } = await supabase
-                .from('marketplace_profiles')
-                .select('id, business_name')
+                .from('marketplace_stores')
+                .select('id, store_name')
                 .eq('tenant_id', tenant.id)
                 .maybeSingle();
 
             if (error) {
-                logger.error('Failed to fetch marketplace profile', error);
+                logger.error('Failed to fetch marketplace store', error);
                 return null;
             }
-            return data as { id: string; business_name: string } | null;
+            return data as { id: string; store_name: string } | null;
         },
         enabled: !!tenant?.id
     });
@@ -116,26 +115,19 @@ export default function ProductSyncPage() {
     });
 
     // 3. Sync Mutation
+    // 3. Sync Mutation
     const syncMutation = useMutation({
         mutationFn: async (productId: string) => {
-            if (!profile?.id) throw new Error("No marketplace profile found");
+            if (!store?.id) throw new Error("No marketplace store found");
 
-            // For now, simulate sync since the RPC may not exist
-            // In production, replace with actual RPC call
-            try {
-                // @ts-ignore - RPC may not be in generated types
-                const { data, error } = await supabase.rpc('sync_product_to_marketplace', {
-                    p_product_id: productId,
-                    p_store_id: profile.id
-                });
+            // @ts-ignore - RPC may not be in generated types
+            const { data, error } = await supabase.rpc('sync_product_to_marketplace', {
+                p_product_id: productId,
+                p_store_id: store.id
+            });
 
-                if (error) throw error;
-                return data;
-            } catch (e) {
-                // Fallback: log and return success for demo
-                logger.warn('Sync RPC not available, using fallback', e);
-                return { success: true };
-            }
+            if (error) throw error;
+            return data;
         },
         onMutate: (productId) => {
             setSyncingIds(prev => new Set(prev).add(productId));
@@ -149,7 +141,7 @@ export default function ProductSyncPage() {
             if (!error) {
                 toast.success("Product synced successfully");
                 queryClient.invalidateQueries({ queryKey: ['products-sync'] });
-                queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] }); // Refresh listings if user goes there
+                queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] });
             } else {
                 toast.error(`Sync failed: ${(error as Error).message}`);
             }
@@ -157,15 +149,15 @@ export default function ProductSyncPage() {
     });
 
     const handleSync = (productId: string) => {
-        if (!profile) {
-            toast.error("You must create a Marketplace Profile first.");
+        if (!store) {
+            toast.error("You must create a Marketplace Store first.");
             return;
         }
         syncMutation.mutate(productId);
     };
 
     const handleBulkSync = async () => {
-        if (!products || !profile) return;
+        if (!products || !store) return;
 
         // rudimentary bulk sync - just loop (better to have a bulk RPC but this works for MVP)
         const unsynced = products.filter(p => !getSyncStatus(p));
@@ -202,7 +194,7 @@ export default function ProductSyncPage() {
         product.category?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    if (isLoadingProfile || isLoadingProducts) {
+    if (isLoadingStore || isLoadingProducts) {
         return <div className="p-6 space-y-6">
             <div className="flex justify-between items-center">
                 <Skeleton className="h-8 w-48" />
@@ -212,22 +204,22 @@ export default function ProductSyncPage() {
         </div>;
     }
 
-    if (!profile) {
+    if (!store) {
         return (
             <div className="p-6">
                 <Card className="bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-400">
                             <AlertCircle className="h-5 w-5" />
-                            Marketplace Profile Required
+                            Marketplace Store Required
                         </CardTitle>
                         <CardDescription className="text-amber-700 dark:text-amber-500">
-                            You need to set up your Seller Profile before you can sync products to the marketplace.
+                            You need to set up your Marketplace Store before you can sync products.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Button onClick={() => window.location.href = `/${tenant?.slug}/admin/marketplace/profile`}>
-                            Create Profile
+                        <Button onClick={() => window.location.href = `/${tenant?.slug}/admin/storefront`}>
+                            Create Store
                         </Button>
                     </CardContent>
                 </Card>
