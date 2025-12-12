@@ -249,7 +249,7 @@ const ButtonTester = lazy(() => import("./pages/admin/ButtonTester"));
 
 // GitHub Repos Integration Pages
 const AnalyticsPage = lazy(() => import("./pages/admin/AnalyticsPage"));
-const RouteOptimizationPageAdmin = lazy(() => import("./pages/admin/RouteOptimizationPage"));
+
 const AdvancedInvoicePage = lazy(() => import("./pages/admin/AdvancedInvoicePage"));
 const LocalAIPage = lazy(() => import("./pages/admin/LocalAIPage"));
 const WorkflowAutomationPage = lazy(() => import("./pages/admin/WorkflowAutomationPage"));
@@ -960,7 +960,7 @@ const App = () => {
 
                                           {/* GitHub Repos Integration Routes */}
                                           <Route path="analytics-dashboard" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />
-                                          <Route path="route-optimizer" element={<FeatureProtectedRoute featureId="route-optimization"><RouteOptimizationPageAdmin /></FeatureProtectedRoute>} />
+                                          <Route path="route-optimizer" element={<FeatureProtectedRoute featureId="route-optimization"><RouteOptimizationPage /></FeatureProtectedRoute>} />
                                           <Route path="wholesale-pricing-tiers" element={<PricingTiersPage />} />
                                           <Route path="advanced-invoice" element={<FeatureProtectedRoute featureId="invoice-management"><AdvancedInvoicePage /></FeatureProtectedRoute>} />
                                           <Route path="local-ai" element={<FeatureProtectedRoute featureId="ai"><LocalAIPage /></FeatureProtectedRoute>} />

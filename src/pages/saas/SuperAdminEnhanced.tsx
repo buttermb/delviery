@@ -170,7 +170,7 @@ export default function SuperAdminEnhanced() {
   });
 
   // Fetch tenant list
-  const { data: tenants, isLoading: tenantsLoading } = useQuery<TenantSummary[]>({
+  const { data: tenants, isLoading: tenantsLoading, refetch: refetchTenants } = useQuery<TenantSummary[]>({
     queryKey: ['super-admin-tenants', searchTerm, statusFilter, planFilter],
     queryFn: async () => {
       let query = supabase
@@ -743,7 +743,7 @@ export default function SuperAdminEnhanced() {
                           }}
                           onRefresh={() => {
                             // Refresh tenant data
-                            // TODO: Add refresh logic
+                            refetchTenants();
                           }}
                         />
                       </td>

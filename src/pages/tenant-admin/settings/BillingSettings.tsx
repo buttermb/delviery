@@ -64,8 +64,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 
+interface ExtendedInvoice extends Invoice {
+  tax_rate?: number;
+  notes?: string;
+  items?: any[]; // Fallback for differing structures
+}
+
+interface ExtendedTenant extends Database['public']['Tables']['tenants']['Row'] {
+  billing_cycle?: 'monthly' | 'yearly';
+  subscription_plan?: string;
+  trial_ends_at?: string;
+  mrr?: number;
+  limits?: Record<string, number>;
+  usage?: Record<string, number>;
+  contact_email?: string;
+  address?: string;
+}
+
 // Map database invoice to PDF-compatible format
-function mapInvoiceToPdfData(invoice: Invoice, tenant: any) {
+function mapInvoiceToPdfData(invoice: ExtendedInvoice, tenant: ExtendedTenant | null) {
   return {
     invoiceNumber: invoice.invoice_number || `INV-${invoice.id.slice(0, 8)}`,
     issueDate: invoice.issue_date || new Date().toISOString(),
@@ -75,36 +92,37 @@ function mapInvoiceToPdfData(invoice: Invoice, tenant: any) {
     customerEmail: tenant?.contact_email || '',
     companyName: 'BigMike Wholesale',
     companyAddress: '123 Business Ave, Suite 100',
-    lineItems: Array.isArray(invoice.line_items) 
+    lineItems: Array.isArray(invoice.line_items)
       ? (invoice.line_items as any[]).map(item => ({
-          description: item.description || item.name || 'Subscription',
-          quantity: item.quantity || 1,
-          unitPrice: item.amount || item.unit_price || invoice.total || 0,
-          total: item.total || item.amount || invoice.total || 0,
-        }))
+        description: item.description || item.name || 'Subscription',
+        quantity: item.quantity || 1,
+        unitPrice: item.amount || item.unit_price || invoice.total || 0,
+        total: item.total || item.amount || invoice.total || 0,
+      }))
       : [{
-          description: 'Monthly Subscription',
-          quantity: 1,
-          unitPrice: invoice.total || 0,
-          total: invoice.total || 0,
-        }],
+        description: 'Monthly Subscription',
+        quantity: 1,
+        unitPrice: invoice.total || 0,
+        total: invoice.total || 0,
+      }],
     subtotal: invoice.subtotal || invoice.total || 0,
     tax: invoice.tax || 0,
-    taxRate: (invoice as any).tax_rate || 0,
+    taxRate: invoice.tax_rate || 0,
     total: invoice.total || 0,
-    notes: (invoice as any).notes || '',
+    notes: invoice.notes || '',
   };
 }
 
 export default function BillingSettings() {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant: rawTenant } = useTenantAdminAuth();
+  const tenant = rawTenant as ExtendedTenant | null;
   const { currentTier, currentTierName } = useFeatureAccess();
   const { isTrial, needsPaymentMethod } = useSubscriptionStatus();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  
+
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionTier | null>(null);
@@ -335,9 +353,9 @@ export default function BillingSettings() {
 
   const handleCancelSubscription = async () => {
     if (!tenantId) return;
-    
+
     setCancelDialogOpen(false);
-    
+
     try {
       setUpgradeLoading(true);
       // Open Stripe portal to the cancellation page
@@ -369,11 +387,11 @@ export default function BillingSettings() {
 
   const handleDownloadInvoice = async (invoice: Invoice) => {
     setDownloadingInvoice(invoice.id);
-    
+
     try {
       // Generate HTML invoice and download it
       const invoiceData = mapInvoiceToPdfData(invoice, tenant);
-      
+
       const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -470,13 +488,13 @@ export default function BillingSettings() {
   const currentSubscriptionTier = businessTierToSubscriptionTier(currentTier);
 
   // Calculate next billing date (30 days from now or subscription start)
-  const nextBillingDate = tenant?.created_at 
+  const nextBillingDate = tenant?.created_at
     ? new Date(new Date(tenant.created_at).getTime() + 30 * 24 * 60 * 60 * 1000)
     : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
   // Get actual plan name from tenant
-  const displayPlanName = tenant?.subscription_plan 
-    ? (tenant.subscription_plan as string).charAt(0).toUpperCase() + (tenant.subscription_plan as string).slice(1)
+  const displayPlanName = tenant?.subscription_plan
+    ? tenant?.subscription_plan.charAt(0).toUpperCase() + tenant?.subscription_plan.slice(1)
     : currentTierName;
 
   const PLANS = [
@@ -552,7 +570,7 @@ export default function BillingSettings() {
                 </p>
               </div>
             </div>
-            <Button 
+            <Button
               className="bg-amber-600 hover:bg-amber-700"
               onClick={() => needsPaymentMethod ? setPaymentDialogOpen(true) : handlePlanChange('professional')}
             >
@@ -563,7 +581,7 @@ export default function BillingSettings() {
       )}
 
       {/* Annual Savings Banner - for monthly subscribers */}
-      {!isTrial && !isFreeTier && (tenant as any)?.billing_cycle !== 'yearly' && (
+      {!isTrial && !isFreeTier && tenant?.billing_cycle !== 'yearly' && (
         <div className="bg-gradient-to-r from-green-500/10 via-green-500/5 to-transparent border border-green-500/20 rounded-xl p-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
@@ -579,7 +597,7 @@ export default function BillingSettings() {
                 </p>
               </div>
             </div>
-            <Button 
+            <Button
               className="bg-green-600 hover:bg-green-700"
               onClick={handleManageSubscription}
             >
@@ -635,21 +653,21 @@ export default function BillingSettings() {
                     <span className={cn(
                       "font-medium",
                       isOutOfCredits ? "text-red-600" :
-                      isCriticalCredits ? "text-orange-600" :
-                      isLowCredits ? "text-yellow-600" :
-                      "text-emerald-600"
+                        isCriticalCredits ? "text-orange-600" :
+                          isLowCredits ? "text-yellow-600" :
+                            "text-emerald-600"
                     )}>
                       {lifetimeSpent.toLocaleString()} / {FREE_TIER_MONTHLY_CREDITS.toLocaleString()}
                     </span>
                   </div>
-                  <Progress 
-                    value={Math.min(100, (creditBalance / FREE_TIER_MONTHLY_CREDITS) * 100)} 
+                  <Progress
+                    value={Math.min(100, (creditBalance / FREE_TIER_MONTHLY_CREDITS) * 100)}
                     className={cn(
                       "h-2",
                       isOutOfCredits ? '[&>div]:bg-red-500' :
-                      isCriticalCredits ? '[&>div]:bg-orange-500' :
-                      isLowCredits ? '[&>div]:bg-yellow-500' :
-                      '[&>div]:bg-emerald-500'
+                        isCriticalCredits ? '[&>div]:bg-orange-500' :
+                          isLowCredits ? '[&>div]:bg-yellow-500' :
+                            '[&>div]:bg-emerald-500'
                     )}
                   />
                 </div>
@@ -659,7 +677,7 @@ export default function BillingSettings() {
                   <Alert variant={isOutOfCredits ? 'destructive' : 'default'} className="mb-4">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      {isOutOfCredits 
+                      {isOutOfCredits
                         ? "You're out of credits! Upgrade to a paid plan for unlimited usage."
                         : "Running low on credits. Upgrade for unlimited access to all features."}
                     </AlertDescription>
@@ -679,7 +697,7 @@ export default function BillingSettings() {
             </TabsContent>
 
             <TabsContent value="usage">
-              <CreditUsageStats 
+              <CreditUsageStats
                 showUpgradeButton={true}
                 onUpgradeClick={() => navigate(`/${tenant?.slug}/admin/select-plan`)}
               />
@@ -700,7 +718,7 @@ export default function BillingSettings() {
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-bold">{displayPlanName}</h3>
                 <Badge variant="secondary">{isTrial ? 'Trial' : 'Active'}</Badge>
-                {(tenant as any)?.billing_cycle === 'yearly' && (
+                {tenant?.billing_cycle === 'yearly' && (
                   <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                     Annual
                   </Badge>
@@ -709,10 +727,10 @@ export default function BillingSettings() {
               <p className="text-2xl font-bold mt-2">
                 {formatCurrency(TIER_PRICES[currentSubscriptionTier])}
                 <span className="text-sm font-normal text-muted-foreground">
-                  /{(tenant as any)?.billing_cycle === 'yearly' ? 'year' : 'month'}
+                  /{tenant?.billing_cycle === 'yearly' ? 'year' : 'month'}
                 </span>
               </p>
-              {(tenant as any)?.billing_cycle === 'yearly' && (
+              {tenant?.billing_cycle === 'yearly' && (
                 <p className="text-sm text-green-600 dark:text-green-400 font-medium">
                   Saving 17% with annual billing
                 </p>
@@ -729,11 +747,11 @@ export default function BillingSettings() {
               )}
             </div>
             <div className="flex flex-col gap-2">
-            <Button 
-              variant="outline" 
-              onClick={handleManageSubscription}
-              disabled={upgradeLoading}
-            >
+              <Button
+                variant="outline"
+                onClick={handleManageSubscription}
+                disabled={upgradeLoading}
+              >
                 {upgradeLoading ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
@@ -742,8 +760,8 @@ export default function BillingSettings() {
                 Manage Subscription
               </Button>
               {!isTrial && currentSubscriptionTier !== 'starter' && (
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
                   className="text-muted-foreground hover:text-destructive"
                   onClick={() => setCancelDialogOpen(true)}
@@ -760,7 +778,7 @@ export default function BillingSettings() {
           {Object.keys(limits).length > 0 && (
             <div className="pt-6 space-y-4">
               <h4 className="font-medium text-sm text-muted-foreground">Usage This Month</h4>
-              
+
               <div className="space-y-4">
                 {Object.keys(limits).map((resource) => {
                   const limit = limits[resource];
@@ -783,8 +801,8 @@ export default function BillingSettings() {
                         </span>
                       </div>
                       {!isUnlimited && (
-                        <Progress 
-                          value={percentage} 
+                        <Progress
+                          value={percentage}
                           className={cn("h-2", getProgressColor(percentage))}
                         />
                       )}
@@ -792,9 +810,9 @@ export default function BillingSettings() {
                         <div className="flex items-center gap-2 text-xs text-amber-600">
                           <ArrowUp className="h-3 w-3" />
                           <span>Running low! Consider upgrading for more capacity.</span>
-                          <Button 
-                            variant="link" 
-                            size="sm" 
+                          <Button
+                            variant="link"
+                            size="sm"
                             className="h-auto p-0 text-xs"
                             onClick={scrollToComparison}
                           >
@@ -823,7 +841,7 @@ export default function BillingSettings() {
             const Icon = plan.icon;
             const tierOrder = ['starter', 'professional', 'enterprise'];
             const isUpgrade = tierOrder.indexOf(plan.id) > tierOrder.indexOf(currentSubscriptionTier);
-            
+
             return (
               <div
                 key={plan.id}
@@ -838,14 +856,14 @@ export default function BillingSettings() {
                     <Star className="h-3 w-3 mr-1" /> Most Popular
                   </Badge>
                 )}
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Icon className={cn("h-6 w-6", plan.color)} />
                     <h3 className="font-semibold text-lg">{plan.name}</h3>
                     {isCurrent && <Badge variant="secondary">Current</Badge>}
                   </div>
-                  
+
                   <div className="space-y-1">
                     <p className="text-3xl font-bold">
                       {formatCurrency(plan.priceMonthly)}
@@ -855,7 +873,7 @@ export default function BillingSettings() {
                       or {formatCurrency(plan.priceYearly)}/yr (save 17%)
                     </p>
                   </div>
-                  
+
                   <ul className="space-y-2">
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex items-center gap-2 text-sm">
@@ -864,7 +882,7 @@ export default function BillingSettings() {
                       </li>
                     ))}
                   </ul>
-                  
+
                   <Button
                     className="w-full"
                     variant={isCurrent ? 'secondary' : isUpgrade ? 'default' : 'outline'}
@@ -962,8 +980,8 @@ export default function BillingSettings() {
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary">Default</Badge>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={handleManageSubscription}
                   disabled={upgradeLoading}
@@ -1023,14 +1041,14 @@ export default function BillingSettings() {
                         invoice.status === 'paid'
                           ? 'default'
                           : invoice.status === 'pending'
-                          ? 'secondary'
-                          : 'destructive'
+                            ? 'secondary'
+                            : 'destructive'
                       }
                     >
                       {invoice.status?.toUpperCase() || 'PENDING'}
                     </Badge>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => handleDownloadInvoice(invoice)}
                       disabled={downloadingInvoice === invoice.id}
@@ -1061,9 +1079,9 @@ export default function BillingSettings() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {selectedPlan && 
-                (['starter', 'professional', 'enterprise'].indexOf(selectedPlan) > 
-                 ['starter', 'professional', 'enterprise'].indexOf(currentSubscriptionTier)
+              {selectedPlan &&
+                (['starter', 'professional', 'enterprise'].indexOf(selectedPlan) >
+                  ['starter', 'professional', 'enterprise'].indexOf(currentSubscriptionTier)
                   ? 'Confirm Upgrade'
                   : 'Confirm Downgrade')}
             </DialogTitle>
@@ -1128,8 +1146,8 @@ export default function BillingSettings() {
             >
               Keep Subscription
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={handleCancelSubscription}
               disabled={upgradeLoading}
             >

@@ -22,25 +22,43 @@ import { useWholesaleClients } from '@/hooks/useWholesaleData';
 import { useMenuWhitelist } from '@/hooks/useDisposableMenus';
 import { cn } from '@/lib/utils';
 import { jsonToString, jsonToStringOrNumber, safeJsonAccess } from '@/utils/menuTypeHelpers';
+import { supabase } from '@/integrations/supabase/client';
+
+interface MenuSecuritySettings {
+  menu_type?: 'forum' | 'catalog';
+  max_views?: number;
+  [key: string]: unknown;
+}
 
 interface Menu {
   id?: string;
+  tenant_id?: string;
   encrypted_url_token?: string;
   access_code?: string | null;
   name?: string;
   expiration_date?: string | null;
+  status?: string;
+  security_settings?: MenuSecuritySettings | null;
   [key: string]: unknown;
 }
 
 interface WhitelistEntry {
+  id?: string;
   unique_access_token?: string;
   customer_name?: string;
   customer_email?: string | null;
+  customer_phone?: string | null;
+  customer?: { business_name?: string; contact_name?: string };
+  status?: string;
+  invited_at?: string | null;
   [key: string]: unknown;
 }
 
 interface Customer {
   id: string;
+  business_name?: string;
+  contact_name?: string;
+  phone?: string;
   [key: string]: unknown;
 }
 
@@ -90,7 +108,7 @@ export const MenuShareDialogEnhanced = ({
   }, [open, menuUrl]);
 
   // Check if this is a forum menu
-  const isForumMenu = (menu?.security_settings as any)?.menu_type === 'forum';
+  const isForumMenu = menu?.security_settings?.menu_type === 'forum';
 
   // Auto-populate SMS message
   useEffect(() => {
@@ -164,25 +182,58 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
     }
 
     setSendingSms(true);
+    let successCount = 0;
+    let failCount = 0;
+
     try {
-      // TODO: Integrate with SMS provider (Twilio, Plivo, Novu, etc.)
-      // For now, show a placeholder
       const selectedCustomersData = customers?.filter((c: Customer) =>
         selectedCustomers.includes(c.id)
       );
 
-      // Simulate SMS sending
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (!selectedCustomersData) return;
 
-      // In production, call your SMS service here
+      const promises = selectedCustomersData.map(async (customer: Customer) => {
+        const phone = customer.phone as string;
+        if (!phone) return null;
 
-      showSuccessToast(
-        'SMS Sent',
-        `SMS sent to ${selectedCustomers.length} customer${selectedCustomers.length > 1 ? 's' : ''}`
-      );
-      setSelectedCustomers([]);
-    } catch (error: unknown) {
-      showErrorToast('SMS Failed', error instanceof Error ? error.message : 'Failed to send SMS');
+        const { error } = await supabase.functions.invoke('send-sms', {
+          body: {
+            to: phone,
+            message: smsMessage,
+            customerId: customer.id,
+            accountId: menu.tenant_id // Assuming menu has tenant_id
+          }
+        });
+
+        if (error) throw error;
+        return true;
+      });
+
+      const results = await Promise.allSettled(promises);
+
+      results.forEach(result => {
+        if (result.status === 'fulfilled' && result.value) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      });
+
+      if (successCount > 0) {
+        showSuccessToast(
+          'SMS Sent',
+          `Successfully sent to ${successCount} customer${successCount !== 1 ? 's' : ''}`
+        );
+        setSelectedCustomers([]);
+      }
+
+      if (failCount > 0) {
+        showErrorToast('Some Messages Failed', `Failed to send to ${failCount} customers`);
+      }
+
+    } catch (error: any) {
+      logger.error('Failed to send SMS batch', error);
+      showErrorToast('SMS Failed', error.message || 'Failed to send SMS');
     } finally {
       setSendingSms(false);
     }
@@ -373,8 +424,8 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
             <div className="bg-muted/50 p-4 rounded-lg space-y-2 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Status:</span>
-                <Badge variant={jsonToString(menu?.status as any) === 'active' ? 'default' : 'destructive'}>
-                  {jsonToString(menu?.status as any)}
+                <Badge variant={menu?.status === 'active' ? 'default' : 'destructive'}>
+                  {menu?.status || 'unknown'}
                 </Badge>
               </div>
               {menu?.expiration_date && (
@@ -385,11 +436,11 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
                   </span>
                 </div>
               )}
-              {(menu?.security_settings as any)?.max_views && (
+              {menu?.security_settings?.max_views && (
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">View Limit:</span>
                   <span className="font-medium">
-                    {String((menu.security_settings as any).max_views)} views
+                    {menu.security_settings.max_views} views
                   </span>
                 </div>
               )}
@@ -435,7 +486,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
                             </div>
                             {customer.phone && (
                               <div className="text-xs text-muted-foreground">
-                                {String(customer.phone)}
+                                {customer.phone}
                               </div>
                             )}
                           </div>
@@ -501,12 +552,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
               )}
             </Button>
 
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3 rounded-lg text-sm">
-              <p className="text-yellow-800 dark:text-yellow-200">
-                <strong>Note:</strong> SMS functionality requires integration with a provider (Twilio, Plivo, etc.).
-                This is a placeholder implementation.
-              </p>
-            </div>
+
           </TabsContent>
 
           {/* Customers Tab */}
@@ -520,16 +566,16 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
                       <div key={String(entry.id)} className="p-3 flex items-center justify-between">
                         <div>
                           <div className="font-medium">
-                            {jsonToString(entry.customer_name as any) || jsonToString((entry.customer as any)?.business_name as any) || 'Unknown Customer'}
+                            {entry.customer_name || entry.customer?.business_name || 'Unknown Customer'}
                           </div>
                           {entry.customer_phone && (
                             <div className="text-sm text-muted-foreground">
-                              {jsonToString(entry.customer_phone as any)}
+                              {entry.customer_phone}
                             </div>
                           )}
-                          {(entry as any).invited_at && (
+                          {entry.invited_at && (
                             <div className="text-xs text-muted-foreground mt-1">
-                              Invited: {new Date(String(jsonToStringOrNumber((entry as any).invited_at as any))).toLocaleDateString()}
+                              Invited: {new Date(String(entry.invited_at)).toLocaleDateString()}
                             </div>
                           )}
                         </div>

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
@@ -86,7 +87,7 @@ export function QuickActionsHub() {
         refetchInterval: 30000 // Refresh every 30 seconds
     });
 
-    const quickActions: QuickAction[] = [
+    const quickActions: QuickAction[] = useMemo(() => [
         {
             id: 'new-order',
             label: 'New Order',
@@ -164,10 +165,32 @@ export function QuickActionsHub() {
             action: () => navigate(`/${tenantSlug}/admin/notifications`),
             description: 'Send SMS/notifications'
         }
-    ];
+    ], [navigate, tenantSlug, counts]);
 
     // Register keyboard shortcuts
-    // TODO: Implement useEffect with keyboard event listeners
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Check if user is typing in an input
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+                return;
+            }
+
+            if (!e.altKey) return;
+
+            // Handle Alt + Key shortcuts
+            const key = e.key.toUpperCase();
+            const action = quickActions.find(a => a.shortcut === `Alt+${key}`);
+
+            if (action) {
+                e.preventDefault();
+                action.action();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [quickActions]);
+
 
     return (
         <Card>

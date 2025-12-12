@@ -247,8 +247,7 @@ export function useCreateUnifiedOrder() {
       if (!tenant?.id) throw new Error('No tenant');
 
       // Use RPC for atomic creation
-      // @ts-ignore - RPC exists after unified architecture migration
-      const { data: orderId, error } = await supabase.rpc('create_unified_order', {
+      const rpcParams = {
         p_tenant_id: tenant.id,
         p_order_type: input.order_type,
         p_source: input.source,
@@ -264,7 +263,10 @@ export function useCreateUnifiedOrder() {
         p_contact_name: input.contact_name,
         p_contact_phone: input.contact_phone,
         p_metadata: JSON.parse(JSON.stringify(input.metadata || {})),
-      } as any);
+      };
+
+      // @ts-ignore - RPC exists after unified architecture migration
+      const { data: orderId, error } = await supabase.rpc('create_unified_order', rpcParams);
 
       if (error) {
         logger.error('Failed to create order', { error });

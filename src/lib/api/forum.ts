@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { logger } from '@/lib/logger';
 /**
  * Forum API Functions
@@ -280,9 +280,9 @@ export async function createComment(comment: CreateCommentRequest): Promise<Foru
         .select('depth')
         .eq('id', comment.parent_comment_id)
         .maybeSingle();
-      
+
       depth = parent ? (parent.depth || 0) + 1 : 0;
-      
+
       // Limit depth to 3
       if (depth > 3) {
         depth = 3;
@@ -396,7 +396,7 @@ export async function vote(votableType: 'post' | 'comment', votableId: string, v
           .from('forum_votes')
           .delete()
           .eq('id', existingVote.id);
-        
+
         if (error) throw error;
         return null;
       } else {
@@ -407,7 +407,7 @@ export async function vote(votableType: 'post' | 'comment', votableId: string, v
           .eq('id', existingVote.id)
           .select()
           .maybeSingle();
-        
+
         if (error) throw error;
         return data as ForumVote;
       }
@@ -423,7 +423,7 @@ export async function vote(votableType: 'post' | 'comment', votableId: string, v
         })
         .select()
         .maybeSingle();
-      
+
       if (error) throw error;
       return data as ForumVote;
     }

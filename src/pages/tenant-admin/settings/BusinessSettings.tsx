@@ -184,12 +184,64 @@ export default function BusinessSettings() {
     reader.readAsDataURL(file);
   };
 
+  // Fetch initial settings
+  useEffect(() => {
+    async function loadSettings() {
+      if (!tenant?.id) return;
+      const { data, error } = await supabase
+        .from('tenants')
+        .select('operating_settings')
+        .eq('id', tenant.id)
+        .single();
+
+      if (data?.operating_settings) {
+        // Cast to unknown first to avoid type errors until schema is updated
+        const settings = data.operating_settings as unknown as { business_hours: BusinessHours };
+        if (settings.business_hours) {
+          setBusinessHours(settings.business_hours);
+        }
+      }
+    }
+    loadSettings();
+  }, [tenant?.id]);
+
+  const { save: saveBusinessHoursDebounced, status: hoursStatus } = useAutoSave({
+    onSave: async (hours: BusinessHours) => {
+      if (!tenant?.id) return;
+
+      // Get current settings first to merge (shallow merge for now)
+      const { data: current } = await supabase
+        .from('tenants')
+        .select('operating_settings')
+        .eq('id', tenant.id)
+        .single();
+
+      const currentSettings = (current?.operating_settings as any) || {};
+
+      const { error } = await supabase
+        .from('tenants')
+        .update({
+          operating_settings: {
+            ...currentSettings,
+            business_hours: hours
+          }
+        })
+        .eq('id', tenant.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => toast.success('Business hours saved'),
+  });
+
   const handleHoursChange = (day: string, field: 'open' | 'close' | 'closed', value: string | boolean) => {
-    setBusinessHours((prev) => ({
-      ...prev,
-      [day]: { ...prev[day], [field]: value },
-    }));
-    // TODO: Persis hours logic here
+    setBusinessHours((prev) => {
+      const newHours = {
+        ...prev,
+        [day]: { ...prev[day], [field]: value },
+      };
+      saveBusinessHoursDebounced(newHours);
+      return newHours;
+    });
   };
 
   return (
@@ -324,6 +376,7 @@ export default function BusinessSettings() {
         title="Operating Hours"
         description="Set when your business is open"
         icon={Clock}
+        action={<SaveStatusIndicator status={hoursStatus} />}
       >
         <SettingsCard>
           <div className="space-y-3">

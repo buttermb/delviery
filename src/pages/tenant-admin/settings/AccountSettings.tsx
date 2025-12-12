@@ -35,8 +35,16 @@ export default function AccountSettings() {
 
   const { save: saveName, status: nameStatus } = useAutoSave<string>({
     onSave: async (newName) => {
-      // TODO: Implement name update via edge function
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate API call
+      const { error } = await supabase.functions.invoke('update-account-profile', {
+        body: { name: newName },
+      });
+
+      if (error) throw error;
+
+      // Optimistically update local state logic is handled by query invalidation usually, 
+      // but here we just show success. 
+      // We might want to reload the user/admin context if it doesn't auto-update.
+      // For now, keep it simple.
     },
     onSuccess: () => {
       toast({ title: 'Name updated', description: 'Your display name has been saved.' });
@@ -66,8 +74,40 @@ export default function AccountSettings() {
     };
     reader.readAsDataURL(file);
 
-    // TODO: Upload to storage
-    toast({ title: 'Avatar updated', description: 'Your profile picture has been changed.' });
+    // Upload to storage
+    try {
+      if (!admin?.id) return;
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${admin.id}-${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase.functions.invoke('update-account-profile', {
+        body: { avatar_url: publicUrl },
+      });
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      toast({ title: 'Avatar updated', description: 'Your profile picture has been changed.' });
+    } catch (error: any) {
+      console.error('Avatar upload failed:', error);
+      toast({
+        title: 'Upload failed',
+        description: error.message || 'Failed to upload avatar',
+        variant: 'destructive'
+      });
+    }
   };
 
   const getInitials = (name: string | null | undefined) => {

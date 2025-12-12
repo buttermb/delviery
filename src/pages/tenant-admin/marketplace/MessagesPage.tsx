@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { encryptMessage, decryptMessage } from '@/lib/utils/encryption';
 /**
  * Marketplace Messages Page
  * View and manage buyer-seller conversations
@@ -116,7 +117,21 @@ export default function MessagesPage() {
         throw error;
       }
 
-      return (data || []) as unknown as Message[];
+      // Decrypt messages
+      const decryptedData = await Promise.all((data || []).map(async (msg: any) => {
+        if (msg.message_encrypted && msg.message_text) {
+          try {
+            const decrypted = await decryptMessage(msg.message_text);
+            return { ...msg, message_text: decrypted };
+          } catch (e) {
+            console.warn('Failed to decrypt message', msg.id);
+            return msg;
+          }
+        }
+        return msg;
+      }));
+
+      return decryptedData as unknown as Message[];
     },
     enabled: !!tenantId,
     refetchInterval: 30000,
@@ -211,13 +226,14 @@ export default function MessagesPage() {
     }) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      // TODO: Encrypt message_text with AES-256
+      const encryptedText = await encryptMessage(text);
+
       const { data, error } = await supabase
         .from('marketplace_messages' as any)
         .insert({
           sender_tenant_id: tenantId,
           receiver_tenant_id: buyerTenantId,
-          message_text: text, // Should be encrypted
+          message_text: encryptedText,
           message_encrypted: true,
           subject: selectedConv?.lastMessage.subject || undefined,
           listing_id: listingId || selectedConv?.listingId || null,
