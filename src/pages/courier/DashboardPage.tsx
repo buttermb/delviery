@@ -288,7 +288,7 @@ export default function CourierDashboardPage() {
           </CardHeader>
           <CardContent>
             <UnifiedDeliveryView
-              courierOrders={availableOrders}
+              courierOrders={availableOrders as any}
               onAcceptOrder={handleAcceptOrder}
               onCompleteDelivery={() => { }}
             />
