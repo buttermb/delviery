@@ -132,8 +132,8 @@ export default function CheckoutPage() {
         acc.push({
           ...item,
           id: `${item.product_id}-${item.selected_weight}`,
-          products: product
-        });
+          products: product as any
+        } as RenderCartItem);
       }
       return acc;
     }, []);
@@ -157,7 +157,7 @@ export default function CheckoutPage() {
     return Number(product.price) || 0;
   };
 
-  const subtotal = cartItems.reduce((sum, item) => sum + getItemPrice(item) * item.quantity, 0);
+  const subtotal = (cartItems as RenderCartItem[]).reduce((sum, item) => sum + getItemPrice(item) * item.quantity, 0);
   const taxRate = 0.085;
   const tax = subtotal * taxRate;
   const deliveryFee = subtotal >= 1000 ? 0 : 0;
@@ -685,7 +685,7 @@ export default function CheckoutPage() {
                   <div>
                     <h3 className="font-semibold text-[hsl(var(--customer-text))] mb-3">Order Items</h3>
                     <div className="space-y-3">
-                      {cartItems.map((item: RenderCartItem) => {
+                      {(cartItems as RenderCartItem[]).map((item: RenderCartItem) => {
                         const product = item.products;
                         const price = getItemPrice(item);
                         return (

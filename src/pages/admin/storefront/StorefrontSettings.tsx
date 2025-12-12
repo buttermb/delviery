@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -218,10 +219,10 @@ export default function StorefrontSettings() {
           require_account: formData.require_account,
           require_age_verification: formData.require_age_verification,
           minimum_age: formData.minimum_age,
-          delivery_zones: formData.delivery_zones,
+          delivery_zones: formData.delivery_zones as unknown as Json,
           payment_methods: formData.payment_methods,
           time_slots: formData.time_slots,
-          theme_config: formData.theme_config,
+          theme_config: formData.theme_config as unknown as Json,
           free_delivery_threshold: formData.free_delivery_threshold,
           default_delivery_fee: formData.default_delivery_fee,
           checkout_settings: formData.checkout_settings,

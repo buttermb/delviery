@@ -212,7 +212,7 @@ export default function StorefrontProducts() {
       if (existing) {
         const { error } = await supabase
           .from('marketplace_product_settings')
-          .update({ display_price: price })
+          .update({ custom_price: price })
           .eq('id', existing.id);
         if (error) throw error;
       } else {
@@ -221,7 +221,7 @@ export default function StorefrontProducts() {
           .insert({
             store_id: store.id,
             product_id: productId,
-            display_price: price,
+            custom_price: price,
             is_visible: false,
           });
         if (error) throw error;
