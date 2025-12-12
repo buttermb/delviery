@@ -13966,6 +13966,10 @@ export type Database = {
         Args: { p_dlq_id: string; p_user_id?: string }
         Returns: string
       }
+      sync_product_to_marketplace: {
+        Args: { p_product_id: string; p_store_id: string }
+        Returns: Json
+      }
       track_feature_usage: {
         Args: { p_feature_id: string; p_tenant_id: string; p_user_id: string }
         Returns: undefined

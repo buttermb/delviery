@@ -141,10 +141,10 @@ export default function ProductManagement() {
 
   // Fetch store for publishing
   const { data: store } = useQuery({
-    queryKey: ['marketplace-settings', tenant?.id],
+    queryKey: ['marketplace-store', tenant?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('marketplace_profiles')
+        .from('marketplace_stores')
         .select('*')
         .eq('tenant_id', tenant?.id)
         .maybeSingle();
