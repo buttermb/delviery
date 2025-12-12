@@ -91,7 +91,7 @@ export function QuickActionsHub() {
             id: 'new-order',
             label: 'New Order',
             icon: Plus,
-            action: () => navigate(`/${tenantSlug}/admin/wholesale-orders/new`),
+            action: () => navigate(`/${tenantSlug}/admin/orders?tab=wholesale&action=new`),
             shortcut: 'Alt+N',
             description: 'Create wholesale order'
         },
@@ -99,7 +99,7 @@ export function QuickActionsHub() {
             id: 'add-inventory',
             label: 'Add Inventory',
             icon: Package,
-            action: () => navigate(`/${tenantSlug}/admin/advanced-inventory`),
+            action: () => navigate(`/${tenantSlug}/admin/inventory-hub?tab=adjustments`),
             shortcut: 'Alt+I',
             description: 'Update stock levels'
         },
@@ -107,7 +107,7 @@ export function QuickActionsHub() {
             id: 'mark-shipped',
             label: 'Mark Shipped',
             icon: Truck,
-            action: () => navigate(`/${tenantSlug}/admin/wholesale-orders?status=ready`),
+            action: () => navigate(`/${tenantSlug}/admin/orders?tab=wholesale&status=ready`),
             badge: counts?.todayDeliveries,
             description: 'Process deliveries'
         },
@@ -115,7 +115,7 @@ export function QuickActionsHub() {
             id: 'add-customer',
             label: 'Add Customer',
             icon: UserPlus,
-            action: () => navigate(`/${tenantSlug}/admin/big-plug-clients`),
+            action: () => navigate(`/${tenantSlug}/admin/customer-hub?tab=contacts&action=new`),
             shortcut: 'Alt+C',
             description: 'Create customer profile'
         },
@@ -123,7 +123,7 @@ export function QuickActionsHub() {
             id: 'generate-invoice',
             label: 'Invoice',
             icon: FileText,
-            action: () => navigate(`/${tenantSlug}/admin/crm/invoices/new`),
+            action: () => navigate(`/${tenantSlug}/admin/customer-hub?tab=invoices&action=new`),
             description: 'Generate customer invoice'
         },
         {
@@ -137,7 +137,7 @@ export function QuickActionsHub() {
             id: 'view-deliveries',
             label: 'Deliveries',
             icon: MapPin,
-            action: () => navigate(`/${tenantSlug}/admin/delivery-management`),
+            action: () => navigate(`/${tenantSlug}/admin/delivery-hub`),
             badge: counts?.todayDeliveries,
             description: "View today's routes"
         },
@@ -153,7 +153,7 @@ export function QuickActionsHub() {
             id: 'low-stock',
             label: 'Low Stock',
             icon: AlertCircle,
-            action: () => navigate(`/${tenantSlug}/admin/inventory-monitoring`),
+            action: () => navigate(`/${tenantSlug}/admin/inventory-hub?tab=monitoring`),
             badge: counts?.lowStockItems,
             description: 'Review reorder needs'
         },

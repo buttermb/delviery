@@ -24,7 +24,7 @@ export interface TierPreset {
   revenueRange: string;
   typicalLocations: string;
   typicalTeam: string;
-  
+
   // Maps to subscription tier for feature access
   subscriptionTier: SubscriptionTier;
 
@@ -95,9 +95,9 @@ const STREET_TIER: TierPreset = {
   pulseMetrics: ['revenue', 'profit', 'orders_today', 'pending_actions'],
 
   quickActions: [
-    { id: 'new-sale', label: '+ New Sale', icon: 'DollarSign', path: '/admin/disposable-menu-orders' },
-    { id: 'view-orders', label: 'Orders', icon: 'Package', path: '/admin/disposable-menu-orders' },
-    { id: 'inventory', label: 'Inventory', icon: 'Box', path: '/admin/inventory/products' },
+    { id: 'new-sale', label: '+ New Sale', icon: 'DollarSign', path: '/admin/orders?tab=menu' },
+    { id: 'view-orders', label: 'Orders', icon: 'Package', path: '/admin/orders?tab=menu' },
+    { id: 'inventory', label: 'Inventory', icon: 'Box', path: '/admin/inventory-hub?tab=products' },
     { id: 'menu', label: 'View Menu', icon: 'Menu', path: '/admin/disposable-menus' },
   ],
 
@@ -146,9 +146,9 @@ const TRAP_TIER: TierPreset = {
   pulseMetrics: ['revenue', 'profit_margin', 'orders_today', 'team_online'],
 
   quickActions: [
-    { id: 'new-order', label: '+ New Order', icon: 'Plus', path: '/admin/disposable-menu-orders' },
-    { id: 'process-menu', label: 'Process Orders', icon: 'Menu', path: '/admin/disposable-menu-orders' },
-    { id: 'inventory', label: 'Inventory', icon: 'Box', path: '/admin/inventory/products' },
+    { id: 'new-order', label: '+ New Order', icon: 'Plus', path: '/admin/orders?tab=menu' },
+    { id: 'process-menu', label: 'Process Orders', icon: 'Menu', path: '/admin/orders?tab=menu' },
+    { id: 'inventory', label: 'Inventory', icon: 'Box', path: '/admin/inventory-hub?tab=products' },
     { id: 'reports', label: 'Reports', icon: 'BarChart3', path: '/admin/reports' },
   ],
 
@@ -203,8 +203,8 @@ const BLOCK_TIER: TierPreset = {
   pulseMetrics: ['total_revenue', 'avg_margin', 'orders_network', 'issues_count'],
 
   quickActions: [
-    { id: 'approve-orders', label: 'Approve Orders', icon: 'CheckCircle', path: '/admin/wholesale-orders' },
-    { id: 'live-orders', label: 'Live Orders', icon: 'Activity', path: '/admin/live-orders' },
+    { id: 'approve-orders', label: 'Approve Orders', icon: 'CheckCircle', path: '/admin/orders?tab=wholesale' },
+    { id: 'live-orders', label: 'Live Orders', icon: 'Activity', path: '/admin/orders?tab=live' },
     { id: 'transfer', label: 'Transfer Stock', icon: 'ArrowRightLeft', path: '/admin/inventory-transfers' },
     { id: 'reports', label: 'Reports', icon: 'BarChart3', path: '/admin/reports' },
   ],
@@ -268,9 +268,9 @@ const HOOD_TIER: TierPreset = {
   pulseMetrics: ['mtd_revenue', 'projected_revenue', 'net_profit', 'cash_position'],
 
   quickActions: [
-    { id: 'executive-actions', label: 'Pending Approvals', icon: 'ClipboardList', path: '/admin/wholesale-orders' },
+    { id: 'executive-actions', label: 'Pending Approvals', icon: 'ClipboardList', path: '/admin/orders?tab=wholesale' },
     { id: 'pnl', label: 'P&L Summary', icon: 'DollarSign', path: '/admin/financial-center' },
-    { id: 'analytics', label: 'Analytics', icon: 'BarChart3', path: '/admin/analytics/comprehensive' },
+    { id: 'analytics', label: 'Analytics', icon: 'BarChart3', path: '/admin/analytics-hub' },
     { id: 'team', label: 'Team', icon: 'Users', path: '/admin/staff-management' },
   ],
 
@@ -338,7 +338,7 @@ const EMPIRE_TIER: TierPreset = {
     { id: 'realtime', label: 'Real-Time', icon: 'Activity', path: '/admin/realtime-dashboard' },
     { id: 'strategic', label: 'Strategic', icon: 'TrendingUp', path: '/admin/advanced-analytics' },
     { id: 'compliance', label: 'Compliance', icon: 'Shield', path: '/admin/compliance' },
-    { id: 'fleet', label: 'Fleet', icon: 'Truck', path: '/admin/fleet-management' },
+    { id: 'fleet', label: 'Fleet', icon: 'Truck', path: '/admin/delivery-hub?tab=fleet' },
   ],
 
   navSections: ['all'],

@@ -229,7 +229,7 @@ export async function fetchAttentionItems(
       description: 'Customers waiting for confirmation',
       value: String(totalValue),
       actionLabel: 'Process',
-      actionRoute: '/admin/disposable-menu-orders',
+      actionRoute: '/admin/orders?tab=menu',
       timestamp: new Date(oldestOrder),
     }));
   }
@@ -242,7 +242,7 @@ export async function fetchAttentionItems(
       title: `${lateDeliveries.data.length} deliveries running late`,
       description: 'Customers waiting - check with drivers',
       actionLabel: 'Track',
-      actionRoute: '/admin/deliveries',
+      actionRoute: '/admin/delivery-hub',
       timestamp: new Date(),
     }));
   }
@@ -255,7 +255,7 @@ export async function fetchAttentionItems(
       title: `${outOfStock.data.length} products out of stock`,
       description: 'Customers cannot order these items',
       actionLabel: 'Restock',
-      actionRoute: '/admin/inventory-dashboard?filter=out_of_stock',
+      actionRoute: '/admin/inventory-hub?tab=stock&filter=out_of_stock',
       timestamp: new Date(),
     }));
   }
@@ -292,7 +292,7 @@ export async function fetchAttentionItems(
       title: `${wholesalePending.data.length} wholesale orders need approval`,
       value: String(totalValue),
       actionLabel: 'Review',
-      actionRoute: '/admin/wholesale-orders',
+      actionRoute: '/admin/orders?tab=wholesale',
       timestamp: new Date(),
     }));
   }
@@ -305,7 +305,7 @@ export async function fetchAttentionItems(
       title: `${lowStock.data.length} items running low`,
       description: 'Reorder to avoid stockouts',
       actionLabel: 'Reorder',
-      actionRoute: '/admin/inventory-dashboard',
+      actionRoute: '/admin/inventory-hub?tab=stock',
       timestamp: new Date(),
     }));
   }
@@ -323,7 +323,7 @@ export async function fetchAttentionItems(
         title: `${customerTabs.data.length} customers with open tabs`,
         value: String(totalOwed),
         actionLabel: 'Collect',
-        actionRoute: '/admin/customer-tabs',
+        actionRoute: '/admin/customer-hub',
         timestamp: new Date(),
       }));
     }
@@ -339,7 +339,7 @@ export async function fetchAttentionItems(
       title: `${activeDeliveries.data.length} deliveries in progress`,
       description: 'All on schedule',
       actionLabel: 'Track',
-      actionRoute: '/admin/deliveries',
+      actionRoute: '/admin/delivery-hub',
       timestamp: new Date(),
     }));
   }

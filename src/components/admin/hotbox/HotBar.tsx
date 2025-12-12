@@ -6,11 +6,11 @@
  */
 
 import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  Flame, 
-  Package, 
-  DollarSign, 
-  BarChart3, 
+import {
+  Flame,
+  Package,
+  DollarSign,
+  BarChart3,
   MoreHorizontal,
   Store,
   Users,
@@ -40,8 +40,8 @@ interface NavItem {
 // Core navigation items - always visible
 const coreNavItems: NavItem[] = [
   { id: 'hotbox', label: 'Hotbox', icon: Flame, path: '/admin/hotbox' },
-  { id: 'orders', label: 'Orders', icon: Package, path: '/admin/disposable-menu-orders' },
-  { id: 'money', label: 'Money', icon: DollarSign, path: '/admin/financial-center' },
+  { id: 'orders', label: 'Orders', icon: Package, path: '/admin/orders?tab=menu' },
+  { id: 'money', label: 'Money', icon: DollarSign, path: '/admin/finance-hub' },
   { id: 'reports', label: 'Reports', icon: BarChart3, path: '/admin/reports' },
 ];
 
@@ -50,8 +50,8 @@ const moreCategories = [
   {
     section: 'Operations',
     items: [
-      { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory-dashboard' },
-      { id: 'products', label: 'Products', icon: Store, path: '/admin/inventory/products' },
+      { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory-hub?tab=stock' },
+      { id: 'products', label: 'Products', icon: Store, path: '/admin/inventory-hub?tab=products' },
       { id: 'pos', label: 'POS System', icon: Store, path: '/admin/pos-system' },
     ],
   },
@@ -59,21 +59,21 @@ const moreCategories = [
     section: 'Delivery',
     items: [
       { id: 'live-map', label: 'Live Map', icon: Truck, path: '/admin/live-map' },
-      { id: 'couriers', label: 'Couriers', icon: Users, path: '/admin/couriers' },
+      { id: 'couriers', label: 'Couriers', icon: Users, path: '/admin/delivery-hub?tab=couriers' },
     ],
   },
   {
     section: 'People',
     items: [
-      { id: 'customers', label: 'Customers', icon: Users, path: '/admin/big-plug-clients' },
-      { id: 'team', label: 'Team', icon: Users, path: '/admin/team-members' },
+      { id: 'customers', label: 'Customers', icon: Users, path: '/admin/customer-hub' },
+      { id: 'team', label: 'Team', icon: Users, path: '/admin/staff-management' },
     ],
   },
   {
     section: 'Settings',
     items: [
       { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
-      { id: 'billing', label: 'Billing', icon: DollarSign, path: '/admin/billing' },
+      { id: 'billing', label: 'Billing', icon: DollarSign, path: '/admin/settings?section=billing' },
     ],
   },
 ];

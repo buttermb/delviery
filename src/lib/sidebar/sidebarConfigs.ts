@@ -106,10 +106,10 @@ export const STARTER_SIDEBAR: SidebarSection[] = [
     section: 'Sales & Orders',
     defaultExpanded: true,
     items: [
-      createItem('basic-orders', 'Orders', '/admin/disposable-menu-orders', ShoppingCart),
+      createItem('basic-orders', 'Orders', '/admin/orders?tab=menu', ShoppingCart),
       createItem('disposable-menus', 'Menus', '/admin/disposable-menus', Menu),
       createItem('menu-migration', 'Menu Migration', '/admin/menu-migration', Download),
-      createItem('wholesale-orders', 'Wholesale', '/admin/wholesale-orders', FileText),
+      createItem('wholesale-orders', 'Wholesale', '/admin/orders?tab=wholesale', FileText),
       createItem('loyalty-program', 'Loyalty', '/admin/loyalty-program', Star),
       createItem('coupons', 'Coupons', '/admin/coupons', Tag),
     ],
@@ -117,8 +117,8 @@ export const STARTER_SIDEBAR: SidebarSection[] = [
   {
     section: 'Inventory',
     items: [
-      createItem('products', 'Products', '/admin/inventory/products', Package),
-      createItem('inventory-dashboard', 'Stock Levels', '/admin/inventory-dashboard', Warehouse),
+      createItem('products', 'Products', '/admin/inventory-hub?tab=products', Package),
+      createItem('inventory-dashboard', 'Stock Levels', '/admin/inventory-hub?tab=stock', Warehouse),
       createItem('stock-alerts', 'Alerts', '/admin/stock-alerts', AlertCircle),
       createItem('generate-barcodes', 'Barcodes', '/admin/generate-barcodes', Barcode),
     ],
@@ -126,7 +126,7 @@ export const STARTER_SIDEBAR: SidebarSection[] = [
   {
     section: 'Customers',
     items: [
-      createItem('customers', 'Customers', '/admin/big-plug-clients', Users),
+      createItem('customers', 'Customers', '/admin/customer-hub?tab=contacts', Users),
     ],
   },
   {
@@ -166,7 +166,7 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('dashboard', 'Dashboard', '/admin/dashboard', LayoutDashboard, { shortcut: '⌘1' }),
       createItem('hotbox', 'Hotbox', '/admin/hotbox', Flame, { hot: true }),
-      createItem('live-orders', 'Live Orders', '/admin/live-orders', Activity),
+      createItem('live-orders', 'Live Orders', '/admin/orders?tab=live', Activity),
       createItem('notifications', 'Notifications', '/admin/notifications', Bell),
     ],
   },
@@ -174,9 +174,9 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     section: 'Sales & Orders',
     defaultExpanded: true,
     items: [
-      createItem('basic-orders', 'Orders', '/admin/disposable-menu-orders', ShoppingCart),
+      createItem('basic-orders', 'Orders', '/admin/orders?tab=menu', ShoppingCart),
       createItem('disposable-menus', 'Menus', '/admin/disposable-menus', Menu),
-      createItem('wholesale-orders', 'Wholesale', '/admin/wholesale-orders', FileText),
+      createItem('wholesale-orders', 'Wholesale', '/admin/orders?tab=wholesale', FileText),
       createItem('storefront', 'Storefront', '/admin/storefront', Store),
       createItem('loyalty-program', 'Loyalty', '/admin/loyalty-program', Star),
       createItem('coupons', 'Coupons', '/admin/coupons', Tag),
@@ -188,11 +188,11 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
   {
     section: 'Inventory',
     items: [
-      createItem('products', 'Products', '/admin/inventory/products', Package),
-      createItem('inventory-dashboard', 'Stock Levels', '/admin/inventory-dashboard', Warehouse),
+      createItem('products', 'Products', '/admin/inventory-hub?tab=products', Package),
+      createItem('inventory-dashboard', 'Stock Levels', '/admin/inventory-hub?tab=stock', Warehouse),
       createItem('stock-alerts', 'Alerts', '/admin/stock-alerts', AlertCircle),
       createItem('generate-barcodes', 'Barcodes', '/admin/generate-barcodes', Barcode),
-      createItem('advanced-inventory', 'Advanced', '/admin/advanced-inventory', Box),
+      createItem('advanced-inventory', 'Advanced', '/admin/inventory-hub?tab=adjustments', Box),
       createItem('inventory-transfers', 'Transfers', '/admin/inventory-transfers', ArrowRightLeft),
       createItem('fronted-inventory', 'Who Owes Me', '/admin/fronted-inventory', CreditCard),
       createItem('operations', 'Receiving', '/admin/operations/receiving', Warehouse),
@@ -201,12 +201,12 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
   {
     section: 'Customers',
     items: [
-      createItem('customers', 'Customers', '/admin/big-plug-clients', Users),
-      createItem('customer-crm', 'CRM', '/admin/crm/clients', Users),
+      createItem('customers', 'Customers', '/admin/customer-hub?tab=contacts', Users),
+      createItem('customer-crm', 'CRM', '/admin/customer-hub?tab=crm', Users),
       createItem('crm-invoices', 'Invoices', '/admin/crm/invoices', FileText),
-      createItem('customer-insights', 'Insights', '/admin/customer-insights', TrendingUp),
+      createItem('customer-insights', 'Insights', '/admin/customer-hub?tab=insights', TrendingUp),
       createItem('marketing-automation', 'Marketing', '/admin/marketing-automation', Mail),
-      createItem('customer-analytics', 'Analytics', '/admin/customer-analytics', BarChart3),
+      createItem('customer-analytics', 'Analytics', '/admin/customer-hub?tab=analytics', BarChart3),
       createItem('live-chat', 'Live Chat', '/admin/live-chat', MessageSquare),
     ],
   },
@@ -279,7 +279,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('dashboard', 'Dashboard', '/admin/dashboard', LayoutDashboard, { shortcut: '⌘1' }),
       createItem('hotbox', 'Hotbox', '/admin/hotbox', Flame, { hot: true }),
-      createItem('live-orders', 'Live Orders', '/admin/live-orders', Activity),
+      createItem('live-orders', 'Live Orders', '/admin/orders?tab=live', Activity),
       createItem('notifications', 'Notifications', '/admin/notifications', Bell),
       createItem('realtime-dashboard', 'Real-Time Monitor', '/admin/realtime-dashboard', Activity),
       createItem('live-map', 'Live Map', '/admin/live-map', MapPin),
@@ -289,9 +289,9 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     section: 'Sales & Orders',
     defaultExpanded: true,
     items: [
-      createItem('basic-orders', 'Orders', '/admin/disposable-menu-orders', ShoppingCart),
+      createItem('basic-orders', 'Orders', '/admin/orders?tab=menu', ShoppingCart),
       createItem('disposable-menus', 'Menus', '/admin/disposable-menus', Menu),
-      createItem('wholesale-orders', 'Wholesale', '/admin/wholesale-orders', FileText),
+      createItem('wholesale-orders', 'Wholesale', '/admin/orders?tab=wholesale', FileText),
       createItem('storefront', 'Storefront', '/admin/storefront', Store),
       createItem('loyalty-program', 'Loyalty', '/admin/loyalty-program', Star),
       createItem('coupons', 'Coupons', '/admin/coupons', Tag),
@@ -304,11 +304,11 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
   {
     section: 'Inventory',
     items: [
-      createItem('products', 'Products', '/admin/inventory/products', Package),
-      createItem('inventory-dashboard', 'Stock Levels', '/admin/inventory-dashboard', Warehouse),
+      createItem('products', 'Products', '/admin/inventory-hub?tab=products', Package),
+      createItem('inventory-dashboard', 'Stock Levels', '/admin/inventory-hub?tab=stock', Warehouse),
       createItem('stock-alerts', 'Alerts', '/admin/stock-alerts', AlertCircle),
       createItem('generate-barcodes', 'Barcodes', '/admin/generate-barcodes', Barcode),
-      createItem('advanced-inventory', 'Advanced', '/admin/advanced-inventory', Box),
+      createItem('advanced-inventory', 'Advanced', '/admin/inventory-hub?tab=adjustments', Box),
       createItem('inventory-transfers', 'Transfers', '/admin/inventory-transfers', ArrowRightLeft),
       createItem('fronted-inventory', 'Who Owes Me', '/admin/fronted-inventory', CreditCard),
       createItem('operations', 'Receiving', '/admin/operations/receiving', Warehouse),
@@ -319,12 +319,12 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
   {
     section: 'Customers',
     items: [
-      createItem('customers', 'Customers', '/admin/big-plug-clients', Users),
-      createItem('customer-crm', 'CRM', '/admin/crm/clients', Users),
+      createItem('customers', 'Customers', '/admin/customer-hub?tab=contacts', Users),
+      createItem('customer-crm', 'CRM', '/admin/customer-hub?tab=crm', Users),
       createItem('crm-invoices', 'Invoices', '/admin/crm/invoices', FileText),
-      createItem('customer-insights', 'Insights', '/admin/customer-insights', TrendingUp),
+      createItem('customer-insights', 'Insights', '/admin/customer-hub?tab=insights', TrendingUp),
       createItem('marketing-automation', 'Marketing', '/admin/marketing-automation', Mail),
-      createItem('customer-analytics', 'Analytics', '/admin/customer-analytics', BarChart3),
+      createItem('customer-analytics', 'Analytics', '/admin/customer-hub?tab=analytics', BarChart3),
       createItem('live-chat', 'Live Chat', '/admin/live-chat', MessageSquare),
     ],
   },
@@ -348,12 +348,12 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
   {
     section: 'Delivery & Fleet',
     items: [
-      createItem('delivery-management', 'Delivery', '/admin/delivery-management', Truck),
-      createItem('fleet-management', 'Fleet', '/admin/fleet-management', Building2),
-      createItem('couriers', 'Couriers', '/admin/couriers', Users),
-      createItem('route-optimization', 'Route Optimizer', '/admin/route-optimizer', MapPinned),
-      createItem('delivery-tracking', 'Tracking', '/admin/delivery-tracking', MapPin),
-      createItem('delivery-analytics', 'Analytics', '/admin/delivery-analytics', BarChart3),
+      createItem('delivery-management', 'Delivery', '/admin/delivery-hub?tab=dashboard', Truck),
+      createItem('fleet-management', 'Fleet', '/admin/delivery-hub?tab=fleet', Building2),
+      createItem('couriers', 'Couriers', '/admin/delivery-hub?tab=couriers', Users),
+      createItem('route-optimization', 'Route Optimizer', '/admin/delivery-hub?tab=routes', MapPinned),
+      createItem('delivery-tracking', 'Tracking', '/admin/delivery-hub?tab=tracking', MapPin),
+      createItem('delivery-analytics', 'Analytics', '/admin/delivery-hub?tab=analytics', BarChart3),
     ],
   },
   {

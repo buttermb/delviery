@@ -157,7 +157,7 @@ export function useAttentionQueue() {
           title: `${pendingMenuOrders.data.length} menu orders waiting`,
           value: String(totalValue),
           actionLabel: 'Process',
-          actionUrl: buildAdminUrl('disposable-menu-orders'),
+          actionUrl: buildAdminUrl('orders?tab=menu'),
           timestamp: oldestTimestamp,
         });
       }
@@ -172,7 +172,7 @@ export function useAttentionQueue() {
           category: 'delivery',
           title: `${lateDeliveries.data.length} late deliveries`,
           actionLabel: 'Track',
-          actionUrl: buildAdminUrl('delivery-tracking'),
+          actionUrl: buildAdminUrl('delivery-hub?tab=tracking'),
           timestamp: oldestTimestamp,
         });
       }
@@ -185,7 +185,7 @@ export function useAttentionQueue() {
           category: 'inventory',
           title: `${outOfStock.data.length} out of stock`,
           actionLabel: 'Restock',
-          actionUrl: buildAdminUrl('inventory-dashboard'),
+          actionUrl: buildAdminUrl('inventory-hub?tab=stock'),
           timestamp: now.toISOString(),
         });
       }
@@ -221,7 +221,7 @@ export function useAttentionQueue() {
           title: `${wholesalePending.data.length} wholesale orders`,
           value: String(totalValue),
           actionLabel: 'Review',
-          actionUrl: buildAdminUrl('wholesale-orders'),
+          actionUrl: buildAdminUrl('orders?tab=wholesale'),
           timestamp: oldestTimestamp,
         });
       }
@@ -234,7 +234,7 @@ export function useAttentionQueue() {
           category: 'inventory',
           title: `${lowStock.data.length} items low`,
           actionLabel: 'Reorder',
-          actionUrl: buildAdminUrl('inventory-dashboard'),
+          actionUrl: buildAdminUrl('inventory-hub?tab=stock'),
           timestamp: now.toISOString(),
         });
       }
@@ -252,7 +252,7 @@ export function useAttentionQueue() {
             title: `${customerTabs.data.length} open tabs`,
             value: String(totalOwed),
             actionLabel: 'Collect',
-            actionUrl: buildAdminUrl('customers'),
+            actionUrl: buildAdminUrl('customer-hub'),
             timestamp: now.toISOString(),
           });
         }
@@ -267,7 +267,7 @@ export function useAttentionQueue() {
           category: 'delivery',
           title: `${activeDeliveries.data.length} in progress`,
           actionLabel: 'Track',
-          actionUrl: buildAdminUrl('delivery-tracking'),
+          actionUrl: buildAdminUrl('delivery-hub?tab=tracking'),
           timestamp: oldestTimestamp,
         });
       }

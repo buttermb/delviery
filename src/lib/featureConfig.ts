@@ -109,7 +109,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'View and manage customer orders',
     tier: 'starter',
     category: 'Sales & Orders',
-    route: '/admin/disposable-menu-orders',
+    route: '/admin/orders?tab=menu',
   },
   // --- Menus (Starter) ---
   'disposable-menus': {
@@ -126,7 +126,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Manage bulk B2B orders',
     tier: 'starter',
     category: 'Sales & Orders',
-    route: '/admin/wholesale-orders',
+    route: '/admin/orders?tab=wholesale',
   },
   'wholesale-pricing-tiers': {
     id: 'wholesale-pricing-tiers',
@@ -160,7 +160,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Manage your product catalog',
     tier: 'starter',
     category: 'Inventory',
-    route: '/admin/inventory/products',
+    route: '/admin/inventory-hub?tab=products',
   },
   'inventory-dashboard': {
     id: 'inventory-dashboard',
@@ -168,7 +168,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Overview of inventory levels and stock status',
     tier: 'starter',
     category: 'Inventory',
-    route: '/admin/inventory-dashboard',
+    route: '/admin/inventory-hub?tab=stock',
   },
   'stock-alerts': {
     id: 'stock-alerts',
@@ -270,7 +270,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Real-time order monitoring and status updates',
     tier: 'professional',
     category: 'Command Center',
-    route: '/admin/live-orders',
+    route: '/admin/orders?tab=live',
   },
   'notifications': {
     id: 'notifications',
@@ -330,7 +330,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Full inventory management with tracking and history',
     tier: 'professional',
     category: 'Inventory',
-    route: '/admin/advanced-inventory',
+    route: '/admin/inventory-hub?tab=adjustments',
   },
   'inventory-transfers': {
     id: 'inventory-transfers',
@@ -396,7 +396,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Customer behavior insights and trends',
     tier: 'professional',
     category: 'Customers',
-    route: '/admin/customer-analytics',
+    route: '/admin/customer-hub?tab=analytics',
   },
   'live-chat': {
     id: 'live-chat',
@@ -666,7 +666,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Coordinate deliveries and driver assignments',
     tier: 'enterprise',
     category: 'Delivery & Fleet',
-    route: '/admin/delivery-hub',
+    route: '/admin/delivery-hub?tab=dashboard',
   },
   'fleet-management': {
     id: 'fleet-management',
@@ -706,7 +706,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Delivery performance metrics and optimization',
     tier: 'enterprise',
     category: 'Delivery & Fleet',
-    route: '/admin/delivery-analytics',
+    route: '/admin/delivery-hub?tab=analytics',
   },
 
   // --- Point of Sale (Enterprise) ---

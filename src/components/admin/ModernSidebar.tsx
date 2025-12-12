@@ -42,8 +42,8 @@ const navigation: NavItem[] = [
     name: 'Operations',
     icon: <Package className="h-5 w-5" />,
     children: [
-      { name: 'Orders', href: '/admin/wholesale-orders', icon: <FileText className="h-4 w-4" /> },
-      { name: 'Inventory Alerts', href: '/admin/inventory-monitoring', icon: <Package className="h-4 w-4" /> },
+      { name: 'Orders', href: '/admin/orders?tab=wholesale', icon: <FileText className="h-4 w-4" /> },
+      { name: 'Inventory Alerts', href: '/admin/inventory-hub?tab=monitoring', icon: <Package className="h-4 w-4" /> },
       { name: 'Transfers & Delivery', href: '/admin/dispatch-inventory', icon: <Truck className="h-4 w-4" /> },
       { name: 'Receiving & Packaging', href: '/admin/operations/receiving', icon: <Warehouse className="h-4 w-4" /> },
     ],
@@ -53,7 +53,7 @@ const navigation: NavItem[] = [
     icon: <Menu className="h-5 w-5" />,
     children: [
       { name: 'Disposable Menus', href: '/admin/disposable-menus', icon: <Menu className="h-4 w-4" /> },
-      { name: 'Customers', href: '/admin/customers', icon: <Users className="h-4 w-4" /> },
+      { name: 'Customers', href: '/admin/customer-hub', icon: <Users className="h-4 w-4" /> },
       { name: 'Pricing & Deals', href: '/admin/sales/pricing', icon: <DollarSign className="h-4 w-4" /> },
       { name: 'Sales Analytics', href: '/admin/sales-dashboard', icon: <BarChart3 className="h-4 w-4" /> },
     ],
@@ -62,7 +62,7 @@ const navigation: NavItem[] = [
     name: 'Catalog',
     icon: <Tag className="h-5 w-5" />,
     children: [
-      { name: 'Products', href: '/admin/inventory/products', icon: <Package className="h-4 w-4" /> },
+      { name: 'Products', href: '/admin/inventory-hub?tab=products', icon: <Package className="h-4 w-4" /> },
       { name: 'Images & Media', href: '/admin/catalog/images', icon: <Image className="h-4 w-4" /> },
       { name: 'Batches & Lots', href: '/admin/catalog/batches', icon: <Tag className="h-4 w-4" /> },
       { name: 'Categories & Tags', href: '/admin/catalog/categories', icon: <Tag className="h-4 w-4" /> },
@@ -81,14 +81,14 @@ const navigation: NavItem[] = [
     name: 'Finance',
     icon: <DollarSign className="h-5 w-5" />,
     children: [
-      { name: 'Financial Center', href: '/admin/financial-center', icon: <DollarSign className="h-4 w-4" /> },
+      { name: 'Financial Center', href: '/admin/finance-hub', icon: <DollarSign className="h-4 w-4" /> },
     ],
   },
   {
     name: 'Team',
     icon: <Users className="h-5 w-5" />,
     children: [
-      { name: 'Staff Management', href: '/admin/team-members', icon: <Users className="h-4 w-4" /> },
+      { name: 'Staff Management', href: '/admin/staff-management', icon: <Users className="h-4 w-4" /> },
       { name: 'Roles & Permissions', href: '/admin/role-management', icon: <Shield className="h-4 w-4" /> },
       { name: 'Activity Log', href: '/admin/audit-trail', icon: <FileText className="h-4 w-4" /> },
     ],
@@ -107,8 +107,8 @@ export function ModernSidebar() {
     // Auto-expand section if current path matches
     const currentSection = navigation.find(
       section => section.children?.some(child => {
-        const fullPath = tenantSlug && child.href?.startsWith('/admin') 
-          ? `/${tenantSlug}${child.href}` 
+        const fullPath = tenantSlug && child.href?.startsWith('/admin')
+          ? `/${tenantSlug}${child.href}`
           : child.href;
         return fullPath === location.pathname;
       })

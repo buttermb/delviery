@@ -104,7 +104,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'live-orders',
     name: 'Live Orders',
     icon: Activity,
-    path: '/admin/live-orders',
+    path: '/admin/orders?tab=live',
     category: 'Command Center',
     minTier: 'professional',
   },
@@ -140,7 +140,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'basic-orders',
     name: 'Orders',
     icon: ShoppingCart,
-    path: '/admin/disposable-menu-orders',
+    path: '/admin/orders?tab=menu',
     category: 'Sales & Orders',
     minTier: 'starter',
   },
@@ -156,7 +156,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'wholesale-orders',
     name: 'Wholesale',
     icon: FileText,
-    path: '/admin/wholesale-orders',
+    path: '/admin/orders?tab=wholesale',
     category: 'Sales & Orders',
     minTier: 'starter',
   },
@@ -224,7 +224,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'products',
     name: 'Products',
     icon: Package,
-    path: '/admin/inventory/products',
+    path: '/admin/inventory-hub?tab=products',
     category: 'Inventory',
     minTier: 'starter',
   },
@@ -232,7 +232,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'inventory-dashboard',
     name: 'Stock Levels',
     icon: Warehouse,
-    path: '/admin/inventory-dashboard',
+    path: '/admin/inventory-hub?tab=stock',
     category: 'Inventory',
     minTier: 'starter',
   },
@@ -256,7 +256,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'advanced-inventory',
     name: 'Advanced Inventory',
     icon: Box,
-    path: '/admin/advanced-inventory',
+    path: '/admin/inventory-hub?tab=adjustments',
     category: 'Inventory',
     minTier: 'professional',
   },
@@ -300,7 +300,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'customers',
     name: 'Customers',
     icon: Users,
-    path: '/admin/big-plug-clients',
+    path: '/admin/customer-hub?tab=contacts',
     category: 'Customers',
     minTier: 'starter',
   },
@@ -308,7 +308,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'customer-crm',
     name: 'CRM',
     icon: Users,
-    path: '/admin/crm/clients',
+    path: '/admin/customer-hub?tab=crm',
     category: 'Customers',
     minTier: 'professional',
   },
@@ -324,7 +324,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'customer-insights',
     name: 'Insights',
     icon: TrendingUp,
-    path: '/admin/customer-insights',
+    path: '/admin/customer-hub?tab=insights',
     category: 'Customers',
     minTier: 'professional',
   },
@@ -340,7 +340,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'customer-analytics',
     name: 'Customer Analytics',
     icon: BarChart3,
-    path: '/admin/customer-analytics',
+    path: '/admin/customer-hub?tab=analytics',
     category: 'Customers',
     minTier: 'professional',
   },
@@ -460,7 +460,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'delivery-management',
     name: 'Delivery',
     icon: Truck,
-    path: '/admin/delivery-management',
+    path: '/admin/delivery-hub?tab=dashboard',
     category: 'Delivery & Fleet',
     minTier: 'enterprise',
   },
@@ -468,7 +468,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'fleet-management',
     name: 'Fleet',
     icon: Building2,
-    path: '/admin/fleet-management',
+    path: '/admin/delivery-hub?tab=fleet',
     category: 'Delivery & Fleet',
     minTier: 'enterprise',
   },
@@ -476,7 +476,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'couriers',
     name: 'Couriers',
     icon: Users,
-    path: '/admin/couriers',
+    path: '/admin/delivery-hub?tab=couriers',
     category: 'Delivery & Fleet',
     minTier: 'enterprise',
   },
@@ -484,7 +484,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'route-optimization',
     name: 'Route Optimizer',
     icon: MapPinned,
-    path: '/admin/route-optimizer',
+    path: '/admin/delivery-hub?tab=routes',
     category: 'Delivery & Fleet',
     minTier: 'enterprise',
   },
@@ -492,7 +492,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'delivery-tracking',
     name: 'Tracking',
     icon: MapPin,
-    path: '/admin/delivery-tracking',
+    path: '/admin/delivery-hub?tab=tracking',
     category: 'Delivery & Fleet',
     minTier: 'enterprise',
   },
@@ -500,7 +500,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'delivery-analytics',
     name: 'Delivery Analytics',
     icon: BarChart3,
-    path: '/admin/delivery-analytics',
+    path: '/admin/delivery-hub?tab=analytics',
     category: 'Delivery & Fleet',
     minTier: 'enterprise',
   },
@@ -846,7 +846,7 @@ export function getFeaturesByCategory(category: string): FeatureDef[] {
 export function getFeaturesByTier(tier: SubscriptionTier): FeatureDef[] {
   const tierHierarchy: SubscriptionTier[] = ['starter', 'professional', 'enterprise'];
   const tierIndex = tierHierarchy.indexOf(tier);
-  
+
   return getAllFeatures().filter(f => {
     const featureTierIndex = tierHierarchy.indexOf(f.minTier);
     return featureTierIndex <= tierIndex;
@@ -859,10 +859,10 @@ export function getFeaturesByTier(tier: SubscriptionTier): FeatureDef[] {
 export function isFeatureAccessible(featureId: string, currentTier: SubscriptionTier): boolean {
   const feature = FEATURE_REGISTRY[featureId];
   if (!feature) return false;
-  
+
   const tierHierarchy: SubscriptionTier[] = ['starter', 'professional', 'enterprise'];
   const currentTierIndex = tierHierarchy.indexOf(currentTier);
   const requiredTierIndex = tierHierarchy.indexOf(feature.minTier);
-  
+
   return currentTierIndex >= requiredTierIndex;
 }

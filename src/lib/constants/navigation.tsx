@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { 
+import {
   LayoutDashboard, Package, FileText, Truck, Warehouse,
   Menu, Users, DollarSign, BarChart3, Image, Tag,
   Settings, Shield, Bell, Printer, Plug, HelpCircle
@@ -30,27 +30,27 @@ export const navigation: NavItem[] = [
     icon: <Package className="h-5 w-5" />,
     roles: ['owner', 'manager', 'runner', 'warehouse'],
     children: [
-      { 
-        name: 'Orders', 
-        href: '/admin/wholesale-orders', 
+      {
+        name: 'Orders',
+        href: '/admin/orders?tab=wholesale',
         icon: <FileText className="h-4 w-4" />,
         roles: ['owner', 'manager', 'runner'],
       },
-      { 
-        name: 'Transfers & Delivery', 
-        href: '/admin/dispatch-inventory', 
+      {
+        name: 'Transfers & Delivery',
+        href: '/admin/dispatch-inventory',
         icon: <Truck className="h-4 w-4" />,
         roles: ['owner', 'manager', 'runner', 'warehouse'],
       },
-      { 
-        name: 'Inventory', 
-        href: '/admin/inventory-dashboard', 
+      {
+        name: 'Inventory',
+        href: '/admin/inventory-hub?tab=stock',
         icon: <Package className="h-4 w-4" />,
         roles: ['owner', 'manager', 'warehouse'],
       },
-      { 
-        name: 'Receiving & Packaging', 
-        href: '/admin/operations/receiving', 
+      {
+        name: 'Receiving & Packaging',
+        href: '/admin/operations/receiving',
         icon: <Warehouse className="h-4 w-4" />,
         roles: ['owner', 'manager', 'warehouse'],
       },
@@ -61,27 +61,27 @@ export const navigation: NavItem[] = [
     icon: <Menu className="h-5 w-5" />,
     roles: ['owner', 'manager'],
     children: [
-      { 
-        name: 'Disposable Menus', 
-        href: '/admin/disposable-menus', 
+      {
+        name: 'Disposable Menus',
+        href: '/admin/disposable-menus',
         icon: <Menu className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Customers', 
-        href: '/admin/customers', 
+      {
+        name: 'Customers',
+        href: '/admin/customer-hub',
         icon: <Users className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Pricing & Deals', 
-        href: '/admin/sales/pricing', 
+      {
+        name: 'Pricing & Deals',
+        href: '/admin/sales/pricing',
         icon: <DollarSign className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Sales Analytics', 
-        href: '/admin/sales-dashboard', 
+      {
+        name: 'Sales Analytics',
+        href: '/admin/sales-dashboard',
         icon: <BarChart3 className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
@@ -92,27 +92,27 @@ export const navigation: NavItem[] = [
     icon: <Tag className="h-5 w-5" />,
     roles: ['owner', 'manager', 'warehouse', 'viewer'],
     children: [
-      { 
-        name: 'Products', 
-        href: '/admin/inventory/products', 
+      {
+        name: 'Products',
+        href: '/admin/inventory-hub?tab=products',
         icon: <Package className="h-4 w-4" />,
         roles: ['owner', 'manager', 'warehouse', 'viewer'],
       },
-      { 
-        name: 'Images & Media', 
-        href: '/admin/catalog/images', 
+      {
+        name: 'Images & Media',
+        href: '/admin/catalog/images',
         icon: <Image className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Batches & Lots', 
-        href: '/admin/catalog/batches', 
+      {
+        name: 'Batches & Lots',
+        href: '/admin/catalog/batches',
         icon: <Tag className="h-4 w-4" />,
         roles: ['owner', 'manager', 'warehouse'],
       },
-      { 
-        name: 'Categories & Tags', 
-        href: '/admin/catalog/categories', 
+      {
+        name: 'Categories & Tags',
+        href: '/admin/catalog/categories',
         icon: <Tag className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
@@ -123,21 +123,21 @@ export const navigation: NavItem[] = [
     icon: <Warehouse className="h-5 w-5" />,
     roles: ['owner', 'manager', 'runner', 'warehouse'],
     children: [
-      { 
-        name: 'Warehouses', 
-        href: '/admin/locations/warehouses', 
+      {
+        name: 'Warehouses',
+        href: '/admin/locations/warehouses',
         icon: <Warehouse className="h-4 w-4" />,
         roles: ['owner', 'manager', 'warehouse'],
       },
-      { 
-        name: 'Runners & Vehicles', 
-        href: '/admin/locations/runners', 
+      {
+        name: 'Runners & Vehicles',
+        href: '/admin/locations/runners',
         icon: <Truck className="h-4 w-4" />,
         roles: ['owner', 'manager', 'runner'],
       },
-      { 
-        name: 'Location Analytics', 
-        href: '/admin/location-analytics', 
+      {
+        name: 'Location Analytics',
+        href: '/admin/location-analytics',
         icon: <BarChart3 className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
@@ -148,9 +148,9 @@ export const navigation: NavItem[] = [
     icon: <DollarSign className="h-5 w-5" />,
     roles: ['owner', 'manager'],
     children: [
-      { 
-        name: 'Financial Center', 
-        href: '/admin/financial-center', 
+      {
+        name: 'Financial Center',
+        href: '/admin/finance-hub',
         icon: <DollarSign className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
@@ -161,21 +161,21 @@ export const navigation: NavItem[] = [
     icon: <Users className="h-5 w-5" />,
     roles: ['owner', 'manager'],
     children: [
-      { 
-        name: 'Staff Management', 
-        href: '/admin/team-members', 
+      {
+        name: 'Staff Management',
+        href: '/admin/staff-management',
         icon: <Users className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Roles & Permissions', 
-        href: '/admin/settings', 
+      {
+        name: 'Roles & Permissions',
+        href: '/admin/settings',
         icon: <Shield className="h-4 w-4" />,
         roles: ['owner'],
       },
-      { 
-        name: 'Activity Log', 
-        href: '/admin/audit-trail', 
+      {
+        name: 'Activity Log',
+        href: '/admin/audit-trail',
         icon: <FileText className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
@@ -186,27 +186,27 @@ export const navigation: NavItem[] = [
     icon: <BarChart3 className="h-5 w-5" />,
     roles: ['owner', 'manager', 'viewer'],
     children: [
-      { 
-        name: 'Business Intelligence', 
-        href: '/admin/analytics-dashboard', 
+      {
+        name: 'Business Intelligence',
+        href: '/admin/analytics-dashboard',
         icon: <BarChart3 className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Chain of Custody', 
-        href: '/admin/reports', 
+      {
+        name: 'Chain of Custody',
+        href: '/admin/reports',
         icon: <FileText className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Inventory Reports', 
-        href: '/admin/reports', 
+      {
+        name: 'Inventory Reports',
+        href: '/admin/reports',
         icon: <Package className="h-4 w-4" />,
         roles: ['owner', 'manager', 'viewer'],
       },
-      { 
-        name: 'Financial Reports', 
-        href: '/admin/reports', 
+      {
+        name: 'Financial Reports',
+        href: '/admin/reports',
         icon: <DollarSign className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
@@ -217,39 +217,39 @@ export const navigation: NavItem[] = [
     icon: <Settings className="h-5 w-5" />,
     roles: ['owner', 'manager'],
     children: [
-      { 
-        name: 'General Settings', 
-        href: '/admin/settings', 
+      {
+        name: 'General Settings',
+        href: '/admin/settings',
         icon: <Settings className="h-4 w-4" />,
         roles: ['owner'],
       },
-      { 
-        name: 'Security', 
-        href: '/admin/settings', 
+      {
+        name: 'Security',
+        href: '/admin/settings',
         icon: <Shield className="h-4 w-4" />,
         roles: ['owner'],
       },
-      { 
-        name: 'Notifications', 
-        href: '/admin/notifications', 
+      {
+        name: 'Notifications',
+        href: '/admin/notifications',
         icon: <Bell className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Printing & Labels', 
-        href: '/admin/generate-barcodes', 
+      {
+        name: 'Printing & Labels',
+        href: '/admin/generate-barcodes',
         icon: <Printer className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Integrations', 
-        href: '/admin/settings', 
+      {
+        name: 'Integrations',
+        href: '/admin/settings',
         icon: <Plug className="h-4 w-4" />,
         roles: ['owner'],
       },
-      { 
-        name: 'Help & Resources', 
-        href: '/admin/help', 
+      {
+        name: 'Help & Resources',
+        href: '/admin/help',
         icon: <HelpCircle className="h-4 w-4" />,
         roles: ['owner', 'manager', 'viewer'],
       },
@@ -262,7 +262,7 @@ export const navigation: NavItem[] = [
  */
 export function getNavigationForRole(role: string | null | undefined): NavItem[] {
   if (!role) return [];
-  
+
   return navigation
     .filter(item => !item.roles || item.roles.includes('all') || item.roles.includes(role))
     .map(item => ({

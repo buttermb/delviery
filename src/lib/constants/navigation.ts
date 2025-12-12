@@ -3,12 +3,12 @@
  * Organized by business function with role-based filtering
  */
 
-import { 
+import {
   LayoutDashboard, Package, FileText, Truck, Warehouse,
   Menu, Users, DollarSign, BarChart3, Image, Tag,
   Settings, Shield, Bell, Printer, Plug, TrendingUp,
   Activity, Zap, Globe, Code, Webhook, Clock,
-  Download, MapPin, Key, LineChart, PieChart, 
+  Download, MapPin, Key, LineChart, PieChart,
   Building2, CheckCircle, Eye, type LucideIcon
 } from 'lucide-react';
 
@@ -35,51 +35,51 @@ export const navigation: NavItem[] = [
     iconSize: 'h-5 w-5',
     roles: ['owner', 'manager', 'runner', 'warehouse'],
     children: [
-      { 
-        name: 'Orders', 
-        href: '/admin/big-plug-order', 
+      {
+        name: 'Orders',
+        href: '/admin/big-plug-order',
         icon: FileText,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager', 'runner'],
       },
-      { 
-        name: 'Transfers & Delivery', 
-        href: '/admin/inventory/dispatch', 
+      {
+        name: 'Transfers & Delivery',
+        href: '/admin/inventory/dispatch',
         icon: Truck,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager', 'runner', 'warehouse'],
       },
-      { 
-        name: 'Inventory', 
-        href: '/admin/big-plug-inventory', 
+      {
+        name: 'Inventory',
+        href: '/admin/big-plug-inventory',
         icon: Package,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager', 'warehouse'],
       },
-      { 
-        name: 'Stock Alerts', 
-        href: '/admin/stock-alerts', 
+      {
+        name: 'Stock Alerts',
+        href: '/admin/stock-alerts',
         icon: Bell,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager', 'warehouse'],
       },
-      { 
-        name: 'Inventory Transfers', 
-        href: '/admin/inventory-transfers', 
+      {
+        name: 'Inventory Transfers',
+        href: '/admin/inventory-transfers',
         icon: Truck,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager', 'warehouse'],
       },
-      { 
-        name: 'Bulk Operations', 
-        href: '/admin/bulk-operations', 
+      {
+        name: 'Bulk Operations',
+        href: '/admin/bulk-operations',
         icon: Package,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Receiving & Packaging', 
-        href: '/admin/operations/receiving', 
+      {
+        name: 'Receiving & Packaging',
+        href: '/admin/operations/receiving',
         icon: Warehouse,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager', 'warehouse'],
@@ -92,37 +92,37 @@ export const navigation: NavItem[] = [
     iconSize: 'h-5 w-5',
     roles: ['owner', 'manager'],
     children: [
-      { 
-        name: 'Disposable Menus', 
-        href: '/admin/disposable-menus', 
+      {
+        name: 'Disposable Menus',
+        href: '/admin/disposable-menus',
         icon: Menu,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Customers', 
-        href: '/admin/big-plug-clients', 
+      {
+        name: 'Customers',
+        href: '/admin/big-plug-clients',
         icon: Users,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Customer Insights', 
-        href: '/admin/customer-insights', 
+      {
+        name: 'Customer Insights',
+        href: '/admin/customer-hub?tab=insights',
         icon: Eye,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Pricing & Deals', 
-        href: '/admin/sales/pricing', 
+      {
+        name: 'Pricing & Deals',
+        href: '/admin/sales/pricing',
         icon: DollarSign,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Sales Analytics', 
-        href: '/admin/analytics/comprehensive', 
+      {
+        name: 'Sales Analytics',
+        href: '/admin/analytics/comprehensive',
         icon: BarChart3,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
@@ -135,30 +135,30 @@ export const navigation: NavItem[] = [
     iconSize: 'h-5 w-5',
     roles: ['owner', 'manager', 'warehouse', 'viewer'],
     children: [
-      { 
-        name: 'Products', 
-        href: '/admin/inventory/products', 
+      {
+        name: 'Products',
+        href: '/admin/inventory-hub?tab=products',
         icon: Package,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager', 'warehouse', 'viewer'],
       },
-      { 
-        name: 'Images & Media', 
-        href: '/admin/catalog/images', 
+      {
+        name: 'Images & Media',
+        href: '/admin/catalog/images',
         icon: Image,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Batches & Lots', 
-        href: '/admin/catalog/batches', 
+      {
+        name: 'Batches & Lots',
+        href: '/admin/catalog/batches',
         icon: Tag,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager', 'warehouse'],
       },
-      { 
-        name: 'Categories & Tags', 
-        href: '/admin/catalog/categories', 
+      {
+        name: 'Categories & Tags',
+        href: '/admin/catalog/categories',
         icon: Tag,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
@@ -171,23 +171,23 @@ export const navigation: NavItem[] = [
     iconSize: 'h-5 w-5',
     roles: ['owner', 'manager', 'runner', 'warehouse'],
     children: [
-      { 
-        name: 'Warehouses', 
-        href: '/admin/locations/warehouses', 
+      {
+        name: 'Warehouses',
+        href: '/admin/locations/warehouses',
         icon: Warehouse,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager', 'warehouse'],
       },
-      { 
-        name: 'Runners & Vehicles', 
-        href: '/admin/locations/runners', 
+      {
+        name: 'Runners & Vehicles',
+        href: '/admin/locations/runners',
         icon: Truck,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager', 'runner'],
       },
-      { 
-        name: 'Location Analytics', 
-        href: '/admin/analytics/comprehensive', 
+      {
+        name: 'Location Analytics',
+        href: '/admin/analytics/comprehensive',
         icon: BarChart3,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
@@ -200,58 +200,58 @@ export const navigation: NavItem[] = [
     iconSize: 'h-5 w-5',
     roles: ['owner', 'manager'],
     children: [
-      { 
-        name: 'Payments & Invoices', 
-        href: '/admin/financial-center', 
+      {
+        name: 'Payments & Invoices',
+        href: '/admin/finance-hub',
         icon: DollarSign,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Revenue Reports', 
-        href: '/admin/revenue-reports', 
+      {
+        name: 'Revenue Reports',
+        href: '/admin/revenue-reports',
         icon: BarChart3,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Commission Tracking', 
-        href: '/admin/commission-tracking', 
+      {
+        name: 'Commission Tracking',
+        href: '/admin/commission-tracking',
         icon: DollarSign,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Expense Tracking', 
-        href: '/admin/expense-tracking', 
+      {
+        name: 'Expense Tracking',
+        href: '/admin/expense-tracking',
         icon: FileText,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Credit Management', 
-        href: '/admin/big-plug-financial', 
+      {
+        name: 'Credit Management',
+        href: '/admin/big-plug-financial',
         icon: DollarSign,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Cash Register', 
-        href: '/admin/cash-register', 
+      {
+        name: 'Cash Register',
+        href: '/admin/cash-register',
         icon: Building2,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'POS Shifts', 
-        href: '/admin/pos-shifts', 
+      {
+        name: 'POS Shifts',
+        href: '/admin/pos-shifts',
         icon: Clock,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Z-Reports', 
-        href: '/admin/z-reports', 
+      {
+        name: 'Z-Reports',
+        href: '/admin/z-reports',
         icon: FileText,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
@@ -264,44 +264,44 @@ export const navigation: NavItem[] = [
     iconSize: 'h-5 w-5',
     roles: ['owner', 'manager'],
     children: [
-      { 
-        name: 'Staff Management', 
-        href: '/admin/team', 
+      {
+        name: 'Staff Management',
+        href: '/admin/team',
         icon: Users,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'User Management', 
-        href: '/admin/user-management', 
+      {
+        name: 'User Management',
+        href: '/admin/user-management',
         icon: Users,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
       },
-      { 
-        name: 'Role Management', 
-        href: '/admin/role-management', 
+      {
+        name: 'Role Management',
+        href: '/admin/role-management',
         icon: Shield,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
       },
-      { 
-        name: 'Permissions', 
-        href: '/admin/permissions', 
+      {
+        name: 'Permissions',
+        href: '/admin/permissions',
         icon: Shield,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
       },
-      { 
-        name: 'Activity Logs', 
-        href: '/admin/activity-logs', 
+      {
+        name: 'Activity Logs',
+        href: '/admin/activity-logs',
         icon: FileText,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Audit Trail', 
-        href: '/admin/audit-trail', 
+      {
+        name: 'Audit Trail',
+        href: '/admin/audit-trail',
         icon: CheckCircle,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
@@ -314,58 +314,58 @@ export const navigation: NavItem[] = [
     iconSize: 'h-5 w-5',
     roles: ['owner', 'manager'],
     children: [
-      { 
-        name: 'Sales Dashboard', 
-        href: '/admin/sales-dashboard', 
+      {
+        name: 'Sales Dashboard',
+        href: '/admin/sales-dashboard',
         icon: BarChart3,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Order Analytics', 
-        href: '/admin/order-analytics', 
+      {
+        name: 'Order Analytics',
+        href: '/admin/order-analytics',
         icon: LineChart,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Customer Analytics', 
-        href: '/admin/customer-analytics', 
+      {
+        name: 'Customer Analytics',
+        href: '/admin/customer-hub?tab=analytics',
         icon: Users,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Delivery Analytics', 
-        href: '/admin/delivery-analytics', 
+      {
+        name: 'Delivery Analytics',
+        href: '/admin/delivery-hub?tab=analytics',
         icon: Truck,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Location Analytics', 
-        href: '/admin/location-analytics', 
+      {
+        name: 'Location Analytics',
+        href: '/admin/location-analytics',
         icon: MapPin,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'POS Analytics', 
-        href: '/admin/pos-analytics', 
+      {
+        name: 'POS Analytics',
+        href: '/admin/pos-analytics',
         icon: BarChart3,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Advanced Analytics', 
-        href: '/admin/advanced-analytics', 
+      {
+        name: 'Advanced Analytics',
+        href: '/admin/advanced-analytics',
         icon: TrendingUp,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
       },
-      { 
-        name: 'Real-Time Dashboard', 
-        href: '/admin/realtime-dashboard', 
+      {
+        name: 'Real-Time Dashboard',
+        href: '/admin/realtime-dashboard',
         icon: Activity,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
@@ -378,44 +378,44 @@ export const navigation: NavItem[] = [
     iconSize: 'h-5 w-5',
     roles: ['owner', 'manager', 'viewer'],
     children: [
-      { 
-        name: 'Business Intelligence', 
-        href: '/admin/analytics/comprehensive', 
+      {
+        name: 'Business Intelligence',
+        href: '/admin/analytics/comprehensive',
         icon: BarChart3,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Revenue Reports', 
-        href: '/admin/revenue-reports', 
+      {
+        name: 'Revenue Reports',
+        href: '/admin/revenue-reports',
         icon: DollarSign,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Custom Reports', 
-        href: '/admin/custom-reports', 
+      {
+        name: 'Custom Reports',
+        href: '/admin/custom-reports',
         icon: FileText,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
       },
-      { 
-        name: 'Data Export', 
-        href: '/admin/data-export', 
+      {
+        name: 'Data Export',
+        href: '/admin/data-export',
         icon: Download,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Chain of Custody', 
-        href: '/admin/reports-new', 
+      {
+        name: 'Chain of Custody',
+        href: '/admin/reports-new',
         icon: FileText,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'Inventory Reports', 
-        href: '/admin/reports-new', 
+      {
+        name: 'Inventory Reports',
+        href: '/admin/reports-new',
         icon: Package,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager', 'viewer'],
@@ -428,44 +428,44 @@ export const navigation: NavItem[] = [
     iconSize: 'h-5 w-5',
     roles: ['owner', 'manager'],
     children: [
-      { 
-        name: 'General Settings', 
-        href: '/admin/settings', 
+      {
+        name: 'General Settings',
+        href: '/admin/settings',
         icon: Settings,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
       },
-      { 
-        name: 'Security', 
-        href: '/admin/settings', 
+      {
+        name: 'Security',
+        href: '/admin/settings',
         icon: Shield,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
       },
-      { 
-        name: 'Notifications', 
-        href: '/admin/notifications', 
+      {
+        name: 'Notifications',
+        href: '/admin/notifications',
         icon: Bell,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
-      { 
-        name: 'White Label', 
-        href: '/admin/white-label', 
+      {
+        name: 'White Label',
+        href: '/admin/white-label',
         icon: Eye,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
       },
-      { 
-        name: 'Custom Domain', 
-        href: '/admin/custom-domain', 
+      {
+        name: 'Custom Domain',
+        href: '/admin/custom-domain',
         icon: Globe,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
       },
-      { 
-        name: 'Printing & Labels', 
-        href: '/admin/inventory/barcodes', 
+      {
+        name: 'Printing & Labels',
+        href: '/admin/inventory/barcodes',
         icon: Printer,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
@@ -478,51 +478,51 @@ export const navigation: NavItem[] = [
     iconSize: 'h-5 w-5',
     roles: ['owner'],
     children: [
-      { 
-        name: 'Automation', 
-        href: '/admin/automation', 
+      {
+        name: 'Automation',
+        href: '/admin/automation',
         icon: Zap,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
       },
-      { 
-        name: 'Route Optimization', 
-        href: '/admin/route-optimization', 
+      {
+        name: 'Route Optimization',
+        href: '/admin/route-optimization',
         icon: Truck,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
       },
-      { 
-        name: 'API Access', 
-        href: '/admin/api-access', 
+      {
+        name: 'API Access',
+        href: '/admin/api-access',
         icon: Key,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
       },
-      { 
-        name: 'Webhooks', 
-        href: '/admin/webhooks', 
+      {
+        name: 'Webhooks',
+        href: '/admin/webhooks',
         icon: Webhook,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
       },
-      { 
-        name: 'Integrations', 
-        href: '/admin/custom-integrations', 
+      {
+        name: 'Integrations',
+        href: '/admin/custom-integrations',
         icon: Plug,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
       },
-      { 
-        name: 'Compliance', 
-        href: '/admin/compliance', 
+      {
+        name: 'Compliance',
+        href: '/admin/compliance',
         icon: Shield,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
       },
-      { 
-        name: 'Priority Support', 
-        href: '/admin/priority-support', 
+      {
+        name: 'Priority Support',
+        href: '/admin/priority-support',
         icon: Bell,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
@@ -536,14 +536,14 @@ export const navigation: NavItem[] = [
  */
 export function getNavigationForRole(role: string | null | undefined): NavItem[] {
   if (!role) return [];
-  
+
   return navigation
     .filter(item => !item.roles || item.roles.includes('all') || item.roles.includes(role))
     .map(item => {
       const filteredChildren = item.children?.filter(child =>
         !child.roles || child.roles.includes('all') || child.roles.includes(role)
       );
-      
+
       return {
         name: item.name,
         href: item.href,
