@@ -179,7 +179,7 @@ export function ModernDashboard() {
           value={`${dashboardData?.alerts || 0} Items`}
           icon={<AlertTriangle className="h-5 w-5" />}
           color={(dashboardData?.alerts || 0) > 0 ? 'red' : 'green'}
-          onClick={() => handleNavigate('inventory-dashboard')}
+          onClick={() => handleNavigate('inventory-hub')}
         />
       </div>
 

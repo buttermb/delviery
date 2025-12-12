@@ -36,7 +36,7 @@ export async function processAutomationRules(
                 ruleId: 'low_stock_alert',
                 triggered: true,
                 message: `${count} items are running low on stock.`,
-                action: '/admin/inventory-dashboard',
+                action: '/admin/inventory-hub',
                 data: { count }
             });
         }

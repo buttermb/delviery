@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
+import {
   TrendingDown, TrendingUp, Users, Package, DollarSign,
   ArrowRight, AlertTriangle, CheckCircle2, Info
 } from 'lucide-react';
@@ -81,7 +81,7 @@ export function ActionableInsights() {
       description: 'Review your inventory and restock popular items to avoid stockouts.',
       action: {
         label: 'View Inventory',
-        onClick: () => navigate(getFullPath('/admin/inventory-dashboard')),
+        onClick: () => navigate(getFullPath('/admin/inventory-hub')),
       },
       priority: 'high',
     },
@@ -92,7 +92,7 @@ export function ActionableInsights() {
       description: 'Great! You\'re getting new orders. Keep up the momentum.',
       action: {
         label: 'View Orders',
-        onClick: () => navigate(getFullPath('/admin/wholesale-orders')),
+        onClick: () => navigate(getFullPath('/admin/orders')),
       },
       priority: 'low',
     },

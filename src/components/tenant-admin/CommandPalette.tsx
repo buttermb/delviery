@@ -203,16 +203,16 @@ export function TenantAdminCommandPalette() {
   const navigationPages: NavigationPage[] = useMemo(() => [
     { id: 'dashboard', title: 'Dashboard', icon: LayoutDashboard, href: buildUrl('dashboard'), shortcut: '⌘D', keywords: ['home', 'overview'] },
     { id: 'command-center', title: 'Financial Command Center', icon: Wallet, href: buildUrl('command-center'), shortcut: '⌘F', keywords: ['money', 'finance', 'cash'] },
-    { id: 'orders', title: 'Wholesale Orders', icon: ShoppingCart, href: buildUrl('wholesale-orders'), shortcut: '⌘O', keywords: ['sales', 'purchases'] },
+    { id: 'orders', title: 'Wholesale Orders', icon: ShoppingCart, href: buildUrl('orders'), shortcut: '⌘O', keywords: ['sales', 'purchases'] },
     { id: 'products', title: 'Products', icon: Package, href: buildUrl('inventory/products'), keywords: ['inventory', 'items', 'catalog'] },
     { id: 'clients', title: 'Clients', icon: Users, href: buildUrl('big-plug-clients'), keywords: ['customers', 'businesses'] },
     { id: 'menus', title: 'Disposable Menus', icon: Menu, href: buildUrl('disposable-menus'), shortcut: '⌘M', keywords: ['big plug', 'qr'] },
     { id: 'invoices', title: 'Invoices', icon: FileText, href: buildUrl('crm/invoices'), keywords: ['billing', 'payments'] },
-    { id: 'inventory', title: 'Inventory Dashboard', icon: Boxes, href: buildUrl('inventory-dashboard'), shortcut: '⌘I', keywords: ['stock', 'warehouse'] },
+    { id: 'inventory', title: 'Inventory Dashboard', icon: Boxes, href: buildUrl('inventory-hub'), shortcut: '⌘I', keywords: ['stock', 'warehouse'] },
     { id: 'analytics', title: 'Analytics', icon: BarChart3, href: buildUrl('analytics-dashboard'), keywords: ['reports', 'data', 'insights'] },
     { id: 'pos', title: 'Point of Sale', icon: Calculator, href: buildUrl('pos-system'), keywords: ['register', 'checkout'] },
     { id: 'deliveries', title: 'Delivery Management', icon: Truck, href: buildUrl('delivery-management'), keywords: ['shipping', 'courier'] },
-    { id: 'live-orders', title: 'Live Orders', icon: Zap, href: buildUrl('live-orders'), keywords: ['active', 'realtime'] },
+    { id: 'live-orders', title: 'Live Orders', icon: Zap, href: buildUrl('orders?tab=live'), keywords: ['active', 'realtime'] },
     { id: 'locations', title: 'Locations', icon: MapPin, href: buildUrl('locations'), keywords: ['stores', 'warehouses'] },
     { id: 'reports', title: 'Reports', icon: TrendingUp, href: buildUrl('reports'), keywords: ['data', 'export'] },
     { id: 'notifications', title: 'Notifications', icon: Bell, href: buildUrl('notifications'), keywords: ['alerts', 'messages'] },
@@ -222,7 +222,7 @@ export function TenantAdminCommandPalette() {
 
   // Quick actions
   const quickActions: QuickAction[] = useMemo(() => [
-    { id: 'new-order', title: 'Create New Order', icon: Plus, href: buildUrl('wholesale-orders/new'), keywords: ['add', 'create'] },
+    { id: 'new-order', title: 'Create New Order', icon: Plus, href: buildUrl('orders/new'), keywords: ['add', 'create'] },
     { id: 'new-product', title: 'Add Product', icon: Plus, href: buildUrl('inventory/products?action=new'), keywords: ['add', 'create'] },
     { id: 'new-client', title: 'Add Client', icon: Plus, href: buildUrl('big-plug-clients?action=new'), keywords: ['add', 'create'] },
     { id: 'new-invoice', title: 'Create Invoice', icon: Plus, href: buildUrl('crm/invoices/new'), keywords: ['add', 'create'] },
