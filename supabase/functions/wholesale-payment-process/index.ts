@@ -12,6 +12,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('wholesale-payment-process: Starting payment processing');
+    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -19,9 +21,11 @@ serve(async (req) => {
     );
 
     const { client_id, amount, payment_method, reference_number, notes } = await req.json();
+    console.log('wholesale-payment-process: Received payment request', { client_id, amount, payment_method });
 
     // Validate input
     if (!client_id || !amount || amount <= 0) {
+      console.error('wholesale-payment-process: Invalid payment details');
       return new Response(
         JSON.stringify({ error: 'Invalid payment details' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -29,18 +33,29 @@ serve(async (req) => {
     }
 
     // Get client
-    const { data: client } = await supabaseClient
+    const { data: client, error: clientError } = await supabaseClient
       .from('wholesale_clients')
       .select('outstanding_balance')
       .eq('id', client_id)
       .single();
 
+    if (clientError) {
+      console.error('wholesale-payment-process: Client fetch error', clientError);
+      return new Response(
+        JSON.stringify({ error: `Client error: ${clientError.message}` }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     if (!client) {
+      console.error('wholesale-payment-process: Client not found');
       return new Response(
         JSON.stringify({ error: 'Client not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('wholesale-payment-process: Found client with balance', client.outstanding_balance);
 
     // Create payment record
     const { data: payment, error: paymentError } = await supabaseClient
@@ -56,10 +71,15 @@ serve(async (req) => {
       .select()
       .single();
 
-    if (paymentError) throw paymentError;
+    if (paymentError) {
+      console.error('wholesale-payment-process: Payment insert error', paymentError);
+      throw new Error(`Payment insert failed: ${paymentError.message}`);
+    }
+
+    console.log('wholesale-payment-process: Payment record created', payment.id);
 
     // Update client outstanding balance
-    const newBalance = Math.max(0, client.outstanding_balance - amount);
+    const newBalance = Math.max(0, (client.outstanding_balance || 0) - amount);
     
     const { error: updateError } = await supabaseClient
       .from('wholesale_clients')
@@ -69,13 +89,26 @@ serve(async (req) => {
       })
       .eq('id', client_id);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error('wholesale-payment-process: Balance update error', updateError);
+      throw new Error(`Balance update failed: ${updateError.message}`);
+    }
 
-    // Update reliability score (improved payment history)
-    await supabaseClient.rpc('update_client_reliability', {
-      p_client_id: client_id,
-      p_payment_made: true
-    });
+    console.log('wholesale-payment-process: Balance updated to', newBalance);
+
+    // Try to update reliability score (optional - don't fail if RPC doesn't exist)
+    try {
+      await supabaseClient.rpc('update_client_reliability', {
+        p_client_id: client_id,
+        p_payment_made: true
+      });
+      console.log('wholesale-payment-process: Reliability score updated');
+    } catch (rpcError) {
+      // RPC might not exist, log but don't fail
+      console.warn('wholesale-payment-process: Reliability RPC failed (non-critical)', rpcError);
+    }
+
+    console.log('wholesale-payment-process: Payment completed successfully');
 
     return new Response(
       JSON.stringify({ 
@@ -88,8 +121,10 @@ serve(async (req) => {
     );
 
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('wholesale-payment-process: Unexpected error', errorMessage, error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
