@@ -41,7 +41,8 @@ function OrderCard({ order, onStatusChange }: { order: any; onStatusChange?: (id
   const customerName = order.whitelist?.customer_name || order.contact_phone || 'Unknown';
   const menuName = order.menu?.name || 'Menu';
   const total = Number(order.total_amount || 0);
-  const itemCount = order.items?.length || 0;
+  const orderItems = order.order_data?.items || [];
+  const itemCount = Array.isArray(orderItems) ? orderItems.length : 0;
   const createdAt = order.created_at ? new Date(order.created_at) : new Date();
 
   const statusColors: Record<string, string> = {
@@ -366,7 +367,7 @@ function OrdersTab() {
                             {order.whitelist?.customer_name || order.contact_phone || 'Unknown'}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {order.menu?.name} • {order.items?.length || 0} items
+                            {order.menu?.name} • {Array.isArray(order.order_data?.items) ? order.order_data.items.length : 0} items
                           </div>
                         </div>
                       </div>
