@@ -347,6 +347,7 @@ export default function CustomerCRMPage() {
 
         <TabsContent value="overview" className="space-y-4">
           <ResponsiveTable
+            keyExtractor={(customer: any) => customer.id}
             columns={[
               {
                 header: 'Customer',

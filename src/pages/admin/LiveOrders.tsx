@@ -97,7 +97,7 @@ export default function LiveOrders() {
               disposable_menus (title)
             `)
             .eq('tenant_id', tenant.id)
-            .in('status', ['pending', 'confirmed', 'completed', 'rejected'])
+            .in('status', ['pending', 'confirmed', 'rejected'])
             .is('synced_order_id', null) // Only show unsynced
             .order('created_at', { ascending: false })
         ]);

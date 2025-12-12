@@ -87,23 +87,30 @@ export default function StorefrontCustomers() {
       // Aggregate customer data from orders
       const { data, error } = await supabase
         .from('marketplace_orders')
-        .select('customer_email, customer_name, customer_phone, total, created_at')
+        .select('customer_email, customer_name, customer_phone, total_amount, created_at')
         .eq('store_id', store.id)
         .not('customer_email', 'is', null);
 
       if (error) throw error;
+      const orders = data as unknown as Array<{
+        customer_email: string;
+        customer_name: string | null;
+        customer_phone: string | null;
+        total_amount: number;
+        created_at: string;
+      }>;
 
       // Group by email and aggregate
       const customerMap = new Map<string, Customer>();
 
-      data?.forEach((order) => {
+      orders?.forEach((order) => {
         const email = order.customer_email;
         if (!email) return;
 
         const existing = customerMap.get(email);
         if (existing) {
           existing.total_orders += 1;
-          existing.total_spent += order.total || 0;
+          existing.total_spent += order.total_amount || 0;
           if (new Date(order.created_at) > new Date(existing.last_order)) {
             existing.last_order = order.created_at;
             existing.customer_name = order.customer_name || existing.customer_name;
@@ -118,7 +125,7 @@ export default function StorefrontCustomers() {
             customer_name: order.customer_name,
             customer_phone: order.customer_phone,
             total_orders: 1,
-            total_spent: order.total || 0,
+            total_spent: order.total_amount || 0,
             first_order: order.created_at,
             last_order: order.created_at,
           });

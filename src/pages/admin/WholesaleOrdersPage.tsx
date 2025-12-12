@@ -784,8 +784,8 @@ export default function WholesaleOrdersPage() {
             <div className="w-full sm:w-80">
               <SearchInput
                 placeholder="Search by order #, client, runner..."
-                value={searchQuery}
-                onChange={setSearchQuery}
+                defaultValue={searchQuery}
+                onSearch={setSearchQuery}
               />
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
@@ -851,7 +851,7 @@ export default function WholesaleOrdersPage() {
           <EditWholesaleOrderDialog
             open={editDialogOpen}
             onOpenChange={setEditDialogOpen}
-            orderId={selectedOrder.id}
+            order={selectedOrder as any}
             onSuccess={handleRefresh}
           />
         )}

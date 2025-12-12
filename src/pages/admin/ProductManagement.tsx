@@ -418,7 +418,7 @@ export default function ProductManagement() {
       return;
     }
     try {
-      const { data, error } = await supabase.rpc('sync_product_to_marketplace', {
+      const { data, error } = await (supabase.rpc as any)('sync_product_to_marketplace', {
         p_product_id: productId,
         p_store_id: store.id
       });

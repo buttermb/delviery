@@ -294,6 +294,7 @@ export default function ClientDetail() {
       <Card className="p-6">
         <h2 className="text-lg font-semibold mb-4">📋 Recent Orders</h2>
         <ResponsiveTable
+          keyExtractor={(order: any) => order.id || order.order_number}
           columns={[
             {
               header: 'Order #',

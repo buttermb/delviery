@@ -120,13 +120,13 @@ export default function StorefrontBundles() {
     queryKey: ['marketplace-bundles', store?.id],
     queryFn: async () => {
       if (!store?.id) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('marketplace_bundles')
         .select('*')
         .eq('store_id', store.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data as Bundle[];
+      return (data || []) as Bundle[];
     },
     enabled: !!store?.id,
   });
@@ -136,14 +136,13 @@ export default function StorefrontBundles() {
     queryKey: ['store-products', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('products')
         .select('id, name, price, image_url')
         .eq('tenant_id', tenant.id)
-        .eq('status', 'active')
         .order('name');
       if (error) throw error;
-      return data as Product[];
+      return (data || []) as Product[];
     },
     enabled: !!tenant?.id,
   });
@@ -153,7 +152,7 @@ export default function StorefrontBundles() {
     mutationFn: async () => {
       if (!store?.id || !tenant?.id) throw new Error('No store');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('marketplace_bundles')
         .insert({
           store_id: store.id,
@@ -183,7 +182,7 @@ export default function StorefrontBundles() {
   // Update bundle mutation
   const updateBundleMutation = useMutation({
     mutationFn: async (bundle: Bundle) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('marketplace_bundles')
         .update({
           name: formData.name,
@@ -213,7 +212,7 @@ export default function StorefrontBundles() {
   // Toggle bundle status
   const toggleBundleMutation = useMutation({
     mutationFn: async ({ bundleId, isActive }: { bundleId: string; isActive: boolean }) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('marketplace_bundles')
         .update({ is_active: isActive, updated_at: new Date().toISOString() })
         .eq('id', bundleId);
@@ -227,7 +226,7 @@ export default function StorefrontBundles() {
   // Delete bundle
   const deleteBundleMutation = useMutation({
     mutationFn: async (bundleId: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('marketplace_bundles')
         .delete()
         .eq('id', bundleId);

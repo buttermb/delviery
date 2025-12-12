@@ -125,7 +125,7 @@ export default function StorefrontLiveOrders() {
 
       const { data, error } = await query.limit(100);
       if (error) throw error;
-      return data as LiveOrder[];
+      return (data || []) as unknown as LiveOrder[];
     },
     enabled: !!store?.id,
     refetchInterval: autoRefresh ? 15000 : false, // Auto-refresh every 15s
