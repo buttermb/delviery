@@ -262,8 +262,7 @@ export const useMenuOrders = (menuId?: string) => {
         .from('menu_orders')
         .select(`
           *,
-          menu:disposable_menus(name),
-          items:menu_order_items(*)
+          menu:disposable_menus(name)
         `)
         .order('created_at', { ascending: false });
 
