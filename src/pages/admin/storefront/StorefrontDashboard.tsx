@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Storefront Dashboard
  * Main hub for managing multi-store white-label online stores
@@ -76,7 +75,7 @@ export default function StorefrontDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
-  
+
   const { activeStoreId, selectStore, clearSelection } = useActiveStore(tenantId);
   const [showListView, setShowListView] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -215,12 +214,12 @@ export default function StorefrontDashboard() {
       queryClient.invalidateQueries({ queryKey: ['marketplace-stores'] });
       setDeleteDialogOpen(false);
       setStoreToDelete(null);
-      
+
       // If deleted active store, clear selection
       if (deletedStoreId === activeStoreId) {
         clearSelection();
       }
-      
+
       toast({
         title: 'Store deleted',
         description: 'Your store has been permanently deleted.',
@@ -375,7 +374,7 @@ export default function StorefrontDashboard() {
             </Button>
           </CardContent>
         </Card>
-        
+
         <CreateStoreDialog
           open={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
@@ -392,8 +391,8 @@ export default function StorefrontDashboard() {
     return (
       <div className="container mx-auto p-6">
         <div className="mb-6">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             onClick={() => {
               setShowListView(false);
               setSearchParams({});
@@ -402,7 +401,7 @@ export default function StorefrontDashboard() {
             ← Back to Dashboard
           </Button>
         </div>
-        
+
         <StoreListView
           stores={stores}
           activeStoreId={activeStoreId}

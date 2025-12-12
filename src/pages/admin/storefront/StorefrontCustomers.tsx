@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Storefront Customers Page
  * View and manage store customers

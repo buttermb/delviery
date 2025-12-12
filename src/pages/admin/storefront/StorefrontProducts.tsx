@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Storefront Products Page
  * Manage product visibility and pricing for the online store
@@ -106,7 +105,7 @@ export default function StorefrontProducts() {
         .eq('tenant_id', tenantId)
         .eq('status', 'active')
         .order('name');
-      
+
       if (error) throw error;
       return data as Product[];
     },
@@ -122,7 +121,7 @@ export default function StorefrontProducts() {
         .from('marketplace_product_settings')
         .select('id, product_id, is_visible, display_price, display_order')
         .eq('store_id', store.id);
-      
+
       if (error) throw error;
       return data as ProductSetting[];
     },
@@ -173,7 +172,7 @@ export default function StorefrontProducts() {
       if (!store?.id) throw new Error('No store');
 
       const existing = settingsMap.get(productId);
-      
+
       if (existing) {
         const { error } = await supabase
           .from('marketplace_product_settings')
@@ -210,7 +209,7 @@ export default function StorefrontProducts() {
       if (!store?.id) throw new Error('No store');
 
       const existing = settingsMap.get(productId);
-      
+
       if (existing) {
         const { error } = await supabase
           .from('marketplace_product_settings')
@@ -249,7 +248,7 @@ export default function StorefrontProducts() {
       if (!store?.id || selectedProducts.size === 0) return;
 
       const productIds = Array.from(selectedProducts);
-      
+
       // Get existing settings
       const existingIds = productIds.filter((id) => settingsMap.has(id));
       const newIds = productIds.filter((id) => !settingsMap.has(id));
@@ -312,7 +311,7 @@ export default function StorefrontProducts() {
   const handlePriceSave = (productId: string, originalPrice: number) => {
     const newPrice = editingPrices[productId];
     if (newPrice === undefined) return;
-    
+
     const parsedPrice = parseFloat(newPrice);
     if (isNaN(parsedPrice)) {
       // Reset to original
