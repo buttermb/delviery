@@ -190,13 +190,12 @@ export default function BusinessSettings() {
       if (!tenant?.id) return;
       const { data, error } = await supabase
         .from('tenants')
-        .select('operating_settings')
+        .select('*')
         .eq('id', tenant.id)
         .single();
 
-      if (data?.operating_settings) {
-        // Cast to unknown first to avoid type errors until schema is updated
-        const settings = data.operating_settings as unknown as { business_hours: BusinessHours };
+      if (data && (data as any).operating_settings) {
+        const settings = (data as any).operating_settings as { business_hours: BusinessHours };
         if (settings.business_hours) {
           setBusinessHours(settings.business_hours);
         }
@@ -212,20 +211,23 @@ export default function BusinessSettings() {
       // Get current settings first to merge (shallow merge for now)
       const { data: current } = await supabase
         .from('tenants')
-        .select('operating_settings')
+        .select('*')
         .eq('id', tenant.id)
         .single();
 
-      const currentSettings = (current?.operating_settings as any) || {};
+      const currentSettings = ((current as any)?.operating_settings as any) || {};
 
       const { error } = await supabase
         .from('tenants')
         .update({
-          operating_settings: {
-            ...currentSettings,
-            business_hours: hours
+          metadata: {
+            ...((current as any)?.metadata || {}),
+            operating_settings: {
+              ...currentSettings,
+              business_hours: hours
+            }
           }
-        })
+        } as any)
         .eq('id', tenant.id);
 
       if (error) throw error;

@@ -82,7 +82,7 @@ export async function getPosts(options: GetPostsOptions = {}): Promise<ForumPost
       throw error;
     }
 
-    return (data || []) as ForumPost[];
+    return (data || []) as unknown as ForumPost[];
   } catch (error) {
     logger.error('Error in getPosts', error, { component: 'forumApi' });
     throw error;
@@ -128,7 +128,7 @@ export async function getPostById(postId: string): Promise<ForumPost | null> {
       .update({ view_count: (data.view_count || 0) + 1 })
       .eq('id', postId);
 
-    return data as ForumPost;
+    return data as unknown as ForumPost;
   } catch (error) {
     logger.error('Error in getPostById', error, { component: 'forumApi', postId });
     throw error;
@@ -175,7 +175,7 @@ export async function createPost(post: CreatePostRequest): Promise<ForumPost> {
       throw error;
     }
 
-    return data as ForumPost;
+    return data as unknown as ForumPost;
   } catch (error) {
     logger.error('Error in createPost', error, { component: 'forumApi' });
     throw error;
@@ -247,7 +247,7 @@ export async function getComments(postId: string): Promise<ForumComment[]> {
       throw error;
     }
 
-    return (data || []) as ForumComment[];
+    return (data || []) as unknown as ForumComment[];
   } catch (error) {
     logger.error('Error in getComments', error, { component: 'forumApi', postId });
     throw error;
@@ -310,7 +310,7 @@ export async function createComment(comment: CreateCommentRequest): Promise<Foru
       throw error;
     }
 
-    return data as ForumComment;
+    return data as unknown as ForumComment;
   } catch (error) {
     logger.error('Error in createComment', error, { component: 'forumApi' });
     throw error;
@@ -510,7 +510,7 @@ export async function searchPosts(query: string): Promise<ForumPost[]> {
       throw error;
     }
 
-    return (data || []) as ForumPost[];
+    return (data || []) as unknown as ForumPost[];
   } catch (error) {
     logger.error('Error in searchPosts', error, { component: 'forumApi', query });
     throw error;

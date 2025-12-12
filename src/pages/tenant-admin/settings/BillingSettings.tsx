@@ -70,7 +70,12 @@ interface ExtendedInvoice extends Invoice {
   items?: any[]; // Fallback for differing structures
 }
 
-interface ExtendedTenant extends Database['public']['Tables']['tenants']['Row'] {
+type ExtendedTenant = Partial<Database['public']['Tables']['tenants']['Row']> & {
+  id?: string;
+  name?: string;
+  slug?: string;
+  created_at?: string;
+  payment_method_added?: boolean;
   billing_cycle?: 'monthly' | 'yearly';
   subscription_plan?: string;
   trial_ends_at?: string;
@@ -79,7 +84,7 @@ interface ExtendedTenant extends Database['public']['Tables']['tenants']['Row'] 
   usage?: Record<string, number>;
   contact_email?: string;
   address?: string;
-}
+};
 
 // Map database invoice to PDF-compatible format
 function mapInvoiceToPdfData(invoice: ExtendedInvoice, tenant: ExtendedTenant | null) {
@@ -115,7 +120,7 @@ function mapInvoiceToPdfData(invoice: ExtendedInvoice, tenant: ExtendedTenant | 
 
 export default function BillingSettings() {
   const { tenant: rawTenant } = useTenantAdminAuth();
-  const tenant = rawTenant as ExtendedTenant | null;
+  const tenant = rawTenant as unknown as ExtendedTenant | null;
   const { currentTier, currentTierName } = useFeatureAccess();
   const { isTrial, needsPaymentMethod } = useSubscriptionStatus();
   const queryClient = useQueryClient();
