@@ -72,10 +72,10 @@ export function ExecutiveSummaryWidget() {
                 // Unpaid invoices
                 supabase
                     .from('invoices')
-                    .select('total_amount')
+                    .select('total')
                     .eq('tenant_id', tenant.id)
                     .in('status', ['pending', 'overdue', 'sent']),
-                
+
                 // Customer tabs (unpaid balances)
                 supabase
                     .from('customers')
@@ -85,7 +85,7 @@ export function ExecutiveSummaryWidget() {
             ]);
 
             // @ts-ignore - Avoid deep type instantiation
-            const unpaidInvoices = invoicesResult.data?.reduce((sum, i) => sum + Number(i.total_amount || 0), 0) || 0;
+            const unpaidInvoices = invoicesResult.data?.reduce((sum, i) => sum + Number(i.total || 0), 0) || 0;
             const unpaidTabs = tabsResult.data?.reduce((sum, c) => sum + Number(c.balance || 0), 0) || 0;
             const arOutstanding = unpaidInvoices + unpaidTabs;
 

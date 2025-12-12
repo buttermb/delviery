@@ -14,6 +14,12 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
+    // Service client for admin operations - declared once at top
+    const serviceClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
     // Parse and validate request body
     let requestBody: TenantInviteInput;
     try {
@@ -21,7 +27,7 @@ serve(async (req) => {
       requestBody = validateTenantInvite(rawBody);
     } catch (error) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'Invalid request body',
           details: error instanceof Error ? error.message : 'Validation failed'
         }),
@@ -39,7 +45,7 @@ serve(async (req) => {
 
     // Public actions that don't require authentication
     const publicActions = ['get_invitation_details'];
-    
+
     // Skip auth for public actions
     let user = null;
     if (!publicActions.includes(action)) {
@@ -60,7 +66,7 @@ serve(async (req) => {
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
+
       user = authUser;
     }
 
@@ -75,11 +81,6 @@ serve(async (req) => {
       // Logging removed - using centralized logger would require client-side only
 
       // Verify user is tenant owner or admin
-      const serviceClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-
       const { data: tenant, error: tenantError } = await serviceClient
         .from('tenants')
         .select('*')
@@ -95,7 +96,7 @@ serve(async (req) => {
 
       // Check if user is tenant owner
       const isOwner = tenant.owner_email?.toLowerCase() === user.email?.toLowerCase();
-      
+
       // Check if user has permission to invite team members
       // Use permission system if available, fallback to role check
       let hasInvitePermission = false;
@@ -117,7 +118,7 @@ serve(async (req) => {
           .maybeSingle();
         hasInvitePermission = tenantUser?.role === 'admin' || tenantUser?.role === 'owner' || isOwner;
       }
-      
+
       if (!hasInvitePermission) {
         return new Response(
           JSON.stringify({ error: 'Only tenant owners and admins can send invitations' }),
@@ -141,11 +142,6 @@ serve(async (req) => {
       }
 
       // Cross-table check: Verify email is not registered as a customer account
-      const serviceClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-
       const { data: customerUserExists } = await serviceClient
         .from('customer_users')
         .select('id')
@@ -155,7 +151,7 @@ serve(async (req) => {
 
       if (customerUserExists) {
         return new Response(
-          JSON.stringify({ 
+          JSON.stringify({
             error: 'This email is registered as a customer account',
             message: 'This email is registered as a customer account. Please use the customer login or invite a different email address.'
           }),
@@ -166,11 +162,6 @@ serve(async (req) => {
       // Check user limit before creating invitation
       // Enterprise plan has unlimited users (skip check)
       if (tenant.subscription_plan !== 'enterprise') {
-        const serviceClient = createClient(
-          Deno.env.get('SUPABASE_URL') ?? '',
-          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        );
-
         // Count active users (excluding pending invitations)
         const { count: activeUsers, error: countError } = await serviceClient
           .from('tenant_users')
@@ -184,10 +175,10 @@ serve(async (req) => {
         } else {
           // Get user limit from tenant.limits (supports both 'users' and 'team_members')
           const userLimit = (tenant.limits as any)?.users || (tenant.limits as any)?.team_members || 3;
-          
+
           if (activeUsers !== null && activeUsers >= userLimit) {
             return new Response(
-              JSON.stringify({ 
+              JSON.stringify({
                 error: 'User limit reached',
                 message: `You have reached your plan's user limit of ${userLimit} users. Please upgrade your plan to invite more team members.`,
                 current_users: activeUsers,
@@ -233,7 +224,7 @@ serve(async (req) => {
       // Call send-invitation-email edge function (non-blocking)
       const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
       const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-      
+
       // Send email asynchronously (don't wait for response)
       fetch(`${supabaseUrl}/functions/v1/send-invitation-email`, {
         method: 'POST',
@@ -295,9 +286,9 @@ serve(async (req) => {
       // Check if user email matches invitation email
       if (user.email?.toLowerCase() !== invitation.email.toLowerCase()) {
         return new Response(
-          JSON.stringify({ 
-            error: 'Email mismatch', 
-            detail: `This invitation was sent to ${invitation.email}. Please sign in with that email.` 
+          JSON.stringify({
+            error: 'Email mismatch',
+            detail: `This invitation was sent to ${invitation.email}. Please sign in with that email.`
           }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
@@ -346,12 +337,7 @@ serve(async (req) => {
         );
       }
 
-      // Verify user has access to this tenant
-      const serviceClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-
+      // Verify user has access to this tenant (uses top-level serviceClient)
       const { data: tenant } = await serviceClient
         .from('tenants')
         .select('id, owner_email')
