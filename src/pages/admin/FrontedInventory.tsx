@@ -73,9 +73,9 @@ export default function FrontedInventory() {
           product:products(name)
         `);
 
-      // Only filter by account_id if tenant exists
+      // Filter by tenant_id for proper tenant isolation
       if (tenant?.id) {
-        query = query.eq('account_id', tenant.id);
+        query = query.eq('tenant_id', tenant.id);
       }
 
       if (filter === 'pending') {
