@@ -121,6 +121,28 @@ export function CreditUsageStats({
           0
         );
 
+        // Calculate previous week's usage (for trend comparison)
+        const prevWeekStart = new Date();
+        prevWeekStart.setDate(prevWeekStart.getDate() - 14);
+        const prevWeekEnd = new Date();
+        prevWeekEnd.setDate(prevWeekEnd.getDate() - 7);
+
+        const prevWeekTransactions = (transactions || []).filter(
+          (t: any) => {
+            const date = new Date(t.created_at);
+            return date >= prevWeekStart && date < prevWeekEnd;
+          }
+        );
+        const prevWeekUsage = prevWeekTransactions.reduce(
+          (sum: number, t: any) => sum + Math.abs(t.amount),
+          0
+        );
+
+        // Calculate week-over-week change
+        const weekTrend = prevWeekUsage > 0
+          ? Math.round(((weekUsage - prevWeekUsage) / prevWeekUsage) * 100)
+          : weekUsage > 0 ? 100 : 0;
+
         // Calculate monthly usage
         const monthUsage = (transactions || []).reduce(
           (sum: number, t: any) => sum + Math.abs(t.amount),
@@ -204,6 +226,8 @@ export function CreditUsageStats({
         return {
           todayUsage,
           weekUsage,
+          prevWeekUsage,
+          weekTrend,
           monthUsage,
           topActions,
           categoryUsage,
@@ -227,8 +251,8 @@ export function CreditUsageStats({
   }
 
   const isLoading = creditsLoading || usageLoading;
-  const percentUsed = lifetimeEarned > 0 
-    ? Math.round((lifetimeSpent / lifetimeEarned) * 100) 
+  const percentUsed = lifetimeEarned > 0
+    ? Math.round((lifetimeSpent / lifetimeEarned) * 100)
     : 0;
   const percentRemaining = Math.round((balance / FREE_TIER_MONTHLY_CREDITS) * 100);
 
@@ -277,8 +301,8 @@ export function CreditUsageStats({
                   balance > 5000
                     ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
                     : balance > 1000
-                    ? 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20'
-                    : 'bg-red-500/10 text-red-600 border-red-500/20'
+                      ? 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20'
+                      : 'bg-red-500/10 text-red-600 border-red-500/20'
                 )}
               >
                 {percentRemaining}% remaining
@@ -293,8 +317,8 @@ export function CreditUsageStats({
               balance > 5000
                 ? '[&>div]:bg-emerald-500'
                 : balance > 1000
-                ? '[&>div]:bg-yellow-500'
-                : '[&>div]:bg-red-500'
+                  ? '[&>div]:bg-yellow-500'
+                  : '[&>div]:bg-red-500'
             )}
           />
 
@@ -311,6 +335,19 @@ export function CreditUsageStats({
                 {usageData?.weekUsage?.toLocaleString() || 0}
               </p>
               <p className="text-xs text-muted-foreground">This Week</p>
+              {usageData?.weekTrend !== undefined && usageData.weekTrend !== 0 && (
+                <div className={cn(
+                  "flex items-center justify-center gap-1 text-xs mt-1",
+                  usageData.weekTrend > 0 ? "text-red-500" : "text-emerald-500"
+                )}>
+                  {usageData.weekTrend > 0 ? (
+                    <TrendingUp className="h-3 w-3" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3" />
+                  )}
+                  <span>{Math.abs(usageData.weekTrend)}% vs last</span>
+                </div>
+              )}
             </div>
             <div className="text-center">
               <p className="text-xl font-semibold">
@@ -328,8 +365,8 @@ export function CreditUsageStats({
                 usageData.daysUntilDepletion > 14
                   ? 'bg-emerald-500/10 text-emerald-700'
                   : usageData.daysUntilDepletion > 7
-                  ? 'bg-yellow-500/10 text-yellow-700'
-                  : 'bg-red-500/10 text-red-700'
+                    ? 'bg-yellow-500/10 text-yellow-700'
+                    : 'bg-red-500/10 text-red-700'
               )}
             >
               <Calendar className="h-4 w-4" />
