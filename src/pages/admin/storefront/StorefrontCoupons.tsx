@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Marketplace tables not in generated types yet
 
 /**

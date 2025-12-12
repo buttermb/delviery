@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -12,8 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { 
-  ArrowLeft, 
+import {
+  ArrowLeft,
   ShoppingCart,
   Truck,
   CreditCard,
@@ -122,10 +122,10 @@ export default function CheckoutPage() {
   // Combine cart items (optimized: Map for O(1) lookups)
   const guestCartItems = useMemo(() => {
     if (user) return [];
-    
+
     // Create Map for O(1) product lookups instead of O(n) find() in loop
     const productMap = new Map(guestProducts.map(p => [p.id, p]));
-    
+
     return guestCart.reduce<RenderCartItem[]>((acc, item) => {
       const product = productMap.get(item.product_id);
       if (product) {
@@ -176,9 +176,9 @@ export default function CheckoutPage() {
     if (!deliveryInfo.preferredDate) {
       const date = new Date();
       date.setDate(date.getDate() + 7);
-      setDeliveryInfo(prev => ({ 
-        ...prev, 
-        preferredDate: date.toISOString().split('T')[0] 
+      setDeliveryInfo(prev => ({
+        ...prev,
+        preferredDate: date.toISOString().split('T')[0]
       }));
     }
   }, []);
@@ -214,7 +214,7 @@ export default function CheckoutPage() {
 
       // For now, simulate success
       setOrderPlaced(true);
-      
+
       // Clear cart
       if (user) {
         await supabase.from("cart_items").delete().eq("user_id", user.id);
@@ -270,7 +270,7 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
       {/* Mobile Top Navigation */}
       <CustomerMobileNav />
-      
+
       {/* Desktop Header */}
       <header className="hidden lg:block border-b border-[hsl(var(--customer-border))] bg-white sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-6 py-4">
@@ -298,31 +298,28 @@ export default function CheckoutPage() {
               <div key={step.id} className="flex items-center flex-1">
                 <div className="flex flex-col items-center flex-1">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors ${
-                      index <= currentStepIndex
+                    className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors ${index <= currentStepIndex
                         ? "bg-[hsl(var(--customer-primary))] text-white"
                         : "bg-[hsl(var(--customer-surface))] text-[hsl(var(--customer-text-light))]"
-                    }`}
+                      }`}
                   >
                     <step.icon className="h-5 w-5" />
                   </div>
                   <span
-                    className={`text-sm font-medium ${
-                      index <= currentStepIndex
+                    className={`text-sm font-medium ${index <= currentStepIndex
                         ? "text-[hsl(var(--customer-primary))]"
                         : "text-[hsl(var(--customer-text-light))]"
-                    }`}
+                      }`}
                   >
                     {step.label}
                   </span>
                 </div>
                 {index < steps.length - 1 && (
                   <div
-                    className={`flex-1 h-1 mx-2 transition-colors ${
-                      index < currentStepIndex
+                    className={`flex-1 h-1 mx-2 transition-colors ${index < currentStepIndex
                         ? "bg-[hsl(var(--customer-primary))]"
                         : "bg-[hsl(var(--customer-surface))]"
-                    }`}
+                      }`}
                   />
                 )}
               </div>
@@ -480,7 +477,7 @@ export default function CheckoutPage() {
                                   });
                                   return;
                                 }
-                                
+
                                 setIsAddingAddress(true);
                                 try {
                                   if (user) {
@@ -496,18 +493,18 @@ export default function CheckoutPage() {
                                         borough: newAddress.borough,
                                         is_default: savedAddresses.length === 0,
                                       });
-                                    
+
                                     if (error) throw error;
-                                    
+
                                     // Refresh addresses
                                     queryClient.invalidateQueries({ queryKey: ["customer-addresses", user.id] });
                                   }
-                                  
+
                                   toast({
                                     title: "Address Added",
                                     description: "New address has been saved",
                                   });
-                                  
+
                                   setNewAddress({ street: "", city: "", state: "NY", zip: "", borough: "" });
                                   setShowAddAddressDialog(false);
                                 } catch (error: unknown) {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Storefront Live Orders Page
  * Real-time order management for the storefront

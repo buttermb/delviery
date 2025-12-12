@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Storefront Settings Page
  * Configure store branding, delivery, payments, and more
@@ -360,7 +359,7 @@ export default function StorefrontSettings() {
             is_active: store.is_active,
             is_public: store.is_public,
           }}
-          onRegenerateToken={() => regenerateTokenMutation.mutateAsync()}
+          onRegenerateToken={async () => { await regenerateTokenMutation.mutateAsync(); }}
         />
       )}
 

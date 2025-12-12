@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Storefront Analytics Page
  * Store performance metrics and insights
@@ -373,11 +372,10 @@ export default function StorefrontAnalytics() {
                       className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          i === 0 ? 'bg-yellow-500/20 text-yellow-600' :
-                          i === 1 ? 'bg-gray-500/20 text-gray-600' :
-                          'bg-orange-500/20 text-orange-600'
-                        }`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${i === 0 ? 'bg-yellow-500/20 text-yellow-600' :
+                            i === 1 ? 'bg-gray-500/20 text-gray-600' :
+                              'bg-orange-500/20 text-orange-600'
+                          }`}>
                           #{i + 1}
                         </div>
                         <div>
@@ -406,7 +404,7 @@ export default function StorefrontAnalytics() {
                       <span>Conversion Rate</span>
                     </div>
                     <Badge variant="secondary">
-                      {metrics.totalOrders > 0 
+                      {metrics.totalOrders > 0
                         ? ((statusBreakdown['delivered'] || 0) / metrics.totalOrders * 100).toFixed(1)
                         : 0}%
                     </Badge>
@@ -417,7 +415,7 @@ export default function StorefrontAnalytics() {
                       <span>Repeat Customer Rate</span>
                     </div>
                     <Badge variant="secondary">
-                      {metrics.uniqueCustomers > 0 
+                      {metrics.uniqueCustomers > 0
                         ? ((1 - metrics.uniqueCustomers / metrics.totalOrders) * 100).toFixed(1)
                         : 0}%
                     </Badge>

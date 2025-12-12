@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Storefront Bundles Page
  * Create and manage product bundles with discounts
