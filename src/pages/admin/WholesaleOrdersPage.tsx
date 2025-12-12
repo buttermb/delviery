@@ -170,7 +170,7 @@ export default function WholesaleOrdersPage() {
           .from('wholesale_orders')
           .select(`
             *,
-            client:wholesale_clients(id, business_name, contact_name, phone, license_number),
+            client:wholesale_clients(id, business_name, contact_name, phone),
             items:wholesale_order_items(id, product_name, quantity_lbs, unit_price)
           `)
           .eq('tenant_id', tenant.id)
