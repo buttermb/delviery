@@ -21,6 +21,7 @@ import { RevenueChartWidget } from './dashboard/RevenueChartWidget';
 import { RevenuePredictionWidget } from './dashboard/RevenuePredictionWidget';
 import { TopProductsWidget } from './dashboard/TopProductsWidget';
 import { ActionableInsights } from '@/components/admin/ActionableInsights';
+import { DashboardLayoutEditor } from './dashboard/DashboardLayoutEditor';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 
@@ -79,16 +80,16 @@ export function ModernDashboard() {
       ]);
 
       // Revenue calculation with safe defaults
-      const todayRevenue = (todayOrdersResult.data || []).reduce((sum: number, o: { total_amount?: number | null }) => 
+      const todayRevenue = (todayOrdersResult.data || []).reduce((sum: number, o: { total_amount?: number | null }) =>
         sum + Number(o.total_amount || 0), 0);
 
-      const lastWeekRevenue = (lastWeekOrdersResult.data || []).reduce((sum: number, o: { total_amount?: number | null }) => 
+      const lastWeekRevenue = (lastWeekOrdersResult.data || []).reduce((sum: number, o: { total_amount?: number | null }) =>
         sum + Number(o.total_amount || 0), 0);
 
       return {
         revenue: todayRevenue,
-        revenueChange: lastWeekRevenue > 0 
-          ? ((todayRevenue - lastWeekRevenue) / lastWeekRevenue) * 100 
+        revenueChange: lastWeekRevenue > 0
+          ? ((todayRevenue - lastWeekRevenue) / lastWeekRevenue) * 100
           : 0,
         orders: activeOrdersResult.data?.length || 0,
         transfers: transfersResult.data?.length || 0,
@@ -129,13 +130,14 @@ export function ModernDashboard() {
   return (
     <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-2">🏠 Dashboard</h1>
           <p className="text-muted-foreground">
             {format(new Date(), 'EEEE, MMMM d, yyyy')}
           </p>
         </div>
+        <DashboardLayoutEditor />
       </div>
 
       {/* Quick Actions Bar */}
@@ -155,7 +157,7 @@ export function ModernDashboard() {
           color="green"
           onClick={() => handleNavigate('big-plug-financial')}
         />
-        
+
         <StatCard
           title="Orders"
           value={`${dashboardData?.orders || 0} Active`}

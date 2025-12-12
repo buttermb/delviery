@@ -10,8 +10,8 @@ import { toast } from 'sonner';
 import {
   MapPin, Truck, Layers, Map as MapIcon, Search,
   Phone, Navigation, Clock, Users, Activity,
-  ChevronRight, RefreshCw, Maximize2, UserPlus, AlertCircle,
-  CheckCircle, XCircle
+  ChevronRight, RefreshCw, Maximize2, Minimize2, UserPlus, AlertCircle,
+  CheckCircle, XCircle, Car, Focus
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -44,6 +44,7 @@ export default function LiveMap() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourier, setSelectedCourier] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showTraffic, setShowTraffic] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [showOffline, setShowOffline] = useState(false);
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -295,6 +296,44 @@ export default function LiveMap() {
     }
   };
 
+  // Center map on all active couriers
+  const centerOnActivity = useCallback(() => {
+    if (!map.current || couriers.length === 0) {
+      toast.info('No active couriers to center on');
+      return;
+    }
+
+    const bounds = new mapboxgl.LngLatBounds();
+    couriers.forEach((courier) => {
+      if (courier.current_lat && courier.current_lng) {
+        bounds.extend([courier.current_lng, courier.current_lat]);
+      }
+    });
+
+    if (!bounds.isEmpty()) {
+      map.current.fitBounds(bounds, {
+        padding: 100,
+        maxZoom: 15,
+        duration: 1500
+      });
+      setSelectedCourier(null);
+      toast.success(`Centered on ${couriers.length} active courier${couriers.length > 1 ? 's' : ''}`);
+    }
+  }, [couriers]);
+
+  // Toggle fullscreen mode
+  const toggleFullscreen = useCallback(() => {
+    if (!mapContainer.current) return;
+
+    if (!document.fullscreenElement) {
+      mapContainer.current.parentElement?.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  }, []);
+
   // Update markers when couriers change
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
@@ -447,6 +486,48 @@ export default function LiveMap() {
       }
     }
   }, [showHeatmap, couriers, mapLoaded]);
+
+  // Toggle traffic layer
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+
+    if (showTraffic) {
+      // Add traffic layer if not already added
+      if (!map.current.getSource('mapbox-traffic')) {
+        map.current.addSource('mapbox-traffic', {
+          type: 'vector',
+          url: 'mapbox://mapbox.mapbox-traffic-v1'
+        });
+
+        map.current.addLayer({
+          id: 'traffic-layer',
+          type: 'line',
+          source: 'mapbox-traffic',
+          'source-layer': 'traffic',
+          paint: {
+            'line-width': 2,
+            'line-color': [
+              'match',
+              ['get', 'congestion'],
+              'low', '#10b981',
+              'moderate', '#f59e0b',
+              'heavy', '#ef4444',
+              'severe', '#dc2626',
+              '#6b7280'
+            ],
+            'line-opacity': 0.8
+          }
+        });
+      }
+    } else {
+      if (map.current.getLayer('traffic-layer')) {
+        map.current.removeLayer('traffic-layer');
+      }
+      if (map.current.getSource('mapbox-traffic')) {
+        map.current.removeSource('mapbox-traffic');
+      }
+    }
+  }, [showTraffic, mapLoaded]);
 
   // No mapbox token
   if (!mapboxToken && !tokenLoading) {
@@ -730,6 +811,38 @@ export default function LiveMap() {
               >
                 <Activity className="h-4 w-4" />
                 Heatmap
+              </Button>
+              <Button
+                variant={showTraffic ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setShowTraffic(!showTraffic)}
+                className="gap-1"
+              >
+                <Car className="h-4 w-4" />
+                Traffic
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={centerOnActivity}
+                className="gap-1"
+                disabled={couriers.length === 0}
+              >
+                <Focus className="h-4 w-4" />
+                Center
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleFullscreen}
+                className="gap-1 ml-auto"
+              >
+                {isFullscreen ? (
+                  <Minimize2 className="h-4 w-4" />
+                ) : (
+                  <Maximize2 className="h-4 w-4" />
+                )}
+                {isFullscreen ? 'Exit' : 'Fullscreen'}
               </Button>
             </div>
 
