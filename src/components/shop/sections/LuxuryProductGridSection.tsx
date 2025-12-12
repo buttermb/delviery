@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, RefreshCw } from 'lucide-react';
+import { Search, Plus, RefreshCw, Eye } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductImage from '@/components/ProductImage';
 import { cleanProductName } from '@/utils/productName';
@@ -13,6 +13,7 @@ import { useShop } from '@/pages/shop/ShopLayout';
 import { useShopCart } from '@/hooks/useShopCart';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
+import { ProductQuickViewModal } from './ProductQuickViewModal';
 
 export interface LuxuryProductGridSectionProps {
   content?: {
@@ -46,6 +47,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
   const { isPreviewMode } = useShop();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [quickViewProduct, setQuickViewProduct] = useState<MarketplaceProduct | null>(null);
   const { toast } = useToast();
 
   const { addItem } = useShopCart({
@@ -139,6 +141,38 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
       });
     } catch (error) {
       logger.error('Quick add to cart failed', error, { productId: product.product_id });
+      toast({
+        title: "Failed to add",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleQuickView = (e: React.MouseEvent, product: MarketplaceProduct) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setQuickViewProduct(product);
+  };
+
+  const handleQuickViewAddToCart = (product: MarketplaceProduct, quantity: number) => {
+    try {
+      addItem({
+        productId: product.product_id,
+        name: product.product_name,
+        price: product.price,
+        imageUrl: product.image_url,
+        quantity,
+        variant: product.strain_type
+      });
+
+      toast({
+        title: "Added to cart",
+        description: `${quantity}x ${product.product_name} has been added to your cart.`,
+        duration: 3000,
+      });
+    } catch (error) {
+      logger.error('Quick view add to cart failed', error, { productId: product.product_id });
       toast({
         title: "Failed to add",
         description: "Please try again",
@@ -281,6 +315,15 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                             <span className="text-[10px] font-medium tracking-widest uppercase text-white/90">{product.strain_type}</span>
                           </div>
                         )}
+
+                        {/* Quick View Button */}
+                        <button
+                          onClick={(e) => handleQuickView(e, product)}
+                          className="absolute top-4 right-4 p-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white/20 z-10"
+                          title="Quick View"
+                        >
+                          <Eye className="w-4 h-4 text-white" />
+                        </button>
                       </div>
 
                       {/* Content */}
@@ -353,6 +396,15 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
           </motion.div>
         )}
       </div>
+
+      {/* Quick View Modal */}
+      <ProductQuickViewModal
+        product={quickViewProduct}
+        isOpen={!!quickViewProduct}
+        onClose={() => setQuickViewProduct(null)}
+        onAddToCart={handleQuickViewAddToCart}
+        accentColor={accentColor}
+      />
     </section>
   );
 }
