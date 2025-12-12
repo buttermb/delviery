@@ -188,7 +188,7 @@ export function MobileMenuActions({ menu, trigger }: MobileMenuActionsProps) {
       />
 
       <MenuShareDialogEnhanced
-        menu={menu}
+        menu={menu as any}
         open={shareDialogOpen}
         onOpenChange={setShareDialogOpen}
         whitelistEntry={undefined}
