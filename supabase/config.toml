@@ -230,6 +230,12 @@ verify_jwt = true
 [functions.billing]
 verify_jwt = true
 
+[functions.create-stripe-refund]
+verify_jwt = true
+
+[functions.retry-stripe-payment]
+verify_jwt = true
+
 [functions.create-checkout]
 verify_jwt = true
 
