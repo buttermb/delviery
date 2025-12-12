@@ -215,40 +215,40 @@ interface SidebarCategory {
 const SIDEBAR_CATEGORIES: SidebarCategory[] = [
   {
     label: 'Command Center',
-    features: ['dashboard', 'hotbox', 'live-orders', 'notifications', 'realtime-dashboard', 'live-map'],
+    features: ['dashboard', 'hotbox', 'notifications'],
   },
   {
     label: 'Sales & Orders',
-    features: ['basic-orders', 'pos-system', 'wholesale-orders', 'marketplace', 'sales-dashboard'],
+    features: ['basic-orders', 'pos-system', 'marketplace'],
   },
   {
     label: 'Menus',
-    features: ['disposable-menus', 'menu-migration', 'storefront'],
+    features: ['disposable-menus', 'storefront'],
   },
   {
     label: 'Inventory',
-    features: ['products', 'inventory-dashboard', 'advanced-inventory', 'operations'],
+    features: ['products'],
   },
   {
     label: 'Customers',
-    features: ['customers', 'customer-crm', 'marketing-automation'],
+    features: ['customers'],
   },
   {
     label: 'Operations',
-    features: ['suppliers', 'purchase-orders', 'team-members', 'role-management', 'locations'],
+    features: ['suppliers', 'team-members', 'locations'],
   },
   {
     label: 'Delivery',
-    features: ['delivery-management', 'fleet-management'],
+    features: ['delivery-management'],
     showForTiers: ['enterprise'],
   },
   {
     label: 'Analytics & Finance',
-    features: ['analytics', 'financial-center', 'reports'],
+    features: ['analytics', 'financial-center'],
   },
   {
     label: 'Integrations',
-    features: ['api-access', 'automation', 'bulk-operations'],
+    features: ['api-access', 'automation'],
   },
   {
     label: 'Settings',
