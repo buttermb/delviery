@@ -14024,7 +14024,17 @@ export type Database = {
       burn_type: "soft" | "hard"
       event_severity: "low" | "medium" | "high" | "critical"
       menu_access_type: "invite_only" | "shared_link" | "hybrid"
-      menu_order_status: "pending" | "confirmed" | "rejected"
+      menu_order_status:
+        | "pending"
+        | "confirmed"
+        | "rejected"
+        | "processing"
+        | "preparing"
+        | "ready_for_pickup"
+        | "in_transit"
+        | "completed"
+        | "cancelled"
+        | "delivered"
       menu_status: "active" | "soft_burned" | "hard_burned"
       order_status_type:
         | "pending"
@@ -14193,7 +14203,18 @@ export const Constants = {
       burn_type: ["soft", "hard"],
       event_severity: ["low", "medium", "high", "critical"],
       menu_access_type: ["invite_only", "shared_link", "hybrid"],
-      menu_order_status: ["pending", "confirmed", "rejected"],
+      menu_order_status: [
+        "pending",
+        "confirmed",
+        "rejected",
+        "processing",
+        "preparing",
+        "ready_for_pickup",
+        "in_transit",
+        "completed",
+        "cancelled",
+        "delivered",
+      ],
       menu_status: ["active", "soft_burned", "hard_burned"],
       order_status_type: [
         "pending",
