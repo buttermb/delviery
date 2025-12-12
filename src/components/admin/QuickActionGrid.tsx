@@ -10,7 +10,7 @@ export function QuickActionGrid() {
   const actions = [
     { icon: Package, label: "Products", path: "/admin/products", color: "text-info" },
     { icon: Users, label: "Users", path: "/admin/users", color: "text-success" },
-    { icon: Truck, label: "Live Deliveries", path: "/admin/live-orders", color: "text-primary" },
+    { icon: Truck, label: "Live Deliveries", path: "/admin/orders?tab=live", color: "text-primary" },
     { icon: TrendingUp, label: "Analytics", path: "/admin/analytics", color: "text-primary" },
     { icon: Bell, label: "Notifications", path: "/admin/notifications", color: "text-destructive" },
     { icon: FileText, label: "Orders", path: "/admin/orders", color: "text-info" },

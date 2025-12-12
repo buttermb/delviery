@@ -41,7 +41,7 @@ export function QuickActionsMenu() {
       icon: Truck,
       label: "Fleet",
       description: "Runners & deliveries",
-      path: "/admin/fleet-management",
+      path: "/admin/delivery-hub?tab=fleet",
       color: "bg-orange-500"
     },
     {

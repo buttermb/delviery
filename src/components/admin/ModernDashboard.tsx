@@ -163,7 +163,7 @@ export function ModernDashboard() {
           value={`${dashboardData?.orders || 0} Active`}
           icon={<Package className="h-5 w-5" />}
           color="blue"
-          onClick={() => handleNavigate('wholesale-orders')}
+          onClick={() => handleNavigate('orders')}
         />
 
         <StatCard
@@ -171,7 +171,7 @@ export function ModernDashboard() {
           value={`${dashboardData?.transfers || 0} In Transit`}
           icon={<Truck className="h-5 w-5" />}
           color="orange"
-          onClick={() => handleNavigate('fleet-management')}
+          onClick={() => handleNavigate('delivery-hub')}
         />
 
         <StatCard
