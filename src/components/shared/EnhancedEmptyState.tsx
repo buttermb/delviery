@@ -86,9 +86,21 @@ const emptyStateConfig: Record<
   },
 };
 
-// Helper to check if something is a LucideIcon component
+// Helper to check if something is a LucideIcon component (handles forwardRef)
 const isLucideIcon = (icon: unknown): icon is LucideIcon => {
-  return typeof icon === 'function' && icon.toString().includes('createElement');
+  // Check if it's a function (class or function component)
+  if (typeof icon === 'function') return true;
+
+  // Check if it's a forwardRef component (object with $$typeof)
+  if (typeof icon === 'object' && icon !== null) {
+    const iconObj = icon as Record<string, unknown>;
+    // React forwardRef components have $$typeof Symbol
+    if ('$$typeof' in iconObj && 'render' in iconObj) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 export function EnhancedEmptyState({
