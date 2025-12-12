@@ -105,19 +105,19 @@ export const navigationSections: NavSection[] = [
     items: [
       {
         title: 'Orders',
-        href: '/admin/wholesale-orders',
+        href: '/admin/orders',
         icon: ShoppingCart,
         badge: 'HOT'
       },
       {
         title: 'Live Orders',
-        href: '/admin/live-orders',
+        href: '/admin/orders?tab=live',
         icon: Activity,
         tier: 'professional'
       },
       {
         title: 'Inventory',
-        href: '/admin/inventory-dashboard',
+        href: '/admin/inventory-hub',
         icon: Package
       },
       {
@@ -223,7 +223,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Customer Insights',
-        href: '/admin/customer-insights',
+        href: '/admin/customer-hub?tab=insights',
         icon: Target,
         tier: 'professional'
       },
@@ -408,7 +408,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Fleet Management',
-        href: '/admin/fleet-management',
+        href: '/admin/delivery-hub?tab=fleet',
         icon: Truck,
         tier: 'enterprise'
       },
@@ -539,7 +539,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Customer Analytics',
-        href: '/admin/customer-analytics',
+        href: '/admin/customer-hub?tab=analytics',
         icon: Users,
         tier: 'professional'
       },

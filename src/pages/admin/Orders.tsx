@@ -65,7 +65,7 @@ export default function Orders() {
       if (searchInput) searchInput.focus();
     },
     onCreate: () => {
-      navigate('/admin/wholesale-orders');
+      navigate('/admin/orders?tab=wholesale');
     }
   });
 

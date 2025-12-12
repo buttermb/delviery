@@ -48,7 +48,7 @@ export function generateHotItems(context: BusinessContext): HotItem[] {
     hotItems.push({
       id: 'hot-pending-orders',
       name: `📦 ${context.pendingOrders} Orders Waiting`,
-      path: '/admin/disposable-menu-orders',
+      path: '/admin/orders',
       icon: ShoppingCart,
       priority: context.pendingOrders > 50 ? 'urgent' : 'high',
       badge: context.pendingOrders,
@@ -145,7 +145,7 @@ export function getBusinessContext(tenant: {
   fronted_total?: number;
 }): BusinessContext {
   const now = new Date();
-  
+
   return {
     lowStock: tenant.low_stock_count,
     pendingOrders: tenant.pending_orders,

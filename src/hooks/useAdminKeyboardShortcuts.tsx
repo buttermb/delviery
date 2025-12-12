@@ -96,8 +96,8 @@ export const useAdminKeyboardShortcuts = (options: KeyboardShortcutsOptions = {}
             break;
           case 'n':
             // Create new order
-            navigate(getPath('/admin/wholesale-orders'));
-            toast.success('New Order');
+            navigate(getPath('/admin/orders'));
+            toast.success('Orders');
             break;
           case 'm':
             // Navigate to menus
@@ -106,7 +106,7 @@ export const useAdminKeyboardShortcuts = (options: KeyboardShortcutsOptions = {}
             break;
           case 'i':
             // Navigate to inventory
-            navigate(getPath('/admin/inventory-dashboard'));
+            navigate(getPath('/admin/inventory-hub'));
             toast.success('Inventory');
             break;
           default:
