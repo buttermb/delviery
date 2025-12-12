@@ -129,11 +129,11 @@ export default function Orders() {
       if (userIds.length > 0) {
         const { data: profilesData } = await supabase
           .from('profiles')
-          .select('user_id, full_name, email')
+          .select('user_id, full_name')
           .in('user_id', userIds);
 
-        profilesMap = (profilesData || []).reduce((acc, profile) => {
-          acc[profile.user_id] = profile;
+        profilesMap = (profilesData || []).reduce((acc, profile: any) => {
+          acc[profile.user_id] = { user_id: profile.user_id, full_name: profile.full_name || null, email: null };
           return acc;
         }, {} as Record<string, { user_id: string; full_name: string | null; email: string | null }>);
       }
@@ -457,8 +457,8 @@ export default function Orders() {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
               <div className="relative flex-1">
                 <SearchInput
-                  value={searchQuery}
-                  onChange={setSearchQuery}
+                  defaultValue={searchQuery}
+                  onSearch={setSearchQuery}
                   placeholder="Search orders, customers, total..."
                 />
               </div>

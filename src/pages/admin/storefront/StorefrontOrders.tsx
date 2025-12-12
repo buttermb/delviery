@@ -134,7 +134,7 @@ export default function StorefrontOrders() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as MarketplaceOrder[];
+      return (data || []) as unknown as MarketplaceOrder[];
     },
     enabled: !!store?.id,
   });

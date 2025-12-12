@@ -179,6 +179,7 @@ export default function ClientsPage() {
             <ResponsiveTable
                 columns={columns}
                 data={filteredClients}
+                keyExtractor={(client) => client.id}
                 isLoading={isLoading}
                 onRowClick={(client) => navigate(`/admin/crm/clients/${client.id}`)}
                 mobileRenderer={renderMobileCard}
@@ -186,7 +187,7 @@ export default function ClientsPage() {
                     icon: Users,
                     title: "No clients found",
                     description: "No clients match your search criteria.",
-                    action: {
+                    primaryAction: {
                         label: "Clear Search",
                         onClick: () => setSearchTerm('')
                     }

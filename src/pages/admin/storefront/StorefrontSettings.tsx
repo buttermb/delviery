@@ -146,7 +146,7 @@ export default function StorefrontSettings() {
         throw error;
       }
 
-      return data as StoreSettings | null;
+      return data as unknown as StoreSettings | null;
     },
     enabled: !!tenantId,
   });

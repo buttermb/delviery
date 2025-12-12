@@ -62,23 +62,32 @@ export default function StorefrontAnalytics() {
     enabled: !!tenantId,
   });
 
+  // Define order type for analytics
+  interface AnalyticsOrder {
+    id: string;
+    total_amount: number;
+    status: string;
+    created_at: string;
+    customer_email: string | null;
+  }
+
   // Fetch orders for analytics (last 30 days)
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['storefront-analytics-orders', store?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<AnalyticsOrder[]> => {
       if (!store?.id) return [];
 
       const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
 
       const { data, error } = await supabase
         .from('marketplace_orders')
-        .select('id, total, status, created_at, customer_email')
+        .select('id, total_amount, status, created_at, customer_email')
         .eq('store_id', store.id)
         .gte('created_at', thirtyDaysAgo)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as unknown as AnalyticsOrder[];
     },
     enabled: !!store?.id,
   });
@@ -86,7 +95,7 @@ export default function StorefrontAnalytics() {
   // Fetch previous period orders for comparison
   const { data: previousOrders = [] } = useQuery({
     queryKey: ['storefront-analytics-previous', store?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<AnalyticsOrder[]> => {
       if (!store?.id) return [];
 
       const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
@@ -94,29 +103,30 @@ export default function StorefrontAnalytics() {
 
       const { data, error } = await supabase
         .from('marketplace_orders')
-        .select('id, total, status, created_at')
+        .select('id, total_amount, status, created_at')
         .eq('store_id', store.id)
         .gte('created_at', sixtyDaysAgo)
         .lt('created_at', thirtyDaysAgo);
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as unknown as AnalyticsOrder[];
     },
     enabled: !!store?.id,
   });
+
 
   // Calculate metrics
   const metrics = useMemo(() => {
     // Current period
     const completedOrders = orders.filter((o) => o.status === 'delivered');
-    const totalRevenue = completedOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+    const totalRevenue = completedOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
     const totalOrders = orders.length;
     const avgOrderValue = totalOrders > 0 ? totalRevenue / completedOrders.length : 0;
     const uniqueCustomers = new Set(orders.map((o) => o.customer_email).filter(Boolean)).size;
 
     // Previous period
     const prevCompletedOrders = previousOrders.filter((o) => o.status === 'delivered');
-    const prevRevenue = prevCompletedOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+    const prevRevenue = prevCompletedOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
     const prevOrders = previousOrders.length;
     const prevAvg = prevOrders > 0 ? prevRevenue / prevCompletedOrders.length : 0;
 
@@ -155,7 +165,7 @@ export default function StorefrontAnalytics() {
       return {
         date: format(day, 'MMM d'),
         orders: dayOrders.length,
-        revenue: dayOrders.reduce((sum, o) => sum + (o.total || 0), 0),
+        revenue: dayOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0),
       };
     });
   }, [orders]);

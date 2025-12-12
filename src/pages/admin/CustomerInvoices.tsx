@@ -164,12 +164,13 @@ export default function CustomerInvoices() {
           showToast: false,
         });
 
-        if (!edgeError && edgeData?.invoices && Array.isArray(edgeData.invoices)) {
+        if (!edgeError && edgeData && typeof edgeData === 'object' && 'invoices' in edgeData && Array.isArray((edgeData as any).invoices)) {
+          const invoicesData = (edgeData as any).invoices;
           // Store all invoices for client-side pagination
-          setAllInvoices(edgeData.invoices);
-          const paginatedData = edgeData.invoices.slice(0, PAGE_SIZE);
+          setAllInvoices(invoicesData);
+          const paginatedData = invoicesData.slice(0, PAGE_SIZE);
           setInvoices(paginatedData);
-          setHasMore(edgeData.invoices.length > PAGE_SIZE);
+          setHasMore(invoicesData.length > PAGE_SIZE);
           setCurrentPage(1);
           setLoading(false);
           return;

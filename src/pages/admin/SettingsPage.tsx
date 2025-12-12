@@ -102,11 +102,11 @@ export default function SettingsPage() {
       generalForm.reset({
         companyName: account.company_name,
         email: account.billing_email || '',
-        phone: (account.metadata as any)?.phone || '',
-        address: (account.metadata as any)?.address || '',
+        phone: ((account as any).metadata as any)?.phone || '',
+        address: ((account as any).metadata as any)?.address || '',
       });
 
-      const secSettings = (account.metadata as any)?.security || {};
+      const secSettings = ((account as any).metadata as any)?.security || {};
       securityForm.reset({
         twoFactorEnabled: secSettings.twoFactorEnabled || false,
         requirePasswordChange: secSettings.requirePasswordChange || false,
@@ -140,7 +140,7 @@ export default function SettingsPage() {
           company_name: data.companyName,
           billing_email: data.email || null,
           metadata: {
-            ...((account.metadata as object) || {}),
+            ...(((account as any).metadata as object) || {}),
             phone: data.phone,
             address: data.address,
           }
@@ -168,7 +168,7 @@ export default function SettingsPage() {
         .from('accounts')
         .update({
           metadata: {
-            ...((account.metadata as object) || {}),
+            ...(((account as any).metadata as object) || {}),
             security: data,
           }
         })

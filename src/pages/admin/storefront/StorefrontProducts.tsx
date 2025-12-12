@@ -99,15 +99,14 @@ export default function StorefrontProducts() {
     queryKey: ['tenant-products', tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('products')
-        .select('id, name, category, price, image_url, in_stock, status')
+        .select('id, name, category, price, image_url, in_stock')
         .eq('tenant_id', tenantId)
-        .eq('status', 'active')
         .order('name');
 
       if (error) throw error;
-      return data as Product[];
+      return (data || []) as unknown as Product[];
     },
     enabled: !!tenantId,
   });
@@ -117,13 +116,13 @@ export default function StorefrontProducts() {
     queryKey: ['marketplace-product-settings', store?.id],
     queryFn: async () => {
       if (!store?.id) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('marketplace_product_settings')
-        .select('id, product_id, is_visible, display_price, display_order')
+        .select('id, product_id, is_visible, custom_price, display_order')
         .eq('store_id', store.id);
 
       if (error) throw error;
-      return data as ProductSetting[];
+      return (data || []) as unknown as ProductSetting[];
     },
     enabled: !!store?.id,
   });

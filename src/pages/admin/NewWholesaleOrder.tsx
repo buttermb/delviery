@@ -89,12 +89,12 @@ export default function NewWholesaleOrder() {
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data } = await supabase
-        .from('integration_settings')
-        .select('settings')
-        .eq('tenant_id', tenant.id) // Ensure tenant isolation
-        .eq('integration_id', 'wholesale_pricing_tiers')
+        .from('account_settings')
+        .select('integration_settings')
+        .eq('account_id', tenant.id)
         .maybeSingle();
-      return data?.settings?.tiers || [];
+      const settings = (data?.integration_settings as any) || {};
+      return settings?.wholesale_pricing_tiers?.tiers || [];
     },
     enabled: !!tenant?.id,
   });
