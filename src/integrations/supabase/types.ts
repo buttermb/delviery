@@ -4495,6 +4495,7 @@ export type Database = {
           quantity_returned: number | null
           quantity_sold: number | null
           status: string | null
+          tenant_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -4524,6 +4525,7 @@ export type Database = {
           quantity_returned?: number | null
           quantity_sold?: number | null
           status?: string | null
+          tenant_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -4553,6 +4555,7 @@ export type Database = {
           quantity_returned?: number | null
           quantity_sold?: number | null
           status?: string | null
+          tenant_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -4575,6 +4578,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fronted_inventory_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
