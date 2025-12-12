@@ -1,10 +1,14 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { createLogger } from '../_shared/logger.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const logger = createLogger('forum-approvals');
+
+// Zod validation schema
+const forumApprovalSchema = z.object({
+  action: z.enum(['approve', 'reject']),
+  approval_id: z.string().uuid('Invalid approval ID'),
+  rejection_reason: z.string().max(500).optional(),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -26,14 +30,16 @@ serve(async (req) => {
     // Get the authorization header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      logger.warn('Missing authorization header');
       throw new Error('No authorization header');
     }
 
     // Verify the user is authenticated
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-    
+
     if (userError || !user) {
+      logger.warn('Authentication failed', { error: userError?.message });
       throw new Error('Not authenticated');
     }
 
@@ -45,14 +51,26 @@ serve(async (req) => {
       .single();
 
     if (adminError || !adminUser || !adminUser.is_active) {
+      logger.warn('Non-admin attempted forum approval', { userId: user.id });
       throw new Error('Not authorized');
     }
 
-    const { action, approval_id, rejection_reason } = await req.json();
+    // Parse and validate request body
+    const rawBody = await req.json();
+    const validationResult = forumApprovalSchema.safeParse(rawBody);
 
-    if (!action || !approval_id) {
-      throw new Error('Missing required parameters');
+    if (!validationResult.success) {
+      logger.warn('Validation failed', { errors: validationResult.error.flatten(), userId: user.id });
+      return new Response(
+        JSON.stringify({
+          error: 'Validation failed',
+          details: validationResult.error.flatten().fieldErrors,
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+
+    const { action, approval_id, rejection_reason } = validationResult.data;
 
     if (action === 'approve') {
       // Get the approval record
@@ -63,10 +81,12 @@ serve(async (req) => {
         .single();
 
       if (approvalError || !approval) {
+        logger.warn('Approval not found', { approval_id });
         throw new Error('Approval not found');
       }
 
       if (approval.status !== 'pending') {
+        logger.warn('Approval already processed', { approval_id, status: approval.status });
         throw new Error('Approval already processed');
       }
 
@@ -80,9 +100,7 @@ serve(async (req) => {
         })
         .eq('id', approval_id);
 
-      if (updateError) {
-        throw updateError;
-      }
+      if (updateError) throw updateError;
 
       // Check if user already has a forum profile
       const { data: existingProfile } = await supabaseClient
@@ -93,14 +111,12 @@ serve(async (req) => {
 
       // Only create profile if it doesn't exist
       if (!existingProfile) {
-        // Get user's profile info
         const { data: userProfile } = await supabaseClient
           .from('profiles')
           .select('email, full_name')
           .eq('user_id', approval.customer_user_id)
           .single();
 
-        // Create forum profile
         const { error: profileError } = await supabaseClient
           .from('forum_user_profiles')
           .insert({
@@ -110,18 +126,17 @@ serve(async (req) => {
           });
 
         if (profileError) {
-          console.error('Error creating forum profile:', profileError);
-          // Don't throw - approval is already updated
+          logger.error('Error creating forum profile', { error: profileError.message });
         }
       }
+
+      logger.info('Forum approval granted', { approval_id, approvedBy: user.id });
 
       return new Response(
         JSON.stringify({ success: true, message: 'User approved successfully' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
-
     } else if (action === 'reject') {
-      // Update approval status
       const { error: updateError } = await supabaseClient
         .from('forum_user_approvals')
         .update({
@@ -132,21 +147,19 @@ serve(async (req) => {
         })
         .eq('id', approval_id);
 
-      if (updateError) {
-        throw updateError;
-      }
+      if (updateError) throw updateError;
+
+      logger.info('Forum approval rejected', { approval_id, rejectedBy: user.id });
 
       return new Response(
         JSON.stringify({ success: true, message: 'User rejected' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
-
-    } else {
-      throw new Error('Invalid action');
     }
 
+    throw new Error('Invalid action');
   } catch (error) {
-    console.error('Error:', error);
+    logger.error('Forum approval error', { error: error instanceof Error ? error.message : 'Unknown' });
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({ error: message }),
