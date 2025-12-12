@@ -1,7 +1,23 @@
-import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { createLogger } from '../_shared/logger.ts';
+
+const logger = createLogger('add-courier');
+
+// Zod validation schema
+const addCourierSchema = z.object({
+  full_name: z.string().min(1, 'Full name is required').max(100),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().min(10, 'Phone must be at least 10 characters').max(20),
+  license_number: z.string().min(1, 'License number is required').max(50),
+  vehicle_type: z.enum(['car', 'motorcycle', 'bicycle', 'scooter', 'walking']),
+  vehicle_make: z.string().max(50).optional(),
+  vehicle_model: z.string().max(50).optional(),
+  vehicle_plate: z.string().max(20).optional(),
+  tenant_id: z.string().uuid().optional(),
+  age_verified: z.boolean().default(true),
+});
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -14,6 +30,7 @@ serve(async (req) => {
     // Verify admin authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      logger.warn('Missing authorization header');
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -24,6 +41,7 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
+      logger.warn('Unauthorized access attempt', { error: authError?.message });
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -39,13 +57,28 @@ serve(async (req) => {
       .maybeSingle();
 
     if (!roles) {
+      logger.warn('Non-admin attempted to add courier', { userId: user.id });
       return new Response(
         JSON.stringify({ error: 'Admin access required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const body = await req.json();
+    // Parse and validate request body
+    const rawBody = await req.json();
+    const validationResult = addCourierSchema.safeParse(rawBody);
+    
+    if (!validationResult.success) {
+      logger.warn('Validation failed', { errors: validationResult.error.flatten() });
+      return new Response(
+        JSON.stringify({ 
+          error: 'Validation failed', 
+          details: validationResult.error.flatten().fieldErrors 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const {
       full_name,
       email,
@@ -56,21 +89,12 @@ serve(async (req) => {
       vehicle_model,
       vehicle_plate,
       tenant_id,
-      age_verified = true // Default to true for admin-added couriers
-    } = body;
-
-    // Validate required fields
-    if (!full_name || !email || !phone || !license_number || !vehicle_type) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+      age_verified
+    } = validationResult.data;
 
     // Get tenant_id from the admin user if not provided
     let courierTenantId = tenant_id;
     if (!courierTenantId) {
-      // Try to get tenant from tenant_users table
       const { data: tenantUser } = await supabase
         .from('tenant_users')
         .select('tenant_id')
@@ -84,6 +108,7 @@ serve(async (req) => {
     }
 
     if (!courierTenantId) {
+      logger.warn('Unable to determine tenant', { userId: user.id });
       return new Response(
         JSON.stringify({ error: 'Unable to determine tenant. Please provide tenant_id.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -98,31 +123,29 @@ serve(async (req) => {
       .maybeSingle();
 
     if (existingCourier) {
+      logger.warn('Courier email already exists', { email });
       return new Response(
         JSON.stringify({ error: 'Courier with this email already exists' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Create a temporary user for the courier (they can set password later)
+    // Create a temporary user for the courier
     const { data: authData, error: createUserError } = await supabase.auth.admin.createUser({
       email,
-      email_confirm: true, // Auto-confirm email
-      user_metadata: {
-        full_name,
-        phone
-      }
+      email_confirm: true,
+      user_metadata: { full_name, phone }
     });
 
     if (createUserError) {
-      console.error('Failed to create auth user:', createUserError);
+      logger.error('Failed to create auth user', { error: createUserError.message });
       return new Response(
         JSON.stringify({ error: 'Failed to create courier account' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Insert courier record with tenant_id for multi-tenant isolation
+    // Insert courier record
     const { data: courier, error: courierError } = await supabase
       .from('couriers')
       .insert({
@@ -144,10 +167,8 @@ serve(async (req) => {
       .maybeSingle();
 
     if (courierError) {
-      console.error('Failed to create courier:', courierError);
-      // Cleanup: delete auth user if courier creation failed
+      logger.error('Failed to create courier record', { error: courierError.message });
       await supabase.auth.admin.deleteUser(authData.user.id);
-
       return new Response(
         JSON.stringify({ error: 'Failed to create courier record' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -157,10 +178,7 @@ serve(async (req) => {
     // Assign courier role
     await supabase
       .from('user_roles')
-      .insert({
-        user_id: authData.user.id,
-        role: 'courier'
-      });
+      .insert({ user_id: authData.user.id, role: 'courier' });
 
     // Log the action
     await supabase
@@ -170,14 +188,10 @@ serve(async (req) => {
         entity_id: courier.id,
         action: 'CREATE',
         user_id: user.id,
-        details: {
-          courier_name: full_name,
-          email,
-          vehicle_type
-        }
+        details: { courier_name: full_name, email, vehicle_type }
       });
 
-    console.log('Courier created successfully:', courier.id);
+    logger.info('Courier created successfully', { courierId: courier.id, tenantId: courierTenantId });
 
     return new Response(
       JSON.stringify({
@@ -189,7 +203,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in add-courier function:', error);
+    logger.error('Unexpected error', { error: error instanceof Error ? error.message : 'Unknown' });
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
