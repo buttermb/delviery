@@ -38,19 +38,17 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
-    { id: 'contacts', label: 'Contacts', icon: Users },
+    { id: 'all', label: 'All', icon: Users },
     { id: 'wholesale', label: 'Wholesale', icon: Briefcase },
     { id: 'crm', label: 'CRM', icon: Heart },
-    { id: 'insights', label: 'Insights', icon: BarChart3 },
-    { id: 'invoices', label: 'Invoices', icon: FileText },
-    { id: 'analytics', label: 'Analytics', icon: PieChart },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
 
 export default function CustomerHubPage() {
     const [searchParams, setSearchParams] = useSearchParams();
-    const activeTab = (searchParams.get('tab') as TabId) || 'contacts';
+    const activeTab = (searchParams.get('tab') as TabId) || 'all';
 
     const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab });
@@ -79,8 +77,8 @@ export default function CustomerHubPage() {
                     </TabsList>
                 </div>
 
-                {/* Contacts Tab */}
-                <TabsContent value="contacts" className="m-0">
+                {/* All Tab */}
+                <TabsContent value="all" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <CustomerManagement />
                     </Suspense>
@@ -97,20 +95,6 @@ export default function CustomerHubPage() {
                 <TabsContent value="crm" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <CustomerCRMPage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Insights Tab */}
-                <TabsContent value="insights" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <CustomerInsightsPage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Invoices Tab */}
-                <TabsContent value="invoices" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <CustomerInvoices />
                     </Suspense>
                 </TabsContent>
 
