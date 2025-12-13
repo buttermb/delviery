@@ -228,6 +228,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('dashboard', 'Dashboard', '/admin/dashboard', LayoutDashboard, { shortcut: '⌘1' }),
       createItem('hotbox', 'Hotbox', '/admin/hotbox', Flame, { hot: true }),
+      createItem('notifications', 'Notifications', '/admin/notifications', Bell),
     ],
   },
   {
@@ -236,6 +237,8 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('disposable-menus', 'Menus', '/admin/disposable-menus', Menu),
       createItem('basic-orders', 'Orders', '/admin/orders-hub', ShoppingCart),
+      createItem('wholesale-orders', 'Wholesale Orders', '/admin/wholesale-orders', Package),
+      createItem('wholesale-clients', 'Wholesale Clients', '/admin/wholesale-clients', Briefcase),
       createItem('pos-system', 'POS', '/admin/pos-hub', Store),
     ],
   },
@@ -259,6 +262,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     collapsed: true,
     items: [
       createItem('settings', 'Settings', '/admin/settings-hub', Settings),
+      createItem('billing', 'Billing', '/admin/billing', CreditCard),
       createItem('help', 'Help', '/admin/help', HelpCircle),
     ],
   },
