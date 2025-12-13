@@ -15,7 +15,8 @@ import {
     Car,
     Users,
     MapPin,
-    Route
+    Route,
+    Map,
 } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,6 +26,7 @@ const FleetManagement = lazy(() => import('@/pages/admin/FleetManagement'));
 const Couriers = lazy(() => import('@/pages/admin/Couriers'));
 const DeliveryTracking = lazy(() => import('@/pages/admin/DeliveryTracking'));
 const RouteOptimizationPage = lazy(() => import('@/pages/tenant-admin/RouteOptimizationPage'));
+const LiveMap = lazy(() => import('@/pages/admin/LiveMap'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -39,6 +41,7 @@ const tabs = [
     { id: 'couriers', label: 'Couriers', icon: Users },
     { id: 'tracking', label: 'Tracking', icon: MapPin },
     { id: 'routes', label: 'Routes', icon: Route },
+    { id: 'live-map', label: 'Live Map', icon: Map },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -63,7 +66,7 @@ export default function DeliveryHubPage() {
                             </p>
                         </div>
                     </div>
-                    <TabsList className="grid w-full max-w-2xl grid-cols-5">
+                    <TabsList className="grid w-full max-w-3xl grid-cols-6">
                         {tabs.map((tab) => (
                             <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
                                 <tab.icon className="h-4 w-4" />
@@ -87,6 +90,9 @@ export default function DeliveryHubPage() {
                 </TabsContent>
                 <TabsContent value="routes" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><RouteOptimizationPage /></Suspense>
+                </TabsContent>
+                <TabsContent value="live-map" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><LiveMap /></Suspense>
                 </TabsContent>
             </Tabs>
         </div>
