@@ -23,8 +23,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 const SettingsPage = lazy(() => import('@/pages/admin/SettingsPage'));
 const BillingPage = lazy(() => import('@/pages/tenant-admin/BillingPage'));
 const APIAccessPage = lazy(() => import('@/pages/tenant-admin/APIAccessPage'));
-const SecurityPage = lazy(() => import('@/pages/admin/SecurityPage'));
-const HelpPage = lazy(() => import('@/pages/admin/HelpPage'));
+const SecurityPage = lazy(() => import('@/pages/docs/SecurityPage'));
+const HelpPage = lazy(() => import('@/pages/HelpPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
