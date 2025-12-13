@@ -17,20 +17,30 @@ import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Building2,
+    FileText,
+    ArrowLeftRight,
     Users,
-    MapPin,
-    Truck,
+    UserCog,
+    ScrollText,
     Shield,
+    Calendar,
+    Headphones,
+    MapPin,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Lazy load tab content for performance
-const TeamManagement = lazy(() => import('@/pages/admin/TeamManagement'));
 const SupplierManagementPage = lazy(() => import('@/pages/admin/SupplierManagementPage'));
+const PurchaseOrdersPage = lazy(() => import('@/pages/admin/PurchaseOrdersPage'));
+const ReturnsManagementPage = lazy(() => import('@/pages/admin/ReturnsManagementPage'));
+const TeamManagement = lazy(() => import('@/pages/admin/TeamManagement'));
+const RoleManagement = lazy(() => import('@/pages/admin/RoleManagement'));
+const ActivityLogsPage = lazy(() => import('@/pages/tenant-admin/ActivityLogsPage'));
+const QualityControlPage = lazy(() => import('@/pages/admin/QualityControlPage'));
+const AppointmentSchedulerPage = lazy(() => import('@/pages/admin/AppointmentSchedulerPage'));
+const SupportTicketsPage = lazy(() => import('@/pages/admin/SupportTicketsPage'));
 const LocationsManagement = lazy(() => import('@/pages/admin/LocationsManagement'));
-const DeliveryManagement = lazy(() => import('@/pages/admin/DeliveryManagement'));
-const CompliancePage = lazy(() => import('@/pages/tenant-admin/CompliancePage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -40,18 +50,23 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
+    { id: 'suppliers', label: 'Suppliers', icon: Building2 },
+    { id: 'purchase-orders', label: 'POs', icon: FileText },
+    { id: 'returns', label: 'Returns', icon: ArrowLeftRight },
     { id: 'team', label: 'Team', icon: Users },
-    { id: 'vendors', label: 'Vendors', icon: Building2 },
+    { id: 'roles', label: 'Roles', icon: UserCog },
+    { id: 'activity', label: 'Activity', icon: ScrollText },
+    { id: 'quality', label: 'Quality', icon: Shield },
+    { id: 'appointments', label: 'Schedule', icon: Calendar },
+    { id: 'support', label: 'Support', icon: Headphones },
     { id: 'locations', label: 'Locations', icon: MapPin },
-    { id: 'delivery', label: 'Delivery', icon: Truck },
-    { id: 'compliance', label: 'Compliance', icon: Shield },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
 
 export default function OperationsHubPage() {
     const [searchParams, setSearchParams] = useSearchParams();
-    const activeTab = (searchParams.get('tab') as TabId) || 'team';
+    const activeTab = (searchParams.get('tab') as TabId) || 'suppliers';
 
     const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab });
@@ -82,6 +97,27 @@ export default function OperationsHubPage() {
                     </div>
                 </div>
 
+                {/* Suppliers Tab */}
+                <TabsContent value="suppliers" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <SupplierManagementPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Purchase Orders Tab */}
+                <TabsContent value="purchase-orders" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <PurchaseOrdersPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Returns Tab */}
+                <TabsContent value="returns" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <ReturnsManagementPage />
+                    </Suspense>
+                </TabsContent>
+
                 {/* Team Tab */}
                 <TabsContent value="team" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
@@ -89,10 +125,38 @@ export default function OperationsHubPage() {
                     </Suspense>
                 </TabsContent>
 
-                {/* Vendors Tab */}
-                <TabsContent value="vendors" className="m-0">
+                {/* Roles Tab */}
+                <TabsContent value="roles" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
-                        <SupplierManagementPage />
+                        <RoleManagement />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Activity Tab */}
+                <TabsContent value="activity" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <ActivityLogsPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Quality Tab */}
+                <TabsContent value="quality" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <QualityControlPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Appointments Tab */}
+                <TabsContent value="appointments" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <AppointmentSchedulerPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Support Tab */}
+                <TabsContent value="support" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <SupportTicketsPage />
                     </Suspense>
                 </TabsContent>
 
@@ -100,20 +164,6 @@ export default function OperationsHubPage() {
                 <TabsContent value="locations" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <LocationsManagement />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Delivery Tab */}
-                <TabsContent value="delivery" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <DeliveryManagement />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Compliance Tab */}
-                <TabsContent value="compliance" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <CompliancePage />
                     </Suspense>
                 </TabsContent>
             </Tabs>

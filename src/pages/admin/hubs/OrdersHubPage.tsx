@@ -42,18 +42,20 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
-    { id: 'all', label: 'All Orders', icon: ShoppingBag },
-    { id: 'menus', label: 'Menus', icon: Package },
-    { id: 'b2b', label: 'B2B', icon: Package },
-    { id: 'store', label: 'Store', icon: Store },
+    { id: 'menu', label: 'Menu Orders', icon: ShoppingBag },
+    { id: 'wholesale', label: 'Wholesale', icon: Package },
+    { id: 'storefront', label: 'Storefront', icon: Store },
+    { id: 'preorders', label: 'Pre-Orders', icon: Clock },
     { id: 'live', label: 'Live', icon: Radio },
+    { id: 'pipeline', label: 'Pipeline', icon: Workflow },
+    { id: 'history', label: 'History', icon: History },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
 
 export default function OrdersHubPage() {
     const [searchParams, setSearchParams] = useSearchParams();
-    const activeTab = (searchParams.get('tab') as TabId) || 'all';
+    const activeTab = (searchParams.get('tab') as TabId) || 'menu';
     const { navigateToAdmin } = useTenantNavigation();
 
     const handleTabChange = (tab: string) => {
@@ -99,31 +101,31 @@ export default function OrdersHubPage() {
                     </div>
                 </div>
 
-                {/* All Orders Tab */}
-                <TabsContent value="all" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <Orders />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Menus Tab */}
-                <TabsContent value="menus" className="m-0">
+                {/* Menu Orders Tab */}
+                <TabsContent value="menu" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <DisposableMenuOrders />
                     </Suspense>
                 </TabsContent>
 
-                {/* B2B Tab */}
-                <TabsContent value="b2b" className="m-0">
+                {/* Wholesale Orders Tab */}
+                <TabsContent value="wholesale" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <WholesaleOrdersPage />
                     </Suspense>
                 </TabsContent>
 
-                {/* Store Tab */}
-                <TabsContent value="store" className="m-0">
+                {/* Storefront Orders Tab */}
+                <TabsContent value="storefront" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <StorefrontOrders />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Pre-Orders Tab */}
+                <TabsContent value="preorders" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <PreOrdersPage />
                     </Suspense>
                 </TabsContent>
 
@@ -131,6 +133,20 @@ export default function OrdersHubPage() {
                 <TabsContent value="live" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <LiveOrders />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Pipeline Tab */}
+                <TabsContent value="pipeline" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <OrderPipelinePage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* History Tab */}
+                <TabsContent value="history" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <Orders />
                     </Suspense>
                 </TabsContent>
             </Tabs>

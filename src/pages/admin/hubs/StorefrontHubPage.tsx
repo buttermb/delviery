@@ -41,18 +41,21 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'catalog', label: 'Catalog', icon: Package },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'products', label: 'Products', icon: Package },
     { id: 'orders', label: 'Orders', icon: ShoppingCart },
-    { id: 'promos', label: 'Promos', icon: Tag },
-    { id: 'design', label: 'Design', icon: Brush },
+    { id: 'customers', label: 'Customers', icon: Users },
+    { id: 'coupons', label: 'Coupons', icon: Tag },
+    { id: 'builder', label: 'Builder', icon: Brush },
+    { id: 'bundles', label: 'Bundles', icon: Boxes },
+    { id: 'settings', label: 'Settings', icon: Settings },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
 
 export default function StorefrontHubPage() {
     const [searchParams, setSearchParams] = useSearchParams();
-    const activeTab = (searchParams.get('tab') as TabId) || 'overview';
+    const activeTab = (searchParams.get('tab') as TabId) || 'dashboard';
 
     const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab });
@@ -82,20 +85,29 @@ export default function StorefrontHubPage() {
                     </div>
                 </div>
 
-                <TabsContent value="overview" className="m-0">
+                <TabsContent value="dashboard" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><StorefrontDashboard /></Suspense>
                 </TabsContent>
-                <TabsContent value="catalog" className="m-0">
+                <TabsContent value="products" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><StorefrontProducts /></Suspense>
                 </TabsContent>
                 <TabsContent value="orders" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><StorefrontOrders /></Suspense>
                 </TabsContent>
-                <TabsContent value="promos" className="m-0">
+                <TabsContent value="customers" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><StorefrontCustomers /></Suspense>
+                </TabsContent>
+                <TabsContent value="coupons" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><StorefrontCoupons /></Suspense>
                 </TabsContent>
-                <TabsContent value="design" className="m-0">
+                <TabsContent value="builder" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><StorefrontBuilder /></Suspense>
+                </TabsContent>
+                <TabsContent value="bundles" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><StorefrontBundles /></Suspense>
+                </TabsContent>
+                <TabsContent value="settings" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><StorefrontSettings /></Suspense>
                 </TabsContent>
             </Tabs>
         </div>
