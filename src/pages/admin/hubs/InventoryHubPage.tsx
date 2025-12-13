@@ -18,6 +18,7 @@ import {
     Truck,
     Plus,
     CreditCard,
+    Barcode,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
@@ -31,6 +32,7 @@ const InventoryManagement = lazy(() => import('@/pages/admin/InventoryManagement
 const InventoryMonitoringPage = lazy(() => import('@/pages/admin/InventoryMonitoringPage'));
 const FrontedInventory = lazy(() => import('@/pages/admin/FrontedInventory'));
 const DispatchInventory = lazy(() => import('@/pages/admin/DispatchInventory'));
+const GenerateBarcodes = lazy(() => import('@/pages/admin/GenerateBarcodes'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -46,6 +48,7 @@ const tabs = [
     { id: 'monitoring', label: 'Alerts', icon: AlertTriangle },
     { id: 'fronted', label: 'Who Owes Me', icon: CreditCard },
     { id: 'dispatch', label: 'Dispatch', icon: Truck },
+    { id: 'barcodes', label: 'Barcodes', icon: Barcode },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -127,6 +130,13 @@ export default function InventoryHubPage() {
                 <TabsContent value="dispatch" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <DispatchInventory />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Barcodes Tab */}
+                <TabsContent value="barcodes" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <GenerateBarcodes />
                     </Suspense>
                 </TabsContent>
             </Tabs>

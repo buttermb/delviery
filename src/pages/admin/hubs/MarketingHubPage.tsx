@@ -12,6 +12,7 @@ import {
     Star,
     Tag,
     Mail,
+    MessageSquare,
 } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -20,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 const LoyaltyProgramPage = lazy(() => import('@/pages/admin/LoyaltyProgramPage'));
 const CouponManagementPage = lazy(() => import('@/pages/admin/CouponManagementPage'));
 const MarketingAutomationPage = lazy(() => import('@/pages/admin/MarketingAutomationPage'));
+const AdminLiveChat = lazy(() => import('@/pages/admin/AdminLiveChat'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -32,6 +34,7 @@ const tabs = [
     { id: 'loyalty', label: 'Loyalty Program', icon: Star },
     { id: 'coupons', label: 'Coupons', icon: Tag },
     { id: 'campaigns', label: 'Campaigns', icon: Mail },
+    { id: 'live-chat', label: 'Live Chat', icon: MessageSquare },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -57,7 +60,7 @@ export default function MarketingHubPage() {
                             </p>
                         </div>
                     </div>
-                    <TabsList className="grid w-full max-w-md grid-cols-3">
+                    <TabsList className="grid w-full max-w-lg grid-cols-4">
                         {tabs.map((tab) => (
                             <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
                                 <tab.icon className="h-4 w-4" />
@@ -85,6 +88,13 @@ export default function MarketingHubPage() {
                 <TabsContent value="campaigns" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <MarketingAutomationPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Live Chat Tab */}
+                <TabsContent value="live-chat" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <AdminLiveChat />
                     </Suspense>
                 </TabsContent>
             </Tabs>
