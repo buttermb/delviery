@@ -218,12 +218,9 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
 
 /**
  * ENTERPRISE TIER SIDEBAR ($499/mo)
- * Condensed to 10 hub-based items for clean navigation
+ * Hub-based navigation with core features directly accessible
  */
 export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
-  // ==========================================================================
-  // COMMAND CENTER (3 items - pinned for quick access)
-  // ==========================================================================
   {
     section: 'Command Center',
     pinned: true,
@@ -231,25 +228,25 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('dashboard', 'Dashboard', '/admin/dashboard', LayoutDashboard, { shortcut: '⌘1' }),
       createItem('hotbox', 'Hotbox', '/admin/hotbox', Flame, { hot: true }),
+    ],
+  },
+  {
+    section: 'Sales & Orders',
+    defaultExpanded: true,
+    items: [
+      createItem('disposable-menus', 'Menus', '/admin/disposable-menus', Menu),
+      createItem('basic-orders', 'Orders', '/admin/orders-hub', ShoppingCart),
       createItem('pos-system', 'POS', '/admin/pos-hub', Store),
     ],
   },
-  // ==========================================================================
-  // BUSINESS (4 items - core daily operations)
-  // ==========================================================================
   {
-    section: 'Business',
-    defaultExpanded: true,
+    section: 'Inventory & Customers',
     items: [
-      createItem('basic-orders', 'Orders', '/admin/orders-hub', ShoppingCart),
       createItem('products', 'Inventory', '/admin/inventory-hub', Package),
       createItem('customers', 'Customers', '/admin/customer-hub', Users),
       createItem('storefront', 'Storefront', '/admin/storefront-hub', Store),
     ],
   },
-  // ==========================================================================
-  // MANAGEMENT (2 items - operations and finance)
-  // ==========================================================================
   {
     section: 'Management',
     items: [
@@ -257,14 +254,11 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
       createItem('financial-center', 'Finance', '/admin/finance-hub', DollarSign),
     ],
   },
-  // ==========================================================================
-  // SYSTEM (2 items - settings and help)
-  // ==========================================================================
   {
     section: 'System',
     collapsed: true,
     items: [
-      createItem('settings', 'Settings', '/admin/settings', Settings),
+      createItem('settings', 'Settings', '/admin/settings-hub', Settings),
       createItem('help', 'Help', '/admin/help', HelpCircle),
     ],
   },
