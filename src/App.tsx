@@ -908,12 +908,12 @@ const App = () => {
                                           <Route path="financial-center" element={<Navigate to="command-center" replace />} />
                                           <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory-analytics"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />
                                           <Route path="global-search" element={<FeatureProtectedRoute featureId="global-search"><GlobalSearch /></FeatureProtectedRoute>} />
-                                          <Route path="suppliers" element={<FeatureProtectedRoute featureId="suppliers"><SupplierManagementPage /></FeatureProtectedRoute>} />
-                                          <Route path="purchase-orders" element={<FeatureProtectedRoute featureId="purchase-orders"><PurchaseOrdersPage /></FeatureProtectedRoute>} />
-                                          <Route path="returns" element={<FeatureProtectedRoute featureId="returns"><ReturnsManagementPage /></FeatureProtectedRoute>} />
-                                          <Route path="loyalty-program" element={<FeatureProtectedRoute featureId="loyalty-program"><LoyaltyProgramPage /></FeatureProtectedRoute>} />
-                                          <Route path="coupons" element={<FeatureProtectedRoute featureId="coupons"><CouponManagementPage /></FeatureProtectedRoute>} />
-                                          <Route path="quality-control" element={<FeatureProtectedRoute featureId="quality-control"><QualityControlPage /></FeatureProtectedRoute>} />
+                                          <Route path="suppliers" element={<Navigate to="operations-hub?tab=suppliers" replace />} />
+                                          <Route path="purchase-orders" element={<Navigate to="operations-hub?tab=purchase-orders" replace />} />
+                                          <Route path="returns" element={<Navigate to="operations-hub?tab=returns" replace />} />
+                                          <Route path="loyalty-program" element={<Navigate to="marketing-hub?tab=loyalty" replace />} />
+                                          <Route path="coupons" element={<Navigate to="marketing-hub?tab=coupons" replace />} />
+                                          <Route path="quality-control" element={<Navigate to="operations-hub?tab=quality" replace />} />
                                           <Route path="customer-crm" element={<Navigate to="customer-hub?tab=crm" replace />} />
                                           <Route path="crm/clients" element={<FeatureProtectedRoute featureId="customer-crm"><ClientsPage /></FeatureProtectedRoute>} />
                                           <Route path="crm/clients/:clientId" element={<FeatureProtectedRoute featureId="customer-crm"><ClientDetailPage /></FeatureProtectedRoute>} />
@@ -925,14 +925,14 @@ const App = () => {
                                           <Route path="crm/pre-orders/:preOrderId" element={<FeatureProtectedRoute featureId="customer-crm"><PreOrderDetailPage /></FeatureProtectedRoute>} />
                                           <Route path="crm/settings" element={<FeatureProtectedRoute featureId="customer-crm"><CRMSettingsPage /></FeatureProtectedRoute>} />
                                           <Route path="crm/invites" element={<FeatureProtectedRoute featureId="customer-crm"><InvitesPage /></FeatureProtectedRoute>} />
-                                          <Route path="marketing-automation" element={<FeatureProtectedRoute featureId="marketing-automation"><MarketingAutomationPage /></FeatureProtectedRoute>} />
-                                          <Route path="appointments" element={<FeatureProtectedRoute featureId="appointments"><AppointmentSchedulerPage /></FeatureProtectedRoute>} />
-                                          <Route path="support-tickets" element={<FeatureProtectedRoute featureId="support-tickets"><SupportTicketsPage /></FeatureProtectedRoute>} />
-                                          <Route path="batch-recall" element={<FeatureProtectedRoute featureId="batch-recall"><BatchRecallPage /></FeatureProtectedRoute>} />
-                                          <Route path="compliance-vault" element={<FeatureProtectedRoute featureId="compliance-vault"><ComplianceVaultPage /></FeatureProtectedRoute>} />
-                                          <Route path="compliance" element={<FeatureProtectedRoute featureId="compliance"><CompliancePage /></FeatureProtectedRoute>} />
+                                          <Route path="marketing-automation" element={<Navigate to="marketing-hub?tab=campaigns" replace />} />
+                                          <Route path="appointments" element={<Navigate to="operations-hub?tab=appointments" replace />} />
+                                          <Route path="support-tickets" element={<Navigate to="operations-hub?tab=support" replace />} />
+                                          <Route path="batch-recall" element={<Navigate to="compliance-hub?tab=batch-recall" replace />} />
+                                          <Route path="compliance-vault" element={<Navigate to="compliance-hub?tab=vault" replace />} />
+                                          <Route path="compliance" element={<Navigate to="compliance-hub" replace />} />
                                           <Route path="advanced-reporting" element={<FeatureProtectedRoute featureId="advanced-reporting"><AdvancedReportingPage /></FeatureProtectedRoute>} />
-                                          <Route path="predictive-analytics" element={<FeatureProtectedRoute featureId="predictive-analytics"><PredictiveAnalyticsPage /></FeatureProtectedRoute>} />
+                                          <Route path="predictive-analytics" element={<Navigate to="analytics-hub?tab=forecasting" replace />} />
                                           <Route path="board-report" element={<BoardReportPage />} />
                                           <Route path="strategic-dashboard" element={<StrategicDashboardPage />} />
                                           <Route path="expansion" element={<ExpansionAnalysisPage />} />
