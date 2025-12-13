@@ -41,13 +41,17 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
+    // Overview
     { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
+    // Store Operations
     { id: 'products', label: 'Catalog', icon: Package },
     { id: 'orders', label: 'Orders', icon: ShoppingCart },
     { id: 'customers', label: 'Customers', icon: Users },
+    // Marketing
     { id: 'coupons', label: 'Promos', icon: Tag },
-    { id: 'builder', label: 'Design', icon: Brush },
     { id: 'bundles', label: 'Bundles', icon: Boxes },
+    // Customization
+    { id: 'builder', label: 'Design', icon: Brush },
     { id: 'settings', label: 'Settings', icon: Settings },
 ] as const;
 

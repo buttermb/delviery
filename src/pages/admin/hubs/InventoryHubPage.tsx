@@ -42,13 +42,13 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
-    { id: 'products', label: 'Products', icon: Package },
-    { id: 'stock', label: 'Stock', icon: BarChart3 },
-    { id: 'adjustments', label: 'Transfers', icon: ArrowLeftRight },
-    { id: 'monitoring', label: 'Alerts', icon: AlertTriangle },
-    { id: 'fronted', label: 'Owed', icon: CreditCard },
+    { id: 'products', label: 'Products', icon: Package },     // Core catalog
+    { id: 'stock', label: 'Stock', icon: BarChart3 },         // Levels overview
+    { id: 'monitoring', label: 'Alerts', icon: AlertTriangle }, // Urgent items
+    { id: 'adjustments', label: 'Transfers', icon: ArrowLeftRight }, // Actions
     { id: 'dispatch', label: 'Dispatch', icon: Truck },
-    { id: 'barcodes', label: 'Barcodes', icon: Barcode },
+    { id: 'fronted', label: 'Owed', icon: CreditCard },       // Tracking
+    { id: 'barcodes', label: 'Barcodes', icon: Barcode },     // Utility
 ] as const;
 
 type TabId = typeof tabs[number]['id'];

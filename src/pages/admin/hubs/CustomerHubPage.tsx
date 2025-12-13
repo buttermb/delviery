@@ -38,11 +38,15 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
+    // Overview
     { id: 'contacts', label: 'All', icon: Users },
-    { id: 'wholesale', label: 'B2B Clients', icon: Briefcase },
+    // Relationships
     { id: 'crm', label: 'CRM', icon: Heart },
-    { id: 'insights', label: 'Insights', icon: BarChart3 },
+    { id: 'wholesale', label: 'B2B Clients', icon: Briefcase },
+    // Transactions
     { id: 'invoices', label: 'Invoices', icon: FileText },
+    // Analytics
+    { id: 'insights', label: 'Insights', icon: BarChart3 },
     { id: 'analytics', label: 'Analytics', icon: PieChart },
 ] as const;
 

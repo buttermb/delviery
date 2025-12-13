@@ -42,13 +42,13 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
-    { id: 'menu', label: 'Menus', icon: ShoppingBag },
+    { id: 'history', label: 'All', icon: History },            // Overview first
+    { id: 'live', label: 'Live', icon: Radio },               // Real-time urgent
+    { id: 'menu', label: 'Menus', icon: ShoppingBag },        // Order types
     { id: 'wholesale', label: 'B2B', icon: Package },
     { id: 'storefront', label: 'Store', icon: Store },
     { id: 'preorders', label: 'Pre-Orders', icon: Clock },
-    { id: 'live', label: 'Live', icon: Radio },
-    { id: 'pipeline', label: 'Pipeline', icon: Workflow },
-    { id: 'history', label: 'All', icon: History },
+    { id: 'pipeline', label: 'Pipeline', icon: Workflow },    // Workflow view
 ] as const;
 
 type TabId = typeof tabs[number]['id'];

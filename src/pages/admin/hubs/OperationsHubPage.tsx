@@ -50,16 +50,20 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
+    // People Management
+    { id: 'team', label: 'Team', icon: Users },
+    { id: 'roles', label: 'Roles', icon: UserCog },
+    // Supply Chain
     { id: 'suppliers', label: 'Vendors', icon: Building2 },
     { id: 'purchase-orders', label: 'Orders', icon: FileText },
     { id: 'returns', label: 'Returns', icon: ArrowLeftRight },
-    { id: 'team', label: 'Team', icon: Users },
-    { id: 'roles', label: 'Roles', icon: UserCog },
-    { id: 'activity', label: 'Logs', icon: ScrollText },
+    // Compliance & Quality
     { id: 'quality', label: 'QC', icon: Shield },
+    { id: 'activity', label: 'Logs', icon: ScrollText },
+    // Facilities
+    { id: 'locations', label: 'Locations', icon: MapPin },
     { id: 'appointments', label: 'Calendar', icon: Calendar },
     { id: 'support', label: 'Support', icon: Headphones },
-    { id: 'locations', label: 'Locations', icon: MapPin },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
