@@ -301,6 +301,9 @@ const DeliveryHubPage = lazy(() => import("./pages/admin/hubs/DeliveryHubPage"))
 const FinanceHubPage = lazy(() => import("./pages/admin/hubs/FinanceHubPage"));
 const IntegrationsHubPage = lazy(() => import("./pages/admin/hubs/IntegrationsHubPage"));
 const StorefrontHubPage = lazy(() => import("./pages/admin/hubs/StorefrontHubPage"));
+const OperationsHubPage = lazy(() => import("./pages/admin/hubs/OperationsHubPage"));
+const ComplianceHubPage = lazy(() => import("./pages/admin/hubs/ComplianceHubPage"));
+const MarketingHubPage = lazy(() => import("./pages/admin/hubs/MarketingHubPage"));
 const RoleManagement = lazy(() => import("./pages/admin/RoleManagement"));
 const ActivityLogsPage = lazy(() => import("./pages/tenant-admin/ActivityLogsPage"));
 const LocationAnalyticsPage = lazy(() => import("./pages/tenant-admin/LocationAnalyticsPage"));
@@ -882,6 +885,9 @@ const App = () => {
                                           <Route path="finance-hub" element={<FeatureProtectedRoute featureId="financial-center"><FinanceHubPage /></FeatureProtectedRoute>} />
                                           <Route path="integrations-hub" element={<FeatureProtectedRoute featureId="api-access"><IntegrationsHubPage /></FeatureProtectedRoute>} />
                                           <Route path="storefront-hub" element={<FeatureProtectedRoute featureId="storefront"><StorefrontHubPage /></FeatureProtectedRoute>} />
+                                          <Route path="operations-hub" element={<FeatureProtectedRoute featureId="suppliers"><OperationsHubPage /></FeatureProtectedRoute>} />
+                                          <Route path="compliance-hub" element={<FeatureProtectedRoute featureId="compliance"><ComplianceHubPage /></FeatureProtectedRoute>} />
+                                          <Route path="marketing-hub" element={<FeatureProtectedRoute featureId="loyalty-program"><MarketingHubPage /></FeatureProtectedRoute>} />
                                           <Route path="delivery-management" element={<Navigate to="delivery-hub?tab=dashboard" replace />} />
                                           <Route path="live-map" element={<FeatureProtectedRoute featureId="live-map"><LiveMap /></FeatureProtectedRoute>} />
                                           <Route path="gps-tracking" element={<FeatureProtectedRoute featureId="fleet-management"><RunnerLocationTracking /></FeatureProtectedRoute>} />

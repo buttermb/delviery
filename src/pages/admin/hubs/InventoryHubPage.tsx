@@ -16,7 +16,8 @@ import {
     ArrowLeftRight,
     AlertTriangle,
     Truck,
-    Plus
+    Plus,
+    CreditCard,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
@@ -28,6 +29,8 @@ const ProductManagement = lazy(() => import('@/pages/admin/ProductManagement'));
 const InventoryDashboard = lazy(() => import('@/pages/admin/InventoryDashboard'));
 const InventoryManagement = lazy(() => import('@/pages/admin/InventoryManagement'));
 const InventoryMonitoringPage = lazy(() => import('@/pages/admin/InventoryMonitoringPage'));
+const FrontedInventory = lazy(() => import('@/pages/admin/FrontedInventory'));
+const DispatchInventory = lazy(() => import('@/pages/admin/DispatchInventory'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -41,6 +44,8 @@ const tabs = [
     { id: 'stock', label: 'Stock Levels', icon: BarChart3 },
     { id: 'adjustments', label: 'Adjustments', icon: ArrowLeftRight },
     { id: 'monitoring', label: 'Alerts', icon: AlertTriangle },
+    { id: 'fronted', label: 'Who Owes Me', icon: CreditCard },
+    { id: 'dispatch', label: 'Dispatch', icon: Truck },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -108,6 +113,20 @@ export default function InventoryHubPage() {
                 <TabsContent value="monitoring" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <InventoryMonitoringPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Who Owes Me (Fronted) Tab */}
+                <TabsContent value="fronted" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <FrontedInventory />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Dispatch Tab */}
+                <TabsContent value="dispatch" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <DispatchInventory />
                     </Suspense>
                 </TabsContent>
             </Tabs>
