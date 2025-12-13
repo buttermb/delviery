@@ -10717,6 +10717,89 @@ export type Database = {
           },
         ]
       }
+      tenant_payment_settings: {
+        Row: {
+          accept_bitcoin: boolean | null
+          accept_cash: boolean | null
+          accept_cashapp: boolean | null
+          accept_ethereum: boolean | null
+          accept_lightning: boolean | null
+          accept_usdt: boolean | null
+          accept_zelle: boolean | null
+          bitcoin_address: string | null
+          cash_instructions: string | null
+          cashapp_instructions: string | null
+          cashapp_username: string | null
+          created_at: string | null
+          crypto_instructions: string | null
+          ethereum_address: string | null
+          id: string
+          lightning_address: string | null
+          tenant_id: string
+          updated_at: string | null
+          usdt_address: string | null
+          zelle_instructions: string | null
+          zelle_phone: string | null
+          zelle_username: string | null
+        }
+        Insert: {
+          accept_bitcoin?: boolean | null
+          accept_cash?: boolean | null
+          accept_cashapp?: boolean | null
+          accept_ethereum?: boolean | null
+          accept_lightning?: boolean | null
+          accept_usdt?: boolean | null
+          accept_zelle?: boolean | null
+          bitcoin_address?: string | null
+          cash_instructions?: string | null
+          cashapp_instructions?: string | null
+          cashapp_username?: string | null
+          created_at?: string | null
+          crypto_instructions?: string | null
+          ethereum_address?: string | null
+          id?: string
+          lightning_address?: string | null
+          tenant_id: string
+          updated_at?: string | null
+          usdt_address?: string | null
+          zelle_instructions?: string | null
+          zelle_phone?: string | null
+          zelle_username?: string | null
+        }
+        Update: {
+          accept_bitcoin?: boolean | null
+          accept_cash?: boolean | null
+          accept_cashapp?: boolean | null
+          accept_ethereum?: boolean | null
+          accept_lightning?: boolean | null
+          accept_usdt?: boolean | null
+          accept_zelle?: boolean | null
+          bitcoin_address?: string | null
+          cash_instructions?: string | null
+          cashapp_instructions?: string | null
+          cashapp_username?: string | null
+          created_at?: string | null
+          crypto_instructions?: string | null
+          ethereum_address?: string | null
+          id?: string
+          lightning_address?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+          usdt_address?: string | null
+          zelle_instructions?: string | null
+          zelle_phone?: string | null
+          zelle_username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_payment_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_users: {
         Row: {
           accepted_at: string | null
