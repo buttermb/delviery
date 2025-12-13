@@ -35,9 +35,12 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
+    // Overview
     { id: 'overview', label: 'Overview', icon: Plug },
+    // Developer Tools
     { id: 'api', label: 'API Keys', icon: Key },
     { id: 'webhooks', label: 'Webhooks', icon: Webhook },
+    // Automation
     { id: 'automation', label: 'Automation', icon: Workflow },
     { id: 'bulk', label: 'Bulk Ops', icon: Database },
     { id: 'ai', label: 'Local AI', icon: Brain },

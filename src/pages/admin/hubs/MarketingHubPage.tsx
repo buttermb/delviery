@@ -31,8 +31,10 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
+    // Customer Retention
     { id: 'loyalty', label: 'Loyalty Program', icon: Star },
     { id: 'coupons', label: 'Coupons', icon: Tag },
+    // Outreach
     { id: 'campaigns', label: 'Campaigns', icon: Mail },
     { id: 'live-chat', label: 'Live Chat', icon: MessageSquare },
 ] as const;

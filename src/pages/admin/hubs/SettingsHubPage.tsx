@@ -34,10 +34,13 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
+    // Configuration
     { id: 'general', label: 'General', icon: Settings },
+    // Account
     { id: 'billing', label: 'Billing', icon: CreditCard },
-    { id: 'integrations', label: 'Integrations', icon: Plug },
     { id: 'security', label: 'Security', icon: Shield },
+    // Tools
+    { id: 'integrations', label: 'Integrations', icon: Plug },
     { id: 'support', label: 'Support', icon: Headphones },
 ] as const;
 

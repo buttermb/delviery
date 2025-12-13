@@ -30,9 +30,12 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
+    // Core POS
     { id: 'register', label: 'Register', icon: CreditCard },
+    // Shift Management
     { id: 'shifts', label: 'Shifts', icon: Clock },
     { id: 'z-reports', label: 'Z-Reports', icon: FileText },
+    // Analytics
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
 ] as const;
 

@@ -41,12 +41,16 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
+    // Overview
     { id: 'overview', label: 'Overview', icon: BarChart3 },
+    // Business Metrics
     { id: 'orders', label: 'Orders', icon: ShoppingCart },
     { id: 'menu', label: 'Menu', icon: UtensilsCrossed },
     { id: 'delivery', label: 'Delivery', icon: Truck },
+    // Advanced Analysis
     { id: 'forecasting', label: 'Forecasting', icon: TrendingUp },
     { id: 'advanced', label: 'Advanced', icon: LineChart },
+    // Reports
     { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'custom', label: 'Custom', icon: PieChart },
 ] as const;
