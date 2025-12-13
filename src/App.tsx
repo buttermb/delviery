@@ -297,12 +297,12 @@ const OrdersHubPage = lazy(() => import("./pages/admin/hubs/OrdersHubPage"));
 const InventoryHubPage = lazy(() => import("./pages/admin/hubs/InventoryHubPage"));
 const CustomerHubPage = lazy(() => import("./pages/admin/hubs/CustomerHubPage"));
 const AnalyticsHubPage = lazy(() => import("./pages/admin/hubs/AnalyticsHubPage"));
-const DeliveryHubPage = lazy(() => import("./pages/admin/hubs/DeliveryHubPage"));
+const SettingsHubPage = lazy(() => import("./pages/admin/hubs/SettingsHubPage"));
 const FinanceHubPage = lazy(() => import("./pages/admin/hubs/FinanceHubPage"));
 const IntegrationsHubPage = lazy(() => import("./pages/admin/hubs/IntegrationsHubPage"));
 const StorefrontHubPage = lazy(() => import("./pages/admin/hubs/StorefrontHubPage"));
 const OperationsHubPage = lazy(() => import("./pages/admin/hubs/OperationsHubPage"));
-const ComplianceHubPage = lazy(() => import("./pages/admin/hubs/ComplianceHubPage"));
+
 const MarketingHubPage = lazy(() => import("./pages/admin/hubs/MarketingHubPage"));
 const RoleManagement = lazy(() => import("./pages/admin/RoleManagement"));
 const ActivityLogsPage = lazy(() => import("./pages/tenant-admin/ActivityLogsPage"));
@@ -883,7 +883,8 @@ const App = () => {
                                           <Route path="fleet-management" element={<Navigate to="operations-hub?tab=delivery" replace />} />
                                           <Route path="delivery-hub" element={<Navigate to="operations-hub?tab=delivery" replace />} />
                                           <Route path="finance-hub" element={<FeatureProtectedRoute featureId="financial-center"><FinanceHubPage /></FeatureProtectedRoute>} />
-                                          <Route path="integrations-hub" element={<FeatureProtectedRoute featureId="api-access"><IntegrationsHubPage /></FeatureProtectedRoute>} />
+                                          <Route path="settings-hub" element={<FeatureProtectedRoute featureId="settings"><SettingsHubPage /></FeatureProtectedRoute>} />
+                                          <Route path="integrations-hub" element={<Navigate to="settings-hub?tab=integrations" replace />} />
                                           <Route path="storefront-hub" element={<FeatureProtectedRoute featureId="storefront"><StorefrontHubPage /></FeatureProtectedRoute>} />
                                           <Route path="operations-hub" element={<FeatureProtectedRoute featureId="suppliers"><OperationsHubPage /></FeatureProtectedRoute>} />
                                           <Route path="compliance-hub" element={<Navigate to="operations-hub?tab=compliance" replace />} />
