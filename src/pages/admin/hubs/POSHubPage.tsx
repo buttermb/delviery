@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CreditCard, Clock, FileText } from 'lucide-react';
+import { CreditCard, Clock, FileText, BarChart3 } from 'lucide-react';
 
 // Import existing components (reuse, don't duplicate)
 import PointOfSale from '@/pages/admin/PointOfSale';
@@ -18,11 +18,22 @@ import ZReportContent from './panels/ZReportPanel';
 
 // Lazy load for performance
 import { lazy, Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const POSAnalyticsPage = lazy(() => import('@/pages/tenant-admin/POSAnalyticsPage'));
+
+const TabSkeleton = () => (
+    <div className="p-6 space-y-4">
+        <Skeleton className="h-8 w-1/3" />
+        <Skeleton className="h-64 w-full" />
+    </div>
+);
 
 const tabs = [
     { id: 'register', label: 'Register', icon: CreditCard },
     { id: 'shifts', label: 'Shifts', icon: Clock },
     { id: 'z-reports', label: 'Z-Reports', icon: FileText },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -49,7 +60,7 @@ export default function POSHubPage() {
                                 </p>
                             </div>
                         </div>
-                        <TabsList className="grid w-full max-w-md grid-cols-3">
+                        <TabsList className="grid w-full max-w-lg grid-cols-4">
                             {tabs.map((tab) => (
                                 <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
                                     <tab.icon className="h-4 w-4" />
@@ -69,8 +80,8 @@ export default function POSHubPage() {
                                 key={tab.id}
                                 onClick={() => handleTabChange(tab.id)}
                                 className={`p-2 rounded ${activeTab === tab.id
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'hover:bg-muted'
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'hover:bg-muted'
                                     }`}
                                 title={tab.label}
                             >
@@ -91,6 +102,13 @@ export default function POSHubPage() {
                 {/* Z-Reports Tab */}
                 <TabsContent value="z-reports" className="m-0">
                     <ZReportContent />
+                </TabsContent>
+
+                {/* Analytics Tab */}
+                <TabsContent value="analytics" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <POSAnalyticsPage />
+                    </Suspense>
                 </TabsContent>
             </Tabs>
         </div>

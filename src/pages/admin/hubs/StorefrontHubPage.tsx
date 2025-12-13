@@ -17,7 +17,9 @@ import {
     ShoppingCart,
     Users,
     Tag,
-    Settings
+    Settings,
+    Brush,
+    Boxes,
 } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,6 +30,8 @@ const StorefrontOrders = lazy(() => import('@/pages/admin/storefront/StorefrontO
 const StorefrontCustomers = lazy(() => import('@/pages/admin/storefront/StorefrontCustomers'));
 const StorefrontCoupons = lazy(() => import('@/pages/admin/storefront/StorefrontCoupons'));
 const StorefrontSettings = lazy(() => import('@/pages/admin/storefront/StorefrontSettings'));
+const StorefrontBuilder = lazy(() => import('@/pages/admin/storefront/StorefrontBuilder'));
+const StorefrontBundles = lazy(() => import('@/pages/admin/storefront/StorefrontBundles'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -42,6 +46,8 @@ const tabs = [
     { id: 'orders', label: 'Orders', icon: ShoppingCart },
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'coupons', label: 'Coupons', icon: Tag },
+    { id: 'builder', label: 'Builder', icon: Brush },
+    { id: 'bundles', label: 'Bundles', icon: Boxes },
     { id: 'settings', label: 'Settings', icon: Settings },
 ] as const;
 
@@ -67,14 +73,16 @@ export default function StorefrontHubPage() {
                             </p>
                         </div>
                     </div>
-                    <TabsList className="grid w-full max-w-3xl grid-cols-6">
-                        {tabs.map((tab) => (
-                            <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-                                <tab.icon className="h-4 w-4" />
-                                <span className="hidden md:inline">{tab.label}</span>
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
+                    <div className="overflow-x-auto">
+                        <TabsList className="inline-flex min-w-max">
+                            {tabs.map((tab) => (
+                                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                    <tab.icon className="h-4 w-4" />
+                                    <span className="hidden md:inline">{tab.label}</span>
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                    </div>
                 </div>
 
                 <TabsContent value="dashboard" className="m-0">
@@ -91,6 +99,12 @@ export default function StorefrontHubPage() {
                 </TabsContent>
                 <TabsContent value="coupons" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><StorefrontCoupons /></Suspense>
+                </TabsContent>
+                <TabsContent value="builder" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><StorefrontBuilder /></Suspense>
+                </TabsContent>
+                <TabsContent value="bundles" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><StorefrontBundles /></Suspense>
                 </TabsContent>
                 <TabsContent value="settings" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><StorefrontSettings /></Suspense>
