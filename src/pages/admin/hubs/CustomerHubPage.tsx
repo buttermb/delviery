@@ -14,7 +14,9 @@ import {
     Briefcase,
     Heart,
     BarChart3,
-    Plus
+    Plus,
+    FileText,
+    PieChart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { lazy, Suspense } from 'react';
@@ -25,6 +27,8 @@ const CustomerManagement = lazy(() => import('@/pages/admin/CustomerManagement')
 const WholesaleClients = lazy(() => import('@/pages/admin/WholesaleClients'));
 const CustomerCRMPage = lazy(() => import('@/pages/admin/CustomerCRMPage'));
 const CustomerInsightsPage = lazy(() => import('@/pages/tenant-admin/CustomerInsightsPage'));
+const CustomerInvoices = lazy(() => import('@/pages/admin/CustomerInvoices'));
+const CustomerAnalyticsPage = lazy(() => import('@/pages/tenant-admin/CustomerAnalyticsPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -38,6 +42,8 @@ const tabs = [
     { id: 'wholesale', label: 'Wholesale', icon: Briefcase },
     { id: 'crm', label: 'CRM', icon: Heart },
     { id: 'insights', label: 'Insights', icon: BarChart3 },
+    { id: 'invoices', label: 'Invoices', icon: FileText },
+    { id: 'analytics', label: 'Analytics', icon: PieChart },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -63,7 +69,7 @@ export default function CustomerHubPage() {
                             </p>
                         </div>
                     </div>
-                    <TabsList className="grid w-full max-w-xl grid-cols-4">
+                    <TabsList className="grid w-full max-w-2xl grid-cols-6">
                         {tabs.map((tab) => (
                             <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
                                 <tab.icon className="h-4 w-4" />
@@ -98,6 +104,20 @@ export default function CustomerHubPage() {
                 <TabsContent value="insights" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <CustomerInsightsPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Invoices Tab */}
+                <TabsContent value="invoices" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <CustomerInvoices />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Analytics Tab */}
+                <TabsContent value="analytics" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <CustomerAnalyticsPage />
                     </Suspense>
                 </TabsContent>
             </Tabs>

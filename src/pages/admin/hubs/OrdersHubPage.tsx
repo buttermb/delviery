@@ -16,7 +16,9 @@ import {
     Store,
     Clock,
     Radio,
-    Plus
+    Plus,
+    History,
+    Workflow,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
@@ -29,6 +31,8 @@ const WholesaleOrdersPage = lazy(() => import('@/pages/admin/WholesaleOrdersPage
 const StorefrontOrders = lazy(() => import('@/pages/admin/storefront/StorefrontOrders'));
 const PreOrdersPage = lazy(() => import('@/pages/admin/PreOrdersPage'));
 const LiveOrders = lazy(() => import('@/pages/admin/LiveOrders'));
+const OrderPipelinePage = lazy(() => import('@/pages/tenant-admin/OrderPipelinePage'));
+const Orders = lazy(() => import('@/pages/admin/Orders'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -43,6 +47,8 @@ const tabs = [
     { id: 'storefront', label: 'Storefront', icon: Store },
     { id: 'preorders', label: 'Pre-Orders', icon: Clock },
     { id: 'live', label: 'Live', icon: Radio },
+    { id: 'pipeline', label: 'Pipeline', icon: Workflow },
+    { id: 'history', label: 'History', icon: History },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -83,14 +89,16 @@ export default function OrdersHubPage() {
                             </Button>
                         )}
                     </div>
-                    <TabsList className="grid w-full max-w-2xl grid-cols-5">
-                        {tabs.map((tab) => (
-                            <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-                                <tab.icon className="h-4 w-4" />
-                                <span className="hidden sm:inline">{tab.label}</span>
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
+                    <div className="overflow-x-auto">
+                        <TabsList className="inline-flex min-w-max">
+                            {tabs.map((tab) => (
+                                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                    <tab.icon className="h-4 w-4" />
+                                    <span className="hidden sm:inline">{tab.label}</span>
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                    </div>
                 </div>
 
                 {/* Menu Orders Tab */}
@@ -125,6 +133,20 @@ export default function OrdersHubPage() {
                 <TabsContent value="live" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <LiveOrders />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Pipeline Tab */}
+                <TabsContent value="pipeline" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <OrderPipelinePage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* History Tab */}
+                <TabsContent value="history" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <Orders />
                     </Suspense>
                 </TabsContent>
             </Tabs>
