@@ -18,7 +18,7 @@ import {
     Route,
     Map,
 } from 'lucide-react';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const DeliveryManagement = lazy(() => import('@/pages/admin/DeliveryManagement'));
@@ -50,9 +50,9 @@ export default function DeliveryHubPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'dashboard';
 
-    const handleTabChange = (tab: string) => {
+    const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab });
-    };
+    }, [setSearchParams]);
 
     return (
         <div className="min-h-screen bg-background">

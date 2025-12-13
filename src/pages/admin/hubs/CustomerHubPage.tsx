@@ -19,7 +19,7 @@ import {
     PieChart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Lazy load tab content for performance
@@ -52,9 +52,9 @@ export default function CustomerHubPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'contacts';
 
-    const handleTabChange = (tab: string) => {
+    const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab });
-    };
+    }, [setSearchParams]);
 
     return (
         <div className="min-h-screen bg-background">

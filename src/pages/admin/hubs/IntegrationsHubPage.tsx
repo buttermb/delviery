@@ -17,7 +17,7 @@ import {
     Plug,
     Brain,
 } from 'lucide-react';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const APIAccessPage = lazy(() => import('@/pages/tenant-admin/APIAccessPage'));
@@ -49,9 +49,9 @@ export default function IntegrationsHubPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'api';
 
-    const handleTabChange = (tab: string) => {
+    const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab });
-    };
+    }, [setSearchParams]);
 
     return (
         <div className="min-h-screen bg-background">
