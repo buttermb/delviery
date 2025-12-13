@@ -4441,6 +4441,7 @@ export type Database = {
           resolved_at: string | null
           resolved_by: string | null
           severity: string
+          tenant_id: string | null
           user_id: string
         }
         Insert: {
@@ -4452,6 +4453,7 @@ export type Database = {
           resolved_at?: string | null
           resolved_by?: string | null
           severity: string
+          tenant_id?: string | null
           user_id: string
         }
         Update: {
@@ -4463,9 +4465,18 @@ export type Database = {
           resolved_at?: string | null
           resolved_by?: string | null
           severity?: string
+          tenant_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fraud_flags_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fronted_inventory: {
         Row: {
