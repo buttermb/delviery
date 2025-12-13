@@ -50,14 +50,14 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
-    { id: 'suppliers', label: 'Suppliers', icon: Building2 },
-    { id: 'purchase-orders', label: 'POs', icon: FileText },
+    { id: 'suppliers', label: 'Vendors', icon: Building2 },
+    { id: 'purchase-orders', label: 'Orders', icon: FileText },
     { id: 'returns', label: 'Returns', icon: ArrowLeftRight },
     { id: 'team', label: 'Team', icon: Users },
     { id: 'roles', label: 'Roles', icon: UserCog },
-    { id: 'activity', label: 'Activity', icon: ScrollText },
-    { id: 'quality', label: 'Quality', icon: Shield },
-    { id: 'appointments', label: 'Schedule', icon: Calendar },
+    { id: 'activity', label: 'Logs', icon: ScrollText },
+    { id: 'quality', label: 'QC', icon: Shield },
+    { id: 'appointments', label: 'Calendar', icon: Calendar },
     { id: 'support', label: 'Support', icon: Headphones },
     { id: 'locations', label: 'Locations', icon: MapPin },
 ] as const;

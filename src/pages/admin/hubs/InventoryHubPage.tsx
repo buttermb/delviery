@@ -43,10 +43,10 @@ const TabSkeleton = () => (
 
 const tabs = [
     { id: 'products', label: 'Products', icon: Package },
-    { id: 'stock', label: 'Stock Levels', icon: BarChart3 },
-    { id: 'adjustments', label: 'Adjustments', icon: ArrowLeftRight },
+    { id: 'stock', label: 'Stock', icon: BarChart3 },
+    { id: 'adjustments', label: 'Transfers', icon: ArrowLeftRight },
     { id: 'monitoring', label: 'Alerts', icon: AlertTriangle },
-    { id: 'fronted', label: 'Who Owes Me', icon: CreditCard },
+    { id: 'fronted', label: 'Owed', icon: CreditCard },
     { id: 'dispatch', label: 'Dispatch', icon: Truck },
     { id: 'barcodes', label: 'Barcodes', icon: Barcode },
 ] as const;

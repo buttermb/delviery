@@ -40,13 +40,13 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
-    { id: 'overview', label: 'Overview', icon: DollarSign },
+    { id: 'overview', label: 'Dashboard', icon: DollarSign },
     { id: 'invoices', label: 'Invoices', icon: FileText },
     { id: 'builder', label: 'Builder', icon: FileEdit },
     { id: 'expenses', label: 'Expenses', icon: CreditCard },
     { id: 'revenue', label: 'Revenue', icon: TrendingUp },
-    { id: 'collections', label: 'Collections', icon: Wallet },
-    { id: 'commissions', label: 'Commissions', icon: Percent },
+    { id: 'collections', label: 'Collect', icon: Wallet },
+    { id: 'commissions', label: 'Payouts', icon: Percent },
     { id: 'export', label: 'Export', icon: Download },
 ] as const;
 
