@@ -19,6 +19,7 @@ import {
     FileEdit,
     Wallet,
     Download,
+    BarChart3,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,10 +28,7 @@ const FinancialCenter = lazy(() => import('@/pages/admin/FinancialCenterReal'));
 const InvoicesPage = lazy(() => import('@/pages/admin/InvoicesPage'));
 const ExpenseTracking = lazy(() => import('@/pages/admin/ExpenseTracking'));
 const RevenueReportsPage = lazy(() => import('@/pages/tenant-admin/RevenueReportsPage'));
-const CommissionTrackingPage = lazy(() => import('@/pages/tenant-admin/CommissionTrackingPage'));
-const AdvancedInvoicePage = lazy(() => import('@/pages/admin/AdvancedInvoicePage'));
-const CollectionMode = lazy(() => import('@/pages/admin/CollectionMode'));
-const DataExportPage = lazy(() => import('@/pages/tenant-admin/DataExportPage'));
+const AdvancedReportingPage = lazy(() => import('@/pages/admin/AdvancedReportingPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -42,12 +40,9 @@ const TabSkeleton = () => (
 const tabs = [
     { id: 'overview', label: 'Overview', icon: DollarSign },
     { id: 'invoices', label: 'Invoices', icon: FileText },
-    { id: 'builder', label: 'Builder', icon: FileEdit },
     { id: 'expenses', label: 'Expenses', icon: CreditCard },
     { id: 'revenue', label: 'Revenue', icon: TrendingUp },
-    { id: 'collections', label: 'Collections', icon: Wallet },
-    { id: 'commissions', label: 'Commissions', icon: Percent },
-    { id: 'export', label: 'Export', icon: Download },
+    { id: 'reports', label: 'Reports', icon: BarChart3 },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -90,23 +85,14 @@ export default function FinanceHubPage() {
                 <TabsContent value="invoices" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><InvoicesPage /></Suspense>
                 </TabsContent>
-                <TabsContent value="builder" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><AdvancedInvoicePage /></Suspense>
-                </TabsContent>
                 <TabsContent value="expenses" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><ExpenseTracking /></Suspense>
                 </TabsContent>
                 <TabsContent value="revenue" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><RevenueReportsPage /></Suspense>
                 </TabsContent>
-                <TabsContent value="collections" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><CollectionMode /></Suspense>
-                </TabsContent>
-                <TabsContent value="commissions" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><CommissionTrackingPage /></Suspense>
-                </TabsContent>
-                <TabsContent value="export" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><DataExportPage /></Suspense>
+                <TabsContent value="reports" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><AdvancedReportingPage /></Suspense>
                 </TabsContent>
             </Tabs>
         </div>
