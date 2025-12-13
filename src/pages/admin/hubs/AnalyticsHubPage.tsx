@@ -15,7 +15,10 @@ import {
     ShoppingCart,
     UtensilsCrossed,
     Truck,
-    TrendingUp
+    TrendingUp,
+    LineChart,
+    FileText,
+    PieChart,
 } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -26,6 +29,9 @@ const OrderAnalyticsPage = lazy(() => import('@/pages/tenant-admin/OrderAnalytic
 const MenuAnalytics = lazy(() => import('@/pages/admin/MenuAnalytics'));
 const DeliveryAnalyticsPage = lazy(() => import('@/pages/tenant-admin/DeliveryAnalyticsPage'));
 const PredictiveAnalyticsPage = lazy(() => import('@/pages/admin/PredictiveAnalyticsPage'));
+const AdvancedAnalyticsPage = lazy(() => import('@/pages/tenant-admin/AdvancedAnalyticsPage'));
+const ReportsPage = lazy(() => import('@/pages/admin/ReportsPage'));
+const CustomReportsPage = lazy(() => import('@/pages/tenant-admin/CustomReportsPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -40,6 +46,9 @@ const tabs = [
     { id: 'menu', label: 'Menu', icon: UtensilsCrossed },
     { id: 'delivery', label: 'Delivery', icon: Truck },
     { id: 'forecasting', label: 'Forecasting', icon: TrendingUp },
+    { id: 'advanced', label: 'Advanced', icon: LineChart },
+    { id: 'reports', label: 'Reports', icon: FileText },
+    { id: 'custom', label: 'Custom', icon: PieChart },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -65,14 +74,16 @@ export default function AnalyticsHubPage() {
                             </p>
                         </div>
                     </div>
-                    <TabsList className="grid w-full max-w-2xl grid-cols-5">
-                        {tabs.map((tab) => (
-                            <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-                                <tab.icon className="h-4 w-4" />
-                                <span className="hidden sm:inline">{tab.label}</span>
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
+                    <div className="overflow-x-auto">
+                        <TabsList className="inline-flex min-w-max">
+                            {tabs.map((tab) => (
+                                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                    <tab.icon className="h-4 w-4" />
+                                    <span className="hidden sm:inline">{tab.label}</span>
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                    </div>
                 </div>
 
                 {/* Overview Tab */}
@@ -107,6 +118,27 @@ export default function AnalyticsHubPage() {
                 <TabsContent value="forecasting" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <PredictiveAnalyticsPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Advanced Tab */}
+                <TabsContent value="advanced" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <AdvancedAnalyticsPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Reports Tab */}
+                <TabsContent value="reports" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <ReportsPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Custom Tab */}
+                <TabsContent value="custom" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <CustomReportsPage />
                     </Suspense>
                 </TabsContent>
             </Tabs>
