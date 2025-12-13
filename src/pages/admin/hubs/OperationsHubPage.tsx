@@ -36,7 +36,7 @@ const PurchaseOrdersPage = lazy(() => import('@/pages/admin/PurchaseOrdersPage')
 const ReturnsManagementPage = lazy(() => import('@/pages/admin/ReturnsManagementPage'));
 const TeamManagement = lazy(() => import('@/pages/admin/TeamManagement'));
 const RoleManagement = lazy(() => import('@/pages/admin/RoleManagement'));
-const ActivityLogsPage = lazy(() => import('@/pages/admin/ActivityLogsPage'));
+const ActivityLogsPage = lazy(() => import('@/pages/tenant-admin/ActivityLogsPage'));
 const QualityControlPage = lazy(() => import('@/pages/admin/QualityControlPage'));
 const AppointmentSchedulerPage = lazy(() => import('@/pages/admin/AppointmentSchedulerPage'));
 const SupportTicketsPage = lazy(() => import('@/pages/admin/SupportTicketsPage'));
