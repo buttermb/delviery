@@ -880,15 +880,15 @@ const App = () => {
                                           <Route path="advanced-inventory" element={<Navigate to="inventory-hub?tab=adjustments" replace />} />
                                           <Route path="fronted-inventory" element={<FeatureProtectedRoute featureId="fronted-inventory"><FrontedInventory /></FeatureProtectedRoute>} />
                                           <Route path="invoice-management" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
-                                          <Route path="fleet-management" element={<Navigate to="delivery-hub?tab=fleet" replace />} />
-                                          <Route path="delivery-hub" element={<FeatureProtectedRoute featureId="delivery-management"><DeliveryHubPage /></FeatureProtectedRoute>} />
+                                          <Route path="fleet-management" element={<Navigate to="operations-hub?tab=delivery" replace />} />
+                                          <Route path="delivery-hub" element={<Navigate to="operations-hub?tab=delivery" replace />} />
                                           <Route path="finance-hub" element={<FeatureProtectedRoute featureId="financial-center"><FinanceHubPage /></FeatureProtectedRoute>} />
                                           <Route path="integrations-hub" element={<FeatureProtectedRoute featureId="api-access"><IntegrationsHubPage /></FeatureProtectedRoute>} />
                                           <Route path="storefront-hub" element={<FeatureProtectedRoute featureId="storefront"><StorefrontHubPage /></FeatureProtectedRoute>} />
                                           <Route path="operations-hub" element={<FeatureProtectedRoute featureId="suppliers"><OperationsHubPage /></FeatureProtectedRoute>} />
-                                          <Route path="compliance-hub" element={<FeatureProtectedRoute featureId="compliance"><ComplianceHubPage /></FeatureProtectedRoute>} />
+                                          <Route path="compliance-hub" element={<Navigate to="operations-hub?tab=compliance" replace />} />
                                           <Route path="marketing-hub" element={<FeatureProtectedRoute featureId="loyalty-program"><MarketingHubPage /></FeatureProtectedRoute>} />
-                                          <Route path="delivery-management" element={<Navigate to="delivery-hub?tab=dashboard" replace />} />
+                                          <Route path="delivery-management" element={<Navigate to="operations-hub?tab=delivery" replace />} />
                                           <Route path="live-map" element={<FeatureProtectedRoute featureId="live-map"><LiveMap /></FeatureProtectedRoute>} />
                                           <Route path="gps-tracking" element={<FeatureProtectedRoute featureId="fleet-management"><RunnerLocationTracking /></FeatureProtectedRoute>} />
                                           <Route path="pos-system" element={<FeatureProtectedRoute featureId="pos-system"><POSHubPage /></FeatureProtectedRoute>} />
@@ -900,10 +900,10 @@ const App = () => {
                                           {/* 13 Hidden gem pages */}
                                           <Route path="live-chat" element={<FeatureProtectedRoute featureId="live-chat"><AdminLiveChat /></FeatureProtectedRoute>} />
                                           <Route path="notifications" element={<FeatureProtectedRoute featureId="notifications"><AdminNotifications /></FeatureProtectedRoute>} />
-                                          <Route path="couriers" element={<Navigate to="delivery-hub?tab=couriers" replace />} />
+                                          <Route path="couriers" element={<Navigate to="operations-hub?tab=delivery" replace />} />
                                           <Route path="customer-details" element={<FeatureProtectedRoute featureId="customer-details"><CustomerDetails /></FeatureProtectedRoute>} />
                                           <Route path="customer-reports" element={<FeatureProtectedRoute featureId="customer-reports"><CustomerReports /></FeatureProtectedRoute>} />
-                                          <Route path="delivery-tracking" element={<Navigate to="delivery-hub?tab=tracking" replace />} />
+                                          <Route path="delivery-tracking" element={<Navigate to="operations-hub?tab=delivery" replace />} />
                                           <Route path="dispatch-inventory" element={<FeatureProtectedRoute featureId="dispatch-inventory"><DispatchInventory /></FeatureProtectedRoute>} />
                                           <Route path="financial-center" element={<Navigate to="command-center" replace />} />
                                           <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory-analytics"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />
