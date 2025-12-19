@@ -190,6 +190,15 @@ export default function TenantAdminLoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4 relative overflow-hidden">
+      {/* Back to Home Button */}
+      <Link
+        to="/"
+        className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-2 rounded-lg bg-card/80 backdrop-blur-sm border border-border text-muted-foreground hover:text-foreground hover:bg-card transition-all"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span className="text-sm font-medium">Home</span>
+      </Link>
+
       {/* Animated Background Gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--tenant-primary))]/5 via-[hsl(var(--tenant-surface))] to-[hsl(var(--tenant-secondary))]/5" />
 

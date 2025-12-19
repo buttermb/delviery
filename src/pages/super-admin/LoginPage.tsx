@@ -5,8 +5,9 @@ import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shield, Loader2, Lock } from "lucide-react";
+import { Shield, Loader2, Lock, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
@@ -98,6 +99,15 @@ export default function SuperAdminLoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[hsl(var(--super-admin-bg))] p-4">
+      {/* Back to Home Button */}
+      <Link
+        to="/"
+        className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-2 rounded-lg bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-sm border border-white/10 text-[hsl(var(--super-admin-text))]/70 hover:text-[hsl(var(--super-admin-text))] hover:bg-[hsl(var(--super-admin-surface))] transition-all"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span className="text-sm font-medium">Home</span>
+      </Link>
+
       {/* Animated Grid Background */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute inset-0" style={{
