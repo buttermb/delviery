@@ -1,0 +1,1101 @@
+import { logger } from '@/lib/logger';
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
+import { useTenantNavigate } from "@/hooks/useTenantNavigate";
+import { supabase } from "@/integrations/supabase/client";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useOptimisticList } from "@/hooks/useOptimisticUpdate";
+import { useConfirmDialog } from "@/hooks/useConfirmDialog";
+import { useTablePreferences } from "@/hooks/useTablePreferences";
+import { useOptimisticLock } from "@/hooks/useOptimisticLock";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { SearchInput } from "@/components/shared/SearchInput";
+import { toast } from "sonner";
+import {
+  Package,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Barcode,
+  DollarSign,
+  LayoutGrid,
+  List,
+  Filter,
+  Loader2,
+  Printer,
+  MoreVertical,
+  Eye,
+  EyeOff,
+  Store
+} from "lucide-react";
+import { TooltipGuide } from '@/components/shared/TooltipGuide';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ProductCard } from "@/components/admin/ProductCard";
+import { Toggle } from "@/components/ui/toggle";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ProductLabel } from "@/components/admin/ProductLabel";
+import { BarcodeScanner } from "@/components/admin/BarcodeScanner";
+import { BatchPanel } from "@/components/admin/BatchPanel";
+import { BulkPriceEditor } from "@/components/admin/BulkPriceEditor";
+import { BatchCategoryEditor } from "@/components/admin/BatchCategoryEditor";
+import { ProductImportDialog } from "@/components/admin/ProductImportDialog";
+import { Upload } from "lucide-react";
+import { ProductForm, type ProductFormData } from "@/components/admin/products/ProductForm";
+import { useEncryption } from "@/lib/hooks/useEncryption";
+import type { Database } from "@/integrations/supabase/types";
+import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { Checkbox } from "@/components/ui/checkbox";
+import { InventoryStatusBadge } from "@/components/admin/InventoryStatusBadge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import CopyButton from "@/components/CopyButton";
+import { ExportButton } from "@/components/ui/ExportButton";
+
+type Product = Database['public']['Tables']['products']['Row'];
+type ProductUpdate = Database['public']['Tables']['products']['Update'];
+
+const mapProductToForm = (product: Product): ProductFormData => ({
+  name: product.name || "",
+  sku: product.sku || "",
+  category: product.category || "flower",
+  vendor_name: product.vendor_name || "",
+  strain_name: product.strain_name || "",
+  strain_type: product.strain_type || "",
+  thc_percent: product.thc_percent?.toString() || "",
+  cbd_percent: product.cbd_percent?.toString() || "",
+  batch_number: product.batch_number || "",
+  cost_per_unit: product.cost_per_unit?.toString() || "",
+  wholesale_price: product.wholesale_price?.toString() || "",
+  retail_price: product.retail_price?.toString() || "",
+  available_quantity: product.available_quantity?.toString() || "",
+  description: product.description || "",
+  image_url: product.image_url || "",
+  low_stock_alert: product.low_stock_alert?.toString() || "10",
+});
+
+export default function ProductManagement() {
+  const navigateTenant = useTenantNavigate();
+  const [searchParams] = useSearchParams();
+  const { tenant, loading: tenantLoading } = useTenantAdminAuth();
+  const { decryptObject, isReady: encryptionIsReady } = useEncryption();
+
+  // Read URL search params for filtering
+  const urlSearch = searchParams.get('search') || '';
+  const highlightId = searchParams.get('highlight') || '';
+
+  // Use optimistic list for products
+  const {
+    items: products,
+    optimisticIds,
+    addOptimistic,
+    updateOptimistic,
+    deleteOptimistic,
+    setItems: setProducts,
+  } = useOptimisticList<Product>([]);
+
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState(urlSearch);
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  // Table preferences persistence
+  const { preferences, savePreferences } = useTablePreferences('products', {
+    sortBy: 'name',
+    customFilters: { category: 'all', stockStatus: 'all' }
+  });
+
+  // Selection state
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+
+  // Filters - initialize from saved preferences
+  const [categoryFilter, setCategoryFilter] = useState<string>(preferences.customFilters?.category || "all");
+  const [stockStatusFilter, setStockStatusFilter] = useState<string>(preferences.customFilters?.stockStatus || "all");
+  const [sortBy, setSortBy] = useState<string>(preferences.sortBy || "name");
+
+  // Persist filter changes
+  useEffect(() => {
+    savePreferences({
+      sortBy,
+      customFilters: { category: categoryFilter, stockStatus: stockStatusFilter }
+    });
+  }, [sortBy, categoryFilter, stockStatusFilter, savePreferences]);
+
+  // Other state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [labelDialogOpen, setLabelDialogOpen] = useState(false);
+  const [labelProduct, setLabelProduct] = useState<Product | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [batchScanMode, setBatchScanMode] = useState(false);
+  const [batchProducts, setBatchProducts] = useState<Product[]>([]);
+  const [bulkPriceEditorOpen, setBulkPriceEditorOpen] = useState(false);
+  const [batchCategoryEditorOpen, setBatchCategoryEditorOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  
+  // Optimistic locking for concurrent edit protection
+  const { updateWithLock, isUpdating: isLockUpdating } = useOptimisticLock('products');
+  const productVersionRef = useRef<number>(1);
+  
+  // Batch delete confirmation dialog
+  const { dialogState: batchDeleteDialogState, confirm: confirmBatchDelete, closeDialog: closeBatchDeleteDialog, setLoading: setBatchDeleteLoading } = useConfirmDialog();
+
+  // Fetch store for publishing
+  const { data: store } = useQuery({
+    queryKey: ['marketplace-store', tenant?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('marketplace_stores')
+        .select('*')
+        .eq('tenant_id', tenant?.id)
+        .maybeSingle();
+      if (error) {
+        logger.error('Failed to fetch store for sync', error);
+        return null;
+      }
+      return data;
+    },
+    enabled: !!tenant?.id,
+  });
+
+  // Load products
+  const loadProducts = async () => {
+    if (!tenant?.id) return;
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('tenant_id', tenant.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (err: any) {
+      logger.error('Error loading products:', err);
+      toast.error('Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (tenant?.id) {
+      loadProducts();
+    }
+  }, [tenant?.id]);
+
+  // Derived state for categories
+  const categories = useMemo(() => {
+    return Array.from(new Set(products.map((p) => p.category).filter(Boolean))) as string[];
+  }, [products]);
+
+  // Derived filtered products
+  const filteredProducts = useMemo(() => {
+    const searchLower = debouncedSearchTerm.toLowerCase();
+    const applyCategoryFilter = categoryFilter !== "all";
+    const applyStockFilter = stockStatusFilter !== "all";
+
+    return products
+      .filter((p) => {
+        // Search filter
+        const matchesSearch = !searchLower ||
+          p.name?.toLowerCase().includes(searchLower) ||
+          p.sku?.toLowerCase().includes(searchLower) ||
+          p.category?.toLowerCase().includes(searchLower);
+
+        // Category filter
+        const matchesCategory = !applyCategoryFilter || p.category === categoryFilter;
+
+        // Stock Status filter
+        let matchesStock = true;
+        if (applyStockFilter) {
+          const qty = p.available_quantity || 0;
+          const lowStockLimit = p.low_stock_alert || 10;
+          if (stockStatusFilter === "in_stock") matchesStock = qty > 0;
+          else if (stockStatusFilter === "out_of_stock") matchesStock = qty <= 0;
+          else if (stockStatusFilter === "low_stock") matchesStock = qty > 0 && qty <= lowStockLimit;
+        }
+
+        return matchesSearch && matchesCategory && matchesStock;
+      })
+      .sort((a, b) => {
+        // Helper for profit margin
+        const profitMargin = (cost: number, price: number) => {
+          if (!price) return 0;
+          return ((price - cost) / price) * 100;
+        };
+
+        switch (sortBy) {
+          case "name":
+            return (a.name || "").localeCompare(b.name || "");
+          case "price":
+            return (b.wholesale_price || 0) - (a.wholesale_price || 0);
+          case "stock":
+            return (b.available_quantity || 0) - (a.available_quantity || 0);
+          case "margin":
+            const marginA = profitMargin(a.cost_per_unit || 0, a.wholesale_price || 0);
+            const marginB = profitMargin(b.cost_per_unit || 0, b.wholesale_price || 0);
+            return Number(marginB) - Number(marginA);
+          default:
+            return 0;
+        }
+      });
+  }, [products, debouncedSearchTerm, categoryFilter, sortBy, stockStatusFilter]);
+
+  // Combined batch products (scanned + selected)
+  const combinedBatchProducts = useMemo(() => {
+    const selectedProductObjects = products.filter(p => selectedProducts.includes(p.id));
+    // Avoid duplicates if a product is both scanned and selected (though unlikely to happen usually)
+    const uniqueMap = new Map();
+    [...batchProducts, ...selectedProductObjects].forEach(p => uniqueMap.set(p.id, p));
+    return Array.from(uniqueMap.values());
+  }, [batchProducts, selectedProducts, products]);
+
+  // Handlers
+  const handleProductSubmit = async (data: ProductFormData) => {
+    setIsGenerating(true);
+    try {
+      // Ensure all required fields for DB are present
+      const productData = {
+        tenant_id: tenant?.id,
+        name: data.name,
+        sku: data.sku,
+        category: data.category,
+        vendor_name: data.vendor_name,
+        strain_name: data.strain_name,
+        strain_type: data.strain_type,
+        thc_percent: data.thc_percent ? parseFloat(data.thc_percent) : null,
+        cbd_percent: data.cbd_percent ? parseFloat(data.cbd_percent) : null,
+        batch_number: data.batch_number,
+        cost_per_unit: data.cost_per_unit ? parseFloat(data.cost_per_unit) : null,
+        wholesale_price: data.wholesale_price ? parseFloat(data.wholesale_price) : null,
+        retail_price: data.retail_price ? parseFloat(data.retail_price) : null,
+        available_quantity: data.available_quantity ? parseFloat(data.available_quantity) : 0,
+        description: data.description,
+        image_url: data.image_url,
+        low_stock_alert: data.low_stock_alert ? parseInt(data.low_stock_alert) : 10,
+        // Add missing required fields with defaults
+        price: data.wholesale_price ? parseFloat(data.wholesale_price) : 0, // Legacy field sync
+        thca_percentage: null,
+      };
+
+      if (editingProduct) {
+        if (!tenant?.id) throw new Error('No tenant context');
+        
+        // Use optimistic locking to prevent concurrent edit conflicts
+        const expectedVersion = (editingProduct as any).version || 1;
+        const result = await updateWithLock(editingProduct.id, productData, expectedVersion);
+        
+        if (!result.success) {
+          if (result.conflictDetected) {
+            toast.error("This product was modified by another user. Please refresh and try again.");
+            return;
+          }
+          throw new Error(result.error || 'Failed to update product');
+        }
+        
+        toast.success("Product updated");
+        // Update state with new version
+        setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...productData, version: expectedVersion + 1 } : p));
+      } else {
+        const { data: newProduct, error } = await supabase.from('products').insert(productData).select().single();
+        if (error) throw error;
+        toast.success("Product created");
+        // Manually update state
+        setProducts(prev => [newProduct, ...prev]);
+      }
+      setIsDialogOpen(false);
+      setEditingProduct(null);
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    const product = products.find(p => p.id === id);
+    if (product) {
+      setProductToDelete(product);
+      setDeleteDialogOpen(true);
+    }
+  }
+
+  const confirmDelete = async () => {
+    if (!productToDelete || !tenant?.id) return;
+    setIsDeleting(true);
+    try {
+      // Check if product is used in any orders
+      const { count: orderItemCount } = await supabase
+        .from('order_items')
+        .select('*', { count: 'exact', head: true })
+        .eq('product_id', productToDelete.id);
+      
+      const { count: wholesaleCount } = await supabase
+        .from('wholesale_order_items')
+        .select('*', { count: 'exact', head: true })
+        .eq('product_name', productToDelete.name);
+      
+      const totalUsage = (orderItemCount || 0) + (wholesaleCount || 0);
+      
+      if (totalUsage > 0) {
+        toast.error("Cannot delete product", {
+          description: `This product is used in ${totalUsage} order(s). Consider marking it as inactive instead.`
+        });
+        setDeleteDialogOpen(false);
+        setProductToDelete(null);
+        return;
+      }
+
+      const { error } = await supabase.from('products').delete().eq('id', productToDelete.id).eq('tenant_id', tenant.id);
+      if (error) throw error;
+
+      setProducts(prev => prev.filter(p => p.id !== productToDelete.id));
+      toast.success("Product deleted");
+      setDeleteDialogOpen(false);
+      setProductToDelete(null);
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedProducts(prev =>
+      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
+    );
+  }
+
+  const handleSelectAll = () => {
+    if (selectedProducts.length === filteredProducts.length) {
+      setSelectedProducts([]);
+    } else {
+      setSelectedProducts(filteredProducts.map(p => p.id));
+    }
+  }
+
+  const handleCombinedBatchRemove = (id: string) => {
+    // Remove from selectedProducts
+    if (selectedProducts.includes(id)) {
+      handleToggleSelect(id);
+    }
+  };
+
+  const handleCombinedBatchClear = () => {
+    setSelectedProducts([]);
+    setBatchProducts([]);
+  };
+
+  const handleCombinedBatchDelete = () => {
+    if (!tenant?.id || combinedBatchProducts.length === 0) return;
+    
+    confirmBatchDelete({
+      title: 'Delete Products',
+      description: `Are you sure you want to delete ${combinedBatchProducts.length} products? This action cannot be undone.`,
+      itemType: 'products',
+      onConfirm: async () => {
+        setBatchDeleteLoading(true);
+        try {
+          const ids = combinedBatchProducts.map(p => p.id);
+          const names = combinedBatchProducts.map(p => p.name);
+          
+          // Check for products used in orders
+          const { data: orderItems } = await supabase
+            .from('order_items')
+            .select('product_id')
+            .in('product_id', ids);
+          
+          const { data: wholesaleItems } = await supabase
+            .from('wholesale_order_items')
+            .select('product_name')
+            .in('product_name', names);
+          
+          const usedProductIds = new Set(orderItems?.map(i => i.product_id) || []);
+          const usedProductNames = new Set(wholesaleItems?.map(i => i.product_name) || []);
+          
+          // Filter out products that are used in orders
+          const deletableIds = ids.filter(id => {
+            const product = combinedBatchProducts.find(p => p.id === id);
+            return !usedProductIds.has(id) && (!product || !usedProductNames.has(product.name));
+          });
+          
+          const skippedCount = ids.length - deletableIds.length;
+          
+          if (deletableIds.length === 0) {
+            toast.error("Cannot delete products", {
+              description: "All selected products are used in existing orders."
+            });
+            closeBatchDeleteDialog();
+            return;
+          }
+          
+          const { error } = await supabase.from('products').delete().in('id', deletableIds).eq('tenant_id', tenant.id);
+          if (error) throw error;
+          
+          if (skippedCount > 0) {
+            toast.warning(`Deleted ${deletableIds.length} products, skipped ${skippedCount}`, {
+              description: `${skippedCount} product(s) with existing orders were not deleted.`
+            });
+          } else {
+            toast.success(`${deletableIds.length} products deleted`);
+          }
+          
+          setProducts(prev => prev.filter(p => !deletableIds.includes(p.id)));
+          handleCombinedBatchClear();
+          closeBatchDeleteDialog();
+        } catch (err: any) {
+          toast.error(err.message);
+        } finally {
+          setBatchDeleteLoading(false);
+        }
+      }
+    });
+  };
+
+  const handleCombinedBatchCategory = () => {
+    setBatchProducts(combinedBatchProducts);
+    setBatchCategoryEditorOpen(true);
+  };
+
+  const handleCombinedBatchPrice = () => {
+    setBatchProducts(combinedBatchProducts);
+    setBulkPriceEditorOpen(true);
+  };
+
+  const handleBulkPriceUpdate = async (updates: any) => {
+    // Logic for bulk update would go here or inside the component
+    // Since component handles it, we just refresh
+    await loadProducts();
+    setBulkPriceEditorOpen(false);
+  }
+
+  const handleBulkCategoryUpdate = async () => {
+    await loadProducts();
+    setBatchCategoryEditorOpen(false);
+  }
+
+
+  const handleScanSuccess = async (code: string) => {
+    // Logic to find product by barcode or SKU and add to batch
+    const product = products.find(p => p.sku === code || p.id === code); // Simplified matching
+    if (product) {
+      setBatchProducts(prev => [...prev, product]);
+      toast.success(`Scanned: ${product.name}`);
+    } else {
+      toast.error("Product not found");
+    }
+  }
+
+  const startBatchScan = () => {
+    setBatchScanMode(true);
+    setScannerOpen(true);
+  }
+
+  const handlePublish = async (productId: string) => {
+    if (!store?.id) {
+      toast.error("Storefront not configured. Please set up your store first.");
+      return;
+    }
+    try {
+      const { data, error } = await (supabase.rpc as any)('sync_product_to_marketplace', {
+        p_product_id: productId,
+        p_store_id: store.id
+      });
+
+      if (error) throw error;
+
+      if ((data as any)?.success) {
+        toast.success("Product published to storefront");
+      } else {
+        toast.error((data as any)?.error || "Failed to publish product");
+      }
+    } catch (err: any) {
+      logger.error('Failed to publish product', err);
+      toast.error(err.message || "Failed to publish product");
+    }
+  };
+
+
+  // --- Table Columns Definition ---
+  const columns: ResponsiveColumn<Product>[] = [
+    {
+      header: (
+        <Checkbox
+          checked={filteredProducts.length > 0 && selectedProducts.length === filteredProducts.length}
+          onCheckedChange={handleSelectAll}
+          aria-label="Select all"
+        />
+      ),
+      className: "w-[50px]",
+      cell: (product) => (
+        <Checkbox
+          checked={selectedProducts.includes(product.id)}
+          onCheckedChange={() => handleToggleSelect(product.id)}
+          onClick={(e) => e.stopPropagation()}
+        />
+      )
+    },
+    {
+      header: "Image",
+      accessorKey: "image_url",
+      cell: (product) => (
+        <img
+          src={product.image_url || "/placeholder.svg"}
+          alt={product.name}
+          className="h-10 w-10 rounded-md object-cover border"
+        />
+      )
+    },
+    {
+      header: "Product Details",
+      accessorKey: "name",
+      cell: (product) => (
+        <div className="flex flex-col">
+          <span className="font-medium text-foreground">{product.name}</span>
+          {product.sku && (
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              SKU: {product.sku}
+              <CopyButton text={product.sku} label="SKU" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </span>
+          )}
+        </div>
+      )
+    },
+    {
+      header: "Category",
+      accessorKey: "category",
+      cell: (product) => (
+        <Badge variant="outline" className="capitalize">
+          {product.category || 'Uncategorized'}
+        </Badge>
+      )
+    },
+    {
+      header: "Price",
+      accessorKey: "wholesale_price",
+      className: "text-right",
+      cell: (product) => (
+        <div className="font-mono font-medium">
+          {product.wholesale_price ? `$${product.wholesale_price}` : '-'}
+        </div>
+      )
+    },
+    {
+      header: "Stock",
+      accessorKey: "available_quantity",
+      cell: (product) => (
+        <InventoryStatusBadge
+          quantity={product.available_quantity || 0}
+          lowStockThreshold={product.low_stock_alert || 10}
+        />
+      )
+    },
+    {
+      header: "Actions",
+      className: "text-right",
+      cell: (product) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => { setEditingProduct(product); setIsDialogOpen(true); }}>
+              <Edit className="mr-2 h-4 w-4" /> Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { setLabelProduct(product); setLabelDialogOpen(true); }}>
+              <Printer className="mr-2 h-4 w-4" /> Print Label
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={() => handleDelete(product.id)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" /> Delete
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handlePublish(product.id)}>
+              <Store className="mr-2 h-4 w-4" /> Publish to Store
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    }
+  ];
+
+  const renderMobileProduct = (product: Product) => (
+    <ProductCard
+      product={product}
+      onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
+      onDelete={() => handleDelete(product.id)}
+      onPrintLabel={() => { setLabelProduct(product); setLabelDialogOpen(true); }}
+      onPublish={() => handlePublish(product.id)}
+    />
+  );
+
+
+  if (tenantLoading) {
+    return (
+      <div className="w-full max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-6">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+        </div>
+        {/* Stats skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-8 w-8 rounded" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        {/* Products grid skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="border rounded-lg p-4 space-y-3">
+                  <Skeleton className="h-32 w-full rounded" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <div className="flex justify-between">
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-6 w-20" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const batchPanelOpen = combinedBatchProducts.length > 0;
+
+  return (
+    <div className="w-full max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold">Product Management</h1>
+            {tenant?.id && (
+              <TooltipGuide
+                title="💡 Product Management"
+                content="Upload CSV to add 100+ products instantly. Products can be organized by category and tracked by batch numbers."
+                placement="right"
+                tenantId={tenant.id}
+              />
+            )}
+          </div>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            Manage products, batches, and inventory packages
+          </p>
+        </div>
+        <div className="flex gap-2 flex-shrink-0">
+          <ExportButton
+            data={filteredProducts}
+            filename="products"
+            columns={[
+              { key: "name", label: "Name" },
+              { key: "sku", label: "SKU" },
+              { key: "category", label: "Category" },
+              { key: "wholesale_price", label: "Price" },
+              { key: "available_quantity", label: "Stock" },
+              { key: "strain_name", label: "Strain" },
+              { key: "vendor_name", label: "Vendor" },
+            ]}
+          />
+          <Button onClick={() => navigateTenant("/admin/generate-barcodes")}>
+            <Barcode className="h-4 w-4 mr-2" />
+            Generate Barcodes
+          </Button>
+          <ProductImportDialog
+            open={importDialogOpen}
+            onOpenChange={setImportDialogOpen}
+            onSuccess={loadProducts}
+          />
+
+          <Dialog
+            open={isDialogOpen}
+            onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (!open) setEditingProduct(null);
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button onClick={() => { setEditingProduct(null); setIsDialogOpen(true); }}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Product
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingProduct ? "Edit Product" : "Add New Product"}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="flex-1 overflow-y-auto px-1">
+                <ProductForm
+                  initialData={editingProduct ? mapProductToForm(editingProduct) : undefined}
+                  onSubmit={handleProductSubmit}
+                  onCancel={() => setIsDialogOpen(false)}
+                  isLoading={isGenerating}
+                  isEditMode={!!editingProduct}
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <Package className="h-8 w-8 text-primary" />
+              <div>
+                <p className="text-2xl font-bold">{products.length}</p>
+                <p className="text-sm text-muted-foreground">Total Products</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <DollarSign className="h-8 w-8 text-green-500" />
+              <div>
+                <p className="text-2xl font-bold">
+                  {products.reduce((sum, p) => sum + (p.available_quantity || 0), 0)}
+                </p>
+                <p className="text-sm text-muted-foreground">Available Units</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <Package className="h-8 w-8 text-blue-500" />
+              <div>
+                <p className="text-2xl font-bold">
+                  {products.reduce((sum, p) => sum + (p.fronted_quantity || 0), 0)}
+                </p>
+                <p className="text-sm text-muted-foreground">Fronted Units</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <DollarSign className="h-8 w-8 text-yellow-500" />
+              <div>
+                <p className="text-2xl font-bold">
+                  $
+                  {products
+                    .reduce(
+                      (sum, p) =>
+                        sum +
+                        (p.available_quantity || 0) * (p.wholesale_price || 0),
+                      0
+                    )
+                    .toFixed(0)}
+                </p>
+                <p className="text-sm text-muted-foreground">Inventory Value</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters and View Mode Toggle */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+          {/* Search Bar */}
+          <div className="relative w-full sm:flex-1">
+            <SearchInput
+              placeholder="Search products, SKU, category..."
+              onSearch={setSearchTerm}
+              defaultValue={searchTerm}
+              className="w-full"
+            />
+          </div>
+
+          {/* Action Buttons (Scan/Import) */}
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setBatchScanMode(false);
+                setScannerOpen(true);
+              }}
+              className="flex-1 sm:flex-initial"
+            >
+              <Barcode className="h-4 w-4 mr-2" />
+              Scan
+            </Button>
+            <Button
+              variant="outline"
+              onClick={startBatchScan}
+              className="flex-1 sm:flex-initial"
+            >
+              <Barcode className="h-4 w-4 mr-2" />
+              Batch
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2 justify-between">
+          <div className="flex gap-2 flex-wrap sm:flex-nowrap w-full">
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={stockStatusFilter} onValueChange={setStockStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <SelectValue placeholder="Stock Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any Status</SelectItem>
+                <SelectItem value="in_stock">In Stock</SelectItem>
+                <SelectItem value="low_stock">Low Stock</SelectItem>
+                <SelectItem value="out_of_stock">Out of Stock</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name">Name (A-Z)</SelectItem>
+                <SelectItem value="price">Price (High-Low)</SelectItem>
+                <SelectItem value="stock">Stock (High-Low)</SelectItem>
+                <SelectItem value="margin">Margin (High-Low)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-1 border rounded-md overflow-hidden bg-background">
+            <Toggle
+              pressed={viewMode === "grid"}
+              onPressedChange={() => setViewMode("grid")}
+              className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none h-9 w-9 p-0"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Toggle>
+            <Toggle
+              pressed={viewMode === "list"}
+              onPressedChange={() => setViewMode("list")}
+              className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none border-l h-9 w-9 p-0"
+            >
+              <List className="h-4 w-4" />
+            </Toggle>
+          </div>
+        </div>
+      </div>
+
+      {/* Products Display */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Products ({filteredProducts.length})</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0 sm:p-6">
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : filteredProducts.length > 0 ? (
+            viewMode === "grid" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 sm:p-0">
+                {filteredProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className={optimisticIds.has(product.id) ? 'opacity-70 transition-opacity' : ''}
+                  >
+                    <ProductCard
+                      product={product}
+                      onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
+                      onDelete={() => handleDelete(product.id)}
+                      onPrintLabel={() => {
+                        setLabelProduct(product);
+                        setLabelDialogOpen(true);
+                      }}
+                      onPublish={() => handlePublish(product.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="-mx-4 sm:mx-0">
+                {/* Table View */}
+                <ResponsiveTable
+                  columns={columns}
+                  data={filteredProducts}
+                  keyExtractor={(item) => item.id}
+                  isLoading={loading}
+                  mobileRenderer={renderMobileProduct}
+                />
+              </div>
+            )
+          ) : (
+            <EnhancedEmptyState
+              type="no_products"
+              title={searchTerm || categoryFilter !== "all" ? "No products found" : undefined}
+              description={
+                searchTerm || categoryFilter !== "all"
+                  ? "Try adjusting your filters to find products"
+                  : undefined
+              }
+              primaryAction={
+                !searchTerm && categoryFilter === "all"
+                  ? {
+                    label: "Add Product",
+                    onClick: () => {
+                      setEditingProduct(null);
+                      setIsDialogOpen(true);
+                    },
+                    icon: <Plus className="h-4 w-4" />,
+                  }
+                  : undefined
+              }
+              designSystem="tenant-admin"
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Product Label Dialog */}
+      {labelProduct && (
+        <ProductLabel
+          product={labelProduct as any}
+          open={labelDialogOpen}
+          onOpenChange={setLabelDialogOpen}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        itemName={productToDelete?.name}
+        itemType="product"
+        isLoading={isDeleting}
+      />
+
+      {/* Barcode Scanner */}
+      <BarcodeScanner
+        open={scannerOpen}
+        onOpenChange={(open) => {
+          setScannerOpen(open);
+          if (!open) {
+            setBatchScanMode(false);
+          }
+        }}
+        onScanSuccess={handleScanSuccess}
+        batchMode={batchScanMode}
+        scannedCount={batchProducts.length}
+      />
+
+      {/* Batch Operations Panel */}
+      {batchPanelOpen && (
+        <BatchPanel
+          products={combinedBatchProducts}
+          onRemove={handleCombinedBatchRemove}
+          onClear={handleCombinedBatchClear}
+          onBatchDelete={handleCombinedBatchDelete}
+          onBatchEditPrice={handleCombinedBatchPrice}
+          onBatchEditCategory={handleCombinedBatchCategory}
+          isDeleting={isDeleting}
+        />
+      )}
+
+      {/* Bulk Price Editor */}
+      <BulkPriceEditor
+        open={bulkPriceEditorOpen}
+        onOpenChange={setBulkPriceEditorOpen}
+        products={batchProducts}
+        onApply={handleBulkPriceUpdate}
+      />
+
+      {/* Batch Category Editor */}
+      <BatchCategoryEditor
+        open={batchCategoryEditorOpen}
+        onOpenChange={setBatchCategoryEditorOpen}
+        products={batchProducts}
+        onApply={handleBulkCategoryUpdate}
+      />
+
+      {/* Batch Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={batchDeleteDialogState.open}
+        onOpenChange={(open) => !open && closeBatchDeleteDialog()}
+        onConfirm={batchDeleteDialogState.onConfirm}
+        title={batchDeleteDialogState.title}
+        description={batchDeleteDialogState.description}
+        itemType={batchDeleteDialogState.itemType}
+        isLoading={batchDeleteDialogState.isLoading}
+      />
+    </div>
+  );
+}

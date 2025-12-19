@@ -1,0 +1,399 @@
+import { useState } from 'react';
+import {
+  SettingsSection,
+  SettingsCard,
+  SettingsRow,
+} from '@/components/settings/SettingsSection';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Plug,
+  CreditCard,
+  MessageSquare,
+  BarChart3,
+  Webhook,
+  Key,
+  Copy,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  XCircle,
+  ExternalLink,
+  RefreshCw,
+  Plus,
+  Trash2,
+} from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+
+interface Integration {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ReactNode;
+  status: 'connected' | 'disconnected' | 'error';
+  category: 'payments' | 'communications' | 'analytics' | 'compliance';
+}
+
+const INTEGRATIONS: Integration[] = [
+  {
+    id: 'stripe',
+    name: 'Stripe',
+    description: 'Accept payments and manage transactions',
+    icon: <CreditCard className="h-5 w-5" />,
+    status: 'connected',
+    category: 'payments',
+  },
+  {
+    id: 'twilio',
+    name: 'Twilio',
+    description: 'SMS notifications and verification',
+    icon: <MessageSquare className="h-5 w-5" />,
+    status: 'disconnected',
+    category: 'communications',
+  },
+  {
+    id: 'sendgrid',
+    name: 'SendGrid',
+    description: 'Email delivery and marketing',
+    icon: <MessageSquare className="h-5 w-5" />,
+    status: 'connected',
+    category: 'communications',
+  },
+  {
+    id: 'analytics',
+    name: 'Google Analytics',
+    description: 'Website and user analytics',
+    icon: <BarChart3 className="h-5 w-5" />,
+    status: 'disconnected',
+    category: 'analytics',
+  },
+];
+
+interface WebhookEndpoint {
+  id: string;
+  url: string;
+  events: string[];
+  active: boolean;
+  lastTriggered?: string;
+}
+
+const MOCK_WEBHOOKS: WebhookEndpoint[] = [
+  {
+    id: '1',
+    url: 'https://api.example.com/webhooks/orders',
+    events: ['order.created', 'order.updated'],
+    active: true,
+    lastTriggered: '2 hours ago',
+  },
+];
+
+export default function IntegrationsSettings() {
+  const [integrations, setIntegrations] = useState(INTEGRATIONS);
+  const [webhooks, setWebhooks] = useState(MOCK_WEBHOOKS);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [addWebhookOpen, setAddWebhookOpen] = useState(false);
+  const [newWebhookUrl, setNewWebhookUrl] = useState('');
+
+  const apiKey = 'your_api_key_will_appear_here';
+
+  const handleConnect = (id: string) => {
+    setIntegrations(
+      integrations.map((i) =>
+        i.id === id ? { ...i, status: 'connected' as const } : i
+      )
+    );
+    toast({ title: 'Integration connected', description: `${id} has been connected successfully` });
+  };
+
+  const handleDisconnect = (id: string) => {
+    setIntegrations(
+      integrations.map((i) =>
+        i.id === id ? { ...i, status: 'disconnected' as const } : i
+      )
+    );
+    toast({ title: 'Integration disconnected' });
+  };
+
+  const handleCopyApiKey = () => {
+    navigator.clipboard.writeText(apiKey);
+    toast({ title: 'API key copied to clipboard' });
+  };
+
+  const handleRegenerateApiKey = () => {
+    toast({ title: 'API key regenerated', description: 'Your old key is no longer valid' });
+  };
+
+  const handleAddWebhook = () => {
+    if (!newWebhookUrl) {
+      toast({ title: 'URL required', variant: 'destructive' });
+      return;
+    }
+
+    setWebhooks([
+      ...webhooks,
+      {
+        id: Date.now().toString(),
+        url: newWebhookUrl,
+        events: ['order.created'],
+        active: true,
+      },
+    ]);
+
+    setNewWebhookUrl('');
+    setAddWebhookOpen(false);
+    toast({ title: 'Webhook added' });
+  };
+
+  const handleDeleteWebhook = (id: string) => {
+    setWebhooks(webhooks.filter((w) => w.id !== id));
+    toast({ title: 'Webhook deleted' });
+  };
+
+  const getStatusBadge = (status: Integration['status']) => {
+    switch (status) {
+      case 'connected':
+        return (
+          <Badge variant="default" className="bg-emerald-500">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Connected
+          </Badge>
+        );
+      case 'error':
+        return (
+          <Badge variant="destructive">
+            <XCircle className="h-3 w-3 mr-1" />
+            Error
+          </Badge>
+        );
+      default:
+        return <Badge variant="secondary">Disconnected</Badge>;
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight">Integrations</h2>
+        <p className="text-muted-foreground mt-1">
+          Connect third-party services and manage API access
+        </p>
+      </div>
+
+      {/* Available Integrations */}
+      <SettingsSection
+        title="Available Integrations"
+        description="Connect your favorite tools and services"
+        icon={Plug}
+      >
+        <div className="grid md:grid-cols-2 gap-4">
+          {integrations.map((integration) => (
+            <SettingsCard key={integration.id}>
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4">
+                  <div
+                    className={cn(
+                      'h-12 w-12 rounded-xl flex items-center justify-center',
+                      integration.status === 'connected'
+                        ? 'bg-emerald-500/10 text-emerald-600'
+                        : 'bg-muted text-muted-foreground'
+                    )}
+                  >
+                    {integration.icon}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">{integration.name}</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {integration.description}
+                    </p>
+                    <div className="mt-2">{getStatusBadge(integration.status)}</div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-4 pt-4 border-t">
+                {integration.status === 'connected' ? (
+                  <>
+                    <Button variant="outline" size="sm">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Configure
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive"
+                      onClick={() => handleDisconnect(integration.id)}
+                    >
+                      Disconnect
+                    </Button>
+                  </>
+                ) : (
+                  <Button size="sm" onClick={() => handleConnect(integration.id)}>
+                    <Plug className="h-4 w-4 mr-2" />
+                    Connect
+                  </Button>
+                )}
+              </div>
+            </SettingsCard>
+          ))}
+        </div>
+      </SettingsSection>
+
+      {/* API Keys */}
+      <SettingsSection
+        title="API Keys"
+        description="Manage your API access credentials"
+        icon={Key}
+      >
+        <SettingsCard>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Live API Key</p>
+                <p className="text-sm text-muted-foreground">
+                  Use this key for production requests
+                </p>
+              </div>
+              <Badge variant="default">Production</Badge>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Input
+                value={showApiKey ? apiKey : '•'.repeat(40)}
+                readOnly
+                className="font-mono text-sm"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setShowApiKey(!showApiKey)}
+              >
+                {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+              <Button variant="outline" size="icon" onClick={handleCopyApiKey}>
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleRegenerateApiKey}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Regenerate Key
+              </Button>
+            </div>
+
+            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-sm text-amber-700 dark:text-amber-300">
+              <strong>Warning:</strong> Keep your API key secret. Never expose it in client-side code.
+            </div>
+          </div>
+        </SettingsCard>
+      </SettingsSection>
+
+      {/* Webhooks */}
+      <SettingsSection
+        title="Webhooks"
+        description="Receive real-time notifications for events"
+        icon={Webhook}
+        action={
+          <Dialog open={addWebhookOpen} onOpenChange={setAddWebhookOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Webhook
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Webhook Endpoint</DialogTitle>
+                <DialogDescription>
+                  We'll send POST requests to this URL when events occur
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Endpoint URL</label>
+                  <Input
+                    type="url"
+                    placeholder="https://api.yoursite.com/webhook"
+                    value={newWebhookUrl}
+                    onChange={(e) => setNewWebhookUrl(e.target.value)}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setAddWebhookOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleAddWebhook}>Add Webhook</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        }
+      >
+        <SettingsCard>
+          {webhooks.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Webhook className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p>No webhooks configured</p>
+              <p className="text-sm">Add a webhook to receive real-time event notifications</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {webhooks.map((webhook) => (
+                <div
+                  key={webhook.id}
+                  className="flex items-center justify-between p-4 border rounded-lg"
+                >
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={cn(
+                        'h-3 w-3 rounded-full',
+                        webhook.active ? 'bg-emerald-500' : 'bg-muted'
+                      )}
+                    />
+                    <div>
+                      <p className="font-mono text-sm">{webhook.url}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-xs">
+                          {webhook.events.length} events
+                        </Badge>
+                        {webhook.lastTriggered && (
+                          <span className="text-xs text-muted-foreground">
+                            Last triggered {webhook.lastTriggered}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch checked={webhook.active} />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive"
+                      onClick={() => handleDeleteWebhook(webhook.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </SettingsCard>
+      </SettingsSection>
+    </div>
+  );
+}
+

@@ -1,0 +1,295 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Plus, Trash2, Calendar, Repeat } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
+import { useRecurringInvoices, RecurringLineItem, CreateScheduleInput } from "@/hooks/useRecurringInvoices";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { formatCurrency } from "@/lib/utils/formatCurrency";
+
+const schema = z.object({
+  name: z.string().min(1, "Name is required"),
+  client_id: z.string().min(1, "Client is required"),
+  frequency: z.enum(["weekly", "biweekly", "monthly", "quarterly", "yearly"]),
+  next_run_date: z.string().min(1, "Start date is required"),
+  day_of_month: z.number().optional(),
+  auto_send_email: z.boolean(),
+  notes: z.string().optional(),
+});
+
+type FormData = z.infer<typeof schema>;
+
+interface RecurringInvoiceFormProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  editSchedule?: any;
+}
+
+export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: RecurringInvoiceFormProps) {
+  const { tenant } = useTenantAdminAuth();
+  const { createSchedule, updateSchedule } = useRecurringInvoices();
+  const [lineItems, setLineItems] = useState<RecurringLineItem[]>(
+    editSchedule?.line_items || [{ description: "", quantity: 1, unit_price: 0 }]
+  );
+
+  const { data: clients = [] } = useQuery({
+    queryKey: ["crm-clients", tenant?.id],
+    queryFn: async () => {
+      if (!tenant?.id) return [];
+      const { data } = await supabase
+        .from("crm_clients")
+        .select("id, name, email")
+        .eq("account_id", tenant.id);
+      return data || [];
+    },
+    enabled: !!tenant?.id
+  });
+
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: editSchedule ? {
+      name: editSchedule.name,
+      client_id: editSchedule.client_id,
+      frequency: editSchedule.frequency,
+      next_run_date: editSchedule.next_run_date,
+      day_of_month: editSchedule.day_of_month,
+      auto_send_email: editSchedule.auto_send_email,
+      notes: editSchedule.notes || "",
+    } : {
+      frequency: "monthly",
+      auto_send_email: false,
+      next_run_date: new Date().toISOString().split("T")[0],
+    }
+  });
+
+  const frequency = watch("frequency");
+
+  const addLineItem = () => {
+    setLineItems([...lineItems, { description: "", quantity: 1, unit_price: 0 }]);
+  };
+
+  const updateLineItem = (index: number, field: keyof RecurringLineItem, value: string | number) => {
+    const updated = [...lineItems];
+    updated[index] = { ...updated[index], [field]: value };
+    setLineItems(updated);
+  };
+
+  const removeLineItem = (index: number) => {
+    if (lineItems.length > 1) {
+      setLineItems(lineItems.filter((_, i) => i !== index));
+    }
+  };
+
+  const total = lineItems.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
+
+  const onSubmit = async (data: FormData) => {
+    const input: CreateScheduleInput = {
+      name: data.name,
+      client_id: data.client_id,
+      frequency: data.frequency,
+      next_run_date: data.next_run_date,
+      line_items: lineItems.filter(item => item.description),
+      template_id: null,
+      is_active: true,
+      day_of_month: data.day_of_month || null,
+      auto_send_email: data.auto_send_email,
+      notes: data.notes || null,
+    };
+
+    if (editSchedule) {
+      await updateSchedule.mutateAsync({ id: editSchedule.id, ...input });
+    } else {
+      await createSchedule.mutateAsync(input);
+    }
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Repeat className="h-5 w-5" />
+            {editSchedule ? "Edit Recurring Invoice" : "Create Recurring Invoice"}
+          </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Basic Info */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Schedule Name</Label>
+              <Input {...register("name")} placeholder="Monthly Retainer" />
+              {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label>Client</Label>
+              <Select
+                value={watch("client_id")}
+                onValueChange={(v) => setValue("client_id", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select client" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.client_id && <p className="text-sm text-destructive">{errors.client_id.message}</p>}
+            </div>
+          </div>
+
+          {/* Schedule */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Frequency</Label>
+              <Select
+                value={frequency}
+                onValueChange={(v: any) => setValue("frequency", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="biweekly">Every 2 Weeks</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="quarterly">Quarterly</SelectItem>
+                  <SelectItem value="yearly">Yearly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>First Invoice Date</Label>
+              <Input type="date" {...register("next_run_date")} />
+              {errors.next_run_date && <p className="text-sm text-destructive">{errors.next_run_date.message}</p>}
+            </div>
+          </div>
+
+          {frequency === "monthly" && (
+            <div className="space-y-2">
+              <Label>Day of Month (optional)</Label>
+              <Input
+                type="number"
+                min={1}
+                max={28}
+                placeholder="e.g., 1 for 1st of month"
+                onChange={(e) => setValue("day_of_month", parseInt(e.target.value) || undefined)}
+              />
+            </div>
+          )}
+
+          {/* Line Items */}
+          <div className="space-y-3">
+            <Label>Line Items</Label>
+            {lineItems.map((item, index) => (
+              <Card key={index}>
+                <CardContent className="p-3">
+                  <div className="grid grid-cols-12 gap-2 items-center">
+                    <div className="col-span-6">
+                      <Input
+                        placeholder="Description"
+                        value={item.description}
+                        onChange={(e) => updateLineItem(index, "description", e.target.value)}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Input
+                        type="number"
+                        min={1}
+                        placeholder="Qty"
+                        value={item.quantity}
+                        onChange={(e) => updateLineItem(index, "quantity", parseInt(e.target.value) || 1)}
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        placeholder="Price"
+                        value={item.unit_price}
+                        onChange={(e) => updateLineItem(index, "unit_price", parseFloat(e.target.value) || 0)}
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeLineItem(index)}
+                        disabled={lineItems.length === 1}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            <Button type="button" variant="outline" size="sm" onClick={addLineItem}>
+              <Plus className="h-4 w-4 mr-1" /> Add Item
+            </Button>
+            <div className="text-right font-semibold">
+              Total per Invoice: {formatCurrency(total)}
+            </div>
+          </div>
+
+          {/* Options */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Auto-send Email</Label>
+                <p className="text-sm text-muted-foreground">Automatically email invoice when generated</p>
+              </div>
+              <Switch
+                checked={watch("auto_send_email")}
+                onCheckedChange={(v) => setValue("auto_send_email", v)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Notes (optional)</Label>
+              <Textarea {...register("notes")} placeholder="Internal notes about this schedule..." />
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-2 pt-4 border-t">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit">
+              <Calendar className="h-4 w-4 mr-1" />
+              {editSchedule ? "Update Schedule" : "Create Schedule"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

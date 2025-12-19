@@ -1,0 +1,563 @@
+/**
+ * Storefront Orders Page
+ * View and manage orders from the online store
+ */
+
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate, useParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
+import {
+  ArrowLeft,
+  Search,
+  ShoppingCart,
+  Eye,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Truck,
+  Package,
+  Filter,
+  Download,
+  RefreshCw
+} from 'lucide-react';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatSmartDate } from '@/lib/utils/formatDate';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
+
+interface MarketplaceOrder {
+  id: string;
+  order_number: string;
+  status: string;
+  payment_status: string;
+  customer_id: string | null;
+  customer_name: string | null;
+  customer_email: string | null;
+  customer_phone: string | null;
+  items: any[];
+  subtotal: number;
+  delivery_fee: number;
+  discount_amount: number;
+  tip_amount: number;
+  total: number;
+  delivery_address: any;
+  delivery_notes: string | null;
+  payment_method: string;
+  tracking_token: string;
+  created_at: string;
+  updated_at: string;
+}
+
+const STATUS_OPTIONS = [
+  { value: 'pending', label: 'Pending', color: 'bg-yellow-500' },
+  { value: 'confirmed', label: 'Confirmed', color: 'bg-blue-500' },
+  { value: 'preparing', label: 'Preparing', color: 'bg-purple-500' },
+  { value: 'ready', label: 'Ready', color: 'bg-indigo-500' },
+  { value: 'out_for_delivery', label: 'Out for Delivery', color: 'bg-orange-500' },
+  { value: 'delivered', label: 'Delivered', color: 'bg-green-500' },
+  { value: 'cancelled', label: 'Cancelled', color: 'bg-red-500' },
+  { value: 'refunded', label: 'Refunded', color: 'bg-gray-500' },
+];
+
+export default function StorefrontOrders() {
+  const { tenant } = useTenantAdminAuth();
+  const { tenantSlug } = useParams();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const tenantId = tenant?.id;
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedOrder, setSelectedOrder] = useState<MarketplaceOrder | null>(null);
+
+  // Fetch store
+  const { data: store } = useQuery({
+    queryKey: ['marketplace-store', tenantId],
+    queryFn: async () => {
+      if (!tenantId) return null;
+      const { data } = await supabase
+        .from('marketplace_stores')
+        .select('id')
+        .eq('tenant_id', tenantId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!tenantId,
+  });
+
+  // Fetch orders
+  const { data: orders = [], isLoading, refetch } = useQuery({
+    queryKey: ['marketplace-orders', store?.id, statusFilter],
+    queryFn: async () => {
+      if (!store?.id) return [];
+
+      let query = supabase
+        .from('marketplace_orders')
+        .select('*')
+        .eq('store_id', store.id)
+        .order('created_at', { ascending: false });
+
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data || []) as unknown as MarketplaceOrder[];
+    },
+    enabled: !!store?.id,
+  });
+
+  // Filter orders by search
+  const filteredOrders = orders.filter((order) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      order.order_number.toLowerCase().includes(query) ||
+      order.customer_name?.toLowerCase().includes(query) ||
+      order.customer_email?.toLowerCase().includes(query) ||
+      order.customer_phone?.includes(query)
+    );
+  });
+
+  // Update order status mutation with retry logic
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ orderId, status, retryCount = 0 }: { orderId: string; status: string; retryCount?: number }) => {
+      if (!store?.id) throw new Error('No store');
+      const MAX_RETRIES = 2;
+      const updates: any = { status };
+
+      // Set delivered_at timestamp when marking as delivered
+      if (status === 'delivered') {
+        updates.delivered_at = new Date().toISOString();
+      }
+
+      try {
+        const { error } = await supabase
+          .from('marketplace_orders')
+          .update(updates)
+          .eq('id', orderId)
+          .eq('store_id', store.id);
+
+        if (error) throw error;
+      } catch (error) {
+        const isNetworkError = error instanceof Error &&
+          (error.message.toLowerCase().includes('network') ||
+            error.message.toLowerCase().includes('fetch') ||
+            error.message.toLowerCase().includes('timeout'));
+
+        // Retry on network errors
+        if (isNetworkError && retryCount < MAX_RETRIES) {
+          toast({ title: 'Connection issue, retrying...' });
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return updateStatusMutation.mutateAsync({ orderId, status, retryCount: retryCount + 1 });
+        }
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
+      toast({ title: 'Order status updated!' });
+    },
+    onError: (error) => {
+      logger.error('Failed to update order status', error, { component: 'StorefrontOrders' });
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to update order status.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig = STATUS_OPTIONS.find((s) => s.value === status);
+    return (
+      <Badge variant="outline" className="flex items-center gap-1">
+        <div className={`w-2 h-2 rounded-full ${statusConfig?.color || 'bg-gray-500'}`} />
+        <span className="capitalize">{status.replace('_', ' ')}</span>
+      </Badge>
+    );
+  };
+
+  const getPaymentBadge = (status: string) => {
+    const colors: Record<string, string> = {
+      pending: 'bg-yellow-500/10 text-yellow-700',
+      paid: 'bg-green-500/10 text-green-700',
+      failed: 'bg-red-500/10 text-red-700',
+      refunded: 'bg-gray-500/10 text-gray-700',
+    };
+    return (
+      <Badge variant="outline" className={colors[status] || ''}>
+        {status}
+      </Badge>
+    );
+  };
+
+  // Order counts by status
+  const orderCounts = orders.reduce(
+    (acc, order) => {
+      acc[order.status] = (acc[order.status] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  if (!store) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground">Please create a store first.</p>
+            <Button
+              className="mt-4"
+              onClick={() => navigate(`/${tenantSlug}/admin/storefront`)}
+            >
+              Go to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(`/${tenantSlug}/admin/storefront`)}
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">Store Orders</h1>
+            <p className="text-muted-foreground">
+              {orders.length} total orders
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => refetch()}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+          <Button variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+        </div>
+      </div>
+
+      {/* Status Quick Filters */}
+      <div className="flex gap-2 flex-wrap">
+        <Button
+          variant={statusFilter === 'all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setStatusFilter('all')}
+        >
+          All ({orders.length})
+        </Button>
+        {STATUS_OPTIONS.slice(0, 6).map((status) => (
+          <Button
+            key={status.value}
+            variant={statusFilter === status.value ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setStatusFilter(status.value)}
+          >
+            <div className={`w-2 h-2 rounded-full ${status.color} mr-2`} />
+            {status.label} ({orderCounts[status.value] || 0})
+          </Button>
+        ))}
+      </div>
+
+      {/* Search and Filters */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by order #, customer name, email, or phone..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Orders Table */}
+      <Card>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="p-6 space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Skeleton key={i} className="h-16" />
+              ))}
+            </div>
+          ) : filteredOrders.length === 0 ? (
+            <div className="p-12 text-center text-muted-foreground">
+              <ShoppingCart className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p>No orders found</p>
+              {orders.length === 0 && (
+                <p className="text-sm mt-2">Orders will appear here when customers checkout</p>
+              )}
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Order</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Items</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead>Payment</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredOrders.map((order) => (
+                  <TableRow key={order.id} className="cursor-pointer hover:bg-muted/50">
+                    <TableCell
+                      className="font-medium"
+                      onClick={() => setSelectedOrder(order)}
+                    >
+                      {order.order_number}
+                    </TableCell>
+                    <TableCell onClick={() => setSelectedOrder(order)}>
+                      <div>
+                        <p className="font-medium">{order.customer_name || 'Guest'}</p>
+                        <p className="text-sm text-muted-foreground">{order.customer_email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell onClick={() => setSelectedOrder(order)}>
+                      {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                    </TableCell>
+                    <TableCell onClick={() => setSelectedOrder(order)}>
+                      {formatCurrency(order.total)}
+                    </TableCell>
+                    <TableCell onClick={() => setSelectedOrder(order)}>
+                      {getPaymentBadge(order.payment_status)}
+                    </TableCell>
+                    <TableCell onClick={() => setSelectedOrder(order)}>
+                      {getStatusBadge(order.status)}
+                    </TableCell>
+                    <TableCell onClick={() => setSelectedOrder(order)}>
+                      {formatSmartDate(order.created_at)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Select
+                        value={order.status}
+                        onValueChange={(status) =>
+                          updateStatusMutation.mutate({ orderId: order.id, status })
+                        }
+                      >
+                        <SelectTrigger className="w-[140px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {STATUS_OPTIONS.map((status) => (
+                            <SelectItem key={status.value} value={status.value}>
+                              <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${status.color}`} />
+                                {status.label}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Order Detail Sheet */}
+      <Sheet open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+          {selectedOrder && (
+            <>
+              <SheetHeader>
+                <SheetTitle>Order {selectedOrder.order_number}</SheetTitle>
+                <SheetDescription>
+                  {formatSmartDate(selectedOrder.created_at)}
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="mt-6 space-y-6">
+                {/* Status */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Status</span>
+                  <Select
+                    value={selectedOrder.status}
+                    onValueChange={(status) => {
+                      updateStatusMutation.mutate({
+                        orderId: selectedOrder.id,
+                        status,
+                      });
+                      setSelectedOrder({ ...selectedOrder, status });
+                    }}
+                  >
+                    <SelectTrigger className="w-[160px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUS_OPTIONS.map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${status.color}`} />
+                            {status.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Separator />
+
+                {/* Customer Info */}
+                <div>
+                  <h3 className="font-medium mb-3">Customer</h3>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="text-muted-foreground">Name:</span> {selectedOrder.customer_name || 'Guest'}</p>
+                    <p><span className="text-muted-foreground">Email:</span> {selectedOrder.customer_email}</p>
+                    <p><span className="text-muted-foreground">Phone:</span> {selectedOrder.customer_phone}</p>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Delivery Info */}
+                <div>
+                  <h3 className="font-medium mb-3">Delivery</h3>
+                  <div className="space-y-2 text-sm">
+                    {selectedOrder.delivery_address && (
+                      <p>{selectedOrder.delivery_address.street}, {selectedOrder.delivery_address.city}</p>
+                    )}
+                    {selectedOrder.delivery_notes && (
+                      <p className="text-muted-foreground">Notes: {selectedOrder.delivery_notes}</p>
+                    )}
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Order Items */}
+                <div>
+                  <h3 className="font-medium mb-3">Items</h3>
+                  <div className="space-y-3">
+                    {selectedOrder.items.map((item: any, index: number) => (
+                      <div key={index} className="flex justify-between text-sm">
+                        <div>
+                          <p className="font-medium">{item.name}</p>
+                          <p className="text-muted-foreground">Qty: {item.quantity}</p>
+                        </div>
+                        <p className="font-medium">{formatCurrency(item.price * item.quantity)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Order Totals */}
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span>{formatCurrency(selectedOrder.subtotal)}</span>
+                  </div>
+                  {selectedOrder.discount_amount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount</span>
+                      <span>-{formatCurrency(selectedOrder.discount_amount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Delivery</span>
+                    <span>{selectedOrder.delivery_fee === 0 ? 'FREE' : formatCurrency(selectedOrder.delivery_fee)}</span>
+                  </div>
+                  {selectedOrder.tip_amount > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Tip</span>
+                      <span>{formatCurrency(selectedOrder.tip_amount)}</span>
+                    </div>
+                  )}
+                  <Separator />
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Total</span>
+                    <span>{formatCurrency(selectedOrder.total)}</span>
+                  </div>
+                </div>
+
+                {/* Payment Info */}
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium capitalize">{selectedOrder.payment_method}</p>
+                      <p className="text-xs text-muted-foreground">Payment method</p>
+                    </div>
+                    {getPaymentBadge(selectedOrder.payment_status)}
+                  </div>
+                </div>
+
+                {/* Tracking Link */}
+                <div className="p-4 bg-primary/5 rounded-lg">
+                  <p className="text-sm font-medium mb-1">Tracking Link</p>
+                  <code className="text-xs text-muted-foreground break-all">
+                    {window.location.origin}/shop/{store?.id}/track/{selectedOrder.tracking_token}
+                  </code>
+                </div>
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+
+
+
+
