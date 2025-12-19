@@ -1,15 +1,18 @@
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrendingUp, DollarSign, Users, Package, Clock } from 'lucide-react';
+import { TrendingUp, DollarSign, Users, Package, Clock, ArrowLeft } from 'lucide-react';
 import { handleError } from '@/utils/errorHandling/handlers';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
 export default function AdvancedAnalytics() {
+  const navigate = useNavigate();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
 
@@ -96,6 +99,10 @@ export default function AdvancedAnalytics() {
   return (
     <div className="p-6 space-y-6">
       <div>
+        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-2">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
         <h1 className="text-3xl font-bold">Advanced Analytics</h1>
         <p className="text-muted-foreground">Deep insights and business intelligence</p>
       </div>
