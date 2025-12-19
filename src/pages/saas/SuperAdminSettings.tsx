@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,12 +23,14 @@ import {
   Key,
   AlertTriangle,
   Save,
+  ArrowLeft,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function SuperAdminSettings() {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
@@ -65,6 +68,12 @@ export default function SuperAdminSettings() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      {/* Back Button */}
+      <Button variant="ghost" size="sm" onClick={() => navigate('/saas/admin')} className="mb-2">
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Dashboard
+      </Button>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

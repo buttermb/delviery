@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, CheckCircle2, Sparkles, Lock, Mail, Wifi, WifiOff, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Sparkles, Lock, Mail, Wifi, WifiOff, AlertCircle, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -264,6 +264,17 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 sm:p-6">
+      {/* Back to Home Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate('/')}
+        className="absolute top-4 left-4 z-50 text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Home
+      </Button>
+
       {/* Theme Toggle */}
       <div className="absolute top-4 right-4 z-50">
         <ThemeToggle />
