@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,7 @@ import {
   Trash2,
   Save,
   Eye,
+  ArrowLeft,
 } from 'lucide-react';
 import { InvoicePDF, InvoiceDownloadButton } from '@/components/admin/InvoicePDF';
 import { useToast } from '@/hooks/use-toast';
@@ -58,6 +60,7 @@ interface InvoiceData {
 }
 
 export function AdvancedInvoice() {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [invoice, setInvoice] = useState<InvoiceData>({
     invoiceNumber: `INV-${Date.now()}`,
@@ -187,14 +190,19 @@ ${invoice.companyName}
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between print:hidden">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <FileText className="h-6 w-6" />
-            Create Invoice
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Professional invoicing inspired by Invoice Ninja
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <FileText className="h-6 w-6" />
+              Create Invoice
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Professional invoicing inspired by Invoice Ninja
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Badge className={getStatusColor(invoice.status)}>
