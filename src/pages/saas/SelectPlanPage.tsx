@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, Loader2, Sparkles, Zap, Shield, Clock, Coins } from "lucide-react";
+import { Check, Loader2, Sparkles, Zap, Shield, Clock, Coins, ArrowLeft } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { SUBSCRIPTION_PLANS } from "@/utils/subscriptionPlans";
 import { handleError } from '@/utils/errorHandling/handlers';
@@ -270,7 +270,17 @@ export default function SelectPlanPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-4 relative">
+      {/* Back Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate(-1)}
+        className="absolute top-4 left-4"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back
+      </Button>
       <div className="w-full max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">

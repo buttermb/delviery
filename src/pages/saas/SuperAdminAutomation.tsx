@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ import {
   Play,
   Pause,
   Settings,
+  ArrowLeft,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +39,7 @@ interface AutomationRule {
 }
 
 export default function SuperAdminAutomation() {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [runningRules, setRunningRules] = useState<Set<string>>(new Set());
   const [rules, setRules] = useState<AutomationRule[]>([
@@ -185,6 +188,12 @@ export default function SuperAdminAutomation() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      {/* Back Button */}
+      <Button variant="ghost" size="sm" onClick={() => navigate('/saas/admin')}>
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Dashboard
+      </Button>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

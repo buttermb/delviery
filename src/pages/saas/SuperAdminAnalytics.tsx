@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ import {
   BarChart3,
   PieChart,
   LineChart,
+  ArrowLeft,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -36,6 +38,7 @@ import {
 import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
 
 export default function SuperAdminAnalytics() {
+  const navigate = useNavigate();
   const [timeRange, setTimeRange] = useState<string>('30d');
 
   // Platform Analytics
@@ -162,6 +165,12 @@ export default function SuperAdminAnalytics() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      {/* Back Button */}
+      <Button variant="ghost" size="sm" onClick={() => navigate('/saas/admin')}>
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Dashboard
+      </Button>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
