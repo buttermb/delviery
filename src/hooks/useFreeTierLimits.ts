@@ -65,7 +65,12 @@ export function useFreeTierLimits() {
   const queryClient = useQueryClient();
   
   const tenantId = tenant?.id;
-  const isFreeTier = tenant?.is_free_tier ?? false;
+  
+  // PRIORITY: Check subscription status first - this is the source of truth
+  // Active/trial subscriptions are NOT on free tier, regardless of is_free_tier flag
+  const hasActiveSubscription = tenant?.subscription_status === 'active' || 
+                                 tenant?.subscription_status === 'trial';
+  const isFreeTier = hasActiveSubscription ? false : (tenant?.is_free_tier ?? true);
 
   // Check if user has purchased credits AND has a positive balance
   // Users need BOTH to bypass daily/monthly limits:
