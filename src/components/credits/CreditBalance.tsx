@@ -22,8 +22,13 @@ export function CreditBalance({
   variant = "default",
   showLabel = true
 }: CreditBalanceProps) {
-  const { credits, setIsPurchaseModalOpen } = useCredits();
+  const { credits, isFreeTier, setIsPurchaseModalOpen } = useCredits();
   const { tenant } = useTenantAdminAuth();
+
+  // Don't show credit balance for paid users (non-free tier)
+  if (!isFreeTier) {
+    return null;
+  }
 
   // Fetch usage stats for tooltip
   const { data: usageStats } = useQuery({
