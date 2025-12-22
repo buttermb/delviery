@@ -290,9 +290,46 @@ export function HotboxDashboard() {
       const pendingWholesaleOrders = getCount(results[8] as PromiseSettledResult<{ count: number | null }>);
       const totalPending = pendingOrders + pendingMenuOrders + pendingWholesaleOrders;
       
-      // TODO: Calculate actual profit margin from product costs when available
+      // Calculate profit using actual product costs when available
+      // Fetch today's order items with product costs for accurate margin calculation
+      const { data: orderItems } = await supabase
+        .from('order_items')
+        .select(`
+          quantity,
+          price,
+          product_id,
+          order:orders!inner(tenant_id, created_at),
+          product:products(cost)
+        `)
+        .eq('order.tenant_id', tenant.id)
+        .gte('order.created_at', today.toISOString());
+
+      let profit: number;
+      let actualMargin: number | null = null;
       const ESTIMATED_PROFIT_MARGIN = 0.25;
-      const profit = todayRevenue * ESTIMATED_PROFIT_MARGIN;
+      
+      if (orderItems && orderItems.length > 0) {
+        // Calculate actual profit from product costs
+        const totalCost = orderItems.reduce((sum, item) => {
+          const productCost = (item.product as { cost?: number } | null)?.cost || 0;
+          return sum + (productCost * (item.quantity || 0));
+        }, 0);
+        
+        if (totalCost > 0 && todayRevenue > 0) {
+          profit = todayRevenue - totalCost;
+          actualMargin = profit / todayRevenue;
+        } else {
+          // Fall back to estimated margin if no cost data
+          profit = todayRevenue * ESTIMATED_PROFIT_MARGIN;
+        }
+      } else {
+        // Fall back to estimated margin if no order items
+        profit = todayRevenue * ESTIMATED_PROFIT_MARGIN;
+      }
+      
+      const marginDisplay = actualMargin !== null 
+        ? `${Math.round(actualMargin * 100)}% margin` 
+        : '~25% est.';
 
       const pulseMetrics: PulseMetric[] = [
         {
@@ -307,7 +344,7 @@ export function HotboxDashboard() {
           id: 'profit',
           label: 'Profit',
           value: `$${profit.toLocaleString()}`,
-          subtext: `~${Math.round(ESTIMATED_PROFIT_MARGIN * 100)}% margin`,
+          subtext: marginDisplay,
         },
         {
           id: 'orders',
