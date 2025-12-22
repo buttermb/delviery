@@ -202,7 +202,7 @@ export default function CustomerForm() {
     } catch (error) {
       logger.error('Error saving customer', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerForm' });
       toast.error('Failed to save customer', {
-        description: error.message
+        description: error instanceof Error ? error.message : 'An unexpected error occurred'
       });
     } finally {
       setLoading(false);

@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
  * Phase 3: Implement Real-Time Synchronization
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { RealtimeChannel } from '@supabase/supabase-js';
@@ -53,7 +53,7 @@ export function useRealtimeSync({
 }: UseRealtimeSyncOptions = {}) {
   const queryClient = useQueryClient();
   const channelsRef = useRef<RealtimeChannel[]>([]);
-  const [isConnecting, setIsConnecting] = useState(false);
+  const isConnectingRef = useRef(false);
   const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -66,12 +66,12 @@ export function useRealtimeSync({
       return;
     }
 
-    // Prevent multiple simultaneous connection attempts
-    if (isConnecting) {
+    // Prevent multiple simultaneous connection attempts using ref
+    if (isConnectingRef.current) {
       return;
     }
 
-    setIsConnecting(true);
+    isConnectingRef.current = true;
 
     // Cleanup function - silently handle WebSocket errors during cleanup
     const cleanup = () => {
@@ -262,7 +262,7 @@ export function useRealtimeSync({
       }
     });
 
-    setIsConnecting(false);
+    isConnectingRef.current = false;
 
     // Cleanup function
     return () => {
@@ -270,9 +270,9 @@ export function useRealtimeSync({
         cleanupRef.current();
         cleanupRef.current = null;
       }
-      setIsConnecting(false);
+      isConnectingRef.current = false;
     };
-  }, [tenantId, tables, enabled, queryClient, isConnecting]);
+  }, [tenantId, tables, enabled, queryClient]);
 
   return {
     isActive: channelsRef.current.length > 0,
