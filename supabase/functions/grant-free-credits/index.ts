@@ -166,7 +166,7 @@ serve(async (req) => {
           .insert({
             tenant_id: tenantId,
             event_type: 'monthly_credit_refresh',
-            credits_at_event: grantResult?.[0]?.new_balance || FREE_CREDITS_AMOUNT,
+            credits_at_event: newBalance,
             metadata: {
               previous_balance: record.balance,
               granted_amount: FREE_CREDITS_AMOUNT,
