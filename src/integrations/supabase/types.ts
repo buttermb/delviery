@@ -2139,21 +2139,27 @@ export type Database = {
       }
       credit_analytics: {
         Row: {
+          action_attempted: string | null
           created_at: string | null
+          credits_at_event: number | null
           event_type: string
           id: string
           metadata: Json | null
           tenant_id: string
         }
         Insert: {
+          action_attempted?: string | null
           created_at?: string | null
+          credits_at_event?: number | null
           event_type: string
           id?: string
           metadata?: Json | null
           tenant_id: string
         }
         Update: {
+          action_attempted?: string | null
           created_at?: string | null
+          credits_at_event?: number | null
           event_type?: string
           id?: string
           metadata?: Json | null
@@ -2171,7 +2177,7 @@ export type Database = {
       }
       credit_costs: {
         Row: {
-          action_type: string
+          action_key: string
           created_at: string | null
           credit_cost: number
           description: string | null
@@ -2180,7 +2186,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          action_type: string
+          action_key: string
           created_at?: string | null
           credit_cost: number
           description?: string | null
@@ -2189,7 +2195,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          action_type?: string
+          action_key?: string
           created_at?: string | null
           credit_cost?: number
           description?: string | null
@@ -11381,37 +11387,76 @@ export type Database = {
       }
       tenant_credits: {
         Row: {
+          alerts_sent: Json | null
           balance: number
           created_at: string | null
+          credits_used_today: number | null
+          free_credits_balance: number | null
+          free_credits_expires_at: string | null
           id: string
+          is_free_tier: boolean | null
+          last_free_grant_at: string | null
           last_refill_at: string | null
           lifetime_earned: number
           lifetime_spent: number
+          next_free_grant_at: string | null
           next_refill_at: string | null
+          purchased_credits_balance: number | null
+          rollover_enabled: boolean | null
           tenant_id: string
           updated_at: string | null
+          warning_0_sent: boolean | null
+          warning_10_sent: boolean | null
+          warning_25_sent: boolean | null
+          warning_5_sent: boolean | null
         }
         Insert: {
+          alerts_sent?: Json | null
           balance?: number
           created_at?: string | null
+          credits_used_today?: number | null
+          free_credits_balance?: number | null
+          free_credits_expires_at?: string | null
           id?: string
+          is_free_tier?: boolean | null
+          last_free_grant_at?: string | null
           last_refill_at?: string | null
           lifetime_earned?: number
           lifetime_spent?: number
+          next_free_grant_at?: string | null
           next_refill_at?: string | null
+          purchased_credits_balance?: number | null
+          rollover_enabled?: boolean | null
           tenant_id: string
           updated_at?: string | null
+          warning_0_sent?: boolean | null
+          warning_10_sent?: boolean | null
+          warning_25_sent?: boolean | null
+          warning_5_sent?: boolean | null
         }
         Update: {
+          alerts_sent?: Json | null
           balance?: number
           created_at?: string | null
+          credits_used_today?: number | null
+          free_credits_balance?: number | null
+          free_credits_expires_at?: string | null
           id?: string
+          is_free_tier?: boolean | null
+          last_free_grant_at?: string | null
           last_refill_at?: string | null
           lifetime_earned?: number
           lifetime_spent?: number
+          next_free_grant_at?: string | null
           next_refill_at?: string | null
+          purchased_credits_balance?: number | null
+          rollover_enabled?: boolean | null
           tenant_id?: string
           updated_at?: string | null
+          warning_0_sent?: boolean | null
+          warning_10_sent?: boolean | null
+          warning_25_sent?: boolean | null
+          warning_5_sent?: boolean | null
         }
         Relationships: [
           {
@@ -14380,6 +14425,10 @@ export type Database = {
         Args: { p_reason?: string; p_reservation_id: string }
         Returns: Json
       }
+      check_credits: {
+        Args: { p_action_key: string; p_tenant_id: string }
+        Returns: Json
+      }
       check_is_admin: { Args: { _user_id: string }; Returns: boolean }
       check_tenant_subscription_valid: {
         Args: { p_tenant_id: string }
@@ -14405,6 +14454,16 @@ export type Database = {
           p_payment_info: Json
           p_reservation_id: string
           p_trace_id?: string
+        }
+        Returns: Json
+      }
+      consume_credits: {
+        Args: {
+          p_action_key: string
+          p_description?: string
+          p_reference_id?: string
+          p_reference_type?: string
+          p_tenant_id: string
         }
         Returns: Json
       }
@@ -14788,6 +14847,10 @@ export type Database = {
       get_user_tenant_ids_safe: {
         Args: { user_uuid: string }
         Returns: string[]
+      }
+      grant_free_credits: {
+        Args: { p_amount?: number; p_tenant_id?: string }
+        Returns: Json
       }
       has_role: {
         Args: {
