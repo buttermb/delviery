@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { logger } from "@/lib/logger";
 
 export interface TablePreferences {
@@ -20,6 +20,17 @@ const defaultPreferences: TablePreferences = {
 export function useTablePreferences(tableId: string, initialPreferences: TablePreferences = defaultPreferences) {
     const storageKey = `table-preferences-${tableId}`;
 
+    // Stabilize initialPreferences to prevent re-renders from object reference changes
+    const stableInitialPreferences = useMemo(() => initialPreferences, [
+        initialPreferences.sortBy,
+        initialPreferences.sortOrder,
+        initialPreferences.pageSize,
+        JSON.stringify(initialPreferences.visibleColumns),
+        JSON.stringify(initialPreferences.customFilters),
+        JSON.stringify(initialPreferences.sorting),
+        JSON.stringify(initialPreferences.columnVisibility),
+    ]);
+
     const loadPreferences = useCallback((): TablePreferences => {
         try {
             const stored = localStorage.getItem(storageKey);
@@ -29,8 +40,8 @@ export function useTablePreferences(tableId: string, initialPreferences: TablePr
         } catch (e) {
             logger.warn('Failed to load table preferences', { error: e });
         }
-        return initialPreferences;
-    }, [storageKey, initialPreferences]);
+        return stableInitialPreferences;
+    }, [storageKey, stableInitialPreferences]);
 
     const [preferences, setPreferences] = useState<TablePreferences>(loadPreferences);
 
@@ -50,8 +61,8 @@ export function useTablePreferences(tableId: string, initialPreferences: TablePr
     // Helper to clear preferences
     const clearPreferences = useCallback(() => {
         localStorage.removeItem(storageKey);
-        setPreferences(initialPreferences);
-    }, [storageKey, initialPreferences]);
+        setPreferences(stableInitialPreferences);
+    }, [storageKey, stableInitialPreferences]);
 
     return {
         preferences,

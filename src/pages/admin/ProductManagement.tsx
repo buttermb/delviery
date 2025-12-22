@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
@@ -134,12 +134,19 @@ export default function ProductManagement() {
   const [stockStatusFilter, setStockStatusFilter] = useState<string>(preferences.customFilters?.stockStatus || "all");
   const [sortBy, setSortBy] = useState<string>(preferences.sortBy || "name");
 
-  // Persist filter changes
+  // Track previous filter values to avoid unnecessary saves
+  const prevFiltersRef = useRef({ sortBy, categoryFilter, stockStatusFilter });
+
+  // Persist filter changes - only when values actually change
   useEffect(() => {
-    savePreferences({
-      sortBy,
-      customFilters: { category: categoryFilter, stockStatus: stockStatusFilter }
-    });
+    const prev = prevFiltersRef.current;
+    if (prev.sortBy !== sortBy || prev.categoryFilter !== categoryFilter || prev.stockStatusFilter !== stockStatusFilter) {
+      prevFiltersRef.current = { sortBy, categoryFilter, stockStatusFilter };
+      savePreferences({
+        sortBy,
+        customFilters: { category: categoryFilter, stockStatus: stockStatusFilter }
+      });
+    }
   }, [sortBy, categoryFilter, stockStatusFilter, savePreferences]);
 
   // Other state

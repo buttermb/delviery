@@ -301,6 +301,11 @@ export default function NewWholesaleOrder() {
       return;
     }
 
+    // Prevent double submission
+    if (isSubmitting && !isRetry) {
+      return;
+    }
+
     setIsSubmitting(true);
     setLastError(null);
 
@@ -309,8 +314,8 @@ export default function NewWholesaleOrder() {
       attemptIdRef.current = crypto.randomUUID();
     }
 
-    await executeCreditAction('wholesale_order_place', async () => {
-      try {
+    try {
+      await executeCreditAction('wholesale_order_place', async () => {
         const { data, error } = await supabase.functions.invoke('wholesale-order-create', {
           body: {
             client_id: orderData.client!.id, // Non-null assertion safe due to check above
@@ -341,82 +346,59 @@ export default function NewWholesaleOrder() {
         setRetryCount(0);
         showSuccessToast('Order Created', `Order #${data.order_number} created successfully`);
         navigateToAdmin('wholesale-orders');
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to create order';
+      }, {
+        referenceId: attemptIdRef.current,
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create order';
 
-        // Categorize errors and provide specific guidance
-        let userFriendlyMessage = errorMessage;
-        let errorTitle = 'Order Failed';
-        let canRetry = false;
+      // Categorize errors and provide specific guidance
+      let userFriendlyMessage = errorMessage;
+      let errorTitle = 'Order Failed';
+      let canRetry = false;
 
-        if (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('fetch') || errorMessage.toLowerCase().includes('timeout')) {
-          userFriendlyMessage = 'Network connection issue. Please check your internet and try again.';
-          errorTitle = 'Connection Error';
-          canRetry = true;
-        } else if (errorMessage.toLowerCase().includes('inventory') || errorMessage.toLowerCase().includes('stock') || errorMessage.toLowerCase().includes('quantity')) {
-          userFriendlyMessage = 'Insufficient inventory for one or more products. Please adjust quantities.';
-          errorTitle = 'Inventory Issue';
-        } else if (errorMessage.toLowerCase().includes('credit') || errorMessage.toLowerCase().includes('limit')) {
-          userFriendlyMessage = 'This order would exceed the client\'s credit limit. Consider switching to cash payment.';
-          errorTitle = 'Credit Limit';
-        } else if (errorMessage.toLowerCase().includes('client') || errorMessage.toLowerCase().includes('not found')) {
-          userFriendlyMessage = 'Client not found or has been deactivated. Please select a different client.';
-          errorTitle = 'Client Error';
-        } else if (errorMessage.toLowerCase().includes('duplicate')) {
-          userFriendlyMessage = 'A similar order was just created. Please check existing orders.';
-          errorTitle = 'Duplicate Order';
-        } else {
-          // Generic network errors can be retried
-          canRetry = retryCount < MAX_RETRIES;
-        }
-
-        setLastError(userFriendlyMessage);
-
-        logger.error('Order creation error', error instanceof Error ? error : new Error(errorMessage), {
-          component: 'NewWholesaleOrder',
-          clientId: orderData.client!.id,
-          retryCount,
-        });
-
-        // Auto-retry for network errors (up to MAX_RETRIES)
-        // IMPORTANT: We need to handle this carefully with the credit wrapper.
-        // Since we are inside the closure, simply calling handleSubmit(true) recursively
-        // works because executeCreditAction handles the idempotency via referenceId.
-        if (canRetry && isRetry === false && retryCount < MAX_RETRIES) {
-          setRetryCount((prev) => prev + 1);
-          showErrorToast(errorTitle, `${userFriendlyMessage} Retrying...`);
-          setTimeout(() => handleSubmit(true), 1500);
-          return; // Exit this execution
-        }
-
-        showErrorToast(errorTitle, userFriendlyMessage);
-      } finally {
-        // Only set not submitting if we are NOT retrying
-        // Actually we should set it false here, and let the retry process set it true again?
-        // handleSubmit calls setIsSubmitting(true) at start.
-        if (!((retryCount < MAX_RETRIES) && (lastError?.includes('Network') || false) && isRetry === false)) {
-          setIsSubmitting(false);
-        }
+      if (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('fetch') || errorMessage.toLowerCase().includes('timeout')) {
+        userFriendlyMessage = 'Network connection issue. Please check your internet and try again.';
+        errorTitle = 'Connection Error';
+        canRetry = true;
+      } else if (errorMessage.toLowerCase().includes('inventory') || errorMessage.toLowerCase().includes('stock') || errorMessage.toLowerCase().includes('quantity')) {
+        userFriendlyMessage = 'Insufficient inventory for one or more products. Please adjust quantities.';
+        errorTitle = 'Inventory Issue';
+      } else if (errorMessage.toLowerCase().includes('credit') || errorMessage.toLowerCase().includes('limit')) {
+        userFriendlyMessage = 'This order would exceed the client\'s credit limit. Consider switching to cash payment.';
+        errorTitle = 'Credit Limit';
+      } else if (errorMessage.toLowerCase().includes('client') || errorMessage.toLowerCase().includes('not found')) {
+        userFriendlyMessage = 'Client not found or has been deactivated. Please select a different client.';
+        errorTitle = 'Client Error';
+      } else if (errorMessage.toLowerCase().includes('duplicate')) {
+        userFriendlyMessage = 'A similar order was just created. Please check existing orders.';
+        errorTitle = 'Duplicate Order';
+      } else {
+        // Generic network errors can be retried
+        canRetry = retryCount < MAX_RETRIES;
       }
-    }, {
-      referenceId: attemptIdRef.current,
-      // If credits fail, we don't want to swallow that error inside the hook, 
-      // but the hook returns null on failure. 
-      // So if it returns null, we should probably stop.
-      // execute returns Promise<T | null>.
-    });
 
-    // Check if execute returned null (credit failure)
-    // The hook handles the toast for credit failure.
-    // We just need to ensure loading state is cleared if it failed before running our action.
-    // However, execute wraps our action. If our action runs, it handles its own finally.
-    // If our action DOES NOT ran (credit fail), we need to clear loading.
-    // We can do this by checking if it returned null?
-    // Actually, simply:
-    setIsSubmitting(false);
-    // Wait, if it was a retry, handleSubmit(true) was called, which sets isSubmitting(true) again.
-    // This setIsSubmitting(false) here runs after the await.
-    // Correct.
+      setLastError(userFriendlyMessage);
+
+      logger.error('Order creation error', error instanceof Error ? error : new Error(errorMessage), {
+        component: 'NewWholesaleOrder',
+        clientId: orderData.client!.id,
+        retryCount,
+      });
+
+      // Auto-retry for network errors (up to MAX_RETRIES)
+      if (canRetry && !isRetry && retryCount < MAX_RETRIES) {
+        setRetryCount((prev) => prev + 1);
+        showErrorToast(errorTitle, `${userFriendlyMessage} Retrying...`);
+        setTimeout(() => handleSubmit(true), 1500);
+        return; // Don't set isSubmitting to false, retry will handle it
+      }
+
+      showErrorToast(errorTitle, userFriendlyMessage);
+    } finally {
+      // Always reset submitting state at the end (unless retrying)
+      setIsSubmitting(false);
+    }
   };
 
   // Get payment term label

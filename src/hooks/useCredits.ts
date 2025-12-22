@@ -133,13 +133,15 @@ export function useCredits(): UseCreditsReturn {
     return Math.round((lifetimeSpent / lifetimeEarned) * 100);
   }, [isFreeTier, lifetimeSpent, lifetimeEarned]);
 
-  // Track low credit warnings
+  // Track low credit warnings - balance is intentionally NOT in deps
+  // We only want to track when isLowCredits becomes true, not on every balance change
   useEffect(() => {
     if (isLowCredits && !showWarning && tenantId) {
       setShowWarning(true);
       trackCreditEvent(tenantId, 'low_credit_warning_shown', balance);
     }
-  }, [isLowCredits, showWarning, tenantId, balance]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLowCredits, showWarning, tenantId]);
 
   // Check if can perform action
   const canPerformAction = useCallback(async (actionKey: string): Promise<boolean> => {
