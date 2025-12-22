@@ -187,6 +187,12 @@ serve(async (req) => {
           })
           .eq('id', tenantId);
 
+        // ALSO update tenant_credits to keep is_free_tier in sync
+        await supabase
+          .from('tenant_credits')
+          .update({ is_free_tier: false })
+          .eq('tenant_id', tenantId);
+
         // Log subscription event
         await supabase.from('subscription_events').insert({
           tenant_id: tenantId,
@@ -289,6 +295,12 @@ serve(async (req) => {
               p_tenant_id: tenantId,
               p_amount: 10000,
             });
+
+            // ALSO update tenant_credits to keep is_free_tier in sync
+            await supabase
+              .from('tenant_credits')
+              .update({ is_free_tier: true })
+              .eq('tenant_id', tenantId);
 
             console.log('[STRIPE-WEBHOOK] Subscription ended, reverted to free tier:', { tenantId, status });
           }

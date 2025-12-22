@@ -65,7 +65,21 @@ export interface CheckCreditsResult {
  */
 export async function getCreditBalance(tenantId: string): Promise<CreditBalance | null> {
   try {
-    // Query all relevant columns from tenant_credits
+    // PRIORITY: Check tenants table for subscription_status first
+    // This is the source of truth for whether user is on free tier
+    const { data: tenantData, error: tenantError } = await supabase
+      .from('tenants')
+      .select('subscription_status, is_free_tier, credits_enabled')
+      .eq('id', tenantId)
+      .maybeSingle();
+
+    // If tenant has active subscription, they are NOT on free tier
+    // regardless of what tenant_credits.is_free_tier says
+    const hasActiveSubscription = tenantData?.subscription_status === 'active' || 
+                                   tenantData?.subscription_status === 'trial';
+    const tenantIsFreeTier = hasActiveSubscription ? false : (tenantData?.is_free_tier ?? true);
+
+    // Query credit balance data
     const { data, error } = await supabase
       .from('tenant_credits')
       .select('balance, lifetime_earned, lifetime_spent, is_free_tier, next_free_grant_at')
@@ -78,7 +92,7 @@ export async function getCreditBalance(tenantId: string): Promise<CreditBalance 
         balance: FREE_TIER_MONTHLY_CREDITS,
         lifetimeEarned: FREE_TIER_MONTHLY_CREDITS,
         lifetimeSpent: 0,
-        isFreeTier: true,
+        isFreeTier: tenantIsFreeTier,
         nextFreeGrantAt: null,
       };
     }
@@ -88,7 +102,8 @@ export async function getCreditBalance(tenantId: string): Promise<CreditBalance 
         balance: data.balance ?? FREE_TIER_MONTHLY_CREDITS,
         lifetimeEarned: data.lifetime_earned ?? FREE_TIER_MONTHLY_CREDITS,
         lifetimeSpent: data.lifetime_spent ?? 0,
-        isFreeTier: data.is_free_tier ?? true,
+        // Use tenant table as source of truth for isFreeTier
+        isFreeTier: tenantIsFreeTier,
         nextFreeGrantAt: data.next_free_grant_at ?? null,
       };
     }
@@ -98,7 +113,7 @@ export async function getCreditBalance(tenantId: string): Promise<CreditBalance 
       balance: FREE_TIER_MONTHLY_CREDITS,
       lifetimeEarned: FREE_TIER_MONTHLY_CREDITS,
       lifetimeSpent: 0,
-      isFreeTier: true,
+      isFreeTier: tenantIsFreeTier,
       nextFreeGrantAt: null,
     };
   } catch (err) {
