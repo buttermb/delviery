@@ -229,10 +229,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
           </Suspense>
         </SidebarContent>
 
-        <SidebarFooter className="p-4 border-t space-y-3">
-          {/* Credit Balance for free tier users */}
-          <CreditBalance variant="default" />
-
+        <SidebarFooter className="p-4 border-t">
           <div className="text-xs text-muted-foreground text-center py-1">
             Press <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">⌘B</kbd> to toggle
           </div>
