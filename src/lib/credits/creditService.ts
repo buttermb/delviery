@@ -65,39 +65,49 @@ export interface CheckCreditsResult {
  */
 export async function getCreditBalance(tenantId: string): Promise<CreditBalance | null> {
   try {
-    // Try direct table query first - only select columns that exist
-    const { data: tableData, error: tableError } = await supabase
+    // Query all relevant columns from tenant_credits
+    const { data, error } = await supabase
       .from('tenant_credits')
-      .select('balance')
+      .select('balance, lifetime_earned, lifetime_spent, is_free_tier, next_free_grant_at')
       .eq('tenant_id', tenantId)
       .maybeSingle();
 
-    if (!tableError && tableData) {
+    if (error) {
+      logger.error('Error fetching credit balance', error, { tenantId });
       return {
-        balance: tableData.balance ?? FREE_TIER_MONTHLY_CREDITS,
+        balance: FREE_TIER_MONTHLY_CREDITS,
         lifetimeEarned: FREE_TIER_MONTHLY_CREDITS,
         lifetimeSpent: 0,
-        isFreeTier: false,
+        isFreeTier: true,
         nextFreeGrantAt: null,
       };
     }
 
-    // If table doesn't exist or no data, return default credits
-    // This allows the app to work without the credit system fully configured
+    if (data) {
+      return {
+        balance: data.balance ?? FREE_TIER_MONTHLY_CREDITS,
+        lifetimeEarned: data.lifetime_earned ?? FREE_TIER_MONTHLY_CREDITS,
+        lifetimeSpent: data.lifetime_spent ?? 0,
+        isFreeTier: data.is_free_tier ?? true,
+        nextFreeGrantAt: data.next_free_grant_at ?? null,
+      };
+    }
+
+    // No record exists - return defaults
     return {
       balance: FREE_TIER_MONTHLY_CREDITS,
       lifetimeEarned: FREE_TIER_MONTHLY_CREDITS,
       lifetimeSpent: 0,
-      isFreeTier: false,
+      isFreeTier: true,
       nextFreeGrantAt: null,
     };
   } catch (err) {
-    // Silently return defaults - credit system is optional
+    logger.error('Error in getCreditBalance', err as Error, { tenantId });
     return {
       balance: FREE_TIER_MONTHLY_CREDITS,
       lifetimeEarned: FREE_TIER_MONTHLY_CREDITS,
       lifetimeSpent: 0,
-      isFreeTier: false,
+      isFreeTier: true,
       nextFreeGrantAt: null,
     };
   }

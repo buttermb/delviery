@@ -3,14 +3,14 @@ import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Coins, Loader2 } from 'lucide-react';
-import { useCredits } from '@/contexts/CreditContext';
+import { useCredits } from '@/hooks/useCredits';
 import { useTenantNavigation } from '@/hooks/useTenantNavigation';
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function CreditPurchaseSuccessPage() {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
-  const { credits, isLoading } = useCredits();
+  const { balance: credits, isLoading } = useCredits();
   const { navigateToAdmin } = useTenantNavigation();
   const queryClient = useQueryClient();
   const [hasRefreshed, setHasRefreshed] = useState(false);
