@@ -2255,36 +2255,42 @@ export type Database = {
       }
       credit_transactions: {
         Row: {
+          action_type: string | null
           amount: number
           balance_after: number
           created_at: string | null
           created_by: string | null
           description: string | null
           id: string
+          metadata: Json | null
           reference_id: string | null
           reference_type: string | null
           tenant_id: string
           transaction_type: string
         }
         Insert: {
+          action_type?: string | null
           amount: number
           balance_after: number
           created_at?: string | null
           created_by?: string | null
           description?: string | null
           id?: string
+          metadata?: Json | null
           reference_id?: string | null
           reference_type?: string | null
           tenant_id: string
           transaction_type: string
         }
         Update: {
+          action_type?: string | null
           amount?: number
           balance_after?: number
           created_at?: string | null
           created_by?: string | null
           description?: string | null
           id?: string
+          metadata?: Json | null
           reference_id?: string | null
           reference_type?: string | null
           tenant_id?: string
@@ -14463,17 +14469,13 @@ export type Database = {
       consume_credits: {
         Args: {
           p_action_key: string
+          p_amount: number
           p_description?: string
+          p_metadata?: Json
           p_reference_id?: string
-          p_reference_type?: string
           p_tenant_id: string
         }
-        Returns: {
-          credits_cost: number
-          error_message: string
-          new_balance: number
-          success: boolean
-        }[]
+        Returns: Json
       }
       create_courier_pin_session: {
         Args: { p_courier_id: string }
