@@ -2178,6 +2178,7 @@ export type Database = {
       credit_costs: {
         Row: {
           action_key: string
+          category: string | null
           created_at: string | null
           credit_cost: number
           description: string | null
@@ -2187,6 +2188,7 @@ export type Database = {
         }
         Insert: {
           action_key: string
+          category?: string | null
           created_at?: string | null
           credit_cost: number
           description?: string | null
@@ -2196,6 +2198,7 @@ export type Database = {
         }
         Update: {
           action_key?: string
+          category?: string | null
           created_at?: string | null
           credit_cost?: number
           description?: string | null
@@ -14465,7 +14468,12 @@ export type Database = {
           p_reference_type?: string
           p_tenant_id: string
         }
-        Returns: Json
+        Returns: {
+          credits_cost: number
+          error_message: string
+          new_balance: number
+          success: boolean
+        }[]
       }
       create_courier_pin_session: {
         Args: { p_courier_id: string }
@@ -14849,8 +14857,12 @@ export type Database = {
         Returns: string[]
       }
       grant_free_credits: {
-        Args: { p_amount?: number; p_tenant_id?: string }
-        Returns: Json
+        Args: { p_amount?: number; p_tenant_id: string }
+        Returns: {
+          error_message: string
+          new_balance: number
+          success: boolean
+        }[]
       }
       has_role: {
         Args: {
