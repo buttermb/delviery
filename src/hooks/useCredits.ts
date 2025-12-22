@@ -185,7 +185,8 @@ export function useCredits(): UseCreditsReturn {
       tenantId,
       actionKey,
       safeReferenceId,
-      referenceType
+      undefined, // description
+      referenceType ? { reference_type: referenceType } : undefined // metadata
     );
 
     // Refetch balance after consumption

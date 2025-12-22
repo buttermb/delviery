@@ -176,7 +176,7 @@ export function RouteOptimizer() {
       // NOTE: In a real integration, ensure tenantId is available.
       const tenantId = session?.user?.id || 'demo-tenant';
 
-      const creditResult = await consumeCredits(tenantId, 'route_optimization', undefined, undefined, 'Optimized delivery route');
+      const creditResult = await consumeCredits(tenantId, 'route_optimization', undefined, 'Optimized delivery route');
 
       if (!creditResult.success && creditResult.errorMessage !== 'No response from credit consumption') {
         toast({

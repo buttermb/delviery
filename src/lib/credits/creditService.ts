@@ -169,17 +169,21 @@ export async function consumeCredits(
   tenantId: string,
   actionKey: string,
   referenceId?: string,
-  referenceType?: string,
-  description?: string
+  description?: string,
+  metadata?: Record<string, unknown>
 ): Promise<ConsumeCreditsResult> {
   try {
+    // Get the cost from creditCosts
+    const cost = getCreditCost(actionKey);
+    
     const { data, error } = await supabase
       .rpc('consume_credits', {
         p_tenant_id: tenantId,
+        p_amount: cost,
         p_action_key: actionKey,
-        p_reference_id: referenceId || null,
-        p_reference_type: referenceType || null,
         p_description: description || null,
+        p_reference_id: referenceId || null,
+        p_metadata: metadata || {},
       });
 
     if (error) {
@@ -192,7 +196,8 @@ export async function consumeCredits(
       };
     }
 
-    if (!data || data.length === 0) {
+    // data is JSONB (single object), not an array
+    if (!data) {
       return {
         success: false,
         newBalance: 0,
@@ -201,21 +206,22 @@ export async function consumeCredits(
       };
     }
 
-    const result = data[0];
+    // Access data directly as single object
+    const result = data as { success: boolean; consumed?: number; balance?: number; error?: string };
     
     if (!result.success) {
       logger.warn('Credit consumption failed', { 
         tenantId, 
         actionKey, 
-        error: result.error_message 
+        error: result.error 
       });
     }
 
     return {
       success: result.success,
-      newBalance: result.new_balance,
-      creditsCost: result.credits_cost,
-      errorMessage: result.error_message || undefined,
+      newBalance: result.balance ?? 0,
+      creditsCost: result.consumed ?? cost,
+      errorMessage: result.error || undefined,
     };
   } catch (err) {
     logger.error('Error consuming credits', err as Error, { tenantId, actionKey });
