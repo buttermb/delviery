@@ -258,7 +258,9 @@ serve(async (req) => {
 
         if (tenantId) {
           const isDeleted = type.includes('deleted');
-          const status = isDeleted ? 'cancelled' : object.status;
+          // Normalize status: Stripe uses 'canceled', we use 'cancelled'
+          const normalizedStatus = object.status === 'canceled' ? 'cancelled' : object.status;
+          const status = isDeleted ? 'cancelled' : normalizedStatus;
           
           // Check if trial converted to active
           const wasTrialing = object.status === 'active' && object.trial_end;
@@ -268,20 +270,32 @@ serve(async (req) => {
             updated_at: new Date().toISOString(),
           };
 
-          // If trial converted to active - ensure is_free_tier stays false
-          if (wasTrialing) {
-            updateData.trial_converted_at = new Date().toISOString();
+          // If trial converted to active OR status becomes active - ensure is_free_tier stays false
+          if (wasTrialing || status === 'active') {
+            if (wasTrialing) {
+              updateData.trial_converted_at = new Date().toISOString();
+            }
             updateData.is_free_tier = false;
             updateData.credits_enabled = false;
             
-            await supabase.from('trial_events').insert({
-              tenant_id: tenantId,
-              event_type: 'trial_converted',
-              event_data: {
-                subscription_id: object.id,
-                converted_at: new Date().toISOString(),
-              },
-            });
+            // SYNC: Also update tenant_credits when becoming active
+            await supabase
+              .from('tenant_credits')
+              .update({ is_free_tier: false })
+              .eq('tenant_id', tenantId);
+            
+            if (wasTrialing) {
+              await supabase.from('trial_events').insert({
+                tenant_id: tenantId,
+                event_type: 'trial_converted',
+                event_data: {
+                  subscription_id: object.id,
+                  converted_at: new Date().toISOString(),
+                },
+              });
+            }
+            
+            console.log('[STRIPE-WEBHOOK] Subscription active, synced is_free_tier=false:', { tenantId, status });
           }
 
           // If subscription is cancelled or deleted, revert to free tier

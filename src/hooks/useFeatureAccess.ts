@@ -17,6 +17,7 @@ import {
   type FeatureId,
   type SubscriptionTier,
 } from '@/lib/featureConfig';
+import { isCancelled as checkIsCancelled } from '@/utils/subscriptionStatus';
 
 // Map business tier (G-Wagon system) to subscription tier for backwards compatibility
 function businessTierToSubscription(businessTier: string | null | undefined): SubscriptionTier {
@@ -58,8 +59,8 @@ export function useFeatureAccess() {
     // Guard: Null check for status
     if (!status) return false;
 
-    // Blocked statuses - no access
-    if (status === 'suspended' || status === 'cancelled') {
+    // Blocked statuses - no access (use utility for cancelled to handle spelling variants)
+    if (status === 'suspended' || checkIsCancelled(status)) {
       return false;
     }
 
@@ -92,7 +93,8 @@ export function useFeatureAccess() {
     new Date(tenant.trial_ends_at) < new Date();
 
   const isSuspended = tenant?.subscription_status === 'suspended';
-  const isCancelled = tenant?.subscription_status === 'cancelled';
+  // Use normalized utility to handle both 'cancelled' and 'canceled' spellings
+  const isCancelled = checkIsCancelled(tenant?.subscription_status);
   const isPastDue = tenant?.subscription_status === 'past_due';
 
   /**

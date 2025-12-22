@@ -5,6 +5,7 @@
 
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { type SubscriptionTier } from '@/lib/featureConfig';
+import { isTrial as checkIsTrial, isCancelled as checkIsCancelled } from '@/utils/subscriptionStatus';
 
 export function useSubscriptionStatus() {
   const { tenant } = useTenantAdminAuth();
@@ -27,8 +28,12 @@ export function useSubscriptionStatus() {
   const currentTier = getTierFromPlan(tenant?.subscription_plan);
   const status = tenant?.subscription_status;
   
+  // Use normalized utilities that handle spelling variants (trial/trialing, cancelled/canceled)
+  const isTrialStatus = checkIsTrial(status);
+  const isCancelledStatus = checkIsCancelled(status);
+  
   // Check if trial is expired
-  const isTrialExpired = status === 'trial' && 
+  const isTrialExpired = isTrialStatus && 
                         tenant?.trial_ends_at && 
                         new Date(tenant.trial_ends_at) < new Date();
   
@@ -38,18 +43,18 @@ export function useSubscriptionStatus() {
     isProfessional: currentTier === 'professional',
     isStarter: currentTier === 'starter',
     
-    // Explicit status flags
-    isTrial: status === 'trial',
+    // Explicit status flags (use normalized utilities)
+    isTrial: isTrialStatus,
     isActive: status === 'active',
     isSuspended: status === 'suspended',
-    isCancelled: status === 'cancelled',
+    isCancelled: isCancelledStatus,
     isPastDue: status === 'past_due',
     
     // Computed flags
-    hasActiveSubscription: status === 'active' || (status === 'trial' && !isTrialExpired),
-    canUpgrade: currentTier !== 'enterprise' && status !== 'suspended' && status !== 'cancelled',
+    hasActiveSubscription: status === 'active' || (isTrialStatus && !isTrialExpired),
+    canUpgrade: currentTier !== 'enterprise' && status !== 'suspended' && !isCancelledStatus,
     canDowngrade: currentTier !== 'starter',
-    needsPaymentMethod: !tenant?.payment_method_added && status === 'trial',
+    needsPaymentMethod: !tenant?.payment_method_added && isTrialStatus,
     isTrialExpired,
     
     // Raw values
