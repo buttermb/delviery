@@ -38,6 +38,9 @@ export interface Tenant {
   onboarding_completed?: boolean;
   business_tier?: string;
   created_at?: string;
+  // Free tier and credits flags - critical for subscription logic
+  is_free_tier?: boolean;
+  credits_enabled?: boolean;
   limits: {
     customers: number;
     menus: number;
