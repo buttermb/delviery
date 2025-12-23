@@ -4,7 +4,7 @@
  * Enhanced with URL-based filters, last updated indicator, and copy buttons
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,9 @@ import {
     ArrowRight,
     AlertCircle,
     Copy,
-    Check
+    Check,
+    Filter,
+    X
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,6 +36,14 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Input } from '@/components/ui/input';
 
 type OrderStatus = 'pending' | 'processing' | 'ready' | 'delivered' | 'cancelled';
 
@@ -193,6 +203,32 @@ export function OrderPipelineBoard() {
     const queryClient = useQueryClient();
     const tenantId = tenant?.id;
     const [lastFetched, setLastFetched] = useState<Date | null>(null);
+    const [searchParams, setSearchParams] = useSearchParams();
+    
+    // URL-based filter state
+    const searchQuery = searchParams.get('search') || '';
+    const minAmount = searchParams.get('minAmount') || '';
+    const showFilters = searchParams.get('filters') === 'true';
+
+    const updateUrlFilter = (key: string, value: string) => {
+        const newParams = new URLSearchParams(searchParams);
+        if (value) {
+            newParams.set(key, value);
+        } else {
+            newParams.delete(key);
+        }
+        setSearchParams(newParams, { replace: true });
+    };
+
+    const clearFilters = () => {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('search');
+        newParams.delete('minAmount');
+        newParams.delete('filters');
+        setSearchParams(newParams, { replace: true });
+    };
+
+    const hasActiveFilters = searchQuery || minAmount;
 
     const { data: orders = [], isLoading, refetch, isFetching } = useQuery({
         queryKey: ['pipeline-orders', tenantId],
@@ -231,6 +267,19 @@ export function OrderPipelineBoard() {
         refetchInterval: 30000
     });
 
+    // Filter orders based on URL params
+    const filteredOrders = useMemo(() => {
+        return orders.filter(order => {
+            if (searchQuery && !order.customer_name.toLowerCase().includes(searchQuery.toLowerCase())) {
+                return false;
+            }
+            if (minAmount && order.total_amount < parseFloat(minAmount)) {
+                return false;
+            }
+            return true;
+        });
+    }, [orders, searchQuery, minAmount]);
+
     const updateStatusMutation = useMutation({
         mutationFn: async ({ id, status }: { id: string; status: OrderStatus }) => {
             const { error } = await supabase
@@ -263,10 +312,37 @@ export function OrderPipelineBoard() {
 
     return (
         <div className="space-y-4">
-            {/* Header with Last Updated */}
-            <div className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                    {orders.length} orders in pipeline
+            {/* Header with Filters and Last Updated */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                    <div className="text-sm text-muted-foreground">
+                        {filteredOrders.length} of {orders.length} orders
+                    </div>
+                    <Button
+                        variant={showFilters ? "secondary" : "outline"}
+                        size="sm"
+                        onClick={() => updateUrlFilter('filters', showFilters ? '' : 'true')}
+                        className="h-8"
+                    >
+                        <Filter className="h-3 w-3 mr-1" />
+                        Filters
+                        {hasActiveFilters && (
+                            <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">
+                                {(searchQuery ? 1 : 0) + (minAmount ? 1 : 0)}
+                            </Badge>
+                        )}
+                    </Button>
+                    {hasActiveFilters && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={clearFilters}
+                            className="h-8 text-muted-foreground"
+                        >
+                            <X className="h-3 w-3 mr-1" />
+                            Clear
+                        </Button>
+                    )}
                 </div>
                 <LastUpdated 
                     lastFetched={lastFetched} 
@@ -275,12 +351,35 @@ export function OrderPipelineBoard() {
                 />
             </div>
 
+            {/* Filter Panel */}
+            {showFilters && (
+                <div className="flex flex-wrap gap-3 p-3 bg-muted/50 rounded-lg border">
+                    <div className="flex-1 min-w-[200px]">
+                        <Input
+                            placeholder="Search by customer name..."
+                            value={searchQuery}
+                            onChange={(e) => updateUrlFilter('search', e.target.value)}
+                            className="h-9"
+                        />
+                    </div>
+                    <div className="w-[150px]">
+                        <Input
+                            type="number"
+                            placeholder="Min amount..."
+                            value={minAmount}
+                            onChange={(e) => updateUrlFilter('minAmount', e.target.value)}
+                            className="h-9"
+                        />
+                    </div>
+                </div>
+            )}
+
             {/* Pipeline Columns */}
-            <div className="h-[calc(100vh-250px)] min-h-[500px] flex gap-4 overflow-x-auto pb-4">
+            <div className="h-[calc(100vh-300px)] min-h-[500px] flex gap-4 overflow-x-auto pb-4">
                 <PipelineColumn
                     title="Pending"
                     status="pending"
-                    orders={orders.filter(o => o.status === 'pending')}
+                    orders={filteredOrders.filter(o => o.status === 'pending')}
                     icon={AlertCircle}
                     color="text-orange-600 bg-orange-50 dark:bg-orange-900/20"
                     onMove={handleMove}
@@ -288,7 +387,7 @@ export function OrderPipelineBoard() {
                 <PipelineColumn
                     title="Processing"
                     status="processing"
-                    orders={orders.filter(o => o.status === 'processing')}
+                    orders={filteredOrders.filter(o => o.status === 'processing')}
                     icon={Package}
                     color="text-blue-600 bg-blue-50 dark:bg-blue-900/20"
                     onMove={handleMove}
@@ -296,7 +395,7 @@ export function OrderPipelineBoard() {
                 <PipelineColumn
                     title="Ready to Ship"
                     status="ready"
-                    orders={orders.filter(o => o.status === 'ready')}
+                    orders={filteredOrders.filter(o => o.status === 'ready')}
                     icon={CheckCircle2}
                     color="text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20"
                     onMove={handleMove}
@@ -304,7 +403,7 @@ export function OrderPipelineBoard() {
                 <PipelineColumn
                     title="Delivered"
                     status="delivered"
-                    orders={orders.filter(o => o.status === 'delivered')}
+                    orders={filteredOrders.filter(o => o.status === 'delivered')}
                     icon={Truck}
                     color="text-slate-600 bg-slate-50 dark:bg-slate-900/20"
                     onMove={handleMove}
