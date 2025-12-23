@@ -278,35 +278,20 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     ],
   },
   // ==========================================================================
-  // 5. STOREFRONT & MARKETING (6 items)
+  // 5. FINANCE (5 items) - Moved up for priority
   // ==========================================================================
   {
-    section: 'Storefront',
+    section: 'Finance',
     items: [
-      createItem('storefront', 'Overview', '/admin/storefront-hub', Store),
-      createItem('storefront', 'Reviews', '/admin/marketing/reviews', Star),
-      createItem('loyalty-program', 'Loyalty', '/admin/marketing-hub?tab=loyalty', Star),
-      createItem('coupons', 'Coupons', '/admin/marketing-hub?tab=coupons', Tag),
-      createItem('marketing-automation', 'Campaigns', '/admin/marketing-hub?tab=campaigns', Mail),
-      createItem('live-chat', 'Live Chat', '/admin/marketing-hub?tab=live-chat', MessageSquare),
+      createItem('financial-center', 'Dashboard', '/admin/finance-hub', DollarSign),
+      createItem('revenue-reports', 'Revenue', '/admin/finance-hub?tab=revenue', TrendingUp),
+      createItem('expense-tracking', 'Expenses', '/admin/finance-hub?tab=expenses', Wallet),
+      createItem('invoice-management', 'Invoices', '/admin/finance-hub?tab=invoices', FileSpreadsheet),
+      createItem('commission-tracking', 'Payouts', '/admin/finance-hub?tab=commissions', CreditCard),
     ],
   },
   // ==========================================================================
-  // 6. OPERATIONS (6 items)
-  // ==========================================================================
-  {
-    section: 'Operations',
-    items: [
-      createItem('team-members', 'Team', '/admin/operations-hub?tab=team', Users),
-      createItem('role-management', 'Roles', '/admin/operations-hub?tab=roles', UserCog),
-      createItem('suppliers', 'Vendors', '/admin/operations-hub?tab=suppliers', Building2),
-      createItem('purchase-orders', 'Purchase Orders', '/admin/operations-hub?tab=purchase-orders', FileText),
-      createItem('locations', 'Locations', '/admin/operations-hub?tab=locations', MapPin),
-      createItem('activity-logs', 'Activity Logs', '/admin/operations-hub?tab=activity', ScrollText),
-    ],
-  },
-  // ==========================================================================
-  // 7. FULFILLMENT & DELIVERY (4 items) - Now a dedicated hub
+  // 6. FULFILLMENT & DELIVERY (4 items) - Dedicated hub
   // ==========================================================================
   {
     section: 'Fulfillment',
@@ -318,20 +303,20 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     ],
   },
   // ==========================================================================
-  // 8. FINANCE (5 items)
+  // 7. STOREFRONT & MARKETING (6 items)
   // ==========================================================================
   {
-    section: 'Finance',
+    section: 'Marketing',
     items: [
-      createItem('financial-center', 'Dashboard', '/admin/finance-hub', DollarSign),
-      createItem('invoice-management', 'Invoices', '/admin/finance-hub?tab=invoices', FileSpreadsheet),
-      createItem('expense-tracking', 'Expenses', '/admin/finance-hub?tab=expenses', Wallet),
-      createItem('revenue-reports', 'Revenue', '/admin/finance-hub?tab=revenue', TrendingUp),
-      createItem('commission-tracking', 'Payouts', '/admin/finance-hub?tab=commissions', CreditCard),
+      createItem('storefront', 'Storefront', '/admin/storefront-hub', Store),
+      createItem('storefront', 'Reviews', '/admin/marketing/reviews', Star),
+      createItem('coupons', 'Coupons', '/admin/marketing-hub?tab=coupons', Tag),
+      createItem('marketing-automation', 'Campaigns', '/admin/marketing-hub?tab=campaigns', Mail),
+      createItem('live-chat', 'Live Chat', '/admin/marketing-hub?tab=live-chat', MessageSquare),
     ],
   },
   // ==========================================================================
-  // 9. ANALYTICS (4 items)
+  // 8. ANALYTICS (4 items)
   // ==========================================================================
   {
     section: 'Analytics',
@@ -340,6 +325,20 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
       createItem('reports', 'Reports', '/admin/analytics-hub?tab=reports', FileText),
       createItem('advanced-reporting', 'Advanced', '/admin/analytics-hub?tab=advanced', PieChart),
       createItem('data-export', 'Export', '/admin/finance-hub?tab=export', Download),
+    ],
+  },
+  // ==========================================================================
+  // 9. OPERATIONS (6 items)
+  // ==========================================================================
+  {
+    section: 'Operations',
+    items: [
+      createItem('team-members', 'Team', '/admin/operations-hub?tab=team', Users),
+      createItem('role-management', 'Roles', '/admin/operations-hub?tab=roles', UserCog),
+      createItem('suppliers', 'Vendors', '/admin/operations-hub?tab=suppliers', Building2),
+      createItem('purchase-orders', 'Purchase Orders', '/admin/operations-hub?tab=purchase-orders', FileText),
+      createItem('locations', 'Locations', '/admin/operations-hub?tab=locations', MapPin),
+      createItem('activity-logs', 'Activity Logs', '/admin/operations-hub?tab=activity', ScrollText),
     ],
   },
   // ==========================================================================
