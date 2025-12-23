@@ -87,6 +87,9 @@ verify_jwt = false
 [functions.check-expired-trials]
 verify_jwt = false
 
+[functions.retry-failed-emails]
+verify_jwt = false
+
 [functions.send-trial-expiration-notice]
 verify_jwt = false
 

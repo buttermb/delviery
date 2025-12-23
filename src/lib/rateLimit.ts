@@ -72,7 +72,8 @@ export async function checkRateLimit(
     return { allowed: true, used: 0, limit, remaining: limit };
   }
 
-  return data as RateLimitResult;
+  const result = data as unknown as RateLimitResult;
+  return result;
 }
 
 /**
@@ -93,7 +94,7 @@ export async function logActionWithLimit(
       tenant_id: tenantId,
       user_id: userId,
       action_type: actionType,
-      metadata,
+      metadata: metadata as Record<string, string | number | boolean | null>,
     });
     return { success: true };
   }
@@ -104,7 +105,7 @@ export async function logActionWithLimit(
     p_action_type: actionType,
     p_limit: limit,
     p_window_hours: 24,
-    p_metadata: metadata,
+    p_metadata: metadata as Record<string, string | number | boolean | null>,
   });
 
   if (error) {
@@ -112,7 +113,7 @@ export async function logActionWithLimit(
     return { success: false, error: error.message };
   }
 
-  const result = data as { success: boolean; error?: string; limit?: RateLimitResult };
+  const result = data as unknown as { success: boolean; error?: string; limit?: RateLimitResult };
   return result;
 }
 
