@@ -3,6 +3,7 @@
  * 
  * Always visible navigation bar at the bottom of the screen
  * Optimized for the new hub-based navigation structure
+ * With real-time badge counts
  */
 
 import { NavLink, useLocation } from 'react-router-dom';
@@ -24,6 +25,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useBusinessTier } from '@/hooks/useBusinessTier';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useAdminBadgeCounts } from '@/hooks/useAdminBadgeCounts';
 import { useState } from 'react';
 import {
   Sheet,
@@ -40,14 +42,14 @@ interface NavItem {
   label: string;
   icon: React.ElementType;
   path: string;
-  badge?: { level: 'critical' | 'warning' | 'success' | 'info'; count: number };
+  badgeKey?: 'pendingOrders' | 'lowStockItems' | 'unreadMessages' | 'pendingShipments';
 }
 
-// Core navigation items - optimized for hub structure
+// Core navigation items - optimized for hub structure with dynamic badges
 const coreNavItems: NavItem[] = [
   { id: 'home', label: 'Home', icon: LayoutDashboard, path: '/admin' },
-  { id: 'orders', label: 'Orders', icon: ShoppingCart, path: '/admin/orders' },
-  { id: 'inventory', label: 'Inventory', icon: Box, path: '/admin/inventory-hub' },
+  { id: 'orders', label: 'Orders', icon: ShoppingCart, path: '/admin/orders', badgeKey: 'pendingOrders' },
+  { id: 'inventory', label: 'Inventory', icon: Box, path: '/admin/inventory-hub', badgeKey: 'lowStockItems' },
   { id: 'finance', label: 'Finance', icon: DollarSign, path: '/admin/finance-hub' },
 ];
 
@@ -81,7 +83,8 @@ const moreCategories = [
 
 export function HotBar() {
   const { tenant } = useTenantAdminAuth();
-  const { tier, preset } = useBusinessTier();
+  const { tier } = useBusinessTier();
+  const { counts, getBadgeLevel } = useAdminBadgeCounts();
   const location = useLocation();
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -98,28 +101,33 @@ export function HotBar() {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t md:hidden">
       <nav className="flex items-center justify-around py-2 px-1">
-        {coreNavItems.map((item) => (
-          <NavLink
-            key={item.id}
-            to={getFullPath(item.path)}
-            className={cn(
-              'flex flex-col items-center justify-center px-3 py-2 rounded-lg transition-colors relative',
-              isActive(item.path)
-                ? 'text-primary bg-primary/10'
-                : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
-            )}
-          >
-            <div className="relative">
-              <item.icon className="h-5 w-5" />
-              {item.badge && (
-                <span className="absolute -top-1.5 -right-1.5">
-                  <AlertBadge level={item.badge.level} count={item.badge.count} size="sm" />
-                </span>
+        {coreNavItems.map((item) => {
+          const badgeCount = item.badgeKey ? counts[item.badgeKey] : 0;
+          const badgeLevel = item.badgeKey ? getBadgeLevel(item.badgeKey) : 'info';
+          
+          return (
+            <NavLink
+              key={item.id}
+              to={getFullPath(item.path)}
+              className={cn(
+                'flex flex-col items-center justify-center px-3 py-2 rounded-lg transition-colors relative',
+                isActive(item.path)
+                  ? 'text-primary bg-primary/10'
+                  : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
               )}
-            </div>
-            <span className="text-xs mt-1">{item.label}</span>
-          </NavLink>
-        ))}
+            >
+              <div className="relative">
+                <item.icon className="h-5 w-5" />
+                {badgeCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5">
+                    <AlertBadge level={badgeLevel} count={badgeCount} size="sm" />
+                  </span>
+                )}
+              </div>
+              <span className="text-xs mt-1">{item.label}</span>
+            </NavLink>
+          );
+        })}
 
         {/* More Menu */}
         <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
