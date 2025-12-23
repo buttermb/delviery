@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { logger } from '@/lib/logger';
+import { isCancelled } from '@/utils/subscriptionStatus';
 // @ts-nocheck
 /**
  * Tenant Context & Utilities
@@ -262,7 +263,7 @@ export function calculateHealthScore(tenant: Tenant): {
     score -= 40;
     reasons.push('Payment past due');
   }
-  if (tenant.subscription_status === 'cancelled') {
+  if (isCancelled(tenant.subscription_status)) {
     score -= 50;
     reasons.push('Subscription cancelled');
   }

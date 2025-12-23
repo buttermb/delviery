@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { isCancelled } from '@/utils/subscriptionStatus';
 /**
  * Super Admin Dashboard Page
  * Redesigned with horizontal navigation layout
@@ -143,7 +144,7 @@ export default function SuperAdminDashboardPage() {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const recentCancelled = tenants.filter(
         (t) =>
-          t.subscription_status === 'cancelled' &&
+          isCancelled(t.subscription_status) &&
           new Date(t.created_at || 0) > thirtyDaysAgo
       );
       const churnRate =
