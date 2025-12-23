@@ -10901,6 +10901,7 @@ export type Database = {
           event_type: string
           id: string
           metadata: Json | null
+          stripe_event_id: string | null
           tenant_id: string
         }
         Insert: {
@@ -10908,6 +10909,7 @@ export type Database = {
           event_type: string
           id?: string
           metadata?: Json | null
+          stripe_event_id?: string | null
           tenant_id: string
         }
         Update: {
@@ -10915,6 +10917,7 @@ export type Database = {
           event_type?: string
           id?: string
           metadata?: Json | null
+          stripe_event_id?: string | null
           tenant_id?: string
         }
         Relationships: [

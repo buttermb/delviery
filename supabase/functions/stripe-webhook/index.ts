@@ -2,6 +2,8 @@
 /**
  * Stripe Webhook Handler
  * Processes Stripe events and updates tenant subscriptions
+ * 
+ * IDEMPOTENCY: Uses stripe_event_id to prevent duplicate processing
  */
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
@@ -31,6 +33,24 @@ serve(async (req) => {
     // Parse and validate JSON
     const rawEvent = JSON.parse(body);
     const event: StripeWebhookInput = validateStripeWebhook(rawEvent);
+
+    // IDEMPOTENCY CHECK: Prevent duplicate webhook processing
+    const stripeEventId = rawEvent.id;
+    if (stripeEventId) {
+      const { data: existingEvent } = await supabase
+        .from('subscription_events')
+        .select('id')
+        .eq('stripe_event_id', stripeEventId)
+        .maybeSingle();
+
+      if (existingEvent) {
+        console.log('[WEBHOOK_IDEMPOTENCY] Event already processed, skipping:', stripeEventId);
+        return new Response(JSON.stringify({ received: true, duplicate: true }), {
+          headers: { 'Content-Type': 'application/json' },
+          status: 200,
+        });
+      }
+    }
 
     const { type, data } = event;
     const object = data.object;
@@ -193,10 +213,11 @@ serve(async (req) => {
           .update({ is_free_tier: false })
           .eq('tenant_id', tenantId);
 
-        // Log subscription event
+        // Log subscription event with stripe_event_id for idempotency
         await supabase.from('subscription_events').insert({
           tenant_id: tenantId,
           event_type: subscriptionStatus === 'trial' ? 'trial_started' : 'subscription_created',
+          stripe_event_id: stripeEventId,
           metadata: {
             plan_id: planId,
             subscription_id: subscriptionId,
@@ -327,6 +348,7 @@ serve(async (req) => {
           await supabase.from('subscription_events').insert({
             tenant_id: tenantId,
             event_type: 'subscription_updated',
+            stripe_event_id: stripeEventId,
             metadata: {
               status,
               subscription_id: object.id,
@@ -346,6 +368,7 @@ serve(async (req) => {
           await supabase.from('subscription_events').insert({
             tenant_id: tenantId,
             event_type: 'payment_succeeded',
+            stripe_event_id: stripeEventId,
             metadata: {
               invoice_id: object.id,
               amount: object.amount_paid,
@@ -376,6 +399,7 @@ serve(async (req) => {
           await supabase.from('subscription_events').insert({
             tenant_id: tenantId,
             event_type: 'payment_failed',
+            stripe_event_id: stripeEventId,
             metadata: {
               invoice_id: object.id,
               grace_period_ends_at: gracePeriodEnds.toISOString(),

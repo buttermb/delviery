@@ -1609,6 +1609,46 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     }
   }, [tenant?.id]);
 
+  // AUTO-POLL: Check for subscription changes every 30 seconds
+  // This catches webhook-triggered updates that the frontend wouldn't otherwise know about
+  useEffect(() => {
+    if (!isAuthenticated || !tenant?.id) return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const { data: freshTenant, error } = await supabase
+          .from('tenants')
+          .select('subscription_status, subscription_plan, is_free_tier, credits_enabled, grace_period_ends_at, trial_ends_at')
+          .eq('id', tenant.id)
+          .maybeSingle();
+
+        if (error || !freshTenant) return;
+
+        // Only trigger full refresh if subscription state changed
+        const subscriptionChanged = 
+          freshTenant.subscription_status !== tenant.subscription_status ||
+          freshTenant.subscription_plan !== tenant.subscription_plan ||
+          freshTenant.is_free_tier !== tenant.is_free_tier ||
+          freshTenant.credits_enabled !== tenant.credits_enabled;
+
+        if (subscriptionChanged) {
+          logger.info('[AUTH_POLL] Subscription state changed, triggering refresh', {
+            oldStatus: tenant.subscription_status,
+            newStatus: freshTenant.subscription_status,
+            oldPlan: tenant.subscription_plan,
+            newPlan: freshTenant.subscription_plan,
+          });
+          await refreshTenant();
+        }
+      } catch (err) {
+        // Silent fail - polling is best-effort
+        logger.warn('[AUTH_POLL] Polling failed', err);
+      }
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [isAuthenticated, tenant?.id, tenant?.subscription_status, tenant?.subscription_plan, tenant?.is_free_tier, tenant?.credits_enabled, refreshTenant]);
+
   return (
     <TenantAdminAuthContext.Provider value={{
       admin,
