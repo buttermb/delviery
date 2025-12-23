@@ -1,25 +1,51 @@
 /**
  * Stock Warning Component
- * Shows low stock and out of stock warnings
+ * Shows low stock and out of stock warnings with real-time data
  */
 
-import { AlertTriangle, Ban, Package } from 'lucide-react';
+import { AlertTriangle, Ban, Package, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useProductStock } from '@/hooks/useInventoryCheck';
 
 interface StockWarningProps {
-  available: number;
+  // Either provide productId for real-time lookup
+  productId?: string;
+  // Or provide available directly
+  available?: number;
   requested?: number;
   className?: string;
   variant?: 'badge' | 'inline' | 'card';
 }
 
 export function StockWarning({ 
-  available, 
+  productId,
+  available: providedAvailable, 
   requested = 1, 
   className,
   variant = 'badge'
 }: StockWarningProps) {
+  // Use real-time stock if productId is provided
+  const { data: stockData, isLoading } = useProductStock(productId);
+  
+  // Use fetched or provided available
+  const available = productId 
+    ? (stockData?.available ?? 0) 
+    : (providedAvailable ?? 0);
+  
+  // Show loading state for real-time lookup
+  if (productId && isLoading) {
+    if (variant === 'inline') {
+      return (
+        <div className={cn("flex items-center gap-1.5 text-muted-foreground text-sm", className)}>
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span>Checking stock...</span>
+        </div>
+      );
+    }
+    return null;
+  }
+  
   const isOutOfStock = available <= 0;
   const isLowStock = available > 0 && available <= 5;
   const isInsufficient = available < requested && available > 0;

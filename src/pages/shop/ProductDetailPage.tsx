@@ -643,6 +643,13 @@ export default function ProductDetailPage() {
             </div>
           )}
 
+          {/* Real-time Stock Warning */}
+          <StockWarning
+            productId={product.product_id}
+            requested={quantity}
+            variant="inline"
+          />
+
           {/* Quantity */}
           <div className="space-y-3">
             <p className="font-medium">Quantity</p>
@@ -940,6 +947,24 @@ export default function ProductDetailPage() {
       <RecentlyViewedSection
         currentProductId={productId}
         className="mt-16"
+      />
+
+      {/* Enhanced Mobile Sticky Add to Cart */}
+      <EnhancedStickyAddToCart
+        product={{
+          product_id: product.product_id,
+          name: product.name,
+          display_price: product.display_price,
+          compare_at_price: product.compare_at_price,
+          in_stock: product.in_stock,
+          image_url: product.image_url,
+        }}
+        primaryColor={store.primary_color}
+        onAddToCart={async () => {
+          handleAddToCart();
+        }}
+        onToggleWishlist={toggleWishlist}
+        isWishlisted={isWishlisted}
       />
     </div>
   );
