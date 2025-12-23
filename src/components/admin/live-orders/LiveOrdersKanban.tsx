@@ -55,7 +55,7 @@ const COLUMNS = [
     {
         id: 'prep',
         label: 'PREP',
-        statuses: ['confirmed', 'preparing'],
+        statuses: ['confirmed', 'processing', 'preparing'],
         color: 'bg-orange-50 dark:bg-orange-950/20',
         borderColor: 'border-orange-200 dark:border-orange-800',
         icon: Package
