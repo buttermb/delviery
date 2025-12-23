@@ -55,7 +55,7 @@ export { FormProgress, FormStepHeader } from '@/components/ui/form-progress';
 
 // ============ SEARCH & NAVIGATION ============
 // Fuzzy search hook with highlighting
-export { useFuzzySearch, highlightMatches } from '@/hooks/useFuzzySearch';
+export { useFuzzySearch } from '@/hooks/useFuzzySearch';
 
 // Global data search hook
 export { useDataSearch } from '@/hooks/useDataSearch';
