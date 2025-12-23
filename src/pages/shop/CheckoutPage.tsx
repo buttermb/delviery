@@ -33,6 +33,8 @@ import {
   Loader2
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
+import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -579,13 +581,19 @@ export default function CheckoutPage() {
               {currentStep === 2 && (
                 <div className="space-y-4">
                   <h2 className="text-xl font-semibold mb-4">Delivery Address</h2>
+                  
+                  {/* Address Autocomplete */}
                   <div className="space-y-2">
                     <Label htmlFor="street">Street Address *</Label>
-                    <Input
-                      id="street"
-                      value={formData.street}
-                      onChange={(e) => updateField('street', e.target.value)}
-                      placeholder="123 Main St"
+                    <CheckoutAddressAutocomplete
+                      defaultValue={formData.street}
+                      placeholder="Start typing your address..."
+                      onAddressSelect={(address) => {
+                        updateField('street', address.street);
+                        updateField('city', address.city);
+                        updateField('state', address.state);
+                        updateField('zip', address.zip);
+                      }}
                     />
                   </div>
                   <div className="space-y-2">
@@ -643,8 +651,18 @@ export default function CheckoutPage() {
 
               {/* Step 3: Payment Method */}
               {currentStep === 3 && (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
+                  
+                  {/* Express Payment Options */}
+                  <div className="space-y-4">
+                    <ExpressPaymentButtons
+                      showDivider={true}
+                      size="lg"
+                    />
+                  </div>
+                  
+                  {/* Standard Payment Methods */}
                   <RadioGroup
                     value={formData.paymentMethod}
                     onValueChange={(value) => updateField('paymentMethod', value)}
