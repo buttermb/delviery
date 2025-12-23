@@ -7,7 +7,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
-interface SearchResult {
+export interface SearchResult {
   id: string;
   type: 'customer' | 'order' | 'product';
   label: string;
