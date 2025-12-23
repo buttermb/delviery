@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { DialogFooterActions } from "@/components/ui/dialog-footer-actions";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
@@ -116,18 +116,14 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
             </div>
           )}
 
-          <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleAssign} 
-              disabled={!selectedRunner || assignDelivery.isPending} 
-              className="flex-1"
-            >
-              {assignDelivery.isPending ? "Assigning..." : "Assign Runner"}
-            </Button>
-          </div>
+          <DialogFooterActions
+            primaryLabel={assignDelivery.isPending ? "Assigning..." : "Assign Runner"}
+            onPrimary={handleAssign}
+            primaryDisabled={!selectedRunner}
+            primaryLoading={assignDelivery.isPending}
+            secondaryLabel="Cancel"
+            onSecondary={() => onOpenChange(false)}
+          />
         </div>
       </DialogContent>
     </Dialog>
