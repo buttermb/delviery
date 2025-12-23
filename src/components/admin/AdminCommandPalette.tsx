@@ -2,6 +2,7 @@
  * Admin Command Palette Component
  * ⌘K quick search and command interface for tenant admin panel
  * Enhanced with global data search across customers, orders, products
+ * Includes recent searches tracking
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -17,8 +18,8 @@ import {
 } from '@/components/ui/command';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useDataSearch } from '@/hooks/useDataSearch';
-import { Loader2 } from 'lucide-react';
+import { useDataSearch, SearchResult } from '@/hooks/useDataSearch';
+import { Loader2, X, History } from 'lucide-react';
 import {
     LayoutDashboard,
     ShoppingCart,
@@ -40,6 +41,20 @@ import {
     Bell,
     Map,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+const RECENT_SEARCHES_KEY = 'admin_recent_searches';
+const MAX_RECENT_SEARCHES = 5;
+
+interface RecentSearch {
+    id: string;
+    type: string;
+    label: string;
+    sublabel?: string;
+    url: string;
+    icon: string;
+    timestamp: number;
+}
 
 interface AdminCommandPaletteProps {
     open: boolean;
@@ -51,6 +66,45 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
     const { tenant } = useTenantAdminAuth();
     const [search, setSearch] = useState('');
     const { results: dataResults, isSearching, search: searchData, clearResults } = useDataSearch();
+    const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
+
+    // Load recent searches from localStorage
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem(RECENT_SEARCHES_KEY);
+            if (saved) {
+                setRecentSearches(JSON.parse(saved));
+            }
+        } catch (e) {
+            console.error('Failed to load recent searches:', e);
+        }
+    }, []);
+
+    // Save recent search when selecting a data result
+    const saveRecentSearch = useCallback((result: SearchResult) => {
+        const newRecent: RecentSearch = {
+            id: result.id,
+            type: result.type,
+            label: result.label,
+            sublabel: result.sublabel,
+            url: result.url,
+            icon: result.icon,
+            timestamp: Date.now(),
+        };
+
+        setRecentSearches((prev) => {
+            const filtered = prev.filter((r) => !(r.id === result.id && r.type === result.type));
+            const updated = [newRecent, ...filtered].slice(0, MAX_RECENT_SEARCHES);
+            localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+            return updated;
+        });
+    }, []);
+
+    // Clear all recent searches
+    const clearRecentSearches = useCallback(() => {
+        setRecentSearches([]);
+        localStorage.removeItem(RECENT_SEARCHES_KEY);
+    }, []);
 
     // Reset search when dialog closes
     useEffect(() => {
@@ -255,6 +309,17 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
         onOpenChange(false);
     };
 
+    const handleDataResultSelect = (result: SearchResult) => {
+        saveRecentSearch(result);
+        navigate(result.url);
+        onOpenChange(false);
+    };
+
+    const handleRecentSelect = (recent: RecentSearch) => {
+        navigate(recent.url);
+        onOpenChange(false);
+    };
+
     return (
         <CommandDialog open={open} onOpenChange={onOpenChange}>
             <CommandInput
@@ -274,6 +339,50 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
                     )}
                 </CommandEmpty>
 
+                {/* Recent Searches - show when no search query */}
+                {!search && recentSearches.length > 0 && (
+                    <>
+                        <CommandGroup heading={
+                            <div className="flex items-center justify-between w-full">
+                                <span>Recent Searches</span>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        clearRecentSearches();
+                                    }}
+                                >
+                                    <X className="h-3 w-3 mr-1" />
+                                    Clear
+                                </Button>
+                            </div>
+                        }>
+                            {recentSearches.map((recent) => (
+                                <CommandItem
+                                    key={`recent-${recent.type}-${recent.id}`}
+                                    onSelect={() => handleRecentSelect(recent)}
+                                    className="min-h-[44px]"
+                                >
+                                    <History className="mr-2 h-4 w-4 text-muted-foreground" />
+                                    <span className="mr-2">{recent.icon}</span>
+                                    <div className="flex flex-col">
+                                        <span>{recent.label}</span>
+                                        {recent.sublabel && (
+                                            <span className="text-xs text-muted-foreground">{recent.sublabel}</span>
+                                        )}
+                                    </div>
+                                    <span className="ml-auto text-xs text-muted-foreground capitalize">
+                                        {recent.type}
+                                    </span>
+                                </CommandItem>
+                            ))}
+                        </CommandGroup>
+                        <CommandSeparator />
+                    </>
+                )}
+
                 {/* Data Search Results */}
                 {dataResults.length > 0 && (
                     <>
@@ -281,7 +390,7 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
                             {dataResults.map((result) => (
                                 <CommandItem
                                     key={`${result.type}-${result.id}`}
-                                    onSelect={() => handleSelect(() => navigate(result.url))}
+                                    onSelect={() => handleDataResultSelect(result)}
                                     className="min-h-[44px]"
                                 >
                                     <span className="mr-2">{result.icon}</span>
