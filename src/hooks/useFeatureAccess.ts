@@ -73,12 +73,11 @@ export function useFeatureAccess() {
       }
     }
 
-    // past_due gets 7-day grace period
-    if (status === 'past_due' && tenant.next_billing_date) {
-      const gracePeriodEnd = new Date(tenant.next_billing_date);
-      gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 7);
+    // past_due gets grace period (set by webhook in grace_period_ends_at)
+    if (status === 'past_due' && tenant.grace_period_ends_at) {
+      const gracePeriodEnd = new Date(tenant.grace_period_ends_at);
       if (new Date() > gracePeriodEnd) {
-        return false;
+        return false; // Grace period expired - block access
       }
     }
 

@@ -33,6 +33,7 @@ export interface Tenant {
   subscription_status: string;
   trial_ends_at?: string | null;
   next_billing_date?: string | null;
+  grace_period_ends_at?: string | null;
   payment_method_added?: boolean;
   mrr?: number;
   onboarding_completed?: boolean;
