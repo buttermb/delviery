@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
 import { useShopCart } from '@/hooks/useShopCart';
+import { useProductStock } from '@/hooks/useInventoryCheck';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -58,6 +59,8 @@ import {
 import { cn } from '@/lib/utils';
 import { RecentlyViewedSection } from '@/components/shop/RecentlyViewedSection';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { StockWarning } from '@/components/shop/StockWarning';
+import { EnhancedStickyAddToCart } from '@/components/shop/EnhancedStickyAddToCart';
 
 interface RpcProduct {
   product_id: string;

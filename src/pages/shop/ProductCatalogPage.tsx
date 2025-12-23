@@ -47,6 +47,8 @@ import { FilterDrawer, FilterTriggerButton, type FilterState } from '@/component
 import { WishlistButton } from '@/components/shop/WishlistButton';
 import { useWishlist } from '@/hooks/useWishlist';
 import { ProductQuickViewModal } from '@/components/shop/ProductQuickViewModal';
+import { EnhancedPriceSlider } from '@/components/shop/EnhancedPriceSlider';
+import { StockWarning } from '@/components/shop/StockWarning';
 
 interface RpcProduct {
   product_id: string;
