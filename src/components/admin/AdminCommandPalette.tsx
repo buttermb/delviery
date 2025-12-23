@@ -99,62 +99,95 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
             },
         ];
 
-        const navigation = [
+        // Hub-aligned navigation
+        const hubs = [
             {
-                id: 'dashboard',
-                label: 'Dashboard',
+                id: 'home',
+                label: 'Home Dashboard',
                 icon: LayoutDashboard,
                 action: () => navigate('/dashboard'),
-                keywords: ['home', 'overview', 'main'],
+                shortcut: '⌘1',
+                keywords: ['home', 'overview', 'main', 'dashboard'],
             },
             {
-                id: 'hotbox',
-                label: 'Hotbox',
-                icon: Flame,
-                action: () => navigate('/hotbox'),
-                keywords: ['attention', 'urgent', 'tasks', 'todo'],
-            },
-            {
-                id: 'orders',
-                label: 'Orders',
+                id: 'orders-hub',
+                label: 'Orders Hub',
                 icon: ShoppingCart,
                 action: () => navigate('/orders'),
+                shortcut: '⌘2',
                 keywords: ['orders', 'sales', 'transactions'],
             },
             {
-                id: 'menus',
-                label: 'Disposable Menus',
-                icon: Menu,
-                action: () => navigate('/menus'),
-                keywords: ['menu', 'disposable', 'share'],
-            },
-            {
-                id: 'products',
-                label: 'Products',
+                id: 'inventory-hub',
+                label: 'Inventory Hub',
                 icon: Package,
-                action: () => navigate('/products'),
-                keywords: ['inventory', 'stock', 'items'],
+                action: () => navigate('/inventory-hub'),
+                shortcut: '⌘3',
+                keywords: ['inventory', 'stock', 'products', 'items'],
             },
             {
-                id: 'customers',
-                label: 'Customers',
+                id: 'customer-hub',
+                label: 'Customers Hub',
                 icon: Users,
-                action: () => navigate('/customers'),
-                keywords: ['clients', 'contacts', 'buyers'],
+                action: () => navigate('/customer-hub'),
+                shortcut: '⌘4',
+                keywords: ['customers', 'clients', 'contacts', 'crm'],
             },
             {
-                id: 'deliveries',
-                label: 'Deliveries',
+                id: 'finance-hub',
+                label: 'Finance Hub',
+                icon: DollarSign,
+                action: () => navigate('/finance-hub'),
+                shortcut: '⌘5',
+                keywords: ['finance', 'revenue', 'payments', 'money'],
+            },
+            {
+                id: 'fulfillment-hub',
+                label: 'Fulfillment Hub',
                 icon: Truck,
-                action: () => navigate('/deliveries'),
-                keywords: ['delivery', 'fleet', 'courier'],
+                action: () => navigate('/fulfillment-hub'),
+                shortcut: '⌘6',
+                keywords: ['fulfillment', 'shipping', 'delivery', 'courier'],
+            },
+            {
+                id: 'marketing-hub',
+                label: 'Marketing Hub',
+                icon: Bell,
+                action: () => navigate('/marketing-hub'),
+                shortcut: '⌘7',
+                keywords: ['marketing', 'promotions', 'campaigns', 'loyalty'],
+            },
+            {
+                id: 'analytics-hub',
+                label: 'Analytics Hub',
+                icon: BarChart3,
+                action: () => navigate('/analytics-hub'),
+                shortcut: '⌘8',
+                keywords: ['analytics', 'reports', 'metrics', 'stats'],
+            },
+        ];
+
+        const quickAccess = [
+            {
+                id: 'hotbox',
+                label: 'Hotbox (Priority Tasks)',
+                icon: Flame,
+                action: () => navigate('/hotbox'),
+                keywords: ['attention', 'urgent', 'tasks', 'todo', 'priority'],
             },
             {
                 id: 'live-map',
                 label: 'Live Map',
                 icon: Map,
                 action: () => navigate('/live-map'),
-                keywords: ['map', 'tracking', 'location'],
+                keywords: ['map', 'tracking', 'location', 'drivers'],
+            },
+            {
+                id: 'live-orders',
+                label: 'Live Orders',
+                icon: Clock,
+                action: () => navigate('/live-orders'),
+                keywords: ['live', 'realtime', 'orders', 'tracking'],
             },
             {
                 id: 'who-owes-me',
@@ -164,25 +197,11 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
                 keywords: ['tabs', 'debt', 'balance', 'owed', 'collection'],
             },
             {
-                id: 'reports',
-                label: 'Reports',
-                icon: BarChart3,
-                action: () => navigate('/reports'),
-                keywords: ['analytics', 'metrics', 'stats'],
-            },
-            {
-                id: 'live-chat',
-                label: 'Live Chat',
-                icon: MessageSquare,
-                action: () => navigate('/live-chat'),
-                keywords: ['chat', 'messages', 'support'],
-            },
-            {
-                id: 'activity',
-                label: 'Activity Logs',
-                icon: Clock,
-                action: () => navigate('/activity'),
-                keywords: ['logs', 'history', 'audit'],
+                id: 'menus',
+                label: 'Disposable Menus',
+                icon: Menu,
+                action: () => navigate('/menus'),
+                keywords: ['menu', 'disposable', 'share'],
             },
             {
                 id: 'settings',
@@ -194,7 +213,7 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
             },
         ];
 
-        return { quickActions, navigation };
+        return { quickActions, hubs, quickAccess };
     }, [navigate]);
 
     const filterCommands = <T extends { label: string; keywords?: string[] }>(
@@ -211,7 +230,8 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
     };
 
     const filteredActions = filterCommands(commands.quickActions, search);
-    const filteredNavigation = filterCommands(commands.navigation, search);
+    const filteredHubs = filterCommands(commands.hubs, search);
+    const filteredQuickAccess = filterCommands(commands.quickAccess, search);
 
     const handleSelect = (action: () => void) => {
         action();
@@ -252,9 +272,33 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
                     </>
                 )}
 
-                {filteredNavigation.length > 0 && (
-                    <CommandGroup heading="Navigation">
-                        {filteredNavigation.map((cmd) => {
+                {filteredHubs.length > 0 && (
+                    <>
+                        <CommandGroup heading="Hubs">
+                            {filteredHubs.map((cmd) => {
+                                const Icon = cmd.icon;
+                                return (
+                                    <CommandItem
+                                        key={cmd.id}
+                                        onSelect={() => handleSelect(cmd.action)}
+                                        className="min-h-[44px]"
+                                    >
+                                        <Icon className="mr-2 h-4 w-4" />
+                                        <span>{cmd.label}</span>
+                                        {cmd.shortcut && (
+                                            <CommandShortcut>{cmd.shortcut}</CommandShortcut>
+                                        )}
+                                    </CommandItem>
+                                );
+                            })}
+                        </CommandGroup>
+                        <CommandSeparator />
+                    </>
+                )}
+
+                {filteredQuickAccess.length > 0 && (
+                    <CommandGroup heading="Quick Access">
+                        {filteredQuickAccess.map((cmd) => {
                             const Icon = cmd.icon;
                             return (
                                 <CommandItem
