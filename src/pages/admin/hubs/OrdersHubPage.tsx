@@ -19,13 +19,13 @@ import {
     History,
     Workflow,
     FileText,
-    RefreshCw,
 } from 'lucide-react';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { lazy, Suspense, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { QuickActions } from '@/components/admin/ui/QuickActions';
 import { AlertBadge } from '@/components/admin/ui/AlertBadge';
+import { useAdminBadgeCounts } from '@/hooks/useAdminBadgeCounts';
 
 // Lazy load tab content for performance
 const WholesaleOrdersPage = lazy(() => import('@/pages/admin/WholesaleOrdersPage'));
@@ -57,6 +57,7 @@ export default function OrdersHubPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'live';
     const { navigateToAdmin } = useTenantNavigation();
+    const { totalPending } = useAdminBadgeCounts();
 
     const handleTabChange = (tab: string) => {
         setSearchParams({ tab });
@@ -103,8 +104,8 @@ export default function OrdersHubPage() {
                                     Manage all order types in one place
                                 </p>
                             </div>
-                            {activeTab === 'live' && (
-                                <AlertBadge level="critical" count={3} pulse />
+                        {activeTab === 'live' && totalPending > 0 && (
+                                <AlertBadge level="critical" count={totalPending} pulse />
                             )}
                         </div>
                         <QuickActions actions={quickActions} />
