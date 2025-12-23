@@ -23,6 +23,8 @@ const DEFAULT_TABLES = [
   'courier_earnings',
   'storefront_orders',
   'marketplace_stores',
+  'orders',
+  'menu_orders',
 ];
 
 // Track failed connection attempts per table
@@ -194,6 +196,26 @@ export function useRealtimeSync({
                   case 'marketplace_stores':
                     queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
                     queryClient.invalidateQueries({ queryKey: ['storefront-performance'] });
+                    break;
+
+                  case 'orders':
+                    queryClient.invalidateQueries({ queryKey: ['orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['live-orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['dashboard-orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['pending-orders'] });
+                    if (payload.new && hasId(payload.new)) {
+                      queryClient.invalidateQueries({ queryKey: ['order', payload.new.id] });
+                    }
+                    break;
+
+                  case 'menu_orders':
+                    queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['live-orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['pending-orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['orders'] });
+                    if (payload.new && hasId(payload.new)) {
+                      queryClient.invalidateQueries({ queryKey: ['menu-order', payload.new.id] });
+                    }
                     break;
 
                   default:
