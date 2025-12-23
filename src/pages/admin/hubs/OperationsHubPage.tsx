@@ -41,6 +41,8 @@ const QualityControlPage = lazy(() => import('@/pages/admin/QualityControlPage')
 const AppointmentSchedulerPage = lazy(() => import('@/pages/admin/AppointmentSchedulerPage'));
 const SupportTicketsPage = lazy(() => import('@/pages/admin/SupportTicketsPage'));
 const LocationsManagement = lazy(() => import('@/pages/admin/LocationsManagement'));
+const CompliancePage = lazy(() => import('@/pages/tenant-admin/CompliancePage'));
+const ComplianceVaultPage = lazy(() => import('@/pages/admin/ComplianceVaultPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -58,6 +60,8 @@ const tabs = [
     { id: 'purchase-orders', label: 'Orders', icon: FileText },
     { id: 'returns', label: 'Returns', icon: ArrowLeftRight },
     // Compliance & Quality
+    { id: 'compliance', label: 'Compliance', icon: Shield },
+    { id: 'vault', label: 'Vault', icon: Shield },
     { id: 'quality', label: 'QC', icon: Shield },
     { id: 'activity', label: 'Logs', icon: ScrollText },
     // Facilities
@@ -140,6 +144,20 @@ export default function OperationsHubPage() {
                 <TabsContent value="activity" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <ActivityLogsPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Compliance Tab */}
+                <TabsContent value="compliance" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <CompliancePage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Vault Tab */}
+                <TabsContent value="vault" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <ComplianceVaultPage />
                     </Suspense>
                 </TabsContent>
 

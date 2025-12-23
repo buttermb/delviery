@@ -170,6 +170,7 @@ const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/Settings
 const TenantAdminSelectPlanPage = lazy(() => import("./pages/tenant-admin/SelectPlanPage"));
 const TrialExpiredPage = lazy(() => import("./pages/tenant-admin/TrialExpired"));
 const HelpPage = lazy(() => import("./pages/HelpPage"));
+const HelpHubPage = lazy(() => import("./pages/admin/hubs/HelpHubPage"));
 
 // Tenant Admin Feature Pages
 const DisposableMenus = lazy(() => import("./pages/admin/DisposableMenus"));
@@ -686,8 +687,9 @@ const App = () => {
                                         {/* Trial Expired Page (must be before AdminLayout) */}
                                         <Route path="/:tenantSlug/admin/trial-expired" element={<TenantAdminProtectedRoute><TrialExpiredPage /></TenantAdminProtectedRoute>} />
 
-                                        {/* Help Page */}
+                                        {/* Help Pages */}
                                         <Route path="/:tenantSlug/admin/help" element={<TenantAdminProtectedRoute><HelpPage /></TenantAdminProtectedRoute>} />
+                                        <Route path="/:tenantSlug/admin/help-hub" element={<TenantAdminProtectedRoute><HelpHubPage /></TenantAdminProtectedRoute>} />
 
                                         {/* Select Plan Page (for adding payment method) */}
                                         <Route

@@ -19,6 +19,7 @@ import {
     LineChart,
     FileText,
     PieChart,
+    Download,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,6 +33,7 @@ const PredictiveAnalyticsPage = lazy(() => import('@/pages/admin/PredictiveAnaly
 const AdvancedAnalyticsPage = lazy(() => import('@/pages/tenant-admin/AdvancedAnalyticsPage'));
 const ReportsPage = lazy(() => import('@/pages/admin/ReportsPage'));
 const CustomReportsPage = lazy(() => import('@/pages/tenant-admin/CustomReportsPage'));
+const DataExportPage = lazy(() => import('@/pages/tenant-admin/DataExportPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -53,6 +55,7 @@ const tabs = [
     // Reports
     { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'custom', label: 'Custom', icon: PieChart },
+    { id: 'export', label: 'Export', icon: Download },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -143,6 +146,13 @@ export default function AnalyticsHubPage() {
                 <TabsContent value="custom" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <CustomReportsPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Export Tab */}
+                <TabsContent value="export" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <DataExportPage />
                     </Suspense>
                 </TabsContent>
             </Tabs>
