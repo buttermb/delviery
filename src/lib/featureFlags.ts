@@ -1,23 +1,91 @@
-// Mock feature flags until tables are created
-const mockFlags = {
-  'multi_tenant': { enabled: true, rollout_percentage: 100 },
-  'advanced_analytics': { enabled: false, rollout_percentage: 0 },
-  'ai_recommendations': { enabled: true, rollout_percentage: 50 },
-  // Security improvements (Phase 1)
-  'USE_HTTP_ONLY_COOKIES': { enabled: true, rollout_percentage: 100 },
-  'ENABLE_RATE_LIMITING': { enabled: true, rollout_percentage: 100 },
-  'ENABLE_CAPTCHA': { enabled: true, rollout_percentage: 100 },
+import { supabase } from '@/integrations/supabase/client';
+
+// Default flags as fallback when database is unavailable
+const defaultFlags: Record<string, boolean> = {
+  'multi_tenant': true,
+  'advanced_analytics': false,
+  'ai_recommendations': true,
+  'USE_HTTP_ONLY_COOKIES': true,
+  'ENABLE_RATE_LIMITING': true,
+  'ENABLE_CAPTCHA': true,
 };
 
+// Cache for feature flags to avoid repeated DB calls
+let flagsCache: Map<string, { enabled: boolean; cachedAt: number }> = new Map();
+const CACHE_TTL = 60000; // 1 minute cache
+
 export async function isFeatureEnabled(flagKey: string, tenantId?: string): Promise<boolean> {
-  const flag = mockFlags[flagKey as keyof typeof mockFlags];
-  return flag?.enabled ?? false;
+  try {
+    // Check cache first
+    const cacheKey = `${flagKey}:${tenantId || 'global'}`;
+    const cached = flagsCache.get(cacheKey);
+    if (cached && Date.now() - cached.cachedAt < CACHE_TTL) {
+      return cached.enabled;
+    }
+
+    // Query from feature_flags table
+    let query = supabase
+      .from('feature_flags')
+      .select('enabled')
+      .eq('flag_name', flagKey);
+
+    if (tenantId) {
+      query = query.eq('tenant_id', tenantId);
+    }
+
+    const { data, error } = await query.maybeSingle();
+
+    if (error) {
+      console.warn(`Feature flag query failed for ${flagKey}:`, error.message);
+      return defaultFlags[flagKey] ?? false;
+    }
+
+    if (data) {
+      flagsCache.set(cacheKey, { enabled: data.enabled, cachedAt: Date.now() });
+      return data.enabled;
+    }
+
+    return defaultFlags[flagKey] ?? false;
+  } catch (error) {
+    console.warn(`Feature flag error for ${flagKey}:`, error);
+    return defaultFlags[flagKey] ?? false;
+  }
 }
 
-export async function getFeatureFlags(tenantId?: string) {
-  return Object.entries(mockFlags).map(([key, value]) => ({
-    flag_key: key,
-    enabled: value.enabled,
-    rollout_percentage: value.rollout_percentage,
-  }));
+export async function getFeatureFlags(tenantId?: string): Promise<Array<{ flag_key: string; enabled: boolean; rollout_percentage: number }>> {
+  try {
+    let query = supabase.from('feature_flags').select('flag_name, enabled');
+
+    if (tenantId) {
+      query = query.eq('tenant_id', tenantId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.warn('Failed to fetch feature flags:', error.message);
+      return Object.entries(defaultFlags).map(([key, enabled]) => ({
+        flag_key: key,
+        enabled,
+        rollout_percentage: enabled ? 100 : 0,
+      }));
+    }
+
+    return (data || []).map(f => ({
+      flag_key: f.flag_name,
+      enabled: f.enabled,
+      rollout_percentage: f.enabled ? 100 : 0,
+    }));
+  } catch (error) {
+    console.warn('Feature flags error:', error);
+    return Object.entries(defaultFlags).map(([key, enabled]) => ({
+      flag_key: key,
+      enabled,
+      rollout_percentage: enabled ? 100 : 0,
+    }));
+  }
+}
+
+export function clearFeatureFlagCache(): void {
+  flagsCache.clear();
 }

@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   SettingsSection,
   SettingsCard,
-  SettingsRow,
 } from '@/components/settings/SettingsSection';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,9 +33,12 @@ import {
   RefreshCw,
   Plus,
   Trash2,
+  Loader2,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 interface Integration {
   id: string;
@@ -89,24 +92,109 @@ interface WebhookEndpoint {
   lastTriggered?: string;
 }
 
-const MOCK_WEBHOOKS: WebhookEndpoint[] = [
-  {
-    id: '1',
-    url: 'https://api.example.com/webhooks/orders',
-    events: ['order.created', 'order.updated'],
-    active: true,
-    lastTriggered: '2 hours ago',
-  },
-];
-
 export default function IntegrationsSettings() {
+  const { tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
   const [integrations, setIntegrations] = useState(INTEGRATIONS);
-  const [webhooks, setWebhooks] = useState(MOCK_WEBHOOKS);
   const [showApiKey, setShowApiKey] = useState(false);
   const [addWebhookOpen, setAddWebhookOpen] = useState(false);
   const [newWebhookUrl, setNewWebhookUrl] = useState('');
 
   const apiKey = 'your_api_key_will_appear_here';
+
+  // Fetch real webhooks from custom_integrations table
+  const { data: webhooks = [], isLoading: webhooksLoading } = useQuery({
+    queryKey: ['webhooks', tenant?.id],
+    queryFn: async () => {
+      if (!tenant?.id) return [];
+
+      const { data, error } = await supabase
+        .from('custom_integrations')
+        .select('*')
+        .eq('tenant_id', tenant.id)
+        .eq('type', 'webhook')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Failed to fetch webhooks:', error);
+        return [];
+      }
+
+      return (data || []).map(item => ({
+        id: item.id,
+        url: (item.config as any)?.url || '',
+        events: (item.config as any)?.events || ['order.created'],
+        active: item.status === 'active',
+        lastTriggered: item.updated_at ? new Date(item.updated_at).toLocaleString() : undefined,
+      })) as WebhookEndpoint[];
+    },
+    enabled: !!tenant?.id,
+  });
+
+  // Add webhook mutation
+  const addWebhookMutation = useMutation({
+    mutationFn: async (url: string) => {
+      if (!tenant?.id) throw new Error('No tenant');
+
+      const { data, error } = await supabase
+        .from('custom_integrations')
+        .insert({
+          tenant_id: tenant.id,
+          name: `Webhook - ${new URL(url).hostname}`,
+          type: 'webhook',
+          config: { url, events: ['order.created'] },
+          status: 'active',
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });
+      setNewWebhookUrl('');
+      setAddWebhookOpen(false);
+      toast({ title: 'Webhook added' });
+    },
+    onError: (error) => {
+      toast({ title: 'Failed to add webhook', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  // Delete webhook mutation
+  const deleteWebhookMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('custom_integrations')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });
+      toast({ title: 'Webhook deleted' });
+    },
+    onError: (error) => {
+      toast({ title: 'Failed to delete webhook', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  // Toggle webhook mutation
+  const toggleWebhookMutation = useMutation({
+    mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
+      const { error } = await supabase
+        .from('custom_integrations')
+        .update({ status: active ? 'active' : 'inactive' })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });
+    },
+  });
 
   const handleConnect = (id: string) => {
     setIntegrations(
@@ -141,24 +229,12 @@ export default function IntegrationsSettings() {
       return;
     }
 
-    setWebhooks([
-      ...webhooks,
-      {
-        id: Date.now().toString(),
-        url: newWebhookUrl,
-        events: ['order.created'],
-        active: true,
-      },
-    ]);
-
-    setNewWebhookUrl('');
-    setAddWebhookOpen(false);
-    toast({ title: 'Webhook added' });
-  };
-
-  const handleDeleteWebhook = (id: string) => {
-    setWebhooks(webhooks.filter((w) => w.id !== id));
-    toast({ title: 'Webhook deleted' });
+    try {
+      new URL(newWebhookUrl); // Validate URL
+      addWebhookMutation.mutate(newWebhookUrl);
+    } catch {
+      toast({ title: 'Invalid URL', variant: 'destructive' });
+    }
   };
 
   const getStatusBadge = (status: Integration['status']) => {
@@ -335,14 +411,21 @@ export default function IntegrationsSettings() {
                 <Button variant="outline" onClick={() => setAddWebhookOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleAddWebhook}>Add Webhook</Button>
+                <Button onClick={handleAddWebhook} disabled={addWebhookMutation.isPending}>
+                  {addWebhookMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Add Webhook
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
         }
       >
         <SettingsCard>
-          {webhooks.length === 0 ? (
+          {webhooksLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : webhooks.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Webhook className="h-12 w-12 mx-auto mb-3 opacity-50" />
               <p>No webhooks configured</p>
@@ -377,12 +460,16 @@ export default function IntegrationsSettings() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Switch checked={webhook.active} />
+                    <Switch 
+                      checked={webhook.active}
+                      onCheckedChange={(checked) => toggleWebhookMutation.mutate({ id: webhook.id, active: checked })}
+                    />
                     <Button
                       variant="ghost"
                       size="icon"
                       className="text-destructive"
-                      onClick={() => handleDeleteWebhook(webhook.id)}
+                      onClick={() => deleteWebhookMutation.mutate(webhook.id)}
+                      disabled={deleteWebhookMutation.isPending}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -396,4 +483,3 @@ export default function IntegrationsSettings() {
     </div>
   );
 }
-
