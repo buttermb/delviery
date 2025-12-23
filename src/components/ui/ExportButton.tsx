@@ -8,6 +8,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Download, FileSpreadsheet, FileJson, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { 
+  exportToCSV, 
+  exportToJSON, 
+  ExportColumn, 
+  generateExportFilename 
+} from "@/lib/utils/exportUtils";
 
 interface ExportButtonProps {
   data: Record<string, any>[];
@@ -24,53 +30,30 @@ export function ExportButton({
 }: ExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
 
-  const getHeaders = () => {
+  const getExportColumns = (): ExportColumn<Record<string, any>>[] => {
     if (columns) {
-      return columns.map(c => c.label);
+      return columns.map(c => ({
+        key: c.key,
+        header: c.label,
+        type: 'string' as const,
+      }));
     }
     if (data.length > 0) {
-      return Object.keys(data[0]);
+      return Object.keys(data[0]).map(key => ({
+        key,
+        header: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        type: 'string' as const,
+      }));
     }
     return [];
   };
 
-  const getKeys = () => {
-    if (columns) {
-      return columns.map(c => c.key);
-    }
-    if (data.length > 0) {
-      return Object.keys(data[0]);
-    }
-    return [];
-  };
-
-  const formatValue = (value: any): string => {
-    if (value === null || value === undefined) return "";
-    if (typeof value === "object") return JSON.stringify(value);
-    return String(value);
-  };
-
-  const exportCSV = () => {
+  const handleExportCSV = () => {
     setIsExporting(true);
     try {
-      const headers = getHeaders();
-      const keys = getKeys();
-      
-      const csvContent = [
-        headers.join(","),
-        ...data.map(row => 
-          keys.map(key => {
-            const value = formatValue(row[key]);
-            // Escape quotes and wrap in quotes if contains comma
-            if (value.includes(",") || value.includes('"') || value.includes("\n")) {
-              return `"${value.replace(/"/g, '""')}"`;
-            }
-            return value;
-          }).join(",")
-        )
-      ].join("\n");
-
-      downloadFile(csvContent, `${filename}.csv`, "text/csv");
+      const exportColumns = getExportColumns();
+      const exportFilename = generateExportFilename(filename, 'csv');
+      exportToCSV(data, exportColumns, exportFilename);
       toast.success(`Exported ${data.length} rows to CSV`);
     } catch (error) {
       toast.error("Failed to export CSV");
@@ -79,11 +62,11 @@ export function ExportButton({
     }
   };
 
-  const exportJSON = () => {
+  const handleExportJSON = () => {
     setIsExporting(true);
     try {
-      const jsonContent = JSON.stringify(data, null, 2);
-      downloadFile(jsonContent, `${filename}.json`, "application/json");
+      const exportFilename = generateExportFilename(filename, 'json');
+      exportToJSON(data, exportFilename);
       toast.success(`Exported ${data.length} rows to JSON`);
     } catch (error) {
       toast.error("Failed to export JSON");
@@ -92,22 +75,31 @@ export function ExportButton({
     }
   };
 
-  const exportExcel = async () => {
+  const handleExportExcel = async () => {
     setIsExporting(true);
     try {
       const XLSX = await import("xlsx");
-      const headers = getHeaders();
-      const keys = getKeys();
+      const headers = columns 
+        ? columns.map(c => c.label)
+        : data.length > 0 ? Object.keys(data[0]) : [];
+      const keys = columns
+        ? columns.map(c => c.key)
+        : data.length > 0 ? Object.keys(data[0]) : [];
       
       const wsData = [
         headers,
-        ...data.map(row => keys.map(key => formatValue(row[key])))
+        ...data.map(row => keys.map(key => {
+          const value = row[key];
+          if (value === null || value === undefined) return "";
+          if (typeof value === "object") return JSON.stringify(value);
+          return String(value);
+        }))
       ];
       
       const ws = XLSX.utils.aoa_to_sheet(wsData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Data");
-      XLSX.writeFile(wb, `${filename}.xlsx`);
+      XLSX.writeFile(wb, generateExportFilename(filename, 'xlsx'));
       
       toast.success(`Exported ${data.length} rows to Excel`);
     } catch (error) {
@@ -115,18 +107,6 @@ export function ExportButton({
     } finally {
       setIsExporting(false);
     }
-  };
-
-  const downloadFile = (content: string, filename: string, mimeType: string) => {
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
 
   if (data.length === 0) {
@@ -151,15 +131,15 @@ export function ExportButton({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={exportCSV}>
+        <DropdownMenuItem onClick={handleExportCSV}>
           <FileText className="h-4 w-4 mr-2" />
           Export as CSV
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={exportExcel}>
+        <DropdownMenuItem onClick={handleExportExcel}>
           <FileSpreadsheet className="h-4 w-4 mr-2" />
           Export as Excel
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={exportJSON}>
+        <DropdownMenuItem onClick={handleExportJSON}>
           <FileJson className="h-4 w-4 mr-2" />
           Export as JSON
         </DropdownMenuItem>
