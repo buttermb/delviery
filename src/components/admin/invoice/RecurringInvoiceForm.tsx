@@ -15,12 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { SafeModal } from "@/components/ui/safe-modal";
+import { DialogFooterActions } from "@/components/ui/dialog-footer-actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRecurringInvoices, RecurringLineItem, CreateScheduleInput } from "@/hooks/useRecurringInvoices";
 import { useQuery } from "@tanstack/react-query";
@@ -66,7 +62,7 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
     enabled: !!tenant?.id
   });
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, watch, setValue, formState: { errors, isDirty } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: editSchedule ? {
       name: editSchedule.name,
@@ -84,6 +80,7 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
   });
 
   const frequency = watch("frequency");
+  const isSubmitting = createSchedule.isPending || updateSchedule.isPending;
 
   const addLineItem = () => {
     setLineItems([...lineItems, { description: "", quantity: 1, unit_price: 0 }]);
@@ -126,14 +123,13 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Repeat className="h-5 w-5" />
-            {editSchedule ? "Edit Recurring Invoice" : "Create Recurring Invoice"}
-          </DialogTitle>
-        </DialogHeader>
+    <SafeModal
+      open={open}
+      onOpenChange={onOpenChange}
+      isDirty={isDirty}
+      title={editSchedule ? "Edit Recurring Invoice" : "Create Recurring Invoice"}
+      className="max-w-2xl max-h-[90vh] overflow-y-auto"
+    >
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Basic Info */}
@@ -278,18 +274,14 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit">
-              <Calendar className="h-4 w-4 mr-1" />
-              {editSchedule ? "Update Schedule" : "Create Schedule"}
-            </Button>
-          </div>
+          <DialogFooterActions
+            primaryLabel={editSchedule ? "Update Schedule" : "Create Schedule"}
+            onPrimary={() => {}}
+            primaryLoading={isSubmitting}
+            secondaryLabel="Cancel"
+            onSecondary={() => onOpenChange(false)}
+          />
         </form>
-      </DialogContent>
-    </Dialog>
+    </SafeModal>
   );
 }
