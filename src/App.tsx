@@ -288,6 +288,7 @@ const ShopCheckoutPage = lazy(() => import("./pages/shop/CheckoutPage"));
 const ShopOrderConfirmationPage = lazy(() => import("./pages/shop/OrderConfirmationPage"));
 const ShopAccountPage = lazy(() => import("./pages/shop/AccountPage"));
 const ShopOrderTrackingPage = lazy(() => import("./pages/shop/OrderTrackingPage"));
+const SinglePageCheckout = lazy(() => import("./components/shop/SinglePageCheckout"));
 const EncryptedStorePage = lazy(() => import("./pages/shop/EncryptedStorePage"));
 const RevenueReportsPage = lazy(() => import("./pages/tenant-admin/RevenueReportsPage"));
 const RouteOptimizationPage = lazy(() => import("./pages/tenant-admin/RouteOptimizationPage"));
@@ -588,6 +589,7 @@ const App = () => {
                                           <Route path="products/:productId" element={<ShopProductDetailPage />} />
                                           <Route path="cart" element={<ShopCartPage />} />
                                           <Route path="checkout" element={<ShopCheckoutPage />} />
+                                          <Route path="express-checkout" element={<SinglePageCheckout />} />
                                           <Route path="order-confirmation" element={<ShopOrderConfirmationPage />} />
                                           <Route path="track/:trackingToken" element={<ShopOrderTrackingPage />} />
                                           <Route path="account" element={<ShopAccountPage />} />
