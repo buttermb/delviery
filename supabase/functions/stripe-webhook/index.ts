@@ -8,30 +8,49 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import Stripe from 'https://esm.sh/stripe@14.21.0';
 import { validateStripeWebhook, type StripeWebhookInput } from './validation.ts';
 
 const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
+const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY') || '';
 const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Initialize Stripe for signature verification
+const stripe = new Stripe(STRIPE_SECRET_KEY, {
+  apiVersion: '2023-10-16',
+});
 
 serve(async (req) => {
   try {
     // Get Stripe signature
     const signature = req.headers.get('stripe-signature');
     if (!signature) {
+      console.error('[STRIPE-WEBHOOK] Missing stripe-signature header');
       return new Response('Missing signature', { status: 400 });
     }
 
-    // Verify webhook (would use Stripe SDK in production)
     const body = await req.text();
-    
-    // In production, verify signature with Stripe:
-    // const event = stripe.webhooks.constructEvent(body, signature, STRIPE_WEBHOOK_SECRET);
-    
-    // Parse and validate JSON
-    const rawEvent = JSON.parse(body);
+
+    // CRITICAL SECURITY: Verify webhook signature with Stripe
+    let rawEvent: any;
+    if (STRIPE_WEBHOOK_SECRET) {
+      try {
+        rawEvent = await stripe.webhooks.constructEventAsync(body, signature, STRIPE_WEBHOOK_SECRET);
+        console.log('[STRIPE-WEBHOOK] Signature verified successfully for event:', rawEvent.id);
+      } catch (err: any) {
+        console.error('[STRIPE-WEBHOOK] Signature verification failed:', err.message);
+        return new Response(`Webhook signature verification failed: ${err.message}`, { status: 400 });
+      }
+    } else {
+      // Fallback for development without webhook secret (log warning)
+      console.warn('[STRIPE-WEBHOOK] WARNING: No STRIPE_WEBHOOK_SECRET configured - signature verification skipped!');
+      rawEvent = JSON.parse(body);
+    }
+
+    // Validate event structure
     const event: StripeWebhookInput = validateStripeWebhook(rawEvent);
 
     // IDEMPOTENCY CHECK: Prevent duplicate webhook processing
@@ -383,9 +402,9 @@ serve(async (req) => {
         const tenantId = object.metadata?.tenant_id;
 
         if (tenantId) {
-          // Grant 7-day grace period
-          const gracePeriodEnds = new Date();
-          gracePeriodEnds.setDate(gracePeriodEnds.getDate() + 7);
+          // Grant 7-day grace period - FIXED: Use milliseconds for exact 7 days (avoids DST issues)
+          const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+          const gracePeriodEnds = new Date(Date.now() + SEVEN_DAYS_MS);
 
           await supabase
             .from('tenants')
@@ -462,6 +481,57 @@ serve(async (req) => {
                 payment_method_id: object.id,
               },
             });
+          }
+        }
+
+        break;
+      }
+
+      case 'customer.deleted': {
+        // Handle Stripe customer deletion - clean up tenant data
+        const customerId = object.id;
+        console.log('[STRIPE-WEBHOOK] Customer deleted:', customerId);
+
+        if (customerId) {
+          // Find the tenant with this Stripe customer ID
+          const { data: tenant } = await supabase
+            .from('tenants')
+            .select('id')
+            .eq('stripe_customer_id', customerId)
+            .maybeSingle();
+
+          if (tenant) {
+            // Revert to free tier and clear Stripe references
+            await supabase
+              .from('tenants')
+              .update({
+                stripe_customer_id: null,
+                stripe_subscription_id: null,
+                subscription_status: 'cancelled',
+                is_free_tier: true,
+                credits_enabled: true,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', tenant.id);
+
+            // Sync tenant_credits table
+            await supabase
+              .from('tenant_credits')
+              .update({ is_free_tier: true })
+              .eq('tenant_id', tenant.id);
+
+            // Log the event
+            await supabase.from('subscription_events').insert({
+              tenant_id: tenant.id,
+              event_type: 'customer_deleted',
+              stripe_event_id: stripeEventId,
+              metadata: {
+                stripe_customer_id: customerId,
+                reverted_to_free_tier: true,
+              },
+            });
+
+            console.log('[STRIPE-WEBHOOK] Tenant reverted to free tier after customer deletion:', tenant.id);
           }
         }
 
