@@ -18,7 +18,6 @@ import {
     Percent,
     FileEdit,
     Wallet,
-    Download,
     Building2,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
@@ -31,7 +30,6 @@ const RevenueReportsPage = lazy(() => import('@/pages/tenant-admin/RevenueReport
 const CommissionTrackingPage = lazy(() => import('@/pages/tenant-admin/CommissionTrackingPage'));
 const AdvancedInvoicePage = lazy(() => import('@/pages/admin/AdvancedInvoicePage'));
 const CollectionMode = lazy(() => import('@/pages/admin/CollectionMode'));
-const DataExportPage = lazy(() => import('@/pages/tenant-admin/DataExportPage'));
 const TaxManagementPage = lazy(() => import('@/pages/admin/TaxManagementPage'));
 
 const TabSkeleton = () => (
@@ -54,7 +52,6 @@ const tabs = [
     { id: 'commissions', label: 'Payouts', icon: Percent },
     // Utilities
     { id: 'builder', label: 'Builder', icon: FileEdit },
-    { id: 'export', label: 'Export', icon: Download },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -114,9 +111,6 @@ export default function FinanceHubPage() {
                 </TabsContent>
                 <TabsContent value="commissions" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><CommissionTrackingPage /></Suspense>
-                </TabsContent>
-                <TabsContent value="export" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><DataExportPage /></Suspense>
                 </TabsContent>
             </Tabs>
         </div>

@@ -43,8 +43,8 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
+    { id: 'live', label: 'Pending', icon: Radio },
     { id: 'history', label: 'All', icon: History },
-    { id: 'live', label: 'Live', icon: Radio },
     { id: 'wholesale', label: 'B2B', icon: Package },
     { id: 'storefront', label: 'Store', icon: Store },
     { id: 'preorders', label: 'Pre-Orders', icon: Clock },
@@ -55,7 +55,7 @@ type TabId = typeof tabs[number]['id'];
 
 export default function OrdersHubPage() {
     const [searchParams, setSearchParams] = useSearchParams();
-    const activeTab = (searchParams.get('tab') as TabId) || 'history';
+    const activeTab = (searchParams.get('tab') as TabId) || 'live';
     const { navigateToAdmin } = useTenantNavigation();
 
     const handleTabChange = (tab: string) => {

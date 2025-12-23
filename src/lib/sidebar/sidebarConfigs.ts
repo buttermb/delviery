@@ -316,7 +316,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     ],
   },
   // ==========================================================================
-  // 8. ANALYTICS (4 items)
+  // 8. ANALYTICS (5 items)
   // ==========================================================================
   {
     section: 'Analytics',
@@ -324,7 +324,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
       createItem('analytics', 'Overview', '/admin/analytics-hub', BarChart3),
       createItem('reports', 'Reports', '/admin/analytics-hub?tab=reports', FileText),
       createItem('advanced-reporting', 'Advanced', '/admin/analytics-hub?tab=advanced', PieChart),
-      createItem('data-export', 'Export', '/admin/finance-hub?tab=export', Download),
+      createItem('data-export', 'Export', '/admin/analytics-hub?tab=export', Download),
     ],
   },
   // ==========================================================================
@@ -355,28 +355,15 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     ],
   },
   // ==========================================================================
-  // 11. COMPLIANCE (4 items)
-  // ==========================================================================
-  {
-    section: 'Compliance',
-    collapsed: true,
-    items: [
-      createItem('compliance', 'Overview', '/admin/operations-hub?tab=compliance', Shield),
-      createItem('compliance-vault', 'Vault', '/admin/operations-hub?tab=compliance', Shield),
-      createItem('audit-trail', 'Audit Trail', '/admin/operations-hub?tab=activity', ScrollText),
-      createItem('quality-control', 'Quality Control', '/admin/operations-hub?tab=quality', Shield),
-    ],
-  },
-  // ==========================================================================
-  // 12. SETTINGS (3 items)
+  // 11. SETTINGS (3 items) - Compliance merged into Operations
   // ==========================================================================
   {
     section: 'Settings',
     collapsed: true,
     items: [
       createItem('settings', 'Settings', '/admin/settings-hub', Settings),
-      createItem('help', 'Help & Support', '/admin/help', HelpCircle),
-      createItem('priority-support', 'Priority Support', '/admin/settings-hub?tab=support', Headphones),
+      createItem('help', 'Help Center', '/admin/help-hub', HelpCircle),
+      createItem('priority-support', 'Priority Support', '/admin/help-hub?tab=support', Headphones),
     ],
   },
 ];
