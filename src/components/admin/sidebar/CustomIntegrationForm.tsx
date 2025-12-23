@@ -4,22 +4,16 @@
  * Allows users to add custom webhooks and API integrations
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { logger } from '@/lib/logger';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { SafeModal, useFormDirtyState } from '@/components/ui/safe-modal';
+import { DialogFooterActions } from '@/components/ui/dialog-footer-actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Plus, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -35,17 +29,22 @@ export function CustomIntegrationForm({
   onIntegrationAdded,
 }: CustomIntegrationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
+  
+  const INITIAL_FORM = {
     name: '',
     type: 'webhook',
     endpoint_url: '',
     description: '',
     auth_type: 'none',
     auth_config: {} as Record<string, string>,
-  });
+  };
+  
+  const [formData, setFormData] = useState(INITIAL_FORM);
   const [customHeaders, setCustomHeaders] = useState<Array<{ key: string; value: string }>>([
     { key: '', value: '' },
   ]);
+  
+  const isDirty = useFormDirtyState(INITIAL_FORM, formData);
 
   const handleAddHeader = () => {
     setCustomHeaders([...customHeaders, { key: '', value: '' }]);
@@ -93,15 +92,14 @@ export function CustomIntegrationForm({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Add Custom Integration</DialogTitle>
-          <DialogDescription>
-            Connect your own APIs, webhooks, or custom endpoints
-          </DialogDescription>
-        </DialogHeader>
-
+    <SafeModal
+      open={open}
+      onOpenChange={onOpenChange}
+      isDirty={isDirty}
+      title="Add Custom Integration"
+      description="Connect your own APIs, webhooks, or custom endpoints"
+      className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto"
+    >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Integration Name</Label>
@@ -224,17 +222,14 @@ export function CustomIntegrationForm({
             ))}
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Add Integration
-            </Button>
-          </DialogFooter>
+          <DialogFooterActions
+            primaryLabel={isSubmitting ? "Adding..." : "Add Integration"}
+            onPrimary={() => {}}
+            primaryLoading={isSubmitting}
+            secondaryLabel="Cancel"
+            onSecondary={() => onOpenChange(false)}
+          />
         </form>
-      </DialogContent>
-    </Dialog>
+    </SafeModal>
   );
 }
