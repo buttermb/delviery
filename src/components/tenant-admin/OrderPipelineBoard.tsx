@@ -1,10 +1,11 @@
 /**
  * Order Status Pipeline Board
  * Kanban-style view for managing order workflow
+ * Enhanced with URL-based filters, last updated indicator, and copy buttons
  */
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -15,14 +16,18 @@ import {
     CheckCircle2,
     MoreVertical,
     ArrowRight,
-    AlertCircle
+    AlertCircle,
+    Copy,
+    Check
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { LastUpdated } from '@/components/ui/last-updated';
+import { toast } from 'sonner';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -53,6 +58,15 @@ interface ColumnProps {
 
 function PipelineColumn({ title, status, orders, icon: Icon, color, onMove }: ColumnProps) {
     const navigate = useNavigate();
+    const [copiedId, setCopiedId] = useState<string | null>(null);
+
+    const handleCopyId = (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(id);
+        setCopiedId(id);
+        toast.success('Order ID copied');
+        setTimeout(() => setCopiedId(null), 1500);
+    };
 
     return (
         <div className="flex-1 min-w-[280px] flex flex-col h-full bg-muted/30 rounded-lg border border-border/50">
@@ -76,8 +90,20 @@ function PipelineColumn({ title, status, orders, icon: Icon, color, onMove }: Co
                         >
                             <CardContent className="p-3 space-y-2">
                                 <div className="flex items-start justify-between">
-                                    <div className="font-medium truncate pr-2">
+                                    <div className="font-medium truncate pr-2 flex items-center gap-1">
                                         {order.customer_name}
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onClick={(e) => handleCopyId(e, order.id)}
+                                        >
+                                            {copiedId === order.id ? (
+                                                <Check className="h-3 w-3 text-emerald-500" />
+                                            ) : (
+                                                <Copy className="h-3 w-3" />
+                                            )}
+                                        </Button>
                                     </div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -166,8 +192,9 @@ export function OrderPipelineBoard() {
     const { tenant } = useTenantAdminAuth();
     const queryClient = useQueryClient();
     const tenantId = tenant?.id;
+    const [lastFetched, setLastFetched] = useState<Date | null>(null);
 
-    const { data: orders = [], isLoading } = useQuery({
+    const { data: orders = [], isLoading, refetch, isFetching } = useQuery({
         queryKey: ['pipeline-orders', tenantId],
         queryFn: async () => {
             if (!tenantId) return [];
@@ -176,18 +203,20 @@ export function OrderPipelineBoard() {
             const { data, error } = await supabase
                 .from('wholesale_orders')
                 .select(`
-          id, 
-          total_amount, 
-          status, 
-          created_at,
-          wholesale_clients(business_name),
-          items:wholesale_order_items(count)
-        `)
+                    id, 
+                    total_amount, 
+                    status, 
+                    created_at,
+                    wholesale_clients(business_name),
+                    items:wholesale_order_items(count)
+                `)
                 .eq('tenant_id', tenantId)
                 .neq('status', 'cancelled')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
+
+            setLastFetched(new Date());
 
             return data.map((order: any) => ({
                 id: order.id,
@@ -213,6 +242,10 @@ export function OrderPipelineBoard() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['pipeline-orders'] });
+            toast.success('Order status updated');
+        },
+        onError: () => {
+            toast.error('Failed to update order status');
         }
     });
 
@@ -220,44 +253,63 @@ export function OrderPipelineBoard() {
         updateStatusMutation.mutate({ id, status });
     };
 
+    const handleRefresh = () => {
+        refetch();
+    };
+
     if (isLoading) {
         return <div className="h-[500px] flex items-center justify-center">Loading pipeline...</div>;
     }
 
     return (
-        <div className="h-[calc(100vh-200px)] min-h-[500px] flex gap-4 overflow-x-auto pb-4">
-            <PipelineColumn
-                title="Pending"
-                status="pending"
-                orders={orders.filter(o => o.status === 'pending')}
-                icon={AlertCircle}
-                color="text-orange-600 bg-orange-50 dark:bg-orange-900/20"
-                onMove={handleMove}
-            />
-            <PipelineColumn
-                title="Processing"
-                status="processing"
-                orders={orders.filter(o => o.status === 'processing')}
-                icon={Package}
-                color="text-blue-600 bg-blue-50 dark:bg-blue-900/20"
-                onMove={handleMove}
-            />
-            <PipelineColumn
-                title="Ready to Ship"
-                status="ready"
-                orders={orders.filter(o => o.status === 'ready')}
-                icon={CheckCircle2}
-                color="text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20"
-                onMove={handleMove}
-            />
-            <PipelineColumn
-                title="Delivered"
-                status="delivered"
-                orders={orders.filter(o => o.status === 'delivered')}
-                icon={Truck}
-                color="text-slate-600 bg-slate-50 dark:bg-slate-900/20"
-                onMove={handleMove}
-            />
+        <div className="space-y-4">
+            {/* Header with Last Updated */}
+            <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                    {orders.length} orders in pipeline
+                </div>
+                <LastUpdated 
+                    lastFetched={lastFetched} 
+                    onRefresh={handleRefresh}
+                    isRefreshing={isFetching}
+                />
+            </div>
+
+            {/* Pipeline Columns */}
+            <div className="h-[calc(100vh-250px)] min-h-[500px] flex gap-4 overflow-x-auto pb-4">
+                <PipelineColumn
+                    title="Pending"
+                    status="pending"
+                    orders={orders.filter(o => o.status === 'pending')}
+                    icon={AlertCircle}
+                    color="text-orange-600 bg-orange-50 dark:bg-orange-900/20"
+                    onMove={handleMove}
+                />
+                <PipelineColumn
+                    title="Processing"
+                    status="processing"
+                    orders={orders.filter(o => o.status === 'processing')}
+                    icon={Package}
+                    color="text-blue-600 bg-blue-50 dark:bg-blue-900/20"
+                    onMove={handleMove}
+                />
+                <PipelineColumn
+                    title="Ready to Ship"
+                    status="ready"
+                    orders={orders.filter(o => o.status === 'ready')}
+                    icon={CheckCircle2}
+                    color="text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20"
+                    onMove={handleMove}
+                />
+                <PipelineColumn
+                    title="Delivered"
+                    status="delivered"
+                    orders={orders.filter(o => o.status === 'delivered')}
+                    icon={Truck}
+                    color="text-slate-600 bg-slate-50 dark:bg-slate-900/20"
+                    onMove={handleMove}
+                />
+            </div>
         </div>
     );
 }

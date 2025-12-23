@@ -1,9 +1,10 @@
 /**
  * Admin Command Palette Component
  * ⌘K quick search and command interface for tenant admin panel
+ * Enhanced with global data search across customers, orders, products
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     CommandDialog,
     CommandEmpty,
@@ -16,6 +17,8 @@ import {
 } from '@/components/ui/command';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useDataSearch } from '@/hooks/useDataSearch';
+import { Loader2 } from 'lucide-react';
 import {
     LayoutDashboard,
     ShoppingCart,
@@ -47,13 +50,27 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
     const navigate = useTenantNavigate();
     const { tenant } = useTenantAdminAuth();
     const [search, setSearch] = useState('');
+    const { results: dataResults, isSearching, search: searchData, clearResults } = useDataSearch();
 
     // Reset search when dialog closes
     useEffect(() => {
         if (!open) {
             setSearch('');
+            clearResults();
         }
-    }, [open]);
+    }, [open, clearResults]);
+
+    // Debounced data search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (search.length >= 2) {
+                searchData(search);
+            } else {
+                clearResults();
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [search, searchData, clearResults]);
 
     const commands = useMemo(() => {
         const quickActions = [
@@ -241,12 +258,48 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
     return (
         <CommandDialog open={open} onOpenChange={onOpenChange}>
             <CommandInput
-                placeholder="Type a command or search..."
+                placeholder="Search customers, orders, products or type a command..."
                 value={search}
                 onValueChange={setSearch}
             />
             <CommandList>
-                <CommandEmpty>No results found.</CommandEmpty>
+                <CommandEmpty>
+                    {isSearching ? (
+                        <div className="flex items-center justify-center py-6">
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Searching...
+                        </div>
+                    ) : (
+                        'No results found.'
+                    )}
+                </CommandEmpty>
+
+                {/* Data Search Results */}
+                {dataResults.length > 0 && (
+                    <>
+                        <CommandGroup heading="Search Results">
+                            {dataResults.map((result) => (
+                                <CommandItem
+                                    key={`${result.type}-${result.id}`}
+                                    onSelect={() => handleSelect(() => navigate(result.url))}
+                                    className="min-h-[44px]"
+                                >
+                                    <span className="mr-2">{result.icon}</span>
+                                    <div className="flex flex-col">
+                                        <span>{result.label}</span>
+                                        {result.sublabel && (
+                                            <span className="text-xs text-muted-foreground">{result.sublabel}</span>
+                                        )}
+                                    </div>
+                                    <span className="ml-auto text-xs text-muted-foreground capitalize">
+                                        {result.type}
+                                    </span>
+                                </CommandItem>
+                            ))}
+                        </CommandGroup>
+                        <CommandSeparator />
+                    </>
+                )}
 
                 {filteredActions.length > 0 && (
                     <>
