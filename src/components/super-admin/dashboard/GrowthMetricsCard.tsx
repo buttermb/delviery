@@ -6,6 +6,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { isCancelled } from '@/utils/subscriptionStatus';
 
 interface GrowthMetricsCardProps {
   stats: {
@@ -70,7 +71,7 @@ export function GrowthMetricsCard({ stats }: GrowthMetricsCardProps) {
 
       // Calculate Churn MRR (cancelled tenants)
       const churnMRR = allTenants
-        .filter((t) => t.subscription_status === 'cancelled' || t.cancelled_at)
+        .filter((t) => isCancelled(t.subscription_status) || t.cancelled_at)
         .reduce((sum, t) => {
           const mrr = Number(t.mrr) || planPrices[t.subscription_plan?.toLowerCase() || 'starter'] || 0;
           return sum + mrr;
