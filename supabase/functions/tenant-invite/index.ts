@@ -366,7 +366,7 @@ serve(async (req) => {
         );
       }
 
-      const { data: invitations, error: listError } = await supabase
+      const { data: invitations, error: listError } = await serviceClient
         .from('tenant_invitations')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -374,8 +374,9 @@ serve(async (req) => {
         .order('created_at', { ascending: false });
 
       if (listError) {
+        console.error('List invitations error:', listError);
         return new Response(
-          JSON.stringify({ error: 'Failed to list invitations' }),
+          JSON.stringify({ error: 'Failed to list invitations', details: listError.message }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
