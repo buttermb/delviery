@@ -1,24 +1,14 @@
 import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import {
   SettingsSection,
   SettingsCard,
-  SettingsRow,
 } from '@/components/settings/SettingsSection';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import {
   Shield,
   Key,
@@ -30,9 +20,9 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
-  Copy,
   Eye,
   EyeOff,
+  Loader2,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -40,6 +30,7 @@ import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeFetch } from '@/utils/safeFetch';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Session {
   id: string;
@@ -51,27 +42,35 @@ interface Session {
   current: boolean;
 }
 
-// Mock sessions for demo
-const MOCK_SESSIONS: Session[] = [
-  {
-    id: '1',
-    device: 'MacBook Pro',
-    browser: 'Chrome 120',
-    location: 'Los Angeles, CA',
-    ip: '192.168.1.1',
-    lastActive: 'Now',
-    current: true,
-  },
-  {
-    id: '2',
-    device: 'iPhone 15',
-    browser: 'Safari',
-    location: 'Los Angeles, CA',
-    ip: '192.168.1.2',
-    lastActive: '2 hours ago',
-    current: false,
-  },
-];
+function parseUserAgent(userAgent: string | null): { device: string; browser: string } {
+  if (!userAgent) return { device: 'Unknown Device', browser: 'Unknown Browser' };
+
+  let device = 'Desktop';
+  let browser = 'Browser';
+
+  // Detect device
+  if (/iPhone/i.test(userAgent)) device = 'iPhone';
+  else if (/iPad/i.test(userAgent)) device = 'iPad';
+  else if (/Android/i.test(userAgent)) device = 'Android';
+  else if (/Macintosh/i.test(userAgent)) device = 'MacBook';
+  else if (/Windows/i.test(userAgent)) device = 'Windows PC';
+  else if (/Linux/i.test(userAgent)) device = 'Linux PC';
+
+  // Detect browser
+  if (/Chrome/i.test(userAgent) && !/Edge/i.test(userAgent)) {
+    const match = userAgent.match(/Chrome\/(\d+)/);
+    browser = match ? `Chrome ${match[1]}` : 'Chrome';
+  } else if (/Safari/i.test(userAgent) && !/Chrome/i.test(userAgent)) {
+    browser = 'Safari';
+  } else if (/Firefox/i.test(userAgent)) {
+    const match = userAgent.match(/Firefox\/(\d+)/);
+    browser = match ? `Firefox ${match[1]}` : 'Firefox';
+  } else if (/Edge/i.test(userAgent)) {
+    browser = 'Edge';
+  }
+
+  return { device, browser };
+}
 
 function getPasswordStrength(password: string): { score: number; label: string; color: string } {
   let score = 0;
@@ -89,6 +88,7 @@ function getPasswordStrength(password: string): { score: number; label: string; 
 
 export default function SecuritySettings() {
   const { admin, tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -98,7 +98,87 @@ export default function SecuritySettings() {
     confirmPassword: '',
   });
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [sessions] = useState<Session[]>(MOCK_SESSIONS);
+
+  // Get current session token for comparison
+  const currentToken = localStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
+
+  // Fetch real sessions from admin_sessions table
+  const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
+    queryKey: ['admin-sessions', admin?.id],
+    queryFn: async () => {
+      if (!admin?.id) return [];
+
+      const { data, error } = await supabase
+        .from('admin_sessions')
+        .select('*')
+        .eq('admin_id', admin.id)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Failed to fetch sessions:', error);
+        return [];
+      }
+
+      return (data || []).map(session => {
+        const { device, browser } = parseUserAgent(session.user_agent);
+        const isCurrent = session.token_hash === currentToken?.substring(0, 64); // Compare first part of token
+        
+        return {
+          id: session.id,
+          device,
+          browser,
+          location: 'Unknown Location', // IP geolocation would require external service
+          ip: session.ip_address || 'Unknown',
+          lastActive: isCurrent ? 'Now' : new Date(session.created_at).toLocaleString(),
+          current: isCurrent,
+        } as Session;
+      });
+    },
+    enabled: !!admin?.id,
+  });
+
+  // Revoke session mutation
+  const revokeSessionMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      const { error } = await supabase
+        .from('admin_sessions')
+        .delete()
+        .eq('id', sessionId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-sessions', admin?.id] });
+      toast({ title: 'Session revoked', description: 'The device has been signed out.' });
+    },
+    onError: (error) => {
+      toast({ title: 'Failed to revoke session', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  // Revoke all other sessions mutation
+  const revokeAllSessionsMutation = useMutation({
+    mutationFn: async () => {
+      const currentSession = sessions.find(s => s.current);
+      if (!currentSession) throw new Error('No current session found');
+
+      const { error } = await supabase
+        .from('admin_sessions')
+        .delete()
+        .eq('admin_id', admin?.id)
+        .neq('id', currentSession.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-sessions', admin?.id] });
+      toast({ title: 'All sessions revoked', description: 'You have been signed out of all other devices.' });
+    },
+    onError: (error) => {
+      toast({ title: 'Failed to revoke sessions', description: error.message, variant: 'destructive' });
+    },
+  });
 
   const passwordStrength = getPasswordStrength(passwordData.newPassword);
 
@@ -156,14 +236,6 @@ export default function SecuritySettings() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleRevokeSession = (sessionId: string) => {
-    toast({ title: 'Session revoked', description: 'The device has been signed out.' });
-  };
-
-  const handleRevokeAllSessions = () => {
-    toast({ title: 'All sessions revoked', description: 'You have been signed out of all other devices.' });
   };
 
   return (
@@ -307,9 +379,11 @@ export default function SecuritySettings() {
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={handleRevokeAllSessions}
+            onClick={() => revokeAllSessionsMutation.mutate()}
+            disabled={revokeAllSessionsMutation.isPending || sessions.filter(s => !s.current).length === 0}
             className="min-h-[44px] text-xs sm:text-sm"
           >
+            {revokeAllSessionsMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             <LogOut className="h-4 w-4 mr-1.5 sm:mr-2" />
             <span className="hidden sm:inline">Sign out all</span>
             <span className="sm:hidden">Sign out</span>
@@ -317,57 +391,69 @@ export default function SecuritySettings() {
         }
       >
         <SettingsCard>
-          <div className="divide-y">
-            {sessions.map((session) => (
-              <div 
-                key={session.id} 
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 py-4 first:pt-0 last:pb-0"
-              >
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                    {session.device.includes('iPhone') ? (
-                      <Smartphone className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <Monitor className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-sm">{session.device}</span>
-                      {session.current && (
-                        <Badge variant="secondary" className="text-[10px]">
-                          Current
-                        </Badge>
+          {sessionsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : sessions.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Monitor className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p>No active sessions found</p>
+            </div>
+          ) : (
+            <div className="divide-y">
+              {sessions.map((session) => (
+                <div 
+                  key={session.id} 
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 py-4 first:pt-0 last:pb-0"
+                >
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                      {session.device.includes('iPhone') || session.device.includes('Android') ? (
+                        <Smartphone className="h-5 w-5 text-muted-foreground" />
+                      ) : (
+                        <Monitor className="h-5 w-5 text-muted-foreground" />
                       )}
                     </div>
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground mt-0.5">
-                      <span>{session.browser}</span>
-                      <span className="hidden sm:inline">•</span>
-                      <span className="flex items-center gap-1">
-                        <Globe className="h-3 w-3" />
-                        {session.location}
-                      </span>
-                      <span className="hidden sm:inline">•</span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {session.lastActive}
-                      </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-sm">{session.device}</span>
+                        {session.current && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            Current
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground mt-0.5">
+                        <span>{session.browser}</span>
+                        <span className="hidden sm:inline">•</span>
+                        <span className="flex items-center gap-1">
+                          <Globe className="h-3 w-3" />
+                          {session.ip}
+                        </span>
+                        <span className="hidden sm:inline">•</span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {session.lastActive}
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  {!session.current && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => revokeSessionMutation.mutate(session.id)}
+                      disabled={revokeSessionMutation.isPending}
+                      className="text-destructive hover:text-destructive min-h-[44px] w-full sm:w-auto"
+                    >
+                      Revoke
+                    </Button>
+                  )}
                 </div>
-                {!session.current && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRevokeSession(session.id)}
-                    className="text-destructive hover:text-destructive min-h-[44px] w-full sm:w-auto"
-                  >
-                    Revoke
-                  </Button>
-                )}
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </SettingsCard>
       </SettingsSection>
 
