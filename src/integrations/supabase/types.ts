@@ -159,6 +159,41 @@ export type Database = {
           },
         ]
       }
+      action_log: {
+        Row: {
+          action_type: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          tenant_id: string
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          tenant_id: string
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          tenant_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       activity_logs: {
         Row: {
           account_id: string
@@ -4099,6 +4134,56 @@ export type Database = {
           },
         ]
       }
+      email_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          failed_at: string | null
+          id: string
+          metadata: Json | null
+          provider_message_id: string | null
+          recipient: string
+          sent_at: string | null
+          status: string
+          template: string
+          tenant_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          failed_at?: string | null
+          id?: string
+          metadata?: Json | null
+          provider_message_id?: string | null
+          recipient: string
+          sent_at?: string | null
+          status?: string
+          template: string
+          tenant_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          failed_at?: string | null
+          id?: string
+          metadata?: Json | null
+          provider_message_id?: string | null
+          recipient?: string
+          sent_at?: string | null
+          status?: string
+          template?: string
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       error_logs: {
         Row: {
           context: Json | null
@@ -4140,6 +4225,56 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      failed_emails: {
+        Row: {
+          created_at: string
+          email_data: Json
+          error_message: string | null
+          id: string
+          max_retries: number
+          next_retry: string
+          recipient: string
+          retry_count: number
+          template: string
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email_data?: Json
+          error_message?: string | null
+          id?: string
+          max_retries?: number
+          next_retry?: string
+          recipient: string
+          retry_count?: number
+          template: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email_data?: Json
+          error_message?: string | null
+          id?: string
+          max_retries?: number
+          next_retry?: string
+          recipient?: string
+          retry_count?: number
+          template?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "failed_emails_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       feature_flags: {
         Row: {
@@ -11642,6 +11777,10 @@ export type Database = {
           billing_cycle: string | null
           business_name: string
           business_tier: string | null
+          cancellation_completed_at: string | null
+          cancellation_reason: string | null
+          cancellation_requested_at: string | null
+          cancellation_requested_by: string | null
           cancelled_at: string | null
           company_size: string | null
           compliance_verified: boolean | null
@@ -11696,6 +11835,10 @@ export type Database = {
           billing_cycle?: string | null
           business_name: string
           business_tier?: string | null
+          cancellation_completed_at?: string | null
+          cancellation_reason?: string | null
+          cancellation_requested_at?: string | null
+          cancellation_requested_by?: string | null
           cancelled_at?: string | null
           company_size?: string | null
           compliance_verified?: boolean | null
@@ -11750,6 +11893,10 @@ export type Database = {
           billing_cycle?: string | null
           business_name?: string
           business_tier?: string | null
+          cancellation_completed_at?: string | null
+          cancellation_reason?: string | null
+          cancellation_requested_at?: string | null
+          cancellation_requested_by?: string | null
           cancelled_at?: string | null
           company_size?: string | null
           compliance_verified?: boolean | null
@@ -14442,6 +14589,15 @@ export type Database = {
         Returns: Json
       }
       check_is_admin: { Args: { _user_id: string }; Returns: boolean }
+      check_rate_limit: {
+        Args: {
+          p_action_type: string
+          p_limit: number
+          p_tenant_id: string
+          p_window_hours?: number
+        }
+        Returns: Json
+      }
       check_tenant_subscription_valid: {
         Args: { p_tenant_id: string }
         Returns: boolean
@@ -14913,6 +15069,17 @@ export type Database = {
       }
       is_tenant_owner: { Args: { p_tenant_id: string }; Returns: boolean }
       is_trial_active: { Args: { p_tenant_id: string }; Returns: boolean }
+      log_action_with_limit: {
+        Args: {
+          p_action_type: string
+          p_limit: number
+          p_metadata?: Json
+          p_tenant_id: string
+          p_user_id: string
+          p_window_hours?: number
+        }
+        Returns: Json
+      }
       log_document_access: {
         Args: { _access_type: string; _verification_id: string }
         Returns: undefined
