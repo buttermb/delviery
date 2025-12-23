@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, subMonths } from 'date-fns';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/formatters';
 
 interface TaxSummary {
   totalSales: number;
@@ -150,7 +151,7 @@ export default function TaxManagementPage() {
               <span className="text-sm text-muted-foreground">Total Sales</span>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </div>
-            <div className="text-2xl font-bold">${(taxData?.totalSales || 0).toLocaleString()}</div>
+            <div className="text-2xl font-bold">{formatCurrency(taxData?.totalSales || 0)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {selectedPeriod === 'month' ? 'This month' : selectedPeriod === 'quarter' ? 'This quarter' : 'Year to date'}
             </p>
@@ -163,7 +164,7 @@ export default function TaxManagementPage() {
               <span className="text-sm text-muted-foreground">Tax Collected</span>
               <Percent className="h-4 w-4 text-muted-foreground" />
             </div>
-            <div className="text-2xl font-bold text-green-600">${(taxData?.taxCollected || 0).toLocaleString()}</div>
+            <div className="text-2xl font-bold text-green-600">{formatCurrency(taxData?.taxCollected || 0)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               At {taxData?.taxRate}% rate
             </p>

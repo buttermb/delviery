@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { formatCurrency } from '@/lib/formatters';
 
 export default function ClientDetail() {
   const { id, tenantSlug } = useParams<{ id: string; tenantSlug: string }>();
@@ -88,7 +89,7 @@ export default function ClientDetail() {
       if (error) throw error;
     },
     onSuccess: () => {
-      showSuccessToast("Credit Limit Updated", `New limit: $${Number(newCreditLimit).toLocaleString()}`);
+      showSuccessToast("Credit Limit Updated", `New limit: ${formatCurrency(Number(newCreditLimit))}`);
       queryClient.invalidateQueries({ queryKey: ['wholesale-client', id] });
       setCreditLimitDialogOpen(false);
       setNewCreditLimit("");
@@ -265,7 +266,7 @@ export default function ClientDetail() {
                 <span className="font-semibold text-destructive">Outstanding Credit</span>
               </div>
               <span className={`text-2xl font-mono font-bold ${getStatusColor(displayClient.outstanding_balance)}`}>
-                ${displayClient.outstanding_balance.toLocaleString()}
+                {formatCurrency(displayClient.outstanding_balance)}
               </span>
             </div>
 
@@ -382,7 +383,7 @@ export default function ClientDetail() {
             {
               header: 'Amount',
               accessorKey: 'total_amount',
-              cell: (order: any) => <span className="font-mono">${Number(order.total_amount).toLocaleString()}</span>
+              cell: (order: any) => <span className="font-mono">{formatCurrency(Number(order.total_amount))}</span>
             },
             {
               header: 'Status',
@@ -431,7 +432,7 @@ export default function ClientDetail() {
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="font-mono font-medium">${Number(order.total_amount).toLocaleString()}</span>
+                <span className="font-mono font-medium">{formatCurrency(Number(order.total_amount))}</span>
                 <div>
                   {order.status === "pending" && (
                     <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 text-xs">
@@ -557,7 +558,7 @@ export default function ClientDetail() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Current Limit: ${displayClient.credit_limit.toLocaleString()}</Label>
+              <Label>Current Limit: {formatCurrency(displayClient.credit_limit)}</Label>
               <Input
                 type="number"
                 placeholder="Enter new credit limit"

@@ -14,6 +14,7 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { inventoryTutorial } from "@/lib/tutorials/tutorialConfig";
+import { formatCurrency, formatQuantity } from '@/lib/formatters';
 
 
 interface Product {
@@ -113,17 +114,17 @@ export default function InventoryManagement() {
       header: 'Weight',
       accessorKey: 'available_quantity',
       className: 'text-right',
-      cell: (item) => <div className="font-mono">{Number(item.available_quantity || 0).toFixed(1)} lbs</div>
+      cell: (item) => <div className="font-mono">{formatQuantity(Number(item.available_quantity || 0), 'lbs', { showZero: true })}</div>
     },
     {
       header: 'Cost/lb',
       className: 'text-right',
-      cell: () => <div className="font-mono">${avgCostPerLb.toLocaleString()}</div>
+      cell: () => <div className="font-mono">{formatCurrency(avgCostPerLb)}</div>
     },
     {
       header: 'Total Value',
       className: 'text-right',
-      cell: (item) => <div className="font-mono">${(Number(item.available_quantity || 0) * avgCostPerLb).toLocaleString()}</div>
+      cell: (item) => <div className="font-mono">{formatCurrency(Number(item.available_quantity || 0) * avgCostPerLb)}</div>
     },
     {
       header: 'Status',
@@ -172,11 +173,11 @@ export default function InventoryManagement() {
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
             <span className="text-muted-foreground block text-xs">Weight</span>
-            <span className="font-mono font-medium">{Number(item.available_quantity || 0).toFixed(1)} lbs</span>
+            <span className="font-mono font-medium">{formatQuantity(Number(item.available_quantity || 0), 'lbs')}</span>
           </div>
           <div>
             <span className="text-muted-foreground block text-xs">Total Value</span>
-            <span className="font-mono font-medium">${(Number(item.available_quantity || 0) * avgCostPerLb).toLocaleString()}</span>
+            <span className="font-mono font-medium">{formatCurrency(Number(item.available_quantity || 0) * avgCostPerLb)}</span>
           </div>
         </div>
 
