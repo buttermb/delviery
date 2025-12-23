@@ -160,3 +160,39 @@ export function StatusBadge({
     </Badge>
   );
 }
+
+interface StatusDotProps {
+  status: string;
+  className?: string;
+  size?: 'sm' | 'md' | 'lg';
+  pulse?: boolean;
+}
+
+export function StatusDot({ 
+  status, 
+  className,
+  size = 'md',
+  pulse = false 
+}: StatusDotProps) {
+  const sizeClasses = {
+    sm: 'w-1.5 h-1.5',
+    md: 'w-2 h-2',
+    lg: 'w-3 h-3',
+  };
+
+  // Get color class based on status
+  const colorClass = getStatusColor(status).split(' ')[0].replace('bg-', 'bg-') || 'bg-muted';
+
+  return (
+    <span 
+      className={cn(
+        'inline-block rounded-full',
+        colorClass,
+        sizeClasses[size],
+        pulse && 'animate-pulse',
+        className
+      )}
+      title={status.replace(/_/g, ' ')}
+    />
+  );
+}

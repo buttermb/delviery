@@ -24,6 +24,12 @@ export {
 } from '../OrderRowContextMenu';
 export type { OrderContextAction, OrderStatus } from '../OrderRowContextMenu';
 
+// Unified status colors and badge
+export { STATUS_COLORS, getStatusColors, getStatusBadgeClasses } from '@/constants/statusColors';
+export type { StatusKey } from '@/constants/statusColors';
+export { StatusBadge, StatusDot } from '@/components/ui/status-badge';
+export type { StatusBadgeProps } from '@/components/ui/status-badge';
+
 // ============ DATA ENTRY ============
 // Expression calculator for inline math (20%, cost + 30%)
 export {
@@ -44,9 +50,18 @@ export { FieldHelp, LabelWithHelp, fieldHelpTexts } from '@/components/ui/field-
 // Searchable filter dropdowns
 export { SearchableFilterDropdown } from '@/components/ui/searchable-filter-dropdown';
 
+// Form progress indicators
+export { FormProgress, FormStepHeader } from '@/components/ui/form-progress';
+
 // ============ SEARCH & NAVIGATION ============
 // Fuzzy search hook with highlighting
 export { useFuzzySearch, highlightMatches } from '@/hooks/useFuzzySearch';
+
+// Global data search hook
+export { useDataSearch } from '@/hooks/useDataSearch';
+
+// URL-based filter persistence
+export { useUrlFilters, useOrderFilters, useCustomerFilters, useProductFilters } from '@/hooks/useUrlFilters';
 
 // ============ PROGRESS & FEEDBACK ============
 // Bulk operation progress indicator
@@ -58,6 +73,9 @@ export {
   FeatureTipManager,
   useFeatureTip,
 } from '@/components/ui/feature-discovery-tip';
+
+// Last updated indicator
+export { LastUpdated, DataFreshnessIndicator } from '@/components/ui/last-updated';
 
 // ============ VERSION & HISTORY ============
 // Version history panel with restore capability
