@@ -305,6 +305,7 @@ const FinanceHubPage = lazy(() => import("./pages/admin/hubs/FinanceHubPage"));
 const IntegrationsHubPage = lazy(() => import("./pages/admin/hubs/IntegrationsHubPage"));
 const StorefrontHubPage = lazy(() => import("./pages/admin/hubs/StorefrontHubPage"));
 const OperationsHubPage = lazy(() => import("./pages/admin/hubs/OperationsHubPage"));
+const FulfillmentHubPage = lazy(() => import("./pages/admin/hubs/FulfillmentHubPage"));
 
 const MarketingHubPage = lazy(() => import("./pages/admin/hubs/MarketingHubPage"));
 const RoleManagement = lazy(() => import("./pages/admin/RoleManagement"));
@@ -896,8 +897,9 @@ const App = () => {
                                           <Route path="advanced-inventory" element={<Navigate to="inventory-hub?tab=adjustments" replace />} />
                                           <Route path="fronted-inventory" element={<FeatureProtectedRoute featureId="fronted-inventory"><FrontedInventory /></FeatureProtectedRoute>} />
                                           <Route path="invoice-management" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
-                                          <Route path="fleet-management" element={<Navigate to="operations-hub?tab=delivery" replace />} />
-                                          <Route path="delivery-hub" element={<Navigate to="operations-hub?tab=delivery" replace />} />
+                                          <Route path="fleet-management" element={<Navigate to="fulfillment-hub?tab=fleet" replace />} />
+                                          <Route path="delivery-hub" element={<Navigate to="fulfillment-hub" replace />} />
+                                          <Route path="fulfillment-hub" element={<FeatureProtectedRoute featureId="delivery-management"><FulfillmentHubPage /></FeatureProtectedRoute>} />
                                           <Route path="finance-hub" element={<FeatureProtectedRoute featureId="financial-center"><FinanceHubPage /></FeatureProtectedRoute>} />
                                           <Route path="settings-hub" element={<FeatureProtectedRoute featureId="settings"><SettingsHubPage /></FeatureProtectedRoute>} />
                                           <Route path="integrations-hub" element={<Navigate to="settings-hub?tab=integrations" replace />} />

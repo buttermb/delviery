@@ -11,7 +11,6 @@
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-    ShoppingBag,
     Package,
     Store,
     Clock,
@@ -26,7 +25,6 @@ import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Lazy load tab content for performance
-const DisposableMenuOrders = lazy(() => import('@/pages/admin/DisposableMenuOrders'));
 const WholesaleOrdersPage = lazy(() => import('@/pages/admin/WholesaleOrdersPage'));
 const StorefrontOrders = lazy(() => import('@/pages/admin/storefront/StorefrontOrders'));
 const PreOrdersPage = lazy(() => import('@/pages/admin/PreOrdersPage'));
@@ -44,7 +42,6 @@ const TabSkeleton = () => (
 const tabs = [
     { id: 'history', label: 'All', icon: History },            // Overview first
     { id: 'live', label: 'Live', icon: Radio },               // Real-time urgent
-    { id: 'menu', label: 'Menus', icon: ShoppingBag },        // Order types
     { id: 'wholesale', label: 'B2B', icon: Package },
     { id: 'storefront', label: 'Store', icon: Store },
     { id: 'preorders', label: 'Pre-Orders', icon: Clock },
@@ -101,12 +98,6 @@ export default function OrdersHubPage() {
                     </div>
                 </div>
 
-                {/* Menu Orders Tab */}
-                <TabsContent value="menu" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <DisposableMenuOrders />
-                    </Suspense>
-                </TabsContent>
 
                 {/* Wholesale Orders Tab */}
                 <TabsContent value="wholesale" className="m-0">

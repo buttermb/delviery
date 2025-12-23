@@ -245,7 +245,6 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     defaultExpanded: true,
     items: [
       createItem('basic-orders', 'All Orders', '/admin/orders', ShoppingCart),
-      createItem('disposable-menus', 'Menus', '/admin/orders?tab=menu', Menu),
       createItem('wholesale-orders', 'B2B Orders', '/admin/orders?tab=wholesale', Building),
       createItem('storefront', 'Store Orders', '/admin/orders?tab=storefront', Store),
     ],
@@ -257,6 +256,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     section: 'Inventory',
     items: [
       createItem('products', 'Products', '/admin/inventory-hub', Package),
+      createItem('disposable-menus', 'Menus', '/admin/inventory-hub?tab=menus', Menu),
       createItem('inventory-dashboard', 'Stock Levels', '/admin/inventory-hub?tab=stock', Warehouse),
       createItem('stock-alerts', 'Alerts', '/admin/inventory-hub?tab=monitoring', AlertCircle),
       createItem('inventory-transfers', 'Transfers', '/admin/inventory-hub?tab=adjustments', ArrowRightLeft),
@@ -271,8 +271,10 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('customers', 'All Customers', '/admin/customer-hub', Users),
       createItem('customer-crm', 'CRM', '/admin/customer-hub?tab=crm', Briefcase),
-      createItem('customer-analytics', 'Analytics', '/admin/customer-hub?tab=analytics', PieChart),
       createItem('crm-invoices', 'Invoices', '/admin/customer-hub?tab=invoices', Receipt),
+      createItem('support-tickets', 'Support', '/admin/customer-hub?tab=support', Layers),
+      createItem('loyalty-program', 'Loyalty', '/admin/customer-hub?tab=loyalty', Star),
+      createItem('customer-analytics', 'Analytics', '/admin/customer-hub?tab=analytics', PieChart),
     ],
   },
   // ==========================================================================
@@ -304,15 +306,15 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     ],
   },
   // ==========================================================================
-  // 7. DELIVERY (4 items)
+  // 7. FULFILLMENT & DELIVERY (4 items) - Now a dedicated hub
   // ==========================================================================
   {
-    section: 'Delivery',
+    section: 'Fulfillment',
     items: [
-      createItem('delivery-management', 'Overview', '/admin/operations-hub?tab=delivery', Truck),
-      createItem('fleet-management', 'Fleet', '/admin/operations-hub?tab=delivery', Truck),
-      createItem('couriers', 'Couriers', '/admin/operations-hub?tab=delivery', Users),
-      createItem('delivery-tracking', 'Tracking', '/admin/operations-hub?tab=delivery', MapPinned),
+      createItem('delivery-management', 'Overview', '/admin/fulfillment-hub', Truck),
+      createItem('fleet-management', 'Fleet', '/admin/fulfillment-hub?tab=fleet', Truck),
+      createItem('couriers', 'Couriers', '/admin/fulfillment-hub?tab=couriers', Users),
+      createItem('delivery-tracking', 'Tracking', '/admin/fulfillment-hub?tab=map', MapPinned),
     ],
   },
   // ==========================================================================

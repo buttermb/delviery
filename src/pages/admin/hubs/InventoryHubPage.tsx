@@ -19,6 +19,7 @@ import {
     Plus,
     CreditCard,
     Barcode,
+    Menu,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
@@ -27,6 +28,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 // Lazy load tab content for performance
 const ProductManagement = lazy(() => import('@/pages/admin/ProductManagement'));
+const DisposableMenus = lazy(() => import('@/pages/admin/DisposableMenus'));
 const InventoryDashboard = lazy(() => import('@/pages/admin/InventoryDashboard'));
 const InventoryManagement = lazy(() => import('@/pages/admin/InventoryManagement'));
 const InventoryMonitoringPage = lazy(() => import('@/pages/admin/InventoryMonitoringPage'));
@@ -43,6 +45,7 @@ const TabSkeleton = () => (
 
 const tabs = [
     { id: 'products', label: 'Products', icon: Package },     // Core catalog
+    { id: 'menus', label: 'Menus', icon: Menu },              // Disposable menus (moved from Orders)
     { id: 'stock', label: 'Stock', icon: BarChart3 },         // Levels overview
     { id: 'monitoring', label: 'Alerts', icon: AlertTriangle }, // Urgent items
     { id: 'adjustments', label: 'Transfers', icon: ArrowLeftRight }, // Actions
@@ -95,6 +98,13 @@ export default function InventoryHubPage() {
                 <TabsContent value="products" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <ProductManagement />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Menus Tab (moved from Orders) */}
+                <TabsContent value="menus" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <DisposableMenus />
                     </Suspense>
                 </TabsContent>
 
