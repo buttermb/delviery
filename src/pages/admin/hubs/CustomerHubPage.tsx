@@ -14,11 +14,11 @@ import {
     Briefcase,
     Heart,
     BarChart3,
-    Plus,
     FileText,
     PieChart,
+    Headphones,
+    Star,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -29,6 +29,8 @@ const CustomerCRMPage = lazy(() => import('@/pages/admin/CustomerCRMPage'));
 const CustomerInsightsPage = lazy(() => import('@/pages/tenant-admin/CustomerInsightsPage'));
 const CustomerInvoices = lazy(() => import('@/pages/admin/CustomerInvoices'));
 const CustomerAnalyticsPage = lazy(() => import('@/pages/tenant-admin/CustomerAnalyticsPage'));
+const SupportTicketsPage = lazy(() => import('@/pages/admin/SupportTicketsPage'));
+const LoyaltyProgramPage = lazy(() => import('@/pages/admin/LoyaltyProgramPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -45,6 +47,9 @@ const tabs = [
     { id: 'wholesale', label: 'B2B Clients', icon: Briefcase },
     // Transactions
     { id: 'invoices', label: 'Invoices', icon: FileText },
+    // Support & Loyalty (new tabs)
+    { id: 'support', label: 'Support', icon: Headphones },
+    { id: 'loyalty', label: 'Loyalty', icon: Star },
     // Analytics
     { id: 'insights', label: 'Insights', icon: BarChart3 },
     { id: 'analytics', label: 'Analytics', icon: PieChart },
@@ -73,14 +78,16 @@ export default function CustomerHubPage() {
                             </p>
                         </div>
                     </div>
-                    <TabsList className="grid w-full max-w-2xl grid-cols-6">
-                        {tabs.map((tab) => (
-                            <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-                                <tab.icon className="h-4 w-4" />
-                                <span className="hidden sm:inline">{tab.label}</span>
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
+                    <div className="overflow-x-auto">
+                        <TabsList className="inline-flex min-w-max">
+                            {tabs.map((tab) => (
+                                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                    <tab.icon className="h-4 w-4" />
+                                    <span className="hidden sm:inline">{tab.label}</span>
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                    </div>
                 </div>
 
                 {/* Contacts Tab */}
@@ -115,6 +122,20 @@ export default function CustomerHubPage() {
                 <TabsContent value="invoices" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <CustomerInvoices />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Support Tab (new) */}
+                <TabsContent value="support" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <SupportTicketsPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Loyalty Tab (new - dual access with Marketing) */}
+                <TabsContent value="loyalty" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <LoyaltyProgramPage />
                     </Suspense>
                 </TabsContent>
 
