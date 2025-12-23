@@ -64,19 +64,21 @@ export function useFeatureAccess() {
       return false;
     }
 
-    // Check trial expiration
+    // Check trial expiration - FIXED: Use UTC comparison to avoid timezone drift
     if (status === 'trial' && tenant.trial_ends_at) {
-      const trialEnd = new Date(tenant.trial_ends_at);
-      const now = new Date();
-      if (trialEnd < now) {
+      const trialEndMs = new Date(tenant.trial_ends_at).getTime();
+      const nowMs = Date.now();
+      if (trialEndMs < nowMs) {
         return false; // Trial expired
       }
     }
 
     // past_due gets grace period (set by webhook in grace_period_ends_at)
+    // FIXED: Use UTC comparison to avoid timezone drift
     if (status === 'past_due' && tenant.grace_period_ends_at) {
-      const gracePeriodEnd = new Date(tenant.grace_period_ends_at);
-      if (new Date() > gracePeriodEnd) {
+      const gracePeriodEndMs = new Date(tenant.grace_period_ends_at).getTime();
+      const nowMs = Date.now();
+      if (nowMs > gracePeriodEndMs) {
         return false; // Grace period expired - block access
       }
     }
@@ -86,10 +88,10 @@ export function useFeatureAccess() {
 
   const subscriptionValid = isSubscriptionValid();
 
-  // Subscription status flags
+  // Subscription status flags - FIXED: Use UTC comparison
   const isTrialExpired = tenant?.subscription_status === 'trial' &&
     tenant?.trial_ends_at &&
-    new Date(tenant.trial_ends_at) < new Date();
+    new Date(tenant.trial_ends_at).getTime() < Date.now();
 
   const isSuspended = tenant?.subscription_status === 'suspended';
   // Use normalized utility to handle both 'cancelled' and 'canceled' spellings
