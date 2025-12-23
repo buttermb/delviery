@@ -765,6 +765,9 @@ const App = () => {
                                           <Route path="sales" element={<Navigate to="sales-dashboard" replace />} />
                                           <Route path="marketplace" element={<Navigate to="marketplace/listings" replace />} />
                                           <Route path="catalog" element={<Navigate to="inventory-hub?tab=products" replace />} />
+                                          {/* Legacy hub redirects - redirect old paths to new paths */}
+                                          <Route path="orders-hub" element={<Navigate to="orders" replace />} />
+                                          <Route path="pos-hub" element={<Navigate to="pos-system" replace />} />
 
                                           <Route path="analytics-hub" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsHubPage /></FeatureProtectedRoute>} />
                                           <Route path="analytics/comprehensive" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />
