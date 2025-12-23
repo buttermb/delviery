@@ -2,20 +2,24 @@
  * HotBar - Fixed Bottom Navigation
  * 
  * Always visible navigation bar at the bottom of the screen
- * Based on the 5-tier Hotbox system
+ * Optimized for the new hub-based navigation structure
  */
 
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   Flame,
+  LayoutDashboard,
   Package,
   DollarSign,
-  BarChart3,
   MoreHorizontal,
   Store,
   Users,
   Truck,
   Settings,
+  ShoppingCart,
+  Box,
+  BarChart3,
+  Megaphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useBusinessTier } from '@/hooks/useBusinessTier';
@@ -29,51 +33,48 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { TierBadge } from '../tier/TierBadge';
+import { AlertBadge } from '../ui/AlertBadge';
 
 interface NavItem {
   id: string;
   label: string;
   icon: React.ElementType;
   path: string;
+  badge?: { level: 'critical' | 'warning' | 'success' | 'info'; count: number };
 }
 
-// Core navigation items - always visible
+// Core navigation items - optimized for hub structure
 const coreNavItems: NavItem[] = [
-  { id: 'hotbox', label: 'Hotbox', icon: Flame, path: '/admin/hotbox' },
-  { id: 'orders', label: 'Orders', icon: Package, path: '/admin/orders?tab=menu' },
-  { id: 'money', label: 'Money', icon: DollarSign, path: '/admin/finance-hub' },
-  { id: 'reports', label: 'Reports', icon: BarChart3, path: '/admin/reports' },
+  { id: 'home', label: 'Home', icon: LayoutDashboard, path: '/admin' },
+  { id: 'orders', label: 'Orders', icon: ShoppingCart, path: '/admin/orders' },
+  { id: 'inventory', label: 'Inventory', icon: Box, path: '/admin/inventory-hub' },
+  { id: 'finance', label: 'Finance', icon: DollarSign, path: '/admin/finance-hub' },
 ];
 
-// More menu categories
+// More menu categories - aligned with sidebar hubs
 const moreCategories = [
   {
-    section: 'Operations',
-    items: [
-      { id: 'inventory', label: 'Inventory', icon: Package, path: '/admin/inventory-hub?tab=stock' },
-      { id: 'products', label: 'Products', icon: Store, path: '/admin/inventory-hub?tab=products' },
-      { id: 'pos', label: 'POS System', icon: Store, path: '/admin/pos-system' },
-    ],
-  },
-  {
-    section: 'Delivery',
-    items: [
-      { id: 'live-map', label: 'Live Map', icon: Truck, path: '/admin/live-map' },
-      { id: 'couriers', label: 'Couriers', icon: Users, path: '/admin/delivery-hub?tab=couriers' },
-    ],
-  },
-  {
-    section: 'People',
+    section: 'Hubs',
     items: [
       { id: 'customers', label: 'Customers', icon: Users, path: '/admin/customer-hub' },
-      { id: 'team', label: 'Team', icon: Users, path: '/admin/staff-management' },
+      { id: 'fulfillment', label: 'Fulfillment', icon: Truck, path: '/admin/fulfillment-hub' },
+      { id: 'marketing', label: 'Marketing', icon: Megaphone, path: '/admin/marketing-hub' },
+      { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/admin/analytics-hub' },
+    ],
+  },
+  {
+    section: 'Quick Access',
+    items: [
+      { id: 'hotbox', label: 'Hotbox', icon: Flame, path: '/admin/hotbox' },
+      { id: 'live-map', label: 'Live Map', icon: Truck, path: '/admin/live-map' },
+      { id: 'pos', label: 'POS System', icon: Store, path: '/admin/pos-system' },
     ],
   },
   {
     section: 'Settings',
     items: [
       { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
-      { id: 'billing', label: 'Billing', icon: DollarSign, path: '/admin/settings?section=billing' },
+      { id: 'team', label: 'Team', icon: Users, path: '/admin/staff-management' },
     ],
   },
 ];
@@ -102,16 +103,20 @@ export function HotBar() {
             key={item.id}
             to={getFullPath(item.path)}
             className={cn(
-              'flex flex-col items-center justify-center px-3 py-2 rounded-lg transition-colors',
+              'flex flex-col items-center justify-center px-3 py-2 rounded-lg transition-colors relative',
               isActive(item.path)
                 ? 'text-primary bg-primary/10'
                 : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
             )}
           >
-            <item.icon className={cn(
-              'h-5 w-5',
-              item.id === 'hotbox' && isActive(item.path) && 'text-orange-500'
-            )} />
+            <div className="relative">
+              <item.icon className="h-5 w-5" />
+              {item.badge && (
+                <span className="absolute -top-1.5 -right-1.5">
+                  <AlertBadge level={item.badge.level} count={item.badge.count} size="sm" />
+                </span>
+              )}
+            </div>
             <span className="text-xs mt-1">{item.label}</span>
           </NavLink>
         ))}
