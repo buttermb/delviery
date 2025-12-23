@@ -18,11 +18,14 @@ import {
     Plus,
     History,
     Workflow,
+    FileText,
+    RefreshCw,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { QuickActions } from '@/components/admin/ui/QuickActions';
+import { AlertBadge } from '@/components/admin/ui/AlertBadge';
 
 // Lazy load tab content for performance
 const WholesaleOrdersPage = lazy(() => import('@/pages/admin/WholesaleOrdersPage'));
@@ -40,12 +43,12 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
-    { id: 'history', label: 'All', icon: History },            // Overview first
-    { id: 'live', label: 'Live', icon: Radio },               // Real-time urgent
+    { id: 'history', label: 'All', icon: History },
+    { id: 'live', label: 'Live', icon: Radio },
     { id: 'wholesale', label: 'B2B', icon: Package },
     { id: 'storefront', label: 'Store', icon: Store },
     { id: 'preorders', label: 'Pre-Orders', icon: Clock },
-    { id: 'pipeline', label: 'Pipeline', icon: Workflow },    // Workflow view
+    { id: 'pipeline', label: 'Pipeline', icon: Workflow },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -59,13 +62,33 @@ export default function OrdersHubPage() {
         setSearchParams({ tab });
     };
 
-    const handleNewOrder = () => {
+    const quickActions = useMemo(() => {
+        const actions = [];
         if (activeTab === 'wholesale') {
-            navigateToAdmin('/wholesale-orders/new');
-        } else if (activeTab === 'preorders') {
-            navigateToAdmin('/crm/pre-orders/new');
+            actions.push({
+                id: 'new-wholesale',
+                label: 'New B2B Order',
+                icon: Plus,
+                onClick: () => navigateToAdmin('/wholesale-orders/new'),
+            });
         }
-    };
+        if (activeTab === 'preorders') {
+            actions.push({
+                id: 'new-preorder',
+                label: 'New Pre-Order',
+                icon: Plus,
+                onClick: () => navigateToAdmin('/crm/pre-orders/new'),
+            });
+        }
+        actions.push({
+            id: 'export',
+            label: 'Export',
+            icon: FileText,
+            onClick: () => console.log('Export orders'),
+            variant: 'outline' as const,
+        });
+        return actions;
+    }, [activeTab, navigateToAdmin]);
 
     return (
         <div className="min-h-screen bg-background">
@@ -73,18 +96,18 @@ export default function OrdersHubPage() {
                 {/* Header */}
                 <div className="border-b bg-card px-4 py-4">
                     <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <h1 className="text-2xl font-bold">Orders</h1>
-                            <p className="text-muted-foreground text-sm">
-                                Manage all order types in one place
-                            </p>
+                        <div className="flex items-center gap-3">
+                            <div>
+                                <h1 className="text-2xl font-bold">Orders</h1>
+                                <p className="text-muted-foreground text-sm">
+                                    Manage all order types in one place
+                                </p>
+                            </div>
+                            {activeTab === 'live' && (
+                                <AlertBadge level="critical" count={3} pulse />
+                            )}
                         </div>
-                        {(activeTab === 'wholesale' || activeTab === 'preorders') && (
-                            <Button onClick={handleNewOrder}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                New Order
-                            </Button>
-                        )}
+                        <QuickActions actions={quickActions} />
                     </div>
                     <div className="overflow-x-auto">
                         <TabsList className="inline-flex min-w-max">
