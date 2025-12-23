@@ -30,13 +30,20 @@ export function useAdminBadgeCounts() {
     if (!tenant?.id) return;
     
     try {
-      const [ordersResult, stockResult, messagesResult, shipmentsResult] = await Promise.all([
-        // Pending orders
+      const [ordersResult, menuOrdersResult, stockResult, messagesResult, shipmentsResult] = await Promise.all([
+        // Pending wholesale orders
         supabase
           .from('wholesale_orders')
           .select('id')
           .eq('tenant_id', tenant.id)
           .or('status.eq.pending,status.eq.assigned'),
+        
+        // Pending menu orders
+        supabase
+          .from('menu_orders')
+          .select('id')
+          .eq('tenant_id', tenant.id)
+          .in('status', ['pending', 'confirmed', 'processing', 'preparing']),
         
         // Low stock items
         supabase
@@ -60,8 +67,11 @@ export function useAdminBadgeCounts() {
           .or('status.eq.assigned,status.eq.picked_up'),
       ]);
 
+      const wholesaleCount = ordersResult.data?.length || 0;
+      const menuCount = menuOrdersResult.data?.length || 0;
+
       setCounts({
-        pendingOrders: ordersResult.data?.length || 0,
+        pendingOrders: wholesaleCount + menuCount,
         lowStockItems: stockResult.data?.length || 0,
         unreadMessages: messagesResult.data?.length || 0,
         pendingShipments: shipmentsResult.data?.length || 0,
@@ -82,7 +92,7 @@ export function useAdminBadgeCounts() {
 
     fetchCounts();
 
-    // Set up realtime subscription for orders
+    // Set up realtime subscription for wholesale orders
     const ordersChannel = supabase
       .channel('admin-badge-orders')
       .on(
@@ -97,11 +107,27 @@ export function useAdminBadgeCounts() {
       )
       .subscribe();
 
+    // Set up realtime subscription for menu orders
+    const menuOrdersChannel = supabase
+      .channel('admin-badge-menu-orders')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'menu_orders',
+          filter: `tenant_id=eq.${tenant.id}`,
+        },
+        () => fetchCounts()
+      )
+      .subscribe();
+
     // Refresh every 30 seconds as a fallback
     const interval = setInterval(fetchCounts, 30000);
 
     return () => {
       ordersChannel.unsubscribe();
+      menuOrdersChannel.unsubscribe();
       clearInterval(interval);
     };
   }, [tenant?.id, fetchCounts]);
