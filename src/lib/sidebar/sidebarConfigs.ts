@@ -232,8 +232,8 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('dashboard', 'Dashboard', '/admin/dashboard', LayoutDashboard, { shortcut: '⌘1' }),
       createItem('hotbox', 'Hotbox', '/admin/hotbox', Flame, { hot: true }),
-      createItem('live-orders', 'Live Orders', '/admin/orders-hub?tab=live', Activity),
-      createItem('pos-system', 'POS', '/admin/pos-hub', CreditCard),
+      createItem('live-orders', 'Live Orders', '/admin/orders?tab=live', Activity),
+      createItem('pos-system', 'POS', '/admin/pos-system', CreditCard),
       createItem('live-map', 'Live Map', '/admin/live-map', MapPinned),
     ],
   },
@@ -244,10 +244,10 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     section: 'Orders',
     defaultExpanded: true,
     items: [
-      createItem('basic-orders', 'All Orders', '/admin/orders-hub', ShoppingCart),
-      createItem('disposable-menus', 'Menus', '/admin/orders-hub?tab=menu', Menu),
-      createItem('wholesale-orders', 'B2B Orders', '/admin/orders-hub?tab=wholesale', Building),
-      createItem('storefront', 'Store Orders', '/admin/orders-hub?tab=storefront', Store),
+      createItem('basic-orders', 'All Orders', '/admin/orders', ShoppingCart),
+      createItem('disposable-menus', 'Menus', '/admin/orders?tab=menu', Menu),
+      createItem('wholesale-orders', 'B2B Orders', '/admin/orders?tab=wholesale', Building),
+      createItem('storefront', 'Store Orders', '/admin/orders?tab=storefront', Store),
     ],
   },
   // ==========================================================================
