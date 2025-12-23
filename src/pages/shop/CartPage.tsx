@@ -25,9 +25,12 @@ import {
   Package,
   Truck,
   Tag,
-  Loader2
+  Loader2,
+  Zap
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { CartItemStockWarning, CartStockSummary, useCartStockCheck } from '@/components/shop/CartStockWarning';
+import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 
 interface AppliedCoupon {
   code: string;
@@ -271,6 +274,13 @@ export default function CartPage() {
                       <p className="text-sm font-semibold mt-1" style={{ color: themeColor }}>
                         {formatCurrency(item.price)}
                       </p>
+                      {/* Stock Warning for this item */}
+                      <CartItemStockWarning
+                        productId={item.productId}
+                        requestedQuantity={item.quantity}
+                        variant="minimal"
+                        className="mt-1"
+                      />
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <Button
@@ -393,6 +403,13 @@ export default function CartPage() {
                   </div>
                 </div>
 
+                {/* Express Checkout */}
+                <ExpressPaymentButtons
+                  disabled={cartItems.length === 0}
+                  showDivider={true}
+                  size="lg"
+                />
+
                 {/* Checkout Button */}
                 <Button
                   className="w-full"
@@ -402,6 +419,16 @@ export default function CartPage() {
                 >
                   Proceed to Checkout
                   <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+
+                {/* Express Checkout Link */}
+                <Button
+                  variant="outline"
+                  className={`w-full ${isLuxuryTheme ? buttonOutline : ''}`}
+                  onClick={() => navigate(`/shop/${storeSlug}/express-checkout`)}
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  Express Checkout
                 </Button>
 
                 {/* Continue Shopping */}

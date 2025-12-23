@@ -6,10 +6,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { EnhancedPriceSlider } from './EnhancedPriceSlider';
 
 export interface FilterState {
   categories: string[];
@@ -215,24 +215,21 @@ export function FilterDrawer({
                 </FilterSection>
               )}
 
-              {/* Price Range */}
+              {/* Price Range - Enhanced Slider */}
               <FilterSection
                 title="Price Range"
                 isExpanded={expandedSections.includes('price')}
                 onToggle={() => toggleSection('price')}
               >
                 <div className="px-2 pt-2 pb-4">
-                  <Slider
+                  <EnhancedPriceSlider
                     value={filters.priceRange}
-                    onValueChange={(value) => onFiltersChange({ ...filters, priceRange: value as [number, number] })}
+                    onChange={(value) => onFiltersChange({ ...filters, priceRange: value })}
                     max={maxPrice}
                     step={5}
-                    className="mb-4"
+                    accentColor={accentColor}
+                    className="[&_input]:bg-white/5 [&_input]:border-white/10 [&_input]:text-white [&_label]:text-white/50 [&_button]:border-white/20 [&_button]:text-white/60 [&_button:hover]:bg-white/10"
                   />
-                  <div className="flex items-center justify-between text-sm text-white/50">
-                    <span>${filters.priceRange[0]}</span>
-                    <span>${filters.priceRange[1]}</span>
-                  </div>
                 </div>
               </FilterSection>
             </div>
