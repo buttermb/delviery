@@ -347,10 +347,10 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     section: 'Integrations',
     collapsed: true,
     items: [
-      createItem('api-access', 'API Access', '/admin/integrations-hub?tab=api', Key),
-      createItem('webhooks', 'Webhooks', '/admin/integrations-hub?tab=webhooks', Zap),
-      createItem('automation', 'Automation', '/admin/integrations-hub?tab=automation', FolderKanban),
-      createItem('ai', 'Local AI', '/admin/integrations-hub?tab=ai', Brain),
+      createItem('api-access', 'API Access', '/admin/api-access', Key),
+      createItem('webhooks', 'Webhooks', '/admin/webhooks', Zap),
+      createItem('automation', 'Automation', '/admin/workflow-automation', FolderKanban),
+      createItem('ai', 'Local AI', '/admin/local-ai', Brain),
     ],
   },
   // ==========================================================================

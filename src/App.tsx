@@ -55,6 +55,8 @@ import { useVersionCheck } from "./hooks/useVersionCheck";
 import { FeatureFlagsProvider } from "./config/featureFlags";
 import { AdminDebugPanel } from "./components/admin/AdminDebugPanel";
 import { PerformanceMonitor } from "./utils/performance";
+import { runRouteAudit } from "./utils/routeAudit";
+import { STARTER_SIDEBAR, PROFESSIONAL_SIDEBAR, ENTERPRISE_SIDEBAR } from "./lib/sidebar/sidebarConfigs";
 import { ClerkProviderWrapper } from "./providers/ClerkProviderWrapper";
 
 import { initCapacitor } from '@/lib/capacitor';
@@ -474,6 +476,16 @@ const App = () => {
     }
 
     return () => PerformanceMonitor.disconnect();
+  }, []);
+
+  // Run route audit on startup (dev mode only)
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      // Audit all sidebar configurations
+      runRouteAudit(STARTER_SIDEBAR);
+      runRouteAudit(PROFESSIONAL_SIDEBAR);
+      runRouteAudit(ENTERPRISE_SIDEBAR);
+    }
   }, []);
 
   // Run production health check on mount
