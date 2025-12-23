@@ -140,7 +140,7 @@ export const STARTER_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('settings', 'Settings', '/admin/settings', Settings),
       createItem('billing', 'Billing', '/admin/billing', CreditCard),
-      createItem('help', 'Help', '/admin/help', HelpCircle),
+      createItem('help', 'Help', '/admin/help-hub', HelpCircle),
     ],
   },
 ];
@@ -181,8 +181,8 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     section: 'Customers',
     items: [
       createItem('customers', 'All Customers', '/admin/customer-hub', Users),
-      createItem('marketing-automation', 'Marketing', '/admin/marketing-automation', Mail),
-      createItem('storefront', 'Reviews', '/admin/marketing/reviews', MessageSquare),
+      createItem('marketing-automation', 'Marketing', '/admin/marketing-hub', Mail),
+      createItem('storefront', 'Reviews', '/admin/marketing-hub?tab=reviews', MessageSquare),
     ],
   },
   {
@@ -212,7 +212,7 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('settings', 'Settings', '/admin/settings', Settings),
       createItem('billing', 'Billing', '/admin/billing', CreditCard),
-      createItem('help', 'Help', '/admin/help', HelpCircle),
+      createItem('help', 'Help', '/admin/help-hub', HelpCircle),
     ],
   },
 ];
@@ -303,13 +303,13 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     ],
   },
   // ==========================================================================
-  // 7. STOREFRONT & MARKETING (6 items)
+  // 7. STOREFRONT & MARKETING (5 items)
   // ==========================================================================
   {
     section: 'Marketing',
     items: [
       createItem('storefront', 'Storefront', '/admin/storefront-hub', Store),
-      createItem('storefront', 'Reviews', '/admin/marketing/reviews', Star),
+      createItem('storefront', 'Reviews', '/admin/marketing-hub?tab=reviews', Star),
       createItem('coupons', 'Coupons', '/admin/marketing-hub?tab=coupons', Tag),
       createItem('marketing-automation', 'Campaigns', '/admin/marketing-hub?tab=campaigns', Mail),
       createItem('live-chat', 'Live Chat', '/admin/marketing-hub?tab=live-chat', MessageSquare),
