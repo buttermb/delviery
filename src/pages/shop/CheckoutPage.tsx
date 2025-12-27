@@ -279,12 +279,12 @@ export default function CheckoutPage() {
         try {
           const { data: orderId, error } = await supabase.rpc('create_marketplace_order', {
             p_store_id: store.id,
-            p_items: orderItems,
             p_customer_name: `${formData.firstName} ${formData.lastName}`,
             p_customer_email: formData.email,
             p_customer_phone: formData.phone || null,
             p_delivery_address: `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`,
             p_delivery_notes: formData.deliveryNotes || null,
+            p_items: orderItems,
             p_subtotal: subtotal,
             p_tax: 0,
             p_delivery_fee: deliveryFee,
@@ -344,7 +344,7 @@ export default function CheckoutPage() {
           }));
 
           const origin = window.location.origin;
-          const successUrl = `${origin}/shop/${storeSlug}/order-confirmation?order=${data.order_number}&token=${data.tracking_token}`;
+          const successUrl = `${origin}/shop/${storeSlug}/order-confirmation?order=${data.order_number}&token=${data.tracking_token}&total=${total}`;
           const cancelUrl = `${origin}/shop/${storeSlug}/checkout`;
 
           const response = await supabase.functions.invoke('storefront-checkout', {
@@ -525,6 +525,7 @@ export default function CheckoutPage() {
                       <Label htmlFor="firstName">First Name *</Label>
                       <Input
                         id="firstName"
+                        name="firstName"
                         value={formData.firstName}
                         onChange={(e) => updateField('firstName', e.target.value)}
                         placeholder="John"
@@ -538,6 +539,7 @@ export default function CheckoutPage() {
                       <Label htmlFor="lastName">Last Name *</Label>
                       <Input
                         id="lastName"
+                        name="lastName"
                         value={formData.lastName}
                         onChange={(e) => updateField('lastName', e.target.value)}
                         placeholder="Doe"
@@ -552,6 +554,7 @@ export default function CheckoutPage() {
                     <Label htmlFor="email">Email *</Label>
                     <Input
                       id="email"
+                      name="email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => updateField('email', e.target.value)}
@@ -568,6 +571,7 @@ export default function CheckoutPage() {
                     </Label>
                     <Input
                       id="phone"
+                      name="phone"
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => updateField('phone', e.target.value)}
@@ -581,7 +585,7 @@ export default function CheckoutPage() {
               {currentStep === 2 && (
                 <div className="space-y-4">
                   <h2 className="text-xl font-semibold mb-4">Delivery Address</h2>
-                  
+
                   {/* Address Autocomplete */}
                   <div className="space-y-2">
                     <Label htmlFor="street">Street Address *</Label>
@@ -600,6 +604,7 @@ export default function CheckoutPage() {
                     <Label htmlFor="apartment">Apartment, Suite, etc. (Optional)</Label>
                     <Input
                       id="apartment"
+                      name="apartment"
                       value={formData.apartment}
                       onChange={(e) => updateField('apartment', e.target.value)}
                       placeholder="Apt 4B"
@@ -610,6 +615,7 @@ export default function CheckoutPage() {
                       <Label htmlFor="city">City *</Label>
                       <Input
                         id="city"
+                        name="city"
                         value={formData.city}
                         onChange={(e) => updateField('city', e.target.value)}
                         placeholder="New York"
@@ -619,6 +625,7 @@ export default function CheckoutPage() {
                       <Label htmlFor="state">State</Label>
                       <Input
                         id="state"
+                        name="state"
                         value={formData.state}
                         onChange={(e) => updateField('state', e.target.value)}
                         placeholder="NY"
@@ -629,6 +636,7 @@ export default function CheckoutPage() {
                     <Label htmlFor="zip">ZIP Code *</Label>
                     <Input
                       id="zip"
+                      name="zip"
                       value={formData.zip}
                       onChange={(e) => updateField('zip', e.target.value)}
                       placeholder="10001"
@@ -653,7 +661,7 @@ export default function CheckoutPage() {
               {currentStep === 3 && (
                 <div className="space-y-6">
                   <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
-                  
+
                   {/* Express Payment Options */}
                   <div className="space-y-4">
                     <ExpressPaymentButtons
@@ -661,7 +669,7 @@ export default function CheckoutPage() {
                       size="lg"
                     />
                   </div>
-                  
+
                   {/* Standard Payment Methods */}
                   <RadioGroup
                     value={formData.paymentMethod}

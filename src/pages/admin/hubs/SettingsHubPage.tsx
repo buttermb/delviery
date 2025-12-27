@@ -35,13 +35,13 @@ const TabSkeleton = () => (
 
 const tabs = [
     // Configuration
-    { id: 'general', label: 'General', icon: Settings },
+    { id: 'general', label: 'General', icon: Settings, group: 'Configuration' },
     // Account
-    { id: 'billing', label: 'Billing', icon: CreditCard },
-    { id: 'security', label: 'Security', icon: Shield },
+    { id: 'billing', label: 'Billing', icon: CreditCard, group: 'Account' },
+    { id: 'security', label: 'Security', icon: Shield, group: 'Account' },
     // Tools
-    { id: 'integrations', label: 'Integrations', icon: Plug },
-    { id: 'support', label: 'Support', icon: Headphones },
+    { id: 'integrations', label: 'Integrations', icon: Plug, group: 'Tools' },
+    { id: 'support', label: 'Support', icon: Headphones, group: 'Tools' },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -67,13 +67,22 @@ export default function SettingsHubPage() {
                         </div>
                     </div>
                     <div className="overflow-x-auto">
-                        <TabsList className="inline-flex min-w-max">
-                            {tabs.map((tab) => (
-                                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-                                    <tab.icon className="h-4 w-4" />
-                                    <span className="hidden sm:inline">{tab.label}</span>
-                                </TabsTrigger>
-                            ))}
+                        <TabsList className="inline-flex min-w-max gap-0.5">
+                            {tabs.map((tab, index) => {
+                                const prevTab = index > 0 ? tabs[index - 1] : null;
+                                const showSeparator = prevTab && prevTab.group !== tab.group;
+                                return (
+                                    <>
+                                        {showSeparator && (
+                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                        )}
+                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                            <tab.icon className="h-4 w-4" />
+                                            <span className="hidden sm:inline">{tab.label}</span>
+                                        </TabsTrigger>
+                                    </>
+                                );
+                            })}
                         </TabsList>
                     </div>
                 </div>

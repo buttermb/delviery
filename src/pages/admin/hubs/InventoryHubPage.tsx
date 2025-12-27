@@ -44,14 +44,18 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
-    { id: 'products', label: 'Products', icon: Package },     // Core catalog
-    { id: 'menus', label: 'Menus', icon: Menu },              // Disposable menus (moved from Orders)
-    { id: 'stock', label: 'Stock', icon: BarChart3 },         // Levels overview
-    { id: 'monitoring', label: 'Alerts', icon: AlertTriangle }, // Urgent items
-    { id: 'adjustments', label: 'Transfers', icon: ArrowLeftRight }, // Actions
-    { id: 'dispatch', label: 'Dispatch', icon: Truck },
-    { id: 'fronted', label: 'Owed', icon: CreditCard },       // Tracking
-    { id: 'barcodes', label: 'Barcodes', icon: Barcode },     // Utility
+    // Catalog
+    { id: 'products', label: 'Products', icon: Package, group: 'Catalog' },
+    { id: 'menus', label: 'Menus', icon: Menu, group: 'Catalog' },
+    // Levels & Alerts
+    { id: 'stock', label: 'Stock', icon: BarChart3, group: 'Levels' },
+    { id: 'monitoring', label: 'Alerts', icon: AlertTriangle, group: 'Levels' },
+    // Movement
+    { id: 'adjustments', label: 'Transfers', icon: ArrowLeftRight, group: 'Movement' },
+    { id: 'dispatch', label: 'Dispatch', icon: Truck, group: 'Movement' },
+    // Tracking & Tools
+    { id: 'fronted', label: 'Owed', icon: CreditCard, group: 'Tools' },
+    { id: 'barcodes', label: 'Barcodes', icon: Barcode, group: 'Tools' },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -84,13 +88,22 @@ export default function InventoryHubPage() {
                             </Button>
                         )}
                     </div>
-                    <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 overflow-x-auto w-full max-w-full">
-                        {tabs.map((tab) => (
-                            <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2 whitespace-nowrap">
-                                <tab.icon className="h-4 w-4" />
-                                <span className="hidden sm:inline">{tab.label}</span>
-                            </TabsTrigger>
-                        ))}
+                    <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 overflow-x-auto w-full max-w-full gap-0.5">
+                        {tabs.map((tab, index) => {
+                            const prevTab = index > 0 ? tabs[index - 1] : null;
+                            const showSeparator = prevTab && prevTab.group !== tab.group;
+                            return (
+                                <>
+                                    {showSeparator && (
+                                        <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                    )}
+                                    <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2 whitespace-nowrap">
+                                        <tab.icon className="h-4 w-4" />
+                                        <span className="hidden sm:inline">{tab.label}</span>
+                                    </TabsTrigger>
+                                </>
+                            );
+                        })}
                     </TabsList>
                 </div>
 

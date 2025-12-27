@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Link, useParams, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useParams, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useShop } from './ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,21 +12,32 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, Package, Clock, Mail, MapPin, Copy, Check } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useToast } from '@/hooks/use-toast';
+import { useShopCart } from '@/hooks/useShopCart';
 
 export default function OrderConfirmationPage() {
   const { storeSlug } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { store } = useShop();
   const { isLuxuryTheme, accentColor, cardBg, cardBorder } = useLuxuryTheme();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+  const [cartCleared, setCartCleared] = useState(false);
 
-  const { orderNumber, trackingToken, total } = (location.state || {}) as {
+  // Get cart clearing function
+  const { clearCart } = useShopCart({ storeId: store?.id || '' });
+
+  // Read from location.state first, fall back to URL query params (for Stripe redirects and page refreshes)
+  const stateData = (location.state || {}) as {
     orderNumber?: string;
     trackingToken?: string;
     total?: number;
   };
+
+  const orderNumber = stateData.orderNumber || searchParams.get('order') || null;
+  const trackingToken = stateData.trackingToken || searchParams.get('token') || null;
+  const total = stateData.total || (searchParams.get('total') ? parseFloat(searchParams.get('total')!) : undefined);
 
   // Redirect if no order data
   useEffect(() => {
@@ -34,6 +45,14 @@ export default function OrderConfirmationPage() {
       navigate(`/shop/${storeSlug}`);
     }
   }, [orderNumber, navigate, storeSlug]);
+
+  // Clear cart ONCE after successful order confirmation
+  useEffect(() => {
+    if (orderNumber && !cartCleared) {
+      clearCart();
+      setCartCleared(true);
+    }
+  }, [orderNumber, cartCleared, clearCart]);
 
   if (!store || !orderNumber) return null;
 

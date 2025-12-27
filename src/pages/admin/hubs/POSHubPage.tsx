@@ -6,7 +6,7 @@
  * - Z-Reports: End of day reports
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreditCard, Clock, FileText, BarChart3 } from 'lucide-react';
@@ -31,12 +31,12 @@ const TabSkeleton = () => (
 
 const tabs = [
     // Core POS
-    { id: 'register', label: 'Register', icon: CreditCard },
+    { id: 'register', label: 'Register', icon: CreditCard, group: 'POS' },
     // Shift Management
-    { id: 'shifts', label: 'Shifts', icon: Clock },
-    { id: 'z-reports', label: 'Z-Reports', icon: FileText },
+    { id: 'shifts', label: 'Shifts', icon: Clock, group: 'Management' },
+    { id: 'z-reports', label: 'Z-Reports', icon: FileText, group: 'Management' },
     // Analytics
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3, group: 'Analytics' },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -45,9 +45,28 @@ export default function POSHubPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'register';
 
-    const handleTabChange = (tab: string) => {
+    const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab });
-    };
+    }, [setSearchParams]);
+
+    // Keyboard shortcuts for quick tab switching (1-4)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Don't trigger if user is typing in an input
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+                return;
+            }
+
+            const key = e.key;
+            if (key === '1') handleTabChange('register');
+            else if (key === '2') handleTabChange('shifts');
+            else if (key === '3') handleTabChange('z-reports');
+            else if (key === '4') handleTabChange('analytics');
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleTabChange]);
 
     return (
         <div className="min-h-screen bg-background">
@@ -76,10 +95,10 @@ export default function POSHubPage() {
 
                 {/* Register Tab - Full screen POS */}
                 <TabsContent value="register" className="m-0">
-                    {/* Show mini tab switcher in corner for register view with labels */}
+                    {/* Show mini tab switcher in corner for register view with keyboard hints */}
                     <div className="fixed bottom-4 right-4 z-50 bg-card rounded-lg shadow-lg border p-2 flex flex-col gap-1">
-                        <span className="text-xs text-muted-foreground px-2 pb-1 border-b mb-1">Quick Nav</span>
-                        {tabs.map((tab) => (
+                        <span className="text-xs text-muted-foreground px-2 pb-1 border-b mb-1">Quick Nav (1-4)</span>
+                        {tabs.map((tab, index) => (
                             <button
                                 key={tab.id}
                                 onClick={() => handleTabChange(tab.id)}
@@ -88,6 +107,7 @@ export default function POSHubPage() {
                                     : 'hover:bg-muted text-foreground'
                                     }`}
                             >
+                                <kbd className="text-xs opacity-60 font-mono w-4">{index + 1}</kbd>
                                 <tab.icon className="h-4 w-4" />
                                 <span>{tab.label}</span>
                             </button>

@@ -55,6 +55,7 @@ import { DashboardWidgetGrid } from '@/components/tenant-admin/DashboardWidgetGr
 import { SmartNotificationsCenter } from '@/components/tenant-admin/SmartNotificationsCenter';
 import { TrialWelcomeModal } from '@/components/onboarding/TrialWelcomeModal';
 import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
+import { QuickActionsWidget } from '@/components/dashboard/QuickActionsWidget';
 
 interface DashboardOrderRow {
   total_amount: number | null;
@@ -178,9 +179,9 @@ export default function TenantAdminDashboardPage() {
               .from("disposable_menus")
               .select("id")
               .eq("tenant_id", tenantId);
-            
+
             if (!tenantMenus?.length) return { data: [], error: null };
-            
+
             const menuIds = tenantMenus.map(m => m.id);
             return supabase
               .from("menu_orders")
@@ -196,7 +197,7 @@ export default function TenantAdminDashboardPage() {
         ]);
 
         // Safely extract data from settled promises
-        const wholesaleOrders = wholesaleResult.status === 'fulfilled' && !wholesaleResult.value.error 
+        const wholesaleOrders = wholesaleResult.status === 'fulfilled' && !wholesaleResult.value.error
           ? wholesaleResult.value.data || [] : [];
         const menuOrders = menuResult.status === 'fulfilled' && !menuResult.value.error
           ? menuResult.value.data || [] : [];
@@ -535,8 +536,8 @@ export default function TenantAdminDashboardPage() {
         if (authLoading) {
           logger.warn('Auth loading timeout (>15s) in DashboardPage - redirecting to login', undefined, 'DashboardPage');
           // Navigate to login instead of just logging
-          navigate(`/${tenant?.slug || 'app'}/admin/login`, { 
-            state: { message: 'Session verification timed out. Please log in again.' } 
+          navigate(`/${tenant?.slug || 'app'}/admin/login`, {
+            state: { message: 'Session verification timed out. Please log in again.' }
           });
         }
       }, 15000);
@@ -854,6 +855,16 @@ export default function TenantAdminDashboardPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Quick Actions Widget - 1-click access to top features */}
+        <QuickActionsWidget
+          userTier={tenant?.subscription_tier === 'enterprise' ? 'ENTERPRISE' : tenant?.subscription_tier === 'professional' ? 'PROFESSIONAL' : 'STARTER'}
+          badges={{
+            orders: todayMetrics?.orderCount || 0,
+            'stock-alerts': todayMetrics?.lowStock?.length || 0,
+          }}
+          className="mb-4"
+        />
 
         {/* Customizable Widget Grid */}
         <DashboardWidgetGrid />

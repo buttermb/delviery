@@ -508,7 +508,7 @@ function ProductCard({
 
   return (
     <Link to={`/shop/${storeSlug}/products/${product.product_id}`}>
-      <Card className="group hover:shadow-lg transition-all overflow-hidden h-full">
+      <Card data-testid="product-card" className="group hover:shadow-lg transition-all overflow-hidden h-full">
         <div className="aspect-square relative overflow-hidden bg-muted">
           {product.image_url ? (
             <img

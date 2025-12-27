@@ -42,10 +42,12 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
-    { id: 'getting-started', label: 'Start', icon: PlayCircle },
-    { id: 'docs', label: 'Docs', icon: BookOpen },
-    { id: 'support', label: 'Support', icon: Headphones },
-    { id: 'feedback', label: 'Feedback', icon: MessageSquareText },
+    // Learning
+    { id: 'getting-started', label: 'Start', icon: PlayCircle, group: 'Learning' },
+    { id: 'docs', label: 'Docs', icon: BookOpen, group: 'Learning' },
+    // Support
+    { id: 'support', label: 'Support', icon: Headphones, group: 'Support' },
+    { id: 'feedback', label: 'Feedback', icon: MessageSquareText, group: 'Support' },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -159,13 +161,22 @@ export default function HelpHubPage() {
                         </div>
                     </div>
                     <div className="overflow-x-auto">
-                        <TabsList className="inline-flex min-w-max">
-                            {tabs.map((tab) => (
-                                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-                                    <tab.icon className="h-4 w-4" />
-                                    <span className="hidden sm:inline">{tab.label}</span>
-                                </TabsTrigger>
-                            ))}
+                        <TabsList className="inline-flex min-w-max gap-0.5">
+                            {tabs.map((tab, index) => {
+                                const prevTab = index > 0 ? tabs[index - 1] : null;
+                                const showSeparator = prevTab && prevTab.group !== tab.group;
+                                return (
+                                    <>
+                                        {showSeparator && (
+                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                        )}
+                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                            <tab.icon className="h-4 w-4" />
+                                            <span className="hidden sm:inline">{tab.label}</span>
+                                        </TabsTrigger>
+                                    </>
+                                );
+                            })}
                         </TabsList>
                     </div>
                 </div>
@@ -192,14 +203,12 @@ export default function HelpHubPage() {
                                     {onboardingSteps.map((step) => (
                                         <div
                                             key={step.id}
-                                            className={`flex items-center gap-3 p-3 rounded-lg border ${
-                                                step.completed ? 'bg-primary/5 border-primary/20' : 'bg-muted/50'
-                                            }`}
+                                            className={`flex items-center gap-3 p-3 rounded-lg border ${step.completed ? 'bg-primary/5 border-primary/20' : 'bg-muted/50'
+                                                }`}
                                         >
                                             <CheckCircle2
-                                                className={`h-5 w-5 ${
-                                                    step.completed ? 'text-primary' : 'text-muted-foreground'
-                                                }`}
+                                                className={`h-5 w-5 ${step.completed ? 'text-primary' : 'text-muted-foreground'
+                                                    }`}
                                             />
                                             <span className={step.completed ? 'line-through text-muted-foreground' : ''}>
                                                 {step.label}

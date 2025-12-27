@@ -247,7 +247,7 @@ export default function CartPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {cartItems.map((item) => (
-                  <div key={`${item.productId}-${item.variant || ''}`} className="flex gap-4">
+                  <div key={`${item.productId}-${item.variant || ''}`} data-testid="cart-item" className="flex gap-4">
                     <div className={`w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
                       {item.imageUrl ? (
                         <img
@@ -286,6 +286,7 @@ export default function CartPage() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label="Remove item"
                         className={`h-8 w-8 ${isLuxuryTheme ? 'text-white/40 hover:text-red-400 hover:bg-white/10' : 'text-muted-foreground hover:text-destructive'}`}
                         onClick={() => handleRemoveItem(item.productId, item.variant)}
                       >

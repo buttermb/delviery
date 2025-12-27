@@ -16,6 +16,7 @@ import {
     Database,
     Plug,
     Brain,
+    Wrench,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -26,6 +27,7 @@ const AutomationPage = lazy(() => import('@/pages/tenant-admin/AutomationPage'))
 const BulkOperationsPage = lazy(() => import('@/pages/tenant-admin/BulkOperationsPage'));
 const CustomIntegrationsPage = lazy(() => import('@/pages/tenant-admin/CustomIntegrationsPage'));
 const LocalAIPage = lazy(() => import('@/pages/admin/LocalAIPage'));
+const DeveloperTools = lazy(() => import('@/pages/admin/DeveloperTools'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -44,6 +46,8 @@ const tabs = [
     { id: 'automation', label: 'Automation', icon: Workflow },
     { id: 'bulk', label: 'Bulk Ops', icon: Database },
     { id: 'ai', label: 'Local AI', icon: Brain },
+    // Developer
+    { id: 'devtools', label: 'Dev Tools', icon: Wrench },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -68,7 +72,7 @@ export default function IntegrationsHubPage() {
                             </p>
                         </div>
                     </div>
-                    <TabsList className="grid w-full max-w-2xl grid-cols-6">
+                    <TabsList className="grid w-full max-w-3xl grid-cols-7">
                         {tabs.map((tab) => (
                             <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
                                 <tab.icon className="h-4 w-4" />
@@ -95,6 +99,9 @@ export default function IntegrationsHubPage() {
                 </TabsContent>
                 <TabsContent value="ai" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><LocalAIPage /></Suspense>
+                </TabsContent>
+                <TabsContent value="devtools" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><DeveloperTools /></Suspense>
                 </TabsContent>
             </Tabs>
         </div>

@@ -22,10 +22,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { User, Mail, Camera, Trash2, CheckCircle } from 'lucide-react';
+import { User, Mail, Camera, Trash2, CheckCircle, Layout } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { SidebarModeSwitcher } from '@/components/sidebar/SidebarModeSwitcher';
 
 export default function AccountSettings() {
   const { admin, tenant } = useTenantAdminAuth();
@@ -235,6 +236,15 @@ export default function AccountSettings() {
             </Badge>
           </div>
         </SettingsCard>
+      </SettingsSection>
+
+      {/* Sidebar Mode */}
+      <SettingsSection
+        title="Navigation"
+        description="Customize how you navigate the admin panel"
+        icon={Layout}
+      >
+        <SidebarModeSwitcher variant="card" showDescription={true} />
       </SettingsSection>
 
       {/* Danger Zone */}

@@ -7,7 +7,7 @@ serve(async (req) => {
   // Get origin from request for CORS (required when credentials are included)
   const origin = req.headers.get('origin');
   const hasCredentials = req.headers.get('cookie') || req.headers.get('authorization');
-  
+
   // When credentials are included, must return specific origin, not wildcard
   // Also need to validate origin against allowed origins for security
   const allowedOrigins: (string | RegExp)[] = [
@@ -15,13 +15,14 @@ serve(async (req) => {
     'https://www.floraiqcrm.com',
     'http://localhost:8080',
     'http://localhost:5173',
+    'http://localhost:3000',
     // Lovable preview domains
     /^https:\/\/[a-f0-9-]+\.lovableproject\.com$/,
     /^https:\/\/[a-f0-9-]+\.lovable\.app$/,
     'https://lovable.app',
     'https://lovable.dev',
   ];
-  
+
   const isOriginAllowed = (checkOrigin: string | null): boolean => {
     if (!checkOrigin) return false;
     return allowedOrigins.some(allowed => {
@@ -31,32 +32,32 @@ serve(async (req) => {
       return allowed.test(checkOrigin);
     });
   };
-  
+
   // Determine the origin to use in response
   const requestOrigin = origin && isOriginAllowed(origin) ? origin : null;
-  
+
   // Reject requests with credentials from non-allowed origins
   if (hasCredentials && !requestOrigin) {
     return new Response(
-      JSON.stringify({ error: 'Origin not allowed' }), 
-      { 
+      JSON.stringify({ error: 'Origin not allowed' }),
+      {
         status: 403,
         headers: { 'Content-Type': 'application/json' }
       }
     );
   }
-  
+
   const corsHeadersWithOrigin: Record<string, string> = {
     'Access-Control-Allow-Origin': requestOrigin || '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, cookie',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
   };
-  
+
   // Add credentials header when we have a valid origin
   if (requestOrigin) {
     corsHeadersWithOrigin['Access-Control-Allow-Credentials'] = 'true';
   }
-  
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeadersWithOrigin });
   }
@@ -69,7 +70,7 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const action = url.searchParams.get('action');
-    
+
     // Only parse JSON body for actions that need it
     let requestBody: any = {};
     if (action !== 'verify' && action !== 'logout' && req.method === 'POST') {
@@ -86,9 +87,9 @@ serve(async (req) => {
       const validationResult = loginSchema.safeParse(requestBody);
       if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ 
-            error: 'Validation failed', 
-            details: validationResult.error.errors 
+          JSON.stringify({
+            error: 'Validation failed',
+            details: validationResult.error.errors
           }),
           { status: 400, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
@@ -152,21 +153,21 @@ serve(async (req) => {
         .eq('slug', tenantSlug.toLowerCase())
         .maybeSingle();
 
-      console.log('Tenant lookup result:', { 
-        found: !!tenant, 
+      console.log('Tenant lookup result:', {
+        found: !!tenant,
         tenantId: tenant?.id,
         ownerEmail: tenant?.owner_email,
-        error: tenantError 
+        error: tenantError
       });
 
       if (tenantError || !tenant) {
-        console.error('Tenant lookup failed:', { 
-          slug: tenantSlug, 
+        console.error('Tenant lookup failed:', {
+          slug: tenantSlug,
           error: tenantError,
           hasServiceKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
         });
         return new Response(
-          JSON.stringify({ 
+          JSON.stringify({
             error: 'Tenant not found',
             detail: 'No tenant exists with this slug. Please check the URL and try again.'
           }),
@@ -184,13 +185,13 @@ serve(async (req) => {
       });
 
       if (authError) {
-        console.error('Auth error:', { 
-          email, 
-          errorCode: authError.status, 
-          errorMessage: authError.message 
+        console.error('Auth error:', {
+          email,
+          errorCode: authError.status,
+          errorMessage: authError.message
         });
         return new Response(
-          JSON.stringify({ 
+          JSON.stringify({
             error: 'Invalid credentials',
             detail: 'Email or password is incorrect. Please try again.'
           }),
@@ -210,12 +211,12 @@ serve(async (req) => {
 
       // Verify user has access to this tenant (check if email matches tenant owner or is a tenant user)
       const isOwner = tenant.owner_email?.toLowerCase() === email.toLowerCase();
-      console.log('Access check:', { 
-        email, 
+      console.log('Access check:', {
+        email,
         tenantOwner: tenant.owner_email,
-        isOwner 
+        isOwner
       });
-      
+
       let tenantUser = null;
       if (!isOwner) {
         console.log('User is not owner, checking tenant_users table');
@@ -226,25 +227,25 @@ serve(async (req) => {
           .eq('tenant_id', tenant.id)
           .maybeSingle();
 
-        console.log('Tenant user lookup:', { 
-          found: !!userCheck, 
-          error: userCheckError 
+        console.log('Tenant user lookup:', {
+          found: !!userCheck,
+          error: userCheckError
         });
 
         if (userCheckError) {
           console.error('Tenant user check error:', userCheckError);
         }
-        
+
         tenantUser = userCheck;
-        
+
         if (!tenantUser) {
-          console.error('User not authorized for tenant:', { 
-            email, 
+          console.error('User not authorized for tenant:', {
+            email,
             tenantId: tenant.id,
             tenantSlug: tenant.slug
           });
           return new Response(
-            JSON.stringify({ 
+            JSON.stringify({
               error: 'You do not have access to this tenant',
               detail: `The account ${email} is not authorized to access ${tenant.business_name}. Please contact your administrator or use the correct login credentials.`
             }),
@@ -305,12 +306,12 @@ serve(async (req) => {
           access_token: authData.session?.access_token,
           refresh_token: authData.session?.refresh_token,
         }),
-        { 
-          headers: { 
-            ...corsHeadersWithOrigin, 
+        {
+          headers: {
+            ...corsHeadersWithOrigin,
             'Content-Type': 'application/json',
             'Set-Cookie': `tenant_access_token=${authData.session?.access_token}; ${cookieOptions}`,
-          } 
+          }
         }
       );
 
@@ -325,9 +326,9 @@ serve(async (req) => {
       const validationResult = refreshSchema.safeParse(requestBody);
       if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ 
-            error: 'Validation failed', 
-            details: validationResult.error.errors 
+          JSON.stringify({
+            error: 'Validation failed',
+            details: validationResult.error.errors
           }),
           { status: 400, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
@@ -406,14 +407,14 @@ serve(async (req) => {
     if (action === "setup-password") {
       // Setup password for newly created tenant user (during signup)
       const rawBody = await req.json();
-      
+
       // Validate input with Zod
       const validationResult = setupPasswordSchema.safeParse(rawBody);
       if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ 
-            error: 'Validation failed', 
-            details: validationResult.error.errors 
+          JSON.stringify({
+            error: 'Validation failed',
+            details: validationResult.error.errors
           }),
           { status: 400, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
@@ -464,7 +465,7 @@ serve(async (req) => {
       // Update password_hash and activate user
       const { error: updateError } = await supabase
         .from("tenant_users")
-        .update({ 
+        .update({
           password_hash: passwordHash,
           status: 'active' // Activate user when password is set
         })
@@ -585,7 +586,7 @@ serve(async (req) => {
     if (action === 'verify') {
       // Check for token in httpOnly cookie first, then fall back to Authorization header
       let token: string | null = null;
-      
+
       // Try to get token from cookie
       const cookieHeader = req.headers.get('Cookie');
       if (cookieHeader) {
@@ -595,7 +596,7 @@ serve(async (req) => {
           token = accessTokenCookie.split('=')[1];
         }
       }
-      
+
       // Fall back to Authorization header if no cookie
       if (!token) {
         const authHeader = req.headers.get('Authorization');
@@ -603,14 +604,14 @@ serve(async (req) => {
           token = authHeader.replace('Bearer ', '');
         }
       }
-      
+
       if (!token) {
         return new Response(
           JSON.stringify({ error: 'No token provided' }),
           { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
-      
+
       // Verify token and get user (fast auth check)
       const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
@@ -639,7 +640,7 @@ serve(async (req) => {
       if (ownedTenant) {
         // User is tenant owner - fast path
         console.log('[VERIFY] User is owner of tenant:', ownedTenant.business_name);
-        
+
         const admin = {
           id: user.id,
           email: userEmail,
@@ -670,7 +671,7 @@ serve(async (req) => {
 
       // Not owner - check tenant_users (optimized: specific fields only, manual join)
       console.log('[VERIFY] User not owner, checking tenant_users');
-      
+
       const { data: tenantUser, error: tenantUserError } = await supabase
         .from('tenant_users')
         .select('id, email, name, role, tenant_id, status')
@@ -744,7 +745,7 @@ serve(async (req) => {
     console.error('Error in tenant-admin-auth:', error);
     return new Response(
       JSON.stringify({ error: error.message || 'Internal server error' }),
-          { status: 500, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
     );
   }
 });

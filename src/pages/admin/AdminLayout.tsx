@@ -3,6 +3,8 @@ import { Outlet, useLocation, Link, useNavigate, useParams } from "react-router-
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminErrorBoundary } from "@/components/admin/AdminErrorBoundary";
 import { AdaptiveSidebar } from "@/components/admin/sidebar/AdaptiveSidebar";
+import { OptimizedSidebar } from "@/components/sidebar/OptimizedSidebar";
+import { useSidebarMode } from "@/hooks/useSidebarMode";
 import { SidebarErrorBoundary } from "@/components/admin/sidebar/SidebarErrorBoundary";
 import { MobileBottomNav } from "@/components/admin/MobileBottomNav";
 import { AccountSwitcher } from "@/components/admin/AccountSwitcher";
@@ -59,8 +61,11 @@ const AdminLayout = () => {
   // Enable keyboard shortcuts
   const { shortcutsVisible, setShortcutsVisible } = useAdminKeyboardShortcuts();
 
+  // Sidebar mode toggle (Classic vs Optimized)
+  const { isOptimized } = useSidebarMode();
+
   // Force module refresh
-  const moduleVersion = "2.1.0";
+  const moduleVersion = "2.2.0";
 
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
@@ -125,11 +130,15 @@ const AdminLayout = () => {
       {/* Command Palette */}
       <TenantAdminCommandPalette />
 
-      {/* Unified Layout with AdaptiveSidebar */}
+      {/* Unified Layout with Sidebar (Optimized or Classic) */}
       <SidebarProvider>
         <div className="min-h-screen flex w-full">
           <SidebarErrorBoundary>
-            <AdaptiveSidebar />
+            {isOptimized ? (
+              <OptimizedSidebar userTier="PROFESSIONAL" />
+            ) : (
+              <AdaptiveSidebar />
+            )}
           </SidebarErrorBoundary>
           <div className="flex-1 flex flex-col min-w-0">
             <AccountSwitcher />

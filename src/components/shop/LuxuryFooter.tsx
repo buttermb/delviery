@@ -44,7 +44,7 @@ export function LuxuryFooter({ accentColor = '#10b981' }: LuxuryFooterProps) {
                 <input
                   type="email"
                   placeholder="your@email.com"
-                  className="flex-1 px-4 py-3 bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-full text-white text-sm font-light placeholder:text-white/30 focus:outline-none focus:border-white/20 transition-colors"
+                  className="flex-1 px-4 py-3 bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-full text-white text-sm font-light placeholder:text-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10 focus:bg-white/[0.05] transition-all duration-300"
                 />
                 <button
                   className="px-6 py-3 bg-white text-black text-sm font-light rounded-full hover:bg-white/90 transition-colors whitespace-nowrap"
@@ -67,17 +67,19 @@ export function LuxuryFooter({ accentColor = '#10b981' }: LuxuryFooterProps) {
                 <li>
                   <Link
                     to={`/shop/${storeSlug}/products${previewParam}`}
-                    className="text-white/60 hover:text-white text-sm font-light transition-colors"
+                    className="text-white/60 hover:text-white text-sm font-light transition-colors relative group"
                   >
                     All Products
+                    <span className="absolute -bottom-1 left-0 w-0 h-px bg-white group-hover:w-full transition-all duration-300" />
                   </Link>
                 </li>
                 <li>
                   <Link
                     to={`/shop/${storeSlug}${previewParam}`}
-                    className="text-white/60 hover:text-white text-sm font-light transition-colors"
+                    className="text-white/60 hover:text-white text-sm font-light transition-colors relative group"
                   >
                     Featured
+                    <span className="absolute -bottom-1 left-0 w-0 h-px bg-white group-hover:w-full transition-all duration-300" />
                   </Link>
                 </li>
               </ul>
@@ -91,25 +93,28 @@ export function LuxuryFooter({ accentColor = '#10b981' }: LuxuryFooterProps) {
                   <li>
                     <Link
                       to={`/shop/${storeSlug}/account`}
-                      className="text-white/60 hover:text-white text-sm font-light transition-colors"
+                      className="text-white/60 hover:text-white text-sm font-light transition-colors relative group"
                     >
                       My Account
+                      <span className="absolute -bottom-1 left-0 w-0 h-px bg-white group-hover:w-full transition-all duration-300" />
                     </Link>
                   </li>
                   <li>
                     <Link
                       to={`/shop/${storeSlug}/orders`}
-                      className="text-white/60 hover:text-white text-sm font-light transition-colors"
+                      className="text-white/60 hover:text-white text-sm font-light transition-colors relative group"
                     >
                       Track Order
+                      <span className="absolute -bottom-1 left-0 w-0 h-px bg-white group-hover:w-full transition-all duration-300" />
                     </Link>
                   </li>
                   <li>
                     <Link
                       to={`/shop/${storeSlug}/cart`}
-                      className="text-white/60 hover:text-white text-sm font-light transition-colors"
+                      className="text-white/60 hover:text-white text-sm font-light transition-colors relative group"
                     >
                       Cart
+                      <span className="absolute -bottom-1 left-0 w-0 h-px bg-white group-hover:w-full transition-all duration-300" />
                     </Link>
                   </li>
                 </ul>

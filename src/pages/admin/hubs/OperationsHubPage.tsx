@@ -36,13 +36,13 @@ const PurchaseOrdersPage = lazy(() => import('@/pages/admin/PurchaseOrdersPage')
 const ReturnsManagementPage = lazy(() => import('@/pages/admin/ReturnsManagementPage'));
 const TeamManagement = lazy(() => import('@/pages/admin/TeamManagement'));
 const RoleManagement = lazy(() => import('@/pages/admin/RoleManagement'));
+const InvitesPage = lazy(() => import('@/pages/admin/InvitesPage'));
 const ActivityLogsPage = lazy(() => import('@/pages/tenant-admin/ActivityLogsPage'));
 const QualityControlPage = lazy(() => import('@/pages/admin/QualityControlPage'));
 const AppointmentSchedulerPage = lazy(() => import('@/pages/admin/AppointmentSchedulerPage'));
 const SupportTicketsPage = lazy(() => import('@/pages/admin/SupportTicketsPage'));
 const LocationsManagement = lazy(() => import('@/pages/admin/LocationsManagement'));
 const CompliancePage = lazy(() => import('@/pages/tenant-admin/CompliancePage'));
-const ComplianceVaultPage = lazy(() => import('@/pages/admin/ComplianceVaultPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -53,22 +53,24 @@ const TabSkeleton = () => (
 
 const tabs = [
     // People Management
-    { id: 'team', label: 'Team', icon: Users },
-    { id: 'roles', label: 'Roles', icon: UserCog },
+    { id: 'team', label: 'Team', icon: Users, group: 'People' },
+    { id: 'roles', label: 'Roles', icon: UserCog, group: 'People' },
+    { id: 'invites', label: 'Invites', icon: Users, group: 'People' },
     // Supply Chain
-    { id: 'suppliers', label: 'Vendors', icon: Building2 },
-    { id: 'purchase-orders', label: 'Orders', icon: FileText },
-    { id: 'returns', label: 'Returns', icon: ArrowLeftRight },
+    { id: 'suppliers', label: 'Vendors', icon: Building2, group: 'Supply' },
+    { id: 'purchase-orders', label: 'POs', icon: FileText, group: 'Supply' },
+    { id: 'returns', label: 'Returns', icon: ArrowLeftRight, group: 'Supply' },
     // Compliance & Quality
-    { id: 'compliance', label: 'Compliance', icon: Shield },
-    { id: 'vault', label: 'Vault', icon: Shield },
-    { id: 'quality', label: 'QC', icon: Shield },
-    { id: 'activity', label: 'Logs', icon: ScrollText },
+    { id: 'compliance', label: 'Compliance', icon: Shield, group: 'Compliance' },
+    { id: 'quality', label: 'QC', icon: Shield, group: 'Compliance' },
+    { id: 'activity', label: 'Logs', icon: ScrollText, group: 'Compliance' },
     // Facilities
-    { id: 'locations', label: 'Locations', icon: MapPin },
-    { id: 'appointments', label: 'Calendar', icon: Calendar },
-    { id: 'support', label: 'Support', icon: Headphones },
+    { id: 'locations', label: 'Locations', icon: MapPin, group: 'Facilities' },
+    { id: 'appointments', label: 'Calendar', icon: Calendar, group: 'Facilities' },
+    { id: 'support', label: 'Support', icon: Headphones, group: 'Facilities' },
 ] as const;
+
+// Remove vault tab (consolidate into compliance) - reduces from 13 to 12
 
 type TabId = typeof tabs[number]['id'];
 
@@ -94,13 +96,22 @@ export default function OperationsHubPage() {
                         </div>
                     </div>
                     <div className="overflow-x-auto">
-                        <TabsList className="inline-flex min-w-max">
-                            {tabs.map((tab) => (
-                                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-                                    <tab.icon className="h-4 w-4" />
-                                    <span className="hidden sm:inline">{tab.label}</span>
-                                </TabsTrigger>
-                            ))}
+                        <TabsList className="inline-flex min-w-max gap-0.5">
+                            {tabs.map((tab, index) => {
+                                const prevTab = index > 0 ? tabs[index - 1] : null;
+                                const showSeparator = prevTab && prevTab.group !== tab.group;
+                                return (
+                                    <>
+                                        {showSeparator && (
+                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                        )}
+                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                            <tab.icon className="h-4 w-4" />
+                                            <span className="hidden sm:inline">{tab.label}</span>
+                                        </TabsTrigger>
+                                    </>
+                                );
+                            })}
                         </TabsList>
                     </div>
                 </div>
@@ -140,6 +151,13 @@ export default function OperationsHubPage() {
                     </Suspense>
                 </TabsContent>
 
+                {/* Invites Tab */}
+                <TabsContent value="invites" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <InvitesPage />
+                    </Suspense>
+                </TabsContent>
+
                 {/* Activity Tab */}
                 <TabsContent value="activity" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
@@ -151,13 +169,6 @@ export default function OperationsHubPage() {
                 <TabsContent value="compliance" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <CompliancePage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Vault Tab */}
-                <TabsContent value="vault" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <ComplianceVaultPage />
                     </Suspense>
                 </TabsContent>
 

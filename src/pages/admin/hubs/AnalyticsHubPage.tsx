@@ -20,6 +20,8 @@ import {
     FileText,
     PieChart,
     Download,
+    Target,
+    Presentation,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,6 +36,8 @@ const AdvancedAnalyticsPage = lazy(() => import('@/pages/tenant-admin/AdvancedAn
 const ReportsPage = lazy(() => import('@/pages/admin/ReportsPage'));
 const CustomReportsPage = lazy(() => import('@/pages/tenant-admin/CustomReportsPage'));
 const DataExportPage = lazy(() => import('@/pages/tenant-admin/DataExportPage'));
+const StrategicDashboardPage = lazy(() => import('@/pages/admin/StrategicDashboardPage'));
+const BoardReportPage = lazy(() => import('@/pages/admin/BoardReportPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -44,18 +48,21 @@ const TabSkeleton = () => (
 
 const tabs = [
     // Overview
-    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'overview', label: 'Overview', icon: BarChart3, group: 'Overview' },
     // Business Metrics
-    { id: 'orders', label: 'Orders', icon: ShoppingCart },
-    { id: 'menu', label: 'Menu', icon: UtensilsCrossed },
-    { id: 'delivery', label: 'Delivery', icon: Truck },
+    { id: 'orders', label: 'Orders', icon: ShoppingCart, group: 'Metrics' },
+    { id: 'menu', label: 'Menu', icon: UtensilsCrossed, group: 'Metrics' },
+    { id: 'delivery', label: 'Delivery', icon: Truck, group: 'Metrics' },
     // Advanced Analysis
-    { id: 'forecasting', label: 'Forecasting', icon: TrendingUp },
-    { id: 'advanced', label: 'Advanced', icon: LineChart },
+    { id: 'forecasting', label: 'Forecasting', icon: TrendingUp, group: 'Analysis' },
+    { id: 'advanced', label: 'Advanced', icon: LineChart, group: 'Analysis' },
     // Reports
-    { id: 'reports', label: 'Reports', icon: FileText },
-    { id: 'custom', label: 'Custom', icon: PieChart },
-    { id: 'export', label: 'Export', icon: Download },
+    { id: 'reports', label: 'Reports', icon: FileText, group: 'Reports' },
+    { id: 'custom', label: 'Custom', icon: PieChart, group: 'Reports' },
+    { id: 'export', label: 'Export', icon: Download, group: 'Reports' },
+    // Strategy (Enterprise)
+    { id: 'strategy', label: 'Strategy', icon: Target, group: 'Strategy' },
+    { id: 'board', label: 'Board', icon: Presentation, group: 'Strategy' },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -82,13 +89,22 @@ export default function AnalyticsHubPage() {
                         </div>
                     </div>
                     <div className="overflow-x-auto">
-                        <TabsList className="inline-flex min-w-max">
-                            {tabs.map((tab) => (
-                                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-                                    <tab.icon className="h-4 w-4" />
-                                    <span className="hidden sm:inline">{tab.label}</span>
-                                </TabsTrigger>
-                            ))}
+                        <TabsList className="inline-flex min-w-max gap-0.5">
+                            {tabs.map((tab, index) => {
+                                const prevTab = index > 0 ? tabs[index - 1] : null;
+                                const showSeparator = prevTab && prevTab.group !== tab.group;
+                                return (
+                                    <>
+                                        {showSeparator && (
+                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                        )}
+                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                            <tab.icon className="h-4 w-4" />
+                                            <span className="hidden sm:inline">{tab.label}</span>
+                                        </TabsTrigger>
+                                    </>
+                                );
+                            })}
                         </TabsList>
                     </div>
                 </div>
@@ -153,6 +169,20 @@ export default function AnalyticsHubPage() {
                 <TabsContent value="export" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <DataExportPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Strategy Tab (Enterprise) */}
+                <TabsContent value="strategy" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <StrategicDashboardPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Board Reports Tab (Enterprise) */}
+                <TabsContent value="board" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <BoardReportPage />
                     </Suspense>
                 </TabsContent>
             </Tabs>

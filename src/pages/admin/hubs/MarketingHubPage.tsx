@@ -34,12 +34,12 @@ const TabSkeleton = () => (
 
 const tabs = [
     // Customer Retention
-    { id: 'loyalty', label: 'Loyalty', icon: Star },
-    { id: 'coupons', label: 'Coupons', icon: Tag },
-    { id: 'reviews', label: 'Reviews', icon: ThumbsUp },
+    { id: 'loyalty', label: 'Loyalty', icon: Star, group: 'Retention' },
+    { id: 'coupons', label: 'Coupons', icon: Tag, group: 'Retention' },
+    { id: 'reviews', label: 'Reviews', icon: ThumbsUp, group: 'Retention' },
     // Outreach
-    { id: 'campaigns', label: 'Campaigns', icon: Mail },
-    { id: 'live-chat', label: 'Chat', icon: MessageSquare },
+    { id: 'campaigns', label: 'Campaigns', icon: Mail, group: 'Outreach' },
+    { id: 'live-chat', label: 'Chat', icon: MessageSquare, group: 'Outreach' },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -66,13 +66,22 @@ export default function MarketingHubPage() {
                         </div>
                     </div>
                     <div className="overflow-x-auto">
-                        <TabsList className="inline-flex min-w-max">
-                            {tabs.map((tab) => (
-                                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-                                    <tab.icon className="h-4 w-4" />
-                                    <span className="hidden sm:inline">{tab.label}</span>
-                                </TabsTrigger>
-                            ))}
+                        <TabsList className="inline-flex min-w-max gap-0.5">
+                            {tabs.map((tab, index) => {
+                                const prevTab = index > 0 ? tabs[index - 1] : null;
+                                const showSeparator = prevTab && prevTab.group !== tab.group;
+                                return (
+                                    <>
+                                        {showSeparator && (
+                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                        )}
+                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                            <tab.icon className="h-4 w-4" />
+                                            <span className="hidden sm:inline">{tab.label}</span>
+                                        </TabsTrigger>
+                                    </>
+                                );
+                            })}
                         </TabsList>
                     </div>
                 </div>

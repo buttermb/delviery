@@ -43,14 +43,18 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'pending', label: 'Pending', icon: Clock },
-    { id: 'in-transit', label: 'In Transit', icon: Truck },
-    { id: 'map', label: 'Live Map', icon: MapPinned },
-    { id: 'couriers', label: 'Couriers', icon: Users },
-    { id: 'fleet', label: 'Fleet', icon: Car },
-    { id: 'routes', label: 'Routes', icon: Package },
-    { id: 'returns', label: 'Returns', icon: ArrowLeftRight },
+    // Overview
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'Overview' },
+    // Live Shipments
+    { id: 'pending', label: 'Pending', icon: Clock, group: 'Shipments' },
+    { id: 'in-transit', label: 'In Transit', icon: Truck, group: 'Shipments' },
+    { id: 'map', label: 'Live Map', icon: MapPinned, group: 'Shipments' },
+    // Team & Fleet
+    { id: 'couriers', label: 'Couriers', icon: Users, group: 'Fleet' },
+    { id: 'fleet', label: 'Fleet', icon: Car, group: 'Fleet' },
+    { id: 'routes', label: 'Routes', icon: Package, group: 'Fleet' },
+    // Returns
+    { id: 'returns', label: 'Returns', icon: ArrowLeftRight, group: 'Returns' },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
@@ -83,13 +87,22 @@ export default function FulfillmentHubPage() {
                         )}
                     </div>
                     <div className="overflow-x-auto">
-                        <TabsList className="inline-flex min-w-max">
-                            {tabs.map((tab) => (
-                                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-                                    <tab.icon className="h-4 w-4" />
-                                    <span className="hidden sm:inline">{tab.label}</span>
-                                </TabsTrigger>
-                            ))}
+                        <TabsList className="inline-flex min-w-max gap-0.5">
+                            {tabs.map((tab, index) => {
+                                const prevTab = index > 0 ? tabs[index - 1] : null;
+                                const showSeparator = prevTab && prevTab.group !== tab.group;
+                                return (
+                                    <>
+                                        {showSeparator && (
+                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                        )}
+                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                            <tab.icon className="h-4 w-4" />
+                                            <span className="hidden sm:inline">{tab.label}</span>
+                                        </TabsTrigger>
+                                    </>
+                                );
+                            })}
                         </TabsList>
                     </div>
                 </div>

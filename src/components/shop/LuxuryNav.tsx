@@ -43,11 +43,10 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#10b9
         </div>
 
         {/* Main nav */}
-        <nav className={`transition-all duration-500 ${
-          scrolled
+        <nav className={`transition-all duration-500 ${scrolled
             ? 'bg-black/80 backdrop-blur-2xl border-b border-white/10 shadow-2xl'
             : 'bg-transparent'
-        }`}>
+          }`}>
           <div className="container mx-auto px-6">
             <div className="flex items-center justify-between h-20">
               {/* Logo */}
@@ -119,17 +118,19 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#10b9
                 {!isPreviewMode && (
                   <button
                     onClick={onCartClick || (() => navigate(`/shop/${storeSlug}/cart`))}
-                    className="relative w-9 h-9 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+                    className="relative w-9 h-9 flex items-center justify-center text-white/60 hover:text-white transition-colors group"
                     aria-label="Shopping cart"
                   >
-                    <ShoppingBag className="w-5 h-5" />
+                    <ShoppingBag className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     {cartItemCount > 0 && (
-                      <span
-                        className="absolute -top-1 -right-1 w-4 h-4 text-white text-[10px] font-medium rounded-full flex items-center justify-center"
+                      <motion.span
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="absolute -top-1 -right-1 w-5 h-5 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg"
                         style={{ backgroundColor: accentColor }}
                       >
-                        {cartItemCount}
-                      </span>
+                        {cartItemCount > 9 ? '9+' : cartItemCount}
+                      </motion.span>
                     )}
                   </button>
                 )}

@@ -442,8 +442,8 @@ export default function ShopLayout() {
                 </Button>
                 {!isPreviewMode && (
                   <>
-                    <Link to={`/shop/${storeSlug}/cart`}>
-                      <Button variant="ghost" size="icon" className="relative">
+                    <Link to={`/shop/${storeSlug}/cart`} data-testid="cart-button">
+                      <Button variant="ghost" size="icon" className="relative" data-testid="cart-count">
                         <ShoppingCart className="w-5 h-5" />
                         {cartItemCount > 0 && (
                           <Badge

@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, RefreshCw, Eye } from 'lucide-react';
+import { Search, Plus, RefreshCw, Eye, Check, AlertTriangle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductImage from '@/components/ProductImage';
 import { cleanProductName } from '@/utils/productName';
@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { ProductQuickViewModal } from './ProductQuickViewModal';
 import { WishlistButton } from '../WishlistButton';
+import { CartPreviewPopup } from '../CartPreviewPopup';
 
 export interface LuxuryProductGridSectionProps {
   content?: {
@@ -42,6 +43,7 @@ interface MarketplaceProduct {
   cbd_content: number | null;
   is_visible: boolean;
   display_order: number;
+  stock_quantity?: number;
 }
 
 export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryProductGridSectionProps) {
@@ -50,9 +52,17 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [quickViewProduct, setQuickViewProduct] = useState<MarketplaceProduct | null>(null);
+  const [addedProducts, setAddedProducts] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
-  const { addItem } = useShopCart({
+  const [lastAddedItem, setLastAddedItem] = useState<{
+    name: string;
+    price: number;
+    imageUrl: string | null;
+    quantity: number;
+  } | null>(null);
+
+  const { addItem, cartCount, subtotal } = useShopCart({
     storeId,
     onCartChange: () => { },
   });
@@ -139,11 +149,26 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
         variant: product.strain_type // Default to strain type if no variants
       });
 
-      toast({
-        title: "Added to cart",
-        description: `${product.product_name} has been added to your cart.`,
-        duration: 3000,
+      // Show added state for 2 seconds
+      setAddedProducts(prev => new Set(prev).add(product.product_id));
+
+      // Show premium cart popup
+      setLastAddedItem({
+        name: product.product_name,
+        price: product.price,
+        imageUrl: product.image_url,
+        quantity: 1
       });
+
+      setTimeout(() => {
+        setAddedProducts(prev => {
+          const next = new Set(prev);
+          next.delete(product.product_id);
+          return next;
+        });
+      }, 2000);
+
+      // Removed standard toast in favor of popup
     } catch (error) {
       logger.error('Quick add to cart failed', error, { productId: product.product_id });
       toast({
@@ -321,6 +346,26 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                           </div>
                         )}
 
+                        {/* Stock Status Badge */}
+                        {product.stock_quantity !== undefined && product.stock_quantity <= 0 && (
+                          <div className="absolute top-4 left-4 mt-8 px-3 py-1 bg-red-500/80 backdrop-blur-xl rounded-full z-10">
+                            <span className="text-[10px] font-bold tracking-widest uppercase text-white">Sold Out</span>
+                          </div>
+                        )}
+                        {product.stock_quantity !== undefined && product.stock_quantity > 0 && product.stock_quantity <= 5 && (
+                          <div className="absolute top-4 left-4 mt-8 px-3 py-1 bg-amber-500/80 backdrop-blur-xl rounded-full z-10 flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3 text-white" />
+                            <span className="text-[10px] font-bold tracking-widest uppercase text-white">Low Stock</span>
+                          </div>
+                        )}
+
+                        {/* Sold Out Overlay */}
+                        {product.stock_quantity !== undefined && product.stock_quantity <= 0 && (
+                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-5">
+                            <span className="text-white/80 text-lg font-serif italic">Out of Stock</span>
+                          </div>
+                        )}
+
                         {/* Action buttons */}
                         <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
                           {/* Wishlist Button */}
@@ -335,7 +380,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                             size="sm"
                             className="opacity-0 group-hover:opacity-100 transition-all duration-300"
                           />
-                          
+
                           {/* Quick View Button */}
                           <button
                             onClick={(e) => handleQuickView(e, product)}
@@ -383,9 +428,21 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                           <Button
                             size="sm"
                             onClick={(e) => handleQuickAdd(e, product)}
-                            className="px-5 py-2 bg-white text-black hover:bg-neutral-200 border-none rounded-full text-xs font-bold tracking-wider uppercase transition-all duration-300 transform active:scale-95 shadow-lg shadow-white/5"
+                            disabled={product.stock_quantity !== undefined && product.stock_quantity <= 0}
+                            className={`px-5 py-2 border-none rounded-full text-xs font-bold tracking-wider uppercase transition-all duration-300 transform active:scale-95 shadow-lg shadow-white/5 min-w-[80px] ${addedProducts.has(product.product_id)
+                              ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                              : product.stock_quantity !== undefined && product.stock_quantity <= 0
+                                ? 'bg-neutral-600 text-neutral-400 cursor-not-allowed'
+                                : 'bg-white text-black hover:bg-neutral-200'
+                              }`}
                           >
-                            <Plus className="w-3 h-3 mr-1" /> Add
+                            {addedProducts.has(product.product_id) ? (
+                              <><Check className="w-3 h-3 mr-1" /> Added</>
+                            ) : product.stock_quantity !== undefined && product.stock_quantity <= 0 ? (
+                              'Sold Out'
+                            ) : (
+                              <><Plus className="w-3 h-3 mr-1" /> Add</>
+                            )}
                           </Button>
                         </div>
                       </div>
@@ -419,6 +476,15 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
       </div>
 
       {/* Quick View Modal */}
+      {/* Cart Preview Popup */}
+      <CartPreviewPopup
+        item={lastAddedItem}
+        cartCount={cartCount}
+        cartTotal={subtotal}
+        storeSlug={storeSlug || ''}
+        onClose={() => setLastAddedItem(null)}
+      />
+
       <ProductQuickViewModal
         product={quickViewProduct}
         isOpen={!!quickViewProduct}

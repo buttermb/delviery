@@ -29,21 +29,48 @@ serve(async (req) => {
 
         const signature = req.headers.get("stripe-signature");
         const body = await req.text();
+        const webhookSecret = Deno.env.get("STRIPE_STOREFRONT_WEBHOOK_SECRET");
 
-        if (!signature) {
-            console.log("No Stripe signature - processing without verification (testing mode)");
-        }
-
-        // Parse the webhook event
+        // Parse the webhook event with optional signature verification
         let event: Stripe.Event;
-        
-        try {
-            event = JSON.parse(body) as Stripe.Event;
-        } catch (parseError) {
-            console.error("Failed to parse webhook body:", parseError);
+
+        if (signature && webhookSecret) {
+            // Production: Verify signature using Stripe's constructEvent
+            try {
+                const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
+                    apiVersion: "2024-06-20",
+                });
+                event = await stripe.webhooks.constructEventAsync(
+                    body,
+                    signature,
+                    webhookSecret
+                );
+                console.log("✓ Stripe signature verified successfully");
+            } catch (verifyError: any) {
+                console.error("⚠️ Stripe signature verification failed:", verifyError.message);
+                return new Response(
+                    JSON.stringify({ error: "Webhook signature verification failed" }),
+                    { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                );
+            }
+        } else if (Deno.env.get("ALLOW_UNVERIFIED_WEBHOOKS") === "true") {
+            // Development/testing ONLY: Allow unverified webhooks
+            console.warn("⚠️ Processing webhook WITHOUT signature verification (dev mode only)");
+            try {
+                event = JSON.parse(body) as Stripe.Event;
+            } catch (parseError) {
+                console.error("Failed to parse webhook body:", parseError);
+                return new Response(
+                    JSON.stringify({ error: "Invalid JSON body" }),
+                    { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                );
+            }
+        } else {
+            // Production without proper configuration
+            console.error("❌ Missing webhook signature or secret - configure STRIPE_STOREFRONT_WEBHOOK_SECRET");
             return new Response(
-                JSON.stringify({ error: "Invalid JSON body" }),
-                { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                JSON.stringify({ error: "Webhook security not configured" }),
+                { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
         }
 
