@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { loginSchema, refreshSchema, setupPasswordSchema } from './validation.ts';
+import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from '../_shared/rateLimiting.ts';
 
 serve(async (req) => {
   // Get origin from request for CORS (required when credentials are included)
@@ -95,7 +96,46 @@ serve(async (req) => {
 
       const { email, password, tenantSlug } = validationResult.data;
 
-      console.log('Tenant admin login attempt:', { email, tenantSlug });
+      // Extract client IP for rate limiting
+      const clientIP =
+        req.headers.get('x-forwarded-for')?.split(',')[0] ||
+        req.headers.get('cf-connecting-ip') ||
+        req.headers.get('x-real-ip') ||
+        'unknown';
+
+      // Rate limiting: 5 attempts per 15 minutes per IP+email combo
+      const rateLimitResult = await checkRateLimit(
+        {
+          key: 'tenant_login',
+          limit: 5,
+          windowMs: 15 * 60 * 1000, // 15 minutes
+        },
+        `${clientIP}:${email.toLowerCase()}`
+      );
+
+      if (!rateLimitResult.allowed) {
+        console.warn('[LOGIN] Rate limit exceeded', { 
+          clientIP, 
+          email: email.toLowerCase(),
+          tenantSlug 
+        });
+        return new Response(
+          JSON.stringify({
+            error: 'Too many login attempts. Please try again later.',
+            retryAfter: Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
+          }),
+          {
+            status: 429,
+            headers: { 
+              ...corsHeadersWithOrigin, 
+              'Content-Type': 'application/json',
+              ...getRateLimitHeaders(rateLimitResult),
+            },
+          }
+        );
+      }
+
+      console.log('[LOGIN] Tenant admin login attempt:', { email, tenantSlug, clientIP });
 
       // Create a separate service role client for tenant lookup (bypasses RLS)
       const serviceClient = createClient(
