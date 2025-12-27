@@ -139,8 +139,20 @@ serve(async (req) => {
         }
       }
     } else {
-      // CAPTCHA is optional for now (can be made required later)
-      console.log('[SIGNUP] No CAPTCHA token provided', { email: email.toLowerCase() });
+      // CAPTCHA is required in production when TURNSTILE_SECRET_KEY is configured
+      const turnstileSecret = Deno.env.get('TURNSTILE_SECRET_KEY');
+      if (turnstileSecret) {
+        console.warn('[SIGNUP] CAPTCHA required but not provided', { email: email.toLowerCase(), clientIP });
+        return new Response(
+          JSON.stringify({ 
+            error: 'Security verification required',
+            message: 'Please complete the security verification to continue.'
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      // In development (no TURNSTILE_SECRET_KEY), allow signup without CAPTCHA
+      console.log('[SIGNUP] No CAPTCHA token provided (development mode)', { email: email.toLowerCase() });
     }
 
     console.log('[SIGNUP] Security checks passed', { email: email.toLowerCase(), clientIP });
