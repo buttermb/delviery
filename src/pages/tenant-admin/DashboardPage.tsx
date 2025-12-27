@@ -858,7 +858,7 @@ export default function TenantAdminDashboardPage() {
 
         {/* Quick Actions Widget - 1-click access to top features */}
         <QuickActionsWidget
-          userTier={tenant?.subscription_tier === 'enterprise' ? 'ENTERPRISE' : tenant?.subscription_tier === 'professional' ? 'PROFESSIONAL' : 'STARTER'}
+          userTier={tenant?.subscription_plan === 'enterprise' ? 'ENTERPRISE' : tenant?.subscription_plan === 'professional' ? 'PROFESSIONAL' : 'STARTER'}
           badges={{
             orders: todayMetrics?.orderCount || 0,
             'stock-alerts': todayMetrics?.lowStock?.length || 0,
