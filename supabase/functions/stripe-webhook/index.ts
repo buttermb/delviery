@@ -35,19 +35,19 @@ serve(async (req) => {
     const body = await req.text();
 
     // CRITICAL SECURITY: Verify webhook signature with Stripe
+    // In production, STRIPE_WEBHOOK_SECRET MUST be configured
     let rawEvent: any;
-    if (STRIPE_WEBHOOK_SECRET) {
-      try {
-        rawEvent = await stripe.webhooks.constructEventAsync(body, signature, STRIPE_WEBHOOK_SECRET);
-        console.log('[STRIPE-WEBHOOK] Signature verified successfully for event:', rawEvent.id);
-      } catch (err: any) {
-        console.error('[STRIPE-WEBHOOK] Signature verification failed:', err.message);
-        return new Response(`Webhook signature verification failed: ${err.message}`, { status: 400 });
-      }
-    } else {
-      // Fallback for development without webhook secret (log warning)
-      console.warn('[STRIPE-WEBHOOK] WARNING: No STRIPE_WEBHOOK_SECRET configured - signature verification skipped!');
-      rawEvent = JSON.parse(body);
+    if (!STRIPE_WEBHOOK_SECRET) {
+      console.error('[STRIPE-WEBHOOK] CRITICAL: STRIPE_WEBHOOK_SECRET is not configured!');
+      return new Response('Webhook secret not configured', { status: 500 });
+    }
+    
+    try {
+      rawEvent = await stripe.webhooks.constructEventAsync(body, signature, STRIPE_WEBHOOK_SECRET);
+      console.log('[STRIPE-WEBHOOK] Signature verified successfully for event:', rawEvent.id);
+    } catch (err: any) {
+      console.error('[STRIPE-WEBHOOK] Signature verification failed:', err.message);
+      return new Response(`Webhook signature verification failed: ${err.message}`, { status: 400 });
     }
 
     // Validate event structure
