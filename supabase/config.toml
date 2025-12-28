@@ -74,6 +74,9 @@ verify_jwt = false
 [functions.send-menu-access-link]
 verify_jwt = false
 
+[functions.pricing-advisor]
+verify_jwt = false
+
 # ===========================================
 # SCHEDULED/CRON JOBS (no JWT - service calls)
 # ===========================================
