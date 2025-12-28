@@ -68,7 +68,7 @@ export function LuxuryFeaturesSection({ content, styles }: LuxuryFeaturesSection
   const accentColor = styles?.accent_color || '#10b981';
 
   return (
-    <section className="relative py-24 bg-black overflow-hidden">
+    <section className="relative py-16 md:py-24 bg-black overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-neutral-950 via-black to-neutral-950" />
 
@@ -85,9 +85,9 @@ export function LuxuryFeaturesSection({ content, styles }: LuxuryFeaturesSection
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+          className="text-center mb-10 md:mb-16"
         >
-          <h2 className="text-white font-serif italic text-4xl md:text-5xl tracking-tight mb-4">
+          <h2 className="text-white font-serif italic text-3xl md:text-4xl lg:text-5xl tracking-tight mb-4">
             {heading}
           </h2>
           <p className="text-white/50 text-lg font-light font-sans tracking-wide">
@@ -109,7 +109,7 @@ export function LuxuryFeaturesSection({ content, styles }: LuxuryFeaturesSection
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="group"
               >
-                <div className="relative h-full p-8 bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] hover:border-white/20 rounded-2xl transition-all duration-500 hover:-translate-y-2">
+                <div className="relative h-full p-6 md:p-8 bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] hover:border-white/20 rounded-2xl transition-all duration-500 hover:-translate-y-2">
                   {/* Hover glow */}
                   <div
                     className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"

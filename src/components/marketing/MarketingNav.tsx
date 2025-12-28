@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Coins } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import FloraIQLogo from "@/components/FloraIQLogo";
@@ -70,17 +70,19 @@ export function MarketingNav() {
                   Login
                 </Button>
               </Link>
-              <Link to="/signup">
-                <Button size="sm" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white">
-                  Start Free →
+              <Link to="/signup?plan=free">
+                <Button size="sm" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white font-bold gap-2">
+                  <Coins className="w-4 h-4" />
+                  Start Free
                 </Button>
               </Link>
             </div>
 
             <div className="flex md:hidden items-center gap-2">
-              <Link to="/signup">
-                <Button size="sm" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white text-xs px-3 h-9">
-                  Start Free
+              <Link to="/signup?plan=free">
+                <Button size="sm" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white text-xs px-3 h-9 gap-1">
+                  <Coins className="w-3 h-3" />
+                  Free Plan
                 </Button>
               </Link>
 
@@ -139,9 +141,9 @@ export function MarketingNav() {
                       Login
                     </Button>
                   </Link>
-                  <Link to="/signup" className="block" onClick={() => setMobileMenuOpen(false)}>
+                  <Link to="/signup?plan=free" className="block" onClick={() => setMobileMenuOpen(false)}>
                     <Button size="lg" className="w-full min-h-[48px] rounded-xl bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white touch-manipulation active:scale-[0.98]">
-                      Start Free Trial
+                      Start Free
                     </Button>
                   </Link>
                 </div>

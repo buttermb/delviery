@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
 // Lazy load tab content for performance
 const ProductManagement = lazy(() => import('@/pages/admin/ProductManagement'));
@@ -74,6 +75,11 @@ export default function InventoryHubPage() {
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header */}
                 <div className="border-b bg-card px-4 py-4">
+                    <HubBreadcrumbs
+                        hubName="inventory-hub"
+                        hubHref="inventory-hub"
+                        currentTab={tabs.find(t => t.id === activeTab)?.label}
+                    />
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h1 className="text-2xl font-bold">Inventory</h1>

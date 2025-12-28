@@ -60,6 +60,20 @@ Every task follows this workflow:
 
 ---
 
+## 📱 MOBILE OPTIMIZATION RULES
+
+- **Prioritize mobile-first design**: build for small screens first, then enhance for larger screens
+- **Use responsive design patterns**: CSS Grid/Flexbox, media queries, fluid typography
+- **Touch targets**: minimum 44×44px for buttons/interactive elements
+- **Performance**: optimize images, implement lazy loading, minimize JavaScript
+- **Navigation**: vertical stacking on mobile, adapt for larger screens
+- **Forms**: minimize text inputs, use appropriate input types (email, tel, number)
+- **Avoid hover-only interactions**: provide touch-friendly alternatives
+- **CSS framework**: use responsive frameworks (Tailwind, Bootstrap)
+- **Testing**: always consider mobile viewports (375px, 768px, 1024px)
+
+---
+
 ## 🔬 EVIDENCE-BASED DEBUGGING
 
 **CRITICAL**: Never speculate. Never hallucinate. Only work with hard evidence.

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
 // Lazy load tab content for performance
 const LoyaltyProgramPage = lazy(() => import('@/pages/admin/LoyaltyProgramPage'));
@@ -55,31 +56,31 @@ export default function MarketingHubPage() {
     return (
         <div className="min-h-screen bg-background">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                {/* Header */}
-                <div className="border-b bg-card px-4 py-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <h1 className="text-2xl font-bold">Marketing</h1>
-                            <p className="text-muted-foreground text-sm">
-                                Manage loyalty programs, coupons, and marketing campaigns
-                            </p>
-                        </div>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <TabsList className="inline-flex min-w-max gap-0.5">
+                {/* Header - Sticky Tabs */}
+                <div className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur-sm px-4 pt-4 pb-0">
+                    <HubBreadcrumbs
+                        hubName="marketing-hub"
+                        hubHref="marketing-hub"
+                        currentTab={tabs.find(t => t.id === activeTab)?.label}
+                    />
+                    <div className="overflow-x-auto pb-4 scrollbar-hide">
+                        <TabsList className="inline-flex min-w-max gap-1 bg-transparent p-0">
                             {tabs.map((tab, index) => {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
                                 const showSeparator = prevTab && prevTab.group !== tab.group;
                                 return (
-                                    <>
+                                    <div key={tab.id} className="flex items-center">
                                         {showSeparator && (
-                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-2" />
                                         )}
-                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                        <TabsTrigger
+                                            value={tab.id}
+                                            className="flex items-center gap-2 rounded-full border border-transparent px-4 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 transition-all hover:bg-muted"
+                                        >
                                             <tab.icon className="h-4 w-4" />
-                                            <span className="hidden sm:inline">{tab.label}</span>
+                                            <span className="hidden sm:inline font-medium">{tab.label}</span>
                                         </TabsTrigger>
-                                    </>
+                                    </div>
                                 );
                             })}
                         </TabsList>

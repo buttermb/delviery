@@ -38,24 +38,26 @@ export function QuickActionsBar() {
   ];
 
   return (
-    <Card className="p-4">
-      <div className="flex items-center gap-3 flex-wrap">
-        <span className="text-sm font-medium text-muted-foreground">Quick Actions:</span>
-        {actions.map((action) => (
-          <Button
-            key={action.label}
-            variant="outline"
-            size="sm"
-            onClick={() => navigateToAdmin(action.href)}
-            className="gap-2 min-h-[44px]"
-          >
-            {action.icon}
-            <span>{action.label}</span>
-            <kbd className="hidden lg:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
-              {action.shortcut}
-            </kbd>
-          </Button>
-        ))}
+    <Card className="p-3 sm:p-4">
+      <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:gap-3 sm:flex-wrap">
+        <span className="text-sm font-medium text-muted-foreground hidden sm:inline">Quick Actions:</span>
+        <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:flex-wrap sm:gap-3">
+          {actions.map((action) => (
+            <Button
+              key={action.label}
+              variant="outline"
+              size="sm"
+              onClick={() => navigateToAdmin(action.href)}
+              className="gap-2 min-h-[44px] justify-start sm:justify-center w-full sm:w-auto"
+            >
+              {action.icon}
+              <span className="truncate">{action.label}</span>
+              <kbd className="hidden lg:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 ml-auto sm:ml-2">
+                {action.shortcut}
+              </kbd>
+            </Button>
+          ))}
+        </div>
       </div>
     </Card>
   );

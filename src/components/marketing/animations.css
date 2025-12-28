@@ -382,6 +382,20 @@
   animation-delay: 3s; /* Start after 3 seconds of idle */
 }
 
+/* Subtle bounce animation for tooltips */
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0) rotate(-6deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(-6deg);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .animate-gradient-border,

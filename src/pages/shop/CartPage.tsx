@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart,
   Plus,
@@ -187,22 +188,33 @@ export default function CartPage() {
       </h1>
 
       {cartItems.length === 0 ? (
-        <Card className={isLuxuryTheme ? `${cardBg} ${cardBorder}` : ''}>
-          <CardContent className="py-16 text-center">
-            <ShoppingCart className={`w-16 h-16 mx-auto mb-4 ${isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground'}`} />
-            <h2 className={`text-xl font-semibold mb-2 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>
-              Your cart is empty
-            </h2>
-            <p className={`mb-6 ${textMuted}`}>
-              Add some products to get started
-            </p>
-            <Link to={`/shop/${storeSlug}/products`}>
-              <Button style={{ backgroundColor: themeColor }}>
-                Browse Products
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Card className={isLuxuryTheme ? `${cardBg} ${cardBorder}` : ''}>
+            <CardContent className="py-16 text-center">
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <ShoppingCart className={`w-16 h-16 mx-auto mb-4 ${isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground'}`} />
+              </motion.div>
+              <h2 className={`text-xl font-semibold mb-2 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>
+                Your cart is empty
+              </h2>
+              <p className={`mb-6 ${textMuted}`}>
+                Add some products to get started
+              </p>
+              <Link to={`/shop/${storeSlug}/products`}>
+                <Button style={{ backgroundColor: themeColor }}>
+                  Browse Products
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </motion.div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
@@ -246,76 +258,92 @@ export default function CartPage() {
                 </Button>
               </CardHeader>
               <CardContent className="space-y-4">
-                {cartItems.map((item) => (
-                  <div key={`${item.productId}-${item.variant || ''}`} data-testid="cart-item" className="flex gap-4">
-                    <div className={`w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
-                      {item.imageUrl ? (
-                        <img
-                          src={item.imageUrl}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Package className={`w-8 h-8 ${isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground'}`} />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <Link
-                        to={`/shop/${storeSlug}/products/${item.productId}`}
-                        className={`font-medium hover:underline line-clamp-2 ${isLuxuryTheme ? textPrimary : ''}`}
-                      >
-                        {item.name}
-                      </Link>
-                      {item.variant && (
-                        <p className={`text-xs mt-0.5 ${textMuted}`}>{item.variant}</p>
-                      )}
-                      <p className="text-sm font-semibold mt-1" style={{ color: themeColor }}>
-                        {formatCurrency(item.price)}
-                      </p>
-                      {/* Stock Warning for this item */}
-                      <CartItemStockWarning
-                        productId={item.productId}
-                        requestedQuantity={item.quantity}
-                        variant="minimal"
-                        className="mt-1"
-                      />
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Remove item"
-                        className={`h-8 w-8 ${isLuxuryTheme ? 'text-white/40 hover:text-red-400 hover:bg-white/10' : 'text-muted-foreground hover:text-destructive'}`}
-                        onClick={() => handleRemoveItem(item.productId, item.variant)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className={`h-8 w-8 ${isLuxuryTheme ? buttonOutline : ''}`}
-                          onClick={() => handleUpdateQuantity(item.productId, -1, item.variant)}
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                        <span className={`w-8 text-center font-medium ${isLuxuryTheme ? textPrimary : ''}`}>
-                          {item.quantity}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className={`h-8 w-8 ${isLuxuryTheme ? buttonOutline : ''}`}
-                          onClick={() => handleUpdateQuantity(item.productId, 1, item.variant)}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
+                <AnimatePresence mode="popLayout">
+                  {cartItems.map((item, index) => (
+                    <motion.div
+                      key={`${item.productId}-${item.variant || ''}`}
+                      data-testid="cart-item"
+                      className="flex gap-4"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 50, height: 0, marginBottom: 0 }}
+                      transition={{ duration: 0.25, delay: index * 0.05 }}
+                      layout
+                    >
+                      <div className={`w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
+                        {item.imageUrl ? (
+                          <img
+                            src={item.imageUrl}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Package className={`w-8 h-8 ${isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground'}`} />
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </div>
-                ))}
+                      <div className="flex-1 min-w-0">
+                        <Link
+                          to={`/shop/${storeSlug}/products/${item.productId}`}
+                          className={`font-medium hover:underline line-clamp-2 ${isLuxuryTheme ? textPrimary : ''}`}
+                        >
+                          {item.name}
+                        </Link>
+                        {item.variant && (
+                          <p className={`text-xs mt-0.5 ${textMuted}`}>{item.variant}</p>
+                        )}
+                        <p className="text-sm font-semibold mt-1" style={{ color: themeColor }}>
+                          {formatCurrency(item.price)}
+                        </p>
+                        {/* Stock Warning for this item */}
+                        <CartItemStockWarning
+                          productId={item.productId}
+                          requestedQuantity={item.quantity}
+                          variant="minimal"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Remove item"
+                          className={`h-8 w-8 ${isLuxuryTheme ? 'text-white/40 hover:text-red-400 hover:bg-white/10' : 'text-muted-foreground hover:text-destructive'}`}
+                          onClick={() => handleRemoveItem(item.productId, item.variant)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className={`h-8 w-8 ${isLuxuryTheme ? buttonOutline : ''}`}
+                            onClick={() => handleUpdateQuantity(item.productId, -1, item.variant)}
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                          <motion.span
+                            key={item.quantity}
+                            initial={{ scale: 1.3 }}
+                            animate={{ scale: 1 }}
+                            className={`w-8 text-center font-medium ${isLuxuryTheme ? textPrimary : ''}`}
+                          >
+                            {item.quantity}
+                          </motion.span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className={`h-8 w-8 ${isLuxuryTheme ? buttonOutline : ''}`}
+                            onClick={() => handleUpdateQuantity(item.productId, 1, item.variant)}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </CardContent>
             </Card>
           </div>

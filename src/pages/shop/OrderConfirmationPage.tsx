@@ -59,7 +59,7 @@ export default function OrderConfirmationPage() {
   const trackingUrl = `${window.location.origin}/shop/${storeSlug}/track/${trackingToken}`;
 
   return (
-    <div className="container mx-auto px-4 py-16 max-w-2xl">
+    <div className="container mx-auto px-4 py-8 md:py-16 max-w-2xl">
       <div className="text-center mb-8">
         <div
           className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center"
@@ -164,14 +164,14 @@ export default function OrderConfirmationPage() {
       </Card>
 
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Link to={`/shop/${storeSlug}/track/${trackingToken}`}>
-          <Button style={{ backgroundColor: store.primary_color }}>
+        <Link to={`/shop/${storeSlug}/track/${trackingToken}`} className="w-full sm:w-auto">
+          <Button style={{ backgroundColor: store.primary_color }} className="w-full sm:w-auto">
             <Package className="w-4 h-4 mr-2" />
             Track Order
           </Button>
         </Link>
-        <Link to={`/shop/${storeSlug}/products`}>
-          <Button variant="outline">Continue Shopping</Button>
+        <Link to={`/shop/${storeSlug}/products`} className="w-full sm:w-auto">
+          <Button variant="outline" className="w-full sm:w-auto">Continue Shopping</Button>
         </Link>
       </div>
     </div>

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
+import { motion } from 'framer-motion';
 import {
   Package,
   Truck,
@@ -204,56 +205,66 @@ export default function OrderTrackingPage() {
                 const Icon = step.icon;
 
                 return (
-                  <div
+                  <motion.div
                     key={step.status}
-                    className={`flex items-start gap-4 ${index < STATUS_STEPS.length - 1 ? 'pb-8' : ''
-                      }`}
+                    className={`flex items-start gap-4 ${index < STATUS_STEPS.length - 1 ? 'pb-8' : ''}`}
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.15 }}
                   >
                     {/* Timeline line */}
                     {index < STATUS_STEPS.length - 1 && (
-                      <div
-                        className={`absolute left-5 w-0.5 h-8 mt-10 ${isComplete ? '' : 'bg-muted'
-                          }`}
+                      <motion.div
+                        className={`absolute left-5 w-0.5 ${isComplete ? '' : 'bg-muted'}`}
                         style={{
                           top: `${index * 80 + 40}px`,
                           backgroundColor: isComplete ? store?.primary_color : undefined,
                         }}
+                        initial={{ height: 0 }}
+                        animate={{ height: 32 }}
+                        transition={{ duration: 0.3, delay: index * 0.15 + 0.2 }}
                       />
                     )}
 
                     {/* Icon */}
-                    <div
-                      className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isCurrent ? 'ring-4 ring-offset-2' : ''
-                        }`}
+                    <motion.div
+                      className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isCurrent ? 'ring-4 ring-offset-2' : ''}`}
                       style={{
                         backgroundColor: isComplete ? store?.primary_color : '#e5e7eb',
                         '--tw-ring-color': isCurrent ? `${store?.primary_color}40` : undefined,
                       } as React.CSSProperties}
+                      animate={isCurrent ? { scale: [1, 1.1, 1] } : {}}
+                      transition={isCurrent ? { duration: 1.5, repeat: Infinity, ease: "easeInOut" } : {}}
                     >
                       <Icon
                         className={`w-5 h-5 ${isComplete ? 'text-white' : 'text-gray-400'}`}
                       />
-                    </div>
+                    </motion.div>
 
                     {/* Content */}
                     <div className="flex-1 pt-2">
                       <p
-                        className={`font-medium ${isComplete ? '' : 'text-muted-foreground'
-                          }`}
+                        className={`font-medium ${isComplete ? '' : 'text-muted-foreground'}`}
                         style={{ color: isCurrent ? store?.primary_color : undefined }}
                       >
                         {step.label}
                       </p>
                       {isCurrent && (
-                        <Badge
-                          className="mt-1"
-                          style={{ backgroundColor: store?.primary_color }}
+                        <motion.div
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
                         >
-                          Current Status
-                        </Badge>
+                          <Badge
+                            className="mt-1"
+                            style={{ backgroundColor: store?.primary_color }}
+                          >
+                            Current Status
+                          </Badge>
+                        </motion.div>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>

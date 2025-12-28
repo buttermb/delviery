@@ -229,42 +229,42 @@ export default function InvoicesPage() {
 
             <Card>
                 <CardHeader className="p-4">
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
                         <div className="relative flex-1">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Search className="absolute left-2.5 top-3.5 h-4 w-4 text-muted-foreground md:top-2.5" />
                             <Input
                                 placeholder="Search invoices..."
-                                className="pl-8"
+                                className="pl-8 h-11 md:h-10 text-base md:text-sm"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="gap-2">
+                                <Button variant="outline" className="gap-2 w-full md:w-auto justify-center h-11 md:h-10 text-base md:text-sm">
                                     <Filter className="h-4 w-4" />
                                     Filter: {statusFilter ? statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1) : "All"}
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="w-[200px]">
                                 <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => setStatusFilter(null)}>
+                                <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter(null)}>
                                     All Statuses
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setStatusFilter("draft")}>
+                                <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("draft")}>
                                     Draft
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setStatusFilter("sent")}>
+                                <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("sent")}>
                                     Sent
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setStatusFilter("paid")}>
+                                <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("paid")}>
                                     Paid
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setStatusFilter("overdue")}>
+                                <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("overdue")}>
                                     Overdue
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setStatusFilter("cancelled")}>
+                                <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("cancelled")}>
                                     Cancelled
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -272,7 +272,115 @@ export default function InvoicesPage() {
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <Table>
+                    {/* Mobile List View */}
+                    <div className="md:hidden divide-y">
+                        {isLoading ? (
+                            [...Array(3)].map((_, i) => (
+                                <div key={i} className="p-4 space-y-3">
+                                    <div className="flex justify-between">
+                                        <Skeleton className="h-5 w-24" />
+                                        <Skeleton className="h-5 w-16 rounded-full" />
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <div className="space-y-1">
+                                            <Skeleton className="h-4 w-32" />
+                                            <Skeleton className="h-3 w-20" />
+                                        </div>
+                                        <Skeleton className="h-6 w-20" />
+                                    </div>
+                                </div>
+                            ))
+                        ) : filteredInvoices?.length === 0 ? (
+                            <div className="p-6">
+                                <EnhancedEmptyState
+                                    icon={FileText}
+                                    title={searchQuery || statusFilter ? "No Invoices Found" : "No Invoices Yet"}
+                                    description={searchQuery || statusFilter ? "No invoices match your current filters." : "Create your first invoice to get started."}
+                                    primaryAction={!searchQuery && !statusFilter ? {
+                                        label: "Create Invoice",
+                                        onClick: () => navigate(`/${tenantSlug}/admin/crm/invoices/new`),
+                                        icon: Plus
+                                    } : undefined}
+                                    compact
+                                />
+                            </div>
+                        ) : (
+                            filteredInvoices?.map((invoice) => (
+                                <div
+                                    key={invoice.id}
+                                    className="p-4 active:bg-muted/50 transition-colors"
+                                    onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`)}
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div>
+                                            <span className="font-semibold text-sm">{invoice.invoice_number}</span>
+                                            <p className="text-sm text-foreground/90 font-medium">
+                                                {invoice.client?.name || "Unknown Client"}
+                                            </p>
+                                        </div>
+                                        {getStatusBadge(invoice.status)}
+                                    </div>
+
+                                    <div className="flex justify-between items-end">
+                                        <div className="text-xs text-muted-foreground space-y-0.5">
+                                            <p>Due: {format(new Date(invoice.due_date), "MMM d, yyyy")}</p>
+                                            <p>{format(new Date(invoice.invoice_date), "MMM d")}</p>
+                                        </div>
+
+                                        <div className="flex items-center gap-3">
+                                            <span className="font-bold text-base">
+                                                {formatCurrency(invoice.total)}
+                                            </span>
+
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-11 w-11 -mr-2" onClick={(e) => e.stopPropagation()}>
+                                                        <span className="sr-only">Open menu</span>
+                                                        <MoreHorizontal className="h-5 w-5" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-[200px]">
+                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                    <DropdownMenuItem className="py-3" onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`);
+                                                    }}>
+                                                        View Details
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem className="py-3" onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const link = `${window.location.origin}/portal/invoice/${invoice.public_token}`;
+                                                        navigator.clipboard.writeText(link);
+                                                        toast.success("Invoice link copied");
+                                                    }}>
+                                                        Copy Link
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    {invoice.status !== "paid" && invoice.status !== "cancelled" && (
+                                                        <DropdownMenuItem className="py-3" onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleMarkAsPaid(invoice.id);
+                                                        }}>
+                                                            Mark as Paid
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    <DropdownMenuItem className="py-3" onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDownloadPDF(invoice);
+                                                    }}>
+                                                        Download PDF
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {/* Desktop Table View */}
+                    <Table className="hidden md:table">
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Invoice #</TableHead>
@@ -388,7 +496,7 @@ export default function InvoicesPage() {
                         </TableBody>
                     </Table>
                 </CardContent>
-                
+
                 {/* Pagination */}
                 {totalItems > pageSize && (
                     <div className="p-4 border-t">

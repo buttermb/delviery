@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowRight,
   CheckCircle,
+  HelpCircle,
+  AlertCircle,
 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -38,6 +40,10 @@ const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingCha
 const PlatformCapabilities = lazy(() => import("@/components/marketing/PlatformCapabilities").then(m => ({ default: m.PlatformCapabilities })));
 const EnhancedDashboardPreview = lazy(() => import("@/components/marketing/EnhancedDashboardPreview").then(m => ({ default: m.EnhancedDashboardPreview })));
 
+// New AI Components
+import { FreeVsTrialExplainer } from "@/components/marketing/FreeVsTrialExplainer";
+import { FreePaidComparison } from "@/components/marketing/FreePaidComparison";
+
 // Loading fallback component
 const SectionLoader = () => (
   <SectionSkeleton />
@@ -63,7 +69,7 @@ export default function MarketingHome() {
 
       <SEOHead
         title="FloraIQ - Modern Operating System for Cannabis Distribution"
-        description="Secure disposable menus, real-time inventory, and automated logistics. The all-in-one platform for modern wholesale."
+        description="Start for free with 500 credits/month. Secure disposable menus, real-time inventory, and automated logistics. No credit card required."
         structuredData={{
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",
@@ -198,6 +204,13 @@ export default function MarketingHome() {
         </SectionTransition>
       </MarketingErrorBoundary>
 
+      {/* NEW: AI RECOMMENDATION SECTION */}
+      <section className="bg-[hsl(var(--marketing-bg-subtle))]/30 py-12">
+        <div className="container mx-auto px-4">
+          <FreeVsTrialExplainer />
+        </div>
+      </section>
+
       {/* SECTION 9: PRICING PREVIEW */}
       <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg))]">
         <div className="container mx-auto px-4">
@@ -210,29 +223,80 @@ export default function MarketingHome() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
+            {/* FREE TIER - With Premium Glow Animation */}
+            <div className="p-6 rounded-3xl border-2 border-emerald-500 bg-gradient-to-b from-emerald-500/10 to-[hsl(var(--marketing-bg-subtle))] relative overflow-hidden transition-all hover:-translate-y-2 hover:shadow-[0_20px_60px_-15px_rgba(16,185,129,0.4)] group">
+              {/* Animated Glow Ring */}
+              <div className="absolute inset-0 rounded-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-500">
+                <div className="absolute inset-[-2px] rounded-3xl bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-400 opacity-75 blur-sm animate-gradient-border" />
+              </div>
+
+              {/* Sparkle Effects */}
+              <div className="absolute top-4 right-12 w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <div className="absolute top-8 right-8 w-1 h-1 rounded-full bg-teal-300 animate-ping" style={{ animationDuration: '2s' }} />
+
+              <div className="absolute top-0 right-0 px-4 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold rounded-bl-2xl shadow-lg">
+                ✨ NO CC REQUIRED
+              </div>
+
+              <div className="relative z-10">
+                <h3 className="text-xl font-bold mb-1 text-center text-emerald-600 dark:text-emerald-400 tracking-wide">FREE FOREVER</h3>
+                <div className="text-center mb-2">
+                  <span className="text-5xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">$0</span>
+                  <span className="text-lg text-[hsl(var(--marketing-text-light))]">/mo</span>
+                </div>
+                <p className="text-sm text-center text-[hsl(var(--marketing-text-light))] mb-4">Perfect for getting started</p>
+                <div className="text-center mb-6 py-2 px-4 bg-emerald-100 dark:bg-emerald-900/30 rounded-full inline-flex items-center gap-2 mx-auto w-full justify-center">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300">500 FREE credits/month</span>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  {["All core features", "50 customers", "3 menus", "1 location", "No credit card ever"].map((feature, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-[hsl(var(--marketing-text))]">
+                      <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle className="h-3 w-3 text-white" />
+                      </div>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Link to="/signup?plan=free">
+                  <Button className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold h-12 rounded-xl shadow-lg shadow-emerald-500/25 transition-all hover:shadow-emerald-500/40 hover:scale-[1.02]">
+                    Start Free Now
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
             {[
               {
-                name: "BASIC",
+                id: "starter",
+                name: "STARTER",
                 price: "$79",
                 period: "/mo",
-                description: "Perfect for getting started",
-                features: ["28 Core Features", "50 customers", "100 products", "2 locations", "3 team members"],
+                description: "Unlimited for small teams",
+                features: ["Unlimited usage", "Unlimited menus", "2 locations", "3 team members", "Email support"],
+                cta: "Start 14-Day Trial"
               },
               {
+                id: "professional",
                 name: "PROFESSIONAL",
                 price: "$150",
                 period: "/mo",
                 popular: true,
-                description: "Most popular for growing teams",
-                features: ["55 Total Features", "500 customers", "1,000 products", "5 locations", "Advanced CRM"],
+                description: "Most popular choice",
+                features: ["55 Total Features", "500 customers", "5 locations", "Advanced CRM", "Priority support"],
+                cta: "Start 14-Day Trial"
               },
               {
+                id: "enterprise",
                 name: "ENTERPRISE",
                 price: "$499",
                 period: "/mo",
                 description: "For large-scale operations",
                 features: ["All 87 Features", "Unlimited everything", "Fleet management", "API & webhooks", "White-label"],
+                cta: "Contact Sales"
               },
             ].map((plan, index) => (
               <div
@@ -269,7 +333,7 @@ export default function MarketingHome() {
                     </li>
                   ))}
                 </ul>
-                <Link to="/signup">
+                <Link to={plan.id === "enterprise" ? "/contact?reason=enterprise" : `/signup?plan=${plan.id}`}>
                   <ConfettiButton
                     variant={plan.popular ? "default" : "outline"}
                     size="lg"
@@ -281,29 +345,41 @@ export default function MarketingHome() {
                       particleCount: plan.popular ? 150 : 100,
                       colors: ['#10B981', '#34D399', '#059669'],
                     }}
-                    onClick={() => navigate('/signup')}
                   >
-                    {plan.name === "ENTERPRISE" ? "Contact Sales" : "Start Free Trial"}
+                    {plan.cta}
                   </ConfettiButton>
                 </Link>
+                {plan.name !== "ENTERPRISE" && (
+                  <div className="text-[10px] text-center mt-2 text-[hsl(var(--marketing-text-light))] flex justify-center gap-1">
+                    ⚠️ Credit card required for trial
+                  </div>
+                )}
               </div>
             ))}
           </div>
 
           <div className="text-center mt-8">
-            <div className="flex flex-wrap justify-center gap-4 text-sm text-[hsl(var(--marketing-text-light))] mb-4">
-              <span className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-primary))]" />
-                14-day free trial
-              </span>
-              <span className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-primary))]" />
-                No credit card required
-              </span>
-              <span className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-primary))]" />
-                Cancel anytime
-              </span>
+            <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800 rounded-xl max-w-lg mx-auto text-left">
+              <h4 className="font-bold text-blue-900 dark:text-blue-300 mb-4 flex items-center gap-2 text-lg">
+                <HelpCircle className="w-5 h-5" />
+                When is a credit card required?
+              </h4>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />
+                  <span className="text-blue-800 dark:text-blue-200">
+                    <strong className="block text-blue-900 dark:text-blue-100">FREE tier</strong>
+                    No credit card ever. Just sign up and start.
+                  </span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
+                  <span className="text-blue-800 dark:text-blue-200">
+                    <strong className="block text-blue-900 dark:text-blue-100">Paid plan trials</strong>
+                    Credit card required at signup to verify identity. <br />You won't be charged during the 14-day trial.
+                  </span>
+                </div>
+              </div>
             </div>
             <Link to="/pricing">
               <Button variant="ghost" className="group text-[hsl(var(--marketing-text))] hover:text-[hsl(var(--marketing-primary))] hover:scale-105 active:scale-95 transition-transform">
@@ -327,14 +403,14 @@ export default function MarketingHome() {
       {/* SECTION 10: FINAL CTA */}
       <CTASection
         title="Ready to Transform Your Cannabis Distribution?"
-        description="Start your 14-day free trial today. No credit card required."
+        description="Start for free today. No credit card required."
         primaryCta={{
           text: "Start Free Trial",
-          link: "/signup",
+          link: "/signup?plan=free",
         }}
         secondaryCta={{
-          text: "Schedule a Demo",
-          link: "/demo",
+          text: "View Pricing",
+          link: "/pricing",
         }}
         variant="gradient"
       />
@@ -360,6 +436,9 @@ export default function MarketingHome() {
 
       {/* Live Social Proof Notifications */}
       <LiveSocialProof />
+
+      {/* Sticky Comparison Widget */}
+      <FreePaidComparison />
     </div>
   );
 }

@@ -212,7 +212,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
   };
 
   return (
-    <section className="relative py-24 bg-black" id="products">
+    <section className="relative py-16 md:py-24 bg-black" id="products">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-black via-neutral-950 to-black" />
 
@@ -223,9 +223,9 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+          className="text-center mb-10 md:mb-16"
         >
-          <h2 className="text-white font-serif italic text-5xl md:text-6xl tracking-tight mb-4">
+          <h2 className="text-white font-serif italic text-4xl md:text-5xl lg:text-6xl tracking-tight mb-4">
             {heading}
           </h2>
           <p className="text-white/50 text-lg font-light font-sans tracking-wide">
@@ -240,7 +240,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex flex-col md:flex-row gap-4 mb-12 max-w-3xl mx-auto"
+            className="flex flex-col md:flex-row gap-4 mb-8 md:mb-12 max-w-3xl mx-auto"
           >
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
@@ -256,7 +256,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
             <div className="flex gap-2 flex-wrap justify-center">
               <button
                 onClick={() => setSelectedCategory(null)}
-                className={`px-4 py-2 rounded-full text-sm font-light transition-all ${!selectedCategory
+                className={`px-5 py-2.5 rounded-full text-sm font-light transition-all ${!selectedCategory
                   ? 'bg-white text-black'
                   : 'bg-white/[0.02] text-white/60 border border-white/10 hover:border-white/20'
                   }`}
@@ -267,7 +267,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-light transition-all ${selectedCategory === cat
+                  className={`px-5 py-2.5 rounded-full text-sm font-light transition-all ${selectedCategory === cat
                     ? 'bg-white text-black'
                     : 'bg-white/[0.02] text-white/60 border border-white/10 hover:border-white/20'
                     }`}
@@ -384,7 +384,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                           {/* Quick View Button */}
                           <button
                             onClick={(e) => handleQuickView(e, product)}
-                            className="p-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white/20"
+                            className="p-3 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white/20"
                             title="Quick View"
                           >
                             <Eye className="w-4 h-4 text-white" />

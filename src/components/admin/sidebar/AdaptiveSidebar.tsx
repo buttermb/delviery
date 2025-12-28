@@ -28,7 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, ChevronDown, User, HelpCircle, Layout, RefreshCw } from 'lucide-react';
+import { LogOut, Settings, ChevronDown, User, HelpCircle, Layout, RefreshCw, Search } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarMigration } from '@/hooks/useSidebarMigration';
@@ -42,6 +42,7 @@ import { useState, Suspense } from 'react';
 import type { FeatureId } from '@/lib/featureConfig';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CreditBalance } from '@/components/credits';
+import { useCommandPaletteStore } from '@/components/tenant-admin/CommandPalette';
 
 interface AdaptiveSidebarInnerProps {
   collapsible?: "offcanvas" | "icon" | "none";
@@ -155,6 +156,21 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
         {/* Credit Balance for Free Tier Users */}
         <div className="px-3 py-2 border-b">
           <CreditBalance variant="default" showLabel={true} />
+        </div>
+
+        {/* Quick Search Button */}
+        <div className="px-3 py-2 border-b">
+          <Button
+            variant="outline"
+            className="w-full justify-start text-muted-foreground hover:text-foreground"
+            onClick={() => useCommandPaletteStore.getState().setOpen(true)}
+          >
+            <Search className="mr-2 h-4 w-4" />
+            <span className="flex-1 text-left">Search...</span>
+            <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+              <span className="text-xs">⌘</span>K
+            </kbd>
+          </Button>
         </div>
 
         <SidebarContent>

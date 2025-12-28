@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
 const APIAccessPage = lazy(() => import('@/pages/tenant-admin/APIAccessPage'));
 const WebhooksPage = lazy(() => import('@/pages/tenant-admin/WebhooksPage'));
@@ -64,6 +65,11 @@ export default function IntegrationsHubPage() {
         <div className="min-h-screen bg-background">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <div className="border-b bg-card px-4 py-4">
+                    <HubBreadcrumbs
+                        hubName="integrations-hub"
+                        hubHref="integrations-hub"
+                        currentTab={tabs.find(t => t.id === activeTab)?.label}
+                    />
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h1 className="text-2xl font-bold">Integrations</h1>

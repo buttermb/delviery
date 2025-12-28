@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart,
   Heart,
@@ -500,17 +501,24 @@ export default function ProductDetailPage() {
               className="aspect-square relative bg-muted rounded-lg overflow-hidden cursor-zoom-in group"
               onClick={() => setShowZoom(true)}
             >
-              {allImages[selectedImage] ? (
-                <img
-                  src={allImages[selectedImage]}
-                  alt={product.name}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Package className="w-24 h-24 text-muted-foreground" />
-                </div>
-              )}
+              <AnimatePresence mode="wait">
+                {allImages[selectedImage] ? (
+                  <motion.img
+                    key={selectedImage}
+                    src={allImages[selectedImage]}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Package className="w-24 h-24 text-muted-foreground" />
+                  </div>
+                )}
+              </AnimatePresence>
 
               {/* Badges */}
               <div className="absolute top-4 left-4 flex flex-col gap-2">
@@ -701,31 +709,37 @@ export default function ProductDetailPage() {
 
             {/* Add to Cart & Wishlist */}
             <div className="flex gap-3">
-              <Button
-                data-testid="add-to-cart-button"
-                size="lg"
-                className="flex-1 relative overflow-hidden"
-                style={{ backgroundColor: store.primary_color }}
-                disabled={!product.in_stock || isAddingToCart}
-                onClick={handleAddToCart}
+              <motion.div
+                className="flex-1"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                {isAddingToCart && !showAddedAnimation ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Adding...
-                  </span>
-                ) : showAddedAnimation ? (
-                  <span className="flex items-center gap-2">
-                    <Check className="w-5 h-5" />
-                    Added!
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <ShoppingCart className="w-5 h-5" />
-                    {product.in_stock ? 'Add to Cart' : 'Out of Stock'}
-                  </span>
-                )}
-              </Button>
+                <Button
+                  data-testid="add-to-cart-button"
+                  size="lg"
+                  className="w-full relative overflow-hidden"
+                  style={{ backgroundColor: store.primary_color }}
+                  disabled={!product.in_stock || isAddingToCart}
+                  onClick={handleAddToCart}
+                >
+                  {isAddingToCart && !showAddedAnimation ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Adding...
+                    </span>
+                  ) : showAddedAnimation ? (
+                    <span className="flex items-center gap-2">
+                      <Check className="w-5 h-5" />
+                      Added!
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <ShoppingCart className="w-5 h-5" />
+                      {product.in_stock ? 'Add to Cart' : 'Out of Stock'}
+                    </span>
+                  )}
+                </Button>
+              </motion.div>
               <Button
                 size="lg"
                 variant="outline"

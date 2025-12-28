@@ -6,42 +6,67 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { 
-  Check, ArrowRight, Zap, Shield, BarChart, Users, 
-  Globe, Lock, TrendingUp, Star, Menu
+import {
+  Check, ArrowRight, Zap, Shield, BarChart, Users,
+  Globe, Lock, TrendingUp, Star, Menu, Activity, HelpCircle
 } from 'lucide-react';
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
 export default function MarketingLanding() {
+  const faqs = [
+    {
+      question: "Why is a credit card required for the free tier?",
+      answer: "We require a credit card to verify your identity and prevent fraud. You will not be charged unless you choose to upgrade to a paid plan. Your security is our top priority."
+    },
+    {
+      question: "Can I cancel my subscription anytime?",
+      answer: "Yes, absolutely. There are no long-term contracts or cancellation fees. You can cancel your subscription at any time directly from your dashboard."
+    },
+    {
+      question: "Is my data secure?",
+      answer: "We use enterprise-grade encryption and security measures to protect your data. We are fully compliant with industry standards and regulations."
+    },
+    {
+      question: "What happens after my trial ends?",
+      answer: "If you're on a paid plan trial, you can choose to continue with the subscription or switch to our free tier. Your data will be preserved."
+    }
+  ];
   const features = [
     {
-      icon: Menu,
-      title: 'Disposable Menus',
-      description: 'Encrypted, burnable menus with advanced security',
+      icon: Shield,
+      title: 'Secure Digital Menus',
+      description: 'Protect your business with encrypted, burnable menus that keep your pricing discrete and secure.',
     },
     {
       icon: Users,
-      title: 'Customer Management',
-      description: 'Complete CRM for B2B and retail customers',
+      title: 'Built-in CRM',
+      description: 'Stop using spreadsheets. Manage all your retail and B2B customers in one organized, secure system.',
     },
     {
-      icon: BarChart,
-      title: 'Analytics & Insights',
-      description: 'Real-time dashboards and performance metrics',
+      icon: Activity,
+      title: 'Real-Time Inventory',
+      description: 'Never oversell again. Track stock levels across multiple locations with live updates and low-stock alerts.',
     },
     {
-      icon: Shield,
-      title: 'Compliance Ready',
-      description: 'Built for cannabis industry regulations',
+      icon: Lock, // Changed from Shield to avoid duplicate if Shield is used above, or keep inconsistent icons if preferred. Using Lock for variety.
+      title: '100% Compliance Ready',
+      description: 'Stay on the right side of regulations with built-in compliance features designed for the cannabis industry.',
     },
     {
       icon: Zap,
-      title: 'Fast & Reliable',
-      description: '99.9% uptime with real-time updates',
+      title: 'Zero Downtime',
+      description: 'Keep your operation runnning 24/7 with our 99.9% uptime guarantee and instant cloud backups.',
     },
     {
-      icon: Globe,
-      title: 'White-Label',
-      description: 'Brand it as your own (Enterprise)',
+      icon: Globe, // Keeping Globe
+      title: 'White-Label Enterprise',
+      description: 'Scale your brand, not ours. Fully customizable interface for large-scale operations.',
     },
   ];
 
@@ -99,8 +124,8 @@ export default function MarketingLanding() {
       {/* Header */}
       <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="absolute top-4 right-4">
-          <Link 
-            to="/saas/login" 
+          <Link
+            to="/saas/login"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Platform Admin Login
@@ -124,29 +149,77 @@ export default function MarketingLanding() {
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 text-center">
-        <h1 className="text-5xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
-          Wholesale Cannabis CRM
-          <br />
-          Built for Operations
+        <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent leading-tight">
+          Scale Your Cannabis Operations<br />with Confidence
         </h1>
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Complete platform for managing customers, menus, inventory, and orders.
-          Built with security and compliance in mind.
+          Eliminate manual errors, track inventory in real-time, and stay compliant—all in one secure platform.
         </p>
-        <div className="flex gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Link to="/saas/signup">
-            <Button size="lg" className="text-lg px-8">
+            <Button size="lg" className="text-lg px-8 h-12">
               Start Free Trial
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
-          <Button size="lg" variant="outline" className="text-lg px-8">
+          <Button size="lg" variant="outline" className="text-lg px-8 h-12">
             Watch Demo
           </Button>
         </div>
-        <p className="text-sm text-muted-foreground mt-4">
-          14-day free trial • No credit card required • Cancel anytime
-        </p>
+        <div className="mt-6 flex flex-col items-center gap-2 text-sm text-muted-foreground">
+          <p className="font-medium text-foreground">
+            Includes Free Credit Tier • <span className="text-muted-foreground font-normal">Credit card required for safety verification</span>
+          </p>
+          <div className="flex items-center gap-4 text-xs opacity-80">
+            <span className="flex items-center"><Check className="h-3 w-3 mr-1" /> Cancel anytime</span>
+            <span className="flex items-center"><Check className="h-3 w-3 mr-1" /> 14-day free trial</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Signals */}
+      <section className="border-y bg-muted/30">
+        <div className="container mx-auto px-4 py-8">
+          <p className="text-center text-sm font-medium text-muted-foreground mb-6">TRUSTED BY FORWARD-THINKING CANNABIS BRANDS</p>
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+            {/* Placeholders for logos - in a real app these would be SVGs */}
+            <div className="flex items-center gap-2 font-bold text-lg"><Globe className="h-5 w-5" /> GreenLeaf</div>
+            <div className="flex items-center gap-2 font-bold text-lg"><Zap className="h-5 w-5" /> HighTide</div>
+            <div className="flex items-center gap-2 font-bold text-lg"><Shield className="h-5 w-5" /> SecureCanna</div>
+            <div className="flex items-center gap-2 font-bold text-lg"><Star className="h-5 w-5" /> TopShelf</div>
+            <div className="flex items-center gap-2 font-bold text-lg"><Activity className="h-5 w-5" /> FlowState</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Problem Section */}
+      <section className="container mx-auto px-4 py-20 bg-muted/10">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-12">Is your operation stuck in spreadsheets?</h2>
+          <div className="grid md:grid-cols-3 gap-8 text-left">
+            <div className="bg-background p-6 rounded-xl shadow-sm border">
+              <div className="bg-red-100 dark:bg-red-900/20 w-10 h-10 rounded-lg flex items-center justify-center mb-4">
+                <Lock className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="font-semibold mb-2">Security Risks</h3>
+              <p className="text-sm text-muted-foreground">Manual data entry and unsecured spreadsheets leave your sensitive customer data vulnerable to leaks.</p>
+            </div>
+            <div className="bg-background p-6 rounded-xl shadow-sm border">
+              <div className="bg-orange-100 dark:bg-orange-900/20 w-10 h-10 rounded-lg flex items-center justify-center mb-4">
+                <Activity className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+              </div>
+              <h3 className="font-semibold mb-2">Inventory Chaos</h3>
+              <p className="text-sm text-muted-foreground">Overselling products because inventory didn't sync fast enough? That's a surefire way to lose customers.</p>
+            </div>
+            <div className="bg-background p-6 rounded-xl shadow-sm border">
+              <div className="bg-blue-100 dark:bg-blue-900/20 w-10 h-10 rounded-lg flex items-center justify-center mb-4">
+                <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="font-semibold mb-2">Growth Ceiling</h3>
+              <p className="text-sm text-muted-foreground">You can't scale when you're buried in admin work. Automate the busywork and focus on expansion.</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Features Grid */}
@@ -231,6 +304,26 @@ export default function MarketingLanding() {
               </Card>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
+            <p className="text-muted-foreground">Everything you need to know about the platform and billing</p>
+          </div>
+          <Accordion type="single" collapsible className="w-full">
+            {faqs.map((faq, index) => (
+              <AccordionItem key={index} value={`item-${index}`}>
+                <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       </section>
 

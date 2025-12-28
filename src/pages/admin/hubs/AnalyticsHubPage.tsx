@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
 // Lazy load tab content for performance
 const AnalyticsPage = lazy(() => import('@/pages/admin/AnalyticsPage'));
@@ -80,6 +81,11 @@ export default function AnalyticsHubPage() {
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header */}
                 <div className="border-b bg-card px-4 py-4">
+                    <HubBreadcrumbs
+                        hubName="analytics-hub"
+                        hubHref="analytics-hub"
+                        currentTab={tabs.find(t => t.id === activeTab)?.label}
+                    />
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h1 className="text-2xl font-bold">Analytics</h1>

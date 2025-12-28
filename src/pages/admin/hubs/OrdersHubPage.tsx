@@ -26,6 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { QuickActions } from '@/components/admin/ui/QuickActions';
 import { AlertBadge } from '@/components/admin/ui/AlertBadge';
 import { useAdminBadgeCounts } from '@/hooks/useAdminBadgeCounts';
+import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
 // Lazy load tab content for performance
 const WholesaleOrdersPage = lazy(() => import('@/pages/admin/WholesaleOrdersPage'));
@@ -99,6 +100,11 @@ export default function OrdersHubPage() {
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header */}
                 <div className="border-b bg-card px-4 py-4">
+                    <HubBreadcrumbs
+                        hubName="orders"
+                        hubHref="orders-hub"
+                        currentTab={tabs.find(t => t.id === activeTab)?.label}
+                    />
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                             <div>

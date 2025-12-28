@@ -83,7 +83,7 @@ export function ModernHero() {
 
             <div className="flex flex-col gap-3">
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/signup">
+                <Link to="/signup?plan=free">
                   <MagneticButton strength={0.3}>
                     <div className="relative group">
                       {/* Animated gradient border */}
@@ -109,12 +109,23 @@ export function ModernHero() {
                   </Button>
                 </Link>
               </div>
-              <p className="text-sm text-[hsl(var(--marketing-text-light))] ml-1 flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[hsl(var(--marketing-primary))]/10 text-[hsl(var(--marketing-primary))] font-medium text-xs">
-                  ⚡ 60 seconds
-                </span>
-                No credit card required • 14-day free trial
-              </p>
+
+              {/* Free Tier Badge */}
+              <div className="inline-flex items-center gap-2 mt-4 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 px-3 py-1 rounded-full text-xs font-bold border border-emerald-200 dark:border-emerald-800/50 self-start animate-pulse-subtle">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                500 FREE credits/month — No credit card required
+              </div>
+
+              <div className="text-sm text-[hsl(var(--marketing-text-light))] ml-1 flex flex-col gap-1 mt-2">
+                <p className="flex items-center gap-2 font-medium text-[hsl(var(--marketing-text))]">
+                  <CheckCircle className="w-4 h-4 text-[hsl(var(--marketing-primary))]" />
+                  Start Free forever
+                  <span className="text-[hsl(var(--marketing-text-light))] font-normal">• Paid plans = unlimited usage</span>
+                </p>
+                <p className="text-xs opacity-70 pl-6">
+                  Credit card only required for 14-day trial of paid plans
+                </p>
+              </div>
             </div>
 
             <div className="mt-10 flex flex-col gap-8">
@@ -148,6 +159,21 @@ export function ModernHero() {
 
             {/* Card Stack - Static transforms */}
             <div className="relative w-full aspect-square max-w-[600px] mx-auto">
+
+              {/* Start Free Tooltip - Floating on top */}
+              <div className="absolute -left-12 top-20 z-30 animate-bounce-subtle hidden lg:block">
+                <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 shadow-xl border border-emerald-100 dark:border-emerald-900 transform rotate-[-6deg]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">🎁</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">Start FREE</span>
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">500 credits</span>/month
+                    <br />No CC required
+                  </div>
+                </div>
+              </div>
+
               {/* Back Card */}
               <div
                 className="absolute inset-0 bg-[hsl(var(--marketing-bg-subtle))] rounded-3xl border border-[hsl(var(--marketing-border))] opacity-40 scale-95 z-0"
@@ -288,10 +314,10 @@ export function ModernHero() {
             </div>
           </div>
         </div>
-      </div>
+      </div >
 
       {/* CSS animations */}
-      <style>{`
+      < style > {`
         @keyframes progress {
           0% { width: 0%; }
           100% { width: 100%; }
@@ -311,7 +337,7 @@ export function ModernHero() {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
-      `}</style>
-    </section>
+      `}</style >
+    </section >
   );
 }

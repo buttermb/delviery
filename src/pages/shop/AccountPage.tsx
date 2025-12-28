@@ -332,24 +332,28 @@ export default function AccountPage() {
                   {orders.map((order) => (
                     <Card key={order.id} className="hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                           <Link
                             to={`/shop/${storeSlug}/track/${order.tracking_token}`}
-                            className="flex items-center gap-4 flex-1"
+                            className="flex items-center gap-4 flex-1 w-full"
                           >
-                            {getStatusIcon(order.status)}
-                            <div>
-                              <p className="font-medium">{order.order_number}</p>
-                              <p className="text-sm text-muted-foreground">
+                            <div className="flex-shrink-0">
+                              {getStatusIcon(order.status)}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">#{order.order_number}</p>
+                              <p className="text-sm text-muted-foreground truncate">
                                 {formatSmartDate(order.created_at)} • {order.items?.length || 0} item
                                 {(order.items?.length || 0) !== 1 ? 's' : ''}
                               </p>
                             </div>
                           </Link>
-                          <div className="flex items-center gap-4">
-                            <div className="text-right">
+                          <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto mt-2 md:mt-0 pt-2 md:pt-0 border-t md:border-t-0">
+                            <div className="text-left md:text-right">
                               <p className="font-semibold">{formatCurrency(order.total || order.total_amount || 0)}</p>
-                              {getStatusBadge(order.status)}
+                              <div className="mt-1">
+                                {getStatusBadge(order.status)}
+                              </div>
                             </div>
                             <QuickReorderButton
                               order={order}

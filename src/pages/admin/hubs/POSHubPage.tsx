@@ -19,6 +19,7 @@ import ZReportContent from './panels/ZReportPanel';
 // Lazy load for performance
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
 const POSAnalyticsPage = lazy(() => import('@/pages/tenant-admin/POSAnalyticsPage'));
 
@@ -74,6 +75,11 @@ export default function POSHubPage() {
                 {/* Tab Header - Only show when NOT on register (register is fullscreen) */}
                 {activeTab !== 'register' && (
                     <div className="border-b bg-card px-4 py-3">
+                        <HubBreadcrumbs
+                            hubName="pos-system"
+                            hubHref="pos-system"
+                            currentTab={tabs.find(t => t.id === activeTab)?.label}
+                        />
                         <div className="flex items-center justify-between mb-4">
                             <div>
                                 <h1 className="text-2xl font-bold">Point of Sale</h1>

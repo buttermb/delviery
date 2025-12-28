@@ -55,20 +55,20 @@ export function StatCard({
   isRefreshing,
 }: StatCardProps) {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  
+
   // Build the full path with tenant slug if href is provided
-  const fullPath = href 
+  const fullPath = href
     ? href.startsWith('/admin') && tenantSlug
       ? `/${tenantSlug}${href}`
       : href
     : undefined;
 
   const isClickable = !!onClick || !!fullPath;
-  
+
   const cardContent = (
-    <Card 
+    <Card
       className={cn(
-        'p-6 border-2 hover:shadow-lg transition-all',
+        'p-4 sm:p-6 border-2 hover:shadow-lg transition-all',
         colorClasses[color],
         isClickable && 'hover:scale-[1.02] cursor-pointer'
       )}
@@ -83,39 +83,39 @@ export function StatCard({
 
       <div className="text-2xl font-bold mb-1">{value}</div>
 
-        {(change || subtitle) && (
-          <div className="flex items-center gap-2 text-sm">
-            {change && (
-              <span
-                className={cn(
-                  'flex items-center gap-1 font-medium',
-                  change.type === 'increase' ? 'text-primary' : 'text-destructive'
-                )}
-              >
-                {change.type === 'increase' ? (
-                  <ArrowUp className="h-3 w-3" />
-                ) : (
-                  <ArrowDown className="h-3 w-3" />
-                )}
-                {change.value.toFixed(1)}%
-              </span>
-            )}
-            {subtitle && (
-              <span className="text-muted-foreground">{subtitle}</span>
-            )}
-          </div>
-        )}
-        
-        {lastUpdated && (
-          <LastUpdated 
-            date={lastUpdated} 
-            onRefresh={onRefresh}
-            isLoading={isRefreshing}
-            className="mt-2"
-          />
-        )}
-      </Card>
-    );
+      {(change || subtitle) && (
+        <div className="flex items-center gap-2 text-sm">
+          {change && (
+            <span
+              className={cn(
+                'flex items-center gap-1 font-medium',
+                change.type === 'increase' ? 'text-primary' : 'text-destructive'
+              )}
+            >
+              {change.type === 'increase' ? (
+                <ArrowUp className="h-3 w-3" />
+              ) : (
+                <ArrowDown className="h-3 w-3" />
+              )}
+              {change.value.toFixed(1)}%
+            </span>
+          )}
+          {subtitle && (
+            <span className="text-muted-foreground">{subtitle}</span>
+          )}
+        </div>
+      )}
+
+      {lastUpdated && (
+        <LastUpdated
+          date={lastUpdated}
+          onRefresh={onRefresh}
+          isLoading={isRefreshing}
+          className="mt-2"
+        />
+      )}
+    </Card>
+  );
 
   if (fullPath) {
     return <Link to={fullPath}>{cardContent}</Link>;

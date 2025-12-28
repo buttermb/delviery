@@ -125,7 +125,7 @@ export default function StorefrontOrders() {
       let query = supabase
         .from('marketplace_orders')
         .select('*')
-        .eq('store_id', store.id)
+        .eq('seller_profile_id', store.id)
         .order('created_at', { ascending: false });
 
       if (statusFilter !== 'all') {
@@ -168,7 +168,7 @@ export default function StorefrontOrders() {
           .from('marketplace_orders')
           .update(updates)
           .eq('id', orderId)
-          .eq('store_id', store.id);
+          .eq('seller_profile_id', store.id);
 
         if (error) throw error;
       } catch (error) {

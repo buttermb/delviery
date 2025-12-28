@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
+import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
 // Lazy load tab content for performance
 const DeliveryManagement = lazy(() => import('@/pages/admin/DeliveryManagement'));
@@ -73,6 +74,11 @@ export default function FulfillmentHubPage() {
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header */}
                 <div className="border-b bg-card px-4 py-4">
+                    <HubBreadcrumbs
+                        hubName="fulfillment-hub"
+                        hubHref="fulfillment-hub"
+                        currentTab={tabs.find(t => t.id === activeTab)?.label}
+                    />
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h1 className="text-2xl font-bold">Fulfillment & Delivery</h1>

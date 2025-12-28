@@ -130,10 +130,10 @@ export function ModernDashboard() {
   return (
     <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">🏠 Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">🏠 Dashboard</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             {format(new Date(), 'EEEE, MMMM d, yyyy')}
           </p>
         </div>

@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
 const StorefrontDashboard = lazy(() => import('@/pages/admin/storefront/StorefrontDashboard'));
 const StorefrontProducts = lazy(() => import('@/pages/admin/storefront/StorefrontProducts'));
@@ -69,6 +70,11 @@ export default function StorefrontHubPage() {
         <div className="min-h-0 bg-background flex flex-col -m-3 sm:-m-4 md:-m-6" style={{ height: 'calc(100vh - 56px)' }}>
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full flex-1 min-h-0 flex flex-col">
                 <div className="border-b bg-card px-4 py-4 shrink-0">
+                    <HubBreadcrumbs
+                        hubName="storefront-hub"
+                        hubHref="storefront-hub"
+                        currentTab={tabs.find(t => t.id === activeTab)?.label}
+                    />
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h1 className="text-2xl font-bold">Storefront</h1>

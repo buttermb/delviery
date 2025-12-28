@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { RefreshCw, Volume2, VolumeX } from 'lucide-react';
+import { RefreshCw, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -67,8 +67,8 @@ export default function LiveOrders() {
     initAudio(); // Ensure audio is initialized
   };
 
-  // Enable Realtime Sync
-  useRealtimeSync({
+  // Enable Realtime Sync with connection tracking
+  const { isActive: isConnected, channelCount } = useRealtimeSync({
     tenantId: tenant?.id,
     tables: ['orders', 'menu_orders'], // Listen to both tables
     enabled: !!tenant?.id
@@ -256,6 +256,22 @@ export default function LiveOrders() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Connection Status */}
+            <div
+              className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-colors ${isConnected
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                  : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 animate-pulse'
+                }`}
+              title={isConnected ? `Connected (${channelCount} channels)` : 'Disconnected - Using polling'}
+            >
+              {isConnected ? (
+                <Wifi className="h-3 w-3" />
+              ) : (
+                <WifiOff className="h-3 w-3" />
+              )}
+              {isConnected ? 'Live' : 'Polling'}
+            </div>
+
             {/* Sound Toggle */}
             <Button
               variant={soundEnabled ? "default" : "outline"}
