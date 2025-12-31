@@ -5,7 +5,7 @@
 
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -139,6 +139,8 @@ export default function SignUpPage() {
   const { handleSignupSuccess } = useTenantAdminAuth();
   const { prefetch } = usePrefetchDashboard();
   const clerkConfigured = useClerkConfigured();
+  const [searchParams] = useSearchParams();
+  const selectedPlan = (searchParams.get('plan') || 'free') as 'free' | 'starter' | 'professional' | 'enterprise';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string>('');
@@ -1134,7 +1136,7 @@ export default function SignUpPage() {
                   <div className="h-96 bg-muted/50 rounded-lg animate-pulse" />
                 </div>
               }>
-                <SignupFeaturesShowcase />
+                <SignupFeaturesShowcase plan={selectedPlan} />
               </Suspense>
             </div>
           </div>
@@ -1148,7 +1150,7 @@ export default function SignUpPage() {
               <div className="h-96 bg-muted/50 rounded-lg animate-pulse" />
             </div>
           }>
-            <SignupFeaturesShowcase />
+            <SignupFeaturesShowcase plan={selectedPlan} />
           </Suspense>
         </div>
       </div>

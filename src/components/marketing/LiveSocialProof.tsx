@@ -47,17 +47,17 @@ export function LiveSocialProof() {
 
   const cycleNotification = useCallback(() => {
     setIsVisible(true);
-    
+
     const hideTimer = setTimeout(() => {
       setIsVisible(false);
-      
+
       const nextTimer = setTimeout(() => {
         setCurrentIndex((prev) => (prev + 1) % activities.length);
       }, 300);
-      
+
       return () => clearTimeout(nextTimer);
     }, 4000);
-    
+
     return () => clearTimeout(hideTimer);
   }, []);
 
@@ -65,9 +65,10 @@ export function LiveSocialProof() {
     // Initial delay before showing first notification
     const initialDelay = setTimeout(() => {
       cycleNotification();
-    }, 2000);
+    }, 5000); // Increased initial delay
 
-    const interval = setInterval(cycleNotification, 7000);
+    // Reduced frequency: show notification every 20 seconds instead of 7
+    const interval = setInterval(cycleNotification, 20000);
 
     return () => {
       clearTimeout(initialDelay);
@@ -80,10 +81,9 @@ export function LiveSocialProof() {
   const colorClass = getColor(activity.type);
 
   return (
-    <div 
-      className={`fixed bottom-24 left-4 z-40 md:bottom-8 transition-all duration-300 ease-out ${
-        isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'
-      }`}
+    <div
+      className={`fixed bottom-24 left-4 z-40 md:bottom-8 transition-all duration-300 ease-out ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'
+        }`}
     >
       <div className="bg-[hsl(var(--marketing-bg))]/95 backdrop-blur-sm rounded-xl border border-[hsl(var(--marketing-border))] shadow-xl p-4 max-w-xs">
         <div className="flex items-start gap-3">

@@ -14,6 +14,7 @@ import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLo
 import { useFeatureFlags } from "@/config/featureFlags";
 import { toast } from "sonner";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { FreeTierOnboardingFlow } from "@/components/onboarding/FreeTierOnboardingFlow";
 import { useTenantRouteGuard } from "@/hooks/useTenantRouteGuard";
 
 interface TenantAdmin {
@@ -1645,7 +1646,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         if (error || !freshTenant) return;
 
         // Only trigger full refresh if subscription state changed
-        const subscriptionChanged = 
+        const subscriptionChanged =
           freshTenant.subscription_status !== tenant.subscription_status ||
           freshTenant.subscription_plan !== tenant.subscription_plan ||
           freshTenant.is_free_tier !== tenant.is_free_tier ||
@@ -1698,6 +1699,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         open={onboardingOpen}
         onOpenChange={setOnboardingOpen}
       />
+      {/* Free Tier Onboarding - Only shows for free tier users after initial onboarding */}
+      <FreeTierOnboardingFlow />
     </TenantAdminAuthContext.Provider>
   );
 };

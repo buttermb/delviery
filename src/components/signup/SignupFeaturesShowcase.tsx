@@ -8,9 +8,47 @@ import {
   Zap,
   CheckCircle2,
   Sparkles,
+  Coins,
 } from 'lucide-react';
 
-const features = [
+interface SignupFeaturesShowcaseProps {
+  plan?: 'free' | 'starter' | 'professional' | 'enterprise';
+}
+
+// Features for FREE tier - emphasize the generous free offering
+const freeFeatures = [
+  {
+    icon: Coins,
+    title: '500 free credits/month',
+    description: 'Actions use credits, reset monthly',
+    color: 'text-white',
+    bgColor: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
+  },
+  {
+    icon: Users,
+    title: 'Up to 50 customers',
+    description: 'Manage your customer relationships',
+    color: 'text-white',
+    bgColor: 'bg-gradient-to-br from-blue-500 to-blue-600',
+  },
+  {
+    icon: FileText,
+    title: '1 menu per day',
+    description: 'Create shareable product catalogs',
+    color: 'text-white',
+    bgColor: 'bg-gradient-to-br from-purple-500 to-purple-600',
+  },
+  {
+    icon: Package,
+    title: '25 products',
+    description: 'Build your product catalog',
+    color: 'text-white',
+    bgColor: 'bg-gradient-to-br from-orange-500 to-orange-600',
+  },
+];
+
+// Features for paid tiers
+const paidFeatures = [
   {
     icon: Users,
     title: 'Up to 50 customers',
@@ -55,46 +93,95 @@ const features = [
   },
 ];
 
-export function SignupFeaturesShowcase() {
+export function SignupFeaturesShowcase({ plan = 'free' }: SignupFeaturesShowcaseProps) {
+  const isFreePlan = plan === 'free';
+  const features = isFreePlan ? freeFeatures : paidFeatures;
+
   return (
     <div className="space-y-6">
-      {/* Pricing Card */}
-      <Card className="relative overflow-hidden bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-emerald-500/10 backdrop-blur-sm border-2 border-primary/20 shadow-xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-emerald-500/5" />
+      {/* Pricing Card - Dynamic based on plan */}
+      <Card className={`relative overflow-hidden backdrop-blur-sm border-2 shadow-xl ${isFreePlan
+          ? 'bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-emerald-500/10 border-emerald-500/20'
+          : 'bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-emerald-500/10 border-primary/20'
+        }`}>
+        <div className={`absolute inset-0 ${isFreePlan
+            ? 'bg-gradient-to-br from-emerald-500/5 via-teal-500/5 to-emerald-500/5'
+            : 'bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-emerald-500/5'
+          }`} />
         <CardContent className="pt-6 relative z-10">
           <div className="text-center mb-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm font-medium mb-3 shadow-lg animate-pulse" style={{ animationDuration: '3s' }}>
-              <Sparkles className="h-4 w-4" />
-              14-Day Free Trial
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-baseline justify-center gap-2">
-                <span className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">$79</span>
-                <span className="text-muted-foreground">/month</span>
-              </div>
-              <p className="text-sm text-muted-foreground">After trial ends</p>
-            </div>
+            {isFreePlan ? (
+              <>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-medium mb-3 shadow-lg">
+                  <Sparkles className="h-4 w-4" />
+                  FREE Forever
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-baseline justify-center gap-2">
+                    <span className="text-5xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">$0</span>
+                    <span className="text-muted-foreground">/month</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">No credit card ever</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm font-medium mb-3 shadow-lg animate-pulse" style={{ animationDuration: '3s' }}>
+                  <Sparkles className="h-4 w-4" />
+                  14-Day Free Trial
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-baseline justify-center gap-2">
+                    <span className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">$79</span>
+                    <span className="text-muted-foreground">/month</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">After trial ends</p>
+                </div>
+              </>
+            )}
           </div>
           <div className="space-y-2 text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-              <span>No credit card required</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-              <span>Cancel anytime</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-              <span>Full access during trial</span>
-            </div>
+            {isFreePlan ? (
+              <>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                  <span>500 credits every month</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                  <span>All core features included</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                  <span>Upgrade anytime for more</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                  <span>No credit card required</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                  <span>Cancel anytime</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                  <span>Full access during trial</span>
+                </div>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
 
       {/* Features Grid */}
       <div>
-        <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">What's Included</h3>
+        <h3 className={`text-lg font-semibold mb-4 bg-clip-text text-transparent ${isFreePlan
+            ? 'bg-gradient-to-r from-emerald-600 to-teal-600'
+            : 'bg-gradient-to-r from-blue-600 to-purple-600'
+          }`}>What's Included</h3>
         <div className="grid grid-cols-1 gap-3">
           {features.map((feature, index) => (
             <Card
@@ -139,4 +226,3 @@ export function SignupFeaturesShowcase() {
     </div>
   );
 }
-

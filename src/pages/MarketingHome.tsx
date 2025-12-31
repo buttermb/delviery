@@ -32,7 +32,6 @@ import { analytics } from "@/utils/analytics";
 
 // Lazy load heavy components
 const ProblemSolutionSection = lazy(() => import("@/components/marketing/ProblemSolutionSection").then(m => ({ default: m.ProblemSolutionSection })));
-const CustomerSuccessTimeline = lazy(() => import("@/components/marketing/CustomerSuccessTimeline").then(m => ({ default: m.CustomerSuccessTimeline })));
 const ComparisonSection = lazy(() => import("@/components/marketing/ComparisonSection").then(m => ({ default: m.ComparisonSection })));
 const IntegrationEcosystem = lazy(() => import("@/components/marketing/IntegrationEcosystem").then(m => ({ default: m.IntegrationEcosystem })));
 const ROICalculator = lazy(() => import("@/components/marketing/ROICalculator").then(m => ({ default: m.ROICalculator })));
@@ -40,9 +39,6 @@ const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingCha
 const PlatformCapabilities = lazy(() => import("@/components/marketing/PlatformCapabilities").then(m => ({ default: m.PlatformCapabilities })));
 const EnhancedDashboardPreview = lazy(() => import("@/components/marketing/EnhancedDashboardPreview").then(m => ({ default: m.EnhancedDashboardPreview })));
 
-// New AI Components
-import { FreeVsTrialExplainer } from "@/components/marketing/FreeVsTrialExplainer";
-import { FreePaidComparison } from "@/components/marketing/FreePaidComparison";
 
 // Loading fallback component
 const SectionLoader = () => (
@@ -204,12 +200,6 @@ export default function MarketingHome() {
         </SectionTransition>
       </MarketingErrorBoundary>
 
-      {/* NEW: AI RECOMMENDATION SECTION */}
-      <section className="bg-[hsl(var(--marketing-bg-subtle))]/30 py-12">
-        <div className="container mx-auto px-4">
-          <FreeVsTrialExplainer />
-        </div>
-      </section>
 
       {/* SECTION 9: PRICING PREVIEW */}
       <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg))]">
@@ -437,8 +427,6 @@ export default function MarketingHome() {
       {/* Live Social Proof Notifications */}
       <LiveSocialProof />
 
-      {/* Sticky Comparison Widget */}
-      <FreePaidComparison />
     </div>
   );
 }
