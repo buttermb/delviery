@@ -63,12 +63,20 @@ export interface UseCreditsReturn {
 // Hook Implementation
 // ============================================================================
 
+// Client-side rate limiting config
+const RATE_LIMIT = {
+  maxOperations: 30,
+  windowMs: 60 * 1000, // 1 minute
+};
+
 export function useCredits(): UseCreditsReturn {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [showWarning, setShowWarning] = useState(false);
   // RACE CONDITION FIX: Track in-flight actions to prevent double-execution
   const [inFlightActions, setInFlightActions] = useState<Set<string>>(new Set());
+  // CLIENT-SIDE RATE LIMITING: Track recent operations with timestamps
+  const [recentOperations, setRecentOperations] = useState<number[]>([]);
 
   const tenantId = tenant?.id;
 
@@ -182,6 +190,19 @@ export function useCredits(): UseCreditsReturn {
       };
     }
 
+    // CLIENT-SIDE RATE LIMITING: Check if rate limit exceeded
+    const now = Date.now();
+    const recentOps = recentOperations.filter(t => now - t < RATE_LIMIT.windowMs);
+    if (recentOps.length >= RATE_LIMIT.maxOperations) {
+      logger.warn('Client-side rate limit exceeded', { actionKey, operationsInWindow: recentOps.length });
+      return {
+        success: false,
+        newBalance: balance,
+        creditsCost: 0,
+        errorMessage: 'Too many requests. Please wait a moment.',
+      };
+    }
+
     // RACE CONDITION FIX: Prevent double-execution of same action
     // Uses action+reference combo as unique key
     const idempotencyKey = `${actionKey}:${referenceId || 'default'}`;
@@ -195,8 +216,9 @@ export function useCredits(): UseCreditsReturn {
       };
     }
 
-    // Mark action as in-flight
+    // Mark action as in-flight and track for rate limiting
     setInFlightActions(prev => new Set(prev).add(idempotencyKey));
+    setRecentOperations(prev => [...prev.filter(t => now - t < RATE_LIMIT.windowMs), now]);
 
     try {
       // IDEMPOTENCY FIX: Ensure we always have a reference ID
@@ -241,7 +263,7 @@ export function useCredits(): UseCreditsReturn {
         return next;
       });
     }
-  }, [tenantId, isFreeTier, balance, queryClient, inFlightActions]);
+  }, [tenantId, isFreeTier, balance, queryClient, inFlightActions, recentOperations]);
 
   return {
     // Balance info
