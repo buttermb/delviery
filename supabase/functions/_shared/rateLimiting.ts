@@ -144,6 +144,9 @@ export const RATE_LIMITS = {
   ORDER_CREATE: { key: 'order_create', limit: 10, windowMs: 60 * 1000 }, // 10 per minute
   PASSWORD_RESET: { key: 'password_reset', limit: 3, windowMs: 60 * 60 * 1000 }, // 3 per hour
   EMAIL_VERIFICATION: { key: 'email_verify', limit: 5, windowMs: 60 * 1000 }, // 5 per minute
+  CREDIT_CONSUME: { key: 'credit_consume', limit: 30, windowMs: 60 * 1000 }, // 30 per minute
+  CREDIT_PURCHASE: { key: 'credit_purchase', limit: 5, windowMs: 60 * 60 * 1000 }, // 5 per hour
+  FREE_CREDITS_GRANT: { key: 'free_credits', limit: 1, windowMs: 24 * 60 * 60 * 1000 }, // 1 per day
 } as const;
 
 /**
