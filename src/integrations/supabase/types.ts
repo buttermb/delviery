@@ -14584,6 +14584,14 @@ export type Database = {
         Args: { p_reason?: string; p_reservation_id: string }
         Returns: Json
       }
+      check_credit_rate_limit: {
+        Args: {
+          p_max_operations?: number
+          p_tenant_id: string
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
       check_credits: {
         Args: { p_action_key: string; p_tenant_id: string }
         Returns: Json
@@ -15167,6 +15175,7 @@ export type Database = {
         Args: { p_product_id: string; p_quantity: number }
         Returns: boolean
       }
+      reset_daily_credit_usage: { Args: never; Returns: undefined }
       resolve_dead_letter_entry: {
         Args: { p_dlq_id: string; p_notes?: string; p_user_id: string }
         Returns: undefined
