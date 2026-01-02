@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * OutOfCreditsModal Component
  * 
@@ -32,7 +31,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCredits } from '@/hooks/useCredits';
-import { 
+import {
   getCreditCostInfo,
   calculateCreditVsSubscription,
   CREDIT_PACKAGES,
@@ -87,7 +86,7 @@ export function OutOfCreditsModal({
           <DialogTitle className="text-2xl">You're Out of Credits</DialogTitle>
           <DialogDescription className="text-base">
             {actionInfo
-              ? `Cannot ${actionInfo.name.toLowerCase()} — not enough credits.`
+              ? `Cannot ${actionInfo.actionName.toLowerCase()} — not enough credits.`
               : "Your business actions are paused until you get more credits."}
           </DialogDescription>
         </DialogHeader>
@@ -99,7 +98,7 @@ export function OutOfCreditsModal({
               <div className="p-3 rounded-lg bg-muted/50 text-center">
                 <div className="text-xs text-muted-foreground mb-1">Action Cost</div>
                 <div className="text-lg font-bold text-amber-600">
-                  {actionInfo.cost} credits
+                  {actionInfo.credits} credits
                 </div>
               </div>
             )}
@@ -135,7 +134,7 @@ export function OutOfCreditsModal({
                 <Crown className="h-5 w-5 text-primary" />
                 <span className="font-bold text-lg">Upgrade to Unlimited</span>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="text-center p-2 rounded bg-white/50 dark:bg-black/20">
                   <div className="text-2xl font-bold text-primary">$79</div>
@@ -175,9 +174,9 @@ export function OutOfCreditsModal({
                   Higher Cost
                 </Badge>
               </div>
-              
+
               <p className="text-xs text-muted-foreground mb-3">
-                Cheapest pack: {cheapestPack.credits} credits for ${(cheapestPack.priceCents / 100).toFixed(2)} 
+                Cheapest pack: {cheapestPack.credits} credits for ${(cheapestPack.priceCents / 100).toFixed(2)}
                 ({(costPerCredit * 100).toFixed(1)}¢/credit)
               </p>
 

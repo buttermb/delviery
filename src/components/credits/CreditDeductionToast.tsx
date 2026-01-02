@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * CreditDeductionToast Component
  * 
@@ -201,7 +200,8 @@ export function CreditToastContainer({ className }: CreditToastContainerProps) {
   const [toasts, setToasts] = useState<ToastData[]>([]);
 
   useEffect(() => {
-    return creditToastManager.subscribe(setToasts);
+    const unsubscribe = creditToastManager.subscribe(setToasts);
+    return () => { unsubscribe(); };
   }, []);
 
   if (toasts.length === 0) return null;

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * CreditOptimizationTips Component
  * 
@@ -171,7 +170,7 @@ export function CreditOptimizationTips({
 
       // Analyze patterns
       const actionCounts: Record<string, { count: number; credits: number }> = {};
-      
+
       transactions.forEach((t) => {
         const action = t.action_type || 'unknown';
         if (!actionCounts[action]) {
@@ -221,7 +220,7 @@ export function CreditOptimizationTips({
       // If exporting frequently, prioritize export timing tip
       if (
         (actionCounts['export_csv']?.count || 0) +
-          (actionCounts['export_pdf']?.count || 0) >
+        (actionCounts['export_pdf']?.count || 0) >
         3
       ) {
         tips = tips.map((t) =>
@@ -262,7 +261,7 @@ export function CreditOptimizationTips({
             <Lightbulb className="h-5 w-5 text-amber-500" />
             <span className="font-medium">Credit-Saving Tips</span>
           </div>
-          
+
           {personalizedTips.slice(0, 2).map((tip) => (
             <div key={tip.id} className="flex items-start gap-2 text-sm">
               <CheckCircle2 className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
@@ -323,7 +322,7 @@ export function CreditOptimizationTips({
                   <p className="text-sm text-muted-foreground">
                     {tip.description}
                   </p>
-                  
+
                   <div className="flex items-center justify-between">
                     {tip.actionUrl ? (
                       <Button variant="outline" size="sm" asChild>

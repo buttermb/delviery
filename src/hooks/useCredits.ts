@@ -67,6 +67,8 @@ export function useCredits(): UseCreditsReturn {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [showWarning, setShowWarning] = useState(false);
+  // RACE CONDITION FIX: Track in-flight actions to prevent double-execution
+  const [inFlightActions, setInFlightActions] = useState<Set<string>>(new Set());
 
   const tenantId = tenant?.id;
 
@@ -180,42 +182,66 @@ export function useCredits(): UseCreditsReturn {
       };
     }
 
-    // IDEMPOTENCY FIX: Ensure we always have a reference ID
-    const safeReferenceId = referenceId || crypto.randomUUID();
-
-    const result = await consumeCredits(
-      tenantId,
-      actionKey,
-      safeReferenceId,
-      undefined, // description
-      referenceType ? { reference_type: referenceType } : undefined // metadata
-    );
-
-    // Refetch balance after consumption
-    if (result.success) {
-      queryClient.invalidateQueries({ queryKey: ['credits', tenantId] });
-
-      // Show credit deduction toast
-      const costInfo = getCreditCostInfo(actionKey);
-      if (costInfo && result.creditsCost > 0) {
-        showCreditDeductionToast(
-          result.creditsCost,
-          costInfo.actionName,
-          result.newBalance
-        );
-      }
-    } else {
-      // Track failed action due to insufficient credits
-      trackCreditEvent(
-        tenantId,
-        'action_blocked_insufficient_credits',
-        balance,
-        actionKey
-      );
+    // RACE CONDITION FIX: Prevent double-execution of same action
+    // Uses action+reference combo as unique key
+    const idempotencyKey = `${actionKey}:${referenceId || 'default'}`;
+    if (inFlightActions.has(idempotencyKey)) {
+      logger.warn('Duplicate action prevented', { actionKey, referenceId });
+      return {
+        success: false,
+        newBalance: balance,
+        creditsCost: 0,
+        errorMessage: 'Action already in progress',
+      };
     }
 
-    return result;
-  }, [tenantId, isFreeTier, balance, queryClient]);
+    // Mark action as in-flight
+    setInFlightActions(prev => new Set(prev).add(idempotencyKey));
+
+    try {
+      // IDEMPOTENCY FIX: Ensure we always have a reference ID
+      const safeReferenceId = referenceId || crypto.randomUUID();
+
+      const result = await consumeCredits(
+        tenantId,
+        actionKey,
+        safeReferenceId,
+        undefined, // description
+        referenceType ? { reference_type: referenceType } : undefined // metadata
+      );
+
+      // Refetch balance after consumption
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: ['credits', tenantId] });
+
+        // Show credit deduction toast
+        const costInfo = getCreditCostInfo(actionKey);
+        if (costInfo && result.creditsCost > 0) {
+          showCreditDeductionToast(
+            result.creditsCost,
+            costInfo.actionName,
+            result.newBalance
+          );
+        }
+      } else {
+        // Track failed action due to insufficient credits
+        trackCreditEvent(
+          tenantId,
+          'action_blocked_insufficient_credits',
+          balance,
+          actionKey
+        );
+      }
+      return result;
+    } finally {
+      // Remove from in-flight set
+      setInFlightActions(prev => {
+        const next = new Set(prev);
+        next.delete(idempotencyKey);
+        return next;
+      });
+    }
+  }, [tenantId, isFreeTier, balance, queryClient, inFlightActions]);
 
   return {
     // Balance info

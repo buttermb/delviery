@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * CreditUsageChart Component
  * 
@@ -7,13 +6,13 @@
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   Cell,
 } from 'recharts';
@@ -25,17 +24,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { getCategoryDisplayName, type CreditCategory } from '@/lib/credits';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
-const CATEGORY_COLORS: Record<CreditCategory, string> = {
+const CATEGORY_COLORS: Record<string, string> = {
   orders: '#3b82f6',
   inventory: '#10b981',
   customers: '#8b5cf6',
-  finance: '#f59e0b',
-  communication: '#ec4899',
+  invoices: '#f59e0b',
+  crm: '#ec4899',
   reports: '#6366f1',
   exports: '#14b8a6',
   ai: '#f97316',
   api: '#64748b',
   menus: '#06b6d4',
+  marketplace: '#d946ef',
+  pos: '#0ea5e9',
+  operations: '#84cc16',
 };
 
 export interface CreditUsageChartProps {
@@ -71,13 +73,14 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
 
       for (const tx of transactions || []) {
         // Get category from credit_costs or default
-        const category = tx.metadata?.category || 'other';
+        const metadata = tx.metadata as Record<string, unknown> | null;
+        const category = (typeof metadata?.category === 'string' ? metadata.category : 'other');
         byCategory[category] = (byCategory[category] || 0) + Math.abs(tx.amount);
 
         // Aggregate by day
-        const day = new Date(tx.created_at).toLocaleDateString('en-US', { 
-          month: 'short', 
-          day: 'numeric' 
+        const day = new Date(tx.created_at).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric'
         });
         byDay[day] = (byDay[day] || 0) + Math.abs(tx.amount);
       }
@@ -98,7 +101,7 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
 
       // Calculate totals
       const totalUsed = (transactions || []).reduce(
-        (sum, tx) => sum + Math.abs(tx.amount), 
+        (sum, tx) => sum + Math.abs(tx.amount),
         0
       );
 
@@ -115,11 +118,11 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
         .lt('created_at', startDate.toISOString());
 
       const prevTotal = (prevTransactions || []).reduce(
-        (sum, tx) => sum + Math.abs(tx.amount), 
+        (sum, tx) => sum + Math.abs(tx.amount),
         0
       );
 
-      const changePercent = prevTotal > 0 
+      const changePercent = prevTotal > 0
         ? Math.round(((totalUsed - prevTotal) / prevTotal) * 100)
         : 0;
 
@@ -154,17 +157,17 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
     return null;
   }
 
-  const TrendIcon = data.changePercent > 0 
-    ? TrendingUp 
-    : data.changePercent < 0 
-    ? TrendingDown 
-    : Minus;
+  const TrendIcon = data.changePercent > 0
+    ? TrendingUp
+    : data.changePercent < 0
+      ? TrendingDown
+      : Minus;
 
-  const trendColor = data.changePercent > 0 
-    ? 'text-red-500' 
-    : data.changePercent < 0 
-    ? 'text-green-500' 
-    : 'text-muted-foreground';
+  const trendColor = data.changePercent > 0
+    ? 'text-red-500'
+    : data.changePercent < 0
+      ? 'text-green-500'
+      : 'text-muted-foreground';
 
   return (
     <Card className={className}>
@@ -196,17 +199,17 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.dailyData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis 
-                  dataKey="day" 
+                <XAxis
+                  dataKey="day"
                   tick={{ fontSize: 10 }}
                   axisLine={false}
                 />
-                <YAxis 
+                <YAxis
                   tick={{ fontSize: 10 }}
                   axisLine={false}
-                  tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}
+                  tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
                 />
-                <Tooltip 
+                <Tooltip
                   formatter={(value: number) => [value.toLocaleString(), 'Credits']}
                 />
                 <Bar dataKey="credits" radius={[4, 4, 0, 0]}>
@@ -225,7 +228,7 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
           <div className="space-y-2">
             {data.categoryData.slice(0, 5).map((item) => (
               <div key={item.category} className="flex items-center gap-3">
-                <div 
+                <div
                   className="w-3 h-3 rounded-full flex-shrink-0"
                   style={{ backgroundColor: item.color }}
                 />
@@ -239,7 +242,7 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
                   <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1">
                     <div
                       className="h-full rounded-full transition-all"
-                      style={{ 
+                      style={{
                         width: `${(item.credits / data.totalUsed) * 100}%`,
                         backgroundColor: item.color,
                       }}
@@ -255,8 +258,8 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
         {data.categoryData.length > 5 && (
           <div className="flex flex-wrap gap-2">
             {data.categoryData.slice(5).map((item) => (
-              <Badge 
-                key={item.category} 
+              <Badge
+                key={item.category}
                 variant="secondary"
                 className="text-xs"
               >

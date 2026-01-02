@@ -132,7 +132,6 @@ export function useUnifiedOrders(options: UseUnifiedOrdersOptions = {}) {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      // @ts-ignore - Table exists after unified architecture migration
       let query = supabase
         .from('unified_orders')
         .select(`
@@ -206,7 +205,6 @@ export function useUnifiedOrder(orderId: string | undefined) {
     queryFn: async () => {
       if (!tenant?.id || !orderId) throw new Error('Missing tenant or order ID');
 
-      // @ts-ignore - Table exists after unified architecture migration
       const { data, error } = await supabase
         .from('unified_orders')
         .select(`
@@ -274,7 +272,6 @@ export function useCreateUnifiedOrder() {
       }
 
       // Fetch the created order
-      // @ts-ignore - Table exists after unified architecture migration
       const { data: order, error: fetchError } = await supabase
         .from('unified_orders')
         .select('*, items:unified_order_items(*)')
@@ -311,7 +308,6 @@ export function useUpdateOrderStatus() {
         updateData.delivered_at = new Date().toISOString();
       }
 
-      // @ts-ignore - Table exists after unified architecture migration
       const { data, error } = await supabase
         .from('unified_orders')
         .update(updateData)
@@ -350,7 +346,6 @@ export function useCancelOrder() {
       if (!tenant?.id) throw new Error('No tenant');
 
       // Get order details first
-      // @ts-ignore - Table exists after unified architecture migration
       const { data: order, error: fetchError } = await supabase
         .from('unified_orders')
         .select('order_type, wholesale_client_id, total_amount')
@@ -362,7 +357,6 @@ export function useCancelOrder() {
       if (!order) throw new Error('Order not found');
 
       // Update order status
-      // @ts-ignore - Table exists after unified architecture migration
       const { data, error } = await supabase
         .from('unified_orders')
         .update({
@@ -410,7 +404,6 @@ export function useOrderStats(orderType: OrderType = 'all') {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      // @ts-ignore - Table exists after unified architecture migration
       let query = supabase
         .from('unified_orders')
         .select('status, total_amount')
