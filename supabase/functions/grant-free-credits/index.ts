@@ -141,21 +141,34 @@ serve(async (req) => {
           continue;
         }
 
-        // Log the transaction
-        await supabase
+        // Log the transaction with idempotency key
+        const grantDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        const idempotencyKey = `free_grant:${tenantId}:${grantDate}`;
+        
+        const { error: txError } = await supabase
           .from('credit_transactions')
           .insert({
             tenant_id: tenantId,
             amount: FREE_CREDITS_AMOUNT,
             balance_after: newBalance,
             transaction_type: 'free_grant',
+            action_type: 'monthly_refresh',
+            reference_id: idempotencyKey,
             description: 'Monthly credit refresh',
             metadata: {
               previous_balance: previousBalance,
               expired_credits: previousBalance - rolloverAmount,
               rollover_amount: rolloverAmount,
+              grant_date: grantDate,
             },
           });
+        
+        // If duplicate key error, this grant was already processed
+        if (txError?.code === '23505') {
+          console.log(`[GRANT_FREE_CREDITS] Skipping ${tenantId} - already granted today`);
+          results.skipped++;
+          continue;
+        }
 
         console.log(`[GRANT_FREE_CREDITS] Granted ${FREE_CREDITS_AMOUNT} credits to ${tenant.slug} (rollover: ${rolloverAmount})`);
         results.granted++;
@@ -220,7 +233,8 @@ serve(async (req) => {
           if (!createError) {
             console.log(`[GRANT_FREE_CREDITS] Created credit record for ${tenant.slug}`);
             
-            // Log the initial grant transaction
+            // Log the initial grant transaction with idempotency
+            const initKey = `initial_grant:${tenant.id}`;
             await supabase
               .from('credit_transactions')
               .insert({
@@ -228,6 +242,8 @@ serve(async (req) => {
                 amount: FREE_CREDITS_AMOUNT,
                 balance_after: FREE_CREDITS_AMOUNT,
                 transaction_type: 'free_grant',
+                action_type: 'initial_grant',
+                reference_id: initKey,
                 description: 'Initial free credits',
               });
             

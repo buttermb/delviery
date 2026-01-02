@@ -164,7 +164,10 @@ serve(async (req) => {
         .eq('id', creditPackage.id);
     }
 
-    // Create checkout session
+    // Generate idempotency key for this purchase attempt
+    const idempotencyKey = `purchase:${tenant_id}:${package_slug}:${Date.now()}`;
+
+    // Create checkout session with idempotency
     const session = await stripe.checkout.sessions.create({
       customer: stripeCustomerId,
       payment_method_types: ['card'],
@@ -182,7 +185,10 @@ serve(async (req) => {
         package_slug: package_slug,
         credits: creditPackage.credits.toString(),
         type: 'credit_purchase',
+        idempotency_key: idempotencyKey,
       },
+      // Stripe session expires after 24h by default, set to 30 min for security
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
     });
 
     // Track analytics
