@@ -54,8 +54,7 @@ export function EnhancedDashboardPreview() {
         animate={{ opacity: isVisible ? 1 : 0, scale: isVisible ? 1 : 0.98, y: isVisible ? 0 : 20 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-[#0a0a0a]"
-        style={{ touchAction: isInteracting ? 'auto' : 'none', overscrollBehavior: 'contain' }}
-        onMouseLeave={() => setIsInteracting(false)} // Auto-lock on exit to prevent scroll trap
+        onMouseLeave={() => setIsInteracting(false)}
       >
         {/* Enterprise Overlay Guard Layer */}
         <motion.div
@@ -93,10 +92,9 @@ export function EnhancedDashboardPreview() {
           <div className="w-12" /> {/* Spacer for centering */}
         </div>
 
-        {/* Application Layout - Pointer events and touch disabled when not interacting */}
+        {/* Application Layout - Pointer events disabled when not interacting */}
         <div
           className={`flex h-[600px] bg-[#0c0c0c] text-white transition-all ${isInteracting ? 'pointer-events-auto' : 'pointer-events-none'}`}
-          style={{ touchAction: isInteracting ? 'auto' : 'none', overflow: isInteracting ? 'visible' : 'hidden' }}
         >
 
           {/* Sidebar Navigation */}
@@ -175,10 +173,10 @@ export function EnhancedDashboardPreview() {
               </div>
             </div>
 
-            {/* View Content - Scroll completely disabled when locked */}
+            {/* View Content */}
             <div
               className={`flex-1 relative p-6 ${isInteracting ? 'overflow-auto' : 'overflow-hidden'}`}
-              style={{ touchAction: isInteracting ? 'auto' : 'none' }}
+              style={isInteracting ? { overscrollBehavior: 'contain' } : undefined}
             >
               <AnimatePresence mode="wait">
                 <motion.div
