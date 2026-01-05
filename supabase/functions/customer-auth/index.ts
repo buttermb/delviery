@@ -1,59 +1,26 @@
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { hashPassword, comparePassword } from '../_shared/password.ts';
-import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
+import { signJWT, verifyJWT as verifyJWTSecure } from '../_shared/jwt.ts';
 import { signupSchema, loginSchema, updatePasswordSchema } from './validation.ts';
 
-const JWT_SECRET = Deno.env.get("JWT_SECRET") || "your-secret-key-change-in-production";
-
-interface JWTPayload {
+interface CustomerJWTPayload {
   customer_user_id: string;
   customer_id: string;
   tenant_id: string;
   type: "customer";
-  exp: number;
-  iat: number;
 }
 
-function encodeJWT(payload: Omit<JWTPayload, "exp" | "iat">): string {
-  const now = Math.floor(Date.now() / 1000);
-  const jwtPayload: JWTPayload = {
-    ...payload,
-    exp: now + 30 * 24 * 60 * 60, // 30 days
-    iat: now,
-  };
-
-  const encoder = new TextEncoder();
-  const header = { alg: "HS256", typ: "JWT" };
-  const encodedHeader = base64Encode(encoder.encode(JSON.stringify(header)).buffer).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  const encodedPayload = base64Encode(encoder.encode(JSON.stringify(jwtPayload)).buffer).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  const signature = base64Encode(encoder.encode(`${encodedHeader}.${encodedPayload}.${JWT_SECRET}`).buffer).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  
-  return `${encodedHeader}.${encodedPayload}.${signature}`;
+// Wrapper for signing customer tokens
+async function createCustomerToken(payload: { customer_user_id: string; customer_id: string; tenant_id: string; type: "customer" }): Promise<string> {
+  return await signJWT({ ...payload }, 30 * 24 * 60 * 60); // 30 days
 }
 
-function verifyJWT(token: string): JWTPayload | null {
-  try {
-    const parts = token.split(".");
-    if (parts.length !== 3) return null;
-
-    const payload = JSON.parse(new TextDecoder().decode(base64Decode(parts[1])));
-    
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-      return null;
-    }
-
-    if (payload.type !== "customer") return null;
-    
-    return payload as JWTPayload;
-  } catch {
-    return null;
-  }
-}
-
-function base64Decode(str: string): Uint8Array {
-  str = str.replace(/-/g, "+").replace(/_/g, "/");
-  while (str.length % 4) str += "=";
-  return Uint8Array.from(atob(str).split("").map((c) => c.charCodeAt(0)));
+// Wrapper for verifying customer tokens
+async function verifyCustomerToken(token: string): Promise<CustomerJWTPayload | null> {
+  const payload = await verifyJWTSecure(token);
+  if (!payload) return null;
+  if (payload.type !== "customer") return null;
+  return payload as unknown as CustomerJWTPayload;
 }
 
 serve(async (req) => {
@@ -441,7 +408,7 @@ serve(async (req) => {
       }
 
       // Generate JWT token
-      const token = encodeJWT({
+      const token = await createCustomerToken({
         customer_user_id: customerUser.id,
         customer_id: customerUser.customer_id || customerUser.id,
         tenant_id: tenant.id,
@@ -496,7 +463,7 @@ serve(async (req) => {
       }
 
       const token = authHeader.replace("Bearer ", "");
-      const payload = verifyJWT(token);
+      const payload = await verifyCustomerToken(token);
 
       if (!payload) {
         return new Response(
@@ -609,7 +576,7 @@ serve(async (req) => {
       const { currentPassword, newPassword } = validationResult.data;
 
       const token = authHeader.replace("Bearer ", "");
-      const payload = verifyJWT(token);
+      const payload = await verifyCustomerToken(token);
 
       if (!payload) {
         return new Response(

@@ -1,65 +1,31 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
-import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
-import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import { signJWT, verifyJWT as verifyJWTSecure } from '../_shared/jwt.ts';
 import { loginSchema, refreshSchema, updatePasswordSchema } from './validation.ts';
 
-// JWT Secret (should be in environment variable)
-const JWT_SECRET = Deno.env.get("JWT_SECRET") || "your-secret-key-change-in-production";
-
-interface JWTPayload {
+interface SuperAdminJWTPayload {
   super_admin_id: string;
   role: string;
   type: "super_admin";
-  exp: number;
-  iat: number;
 }
 
-// Simple JWT encoding (for production, use a proper JWT library)
-function encodeJWT(payload: Omit<JWTPayload, "exp" | "iat">): string {
-  const now = Math.floor(Date.now() / 1000);
-  const jwtPayload: JWTPayload = {
-    ...payload,
-    exp: now + 7 * 24 * 60 * 60, // 7 days
-    iat: now,
-  };
-
-  const encoder = new TextEncoder();
-  const header = { alg: "HS256", typ: "JWT" };
-  const encodedHeader = base64Encode(encoder.encode(JSON.stringify(header)).buffer).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  const encodedPayload = base64Encode(encoder.encode(JSON.stringify(jwtPayload)).buffer).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  
-  // In production, use proper HMAC signing
-  const signatureData = `${encodedHeader}.${encodedPayload}.${JWT_SECRET}`;
-  const signature = base64Encode(encoder.encode(signatureData).buffer).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  
-  return `${encodedHeader}.${encodedPayload}.${signature}`;
+// Wrapper for signing super admin tokens
+async function createSuperAdminToken(payload: { super_admin_id: string; role: string; type: "super_admin" }): Promise<string> {
+  return await signJWT({ ...payload }, 7 * 24 * 60 * 60); // 7 days
 }
 
-function verifyJWT(token: string): JWTPayload | null {
-  try {
-    const parts = token.split(".");
-    if (parts.length !== 3) return null;
-
-    // In production, verify HMAC signature properly
-    const payload = JSON.parse(new TextDecoder().decode(base64Decode(parts[1])));
-    
-    // Check expiration
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-      return null;
-    }
-
-    if (payload.type !== "super_admin") return null;
-    
-    return payload as JWTPayload;
-  } catch {
-    return null;
-  }
+// Wrapper for verifying super admin tokens
+async function verifySuperAdminToken(token: string): Promise<SuperAdminJWTPayload | null> {
+  const payload = await verifyJWTSecure(token);
+  if (!payload) return null;
+  if (payload.type !== "super_admin") return null;
+  return payload as unknown as SuperAdminJWTPayload;
 }
 
-function base64Decode(str: string): Uint8Array {
-  str = str.replace(/-/g, "+").replace(/_/g, "/");
-  while (str.length % 4) str += "=";
-  return Uint8Array.from(atob(str).split("").map((c) => c.charCodeAt(0)));
+// Base64 encoding helper for password hashing
+function base64Encode(data: ArrayBuffer): string {
+  const bytes = new Uint8Array(data);
+  const binary = String.fromCharCode(...bytes);
+  return btoa(binary);
 }
 
 // Password hashing using Web Crypto API (PBKDF2)
@@ -360,7 +326,7 @@ serve(async (req) => {
       }
 
       // Generate custom JWT token (for super admin specific operations)
-      const token = encodeJWT({
+      const token = await createSuperAdminToken({
         super_admin_id: superAdmin.id,
         role: "super_admin",
         type: "super_admin",
@@ -425,7 +391,7 @@ serve(async (req) => {
       }
 
       const token = authHeader.replace("Bearer ", "");
-      const payload = verifyJWT(token);
+      const payload = await verifySuperAdminToken(token);
 
       if (!payload) {
         return new Response(
@@ -493,7 +459,7 @@ serve(async (req) => {
 
       const { token } = validationResult.data;
 
-      const payload = verifyJWT(token);
+      const payload = await verifySuperAdminToken(token);
       if (!payload || payload.type !== "super_admin") {
         return new Response(
           JSON.stringify({ error: "Invalid token" }),
@@ -502,7 +468,7 @@ serve(async (req) => {
       }
 
       // Generate new token
-      const newToken = encodeJWT({
+      const newToken = await createSuperAdminToken({
         super_admin_id: payload.super_admin_id,
         role: payload.role,
         type: "super_admin",
@@ -550,7 +516,7 @@ serve(async (req) => {
       const { currentPassword, newPassword } = validationResult.data;
 
       const token = authHeader.replace("Bearer ", "");
-      const payload = verifyJWT(token);
+      const payload = await verifySuperAdminToken(token);
 
       if (!payload) {
         return new Response(
