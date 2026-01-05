@@ -54,6 +54,7 @@ export function EnhancedDashboardPreview() {
         animate={{ opacity: isVisible ? 1 : 0, scale: isVisible ? 1 : 0.98, y: isVisible ? 0 : 20 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-[#0a0a0a]"
+        style={{ touchAction: isInteracting ? 'auto' : 'none', overscrollBehavior: 'contain' }}
         onMouseLeave={() => setIsInteracting(false)} // Auto-lock on exit to prevent scroll trap
       >
         {/* Enterprise Overlay Guard Layer */}
@@ -92,8 +93,11 @@ export function EnhancedDashboardPreview() {
           <div className="w-12" /> {/* Spacer for centering */}
         </div>
 
-        {/* Application Layout - Pointer events disabled when not interacting */}
-        <div className={`flex h-[600px] bg-[#0c0c0c] text-white transition-all ${isInteracting ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+        {/* Application Layout - Pointer events and touch disabled when not interacting */}
+        <div
+          className={`flex h-[600px] bg-[#0c0c0c] text-white transition-all ${isInteracting ? 'pointer-events-auto' : 'pointer-events-none'}`}
+          style={{ touchAction: isInteracting ? 'auto' : 'none', overflow: isInteracting ? 'visible' : 'hidden' }}
+        >
 
           {/* Sidebar Navigation */}
           <div className={`${isSidebarCollapsed ? 'w-16' : 'w-64'} flex-shrink-0 border-r border-white/5 bg-[#0f1115] flex flex-col transition-all duration-300`}>
@@ -171,8 +175,11 @@ export function EnhancedDashboardPreview() {
               </div>
             </div>
 
-            {/* View Content */}
-            <div className={`flex-1 overflow-auto relative p-6 ${isInteracting ? '' : 'overflow-hidden'}`}>
+            {/* View Content - Scroll completely disabled when locked */}
+            <div
+              className={`flex-1 relative p-6 ${isInteracting ? 'overflow-auto' : 'overflow-hidden'}`}
+              style={{ touchAction: isInteracting ? 'auto' : 'none' }}
+            >
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeView}

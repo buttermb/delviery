@@ -882,7 +882,7 @@ export function VideoShowcase() {
 
         {/* MAIN DISPLAY FRAME */}
         <motion.div
-          style={{ y }}
+          style={{ y, touchAction: isHovered ? 'auto' : 'none', overscrollBehavior: 'contain' } as any}
           className="max-w-[1200px] mx-auto aspect-[16/9] rounded-3xl border border-white/10 shadow-[0_0_100px_-20px_rgba(255,255,255,0.05)] relative bg-[#0a0a0a] overflow-hidden group"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
