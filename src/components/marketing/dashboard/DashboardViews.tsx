@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useShouldReduceAnimations } from '@/hooks/useReducedMotion';
 
 export type DashboardViewKey = 'dashboard' | 'orders' | 'inventory' | 'catalog' | 'customers' | 'analytics' | 'tracking' | 'menus';
 
@@ -136,6 +137,8 @@ function DashboardOverview() {
 }
 
 function OrdersView({ isInteractive }: { isInteractive: boolean }) {
+  const reduceAnimations = useShouldReduceAnimations();
+
   /* Enhanced Kanban Simulation */
   const [columns, setColumns] = useState({
     new: [
@@ -156,9 +159,9 @@ function OrdersView({ isInteractive }: { isInteractive: boolean }) {
     ] as any[]
   });
 
-  // Continuous Simulation Loop
+  // Continuous Simulation Loop - DISABLED on mobile for performance
   useEffect(() => {
-    if (!isInteractive) return;
+    if (!isInteractive || reduceAnimations) return;
 
     let step = 0;
     const interval = setInterval(() => {

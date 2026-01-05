@@ -15,6 +15,7 @@ import {
   MessageSquare, User, Zap, Navigation
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useShouldReduceAnimations } from "@/hooks/useReducedMotion";
 
 // --- ULTRA DEMO COMPONENTS ---
 
@@ -190,6 +191,7 @@ function DashboardUltra() {
 
 /* 2. ORDERS ULTRA */
 function OrdersUltra() {
+  const reduceAnimations = useShouldReduceAnimations();
   const [notification, setNotification] = useState<null | { title: string, msg: string }>(null);
 
   // Fully Populated Initial State
@@ -212,8 +214,10 @@ function OrdersUltra() {
     ] as any[]
   });
 
-  // Continuous Simulation Loop
+  // Continuous Simulation Loop - DISABLED on mobile for performance
   useEffect(() => {
+    if (reduceAnimations) return; // Skip loop on mobile
+
     let step = 0;
     const interval = setInterval(() => {
       setColumns(prev => {
@@ -261,7 +265,7 @@ function OrdersUltra() {
     }, 1500); // Fast paced for demo
 
     return () => clearInterval(interval);
-  }, []);
+  }, [reduceAnimations]);
 
   return (
     <div className="w-full h-full bg-[#0f1115] flex flex-col p-6 font-sans relative overflow-hidden">
