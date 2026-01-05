@@ -31,7 +31,7 @@ export function ClerkProviderWrapper({ children }: ClerkProviderWrapperProps) {
   
   // If Clerk is not configured, render children without auth
   if (!CLERK_PUBLISHABLE_KEY) {
-    logger.warn('[Clerk] No publishable key found. Auth features disabled.');
+    logger.debug('[Clerk] No publishable key found. Auth features disabled.');
     return <>{children}</>;
   }
 
