@@ -787,13 +787,13 @@ function MenusView() {
   )
 }
 
-export function DashboardViews({ activeView }: { activeView: DashboardViewKey }) {
+export function DashboardViews({ activeView, isInteractive = false }: { activeView: DashboardViewKey; isInteractive?: boolean }) {
   switch (activeView) {
     case 'dashboard': return <DashboardOverview />;
-    case 'orders': return <OrdersView />;
-    case 'inventory': return <InventoryView />;
-    case 'catalog': return <CatalogView />;
-    case 'customers': return <CRMView />;
+    case 'orders': return <OrdersView isInteractive={isInteractive} />;
+    case 'inventory': return <InventoryView isInteractive={isInteractive} />;
+    case 'catalog': return <CatalogView isInteractive={isInteractive} />;
+    case 'customers': return <CRMView isInteractive={isInteractive} />;
     case 'analytics': return <AnalyticsView />;
     case 'tracking': return <FleetView />;
     case 'menus': return <MenusView />;
