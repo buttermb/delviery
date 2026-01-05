@@ -157,8 +157,11 @@ export function ModernHero() {
             {/* Glow Effect */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%] bg-[hsl(var(--marketing-primary))] opacity-15 blur-[80px] rounded-full pointer-events-none" />
 
-            {/* Card Stack - Static transforms */}
-            <div className="relative w-full aspect-square max-w-[600px] mx-auto">
+            {/* Card Stack - Static transforms, allows vertical scroll */}
+            <div
+              className="relative w-full aspect-square max-w-[600px] mx-auto"
+              style={{ touchAction: 'pan-y' }}
+            >
 
               {/* Start Free Tooltip - Floating on top */}
               <div className="absolute -left-12 top-20 z-30 animate-bounce-subtle hidden lg:block">
