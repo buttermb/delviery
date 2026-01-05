@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +12,7 @@ import {
 
 export function PlatformSidebar() {
     const location = useLocation();
+    const navigate = useNavigate();
 
     const navItems = [
         { title: 'Tenants', href: '/platform/tenants', icon: Users },
@@ -50,7 +51,7 @@ export function PlatformSidebar() {
             </div>
 
             <div className="p-4 border-t">
-                <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => window.location.href = '/'}>
+                <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => navigate('/')}>
                     <LogOut className="h-4 w-4 mr-2" />
                     Exit Platform Mode
                 </Button>

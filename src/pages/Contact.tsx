@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -118,7 +119,7 @@ export default function Contact() {
               </CardHeader>
               <CardContent>
                 <Button variant="outline" className="w-full" asChild>
-                  <a href="/demo">Book Demo</a>
+                  <Link to="/demo">Book Demo</Link>
                 </Button>
               </CardContent>
             </Card>

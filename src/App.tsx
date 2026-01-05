@@ -154,6 +154,7 @@ const VerifyEmailPage = lazy(() => import("./pages/saas/VerifyEmailPage"));
 import { EncodedUrlRedirect } from "./components/EncodedUrlRedirect";
 import { UrlEncodingFixer } from "./components/UrlEncodingFixer";
 const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePage"));
+const TenantAdminVerifyEmailPage = lazy(() => import("./pages/tenant-admin/VerifyEmailPage"));
 const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
 
 // Tenant Admin Pages
@@ -685,6 +686,9 @@ const App = () => {
 
                                         {/* Welcome Page (must be before AdminLayout) */}
                                         <Route path="/:tenantSlug/admin/welcome" element={<TenantAdminProtectedRoute><TenantAdminWelcomePage /></TenantAdminProtectedRoute>} />
+
+                                        {/* Email Verification Page */}
+                                        <Route path="/:tenantSlug/admin/verify-email" element={<TenantAdminProtectedRoute><TenantAdminVerifyEmailPage /></TenantAdminProtectedRoute>} />
 
                                         {/* Trial Expired Page (must be before AdminLayout) */}
                                         <Route path="/:tenantSlug/admin/trial-expired" element={<TenantAdminProtectedRoute><TrialExpiredPage /></TenantAdminProtectedRoute>} />

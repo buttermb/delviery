@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -53,6 +53,7 @@ interface ProductWithSync {
 export default function ProductSyncPage() {
     const { tenant } = useTenantAdminAuth();
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState("");
     const [syncingIds, setSyncingIds] = useState<Set<string>>(new Set());
 
@@ -218,7 +219,7 @@ export default function ProductSyncPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Button onClick={() => window.location.href = `/${tenant?.slug}/admin/storefront`}>
+                        <Button onClick={() => navigate(`/${tenant?.slug}/admin/storefront`)}>
                             Create Store
                         </Button>
                     </CardContent>
