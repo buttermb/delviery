@@ -35,34 +35,33 @@ export function InventoryDemo() {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 mb-4">
-        <Package className="h-5 w-5 text-primary" />
-        <span className="text-sm font-semibold text-foreground">Live Stock Levels</span>
+        <Package className="h-5 w-5 text-[hsl(var(--marketing-primary))]" />
+        <span className="text-sm font-semibold text-[hsl(var(--marketing-text))]">Live Stock Levels</span>
       </div>
       {items.map((item, idx) => (
         <motion.div
           key={idx}
           layout
-          className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border"
+          className="flex items-center justify-between p-3 rounded-lg bg-[hsl(var(--marketing-bg-subtle))]/50 border border-[hsl(var(--marketing-border))]"
         >
           <div className="flex-1">
-            <div className="text-sm font-medium text-foreground">{item.name}</div>
+            <div className="text-sm font-medium text-[hsl(var(--marketing-text))]">{item.name}</div>
             <div className="flex items-center gap-2 mt-1">
-              <motion.div 
-                className="h-1.5 rounded-full bg-muted"
+              <motion.div
+                className="h-1.5 rounded-full bg-[hsl(var(--marketing-bg-subtle))]"
                 style={{ width: 80 }}
               >
                 <motion.div
-                  className={`h-full rounded-full ${
-                    item.status === 'low' ? 'bg-destructive' :
+                  className={`h-full rounded-full ${item.status === 'low' ? 'bg-destructive' :
                     item.status === 'high' ? 'bg-emerald-500' :
-                    'bg-primary'
-                  }`}
+                      'bg-[hsl(var(--marketing-primary))]'
+                    }`}
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.min(100, (item.stock / 100) * 100)}%` }}
                   transition={{ duration: 0.3 }}
                 />
               </motion.div>
-              <span className="text-xs text-muted-foreground">{item.stock} units</span>
+              <span className="text-xs text-[hsl(var(--marketing-text-light))]">{item.stock} units</span>
             </div>
           </div>
           {item.status === 'low' && (
@@ -95,7 +94,7 @@ export function OrderAutomationDemo() {
           if (order.status === 'processing') return { ...order, status: 'completed' as const };
           return order;
         }).filter(o => o.status !== 'completed');
-        
+
         if (updated.length < 2) {
           updated.push({
             id: `#${1247 + Math.floor(Math.random() * 100)}`,
@@ -112,8 +111,8 @@ export function OrderAutomationDemo() {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 mb-4">
-        <Clock className="h-5 w-5 text-primary" />
-        <span className="text-sm font-semibold text-foreground">Auto-Processing Orders</span>
+        <Clock className="h-5 w-5 text-[hsl(var(--marketing-primary))]" />
+        <span className="text-sm font-semibold text-[hsl(var(--marketing-text))]">Auto-Processing Orders</span>
       </div>
       <AnimatePresence mode="popLayout">
         {orders.map((order) => (
@@ -123,21 +122,20 @@ export function OrderAutomationDemo() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border"
+            className="flex items-center justify-between p-3 rounded-lg bg-[hsl(var(--marketing-bg-subtle))]/50 border border-[hsl(var(--marketing-border))]"
           >
             <div className="flex items-center gap-3">
-              <div className="text-sm font-mono font-semibold text-foreground">{order.id}</div>
-              <div className={`px-2 py-1 rounded text-xs font-medium ${
-                order.status === 'pending' ? 'bg-amber-500/10 text-amber-600' :
+              <div className="text-sm font-mono font-semibold text-[hsl(var(--marketing-text))]">{order.id}</div>
+              <div className={`px-2 py-1 rounded text-xs font-medium ${order.status === 'pending' ? 'bg-amber-500/10 text-amber-600' :
                 order.status === 'processing' ? 'bg-blue-500/10 text-blue-600' :
-                'bg-emerald-500/10 text-emerald-600'
-              }`}>
+                  'bg-emerald-500/10 text-emerald-600'
+                }`}>
                 {order.status === 'pending' && '⏳ Pending'}
                 {order.status === 'processing' && '⚡ Processing'}
                 {order.status === 'completed' && '✓ Complete'}
               </div>
             </div>
-            <div className="text-sm font-semibold text-foreground">${order.amount}</div>
+            <div className="text-sm font-semibold text-[hsl(var(--marketing-text))]">${order.amount}</div>
           </motion.div>
         ))}
       </AnimatePresence>
@@ -158,34 +156,34 @@ export function AnalyticsDemo() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
-        <TrendingUp className="h-5 w-5 text-primary" />
-        <span className="text-sm font-semibold text-foreground">Revenue Trends</span>
+        <TrendingUp className="h-5 w-5 text-[hsl(var(--marketing-primary))]" />
+        <span className="text-sm font-semibold text-[hsl(var(--marketing-text))]">Revenue Trends</span>
       </div>
-      
+
       <div className="flex items-end justify-between h-32 gap-2">
         {data.map((value, idx) => (
           <motion.div
             key={idx}
-            className="flex-1 bg-gradient-to-t from-primary to-primary/40 rounded-t-lg"
+            className="flex-1 bg-gradient-to-t from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-primary))]/40 rounded-t-lg"
             initial={{ height: 0 }}
             animate={{ height: `${value}%` }}
             transition={{ duration: 0.5 }}
           />
         ))}
       </div>
-      
+
       <div className="grid grid-cols-3 gap-3">
-        <div className="p-3 rounded-lg bg-muted/50 border border-border">
-          <div className="text-xs text-muted-foreground">Today</div>
-          <div className="text-lg font-bold text-foreground">$2,847</div>
+        <div className="p-3 rounded-lg bg-[hsl(var(--marketing-bg-subtle))]/50 border border-[hsl(var(--marketing-border))]">
+          <div className="text-xs text-[hsl(var(--marketing-text-light))]">Today</div>
+          <div className="text-lg font-bold text-[hsl(var(--marketing-text))]">$2,847</div>
         </div>
-        <div className="p-3 rounded-lg bg-muted/50 border border-border">
-          <div className="text-xs text-muted-foreground">This Week</div>
-          <div className="text-lg font-bold text-foreground">$18.2K</div>
+        <div className="p-3 rounded-lg bg-[hsl(var(--marketing-bg-subtle))]/50 border border-[hsl(var(--marketing-border))]">
+          <div className="text-xs text-[hsl(var(--marketing-text-light))]">This Week</div>
+          <div className="text-lg font-bold text-[hsl(var(--marketing-text))]">$18.2K</div>
         </div>
-        <div className="p-3 rounded-lg bg-muted/50 border border-border">
-          <div className="text-xs text-muted-foreground">Growth</div>
-          <div className="text-lg font-bold text-emerald-600">+24%</div>
+        <div className="p-3 rounded-lg bg-[hsl(var(--marketing-bg-subtle))]/50 border border-[hsl(var(--marketing-border))]">
+          <div className="text-xs text-[hsl(var(--marketing-text-light))]">Growth</div>
+          <div className="text-lg font-bold text-emerald-500">+24%</div>
         </div>
       </div>
     </div>
@@ -202,33 +200,32 @@ export function CustomerPortalDemo() {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 mb-4">
-        <Package className="h-5 w-5 text-primary" />
-        <span className="text-sm font-semibold text-foreground">Customer View</span>
+        <Package className="h-5 w-5 text-[hsl(var(--marketing-primary))]" />
+        <span className="text-sm font-semibold text-[hsl(var(--marketing-text))]">Customer View</span>
       </div>
       {products.map((product, idx) => (
         <motion.div
           key={idx}
           whileHover={{ scale: 1.02 }}
-          className={`p-3 rounded-lg border transition-all ${
-            product.available 
-              ? 'bg-muted/50 border-border cursor-pointer hover:border-primary' 
-              : 'bg-muted/20 border-border/50 opacity-60'
-          }`}
+          className={`p-3 rounded-lg border transition-all ${product.available
+            ? 'bg-[hsl(var(--marketing-bg-subtle))]/50 border-[hsl(var(--marketing-border))] cursor-pointer hover:border-[hsl(var(--marketing-primary))]'
+            : 'bg-[hsl(var(--marketing-bg-subtle))]/20 border-[hsl(var(--marketing-border))]/50 opacity-60'
+            }`}
         >
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-medium text-foreground">{product.name}</div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="text-sm font-medium text-[hsl(var(--marketing-text))]">{product.name}</div>
+              <div className="text-xs text-[hsl(var(--marketing-text-light))] mt-1">
                 {product.available ? 'In Stock' : 'Out of Stock'}
               </div>
             </div>
             <div className="text-right">
-              <div className="text-lg font-bold text-foreground">${product.price}</div>
+              <div className="text-lg font-bold text-[hsl(var(--marketing-text))]">${product.price}</div>
               {product.available && (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="mt-1 px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground"
+                  className="mt-1 px-3 py-1 text-xs rounded-full bg-[hsl(var(--marketing-primary))] text-white"
                 >
                   Order
                 </motion.button>
@@ -262,29 +259,29 @@ export function FleetDemo() {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 mb-4">
-        <MapPin className="h-5 w-5 text-primary" />
-        <span className="text-sm font-semibold text-foreground">Active Deliveries</span>
+        <MapPin className="h-5 w-5 text-[hsl(var(--marketing-primary))]" />
+        <span className="text-sm font-semibold text-[hsl(var(--marketing-text))]">Active Deliveries</span>
       </div>
       {deliveries.map((delivery) => (
         <motion.div
           key={delivery.id}
           layout
-          className="p-3 rounded-lg bg-muted/50 border border-border"
+          className="p-3 rounded-lg bg-[hsl(var(--marketing-bg-subtle))]/50 border border-[hsl(var(--marketing-border))]"
         >
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <div className="text-sm font-mono font-semibold text-foreground">{delivery.id}</div>
-              <div className="text-xs text-muted-foreground">{delivery.location}</div>
+              <div className="text-sm font-mono font-semibold text-[hsl(var(--marketing-text))]">{delivery.id}</div>
+              <div className="text-xs text-[hsl(var(--marketing-text-light))]">{delivery.location}</div>
             </div>
             {delivery.progress >= 95 ? (
               <CheckCircle className="h-4 w-4 text-emerald-500" />
             ) : (
-              <div className="text-xs font-medium text-primary">{delivery.progress}%</div>
+              <div className="text-xs font-medium text-[hsl(var(--marketing-primary))]">{delivery.progress}%</div>
             )}
           </div>
-          <div className="h-1.5 rounded-full bg-muted">
+          <div className="h-1.5 rounded-full bg-[hsl(var(--marketing-bg-subtle))]">
             <motion.div
-              className="h-full rounded-full bg-primary"
+              className="h-full rounded-full bg-[hsl(var(--marketing-primary))]"
               animate={{ width: `${delivery.progress}%` }}
               transition={{ duration: 0.5 }}
             />
@@ -301,16 +298,16 @@ export function DisposableMenuDemo() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
-        <Package className="h-5 w-5 text-primary" />
-        <span className="text-sm font-semibold text-foreground">Secure Menu Access</span>
+        <Package className="h-5 w-5 text-[hsl(var(--marketing-primary))]" />
+        <span className="text-sm font-semibold text-[hsl(var(--marketing-text))]">Secure Menu Access</span>
       </div>
-      
+
       <div className="text-center py-6">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setQrVisible(!qrVisible)}
-          className="px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold"
+          className="px-6 py-3 rounded-lg bg-[hsl(var(--marketing-primary))] text-white font-semibold"
         >
           {qrVisible ? 'Hide QR Code' : 'Generate Secure Menu'}
         </motion.button>
@@ -322,16 +319,16 @@ export function DisposableMenuDemo() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="p-4 rounded-lg bg-muted/50 border border-border"
+            className="p-4 rounded-lg bg-[hsl(var(--marketing-bg-subtle))]/50 border border-[hsl(var(--marketing-border))]"
           >
             <div className="w-32 h-32 mx-auto bg-white rounded-lg p-2">
-              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/40 rounded flex items-center justify-center">
-                <div className="text-xs font-mono text-primary">QR_CODE</div>
+              <div className="w-full h-full bg-gradient-to-br from-[hsl(var(--marketing-primary))]/20 to-[hsl(var(--marketing-primary))]/40 rounded flex items-center justify-center">
+                <div className="text-xs font-mono text-[hsl(var(--marketing-primary))]">QR_CODE</div>
               </div>
             </div>
             <div className="text-center mt-3">
-              <div className="text-xs text-muted-foreground">Expires in 24h</div>
-              <div className="text-xs font-mono text-foreground mt-1">ID: #MNU-{Math.floor(Math.random() * 9999)}</div>
+              <div className="text-xs text-[hsl(var(--marketing-text-light))]">Expires in 24h</div>
+              <div className="text-xs font-mono text-[hsl(var(--marketing-text))] mt-1">ID: #MNU-{Math.floor(Math.random() * 9999)}</div>
             </div>
           </motion.div>
         )}

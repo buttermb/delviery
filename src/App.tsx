@@ -93,6 +93,7 @@ const SupportPage = lazy(() => import("./pages/SupportPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const About = lazy(() => import("./pages/About"));
+const InteractiveDemoPage = lazy(() => import("./pages/InteractiveDemoPage"));
 const DemoRequest = lazy(() => import("./pages/DemoRequest"));
 const DemoConfirmation = lazy(() => import("./pages/DemoConfirmation"));
 const IntegrationsPage = lazy(() => import("./pages/IntegrationsPage"));
@@ -309,6 +310,9 @@ const IntegrationsHubPage = lazy(() => import("./pages/admin/hubs/IntegrationsHu
 const StorefrontHubPage = lazy(() => import("./pages/admin/hubs/StorefrontHubPage"));
 const OperationsHubPage = lazy(() => import("./pages/admin/hubs/OperationsHubPage"));
 const FulfillmentHubPage = lazy(() => import("./pages/admin/hubs/FulfillmentHubPage"));
+
+// Smart TV Dashboard (Big Screen Operations View)
+const SmartTVDashboard = lazy(() => import("./pages/admin/SmartTVDashboard"));
 
 const MarketingHubPage = lazy(() => import("./pages/admin/hubs/MarketingHubPage"));
 const RoleManagement = lazy(() => import("./pages/admin/RoleManagement"));
@@ -556,7 +560,8 @@ const App = () => {
                                         <Route path="/pricing" element={<PricingPage />} />
                                         <Route path="/about" element={<About />} />
                                         <Route path="/contact" element={<Contact />} />
-                                        <Route path="/demo" element={<DemoRequest />} />
+                                        <Route path="/demo" element={<InteractiveDemoPage />} />
+                                        <Route path="/demo/request" element={<DemoRequest />} />
                                         <Route path="/demo/confirm" element={<DemoConfirmation />} />
                                         <Route path="/integrations" element={<IntegrationsPage />} />
                                         <Route path="/docs" element={<DocsPage />} />
@@ -740,6 +745,15 @@ const App = () => {
                                                 <FeatureProtectedRoute featureId="hotbox">
                                                   <HotboxPage />
                                                 </FeatureProtectedRoute>
+                                              </Suspense>
+                                            }
+                                          />
+                                          {/* Smart TV Dashboard - Big Screen Operations View */}
+                                          <Route
+                                            path="tv-dashboard"
+                                            element={
+                                              <Suspense fallback={<SkeletonDashboard />}>
+                                                <SmartTVDashboard />
                                               </Suspense>
                                             }
                                           />

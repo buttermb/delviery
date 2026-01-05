@@ -1,22 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { 
-  Database, 
-  Sparkles, 
-  Store, 
-  LineChart, 
-  Key, 
+import {
+  Database,
+  Sparkles,
+  Store,
+  LineChart,
+  Key,
   Navigation,
   type LucideIcon
 } from 'lucide-react';
-import { 
-  InventoryDemo, 
-  OrderAutomationDemo, 
-  AnalyticsDemo, 
-  CustomerPortalDemo, 
-  DisposableMenuDemo, 
-  FleetDemo 
+import {
+  InventoryDemo,
+  OrderAutomationDemo,
+  AnalyticsDemo,
+  CustomerPortalDemo,
+  DisposableMenuDemo,
+  FleetDemo
 } from './CapabilityDemos';
 
 interface Capability {
@@ -106,8 +106,8 @@ export function PlatformCapabilities() {
   const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1, 0.9]);
 
   return (
-    <section 
-      className="py-20 bg-gradient-to-b from-background to-muted/30" 
+    <section
+      className="py-20 bg-gradient-to-b from-[hsl(var(--marketing-bg))] to-[hsl(var(--marketing-bg-subtle))]/30"
       ref={(node) => {
         ref(node);
         if (node) {
@@ -123,10 +123,10 @@ export function PlatformCapabilities() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
               Platform Capabilities
             </h2>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-xl text-[hsl(var(--marketing-text-light))]">
               Everything you need to run your cannabis distribution
             </p>
           </motion.div>
@@ -137,11 +137,10 @@ export function PlatformCapabilities() {
               {capabilities.map((capability, index) => (
                 <motion.div
                   key={capability.id}
-                  className={`glass-card p-6 rounded-xl cursor-pointer transition-all ${
-                    activeCapability === index
-                      ? 'border-2 border-[hsl(var(--marketing-primary))] shadow-lg'
-                      : 'border border-border hover:border-[hsl(var(--marketing-primary))]/50'
-                  }`}
+                  className={`glass-card p-6 rounded-xl cursor-pointer transition-all ${activeCapability === index
+                      ? 'border-2 border-[hsl(var(--marketing-primary))] shadow-lg bg-[hsl(var(--marketing-bg-subtle))]'
+                      : 'border border-[hsl(var(--marketing-border))] hover:border-[hsl(var(--marketing-primary))]/50 bg-[hsl(var(--marketing-bg-subtle))]/50'
+                    }`}
                   onClick={() => setActiveCapability(index)}
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -151,11 +150,11 @@ export function PlatformCapabilities() {
                 >
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0">
-                      <capability.icon className="h-8 w-8 text-primary" />
+                      <capability.icon className="h-8 w-8 text-[hsl(var(--marketing-primary))]" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-bold text-lg text-foreground">{capability.title}</h3>
+                        <h3 className="font-bold text-lg text-[hsl(var(--marketing-text))]">{capability.title}</h3>
                         {activeCapability === index && (
                           <motion.div
                             className="w-2 h-2 rounded-full bg-[hsl(var(--marketing-primary))]"
@@ -164,7 +163,7 @@ export function PlatformCapabilities() {
                           />
                         )}
                       </div>
-                      <p className="text-muted-foreground mb-2">{capability.description}</p>
+                      <p className="text-[hsl(var(--marketing-text-light))] mb-2">{capability.description}</p>
                       <span className="inline-block px-3 py-1 rounded-full bg-[hsl(var(--marketing-primary))]/10 text-sm font-medium text-[hsl(var(--marketing-primary))]">
                         {capability.metrics}
                       </span>
@@ -184,19 +183,19 @@ export function PlatformCapabilities() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4 }}
-                className="glass-card p-8 rounded-2xl border border-border/50 relative overflow-hidden bg-gradient-to-br from-card to-card/50"
+                className="glass-card p-8 rounded-2xl border border-[hsl(var(--marketing-border))]/50 relative overflow-hidden bg-gradient-to-br from-[hsl(var(--marketing-bg-subtle))] to-[hsl(var(--marketing-bg-subtle))]/50"
               >
                 {/* Interactive Demo */}
                 <div className="mb-6">
-                  <h3 className="text-xl font-bold text-foreground mb-2">
+                  <h3 className="text-xl font-bold text-[hsl(var(--marketing-text))] mb-2">
                     {capabilities[activeCapability].title}
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <p className="text-sm text-[hsl(var(--marketing-text-light))] mb-4">
                     {capabilities[activeCapability].description}
                   </p>
-                  
+
                   {/* Live Demo Component */}
-                  <div className="mt-6 p-4 rounded-xl bg-background/50 border border-border">
+                  <div className="mt-6 p-4 rounded-xl bg-[hsl(var(--marketing-bg))]/50 border border-[hsl(var(--marketing-border))]">
                     {(() => {
                       const DemoComponent = capabilities[activeCapability].demo;
                       return <DemoComponent />;
@@ -205,7 +204,7 @@ export function PlatformCapabilities() {
                 </div>
 
                 {/* Subtle corner accent */}
-                <div className="absolute -right-16 -bottom-16 w-48 h-48 bg-primary/5 rounded-full blur-3xl" />
+                <div className="absolute -right-16 -bottom-16 w-48 h-48 bg-[hsl(var(--marketing-primary))]/5 rounded-full blur-3xl" />
               </motion.div>
             </motion.div>
           </div>
