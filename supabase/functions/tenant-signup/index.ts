@@ -2,31 +2,15 @@
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { checkRateLimit } from "../_shared/rateLimiting.ts";
+import { signJWT } from "../_shared/jwt.ts";
 
-// JWT Token generation (simplified for Edge Functions)
-function base64UrlEncode(data: Uint8Array): string {
-  const base64 = btoa(String.fromCharCode(...data));
-  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-}
-
-function encodeJWT(payload: any, secret: string, expiresIn: number = 7 * 24 * 60 * 60): string {
-  const encoder = new TextEncoder();
-  const now = Math.floor(Date.now() / 1000);
-
-  const jwtPayload = {
-    ...payload,
-    exp: now + expiresIn,
-    iat: now,
-  };
-
-  const header = { alg: 'HS256', typ: 'JWT' };
-  const encodedHeader = base64UrlEncode(encoder.encode(JSON.stringify(header)));
-  const encodedPayload = base64UrlEncode(encoder.encode(JSON.stringify(jwtPayload)));
-
-  // Simple signature (in production, use proper HMAC)
-  const signature = base64UrlEncode(encoder.encode(`${encodedHeader}.${encodedPayload}.${secret}`));
-
-  return `${encodedHeader}.${encodedPayload}.${signature}`;
+// Generate slug from business name
+function generateSlug(businessName: string): string {
+  return businessName
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 // Generate slug from business name
@@ -329,10 +313,8 @@ serve(async (req) => {
     const tenant = atomicResult.tenant;
     const tenantUser = atomicResult.tenant_user;
 
-    // Generate JWT tokens for auto-login
-    const jwtSecret = Deno.env.get('JWT_SECRET') || 'default-secret-change-in-production';
-
-    const accessToken = encodeJWT(
+    // Generate JWT tokens for auto-login using secure HMAC-SHA256 signing
+    const accessToken = await signJWT(
       {
         user_id: tenantUser.id,
         email: tenantUser.email,
@@ -341,17 +323,15 @@ serve(async (req) => {
         tenant_id: tenant.id,
         tenant_slug: tenant.slug,
       },
-      jwtSecret,
       7 * 24 * 60 * 60 // 7 days
     );
 
-    const refreshToken = encodeJWT(
+    const refreshToken = await signJWT(
       {
         user_id: tenantUser.id,
         tenant_id: tenant.id,
         type: 'refresh',
       },
-      jwtSecret,
       30 * 24 * 60 * 60 // 30 days
     );
 

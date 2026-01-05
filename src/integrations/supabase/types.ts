@@ -14597,6 +14597,7 @@ export type Database = {
         Returns: Json
       }
       check_is_admin: { Args: { _user_id: string }; Returns: boolean }
+      check_platform_admin_access: { Args: never; Returns: Json }
       check_rate_limit: {
         Args: {
           p_action_type: string
