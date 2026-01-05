@@ -821,10 +821,6 @@ export function VideoShowcase() {
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start end", "end start"] });
-  const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.9, 1], [0, 1, 1, 0]);
-
   // Auto-play Logic
   useEffect(() => {
     if (!isPlaying || isHovered) return;
@@ -864,7 +860,7 @@ export function VideoShowcase() {
 
       <div className="container mx-auto px-4 z-10 relative">
 
-        <motion.div style={{ opacity }} className="text-center mb-16">
+        <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-medium text-white/70 mb-6 backdrop-blur-sm uppercase tracking-widest">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -878,11 +874,10 @@ export function VideoShowcase() {
           <p className="text-lg text-white/50 max-w-2xl mx-auto font-light">
             Hover to interact with the interface. High-fidelity simulations of actual platform capabilities.
           </p>
-        </motion.div>
+        </div>
 
         {/* MAIN DISPLAY FRAME */}
-        <motion.div
-          style={{ y, touchAction: isHovered ? 'auto' : 'none', overscrollBehavior: 'contain' } as any}
+        <div
           className="max-w-[1200px] mx-auto aspect-[16/9] rounded-3xl border border-white/10 shadow-[0_0_100px_-20px_rgba(255,255,255,0.05)] relative bg-[#0a0a0a] overflow-hidden group"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
@@ -994,7 +989,7 @@ export function VideoShowcase() {
               </AnimatePresence>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
