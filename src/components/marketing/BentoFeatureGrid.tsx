@@ -14,18 +14,18 @@ const features = [
     highlight: true,
     className: "md:col-span-2 md:row-span-2",
     visual: (
-      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--marketing-primary))/0.05] via-transparent to-[hsl(var(--marketing-accent))/0.05]">
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 z-30">
-          <div className="bg-[hsl(var(--marketing-bg))]/60 backdrop-blur-md rounded-lg p-3 border border-[hsl(var(--marketing-border))] flex items-center gap-3 shadow-xl relative overflow-hidden">
-            <div className="w-8 h-8 rounded bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] flex items-center justify-center text-white relative z-10">
-              <Lock className="w-4 h-4" />
+          <div className="bg-zinc-900/80 backdrop-blur-md rounded-xl p-4 border border-white/10 flex items-center gap-4 shadow-2xl relative overflow-hidden group-hover:border-emerald-500/20 transition-colors duration-300">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center text-white relative z-10 shadow-lg shadow-emerald-500/20">
+              <Lock className="w-5 h-5" />
             </div>
-            <div className="flex-1 relative z-10">
-              <div className="h-2 w-20 bg-[hsl(var(--marketing-text-light))] opacity-30 rounded mb-1" />
-              <div className="h-1.5 w-12 bg-[hsl(var(--marketing-text-light))] opacity-20 rounded" />
+            <div className="flex-1 relative z-10 space-y-2">
+              <div className="h-2 w-24 bg-white/20 rounded-full" />
+              <div className="h-1.5 w-16 bg-white/10 rounded-full" />
             </div>
           </div>
-          <div className="mt-2">
+          <div className="mt-4 transform scale-90 opacity-80">
             <CountdownTimer />
           </div>
         </div>
@@ -38,18 +38,18 @@ const features = [
     icon: Layers,
     className: "md:col-span-1 md:row-span-1",
     visual: (
-      <div className="absolute inset-0 p-4 flex flex-col gap-2 opacity-50">
-        <div className="flex items-center gap-2 p-2 rounded bg-[hsl(var(--marketing-bg))] border border-[hsl(var(--marketing-border))]">
-          <div className="w-2 h-2 rounded-full bg-emerald-500" />
-          <div className="h-1.5 w-16 bg-[hsl(var(--marketing-text-light))] opacity-30 rounded" />
+      <div className="absolute inset-0 p-6 flex flex-col gap-3 opacity-60">
+        <div className="flex items-center gap-3 p-2.5 rounded-lg bg-white/5 border border-white/5">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+          <div className="h-1.5 w-16 bg-white/20 rounded-full" />
         </div>
-        <div className="flex items-center gap-2 p-2 rounded bg-[hsl(var(--marketing-bg))] border border-[hsl(var(--marketing-border))]">
-          <div className="w-2 h-2 rounded-full bg-emerald-500" />
-          <div className="h-1.5 w-12 bg-[hsl(var(--marketing-text-light))] opacity-30 rounded" />
+        <div className="flex items-center gap-3 p-2.5 rounded-lg bg-white/5 border border-white/5 ml-4">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+          <div className="h-1.5 w-12 bg-white/20 rounded-full" />
         </div>
-        <div className="flex items-center gap-2 p-2 rounded bg-[hsl(var(--marketing-bg))] border border-[hsl(var(--marketing-border))]">
-          <div className="w-2 h-2 rounded-full bg-emerald-500" />
-          <div className="h-1.5 w-20 bg-[hsl(var(--marketing-text-light))] opacity-30 rounded" />
+        <div className="flex items-center gap-3 p-2.5 rounded-lg bg-white/5 border border-white/5">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+          <div className="h-1.5 w-20 bg-white/20 rounded-full" />
         </div>
       </div>
     )
@@ -78,84 +78,100 @@ const features = [
     icon: TrendingUp,
     className: "md:col-span-1 md:row-span-1",
     visual: (
-      <div className="absolute inset-0 flex items-end justify-around p-4 pb-0 opacity-50">
-        <div className="w-4 h-12 bg-[hsl(var(--marketing-primary))] rounded-t opacity-40" />
-        <div className="w-4 h-20 bg-[hsl(var(--marketing-primary))] rounded-t opacity-60" />
-        <div className="w-4 h-16 bg-[hsl(var(--marketing-primary))] rounded-t opacity-50" />
-        <div className="w-4 h-24 bg-[hsl(var(--marketing-primary))] rounded-t opacity-80" />
-        <div className="w-4 h-10 bg-[hsl(var(--marketing-primary))] rounded-t opacity-30" />
+      <div className="absolute inset-0 flex items-end justify-around p-6 pb-0 opacity-40 gap-1">
+        <div className="w-full bg-emerald-500/20 rounded-t-sm h-[40%]" />
+        <div className="w-full bg-emerald-500/40 rounded-t-sm h-[65%]" />
+        <div className="w-full bg-emerald-500/30 rounded-t-sm h-[50%]" />
+        <div className="w-full bg-emerald-500/60 rounded-t-sm h-[80%]" />
+        <div className="w-full bg-emerald-500/20 rounded-t-sm h-[35%]" />
       </div>
     )
   },
 ];
 
+
 export function BentoFeatureGrid() {
   return (
-    <section className="py-20 bg-gradient-to-b from-[hsl(var(--marketing-bg))] via-[hsl(var(--marketing-bg-subtle))] to-[hsl(var(--marketing-bg))] relative">
+    <section className="py-24 bg-[#0a0a0a] relative overflow-hidden">
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-emerald-900/10 to-transparent" />
+        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-emerald-600/5 rounded-full blur-3xl opacity-20" />
+      </div>
+
       <div className="container mx-auto px-4 max-w-7xl relative z-10">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">
-            <span className="bg-gradient-to-r from-[hsl(var(--marketing-primary))] via-[hsl(var(--marketing-accent))] to-[hsl(var(--marketing-primary))] bg-clip-text text-transparent">
-              Everything You Need.
-            </span>
+        <div className="text-center mb-20 max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-widest mb-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Mission Critical
+          </div>
+
+          <h2 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight text-white leading-[1.1]">
+            Everything You Need.
             <br />
-            <span className="text-[hsl(var(--marketing-text-light))]">Purpose-Built.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+              Purpose-Built.
+            </span>
           </h2>
-          <p className="text-lg text-[hsl(var(--marketing-text-light))] max-w-2xl mx-auto">
-            Built specifically for the unique security and operational needs of the cannabis industry.
+          <p className="text-lg md:text-xl text-zinc-400 leading-relaxed max-w-2xl mx-auto font-light">
+            Built from the ground up for the unique compliance, security, and operational needs of the modern cannabis industry.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[minmax(200px,auto)]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 auto-rows-[minmax(240px,auto)]">
           {features.map((feature, index) => (
             <div
               key={index}
               className={`
-                group relative overflow-hidden rounded-3xl p-8 
-                bg-[hsl(var(--marketing-bg))]/60 border border-[hsl(var(--marketing-border))]
-                hover:border-[hsl(var(--marketing-primary))/0.5] 
-                hover:shadow-lg hover:-translate-y-1
-                transition-all duration-200 cursor-pointer
+                group relative overflow-hidden rounded-3xl p-6 md:p-8 
+                bg-zinc-900/40 border border-white/5 backdrop-blur-sm
+                hover:border-emerald-500/30 hover:bg-zinc-900/60
+                transition-all duration-300 cursor-pointer
                 ${feature.className}
               `}
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              {/* Background Glow on Hover */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-[hsl(var(--marketing-primary))/0.05] via-transparent to-[hsl(var(--marketing-accent))/0.03]" />
+              {/* Premium Hover Gradient */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
 
               <div className="relative z-10 h-full flex flex-col">
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start justify-between mb-6">
                   <div className={`
-                    p-3 rounded-xl 
+                    p-3.5 rounded-2xl transition-transform duration-300 group-hover:scale-110
                     ${feature.highlight
-                      ? 'bg-[hsl(var(--marketing-primary))] text-white'
-                      : 'bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-primary))] border border-[hsl(var(--marketing-border))]'}
+                      ? 'bg-gradient-to-br from-emerald-500 to-cyan-600 text-white shadow-lg shadow-emerald-500/20'
+                      : 'bg-white/5 text-emerald-400 border border-white/5 group-hover:bg-white/10 group-hover:text-emerald-300'}
                   `}>
                     <feature.icon className="w-6 h-6" />
                   </div>
                   {feature.highlight && (
-                    <div className="px-3 py-1 rounded-full bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-primary))] text-xs font-bold border border-[hsl(var(--marketing-primary))]">
-                      Flagship Feature
+                    <div className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold border border-emerald-500/20 uppercase tracking-wider backdrop-blur-sm">
+                      Flagship
                     </div>
                   )}
                 </div>
 
-                <h3 className="text-xl font-bold text-[hsl(var(--marketing-text))] mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-[hsl(var(--marketing-text-light))] leading-relaxed mb-4 flex-grow">
-                  {feature.description}
-                </p>
+                <div className="relative">
+                  <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-emerald-400 transition-colors duration-300">
+                    {feature.title}
+                  </h3>
+                  <p className="text-zinc-400 leading-relaxed mb-6 font-light group-hover:text-zinc-300 transition-colors duration-300">
+                    {feature.description}
+                  </p>
+                </div>
 
                 {feature.visual && (
-                  <div className="mt-4 rounded-xl overflow-hidden border border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))] aspect-video relative">
+                  <div className="mt-auto pt-4 rounded-xl overflow-hidden border border-white/5 bg-black/20 aspect-video relative group-hover:border-white/10 transition-colors duration-300">
                     {feature.visual}
                   </div>
                 )}
 
-                <div className="mt-auto pt-4 flex items-center text-sm text-[hsl(var(--marketing-primary))] font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  Learn more <ArrowUpRight className="w-4 h-4 ml-1" />
-                </div>
+                {/* Visual arrow appearing on hover */}
+                {!feature.visual && (
+                  <div className="mt-auto flex items-center text-sm font-medium text-emerald-400 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                    Learn more <ArrowUpRight className="w-4 h-4 ml-2" />
+                  </div>
+                )}
               </div>
             </div>
           ))}
