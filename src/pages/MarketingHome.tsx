@@ -393,7 +393,7 @@ export default function MarketingHome() {
           text: "View Pricing",
           link: "/pricing",
         }}
-        variant="gradient"
+        variant="default"
       />
 
       {/* SECTION 11: FOOTER */}
