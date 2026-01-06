@@ -148,10 +148,10 @@ const SuperAdminCreditAnalyticsPage = lazy(() => import("./pages/super-admin/Cre
 const SuperAdminReferralManagementPage = lazy(() => import("./pages/super-admin/ReferralManagementPage"));
 const SuperAdminProtectedRouteNew = lazy(() => import("./components/auth/SuperAdminProtectedRoute").then(m => ({ default: m.SuperAdminProtectedRoute })));
 const SuperAdminLayout = lazyWithRetry(() => import("./layouts/SuperAdminLayout").then(m => ({ default: m.SuperAdminLayout })));
-const SignUpPage = lazy(() => import("./pages/saas/SignUpPage"));
-const SelectPlanPage = lazy(() => import("./pages/saas/SelectPlanPage"));
-const SaasLoginPage = lazy(() => import("./pages/saas/LoginPage"));
-const VerifyEmailPage = lazy(() => import("./pages/saas/VerifyEmailPage"));
+const SignUpPage = lazyWithRetry(() => import("./pages/saas/SignUpPage"));
+const SelectPlanPage = lazyWithRetry(() => import("./pages/saas/SelectPlanPage"));
+const SaasLoginPage = lazyWithRetry(() => import("./pages/saas/LoginPage"));
+const VerifyEmailPage = lazyWithRetry(() => import("./pages/saas/VerifyEmailPage"));
 import { EncodedUrlRedirect } from "./components/EncodedUrlRedirect";
 import { UrlEncodingFixer } from "./components/UrlEncodingFixer";
 const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePage"));

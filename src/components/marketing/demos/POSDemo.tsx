@@ -113,7 +113,6 @@ export function POSDemo() {
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: 20 }}
-                                exit={{ opacity: 0, x: 20 }}
                                 className="bg-[hsl(var(--marketing-bg))] rounded-lg p-2"
                             >
                                 <div className="flex items-center justify-between">

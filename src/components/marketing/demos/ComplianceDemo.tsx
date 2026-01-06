@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { FileText, CheckCircle2, RefreshCw, database, ShieldCheck, Lock } from 'lucide-react';
+import { FileText, CheckCircle2, RefreshCw, Database, ShieldCheck, Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export function ComplianceDemo() {
