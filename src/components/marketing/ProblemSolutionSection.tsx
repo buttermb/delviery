@@ -81,8 +81,8 @@ export function ProblemSolutionSection() {
               <button
                 onClick={() => setActiveTab('before')}
                 className={`flex-1 px-4 py-3 rounded-md font-semibold transition-all ${activeTab === 'before'
-                    ? 'bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] shadow-sm border border-[hsl(var(--marketing-border))]'
-                    : 'text-[hsl(var(--marketing-text-light))]'
+                  ? 'bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] shadow-sm border border-[hsl(var(--marketing-border))]'
+                  : 'text-[hsl(var(--marketing-text-light))]'
                   }`}
               >
                 Before FloraIQ
@@ -90,8 +90,8 @@ export function ProblemSolutionSection() {
               <button
                 onClick={() => setActiveTab('after')}
                 className={`flex-1 px-4 py-3 rounded-md font-semibold transition-all ${activeTab === 'after'
-                    ? 'bg-[hsl(var(--marketing-primary))] text-white shadow-sm'
-                    : 'text-[hsl(var(--marketing-text-light))]'
+                  ? 'bg-[hsl(var(--marketing-primary))] text-white shadow-sm'
+                  : 'text-[hsl(var(--marketing-text-light))]'
                   }`}
               >
                 With FloraIQ
@@ -102,17 +102,17 @@ export function ProblemSolutionSection() {
           <div className="grid md:grid-cols-2 gap-8">
             {/* Problems */}
             <motion.div
-              className={`glass-card p-8 rounded-xl border border-red-500/20 bg-red-500/5 ${isMobile && activeTab !== 'before' ? 'hidden' : ''
+              className={`glass-card p-8 rounded-xl border border-zinc-200 bg-zinc-50/50 ${isMobile && activeTab !== 'before' ? 'hidden' : ''
                 }`}
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20">
-                  <X className="h-6 w-6 text-red-400" />
+                <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center border border-zinc-200">
+                  <FileSpreadsheet className="h-6 w-6 text-zinc-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-[hsl(var(--marketing-text))]">Before FloraIQ</h3>
+                <h3 className="text-2xl font-bold text-zinc-600">Before FloraIQ</h3>
               </div>
               <ul className="space-y-4">
                 {problems.map((problem, index) => {
@@ -126,10 +126,10 @@ export function ProblemSolutionSection() {
                       viewport={{ once: true }}
                       transition={{ delay: index * 0.1 }}
                     >
-                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
-                        <Icon className="h-4 w-4 text-red-400" />
+                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-zinc-100 flex items-center justify-center">
+                        <Icon className="h-4 w-4 text-zinc-400" />
                       </div>
-                      <span>{problem.text}</span>
+                      <span className="text-zinc-600">{problem.text}</span>
                     </motion.li>
                   );
                 })}
@@ -138,15 +138,17 @@ export function ProblemSolutionSection() {
 
             {/* Solutions */}
             <motion.div
-              className={`glass-card p-8 rounded-xl border border-[hsl(var(--marketing-primary))/0.3] bg-[hsl(var(--marketing-primary))/0.05] ${isMobile && activeTab !== 'after' ? 'hidden' : ''
+              className={`glass-card p-8 rounded-xl border border-[hsl(var(--marketing-accent))/0.3] bg-[hsl(var(--marketing-bg))] shadow-xl shadow-[hsl(var(--marketing-accent))/0.1] relative overflow-hidden ${isMobile && activeTab !== 'after' ? 'hidden' : ''
                 }`}
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full bg-[hsl(var(--marketing-primary))/0.1] flex items-center justify-center border border-[hsl(var(--marketing-primary))/0.2]">
-                  <Check className="h-6 w-6 text-[hsl(var(--marketing-primary))]" />
+              {/* Gold Glow Effect */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[hsl(var(--marketing-accent))/0.1] blur-[50px] rounded-full pointer-events-none" />
+              <div className="flex items-center gap-3 mb-6 relative z-10">
+                <div className="w-12 h-12 rounded-full bg-[hsl(var(--marketing-accent))/0.1] flex items-center justify-center border border-[hsl(var(--marketing-accent))/0.2] shadow-lg shadow-[hsl(var(--marketing-accent))/0.15]">
+                  <Sparkles className="h-6 w-6 text-[hsl(var(--marketing-accent))]" />
                 </div>
                 <h3 className="text-2xl font-bold text-[hsl(var(--marketing-text))]">With FloraIQ</h3>
               </div>
@@ -156,14 +158,14 @@ export function ProblemSolutionSection() {
                   return (
                     <motion.li
                       key={index}
-                      className="flex items-center gap-3 text-[hsl(var(--marketing-text))] font-medium"
+                      className="flex items-center gap-3 text-[hsl(var(--marketing-text))] font-medium relative z-10"
                       initial={{ opacity: 0, x: 10 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
                       transition={{ delay: index * 0.1 }}
                     >
-                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[hsl(var(--marketing-primary))/0.1] flex items-center justify-center">
-                        <Icon className="h-4 w-4 text-[hsl(var(--marketing-primary))]" />
+                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[hsl(var(--marketing-primary))/0.05] flex items-center justify-center">
+                        <Check className="h-4 w-4 text-[hsl(var(--marketing-primary))]" />
                       </div>
                       <span>{solution.text}</span>
                     </motion.li>
@@ -192,7 +194,7 @@ export function ProblemSolutionSection() {
           </motion.div>
         </div>
       </div>
-    </section>
+    </section >
   );
 }
 

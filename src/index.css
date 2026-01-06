@@ -405,104 +405,98 @@ body.keyboard-open [data-radix-dialog-content] {
     --popover-foreground: 215 25% 27%;
     /* #374151 */
 
-    --primary: 160 84% 39%;
-    /* #10B981 - emerald-500 - Cannabis Green */
+    --primary: 254 70% 28%;
+    /* #2E1679 - Indigo (Flowhub Style) */
     --primary-foreground: 0 0% 100%;
-    /* #FFFFFF - White text on green */
-    --primary-dark: 160 100% 33%;
-    /* #059669 - emerald-600 */
-    --primary-light: 158 64% 52%;
-    /* #34D399 - emerald-400 */
+    /* #FFFFFF */
+    --primary-dark: 254 80% 20%;
+    /* #1e0e4b */
+    --primary-light: 254 60% 40%;
+    /* #4c32a0 */
 
-    --secondary: 220 13% 91%;
-    /* #E5E7EB - gray-200 - Subtle backgrounds */
+    --secondary: 220 13% 96%;
+    /* #f3f4f6 - Very light gray */
     --secondary-foreground: 215 25% 27%;
-    /* #374151 - gray-700 */
+    /* #374151 */
 
-    --muted: 220 14% 96%;
-    /* #F3F4F6 - gray-100 - Card backgrounds */
-    --muted-foreground: 215 20% 65%;
-    /* #9CA3AF - gray-400 - Secondary text */
+    --muted: 254 20% 96%;
+    /* Indigo tinted muted */
+    --muted-foreground: 254 20% 50%;
+    /* Indigo tinted muted text */
 
-    --accent: 160 84% 39%;
-    /* #10B981 - emerald-500 */
+    --accent: 35 89% 60%;
+    /* #F3A73D - Gold */
     --accent-foreground: 0 0% 100%;
     /* #FFFFFF */
 
     --destructive: 0 84% 60%;
-    /* #EF4444 - red-500 */
     --destructive-foreground: 0 0% 100%;
-    /* #FFFFFF */
 
-    --warning: 38 92% 50%;
-    /* #F59E0B - amber-500 */
+    --warning: 35 89% 60%;
+    /* Match accent gold */
     --warning-foreground: 0 0% 100%;
-    /* #FFFFFF */
 
-    --success: 160 84% 39%;
-    /* #10B981 - emerald-500 */
+    --success: 254 70% 35%;
+    /* Use lighter indigo for success to keep theme */
     --success-foreground: 0 0% 100%;
-    /* #FFFFFF */
 
     --info: 217 91% 60%;
-    /* #3B82F6 - blue-500 */
     --info-foreground: 0 0% 100%;
-    /* #FFFFFF */
 
-    --border: 220 13% 91%;
-    /* #E5E7EB - gray-200 */
-    --input: 220 14% 96%;
-    /* #F3F4F6 - gray-100 */
-    --ring: 160 84% 39%;
-    /* #10B981 - emerald-500 */
+    --border: 254 15% 92%;
+    /* Indigo tinted border */
+    --input: 254 15% 96%;
+    /* Indigo tinted input */
+    --ring: 35 89% 60%;
+    /* Gold ring */
 
     --radius: 0.5rem;
-    /* 8px - Standard border radius */
 
     /* Chart colors */
-    --chart-1: 160 84% 39%;
-    /* emerald-500 */
-    --chart-2: 158 64% 52%;
-    /* emerald-400 */
-    --chart-3: 38 92% 50%;
-    /* amber-500 */
+    --chart-1: 254 70% 28%;
+    /* Indigo */
+    --chart-2: 35 89% 60%;
+    /* Gold */
+    --chart-3: 254 60% 50%;
+    /* Lighter Indigo */
     --chart-4: 217 91% 60%;
-    /* blue-500 */
+    /* Blue */
     --chart-5: 271 91% 65%;
-    /* purple-500 */
+    /* Purple */
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(160 84% 39%), hsl(158 64% 52%));
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 14% 96%));
+    --gradient-primary: linear-gradient(135deg, hsl(254 70% 28%), hsl(254 60% 40%));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(254 20% 98%));
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
     --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-    --shadow-elegant: 0 20px 60px -10px hsl(160 84% 39% / 0.3);
+    --shadow-elegant: 0 20px 60px -10px hsl(254 70% 28% / 0.15);
 
     /* Transitions */
     --transition-fast: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-smooth: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Marketing Site Colors - Dark Emerald Brand (Forced Dark) */
-    --marketing-primary: 160 84% 39%;
-    /* #10B981 - Emerald 500 */
-    --marketing-secondary: 158 64% 52%;
-    /* #34D399 - Emerald 400 */
-    --marketing-accent: 142 71% 45%;
-    /* #16a34a - Green 600 */
-    --marketing-text: 210 40% 98%;
-    /* #f8fafc - Slate 50 */
-    --marketing-text-light: 215 28% 65%;
-    /* #94a3b8 - Slate 400 */
-    --marketing-bg: 222 47% 11%;
-    /* #0f172a - Slate 900 */
-    --marketing-bg-subtle: 215 28% 17%;
-    /* #1e293b - Slate 800 */
-    --marketing-border: 217 33% 25%;
-    /* #334155 - Slate 700 */
+    /* Marketing Site Colors - Flowhub Bespoke Style */
+    --marketing-primary: 254 70% 28%;
+    /* #2E1679 - Deep Indigo */
+    --marketing-secondary: 254 70% 28%;
+    /* #2E1679 - Same as primary */
+    --marketing-accent: 35 89% 60%;
+    /* #F3A73D - Gold */
+    --marketing-text: 254 70% 28%;
+    /* #2E1679 - Indigo */
+    --marketing-text-light: 254 25% 45%;
+    /* Indigo-tinted gray */
+    --marketing-bg: 0 0% 100%;
+    /* Pure White */
+    --marketing-bg-subtle: 254 30% 98.5%;
+    /* Very faint indigo tint */
+    --marketing-border: 254 20% 93%;
+    /* Subtle indigo border */
+    --radius: 0.5rem;
 
     /* Unified Design System - Spacing Scale (4px base unit) */
     --spacing-1: 0.25rem;
@@ -728,23 +722,23 @@ body.keyboard-open [data-radix-dialog-content] {
     --ring: 160 84% 39%;
     /* emerald-500 */
 
-    /* Marketing Site Colors - Dark Theme (Deep) */
-    --marketing-primary: 160 84% 45%;
-    /* Emerald 400 */
-    --marketing-secondary: 158 64% 60%;
-    /* Emerald 300 */
-    --marketing-accent: 142 71% 55%;
-    /* Green 500 */
-    --marketing-text: 0 0% 100%;
-    /* White */
-    --marketing-text-light: 215 20% 75%;
-    /* Gray 300 */
-    --marketing-bg: 222 47% 8%;
-    /* Slate 950 */
-    --marketing-bg-subtle: 222 40% 12%;
-    /* Slate 900 */
-    --marketing-border: 222 30% 25%;
-    /* Slate 800 */
+    /* Marketing Site Colors - Dark Theme (Forced Light Mode for consistency) */
+    --marketing-primary: 254 70% 28%;
+    /* #2E1679 - Deep Indigo (Flowhub Primary) */
+    --marketing-secondary: 254 70% 28%;
+    /* #2E1679 - Same as primary */
+    --marketing-accent: 35 89% 60%;
+    /* #F3A73D - Gold (Flowhub Accent) */
+    --marketing-text: 222 47% 11%;
+    /* #0f172a - Slate 900 (High Contrast) */
+    --marketing-text-light: 215 16% 47%;
+    /* #64748b - Slate 500 */
+    --marketing-bg: 0 0% 100%;
+    /* #ffffff - Pure White */
+    --marketing-bg-subtle: 210 40% 98%;
+    /* #f8fafc - Slate 50 */
+    --marketing-border: 214 32% 91%;
+    /* #e2e8f0 - Slate 200 */
 
     /* Unified Design System - Spacing Scale (same for dark) */
     --spacing-1: 0.25rem;

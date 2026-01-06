@@ -11,7 +11,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { CTASection } from "@/components/marketing/CTASection";
 import { ModernHero } from "@/components/marketing/ModernHero";
-import { BentoFeatureGrid } from "@/components/marketing/BentoFeatureGrid";
+import { DetailedFeatureSection } from "@/components/marketing/DetailedFeatureSection";
 import { LiveActivityTicker } from "@/components/marketing/LiveActivityTicker";
 import { ScrollProgressIndicator } from "@/components/marketing/ScrollProgressIndicator";
 import { SectionTransition } from "@/components/marketing/SectionTransition";
@@ -102,22 +102,13 @@ export default function MarketingHome() {
         </SectionTransition>
       </MarketingErrorBoundary>
 
-      {/* SECTION 3: BENTO FEATURES */}
-      <BentoFeatureGrid />
+      {/* SECTION 3: DETAILED FEATURES */}
+      <DetailedFeatureSection />
 
       {/* STATS SECTION */}
       <StatsSection />
 
-      {/* SECTION 4: PLATFORM CAPABILITIES */}
-      <MarketingErrorBoundary section="PlatformCapabilities">
-        <SectionTransition variant="fade">
-          <section>
-            <Suspense fallback={<SectionLoader />}>
-              <PlatformCapabilities />
-            </Suspense>
-          </section>
-        </SectionTransition>
-      </MarketingErrorBoundary>
+
 
 
       {/* SECTION 5: TESTIMONIALS CAROUSEL */}

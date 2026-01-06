@@ -94,9 +94,8 @@ export function FeatureComparisonTable() {
               .map((feature, idx) => (
                 <div
                   key={feature.id}
-                  className={`grid grid-cols-4 border-b hover:bg-muted/30 transition-colors ${
-                    idx % 2 === 0 ? 'bg-background' : 'bg-muted/10'
-                  }`}
+                  className={`grid grid-cols-4 border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? 'bg-background' : 'bg-muted/10'
+                    }`}
                 >
                   <div className="p-3">
                     <div className="font-medium text-sm text-[hsl(var(--marketing-text))]">
@@ -113,7 +112,7 @@ export function FeatureComparisonTable() {
                       className="p-3 border-l flex items-center justify-center"
                     >
                       {hasFeatureAccess(tier, feature.tier) ? (
-                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <CheckCircle className="h-5 w-5 text-[hsl(var(--marketing-primary))]" />
                       ) : (
                         <X className="h-5 w-5 text-muted-foreground/30" />
                       )}
@@ -142,7 +141,7 @@ export function FeatureComparisonTable() {
       {/* Legend */}
       <div className="flex items-center gap-6 mt-4 text-sm text-[hsl(var(--marketing-text-light))]">
         <div className="flex items-center gap-2">
-          <CheckCircle className="h-4 w-4 text-green-600" />
+          <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-primary))]" />
           <span>Included</span>
         </div>
         <div className="flex items-center gap-2">

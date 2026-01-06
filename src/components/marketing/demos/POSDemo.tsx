@@ -74,12 +74,12 @@ export function POSDemo() {
     };
 
     return (
-        <div className="w-full h-full bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800 flex">
+        <div className="w-full h-full bg-[hsl(var(--marketing-bg))] rounded-xl overflow-hidden border border-[hsl(var(--marketing-border))] flex">
             {/* Product Grid */}
             <div className="flex-1 p-4">
                 <div className="flex items-center gap-2 mb-4">
                     <CreditCard className="w-5 h-5 text-primary" />
-                    <h3 className="font-semibold text-white">Point of Sale</h3>
+                    <h3 className="font-semibold text-[hsl(var(--marketing-text))]">Point of Sale</h3>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
@@ -89,20 +89,20 @@ export function POSDemo() {
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => addToCart(product)}
-                            className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-left hover:border-primary/50 transition-colors"
+                            className="bg-[hsl(var(--marketing-bg-subtle))] border border-[hsl(var(--marketing-border))] rounded-lg p-3 text-left hover:border-primary/50 transition-colors"
                         >
                             <div className="text-2xl mb-1">{product.emoji}</div>
-                            <div className="text-xs font-medium text-white truncate">{product.name}</div>
-                            <div className="text-sm font-bold text-emerald-400">${product.price}</div>
+                            <div className="text-xs font-medium text-[hsl(var(--marketing-text))] truncate">{product.name}</div>
+                            <div className="text-sm font-bold text-[hsl(var(--marketing-text))]">${product.price}</div>
                         </motion.button>
                     ))}
                 </div>
             </div>
 
             {/* Cart Sidebar */}
-            <div className="w-44 bg-zinc-900/50 border-l border-zinc-800 flex flex-col">
-                <div className="p-3 border-b border-zinc-800">
-                    <div className="text-sm font-medium text-zinc-400">Cart</div>
+            <div className="w-44 bg-[hsl(var(--marketing-bg-subtle))] border-l border-[hsl(var(--marketing-border))] flex flex-col">
+                <div className="p-3 border-b border-[hsl(var(--marketing-border))]">
+                    <div className="text-sm font-medium text-[hsl(var(--marketing-text-light))]">Cart</div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-2 space-y-2">
@@ -113,13 +113,14 @@ export function POSDemo() {
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: 20 }}
-                                className="bg-zinc-800/50 rounded-lg p-2"
+                                exit={{ opacity: 0, x: 20 }}
+                                className="bg-[hsl(var(--marketing-bg))] rounded-lg p-2"
                             >
                                 <div className="flex items-center justify-between">
-                                    <span className="text-xs text-white truncate flex-1">{item.name}</span>
-                                    <span className="text-xs text-zinc-400">x{item.qty}</span>
+                                    <span className="text-xs text-[hsl(var(--marketing-text))] truncate flex-1">{item.name}</span>
+                                    <span className="text-xs text-[hsl(var(--marketing-text-light))]">x{item.qty}</span>
                                 </div>
-                                <div className="text-xs text-emerald-400 mt-1">${item.price * item.qty}</div>
+                                <div className="text-xs text-[hsl(var(--marketing-text))] mt-1">${item.price * item.qty}</div>
                             </motion.div>
                         ))}
                     </AnimatePresence>
@@ -130,10 +131,10 @@ export function POSDemo() {
                 </div>
 
                 {/* Total & Pay */}
-                <div className="p-3 border-t border-zinc-800">
+                <div className="p-3 border-t border-[hsl(var(--marketing-border))]">
                     <div className="flex justify-between mb-2">
-                        <span className="text-sm text-zinc-400">Total</span>
-                        <span className="text-lg font-bold text-white">${total}</span>
+                        <span className="text-sm text-[hsl(var(--marketing-text-light))]">Total</span>
+                        <span className="text-lg font-bold text-[hsl(var(--marketing-text))]">${total}</span>
                     </div>
 
                     <motion.button
@@ -142,10 +143,10 @@ export function POSDemo() {
                         onClick={handlePayment}
                         disabled={cart.length === 0 || processing}
                         className={`w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${success
-                                ? 'bg-emerald-500 text-white'
-                                : processing
-                                    ? 'bg-blue-500 text-white animate-pulse'
-                                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                            ? 'bg-[hsl(var(--marketing-accent))] text-white'
+                            : processing
+                                ? 'bg-blue-500 text-white animate-pulse'
+                                : 'bg-primary text-primary-foreground hover:bg-primary/90'
                             }`}
                     >
                         {success ? (

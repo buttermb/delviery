@@ -34,25 +34,25 @@ const MOCK_MENUS: MockMenu[] = [
     id: '1', name: 'VIP Clients', type: 'catalog', status: 'active',
     views: 24, customers: 8, orders: 12, revenue: 1450, products: 12,
     expiresIn: '5d', security: ['Encrypted', 'Geofenced'],
-    gradient: 'from-violet-600 via-purple-600 to-indigo-600', icon: '👑',
+    gradient: 'from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))]', icon: '👑',
   },
   {
     id: '2', name: 'Flash Sale', type: 'catalog', status: 'active',
     views: 267, customers: 52, orders: 41, revenue: 5800, products: 8,
     expiresIn: '6h', security: ['Encrypted'],
-    gradient: 'from-rose-600 via-pink-600 to-red-600', icon: '⚡',
+    gradient: 'from-[hsl(var(--marketing-accent))] to-orange-500', icon: '⚡',
   },
   {
     id: '3', name: 'Weekly Drop', type: 'catalog', status: 'active',
     views: 142, customers: 34, orders: 28, revenue: 3200, products: 6,
     expiresIn: '2d', security: ['Encrypted'],
-    gradient: 'from-emerald-600 via-teal-600 to-cyan-600', icon: '🌿',
+    gradient: 'from-[hsl(var(--marketing-secondary))] to-[hsl(var(--marketing-primary))]', icon: '🌿',
   },
   {
     id: '4', name: 'Community', type: 'forum', status: 'active',
     views: 89, customers: 15, orders: 0, revenue: 0, products: 0,
     expiresIn: null, security: ['Device Lock'],
-    gradient: 'from-amber-600 via-orange-600 to-yellow-600', icon: '💬',
+    gradient: 'from-blue-600 to-indigo-500', icon: '💬',
   },
 ];
 
@@ -93,12 +93,12 @@ export function QRMenuDemo() {
 
   return (
     <div
-      className="w-full h-full bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 rounded-xl border border-zinc-800/50 overflow-hidden"
+      className="w-full h-full bg-[hsl(var(--marketing-bg))] rounded-xl border border-[hsl(var(--marketing-border))] overflow-hidden shadow-2xl"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Ambient glow */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${menu.gradient} opacity-5 blur-3xl pointer-events-none`} />
+      <div className={`absolute inset-0 bg-gradient-to-br ${menu.gradient} opacity-10 blur-3xl pointer-events-none transition-colors duration-700`} />
 
       <div className="relative p-4 h-full flex flex-col">
         {/* Header */}
@@ -108,8 +108,8 @@ export function QRMenuDemo() {
               <QrCode className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-semibold text-white">Disposable Menus</h3>
-              <p className="text-xs text-zinc-500">{menus.length} menus active</p>
+              <h3 className="font-semibold text-[hsl(var(--marketing-text))]">Disposable Menus</h3>
+              <p className="text-xs text-[hsl(var(--marketing-text-light))]">{menus.length} menus active</p>
             </div>
           </div>
 
@@ -141,7 +141,7 @@ export function QRMenuDemo() {
               transition={{ type: 'spring', stiffness: 400, damping: 30 }}
               className="h-full"
             >
-              <div className="h-full bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-zinc-700/50 overflow-hidden shadow-2xl">
+              <div className="h-full bg-[hsl(var(--marketing-bg-subtle))]/80 backdrop-blur-xl rounded-2xl border border-[hsl(var(--marketing-border))] overflow-hidden shadow-2xl">
                 {/* Gradient header */}
                 <div className={`h-16 bg-gradient-to-r ${menu.gradient} relative overflow-hidden`}>
                   <div className="absolute inset-0 bg-black/10" />
@@ -177,54 +177,54 @@ export function QRMenuDemo() {
                 <div className="p-4 space-y-4">
                   {/* Stats Grid */}
                   <div className="grid grid-cols-4 gap-2">
-                    <div className="bg-zinc-800/50 rounded-xl p-3 text-center">
+                    <div className="bg-[hsl(var(--marketing-bg))] rounded-xl p-3 text-center border border-[hsl(var(--marketing-border))]">
                       <Eye className="w-4 h-4 text-zinc-500 mx-auto mb-1" />
                       <motion.div
                         key={menu.views}
                         initial={{ scale: 1.2 }}
                         animate={{ scale: 1 }}
-                        className="text-lg font-bold text-white"
+                        className="text-lg font-bold text-[hsl(var(--marketing-text))]"
                       >
                         {menu.views}
                       </motion.div>
                       <div className="text-xs text-zinc-500">views</div>
                     </div>
-                    <div className="bg-zinc-800/50 rounded-xl p-3 text-center">
+                    <div className="bg-[hsl(var(--marketing-bg))] rounded-xl p-3 text-center border border-[hsl(var(--marketing-border))]">
                       <Users className="w-4 h-4 text-zinc-500 mx-auto mb-1" />
-                      <div className="text-lg font-bold text-white">{menu.customers}</div>
+                      <div className="text-lg font-bold text-[hsl(var(--marketing-text))]">{menu.customers}</div>
                       <div className="text-xs text-zinc-500">clients</div>
                     </div>
-                    <div className="bg-zinc-800/50 rounded-xl p-3 text-center">
-                      <ShoppingCart className="w-4 h-4 text-zinc-500 mx-auto mb-1" />
+                    <div className="bg-[hsl(var(--marketing-bg))] rounded-xl p-3 text-center border border-[hsl(var(--marketing-border))]">
+                      <ShoppingCart className="w-4 h-4 text-[hsl(var(--marketing-text-light))] mx-auto mb-1" />
                       <motion.div
                         key={menu.orders}
                         initial={{ scale: 1.2 }}
                         animate={{ scale: 1 }}
-                        className="text-lg font-bold text-white"
+                        className="text-lg font-bold text-[hsl(var(--marketing-text))]"
                       >
                         {menu.orders}
                       </motion.div>
-                      <div className="text-xs text-zinc-500">orders</div>
+                      <div className="text-xs text-[hsl(var(--marketing-text-light))]">orders</div>
                     </div>
-                    <div className="bg-emerald-500/10 rounded-xl p-3 text-center border border-emerald-500/20">
-                      <DollarSign className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
+                    <div className="bg-[hsl(var(--marketing-accent))]/10 rounded-xl p-3 text-center border border-[hsl(var(--marketing-accent))]/20">
+                      <DollarSign className="w-4 h-4 text-[hsl(var(--marketing-accent))] mx-auto mb-1" />
                       <motion.div
                         key={menu.revenue}
                         initial={{ scale: 1.1 }}
                         animate={{ scale: 1 }}
-                        className="text-lg font-bold text-emerald-400"
+                        className="text-lg font-bold text-[hsl(var(--marketing-accent))]"
                       >
                         ${(menu.revenue / 1000).toFixed(1)}k
                       </motion.div>
-                      <div className="text-xs text-emerald-400/60">revenue</div>
+                      <div className="text-xs text-[hsl(var(--marketing-accent))]/60">revenue</div>
                     </div>
                   </div>
 
                   {/* Security badges */}
                   <div className="flex flex-wrap gap-2">
                     {menu.security.map((s, i) => (
-                      <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-xs text-zinc-300">
-                        {s === 'Encrypted' && <Lock className="w-3 h-3 text-emerald-400" />}
+                      <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[hsl(var(--marketing-secondary))] border border-[hsl(var(--marketing-border))] text-xs text-[hsl(var(--marketing-text-light))]">
+                        {s === 'Encrypted' && <Lock className="w-3 h-3 text-[hsl(var(--marketing-text))]" />}
                         {s === 'Geofenced' && <MapPin className="w-3 h-3 text-blue-400" />}
                         {s === 'Device Lock' && <Shield className="w-3 h-3 text-amber-400" />}
                         {s}
@@ -233,24 +233,24 @@ export function QRMenuDemo() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-zinc-800">
+                  <div className="flex items-center gap-2 pt-2 border-t border-[hsl(var(--marketing-border))]">
                     <button
                       onClick={handleCopy}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${copied
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300'
+                        ? 'bg-[hsl(var(--marketing-accent))] text-white'
+                        : 'bg-[hsl(var(--marketing-secondary))] hover:bg-[hsl(var(--marketing-secondary))]/80 text-[hsl(var(--marketing-text))]'
                         }`}
                     >
                       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                       <span className="text-xs font-medium">{copied ? 'Copied!' : 'Copy Link'}</span>
                     </button>
-                    <button className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors">
+                    <button className="p-2 rounded-lg bg-[hsl(var(--marketing-secondary))] hover:bg-[hsl(var(--marketing-secondary))]/80 text-[hsl(var(--marketing-text-light))] hover:text-[hsl(var(--marketing-text))] transition-colors">
                       <QrCode className="w-4 h-4" />
                     </button>
-                    <button className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors">
+                    <button className="p-2 rounded-lg bg-[hsl(var(--marketing-secondary))] hover:bg-[hsl(var(--marketing-secondary))]/80 text-[hsl(var(--marketing-text-light))] hover:text-[hsl(var(--marketing-text))] transition-colors">
                       <Share2 className="w-4 h-4" />
                     </button>
-                    <button className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors">
+                    <button className="p-2 rounded-lg bg-[hsl(var(--marketing-secondary))] hover:bg-[hsl(var(--marketing-secondary))]/80 text-[hsl(var(--marketing-text-light))] hover:text-[hsl(var(--marketing-text))] transition-colors">
                       <ExternalLink className="w-4 h-4" />
                     </button>
                     <div className="flex-1" />

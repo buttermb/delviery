@@ -55,15 +55,15 @@ export function LiveMapDemo() {
 
   const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'delivering': return { color: 'text-blue-400', bg: 'bg-blue-500', label: 'Delivering' };
-      case 'picking_up': return { color: 'text-amber-400', bg: 'bg-amber-500', label: 'Picking Up' };
-      case 'completed': return { color: 'text-emerald-400', bg: 'bg-emerald-500', label: 'Completed' };
-      default: return { color: 'text-zinc-400', bg: 'bg-zinc-500', label: 'Idle' };
+      case 'delivering': return { color: 'text-[hsl(var(--marketing-accent))]', bg: 'bg-[hsl(var(--marketing-accent))]', label: 'Delivering' };
+      case 'picking_up': return { color: 'text-[hsl(var(--marketing-primary))]', bg: 'bg-[hsl(var(--marketing-primary))]', label: 'Picking Up' };
+      case 'completed': return { color: 'text-[hsl(var(--marketing-text))]', bg: 'bg-[hsl(var(--marketing-text))]', label: 'Completed' };
+      default: return { color: 'text-[hsl(var(--marketing-text-light))]', bg: 'bg-[hsl(var(--marketing-text-light))]', label: 'Idle' };
     }
   };
 
   return (
-    <div className="w-full h-full bg-zinc-950 rounded-xl border border-zinc-800 overflow-hidden p-4 flex flex-col">
+    <div className="w-full h-full bg-[hsl(var(--marketing-bg))] rounded-xl border border-[hsl(var(--marketing-border))] overflow-hidden p-4 flex flex-col shadow-2xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -71,53 +71,53 @@ export function LiveMapDemo() {
             <Navigation className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-white">Fleet Tracking</h3>
-            <p className="text-xs text-zinc-500">Live driver locations</p>
+            <h3 className="font-semibold text-[hsl(var(--marketing-text))]">Fleet Tracking</h3>
+            <p className="text-xs text-[hsl(var(--marketing-text-light))]">Live driver locations</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-emerald-500/10">
+        <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-[hsl(var(--marketing-accent))]/10 border border-[hsl(var(--marketing-accent))]/20">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(var(--marketing-accent))] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[hsl(var(--marketing-accent))]"></span>
           </span>
-          <span className="text-xs text-emerald-400 font-medium">Live</span>
+          <span className="text-xs text-[hsl(var(--marketing-accent))] font-medium">Live</span>
         </div>
       </div>
 
       {/* MAP AREA - Main focus */}
       <div className="flex-1 rounded-xl overflow-hidden relative" style={{ minHeight: '200px' }}>
         {/* Map Background - Stylized city blocks */}
-        <div className="absolute inset-0 bg-zinc-900">
+        <div className="absolute inset-0 bg-[#e5e7eb]">
           {/* Water/park area */}
-          <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-blue-900/20 rounded-bl-3xl" />
+          <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-[hsl(var(--marketing-primary))]/10 rounded-bl-3xl" />
 
           {/* Major roads - Horizontal */}
-          <div className="absolute top-[30%] left-0 right-0 h-3 bg-zinc-700" />
-          <div className="absolute top-[60%] left-0 right-0 h-2 bg-zinc-700" />
+          <div className="absolute top-[30%] left-0 right-0 h-3 bg-white" />
+          <div className="absolute top-[60%] left-0 right-0 h-2 bg-white" />
 
           {/* Major roads - Vertical */}
-          <div className="absolute left-[25%] top-0 bottom-0 w-2 bg-zinc-700" />
-          <div className="absolute left-[50%] top-0 bottom-0 w-3 bg-zinc-700" />
-          <div className="absolute left-[75%] top-0 bottom-0 w-2 bg-zinc-700" />
+          <div className="absolute left-[25%] top-0 bottom-0 w-2 bg-white" />
+          <div className="absolute left-[50%] top-0 bottom-0 w-3 bg-white" />
+          <div className="absolute left-[75%] top-0 bottom-0 w-2 bg-white" />
 
           {/* City blocks */}
-          <div className="absolute top-[8%] left-[8%] w-[14%] h-[18%] bg-zinc-800 rounded-md" />
-          <div className="absolute top-[8%] left-[30%] w-[16%] h-[18%] bg-zinc-800 rounded-md" />
-          <div className="absolute top-[8%] left-[55%] w-[12%] h-[18%] bg-zinc-800 rounded-md" />
+          <div className="absolute top-[8%] left-[8%] w-[14%] h-[18%] bg-white rounded-md border border-zinc-200" />
+          <div className="absolute top-[8%] left-[30%] w-[16%] h-[18%] bg-white rounded-md border border-zinc-200" />
+          <div className="absolute top-[8%] left-[55%] w-[12%] h-[18%] bg-white rounded-md border border-zinc-200" />
 
-          <div className="absolute top-[38%] left-[8%] w-[14%] h-[18%] bg-zinc-800 rounded-md" />
-          <div className="absolute top-[38%] left-[30%] w-[16%] h-[18%] bg-zinc-800 rounded-md" />
-          <div className="absolute top-[38%] left-[55%] w-[16%] h-[18%] bg-zinc-800 rounded-md" />
-          <div className="absolute top-[38%] left-[78%] w-[14%] h-[18%] bg-zinc-800 rounded-md" />
+          <div className="absolute top-[38%] left-[8%] w-[14%] h-[18%] bg-white rounded-md border border-zinc-200" />
+          <div className="absolute top-[38%] left-[30%] w-[16%] h-[18%] bg-white rounded-md border border-zinc-200" />
+          <div className="absolute top-[38%] left-[55%] w-[16%] h-[18%] bg-white rounded-md border border-zinc-200" />
+          <div className="absolute top-[38%] left-[78%] w-[14%] h-[18%] bg-white rounded-md border border-zinc-200" />
 
-          <div className="absolute top-[68%] left-[8%] w-[14%] h-[24%] bg-zinc-800 rounded-md" />
-          <div className="absolute top-[68%] left-[30%] w-[16%] h-[24%] bg-zinc-800 rounded-md" />
-          <div className="absolute top-[68%] left-[55%] w-[16%] h-[24%] bg-zinc-800 rounded-md" />
-          <div className="absolute top-[68%] left-[78%] w-[14%] h-[24%] bg-zinc-800 rounded-md" />
+          <div className="absolute top-[68%] left-[8%] w-[14%] h-[24%] bg-white rounded-md border border-zinc-200" />
+          <div className="absolute top-[68%] left-[30%] w-[16%] h-[24%] bg-white rounded-md border border-zinc-200" />
+          <div className="absolute top-[68%] left-[55%] w-[16%] h-[24%] bg-white rounded-md border border-zinc-200" />
+          <div className="absolute top-[68%] left-[78%] w-[14%] h-[24%] bg-white rounded-md border border-zinc-200" />
 
           {/* Road markings - dashed center lines */}
-          <div className="absolute top-[31%] left-0 right-0 border-t border-dashed border-yellow-600/50" />
-          <div className="absolute left-[51%] top-0 bottom-0 border-l border-dashed border-yellow-600/50" />
+          <div className="absolute top-[31%] left-0 right-0 border-t border-dashed border-[hsl(var(--marketing-accent))]/20" />
+          <div className="absolute left-[51%] top-0 bottom-0 border-l border-dashed border-[hsl(var(--marketing-accent))]/20" />
         </div>
 
         {/* Destination pins */}
@@ -167,7 +167,7 @@ export function LiveMapDemo() {
                 )}
 
                 {/* Name tag */}
-                <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-zinc-900/90 rounded text-xs text-white font-medium whitespace-nowrap border border-zinc-700">
+                <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-[hsl(var(--marketing-text))] rounded text-xs text-white font-medium whitespace-nowrap border border-[hsl(var(--marketing-border))]">
                   {driver.name}
                 </div>
               </div>
@@ -177,16 +177,16 @@ export function LiveMapDemo() {
 
         {/* Legend */}
         <div className="absolute bottom-2 left-2 flex gap-2">
-          <div className="flex items-center gap-1 px-2 py-1 bg-zinc-900/80 rounded text-xs text-zinc-400 border border-zinc-700">
-            <div className="w-2 h-2 rounded-full bg-blue-500" />
+          <div className="flex items-center gap-1 px-2 py-1 bg-white/90 rounded text-xs text-[hsl(var(--marketing-text))] border border-[hsl(var(--marketing-border))] shadow-sm">
+            <div className="w-2 h-2 rounded-full bg-[hsl(var(--marketing-accent))]" />
             Delivering
           </div>
-          <div className="flex items-center gap-1 px-2 py-1 bg-zinc-900/80 rounded text-xs text-zinc-400 border border-zinc-700">
-            <div className="w-2 h-2 rounded-full bg-amber-500" />
+          <div className="flex items-center gap-1 px-2 py-1 bg-white/90 rounded text-xs text-[hsl(var(--marketing-text))] border border-[hsl(var(--marketing-border))] shadow-sm">
+            <div className="w-2 h-2 rounded-full bg-[hsl(var(--marketing-primary))]" />
             Pickup
           </div>
-          <div className="flex items-center gap-1 px-2 py-1 bg-zinc-900/80 rounded text-xs text-zinc-400 border border-zinc-700">
-            <div className="w-2 h-2 rounded-full bg-emerald-500" />
+          <div className="flex items-center gap-1 px-2 py-1 bg-white/90 rounded text-xs text-[hsl(var(--marketing-text))] border border-[hsl(var(--marketing-border))] shadow-sm">
+            <div className="w-2 h-2 rounded-full bg-[hsl(var(--marketing-text))]" />
             Done
           </div>
         </div>
@@ -194,27 +194,27 @@ export function LiveMapDemo() {
 
       {/* Stats Row */}
       <div className="grid grid-cols-3 gap-2 mt-3">
-        <div className="bg-zinc-900 rounded-xl p-2.5 text-center border border-zinc-800">
-          <Truck className="w-4 h-4 text-blue-400 mx-auto mb-1" />
-          <div className="text-lg font-bold text-white">{stats.active}</div>
-          <div className="text-xs text-zinc-500">Active</div>
+        <div className="bg-[hsl(var(--marketing-primary))]/5 rounded-xl p-2.5 text-center border border-[hsl(var(--marketing-primary))]/10">
+          <Truck className="w-4 h-4 text-[hsl(var(--marketing-primary))] mx-auto mb-1" />
+          <div className="text-lg font-bold text-[hsl(var(--marketing-text))]">{stats.active}</div>
+          <div className="text-xs text-[hsl(var(--marketing-text-light))]">Active</div>
         </div>
-        <div className="bg-zinc-900 rounded-xl p-2.5 text-center border border-zinc-800">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
+        <div className="bg-[hsl(var(--marketing-primary))]/5 rounded-xl p-2.5 text-center border border-[hsl(var(--marketing-primary))]/10">
+          <CheckCircle2 className="w-4 h-4 text-[hsl(var(--marketing-accent))] mx-auto mb-1" />
           <motion.div
             key={stats.delivered}
             initial={{ scale: 1.2 }}
             animate={{ scale: 1 }}
-            className="text-lg font-bold text-emerald-400"
+            className="text-lg font-bold text-[hsl(var(--marketing-accent))]"
           >
             {stats.delivered}
           </motion.div>
-          <div className="text-xs text-zinc-500">Delivered</div>
+          <div className="text-xs text-[hsl(var(--marketing-text-light))]">Delivered</div>
         </div>
-        <div className="bg-zinc-900 rounded-xl p-2.5 text-center border border-zinc-800">
-          <Zap className="w-4 h-4 text-amber-400 mx-auto mb-1" />
-          <div className="text-lg font-bold text-amber-400">{stats.onTime}%</div>
-          <div className="text-xs text-zinc-500">On-Time</div>
+        <div className="bg-[hsl(var(--marketing-primary))]/5 rounded-xl p-2.5 text-center border border-[hsl(var(--marketing-primary))]/10">
+          <Zap className="w-4 h-4 text-[hsl(var(--marketing-accent))] mx-auto mb-1" />
+          <div className="text-lg font-bold text-[hsl(var(--marketing-accent))]">{stats.onTime}%</div>
+          <div className="text-xs text-[hsl(var(--marketing-text-light))]">On-Time</div>
         </div>
       </div>
     </div>

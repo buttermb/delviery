@@ -3,6 +3,7 @@ import { AnimatedStockChart } from './AnimatedStockChart';
 import { WorkflowDiagram } from './WorkflowDiagram';
 import { LiveMapDemo } from './LiveMapDemo';
 import { QRMenuDemo } from './QRMenuDemo';
+import { StorefrontDemo } from './StorefrontDemo';
 import { BarChart3, Users } from 'lucide-react';
 
 interface FeatureDemoPreviewProps {
@@ -20,29 +21,31 @@ export function FeatureDemoPreview({ featureId }: FeatureDemoPreviewProps) {
         return <LiveMapDemo />;
       case 'menus':
         return <QRMenuDemo />;
+      case 'storefront':
+        return <StorefrontDemo />;
       case 'portal':
         return (
-          <div className="w-full h-full bg-card/50 rounded-lg p-6">
+          <div className="w-full h-full bg-[hsl(var(--marketing-bg-subtle))] rounded-lg p-6 border border-[hsl(var(--marketing-border))]">
             <div className="flex items-center gap-2 mb-6">
               <Users className="h-5 w-5 text-primary" />
-              <h4 className="font-semibold text-foreground">Customer Portal</h4>
+              <h4 className="font-semibold text-[hsl(var(--marketing-text))]">Customer Portal</h4>
             </div>
             <div className="space-y-4">
-              <div className="bg-background/50 rounded-lg p-4">
+              <div className="bg-[hsl(var(--marketing-bg))]/50 rounded-lg p-4 border border-[hsl(var(--marketing-border))]">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent" />
                   <div>
-                    <div className="font-medium text-foreground">Welcome, John's Shop</div>
-                    <div className="text-xs text-muted-foreground">Account #1234</div>
+                    <div className="font-medium text-[hsl(var(--marketing-text))]">Welcome, John's Shop</div>
+                    <div className="text-xs text-[hsl(var(--marketing-text-light))]">Account #1234</div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="p-3 bg-primary/10 rounded-lg">
-                    <div className="text-xs text-muted-foreground">Active Orders</div>
-                    <div className="text-xl font-bold text-primary">3</div>
+                  <div className="p-3 bg-[hsl(var(--marketing-primary))]/10 rounded-lg">
+                    <div className="text-xs text-[hsl(var(--marketing-text-light))]">Active Orders</div>
+                    <div className="text-xl font-bold text-[hsl(var(--marketing-primary))]">3</div>
                   </div>
-                  <div className="p-3 bg-accent/10 rounded-lg">
-                    <div className="text-xs text-muted-foreground">Total Spent</div>
+                  <div className="p-3 bg-[hsl(var(--marketing-accent))]/10 rounded-lg">
+                    <div className="text-xs text-[hsl(var(--marketing-text-light))]">Total Spent</div>
                     <div className="text-xl font-bold text-accent">$2.4K</div>
                   </div>
                 </div>
@@ -53,21 +56,21 @@ export function FeatureDemoPreview({ featureId }: FeatureDemoPreviewProps) {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                <div className="text-sm text-foreground font-medium">24/7 Self-Service</div>
-                <div className="text-xs text-muted-foreground mt-1">Customers can order anytime</div>
+                <div className="text-sm text-[hsl(var(--marketing-text))] font-medium">24/7 Self-Service</div>
+                <div className="text-xs text-[hsl(var(--marketing-text-light))] mt-1">Customers can order anytime</div>
               </motion.div>
             </div>
           </div>
         );
       case 'analytics':
         return (
-          <div className="w-full h-full bg-card/50 rounded-lg p-6">
+          <div className="w-full h-full bg-[hsl(var(--marketing-bg-subtle))] rounded-lg p-6 border border-[hsl(var(--marketing-border))]">
             <div className="flex items-center gap-2 mb-6">
               <BarChart3 className="h-5 w-5 text-primary" />
-              <h4 className="font-semibold text-foreground">Real-Time Analytics</h4>
+              <h4 className="font-semibold text-[hsl(var(--marketing-text))]">Real-Time Analytics</h4>
             </div>
             <div className="space-y-4">
-              <div className="flex items-end gap-2 h-32 bg-background/50 rounded-lg p-4">
+              <div className="flex items-end gap-2 h-32 bg-[hsl(var(--marketing-bg))]/50 rounded-lg p-4 border border-[hsl(var(--marketing-border))]">
                 {[65, 80, 70, 90, 75, 95, 85].map((height, i) => (
                   <motion.div
                     key={i}
@@ -79,17 +82,17 @@ export function FeatureDemoPreview({ featureId }: FeatureDemoPreviewProps) {
                 ))}
               </div>
               <div className="grid grid-cols-3 gap-3">
-                <div className="bg-background/50 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-primary">$24K</div>
-                  <div className="text-xs text-muted-foreground">Revenue</div>
+                <div className="bg-[hsl(var(--marketing-bg))]/50 rounded-lg p-3 text-center border border-[hsl(var(--marketing-border))]">
+                  <div className="text-2xl font-bold text-[hsl(var(--marketing-primary))]">$24K</div>
+                  <div className="text-xs text-[hsl(var(--marketing-text-light))]">Revenue</div>
                 </div>
-                <div className="bg-background/50 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-accent">156</div>
-                  <div className="text-xs text-muted-foreground">Orders</div>
+                <div className="bg-[hsl(var(--marketing-bg))]/50 rounded-lg p-3 text-center border border-[hsl(var(--marketing-border))]">
+                  <div className="text-2xl font-bold text-[hsl(var(--marketing-accent))]">156</div>
+                  <div className="text-xs text-[hsl(var(--marketing-text-light))]">Orders</div>
                 </div>
-                <div className="bg-background/50 rounded-lg p-3 text-center">
+                <div className="bg-[hsl(var(--marketing-bg))]/50 rounded-lg p-3 text-center border border-[hsl(var(--marketing-border))]">
                   <div className="text-2xl font-bold text-green-500">+23%</div>
-                  <div className="text-xs text-muted-foreground">Growth</div>
+                  <div className="text-xs text-[hsl(var(--marketing-text-light))]">Growth</div>
                 </div>
               </div>
             </div>
@@ -102,14 +105,14 @@ export function FeatureDemoPreview({ featureId }: FeatureDemoPreviewProps) {
 
   return (
     <AnimatePresence mode="wait">
-              <motion.div
-                key={featureId}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ type: 'spring' as const, stiffness: 200, damping: 25 }}
-                className="h-full"
-              >
+      <motion.div
+        key={featureId}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ type: 'spring' as const, stiffness: 200, damping: 25 }}
+        className="h-full"
+      >
         {renderDemo()}
       </motion.div>
     </AnimatePresence>

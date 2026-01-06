@@ -45,26 +45,26 @@ export function DashboardDemo() {
     }, []);
 
     return (
-        <div className="w-full h-full bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800">
+        <div className="w-full h-full bg-[hsl(var(--marketing-bg))] rounded-xl overflow-hidden border border-[hsl(var(--marketing-border))] shadow-2xl">
             {/* Header */}
-            <div className="bg-zinc-900/95 px-4 py-3 flex items-center justify-between border-b border-zinc-800">
+            <div className="bg-[hsl(var(--marketing-bg))] px-4 py-3 flex items-center justify-between border-b border-[hsl(var(--marketing-border))]">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))] flex items-center justify-center shadow-lg shadow-[hsl(var(--marketing-primary))]/20">
                         <Package className="w-4 h-4 text-white" />
                     </div>
-                    <span className="font-bold text-white">Demo Store</span>
+                    <span className="font-bold text-[hsl(var(--marketing-text))]">Demo Store</span>
                 </div>
                 <div className="text-center">
-                    <div className="text-2xl font-mono font-bold text-white tabular-nums">
+                    <div className="text-2xl font-mono font-bold text-[hsl(var(--marketing-accent))] tabular-nums shadow-[0_0_15px_rgba(234,179,8,0.2)]">
                         {time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                     </div>
                 </div>
-                <div className="flex items-center gap-2 text-emerald-400">
+                <div className="flex items-center gap-2 text-[hsl(var(--marketing-accent))]">
                     <Wifi className="w-4 h-4" />
                     <span className="text-xs font-medium">Live</span>
                     <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(var(--marketing-accent))] opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[hsl(var(--marketing-accent))]"></span>
                     </span>
                 </div>
             </div>
@@ -72,10 +72,10 @@ export function DashboardDemo() {
             {/* Main Grid */}
             <div className="grid grid-cols-2 gap-3 p-3 h-[calc(100%-60px)]">
                 {/* Left - Order Cards */}
-                <div className="bg-zinc-900/50 rounded-lg p-3 border border-zinc-800/50">
+                <div className="bg-[hsl(var(--marketing-primary))]/5 rounded-lg p-3 border border-[hsl(var(--marketing-primary))]/10">
                     <div className="flex items-center gap-2 mb-3">
-                        <ShoppingBag className="w-4 h-4 text-blue-400" />
-                        <span className="text-sm font-medium text-zinc-300">Live Orders</span>
+                        <ShoppingBag className="w-4 h-4 text-[hsl(var(--marketing-primary))]" />
+                        <span className="text-sm font-medium text-[hsl(var(--marketing-text))]">Live Orders</span>
                     </div>
                     <div className="space-y-2">
                         <AnimatePresence>
@@ -85,14 +85,14 @@ export function DashboardDemo() {
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.1 }}
-                                    className={`flex items-center justify-between p-2 rounded-lg border ${order.status === 'new' ? 'bg-blue-500/10 border-blue-500/30' :
-                                            order.status === 'preparing' ? 'bg-amber-500/10 border-amber-500/30' :
-                                                'bg-emerald-500/10 border-emerald-500/30'
+                                    className={`flex items-center justify-between p-2 rounded-lg border backdrop-blur-sm transition-colors ${order.status === 'new' ? 'bg-[hsl(var(--marketing-primary))]/20 border-[hsl(var(--marketing-primary))]/30' :
+                                        order.status === 'preparing' ? 'bg-[hsl(var(--marketing-secondary))]/20 border-[hsl(var(--marketing-secondary))]/30' :
+                                            'bg-[hsl(var(--marketing-accent))]/10 border-[hsl(var(--marketing-accent))]/30'
                                         }`}
                                 >
-                                    <span className="text-sm font-bold text-white">#{order.id}</span>
-                                    <span className="text-xs text-zinc-400">{order.source}</span>
-                                    <span className="text-xs text-zinc-500 flex items-center gap-1">
+                                    <span className="text-sm font-bold text-[hsl(var(--marketing-text))]">#{order.id}</span>
+                                    <span className="text-xs text-[hsl(var(--marketing-text-light))]">{order.source}</span>
+                                    <span className="text-xs text-[hsl(var(--marketing-text-light))] flex items-center gap-1">
                                         <Clock className="w-3 h-3" /> {order.time}
                                     </span>
                                 </motion.div>
@@ -109,20 +109,21 @@ export function DashboardDemo() {
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: i * 0.1 }}
-                            className="bg-zinc-900/50 rounded-lg p-3 border border-zinc-800/50 flex flex-col items-center justify-center"
+                            className="bg-[hsl(var(--marketing-primary))]/5 rounded-lg p-3 border border-[hsl(var(--marketing-primary))]/10 flex flex-col items-center justify-center relative overflow-hidden group"
                         >
+                            <div className="absolute inset-0 bg-[hsl(var(--marketing-primary))]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                             <AnimatePresence mode="wait">
                                 <motion.div
                                     key={metric.value}
                                     initial={{ opacity: 0, y: 5 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="text-xl font-bold text-white"
+                                    className="text-xl font-bold text-[hsl(var(--marketing-text))] relative z-10"
                                 >
                                     {metric.prefix}{metric.value.toLocaleString()}
                                 </motion.div>
                             </AnimatePresence>
-                            <div className="text-xs text-zinc-500 mt-1">{metric.label}</div>
-                            <div className="text-xs text-emerald-400 flex items-center gap-0.5 mt-1">
+                            <div className="text-xs text-[hsl(var(--marketing-text-light))] mt-1 relative z-10">{metric.label}</div>
+                            <div className="text-xs text-[hsl(var(--marketing-accent))] flex items-center gap-0.5 mt-1 relative z-10">
                                 <TrendingUp className="w-3 h-3" />
                                 {metric.trend}
                             </div>

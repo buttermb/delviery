@@ -426,6 +426,11 @@ const SuperAdminAuthCallback = lazy(() => import("./pages/auth/AuthCallbackPage"
 const CustomerAuthCallback = lazy(() => import("./pages/auth/AuthCallbackPage").then(m => ({ default: m.CustomerAuthCallback })));
 const MFAChallengePage = lazy(() => import("./pages/auth/MFAChallengePage"));
 
+// Feature Pages (Marketing)
+import FeatureCompliancePage from "./pages/features/CompliancePage";
+import FeatureLogisticsPage from "./pages/features/LogisticsPage";
+import FeatureEcommercePage from "./pages/features/EcommercePage";
+
 // Create optimized QueryClient from centralized config
 const queryClient = createQueryClient();
 
@@ -435,6 +440,7 @@ setupGlobalErrorHandlers();
 const MobileTestPage = lazy(() => import("@/pages/mobile/MobileTestPage"));
 
 const App = () => {
+  console.log("App Component MOUNTED");
   // Enable automatic version checking and cache busting
   useVersionCheck();
 
@@ -557,6 +563,9 @@ const App = () => {
                                         <Route path="/p/:portalToken" element={<ClientPortalPage />} />
                                         <Route path="/marketing" element={<MarketingHome />} />
                                         <Route path="/features" element={<Features />} />
+                                        <Route path="/features/compliance" element={<FeatureCompliancePage />} />
+                                        <Route path="/features/logistics" element={<FeatureLogisticsPage />} />
+                                        <Route path="/features/ecommerce" element={<FeatureEcommercePage />} />
                                         <Route path="/pricing" element={<PricingPage />} />
                                         <Route path="/about" element={<About />} />
                                         <Route path="/contact" element={<Contact />} />

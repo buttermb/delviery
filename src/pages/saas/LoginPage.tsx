@@ -281,7 +281,7 @@ export default function LoginPage() {
       </div>
 
       {/* Dynamic gradient background with animation */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20 transition-colors duration-700" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-[hsl(var(--marketing-accent))]/10 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-[hsl(var(--marketing-accent))]/10 transition-colors duration-700" />
 
       {/* Large floating orbs with complex movement - theme aware */}
       <div
@@ -308,8 +308,8 @@ export default function LoginPage() {
         className="absolute top-1/3 left-1/2 w-[500px] h-[500px] rounded-full blur-3xl transition-all duration-700"
         style={{
           background: theme === 'dark'
-            ? 'radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0) 70%)'
-            : 'radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, rgba(16, 185, 129, 0) 70%)',
+            ? 'radial-gradient(circle, rgba(243, 167, 61, 0.2) 0%, rgba(243, 167, 61, 0) 70%)'
+            : 'radial-gradient(circle, rgba(243, 167, 61, 0.35) 0%, rgba(243, 167, 61, 0) 70%)',
           opacity: theme === 'dark' ? 0.4 : 0.6,
           animation: 'float-diagonal-complex 30s ease-in-out infinite'
         }}
@@ -362,8 +362,8 @@ export default function LoginPage() {
           className="absolute inset-0 transition-all duration-700"
           style={{
             background: theme === 'dark'
-              ? 'radial-gradient(ellipse at 50% 30%, rgba(16, 185, 129, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 70%, rgba(236, 72, 153, 0.1) 0%, transparent 50%)'
-              : 'radial-gradient(ellipse at 50% 30%, rgba(16, 185, 129, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 50%)',
+              ? 'radial-gradient(ellipse at 50% 30%, rgba(243, 167, 61, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 70%, rgba(236, 72, 153, 0.1) 0%, transparent 50%)'
+              : 'radial-gradient(ellipse at 50% 30%, rgba(243, 167, 61, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 50%)',
             animation: 'wave-movement-reverse 25s ease-in-out infinite'
           }}
         />
@@ -373,8 +373,8 @@ export default function LoginPage() {
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(30)].map((_, i) => {
           const colors = theme === 'dark'
-            ? ['rgba(59, 130, 246, 0.5)', 'rgba(168, 85, 247, 0.5)', 'rgba(16, 185, 129, 0.5)', 'rgba(236, 72, 153, 0.5)']
-            : ['rgba(59, 130, 246, 0.7)', 'rgba(168, 85, 247, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(236, 72, 153, 0.7)'];
+            ? ['rgba(59, 130, 246, 0.5)', 'rgba(168, 85, 247, 0.5)', 'rgba(243, 167, 61, 0.5)', 'rgba(236, 72, 153, 0.5)']
+            : ['rgba(59, 130, 246, 0.7)', 'rgba(168, 85, 247, 0.7)', 'rgba(243, 167, 61, 0.7)', 'rgba(236, 72, 153, 0.7)'];
 
           return (
             <div
@@ -557,9 +557,9 @@ export default function LoginPage() {
         </div>
 
         {signupSuccess && (
-          <Alert className="mb-6 border-green-500 bg-green-50">
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
+          <Alert className="mb-6 border-[hsl(var(--marketing-accent))] bg-[hsl(var(--marketing-accent))]/10">
+            <CheckCircle2 className="h-4 w-4 text-[hsl(var(--marketing-accent))]" />
+            <AlertDescription className="text-[hsl(var(--marketing-text))]">
               Your account has been created successfully! Please sign in to continue.
             </AlertDescription>
           </Alert>

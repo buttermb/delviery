@@ -71,22 +71,22 @@ export function OrderKanbanDemo() {
     }, []);
 
     const getUrgencyColor = (minutes: number) => {
-        if (minutes < 5) return 'border-emerald-500 bg-emerald-500/10';
-        if (minutes < 10) return 'border-amber-500 bg-amber-500/10';
+        if (minutes < 5) return 'border-[hsl(var(--marketing-accent))] bg-[hsl(var(--marketing-accent))]/10';
+        if (minutes < 10) return 'border-[hsl(var(--marketing-primary))] bg-[hsl(var(--marketing-primary))]/10';
         return 'border-red-500 bg-red-500/10';
     };
 
     const columns = [
-        { id: 'new', label: 'New', icon: ShoppingBag, color: 'text-blue-400 border-blue-400/30' },
-        { id: 'preparing', label: 'Preparing', icon: Utensils, color: 'text-amber-400 border-amber-400/30' },
-        { id: 'ready', label: 'Ready', icon: CheckCircle2, color: 'text-emerald-400 border-emerald-400/30' },
+        { id: 'new', label: 'New', icon: ShoppingBag, color: 'text-[hsl(var(--marketing-primary))] border-[hsl(var(--marketing-primary))]/30' },
+        { id: 'preparing', label: 'Preparing', icon: Utensils, color: 'text-[hsl(var(--marketing-accent))] border-[hsl(var(--marketing-accent))]/30' },
+        { id: 'ready', label: 'Ready', icon: CheckCircle2, color: 'text-[hsl(var(--marketing-text))] border-[hsl(var(--marketing-text))]/30' },
     ];
 
     return (
-        <div className="w-full h-full bg-zinc-950 rounded-xl p-4 border border-zinc-800">
+        <div className="w-full h-full bg-[hsl(var(--marketing-bg))] rounded-xl p-4 border border-[hsl(var(--marketing-border))]">
             <div className="flex items-center gap-2 mb-4">
                 <ShoppingBag className="w-5 h-5 text-primary" />
-                <h3 className="font-semibold text-white">Live Orders</h3>
+                <h3 className="font-semibold text-[hsl(var(--marketing-text))]">Live Orders</h3>
             </div>
 
             <div className="grid grid-cols-3 gap-3 h-[calc(100%-40px)]">
@@ -94,8 +94,8 @@ export function OrderKanbanDemo() {
                     <div key={col.id} className="flex flex-col">
                         <div className={`flex items-center gap-2 pb-2 mb-2 border-b ${col.color}`}>
                             <col.icon className="w-4 h-4" />
-                            <span className="text-sm font-medium text-white">{col.label}</span>
-                            <span className="ml-auto bg-zinc-800 px-2 py-0.5 rounded-full text-xs text-zinc-300">
+                            <span className="text-sm font-medium text-[hsl(var(--marketing-text))]">{col.label}</span>
+                            <span className="ml-auto bg-[hsl(var(--marketing-bg-subtle))] px-2 py-0.5 rounded-full text-xs text-[hsl(var(--marketing-text-light))]">
                                 {orders[col.id as keyof typeof orders].length}
                             </span>
                         </div>
@@ -112,11 +112,11 @@ export function OrderKanbanDemo() {
                                         className={`rounded-lg p-3 border-2 ${getUrgencyColor(order.minutes)}`}
                                     >
                                         <div className="flex items-center justify-between mb-1">
-                                            <span className="text-sm font-bold text-white">#{order.id}</span>
-                                            <span className="text-sm font-semibold text-emerald-400">${order.total}</span>
+                                            <span className="text-sm font-bold text-[hsl(var(--marketing-text))]">#{order.id}</span>
+                                            <span className="text-sm font-semibold text-[hsl(var(--marketing-text))]">${order.total}</span>
                                         </div>
-                                        <div className="text-xs text-zinc-400 mb-1">{order.source}</div>
-                                        <div className="flex items-center gap-1 text-zinc-500 text-xs">
+                                        <div className="text-xs text-[hsl(var(--marketing-text-light))] mb-1">{order.source}</div>
+                                        <div className="flex items-center gap-1 text-[hsl(var(--marketing-text-light))] text-xs">
                                             <Clock className="w-3 h-3" />
                                             {order.minutes}m ago
                                         </div>

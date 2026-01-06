@@ -5,69 +5,83 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import FloraIQLogo from "@/components/FloraIQLogo";
 
 const FOOTER_SECTIONS = [
   {
     title: "PRODUCT",
     links: [
-      { label: "Features", href: "/features" },
-      { label: "Pricing", href: "/pricing" },
-      { label: "Demo", href: "/demo" },
+      { label: "Inventory Management", href: "/features" },
+      { label: "Order Fulfillment", href: "/features" },
+      { label: "Delivery Logistics", href: "/features" },
+      { label: "Mobile App", href: "/features" },
       { label: "Integrations", href: "/integrations" },
+    ]
+  },
+  {
+    title: "SOLUTIONS",
+    links: [
+      { label: "For Distributors", href: "/demo" },
+      { label: "For Brands", href: "/demo" },
+      { label: "Client CRM", href: "/features" },
+      { label: "Compliance", href: "/security" },
     ]
   },
   {
     title: "COMPANY",
     links: [
-      { label: "About", href: "/about" },
+      { label: "About Us", href: "/about" },
       { label: "Careers", href: "/careers" },
       { label: "Contact", href: "/contact" },
-      { label: "Press", href: "/press" },
-    ]
-  },
-  {
-    title: "RESOURCES",
-    links: [
       { label: "Blog", href: "/blog" },
-      { label: "Support", href: "/support" },
-      { label: "API Docs", href: "/docs" },
-      { label: "Status", href: "/status" },
     ]
   },
   {
-    title: "LEGAL",
+    title: "SUPPORT",
     links: [
-      { label: "Privacy", href: "/privacy" },
-      { label: "Terms", href: "/terms" },
-      { label: "Security", href: "/security" },
-      { label: "Cookie", href: "/cookie" },
-    ]
-  },
-  {
-    title: "LOGIN",
-    links: [
-      { label: "All Portals", href: "/login" },
-      { label: "Customer Login", href: "/customer/login" },
-      { label: "Business Login", href: "/saas/login" },
-      { label: "Admin Login", href: "/super-admin/login" },
+      { label: "Help Center", href: "/support" },
+      { label: "API Documentation", href: "/docs" },
+      { label: "System Status", href: "/status" },
+      { label: "Login", href: "/login" },
     ]
   }
 ];
 
 export function MarketingFooter() {
   return (
-    <footer className="border-t border-[hsl(var(--marketing-border))] mt-20 bg-[hsl(var(--marketing-bg-subtle))]">
-      <div className="container mx-auto px-4 py-12">
+    <footer className="bg-slate-50 border-t border-slate-200 text-slate-600 pt-20 pb-12 font-sans">
+      <div className="container mx-auto px-4">
 
-        {/* Desktop Grid View (Hidden on Mobile) */}
-        <div className="hidden md:grid md:grid-cols-5 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-12 mb-16">
+          {/* Logo Column */}
+          <div className="lg:col-span-2">
+            <div className="mb-6">
+              <FloraIQLogo size="lg" />
+            </div>
+            <p className="text-slate-500 text-lg mb-6 max-w-sm leading-relaxed">
+              The operating system for modern cannabis distribution. Secure, compliant, and built for scale.
+            </p>
+            <div className="flex gap-4">
+              {/* Social placeholders */}
+              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-[hsl(var(--marketing-primary))] hover:text-white hover:border-[hsl(var(--marketing-primary))] transition-all cursor-pointer font-bold duration-300 shadow-sm">X</div>
+              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-[hsl(var(--marketing-primary))] hover:text-white hover:border-[hsl(var(--marketing-primary))] transition-all cursor-pointer font-bold duration-300 shadow-sm">Li</div>
+              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-[hsl(var(--marketing-primary))] hover:text-white hover:border-[hsl(var(--marketing-primary))] transition-all cursor-pointer font-bold duration-300 shadow-sm">Ig</div>
+            </div>
+          </div>
+
+          {/* Links Columns (Desktop) */}
           {FOOTER_SECTIONS.map((section) => (
-            <div key={section.title}>
-              <h3 className="font-bold mb-4 text-[hsl(var(--marketing-text))]">{section.title}</h3>
-              <ul className="space-y-2 text-sm text-[hsl(var(--marketing-text-light))]">
+            <div key={section.title} className="hidden md:block">
+              <h4 className="font-bold mb-6 text-slate-900 tracking-wider text-sm">
+                {section.title}
+              </h4>
+              <ul className="space-y-4">
                 {section.links.map((link) => (
                   <li key={link.label}>
-                    <Link to={link.href} className="hover:text-[hsl(var(--marketing-primary))] transition-colors">
+                    <Link
+                      to={link.href}
+                      className="text-slate-500 hover:text-[hsl(var(--marketing-primary))] transition-colors text-base font-medium"
+                    >
                       {link.label}
                     </Link>
                   </li>
@@ -75,56 +89,44 @@ export function MarketingFooter() {
               </ul>
             </div>
           ))}
-        </div>
 
-        {/* Mobile Accordion View (Hidden on Desktop) */}
-        <div className="md:hidden mb-8">
-          <Accordion type="single" collapsible className="w-full">
-            {FOOTER_SECTIONS.map((section) => (
-              <AccordionItem key={section.title} value={section.title} className="border-b border-[hsl(var(--marketing-border))]">
-                <AccordionTrigger className="text-[hsl(var(--marketing-text))] font-bold hover:no-underline">
-                  {section.title}
-                </AccordionTrigger>
-                <AccordionContent>
-                  <ul className="space-y-3 pt-2 pb-4 text-sm text-[hsl(var(--marketing-text-light))]">
-                    {section.links.map((link) => (
-                      <li key={link.label}>
-                        <Link to={link.href} className="block hover:text-[hsl(var(--marketing-primary))] transition-colors">
-                          {link.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-
-        <div className="pt-8 border-t border-[hsl(var(--marketing-border))]">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-sm text-[hsl(var(--marketing-text-light))] text-center md:text-left">
-              <p>© 2025 FloraIQ. All rights reserved.</p>
-              <p className="mt-1">Smart Cannabis Operations Platform</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-[hsl(var(--marketing-text-light))] hover:text-[hsl(var(--marketing-primary))] transition-colors">
-                Twitter
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-[hsl(var(--marketing-text-light))] hover:text-[hsl(var(--marketing-primary))] transition-colors">
-                LinkedIn
-              </a>
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-[hsl(var(--marketing-text-light))] hover:text-[hsl(var(--marketing-primary))] transition-colors">
-                Facebook
-              </a>
-              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-[hsl(var(--marketing-text-light))] hover:text-[hsl(var(--marketing-primary))] transition-colors">
-                YouTube
-              </a>
-            </div>
+          {/* Mobile Accordion */}
+          <div className="md:hidden col-span-1">
+            <Accordion type="single" collapsible className="w-full border-none">
+              {FOOTER_SECTIONS.map((section) => (
+                <AccordionItem key={section.title} value={section.title} className="border-b border-slate-200">
+                  <AccordionTrigger className="text-slate-900 font-bold hover:no-underline hover:text-[hsl(var(--marketing-primary))]">
+                    {section.title}
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <ul className="space-y-3 pt-2 pb-4">
+                      {section.links.map((link) => (
+                        <li key={link.label}>
+                          <Link to={link.href} className="block text-slate-500 hover:text-[hsl(var(--marketing-primary))]">
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </div>
+
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+          <div className="font-medium">
+            &copy; 2025 FloraIQ Inc. All rights reserved.
+          </div>
+          <div className="flex gap-8">
+            <Link to="/privacy" className="hover:text-[hsl(var(--marketing-primary))] transition-colors font-medium">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-[hsl(var(--marketing-primary))] transition-colors font-medium">Terms of Service</Link>
+          </div>
+        </div>
+
       </div>
     </footer>
   );
 }
-

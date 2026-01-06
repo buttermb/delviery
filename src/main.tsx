@@ -33,24 +33,24 @@ const MAX_CHUNK_RELOADS = 3;
 
 window.addEventListener('error', (event) => {
   const errorMessage = event.message || '';
-  const isChunkError = errorMessage.includes('chunk') || 
-                      errorMessage.includes('Loading') ||
-                      errorMessage.includes('createContext') ||
-                      errorMessage.includes('Failed to fetch') ||
-                      (event.filename && event.filename.includes('chunk'));
-  
+  const isChunkError = errorMessage.includes('chunk') ||
+    errorMessage.includes('Loading') ||
+    errorMessage.includes('createContext') ||
+    errorMessage.includes('Failed to fetch') ||
+    (event.filename && event.filename.includes('chunk'));
+
   if (isChunkError && chunkReloadCount < MAX_CHUNK_RELOADS) {
     chunkReloadCount++;
     const timestamp = new Date().toISOString();
     logger.error('Chunk loading failed', new Error(errorMessage), { component: 'main' });
-    
+
     // Show error message to user
     const errorDiv = document.createElement('div');
     errorDiv.id = 'chunk-loading-error';
     errorDiv.innerHTML = '⚠️ Loading error detected. Reloading page...';
     errorDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#dc2626;color:white;padding:1rem;text-align:center;z-index:9999;font-family:system-ui,sans-serif;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.2)';
     document.body.appendChild(errorDiv);
-    
+
     // Reload with cache bypass after 2 seconds
     setTimeout(() => {
       const currentPath = window.location.pathname;
@@ -61,7 +61,7 @@ window.addEventListener('error', (event) => {
   } else if (isChunkError && chunkReloadCount >= MAX_CHUNK_RELOADS) {
     // Max reloads reached - show permanent error
     logger.error('Chunk loading failed after max reload attempts', new Error(errorMessage), { component: 'main' });
-    
+
     const errorDiv = document.createElement('div');
     errorDiv.id = 'chunk-loading-error-permanent';
     errorDiv.innerHTML = `
@@ -89,23 +89,23 @@ window.addEventListener('error', (event) => {
 // This catches URLs like /select-plan%3Ftenant_id=xxx and fixes them immediately
 (function fixEncodedUrl() {
   const currentPath = window.location.pathname;
-  
+
   // Check if path contains encoded query string characters
   if (currentPath.includes('%3F') || currentPath.includes('%3D') || currentPath.includes('%26')) {
     const decodedPath = decodeURIComponent(currentPath);
-    
+
     // If decoded path contains ?, split and redirect
     if (decodedPath.includes('?')) {
       const [path, queryString] = decodedPath.split('?');
       const existingSearch = window.location.search ? window.location.search.substring(1) : '';
       const newSearch = existingSearch ? `${queryString}&${existingSearch}` : queryString;
       const newUrl = `${path}?${newSearch}${window.location.hash}`;
-      
-      logger.info('[URL_FIX] Fixing encoded URL before React mounts', { 
-        from: window.location.href, 
-        to: newUrl 
+
+      logger.info('[URL_FIX] Fixing encoded URL before React mounts', {
+        from: window.location.href,
+        to: newUrl
       });
-      
+
       // Use replaceState to fix URL without page reload
       window.history.replaceState(null, '', newUrl);
     }
@@ -138,10 +138,10 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
   navigator.serviceWorker.getRegistrations().then(registrations => {
     registrations.forEach(registration => {
       // Unregister Workbox service workers (they have 'workbox' in scope or scriptURL)
-      if (registration.scope.includes('workbox') || 
-          registration.active?.scriptURL?.includes('workbox') ||
-          registration.waiting?.scriptURL?.includes('workbox') ||
-          registration.installing?.scriptURL?.includes('workbox')) {
+      if (registration.scope.includes('workbox') ||
+        registration.active?.scriptURL?.includes('workbox') ||
+        registration.waiting?.scriptURL?.includes('workbox') ||
+        registration.installing?.scriptURL?.includes('workbox')) {
         registration.unregister();
       }
     });
@@ -152,14 +152,14 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
     try {
       // Small delay to ensure Workbox cleanup completes
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       // Register custom service worker
       const registration = await navigator.serviceWorker.register('/sw.js?v=14'); // Bump version to clear cache and fix React Error #310
-      logger.debug('[APP] Custom ServiceWorker registered', { 
+      logger.debug('[APP] Custom ServiceWorker registered', {
         scope: registration.scope,
         component: 'main'
       });
-      
+
       // Only activate new service workers, don't force reload
       if (registration.waiting) {
         registration.waiting.postMessage({ type: 'SKIP_WAITING' });
@@ -174,7 +174,7 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 if (import.meta.env.DEV) {
   try {
     PerformanceMonitor.init();
-    
+
     // Log performance report after page load
     window.addEventListener('load', () => {
       setTimeout(() => {
@@ -190,7 +190,7 @@ if (import.meta.env.DEV) {
 try {
   // BugFinder automatically starts monitoring on instantiation
   logger.debug('[APP] Bug Finder initialized');
-  
+
   // Log bug scan on initialization
   if (import.meta.env.DEV) {
     const scan = bugFinder.scanBugs();
@@ -205,11 +205,11 @@ try {
 // Render application with error handling
 try {
   const rootElement = document.getElementById("root");
-  
+
   if (!rootElement) {
     throw new Error('Root element not found');
   }
-  
+
   createRoot(rootElement).render(
     <ErrorBoundary>
       <App />
@@ -217,11 +217,11 @@ try {
   );
 } catch (error) {
   logger.error('[APP] Fatal initialization error', error instanceof Error ? error : new Error(String(error)), { component: 'main' });
-  
+
   if (import.meta.env.DEV) {
     logger.debug('Initialization error details', { error: error instanceof Error ? error.message : String(error), component: 'main' });
   }
-  
+
   // Display user-friendly error message
   const rootElement = document.getElementById("root");
   if (rootElement) {

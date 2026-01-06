@@ -45,7 +45,7 @@ export function InventoryGridDemo() {
     const getStockStatus = (stock: number, threshold: number) => {
         if (stock <= 5) return { color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30', label: 'Critical' };
         if (stock <= threshold) return { color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/30', label: 'Low' };
-        return { color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', label: 'Good' };
+        return { color: 'text-[hsl(var(--marketing-primary))]', bg: 'bg-[hsl(var(--marketing-primary))]/10', border: 'border-[hsl(var(--marketing-primary))]/30', label: 'Good' };
     };
 
     const filteredInventory = inventory.filter(p =>
@@ -55,12 +55,12 @@ export function InventoryGridDemo() {
     const lowStockCount = inventory.filter(p => p.stock <= p.threshold).length;
 
     return (
-        <div className="w-full h-full bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800">
+        <div className="w-full h-full bg-[hsl(var(--marketing-bg))] rounded-xl overflow-hidden border border-[hsl(var(--marketing-border))]">
             {/* Header */}
-            <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
+            <div className="px-4 py-3 border-b border-[hsl(var(--marketing-border))] flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Package className="w-5 h-5 text-primary" />
-                    <h3 className="font-semibold text-white">Inventory</h3>
+                    <Package className="w-5 h-5 text-[hsl(var(--marketing-primary))]" />
+                    <h3 className="font-semibold text-[hsl(var(--marketing-text))]">Inventory</h3>
                 </div>
 
                 {lowStockCount > 0 && (
@@ -76,15 +76,15 @@ export function InventoryGridDemo() {
             </div>
 
             {/* Search Bar */}
-            <div className="px-4 py-2 border-b border-zinc-800/50">
+            <div className="px-4 py-2 border-b border-[hsl(var(--marketing-border))]">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--marketing-text-light))]" />
                     <input
                         type="text"
                         placeholder="Search products..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-primary/50"
+                        className="w-full bg-[hsl(var(--marketing-bg-subtle))] border border-[hsl(var(--marketing-border))] rounded-lg pl-9 pr-3 py-2 text-sm text-[hsl(var(--marketing-text))] placeholder:text-[hsl(var(--marketing-text-light))] focus:outline-none focus:border-primary/50"
                     />
                 </div>
             </div>
@@ -103,7 +103,7 @@ export function InventoryGridDemo() {
                                 className={`${status.bg} rounded-lg p-3 border ${status.border}`}
                             >
                                 <div className="text-xl mb-1">{product.emoji}</div>
-                                <div className="text-xs font-medium text-white truncate mb-1">{product.name}</div>
+                                <div className="text-xs font-medium text-[hsl(var(--marketing-text))] truncate mb-1">{product.name}</div>
                                 <div className="flex items-center justify-between">
                                     <AnimatePresence mode="wait">
                                         <motion.span

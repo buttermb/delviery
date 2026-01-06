@@ -10,10 +10,10 @@ const steps = [
 
 export function WorkflowDiagram() {
   return (
-    <div className="w-full h-full bg-card/50 rounded-lg p-6">
+    <div className="w-full h-full bg-[hsl(var(--marketing-bg-subtle))] rounded-lg p-6 border border-[hsl(var(--marketing-border))]">
       <div className="flex items-center gap-2 mb-6">
         <Zap className="h-5 w-5 text-primary" />
-        <h4 className="font-semibold text-foreground">Automated Workflow</h4>
+        <h4 className="font-semibold text-[hsl(var(--marketing-text))]">Automated Workflow</h4>
       </div>
 
       <div className="space-y-4">
@@ -25,7 +25,7 @@ export function WorkflowDiagram() {
               className="flex items-center gap-4"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ 
+              transition={{
                 type: 'spring',
                 stiffness: 200,
                 damping: 20,
@@ -33,21 +33,20 @@ export function WorkflowDiagram() {
               }}
             >
               <motion.div
-                className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  step.status === 'complete' ? 'bg-green-500' :
-                  step.status === 'active' ? 'bg-primary' : 'bg-muted'
-                }`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${step.status === 'complete' ? 'bg-green-500' :
+                    step.status === 'active' ? 'bg-[hsl(var(--marketing-primary))]' : 'bg-[hsl(var(--marketing-bg))]'
+                  }`}
                 animate={step.status === 'active' ? { scale: [1, 1.1, 1] } : {}}
                 transition={{ duration: 1, repeat: Infinity }}
               >
                 <Icon className="h-5 w-5 text-white" />
               </motion.div>
-              
+
               <div className="flex-grow">
-                <div className="font-medium text-foreground">{step.label}</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="font-medium text-[hsl(var(--marketing-text))]">{step.label}</div>
+                <div className="text-xs text-[hsl(var(--marketing-text-light))]">
                   {step.status === 'complete' ? 'Completed' :
-                   step.status === 'active' ? 'In Progress...' : 'Pending'}
+                    step.status === 'active' ? 'In Progress...' : 'Pending'}
                 </div>
               </div>
 
@@ -58,7 +57,7 @@ export function WorkflowDiagram() {
                     stroke="currentColor"
                     strokeWidth="2"
                     strokeDasharray="4 4"
-                    className="text-muted-foreground/30"
+                    className="text-[hsl(var(--marketing-text-light))]/30"
                     initial={{ pathLength: 0 }}
                     animate={{ pathLength: step.status === 'complete' ? 1 : 0 }}
                     transition={{ duration: 0.5, delay: index * 0.2 + 0.3 }}
@@ -71,7 +70,7 @@ export function WorkflowDiagram() {
       </div>
 
       <motion.div
-        className="mt-6 p-4 bg-accent/10 rounded-lg border border-accent/20"
+        className="mt-6 p-4 bg-[hsl(var(--marketing-accent))]/10 rounded-lg border border-[hsl(var(--marketing-accent))]/20"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
@@ -81,8 +80,8 @@ export function WorkflowDiagram() {
             <Sparkles className="h-4 w-4 text-accent" />
           </div>
           <div>
-            <div className="text-sm text-foreground font-medium">75% Faster Processing</div>
-            <div className="text-xs text-muted-foreground">Automated workflows save 15hrs/week</div>
+            <div className="text-sm text-[hsl(var(--marketing-text))] font-medium">75% Faster Processing</div>
+            <div className="text-xs text-[hsl(var(--marketing-text-light))]">Automated workflows save 15hrs/week</div>
           </div>
         </div>
       </motion.div>

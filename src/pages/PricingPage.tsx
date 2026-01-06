@@ -171,11 +171,11 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
-      <SEOHead 
+      <SEOHead
         title="Pricing - DevPanel | Simple, Transparent Pricing"
         description="Simple, transparent pricing for wholesale distributors. Plans from $79/month. Start free, upgrade as you grow. 14-day free trial."
       />
-      
+
       <MarketingNav />
 
       {/* Hero */}
@@ -191,21 +191,19 @@ export default function PricingPage() {
         <div className="inline-flex items-center gap-4 mb-8">
           <button
             onClick={() => setBillingCycle("monthly")}
-            className={`px-6 py-2 rounded-lg font-medium transition-all ${
-              billingCycle === "monthly"
-                ? "bg-[hsl(var(--marketing-primary))] text-white"
-                : "bg-[hsl(var(--marketing-bg-subtle))] text-[hsl(var(--marketing-text-light))]"
-            }`}
+            className={`px-6 py-2 rounded-lg font-medium transition-all ${billingCycle === "monthly"
+              ? "bg-[hsl(var(--marketing-primary))] text-white"
+              : "bg-[hsl(var(--marketing-bg-subtle))] text-[hsl(var(--marketing-text-light))]"
+              }`}
           >
             Monthly
           </button>
           <button
             onClick={() => setBillingCycle("yearly")}
-            className={`px-6 py-2 rounded-lg font-medium transition-all ${
-              billingCycle === "yearly"
-                ? "bg-[hsl(var(--marketing-primary))] text-white"
-                : "bg-[hsl(var(--marketing-bg-subtle))] text-[hsl(var(--marketing-text-light))]"
-            }`}
+            className={`px-6 py-2 rounded-lg font-medium transition-all ${billingCycle === "yearly"
+              ? "bg-[hsl(var(--marketing-primary))] text-white"
+              : "bg-[hsl(var(--marketing-bg-subtle))] text-[hsl(var(--marketing-text-light))]"
+              }`}
           >
             Yearly (Save 20%)
           </button>
@@ -222,27 +220,26 @@ export default function PricingPage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {plans.map((plan, index) => {
             const isFree = (plan as any).isFree;
-            
+
             return (
               <div
                 key={index}
-                className={`relative rounded-2xl border p-6 ${
-                  plan.popular
-                    ? "border-[hsl(var(--marketing-primary))] bg-[hsl(var(--marketing-primary))]/5 shadow-xl md:scale-105"
-                    : isFree
-                    ? "border-emerald-500/50 bg-emerald-500/5 border-dashed"
+                className={`relative rounded-2xl border p-6 ${plan.popular
+                  ? "border-[hsl(var(--marketing-accent))] bg-[hsl(var(--marketing-primary))]/5 shadow-xl md:scale-105"
+                  : isFree
+                    ? "border-[hsl(var(--marketing-primary))]/50 bg-[hsl(var(--marketing-primary))]/5 border-dashed"
                     : "border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))]"
-                }`}
+                  }`}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[hsl(var(--marketing-primary))] text-white text-sm font-bold whitespace-nowrap">
                     MOST POPULAR
                   </div>
                 )}
-                
+
                 {isFree && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-emerald-500 text-white px-3 py-1">
+                    <Badge className="bg-[hsl(var(--marketing-primary))] text-white px-3 py-1">
                       <Coins className="h-3 w-3 mr-1" />
                       FREE FOREVER
                     </Badge>
@@ -251,7 +248,7 @@ export default function PricingPage() {
 
                 <div className="text-center mb-6 pt-2">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    {isFree && <Coins className="h-5 w-5 text-emerald-500" />}
+                    {isFree && <Coins className="h-5 w-5 text-[hsl(var(--marketing-primary))]" />}
                     <h3 className="text-xl font-bold text-[hsl(var(--marketing-text))]">{plan.name}</h3>
                   </div>
                   <p className="text-sm text-[hsl(var(--marketing-text-light))] mb-4">{plan.description}</p>
@@ -269,7 +266,7 @@ export default function PricingPage() {
                     </div>
                   )}
                   {isFree && (
-                    <div className="text-sm text-emerald-600 font-medium">
+                    <div className="text-sm text-[hsl(var(--marketing-primary))] font-medium">
                       {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} credits/month
                     </div>
                   )}
@@ -277,7 +274,12 @@ export default function PricingPage() {
 
                 <Link to="/signup">
                   <Button
-                    className={`w-full mb-6 ${isFree ? "bg-emerald-600 hover:bg-emerald-700" : ""}`}
+                    className={`w-full mb-6 ${isFree
+                        ? "bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90"
+                        : plan.popular
+                          ? "bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white"
+                          : ""
+                      }`}
                     variant={plan.popular ? "default" : isFree ? "default" : "outline"}
                   >
                     {isFree ? (
@@ -296,7 +298,7 @@ export default function PricingPage() {
                 <div className="space-y-2">
                   {plan.features.map((feature, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm">
-                      <CheckCircle className={`h-4 w-4 flex-shrink-0 mt-0.5 ${isFree ? "text-emerald-500" : "text-[hsl(var(--marketing-primary))]"}`} />
+                      <CheckCircle className={`h-4 w-4 flex-shrink-0 mt-0.5 ${isFree ? "text-[hsl(var(--marketing-primary))]" : "text-[hsl(var(--marketing-primary))]"}`} />
                       <span className="text-[hsl(var(--marketing-text))]">{feature}</span>
                     </div>
                   ))}
@@ -309,10 +311,10 @@ export default function PricingPage() {
                     </p>
                   </div>
                 )}
-                
+
                 {isFree && (
-                  <div className="mt-6 pt-4 border-t border-emerald-500/20">
-                    <p className="text-xs text-center text-emerald-600">
+                  <div className="mt-6 pt-4 border-t border-[hsl(var(--marketing-primary))]/20">
+                    <p className="text-xs text-center text-[hsl(var(--marketing-primary))]">
                       No credit card required
                     </p>
                   </div>
@@ -342,7 +344,7 @@ export default function PricingPage() {
       <section className="container mx-auto px-4 py-16">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <Badge className="mb-4 bg-emerald-500/10 text-emerald-700 border-emerald-500/20">
+            <Badge className="mb-4 bg-[hsl(var(--marketing-primary))]/10 text-[hsl(var(--marketing-primary))] border-[hsl(var(--marketing-primary))]/20">
               <Coins className="h-3 w-3 mr-1" />
               Free Tier Credits
             </Badge>
@@ -350,49 +352,49 @@ export default function PricingPage() {
               Start Free, Upgrade When You're Ready
             </h2>
             <p className="text-lg text-[hsl(var(--marketing-text-light))] max-w-2xl mx-auto">
-              Every new account gets {FREE_TIER_MONTHLY_CREDITS} credits to explore. 
+              Every new account gets {FREE_TIER_MONTHLY_CREDITS} credits to explore.
               Here's what you can do with them:
             </p>
           </div>
 
           {/* What Credits Get You */}
           <div className="grid md:grid-cols-3 gap-6 mb-12">
-            <Card className="p-6 text-center border-emerald-500/20 bg-emerald-500/5">
-              <div className="text-4xl font-bold text-emerald-600 mb-2">~5</div>
+            <Card className="p-6 text-center border-[hsl(var(--marketing-primary))]/20 bg-[hsl(var(--marketing-primary))]/5">
+              <div className="text-4xl font-bold text-[hsl(var(--marketing-primary))] mb-2">~5</div>
               <div className="text-sm text-[hsl(var(--marketing-text))]">Orders Received</div>
               <div className="text-xs text-[hsl(var(--marketing-text-light))] mt-1">@ 75 credits each</div>
             </Card>
-            <Card className="p-6 text-center border-emerald-500/20 bg-emerald-500/5">
-              <div className="text-4xl font-bold text-emerald-600 mb-2">~3</div>
+            <Card className="p-6 text-center border-[hsl(var(--marketing-primary))]/20 bg-[hsl(var(--marketing-primary))]/5">
+              <div className="text-4xl font-bold text-[hsl(var(--marketing-primary))] mb-2">~3</div>
               <div className="text-sm text-[hsl(var(--marketing-text))]">Menus Created</div>
               <div className="text-xs text-[hsl(var(--marketing-text-light))] mt-1">@ 100 credits each</div>
             </Card>
-            <Card className="p-6 text-center border-emerald-500/20 bg-emerald-500/5">
-              <div className="text-4xl font-bold text-emerald-600 mb-2">~10</div>
+            <Card className="p-6 text-center border-[hsl(var(--marketing-primary))]/20 bg-[hsl(var(--marketing-primary))]/5">
+              <div className="text-4xl font-bold text-[hsl(var(--marketing-primary))] mb-2">~10</div>
               <div className="text-sm text-[hsl(var(--marketing-text))]">SMS Notifications</div>
               <div className="text-xs text-[hsl(var(--marketing-text-light))] mt-1">@ 25 credits each</div>
             </Card>
           </div>
 
           {/* Value Comparison */}
-          <Card className="p-8 border-amber-500/30 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950 dark:to-orange-950">
+          <Card className="p-8 border-[hsl(var(--marketing-accent))]/30 bg-gradient-to-br from-[hsl(var(--marketing-bg))] to-[hsl(var(--marketing-bg-subtle))]">
             <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="flex-1 text-center md:text-left">
                 <div className="flex items-center gap-2 mb-3 justify-center md:justify-start">
-                  <Calculator className="h-5 w-5 text-amber-600" />
+                  <Calculator className="h-5 w-5 text-[hsl(var(--marketing-accent))]" />
                   <span className="font-semibold text-[hsl(var(--marketing-text))]">The Math is Simple</span>
                 </div>
                 <p className="text-[hsl(var(--marketing-text-light))] mb-4">
                   Active businesses typically burn through {FREE_TIER_MONTHLY_CREDITS} credits in <strong>about 1 day</strong>.
                   A credit pack costs ~$20 for 500 credits. That's $600+/month for heavy usage.
                 </p>
-                <p className="text-lg font-semibold text-amber-700">
-                  Starter plan: $79/month = <span className="text-emerald-600">Unlimited usage</span>
+                <p className="text-lg font-semibold text-[hsl(var(--marketing-accent))]">
+                  Starter plan: $79/month = <span className="text-[hsl(var(--marketing-primary))]">Unlimited usage</span>
                 </p>
               </div>
               <div className="flex-shrink-0">
                 <Link to="/signup">
-                  <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white">
+                  <Button size="lg" className="bg-[hsl(var(--marketing-accent))] hover:bg-[hsl(var(--marketing-accent))]/90 text-white">
                     <TrendingUp className="h-4 w-4 mr-2" />
                     See All Plans
                   </Button>
@@ -410,7 +412,7 @@ export default function PricingPage() {
               {CREDIT_PACKAGES.map((pkg) => (
                 <Card key={pkg.id} className="p-4 text-center relative">
                   {pkg.badge && (
-                    <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 text-xs">
+                    <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 text-xs bg-[hsl(var(--marketing-accent))] text-black border-none hover:bg-[hsl(var(--marketing-accent))]/90">
                       {pkg.badge}
                     </Badge>
                   )}

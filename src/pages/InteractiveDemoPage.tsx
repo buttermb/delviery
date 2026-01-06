@@ -34,6 +34,7 @@ import { POSDemo } from '@/components/marketing/demos/POSDemo';
 import { QRMenuDemo } from '@/components/marketing/demos/QRMenuDemo';
 import { AnalyticsDashDemo } from '@/components/marketing/demos/AnalyticsDashDemo';
 import { LiveMapDemo } from '@/components/marketing/demos/LiveMapDemo';
+import { StorefrontDemo } from '@/components/marketing/demos/StorefrontDemo';
 
 const DEMO_TABS = [
     {
@@ -92,6 +93,14 @@ const DEMO_TABS = [
         features: ['Live GPS tracking', 'Route optimization', 'Driver management', 'ETA updates'],
         component: LiveMapDemo,
     },
+    {
+        id: 'storefront',
+        label: 'Storefront',
+        icon: ShoppingCart,
+        description: 'Premium e-commerce experience for your customers',
+        features: ['Luxury design system', 'Mobile optimized', 'Real-time inventory', 'SEO ready'],
+        component: StorefrontDemo,
+    },
 ];
 
 export default function InteractiveDemoPage() {
@@ -99,7 +108,7 @@ export default function InteractiveDemoPage() {
     const activeDemo = DEMO_TABS.find(t => t.id === activeTab)!;
 
     return (
-        <div className="min-h-screen bg-zinc-950">
+        <div className="min-h-screen bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))]">
             <SEOHead
                 title="Interactive Demo - FloraIQ | See the Platform in Action"
                 description="Explore FloraIQ's features with our interactive demo. See live dashboards, order management, inventory tracking, POS, and more - no signup required."
@@ -122,7 +131,7 @@ export default function InteractiveDemoPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="text-4xl md:text-5xl font-bold text-white mb-4"
+                        className="text-4xl md:text-5xl font-bold text-[hsl(var(--marketing-text))] mb-4"
                     >
                         Experience FloraIQ in Action
                     </motion.h1>
@@ -130,7 +139,7 @@ export default function InteractiveDemoPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-xl text-zinc-400 max-w-2xl mx-auto"
+                        className="text-xl text-[hsl(var(--marketing-text-light))] max-w-2xl mx-auto"
                     >
                         Click through our live demos to see how FloraIQ transforms your operations. No signup required.
                     </motion.p>
@@ -149,8 +158,8 @@ export default function InteractiveDemoPage() {
                                 transition={{ delay: 0.1 * i }}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
-                                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-                                        : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white border border-zinc-800'
+                                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+                                    : 'bg-[hsl(var(--marketing-bg-subtle))] text-[hsl(var(--marketing-text-light))] hover:bg-white hover:text-[hsl(var(--marketing-text))] border border-[hsl(var(--marketing-border))]'
                                     }`}
                             >
                                 <tab.icon className="w-4 h-4" />
@@ -189,19 +198,19 @@ export default function InteractiveDemoPage() {
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: 20 }}
-                                    className="bg-zinc-900/50 rounded-xl border border-zinc-800 p-6 h-full"
+                                    className="bg-[hsl(var(--marketing-bg-subtle))] rounded-xl border border-[hsl(var(--marketing-border))] p-6 h-full"
                                 >
                                     <div className="flex items-center gap-3 mb-4">
                                         <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                                             <activeDemo.icon className="w-5 h-5 text-primary" />
                                         </div>
                                         <div>
-                                            <h3 className="text-lg font-bold text-white">{activeDemo.label}</h3>
-                                            <p className="text-sm text-zinc-500">Feature Demo</p>
+                                            <h3 className="text-lg font-bold text-[hsl(var(--marketing-text))]">{activeDemo.label}</h3>
+                                            <p className="text-sm text-[hsl(var(--marketing-text-light))]">Feature Demo</p>
                                         </div>
                                     </div>
 
-                                    <p className="text-zinc-400 mb-6">
+                                    <p className="text-[hsl(var(--marketing-text-light))] mb-6">
                                         {activeDemo.description}
                                     </p>
 
@@ -214,8 +223,8 @@ export default function InteractiveDemoPage() {
                                                 transition={{ delay: 0.1 * i }}
                                                 className="flex items-center gap-2"
                                             >
-                                                <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                                                <span className="text-sm text-zinc-300">{feature}</span>
+                                                <CheckCircle2 className="w-4 h-4 text-[hsl(var(--marketing-accent))] flex-shrink-0" />
+                                                <span className="text-sm text-[hsl(var(--marketing-text-light))]">{feature}</span>
                                             </motion.div>
                                         ))}
                                     </div>
@@ -242,10 +251,10 @@ export default function InteractiveDemoPage() {
                         viewport={{ once: true }}
                         className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl border border-primary/20 p-8 md:p-12"
                     >
-                        <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                        <h2 className="text-2xl md:text-3xl font-bold text-[hsl(var(--marketing-text))] mb-4">
                             Ready to Transform Your Operations?
                         </h2>
-                        <p className="text-zinc-400 mb-8 max-w-xl mx-auto">
+                        <p className="text-[hsl(var(--marketing-text-light))] mb-8 max-w-xl mx-auto">
                             Start your 14-day free trial and experience all these features with your own data.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">

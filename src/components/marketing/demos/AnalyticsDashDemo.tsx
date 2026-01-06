@@ -30,16 +30,16 @@ export function AnalyticsDashDemo() {
     const maxHeight = Math.max(...hourlyData);
 
     return (
-        <div className="w-full h-full bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800 p-4">
+        <div className="w-full h-full bg-[hsl(var(--marketing-bg))] rounded-xl overflow-hidden border border-[hsl(var(--marketing-border))] p-4">
             <div className="flex items-center gap-2 mb-4">
                 <BarChart3 className="w-5 h-5 text-primary" />
-                <h3 className="font-semibold text-white">Analytics Dashboard</h3>
+                <h3 className="font-semibold text-[hsl(var(--marketing-text))]">Analytics Dashboard</h3>
             </div>
 
             <div className="grid grid-cols-3 gap-3 mb-4">
                 {/* Revenue */}
-                <motion.div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800">
-                    <div className="flex items-center gap-2 text-zinc-400 text-sm mb-2">
+                <motion.div className="bg-[hsl(var(--marketing-bg-subtle))] rounded-xl p-4 border border-[hsl(var(--marketing-border))]">
+                    <div className="flex items-center gap-2 text-[hsl(var(--marketing-text-light))] text-sm mb-2">
                         <DollarSign className="w-4 h-4" />
                         Revenue
                     </div>
@@ -48,7 +48,7 @@ export function AnalyticsDashDemo() {
                             key={revenue}
                             initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-2xl font-bold text-white"
+                            className="text-2xl font-bold text-[hsl(var(--marketing-text))]"
                         >
                             ${revenue.toLocaleString()}
                         </motion.div>
@@ -60,8 +60,8 @@ export function AnalyticsDashDemo() {
                 </motion.div>
 
                 {/* Orders */}
-                <motion.div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800">
-                    <div className="flex items-center gap-2 text-zinc-400 text-sm mb-2">
+                <motion.div className="bg-[hsl(var(--marketing-bg-subtle))] rounded-xl p-4 border border-[hsl(var(--marketing-border))]">
+                    <div className="flex items-center gap-2 text-[hsl(var(--marketing-text-light))] text-sm mb-2">
                         <ShoppingCart className="w-4 h-4" />
                         Orders
                     </div>
@@ -70,7 +70,7 @@ export function AnalyticsDashDemo() {
                             key={orders}
                             initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-2xl font-bold text-white"
+                            className="text-2xl font-bold text-[hsl(var(--marketing-text))]"
                         >
                             {orders}
                         </motion.div>
@@ -82,8 +82,8 @@ export function AnalyticsDashDemo() {
                 </motion.div>
 
                 {/* Customers */}
-                <motion.div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800">
-                    <div className="flex items-center gap-2 text-zinc-400 text-sm mb-2">
+                <motion.div className="bg-[hsl(var(--marketing-bg-subtle))] rounded-xl p-4 border border-[hsl(var(--marketing-border))]">
+                    <div className="flex items-center gap-2 text-[hsl(var(--marketing-text-light))] text-sm mb-2">
                         <Users className="w-4 h-4" />
                         Customers
                     </div>
@@ -92,7 +92,7 @@ export function AnalyticsDashDemo() {
                             key={customers}
                             initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-2xl font-bold text-white"
+                            className="text-2xl font-bold text-[hsl(var(--marketing-text))]"
                         >
                             {customers}
                         </motion.div>
@@ -105,10 +105,10 @@ export function AnalyticsDashDemo() {
             </div>
 
             {/* Chart */}
-            <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800 h-[calc(100%-180px)]">
+            <div className="bg-[hsl(var(--marketing-bg-subtle))] rounded-xl p-4 border border-[hsl(var(--marketing-border))] h-[calc(100%-180px)]">
                 <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm text-zinc-400">Hourly Sales</span>
-                    <span className="text-xs text-zinc-500">Last 12 hours</span>
+                    <span className="text-sm text-[hsl(var(--marketing-text-light))]">Hourly Sales</span>
+                    <span className="text-xs text-[hsl(var(--marketing-text-light))]">Last 12 hours</span>
                 </div>
                 <div className="flex items-end gap-2 h-[calc(100%-30px)]">
                     {hourlyData.map((value, i) => (
@@ -125,13 +125,13 @@ export function AnalyticsDashDemo() {
                                     : 'bg-gradient-to-t from-primary/80 to-primary/40'
                                     }`}
                             />
-                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-zinc-800 px-1.5 py-0.5 rounded text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-[hsl(var(--marketing-primary))] px-1.5 py-0.5 rounded text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                 ${value}
                             </div>
                         </motion.div>
                     ))}
                 </div>
-                <div className="flex justify-between mt-2 text-xs text-zinc-400">
+                <div className="flex justify-between mt-2 text-xs text-[hsl(var(--marketing-text-light))]">
                     <span>12am</span>
                     <span>6am</span>
                     <span>12pm</span>
