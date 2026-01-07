@@ -1,8 +1,11 @@
 import { motion } from 'framer-motion';
 import { ShoppingBag, Star, Plus, ArrowRight, Sparkles, Search, Menu, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
 export function StorefrontDemo() {
+    const { shouldUseStaticFallback } = useMobileOptimized();
+
     const products = [
         {
             id: 1,
@@ -103,9 +106,9 @@ export function StorefrontDemo() {
                     {products.map((product, i) => (
                         <motion.div
                             key={product.id}
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={shouldUseStaticFallback ? false : { opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.1 + 0.3 }}
+                            transition={shouldUseStaticFallback ? { duration: 0 } : { delay: i * 0.1 + 0.3 }}
                             className="group relative bg-white border border-slate-200 rounded-2xl p-3 shadow-sm hover:shadow-xl hover:border-[hsl(var(--marketing-primary))]/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                         >
                             {/* Image Area */}

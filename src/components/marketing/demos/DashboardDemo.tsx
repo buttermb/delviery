@@ -3,11 +3,14 @@
  * 
  * Simulates the TV Dashboard / Command Center for demo purposes.
  * Shows animated metrics, live clock, and activity feed.
+ * 
+ * Mobile: Shows simplified static preview for better performance.
  */
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, ShoppingBag, DollarSign, Package, Clock, Wifi } from 'lucide-react';
+import { TrendingUp, ShoppingBag, DollarSign, Package, Clock, Wifi, BarChart3, Zap } from 'lucide-react';
+import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
 const MOCK_METRICS = [
     { label: "Today's Revenue", value: 12450, prefix: '$', trend: '+18%' },
@@ -23,18 +26,98 @@ const MOCK_ORDERS = [
     { id: '004', status: 'new', source: 'App', time: '1m ago' },
 ];
 
+// Mobile-optimized static fallback
+function DashboardDemoMobile() {
+    return (
+        <div className="w-full h-full min-h-[280px] bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl overflow-hidden border border-slate-200 shadow-xl relative">
+            {/* Header */}
+            <div className="bg-white px-4 py-3 flex items-center justify-between border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
+                        <Package className="w-3.5 h-3.5 text-white" />
+                    </div>
+                    <span className="font-bold text-slate-900 text-sm">FloraIQ Dashboard</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-emerald-600">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-xs font-medium">Live</span>
+                </div>
+            </div>
+
+            {/* Simplified Metrics Grid */}
+            <div className="p-4 space-y-3">
+                {/* Top Stats Row */}
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white rounded-lg p-3 border border-slate-100 shadow-sm">
+                        <div className="flex items-center gap-2 mb-1">
+                            <DollarSign className="w-4 h-4 text-emerald-600" />
+                            <span className="text-xs text-slate-500">Revenue</span>
+                        </div>
+                        <div className="text-lg font-bold text-slate-900">$12,450</div>
+                        <div className="text-xs text-emerald-600 flex items-center gap-0.5">
+                            <TrendingUp className="w-3 h-3" /> +18%
+                        </div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border border-slate-100 shadow-sm">
+                        <div className="flex items-center gap-2 mb-1">
+                            <ShoppingBag className="w-4 h-4 text-indigo-600" />
+                            <span className="text-xs text-slate-500">Orders</span>
+                        </div>
+                        <div className="text-lg font-bold text-slate-900">23</div>
+                        <div className="text-xs text-emerald-600 flex items-center gap-0.5">
+                            <TrendingUp className="w-3 h-3" /> +5 new
+                        </div>
+                    </div>
+                </div>
+
+                {/* Order Preview */}
+                <div className="bg-white rounded-lg p-3 border border-slate-100 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-medium text-slate-700">Recent Orders</span>
+                        <span className="text-xs text-indigo-600 font-medium">View All →</span>
+                    </div>
+                    <div className="space-y-2">
+                        {MOCK_ORDERS.slice(0, 2).map((order) => (
+                            <div key={order.id} className="flex items-center justify-between py-1.5 border-b border-slate-50 last:border-0">
+                                <span className="text-sm font-medium text-slate-900">#{order.id}</span>
+                                <span className={`text-xs px-2 py-0.5 rounded-full ${order.status === 'new' ? 'bg-indigo-100 text-indigo-700' :
+                                        order.status === 'preparing' ? 'bg-amber-100 text-amber-700' :
+                                            'bg-emerald-100 text-emerald-700'
+                                    }`}>
+                                    {order.status}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Interactive Hint */}
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-full shadow-lg">
+                    <Zap className="w-3 h-3" />
+                    Live Dashboard Preview
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function DashboardDemo() {
+    const { shouldUseStaticFallback } = useMobileOptimized();
     const [time, setTime] = useState(new Date());
     const [metrics, setMetrics] = useState(MOCK_METRICS);
 
-    // Animate clock
+    // Animate clock (only on desktop)
     useEffect(() => {
+        if (shouldUseStaticFallback) return;
         const timer = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(timer);
-    }, []);
+    }, [shouldUseStaticFallback]);
 
-    // Animate metrics periodically
+    // Animate metrics periodically (only on desktop)
     useEffect(() => {
+        if (shouldUseStaticFallback) return;
         const timer = setInterval(() => {
             setMetrics(prev => prev.map(m => ({
                 ...m,
@@ -42,7 +125,12 @@ export function DashboardDemo() {
             })));
         }, 3000);
         return () => clearInterval(timer);
-    }, []);
+    }, [shouldUseStaticFallback]);
+
+    // Mobile fallback
+    if (shouldUseStaticFallback) {
+        return <DashboardDemoMobile />;
+    }
 
     return (
         <div className="w-full h-full bg-[hsl(var(--marketing-bg))] rounded-xl overflow-hidden border border-[hsl(var(--marketing-border))] shadow-2xl">

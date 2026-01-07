@@ -2,6 +2,7 @@
  * QRMenuDemo Component - Premium Design
  * 
  * Polished menu showcase with glassmorphism and premium aesthetics.
+ * Mobile: Simplified card view with condensed stats
  */
 
 import { useState, useEffect } from 'react';
@@ -10,8 +11,9 @@ import {
   Eye, Users, ShoppingCart, DollarSign,
   Lock, Shield, MapPin, Clock, QrCode,
   Copy, Share2, ExternalLink, Flame, MessageSquare,
-  ChevronLeft, ChevronRight, Check
+  ChevronLeft, ChevronRight, Check, Zap
 } from 'lucide-react';
+import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
 interface MockMenu {
   id: string;
@@ -48,31 +50,109 @@ const MOCK_MENUS: MockMenu[] = [
     expiresIn: '2d', security: ['Encrypted'],
     gradient: 'from-[hsl(var(--marketing-secondary))] to-[hsl(var(--marketing-primary))]', icon: '🌿',
   },
-  {
-    id: '4', name: 'Community', type: 'forum', status: 'active',
-    views: 89, customers: 15, orders: 0, revenue: 0, products: 0,
-    expiresIn: null, security: ['Device Lock'],
-    gradient: 'from-blue-600 to-indigo-500', icon: '💬',
-  },
 ];
 
+// Mobile-optimized version
+function QRMenuDemoMobile() {
+  return (
+    <div className="w-full min-h-[300px] bg-gradient-to-br from-slate-50 to-indigo-50 rounded-xl overflow-hidden border border-slate-200 shadow-xl relative p-5">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
+            <QrCode className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <div className="font-bold text-slate-900 text-sm">Disposable Menus</div>
+            <div className="text-xs text-slate-500">3 menus active</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-xs font-medium">Live</span>
+        </div>
+      </div>
+
+      {/* Menu Cards */}
+      <div className="space-y-3">
+        {MOCK_MENUS.slice(0, 2).map((menu) => (
+          <div key={menu.id} className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{menu.icon}</span>
+                <div>
+                  <div className="font-semibold text-slate-900">{menu.name}</div>
+                  <div className="text-xs text-slate-500">{menu.products} products</div>
+                </div>
+              </div>
+              {menu.expiresIn && (
+                <div className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                  <Clock className="w-3 h-3" />
+                  {menu.expiresIn}
+                </div>
+              )}
+            </div>
+
+            {/* Stats Row */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="text-center">
+                <div className="text-lg font-bold text-slate-900">{menu.views}</div>
+                <div className="text-xs text-slate-500">views</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-slate-900">{menu.orders}</div>
+                <div className="text-xs text-slate-500">orders</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-emerald-600">${(menu.revenue / 1000).toFixed(1)}k</div>
+                <div className="text-xs text-slate-500">revenue</div>
+              </div>
+            </div>
+
+            {/* Security Badge */}
+            <div className="mt-2 flex items-center gap-2">
+              {menu.security.map((s, i) => (
+                <span key={i} className="inline-flex items-center gap-1 text-xs text-slate-500">
+                  {s === 'Encrypted' && <Lock className="w-3 h-3" />}
+                  {s === 'Geofenced' && <MapPin className="w-3 h-3" />}
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Interactive Hint */}
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-full shadow-lg">
+          <Zap className="w-3 h-3" />
+          QR Menu Demo
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function QRMenuDemo() {
+  const { shouldUseStaticFallback } = useMobileOptimized();
   const [menus, setMenus] = useState(MOCK_MENUS);
   const [activeIndex, setActiveIndex] = useState(0);
   const [copied, setCopied] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Auto-rotate
+  // Skip animations on mobile
   useEffect(() => {
-    if (isPaused) return;
+    if (shouldUseStaticFallback || isPaused) return;
     const timer = setInterval(() => {
       setActiveIndex(prev => (prev + 1) % menus.length);
     }, 3500);
     return () => clearInterval(timer);
-  }, [menus.length, isPaused]);
+  }, [menus.length, isPaused, shouldUseStaticFallback]);
 
-  // Animate stats
+  // Animate stats (skip on mobile)
   useEffect(() => {
+    if (shouldUseStaticFallback) return;
     const timer = setInterval(() => {
       setMenus(prev => prev.map(m => ({
         ...m,
@@ -82,7 +162,12 @@ export function QRMenuDemo() {
       })));
     }, 2000);
     return () => clearInterval(timer);
-  }, []);
+  }, [shouldUseStaticFallback]);
+
+  // Mobile fallback
+  if (shouldUseStaticFallback) {
+    return <QRMenuDemoMobile />;
+  }
 
   const handleCopy = () => {
     setCopied(true);

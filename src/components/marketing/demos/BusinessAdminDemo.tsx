@@ -1,3 +1,11 @@
+/**
+ * BusinessAdminDemo Component
+ * 
+ * Demonstrates the admin dashboard interface.
+ * Desktop: Full sidebar and dashboard layout
+ * Mobile: Simplified stats and order list
+ */
+
 import { motion } from 'framer-motion';
 import {
     LayoutDashboard,
@@ -12,10 +20,108 @@ import {
     TrendingUp,
     DollarSign,
     Clock,
-    CheckCircle2
+    CheckCircle2,
+    Zap
 } from 'lucide-react';
+import { useMobileOptimized } from '@/hooks/useMobileOptimized';
+
+// Mobile-optimized version
+function BusinessAdminDemoMobile() {
+    const stats = [
+        { label: 'Revenue', value: '$24.5K', trend: '+12%', icon: DollarSign, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+        { label: 'Orders', value: '18', trend: '+4', icon: ShoppingCart, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    ];
+
+    const orders = [
+        { customer: 'Green Relief', amount: '$1,250', status: 'Processing' },
+        { customer: 'Urban Wellness', amount: '$850', status: 'Completed' },
+    ];
+
+    return (
+        <div className="w-full h-full min-h-[280px] bg-slate-50 rounded-lg overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="h-12 bg-slate-900 flex items-center justify-between px-4">
+                <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded bg-indigo-600 flex items-center justify-center">
+                        <span className="font-bold text-white text-xs">F</span>
+                    </div>
+                    <span className="text-white font-semibold text-sm">FloraIQ</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                    <span className="text-emerald-400 text-xs">Live</span>
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 p-4 space-y-4">
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-3">
+                    {stats.map((stat, i) => (
+                        <div key={i} className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
+                            <div className="flex items-center gap-2 mb-1">
+                                <div className={`p-1.5 rounded-lg ${stat.bg}`}>
+                                    <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                                </div>
+                            </div>
+                            <div className="text-xl font-bold text-slate-900">{stat.value}</div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs text-slate-500">{stat.label}</span>
+                                <span className="text-xs text-emerald-600 font-medium">{stat.trend}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Orders */}
+                <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div className="px-4 py-3 border-b border-slate-50">
+                        <span className="text-sm font-semibold text-slate-900">Recent Orders</span>
+                    </div>
+                    {orders.map((order, i) => (
+                        <div key={i} className="px-4 py-3 flex items-center justify-between border-b border-slate-50 last:border-0">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-medium text-xs">
+                                    {order.customer.charAt(0)}
+                                </div>
+                                <span className="text-sm font-medium text-slate-900">{order.customer}</span>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-sm font-bold text-slate-900">{order.amount}</div>
+                                <div className={`text-[10px] font-bold ${order.status === 'Completed' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                    {order.status}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Chart Placeholder */}
+                <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
+                    <div className="text-sm font-semibold text-slate-900 mb-3">Revenue</div>
+                    <div className="flex items-end gap-1 h-16">
+                        {[40, 65, 45, 80, 55, 90, 75].map((h, i) => (
+                            <div
+                                key={i}
+                                className="flex-1 bg-indigo-500 rounded-t-sm opacity-80"
+                                style={{ height: `${h}%` }}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 export function BusinessAdminDemo() {
+    const { shouldUseStaticFallback } = useMobileOptimized();
+
+    // Mobile fallback
+    if (shouldUseStaticFallback) {
+        return <BusinessAdminDemoMobile />;
+    }
+
     const sidebarItems = [
         { icon: LayoutDashboard, label: 'Dashboard', active: true },
         { icon: ShoppingCart, label: 'Orders' },

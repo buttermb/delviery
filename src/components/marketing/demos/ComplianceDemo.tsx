@@ -1,8 +1,97 @@
+/**
+ * ComplianceDemo Component
+ * 
+ * Demonstrates the automated compliance and Metrc sync features.
+ * Desktop: Live logs with animated updates
+ * Mobile: Simplified status cards with key metrics
+ */
+
 import { motion } from 'framer-motion';
-import { FileText, CheckCircle2, RefreshCw, Database, ShieldCheck, Lock } from 'lucide-react';
+import { FileText, CheckCircle2, RefreshCw, ShieldCheck, Lock, Zap, Clock, Database } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useMobileOptimized } from '@/hooks/useMobileOptimized';
+
+// Mobile-optimized static fallback
+function ComplianceDemoMobile() {
+    return (
+        <div className="w-full min-h-[280px] bg-gradient-to-br from-slate-50 to-emerald-50 rounded-xl overflow-hidden border border-slate-200 shadow-xl relative p-5">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center">
+                        <ShieldCheck className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                        <div className="font-bold text-slate-900 text-sm">Compliance Engine</div>
+                        <div className="text-xs text-slate-500">Metrc Integration</div>
+                    </div>
+                </div>
+                <div className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-xs font-medium">Active</span>
+                </div>
+            </div>
+
+            {/* Status Cards */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
+                    <div className="flex items-center gap-2 mb-1">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span className="text-xs text-slate-500">License</span>
+                    </div>
+                    <div className="text-sm font-bold text-slate-900">Active</div>
+                    <div className="text-xs text-slate-500">C11-0000123</div>
+                </div>
+                <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
+                    <div className="flex items-center gap-2 mb-1">
+                        <RefreshCw className="w-4 h-4 text-blue-600" />
+                        <span className="text-xs text-slate-500">Last Sync</span>
+                    </div>
+                    <div className="text-sm font-bold text-slate-900">Just now</div>
+                    <div className="text-xs text-emerald-600">✓ Success</div>
+                </div>
+            </div>
+
+            {/* Metrics */}
+            <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-medium text-slate-700">Manifests Generated</span>
+                    <span className="text-lg font-bold text-slate-900">1,248</span>
+                </div>
+                <div className="h-2 bg-slate-100 rounded-full overflow-hidden mb-1">
+                    <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full" style={{ width: '99%' }} />
+                </div>
+                <div className="text-xs text-slate-500 text-right">99.9% Success Rate</div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="mt-3 space-y-2">
+                {[
+                    { action: 'SYNC', detail: 'Metrc sync completed', status: 'success' },
+                    { action: 'VALIDATE', detail: 'Package tags verified', status: 'success' },
+                ].map((log, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs bg-white/80 px-3 py-2 rounded-lg border border-slate-100">
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${log.status === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                            {log.action}
+                        </span>
+                        <span className="text-slate-600">{log.detail}</span>
+                    </div>
+                ))}
+            </div>
+
+            {/* Interactive Hint */}
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded-full shadow-lg">
+                    <Zap className="w-3 h-3" />
+                    Automated Compliance Demo
+                </div>
+            </div>
+        </div>
+    );
+}
 
 export function ComplianceDemo() {
+    const { shouldUseStaticFallback } = useMobileOptimized();
     const [logs, setLogs] = useState([
         { id: 1, action: 'SYNC_START', details: 'Initiating hourly Metrc sync...', time: '10:00:00', status: 'info' },
         { id: 2, action: 'FETCH_SALES', details: 'Found 42 new transactions', time: '10:00:02', status: 'success' },
@@ -12,6 +101,9 @@ export function ComplianceDemo() {
     ]);
 
     useEffect(() => {
+        // Skip animations on mobile
+        if (shouldUseStaticFallback) return;
+
         const interval = setInterval(() => {
             setLogs(prev => {
                 const newLog = {
@@ -25,7 +117,12 @@ export function ComplianceDemo() {
             });
         }, 2500);
         return () => clearInterval(interval);
-    }, []);
+    }, [shouldUseStaticFallback]);
+
+    // Mobile fallback
+    if (shouldUseStaticFallback) {
+        return <ComplianceDemoMobile />;
+    }
 
     return (
         <div className="w-full h-[400px] bg-white rounded-xl overflow-hidden border border-slate-200 font-mono text-sm shadow-xl flex flex-col">
