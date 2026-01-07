@@ -31,7 +31,7 @@ export function StorefrontDemo() {
             type: "Sativa",
             thc: "26%",
             price: 55,
-            image: "https://images.unsplash.com/photo-1595123550441-d377e017de6a?auto=format&fit=crop&q=80&w=800",
+            image: "https://images.unsplash.com/photo-1589578228447-e1a4e481c6c8?auto=format&fit=crop&q=80&w=800",
             tag: "Staff Pick"
         }
     ];
