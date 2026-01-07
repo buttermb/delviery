@@ -10,6 +10,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -32,6 +33,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowRight, Eye, EyeOff, Building2, User, Mail, Lock, Phone, MapPin, Briefcase, Users, Sparkles, Loader2, ChevronDown, ChevronUp, Check, Shield, Zap, Coins, ArrowLeft } from 'lucide-react';
 import { FREE_TIER_MONTHLY_CREDITS } from '@/lib/credits';
+import { PLAN_CONFIG, getPlanConfig, type PlanKey } from '@/config/planPricing';
 import { signupProtection } from '@/lib/signupProtection';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { SignupFeaturesShowcase } from '@/components/signup/SignupFeaturesShowcase';
@@ -140,7 +142,8 @@ export default function SignUpPage() {
   const { prefetch } = usePrefetchDashboard();
   const clerkConfigured = useClerkConfigured();
   const [searchParams] = useSearchParams();
-  const selectedPlan = (searchParams.get('plan') || 'free') as 'free' | 'starter' | 'professional' | 'enterprise';
+  const selectedPlan = (searchParams.get('plan') || 'free') as PlanKey;
+  const planConfig = getPlanConfig(selectedPlan);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string>('');
@@ -523,18 +526,30 @@ export default function SignUpPage() {
 
       await Promise.race([prefetchPromise, timeoutPromise]);
 
-      // Navigate directly to dashboard with welcome flag (free-first model)
-      // Users start free with credits, can upgrade anytime
-      navigate(`/${tenant.slug}/admin/dashboard?welcome=true`, {
-        replace: true,
-        state: {
-          fromSignup: true,
-          tenantSlug: tenant.slug,
-          isFreeTier: true,
-        },
-      });
-
-      logger.info('[SIGNUP] Navigation complete - free tier', { slug: tenant.slug });
+      // Navigate based on selected plan
+      if (selectedPlan !== 'free') {
+        // For paid plans, go to select-plan page with plan pre-selected
+        navigate(`/select-plan?tenant_id=${tenant.id}&plan=${selectedPlan}`, {
+          replace: true,
+          state: {
+            fromSignup: true,
+            tenantSlug: tenant.slug,
+            selectedPlan,
+          },
+        });
+        logger.info('[SIGNUP] Navigation to plan selection', { slug: tenant.slug, plan: selectedPlan });
+      } else {
+        // For free tier, go directly to dashboard
+        navigate(`/${tenant.slug}/admin/dashboard?welcome=true`, {
+          replace: true,
+          state: {
+            fromSignup: true,
+            tenantSlug: tenant.slug,
+            isFreeTier: true,
+          },
+        });
+        logger.info('[SIGNUP] Navigation complete - free tier', { slug: tenant.slug });
+      }
     } catch (error) {
       const message = handleError(error, {
         component: 'SignUpPage',
@@ -738,10 +753,35 @@ export default function SignUpPage() {
                   /* Form Content */
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                      {/* Dynamic Plan Summary Card */}
+                      {selectedPlan !== 'free' && (
+                        <div className="mb-2 p-4 rounded-lg border-2 border-primary bg-primary/5">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <Badge className="bg-primary text-primary-foreground">{planConfig.name} Plan</Badge>
+                              <p className="text-2xl font-bold mt-2">${planConfig.priceMonthly}/mo</p>
+                              <p className="text-sm text-muted-foreground">{planConfig.description}</p>
+                            </div>
+                            <Link to="/pricing" className="text-sm text-primary hover:underline">
+                              Change plan
+                            </Link>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            14-day free trial • Cancel anytime
+                          </p>
+                        </div>
+                      )}
+
                       <div>
-                        <h2 className="text-2xl font-semibold mb-1">Create Your Free Account</h2>
+                        <h2 className="text-2xl font-semibold mb-1">
+                          {selectedPlan === 'free' 
+                            ? 'Create Your Free Account' 
+                            : `Start Your ${planConfig.name} Trial`}
+                        </h2>
                         <p className="text-sm text-muted-foreground">
-                          Get {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} free credits every month • Upgrade anytime
+                          {selectedPlan === 'free' 
+                            ? `Get ${FREE_TIER_MONTHLY_CREDITS.toLocaleString()} free credits every month • Upgrade anytime`
+                            : `14-day free trial of ${planConfig.name} • No credit card required to start`}
                         </p>
                       </div>
 

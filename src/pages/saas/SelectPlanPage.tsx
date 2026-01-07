@@ -12,6 +12,7 @@ import { SUBSCRIPTION_PLANS } from "@/utils/subscriptionPlans";
 import { handleError } from '@/utils/errorHandling/handlers';
 import { cn } from "@/lib/utils";
 import { FREE_TIER_MONTHLY_CREDITS } from "@/lib/credits";
+import { PLAN_CONFIG, type PlanKey } from "@/config/planPricing";
 
 type BillingCycle = 'monthly' | 'yearly';
 
@@ -38,6 +39,7 @@ export default function SelectPlanPage() {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [skipTrial, setSkipTrial] = useState(false);
   const tenantId = searchParams.get("tenant_id");
+  const preselectedPlan = searchParams.get("plan") as PlanKey | null;
 
   // Load plans from database
   useEffect(() => {
