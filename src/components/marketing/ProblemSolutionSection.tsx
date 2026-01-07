@@ -138,7 +138,7 @@ export function ProblemSolutionSection() {
 
             {/* Solutions */}
             <motion.div
-              className={`glass-card p-8 rounded-xl border border-[hsl(var(--marketing-accent))/0.3] bg-[hsl(var(--marketing-bg))] shadow-xl shadow-[hsl(var(--marketing-accent))/0.1] relative overflow-hidden ${isMobile && activeTab !== 'after' ? 'hidden' : ''
+              className={`glass-card p-8 rounded-xl border border-[hsl(var(--marketing-accent))/0.3] bg-gradient-to-br from-[hsl(var(--marketing-primary))]/5 to-[hsl(var(--marketing-accent))]/5 shadow-xl shadow-[hsl(var(--marketing-accent))/0.1] relative overflow-hidden ${isMobile && activeTab !== 'after' ? 'hidden' : ''
                 }`}
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
