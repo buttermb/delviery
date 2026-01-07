@@ -29,7 +29,7 @@ export function DetailedFeatureSection() {
             linkText: 'Learn more about Smart Logistics',
             icon: Truck,
             demo: (
-                <div className="w-full h-[600px] overflow-hidden rounded-xl border border-[hsl(var(--marketing-border))] shadow-2xl relative">
+                <div className="w-full h-[500px] overflow-hidden rounded-xl border border-[hsl(var(--marketing-border))] shadow-2xl relative">
                     <LogisticsDemo />
                 </div>
             ),

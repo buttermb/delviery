@@ -224,9 +224,9 @@ export function LogisticsDemo() {
             </div>
 
             {/* 2. PREMIUM IPHONE INTERFACE */}
-            <div className="absolute bottom-6 right-8 z-30 perspective-[1000px] w-[280px]">
+            <div className="absolute bottom-8 right-8 z-30 perspective-[1000px] w-[280px]">
                 <motion.div
-                    className="w-full min-h-[500px] bg-white rounded-[3.5rem] p-3 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.15)] relative border-4 border-slate-200 ring-1 ring-slate-100"
+                    className="w-full min-h-[440px] bg-white rounded-[3rem] p-3 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.15)] relative border-4 border-slate-200 ring-1 ring-slate-100"
                     initial={{ y: 20, rotateY: -12, rotateX: 5 }}
                     animate={{ y: 0, rotateY: -8, rotateX: 3 }}
                     transition={{ repeat: Infinity, repeatType: "mirror", duration: 5 }}
