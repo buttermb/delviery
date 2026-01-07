@@ -272,7 +272,7 @@ export default function PricingPage() {
                   )}
                 </div>
 
-                <Link to="/signup">
+                <Link to={`/signup?plan=${plan.name.toLowerCase()}`}>
                   <Button
                     className={`w-full mb-6 ${isFree
                         ? "bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90"
