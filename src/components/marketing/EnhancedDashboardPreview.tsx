@@ -1,15 +1,28 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LayoutDashboard, ShoppingCart, Package, Users, BarChart3, Radio, Shield, ChevronRight, Search, Bell, Settings, LogOut, Menu, MousePointer2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { LayoutDashboard, ShoppingCart, Package, Users, BarChart3, Radio, Shield, ChevronRight, Search, Bell, Settings, LogOut, Menu, MousePointer2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DashboardViews, DashboardViewKey } from './dashboard/DashboardViews';
+import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
 export function EnhancedDashboardPreview() {
+  const navigate = useNavigate();
+  const { isMobile } = useMobileOptimized();
   const [isVisible, setIsVisible] = useState(false);
   const [activeView, setActiveView] = useState<DashboardViewKey>('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  /* New State for Click-to-Activate Model */
+  /* Click-to-Activate Model - disabled on mobile to prevent scroll trap */
   const [isInteracting, setIsInteracting] = useState(false);
+
+  const handleOverlayClick = () => {
+    if (isMobile) {
+      // On mobile, navigate to demo page instead of enabling nested scroll
+      navigate('/demo');
+    } else {
+      setIsInteracting(true);
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100);
@@ -60,7 +73,7 @@ export function EnhancedDashboardPreview() {
         <motion.div
           animate={{ opacity: isInteracting ? 0 : 1 }}
           transition={{ duration: 0.4 }}
-          onClick={() => setIsInteracting(true)}
+          onClick={handleOverlayClick}
           className={`absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm cursor-pointer ${isInteracting ? 'pointer-events-none' : 'pointer-events-auto'}`}
         >
           <div className="text-center transform translate-y-[-20px]">
@@ -71,10 +84,23 @@ export function EnhancedDashboardPreview() {
             </div>
             <div className="flex flex-col items-center gap-2 text-[hsl(var(--marketing-text-light))] text-xs animate-bounce">
               <MousePointer2 className="w-6 h-6" />
-              <span>Click to Interact</span>
+              <span>{isMobile ? 'Tap to Open Demo' : 'Click to Interact'}</span>
             </div>
           </div>
         </motion.div>
+
+        {/* Exit interaction button - desktop only */}
+        {isInteracting && !isMobile && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={() => setIsInteracting(false)}
+            className="absolute top-14 right-4 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 text-white text-xs font-medium hover:bg-slate-900 transition-colors backdrop-blur-sm"
+          >
+            <X className="w-3 h-3" />
+            Exit Preview
+          </motion.button>
+        )}
 
         {/* macOS-style Window Header */}
         <div className="h-10 bg-slate-50 border-b border-slate-200 flex items-center px-4 justify-between select-none">
@@ -173,10 +199,9 @@ export function EnhancedDashboardPreview() {
               </div>
             </div>
 
-            {/* View Content */}
+            {/* View Content - no overscrollBehavior to prevent scroll trap */}
             <div
-              className={`flex-1 relative p-6 ${isInteracting ? 'overflow-auto' : 'overflow-hidden'}`}
-              style={isInteracting ? { overscrollBehavior: 'contain' } : undefined}
+              className={`flex-1 relative p-6 ${isInteracting && !isMobile ? 'overflow-auto' : 'overflow-hidden'}`}
             >
               <AnimatePresence mode="wait">
                 <motion.div
