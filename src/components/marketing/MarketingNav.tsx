@@ -45,7 +45,7 @@ export function MarketingNav() {
 
         <div className="hidden md:flex items-center gap-3">
           <Link to="/login">
-            <Button variant="ghost" size="sm" className="text-sm text-[hsl(var(--marketing-text))]">
+            <Button variant="ghost" size="sm" className="text-sm text-[hsl(var(--marketing-text))] hover:bg-[hsl(var(--marketing-primary))]/10 hover:text-[hsl(var(--marketing-primary))]">
               Login
             </Button>
           </Link>
