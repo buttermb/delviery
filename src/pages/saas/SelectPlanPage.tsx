@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Check, Loader2, Sparkles, Zap, Shield, Clock, Coins, ArrowLeft } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { ForceLightMode } from "@/components/marketing/ForceLightMode";
 import { SUBSCRIPTION_PLANS } from "@/utils/subscriptionPlans";
 import { handleError } from '@/utils/errorHandling/handlers';
 import { cn } from "@/lib/utils";
@@ -225,9 +226,9 @@ export default function SelectPlanPage() {
 
       // Grant initial credits
       const { error: creditError } = await (supabase.rpc as any)('grant_free_credits', {
-          p_tenant_id: tenantId,
-          p_amount: FREE_TIER_MONTHLY_CREDITS,
-        });
+        p_tenant_id: tenantId,
+        p_amount: FREE_TIER_MONTHLY_CREDITS,
+      });
 
       if (creditError) {
         logger.warn('[SELECT_PLAN] Failed to grant initial credits', creditError);
@@ -272,285 +273,287 @@ export default function SelectPlanPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-4 relative">
-      {/* Back Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate(-1)}
-        className="absolute top-4 left-4"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back
-      </Button>
-      <div className="w-full max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-            <Sparkles className="h-4 w-4" />
-            {fromSignup ? "Complete Your Registration" : "Choose Your Plan"}
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Simple, Transparent Pricing
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            {skipTrial ? "Get started immediately with full access" : "Start your 14-day free trial today"}
-          </p>
-        </div>
-
-        {/* Billing Cycle Toggle */}
-        <div className="flex justify-center mb-8">
-          <div className="inline-flex items-center gap-1 p-1 bg-muted rounded-lg">
-            <button
-              onClick={() => setBillingCycle('monthly')}
-              className={cn(
-                "px-6 py-2.5 rounded-md font-medium transition-all text-sm",
-                billingCycle === 'monthly'
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setBillingCycle('yearly')}
-              className={cn(
-                "px-6 py-2.5 rounded-md font-medium transition-all text-sm flex items-center gap-2",
-                billingCycle === 'yearly'
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Yearly
-              <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
-                Save 17%
-              </Badge>
-            </button>
-          </div>
-        </div>
-
-        {/* Skip Trial Option */}
-        <div className="flex justify-center mb-8">
-          <label className="flex items-center gap-3 cursor-pointer p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
-            <Checkbox
-              checked={skipTrial}
-              onCheckedChange={(checked) => setSkipTrial(checked === true)}
-              id="skipTrial"
-            />
-            <div>
-              <span className="font-medium">Skip trial and subscribe immediately</span>
-              <p className="text-sm text-muted-foreground">
-                Ready to commit? Get started right away without the trial period.
-              </p>
+    <ForceLightMode>
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-4 relative">
+        {/* Back Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+        <div className="w-full max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+              <Sparkles className="h-4 w-4" />
+              {fromSignup ? "Complete Your Registration" : "Choose Your Plan"}
             </div>
-          </label>
-        </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Simple, Transparent Pricing
+            </h1>
+            <p className="text-xl text-muted-foreground">
+              {skipTrial ? "Get started immediately with full access" : "Start your 14-day free trial today"}
+            </p>
+          </div>
 
-        {/* Plan Cards */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          {/* Free Tier Card */}
-          <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.01] border-dashed">
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 rounded-lg bg-emerald-500/10">
-                  <Coins className="h-5 w-5 text-emerald-500" />
-                </div>
-                <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600">
-                  FREE
-                </Badge>
-              </div>
-              <CardTitle className="text-2xl">Free Forever</CardTitle>
-              <CardDescription className="min-h-[40px]">
-                Get started with credits. Perfect for trying out the platform.
-              </CardDescription>
-
-              <div className="mt-4 space-y-1">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold">$0</span>
-                  <span className="text-muted-foreground">/month</span>
-                </div>
-                <p className="text-sm text-emerald-600 font-medium">
-                  {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} credits/month
-                </p>
-              </div>
-            </CardHeader>
-
-            <CardContent className="pb-4">
-              <ul className="space-y-3">
-                {[
-                  `${FREE_TIER_MONTHLY_CREDITS.toLocaleString()} free credits monthly`,
-                  "All core features unlocked",
-                  "Email support",
-                  "Buy more credits anytime",
-                  "No credit card required",
-                ].map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* Credit usage hint */}
-              <div className="mt-4 p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
-                <p className="text-xs text-muted-foreground">
-                  💡 <span className="font-medium">Tip:</span> {FREE_TIER_MONTHLY_CREDITS} credits ≈ 1 day of active use.
-                  Upgrade for unlimited!
-                </p>
-              </div>
-            </CardContent>
-
-            <CardFooter className="flex-col gap-3 pt-0">
-              <Button
-                className="w-full h-12 text-base font-semibold"
-                size="lg"
-                onClick={handleSelectFreeTier}
-                disabled={loading !== null}
-                variant="outline"
-              >
-                {loading === 'free' ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Setting up...
-                  </>
-                ) : (
-                  <>
-                    <Coins className="mr-2 h-4 w-4" />
-                    Start Free
-                  </>
-                )}
-              </Button>
-
-              <p className="text-xs text-muted-foreground text-center">
-                Upgrade anytime for unlimited access
-              </p>
-            </CardFooter>
-          </Card>
-
-          {/* Paid Plan Cards */}
-          {plans.map((plan) => {
-            const savings = getSavings(plan);
-            const effectiveMonthly = getEffectiveMonthly(plan);
-
-            return (
-              <Card
-                key={plan.id}
+          {/* Billing Cycle Toggle */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex items-center gap-1 p-1 bg-muted rounded-lg">
+              <button
+                onClick={() => setBillingCycle('monthly')}
                 className={cn(
-                  "relative overflow-hidden transition-all duration-300",
-                  plan.popular
-                    ? "border-primary shadow-xl scale-[1.02] ring-2 ring-primary/20"
-                    : "hover:shadow-lg hover:scale-[1.01]"
+                  "px-6 py-2.5 rounded-md font-medium transition-all text-sm",
+                  billingCycle === 'monthly'
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                {plan.popular && (
-                  <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-4 py-1 text-xs font-bold rounded-bl-lg">
-                    MOST POPULAR
-                  </div>
+                Monthly
+              </button>
+              <button
+                onClick={() => setBillingCycle('yearly')}
+                className={cn(
+                  "px-6 py-2.5 rounded-md font-medium transition-all text-sm flex items-center gap-2",
+                  billingCycle === 'yearly'
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
+              >
+                Yearly
+                <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                  Save 17%
+                </Badge>
+              </button>
+            </div>
+          </div>
 
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <CardDescription className="min-h-[40px]">{plan.description}</CardDescription>
+          {/* Skip Trial Option */}
+          <div className="flex justify-center mb-8">
+            <label className="flex items-center gap-3 cursor-pointer p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+              <Checkbox
+                checked={skipTrial}
+                onCheckedChange={(checked) => setSkipTrial(checked === true)}
+                id="skipTrial"
+              />
+              <div>
+                <span className="font-medium">Skip trial and subscribe immediately</span>
+                <p className="text-sm text-muted-foreground">
+                  Ready to commit? Get started right away without the trial period.
+                </p>
+              </div>
+            </label>
+          </div>
 
-                  <div className="mt-4 space-y-1">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold">
-                        ${getDisplayPrice(plan)}
-                      </span>
-                      <span className="text-muted-foreground">
-                        /{billingCycle === 'yearly' ? 'year' : 'month'}
-                      </span>
-                    </div>
-
-                    {billingCycle === 'yearly' && (
-                      <div className="space-y-1">
-                        <p className="text-sm text-muted-foreground">
-                          ${effectiveMonthly}/mo billed annually
-                        </p>
-                        <p className="text-sm font-medium text-green-600 dark:text-green-400">
-                          Save ${savings.amount}/year ({savings.percent}% off)
-                        </p>
-                      </div>
-                    )}
+          {/* Plan Cards */}
+          <div className="grid md:grid-cols-4 gap-6 mb-8">
+            {/* Free Tier Card */}
+            <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.01] border-dashed">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 rounded-lg bg-emerald-500/10">
+                    <Coins className="h-5 w-5 text-emerald-500" />
                   </div>
-                </CardHeader>
+                  <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600">
+                    FREE
+                  </Badge>
+                </div>
+                <CardTitle className="text-2xl">Free Forever</CardTitle>
+                <CardDescription className="min-h-[40px]">
+                  Get started with credits. Perfect for trying out the platform.
+                </CardDescription>
 
-                <CardContent className="pb-4">
-                  <ul className="space-y-3">
-                    {plan.features.slice(0, 8).map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                    {plan.features.length > 8 && (
-                      <li className="text-sm text-muted-foreground pl-7">
-                        +{plan.features.length - 8} more features
-                      </li>
-                    )}
-                  </ul>
-                </CardContent>
+                <div className="mt-4 space-y-1">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-bold">$0</span>
+                    <span className="text-muted-foreground">/month</span>
+                  </div>
+                  <p className="text-sm text-emerald-600 font-medium">
+                    {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} credits/month
+                  </p>
+                </div>
+              </CardHeader>
 
-                <CardFooter className="flex-col gap-3 pt-0">
-                  <Button
-                    className={cn(
-                      "w-full h-12 text-base font-semibold",
-                      plan.popular && "bg-primary hover:bg-primary/90"
-                    )}
-                    size="lg"
-                    onClick={() => handleSelectPlan(plan.id)}
-                    disabled={loading !== null}
-                    variant={plan.popular ? "default" : "outline"}
-                  >
-                    {loading === plan.id ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      getButtonText(plan)
-                    )}
-                  </Button>
+              <CardContent className="pb-4">
+                <ul className="space-y-3">
+                  {[
+                    `${FREE_TIER_MONTHLY_CREDITS.toLocaleString()} free credits monthly`,
+                    "All core features unlocked",
+                    "Email support",
+                    "Buy more credits anytime",
+                    "No credit card required",
+                  ].map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
 
-                  {!skipTrial && (
-                    <p className="text-xs text-muted-foreground text-center">
-                      No charges until trial ends
-                    </p>
+                {/* Credit usage hint */}
+                <div className="mt-4 p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+                  <p className="text-xs text-muted-foreground">
+                    💡 <span className="font-medium">Tip:</span> {FREE_TIER_MONTHLY_CREDITS} credits ≈ 1 day of active use.
+                    Upgrade for unlimited!
+                  </p>
+                </div>
+              </CardContent>
+
+              <CardFooter className="flex-col gap-3 pt-0">
+                <Button
+                  className="w-full h-12 text-base font-semibold"
+                  size="lg"
+                  onClick={handleSelectFreeTier}
+                  disabled={loading !== null}
+                  variant="outline"
+                >
+                  {loading === 'free' ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Setting up...
+                    </>
+                  ) : (
+                    <>
+                      <Coins className="mr-2 h-4 w-4" />
+                      Start Free
+                    </>
                   )}
-                </CardFooter>
-              </Card>
-            );
-          })}
-        </div>
+                </Button>
 
-        {/* Trust Indicators */}
-        <div className="flex flex-wrap justify-center gap-6 mb-8">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Shield className="h-4 w-4 text-green-500" />
-            <span>Bank-level security</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="h-4 w-4 text-blue-500" />
-            <span>Cancel anytime</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Zap className="h-4 w-4 text-amber-500" />
-            <span>Setup in 2 minutes</span>
-          </div>
-        </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  Upgrade anytime for unlimited access
+                </p>
+              </CardFooter>
+            </Card>
 
-        {/* Legal Text */}
-        <div className="text-center text-sm text-muted-foreground max-w-2xl mx-auto">
-          <p>
-            By {skipTrial ? "subscribing" : "starting a trial"}, you agree to our{" "}
-            <a href="/terms" className="text-primary hover:underline">Terms of Service</a> and{" "}
-            <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>.
-            {!skipTrial && (
-              <> Your card will be charged <span className="font-semibold">after 14 days</span> unless you cancel.</>
-            )}
-          </p>
+            {/* Paid Plan Cards */}
+            {plans.map((plan) => {
+              const savings = getSavings(plan);
+              const effectiveMonthly = getEffectiveMonthly(plan);
+
+              return (
+                <Card
+                  key={plan.id}
+                  className={cn(
+                    "relative overflow-hidden transition-all duration-300",
+                    plan.popular
+                      ? "border-primary shadow-xl scale-[1.02] ring-2 ring-primary/20"
+                      : "hover:shadow-lg hover:scale-[1.01]"
+                  )}
+                >
+                  {plan.popular && (
+                    <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-4 py-1 text-xs font-bold rounded-bl-lg">
+                      MOST POPULAR
+                    </div>
+                  )}
+
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                    <CardDescription className="min-h-[40px]">{plan.description}</CardDescription>
+
+                    <div className="mt-4 space-y-1">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-4xl font-bold">
+                          ${getDisplayPrice(plan)}
+                        </span>
+                        <span className="text-muted-foreground">
+                          /{billingCycle === 'yearly' ? 'year' : 'month'}
+                        </span>
+                      </div>
+
+                      {billingCycle === 'yearly' && (
+                        <div className="space-y-1">
+                          <p className="text-sm text-muted-foreground">
+                            ${effectiveMonthly}/mo billed annually
+                          </p>
+                          <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                            Save ${savings.amount}/year ({savings.percent}% off)
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="pb-4">
+                    <ul className="space-y-3">
+                      {plan.features.slice(0, 8).map((feature, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                      {plan.features.length > 8 && (
+                        <li className="text-sm text-muted-foreground pl-7">
+                          +{plan.features.length - 8} more features
+                        </li>
+                      )}
+                    </ul>
+                  </CardContent>
+
+                  <CardFooter className="flex-col gap-3 pt-0">
+                    <Button
+                      className={cn(
+                        "w-full h-12 text-base font-semibold",
+                        plan.popular && "bg-primary hover:bg-primary/90"
+                      )}
+                      size="lg"
+                      onClick={() => handleSelectPlan(plan.id)}
+                      disabled={loading !== null}
+                      variant={plan.popular ? "default" : "outline"}
+                    >
+                      {loading === plan.id ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        getButtonText(plan)
+                      )}
+                    </Button>
+
+                    {!skipTrial && (
+                      <p className="text-xs text-muted-foreground text-center">
+                        No charges until trial ends
+                      </p>
+                    )}
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Trust Indicators */}
+          <div className="flex flex-wrap justify-center gap-6 mb-8">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Shield className="h-4 w-4 text-green-500" />
+              <span>Bank-level security</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4 text-blue-500" />
+              <span>Cancel anytime</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Zap className="h-4 w-4 text-amber-500" />
+              <span>Setup in 2 minutes</span>
+            </div>
+          </div>
+
+          {/* Legal Text */}
+          <div className="text-center text-sm text-muted-foreground max-w-2xl mx-auto">
+            <p>
+              By {skipTrial ? "subscribing" : "starting a trial"}, you agree to our{" "}
+              <a href="/terms" className="text-primary hover:underline">Terms of Service</a> and{" "}
+              <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>.
+              {!skipTrial && (
+                <> Your card will be charged <span className="font-semibold">after 14 days</span> unless you cancel.</>
+              )}
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </ForceLightMode>
   );
 }

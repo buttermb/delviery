@@ -32,6 +32,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useTheme } from '@/contexts/ThemeContext';
+import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -263,155 +264,156 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 sm:p-6">
-      {/* Back to Home Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate('/')}
-        className="absolute top-4 left-4 z-50 text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Home
-      </Button>
+    <ForceLightMode>
+      <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 sm:p-6">
+        {/* Back to Home Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/')}
+          className="absolute top-4 left-4 z-50 text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Home
+        </Button>
 
-      {/* Theme Toggle */}
-      <div className="absolute top-4 right-4 z-50">
-        <ThemeToggle />
-      </div>
+        {/* Theme Toggle */}
+        <div className="absolute top-4 right-4 z-50">
+          <ThemeToggle />
+        </div>
 
-      {/* Dynamic gradient background with animation */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-[hsl(var(--marketing-accent))]/10 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-[hsl(var(--marketing-accent))]/10 transition-colors duration-700" />
+        {/* Dynamic gradient background with animation */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-[hsl(var(--marketing-accent))]/10 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-[hsl(var(--marketing-accent))]/10 transition-colors duration-700" />
 
-      {/* Large floating orbs with complex movement - theme aware */}
-      <div
-        className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full blur-3xl transition-all duration-700"
-        style={{
-          background: theme === 'dark'
-            ? 'radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0) 70%)'
-            : 'radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0) 70%)',
-          opacity: theme === 'dark' ? 0.5 : 0.7,
-          animation: 'float-complex 20s ease-in-out infinite'
-        }}
-      />
-      <div
-        className="absolute -bottom-40 -right-40 w-[700px] h-[700px] rounded-full blur-3xl transition-all duration-700"
-        style={{
-          background: theme === 'dark'
-            ? 'radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(168, 85, 247, 0) 70%)'
-            : 'radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(168, 85, 247, 0) 70%)',
-          opacity: theme === 'dark' ? 0.5 : 0.7,
-          animation: 'float-complex-reverse 25s ease-in-out infinite'
-        }}
-      />
-      <div
-        className="absolute top-1/3 left-1/2 w-[500px] h-[500px] rounded-full blur-3xl transition-all duration-700"
-        style={{
-          background: theme === 'dark'
-            ? 'radial-gradient(circle, rgba(243, 167, 61, 0.2) 0%, rgba(243, 167, 61, 0) 70%)'
-            : 'radial-gradient(circle, rgba(243, 167, 61, 0.35) 0%, rgba(243, 167, 61, 0) 70%)',
-          opacity: theme === 'dark' ? 0.4 : 0.6,
-          animation: 'float-diagonal-complex 30s ease-in-out infinite'
-        }}
-      />
-
-      {/* Medium accent orbs - theme aware */}
-      <div
-        className="absolute top-20 right-1/4 w-64 h-64 rounded-full blur-3xl transition-all duration-700"
-        style={{
-          background: theme === 'dark'
-            ? 'radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, rgba(236, 72, 153, 0) 70%)'
-            : 'radial-gradient(circle, rgba(236, 72, 153, 0.4) 0%, rgba(236, 72, 153, 0) 70%)',
-          opacity: theme === 'dark' ? 0.35 : 0.5,
-          animation: 'float-small 12s ease-in-out infinite'
-        }}
-      />
-      <div
-        className="absolute bottom-32 left-1/4 w-56 h-56 rounded-full blur-3xl transition-all duration-700"
-        style={{
-          background: theme === 'dark'
-            ? 'radial-gradient(circle, rgba(251, 191, 36, 0.25) 0%, rgba(251, 191, 36, 0) 70%)'
-            : 'radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, rgba(251, 191, 36, 0) 70%)',
-          opacity: theme === 'dark' ? 0.35 : 0.5,
-          animation: 'float-small-reverse 14s ease-in-out infinite'
-        }}
-      />
-      <div
-        className="absolute top-1/2 right-1/3 w-72 h-72 rounded-full blur-3xl transition-all duration-700"
-        style={{
-          background: theme === 'dark'
-            ? 'radial-gradient(circle, rgba(34, 211, 238, 0.2) 0%, rgba(34, 211, 238, 0) 70%)'
-            : 'radial-gradient(circle, rgba(34, 211, 238, 0.35) 0%, rgba(34, 211, 238, 0) 70%)',
-          opacity: theme === 'dark' ? 0.3 : 0.4,
-          animation: 'float-medium 16s ease-in-out infinite'
-        }}
-      />
-
-      {/* Animated gradient waves - theme aware */}
-      <div className="absolute inset-0 transition-opacity duration-700" style={{ opacity: theme === 'dark' ? 0.3 : 0.5 }}>
+        {/* Large floating orbs with complex movement - theme aware */}
         <div
-          className="absolute inset-0 transition-all duration-700"
+          className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full blur-3xl transition-all duration-700"
           style={{
             background: theme === 'dark'
-              ? 'radial-gradient(ellipse at 30% 50%, rgba(59, 130, 246, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 70% 50%, rgba(168, 85, 247, 0.12) 0%, transparent 50%)'
-              : 'radial-gradient(ellipse at 30% 50%, rgba(59, 130, 246, 0.18) 0%, transparent 50%), radial-gradient(ellipse at 70% 50%, rgba(168, 85, 247, 0.18) 0%, transparent 50%)',
-            animation: 'wave-movement 20s ease-in-out infinite'
+              ? 'radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0) 70%)'
+              : 'radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0) 70%)',
+            opacity: theme === 'dark' ? 0.5 : 0.7,
+            animation: 'float-complex 20s ease-in-out infinite'
           }}
         />
         <div
-          className="absolute inset-0 transition-all duration-700"
+          className="absolute -bottom-40 -right-40 w-[700px] h-[700px] rounded-full blur-3xl transition-all duration-700"
           style={{
             background: theme === 'dark'
-              ? 'radial-gradient(ellipse at 50% 30%, rgba(243, 167, 61, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 70%, rgba(236, 72, 153, 0.1) 0%, transparent 50%)'
-              : 'radial-gradient(ellipse at 50% 30%, rgba(243, 167, 61, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 50%)',
-            animation: 'wave-movement-reverse 25s ease-in-out infinite'
+              ? 'radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(168, 85, 247, 0) 70%)'
+              : 'radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(168, 85, 247, 0) 70%)',
+            opacity: theme === 'dark' ? 0.5 : 0.7,
+            animation: 'float-complex-reverse 25s ease-in-out infinite'
           }}
         />
-      </div>
+        <div
+          className="absolute top-1/3 left-1/2 w-[500px] h-[500px] rounded-full blur-3xl transition-all duration-700"
+          style={{
+            background: theme === 'dark'
+              ? 'radial-gradient(circle, rgba(243, 167, 61, 0.2) 0%, rgba(243, 167, 61, 0) 70%)'
+              : 'radial-gradient(circle, rgba(243, 167, 61, 0.35) 0%, rgba(243, 167, 61, 0) 70%)',
+            opacity: theme === 'dark' ? 0.4 : 0.6,
+            animation: 'float-diagonal-complex 30s ease-in-out infinite'
+          }}
+        />
 
-      {/* Floating sparkle particles - theme aware */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(30)].map((_, i) => {
-          const colors = theme === 'dark'
-            ? ['rgba(59, 130, 246, 0.5)', 'rgba(168, 85, 247, 0.5)', 'rgba(243, 167, 61, 0.5)', 'rgba(236, 72, 153, 0.5)']
-            : ['rgba(59, 130, 246, 0.7)', 'rgba(168, 85, 247, 0.7)', 'rgba(243, 167, 61, 0.7)', 'rgba(236, 72, 153, 0.7)'];
+        {/* Medium accent orbs - theme aware */}
+        <div
+          className="absolute top-20 right-1/4 w-64 h-64 rounded-full blur-3xl transition-all duration-700"
+          style={{
+            background: theme === 'dark'
+              ? 'radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, rgba(236, 72, 153, 0) 70%)'
+              : 'radial-gradient(circle, rgba(236, 72, 153, 0.4) 0%, rgba(236, 72, 153, 0) 70%)',
+            opacity: theme === 'dark' ? 0.35 : 0.5,
+            animation: 'float-small 12s ease-in-out infinite'
+          }}
+        />
+        <div
+          className="absolute bottom-32 left-1/4 w-56 h-56 rounded-full blur-3xl transition-all duration-700"
+          style={{
+            background: theme === 'dark'
+              ? 'radial-gradient(circle, rgba(251, 191, 36, 0.25) 0%, rgba(251, 191, 36, 0) 70%)'
+              : 'radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, rgba(251, 191, 36, 0) 70%)',
+            opacity: theme === 'dark' ? 0.35 : 0.5,
+            animation: 'float-small-reverse 14s ease-in-out infinite'
+          }}
+        />
+        <div
+          className="absolute top-1/2 right-1/3 w-72 h-72 rounded-full blur-3xl transition-all duration-700"
+          style={{
+            background: theme === 'dark'
+              ? 'radial-gradient(circle, rgba(34, 211, 238, 0.2) 0%, rgba(34, 211, 238, 0) 70%)'
+              : 'radial-gradient(circle, rgba(34, 211, 238, 0.35) 0%, rgba(34, 211, 238, 0) 70%)',
+            opacity: theme === 'dark' ? 0.3 : 0.4,
+            animation: 'float-medium 16s ease-in-out infinite'
+          }}
+        />
 
-          return (
-            <div
-              key={`particle-${i}`}
-              className="absolute rounded-full transition-all duration-700"
-              style={{
-                width: `${Math.random() * 6 + 2}px`,
-                height: `${Math.random() * 6 + 2}px`,
-                background: `radial-gradient(circle, ${colors[i % 4]} 0%, transparent 70%)`,
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `sparkle-float ${Math.random() * 15 + 20}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 10}s`,
-                filter: 'blur(1px)'
-              }}
-            />
-          );
-        })}
-      </div>
+        {/* Animated gradient waves - theme aware */}
+        <div className="absolute inset-0 transition-opacity duration-700" style={{ opacity: theme === 'dark' ? 0.3 : 0.5 }}>
+          <div
+            className="absolute inset-0 transition-all duration-700"
+            style={{
+              background: theme === 'dark'
+                ? 'radial-gradient(ellipse at 30% 50%, rgba(59, 130, 246, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 70% 50%, rgba(168, 85, 247, 0.12) 0%, transparent 50%)'
+                : 'radial-gradient(ellipse at 30% 50%, rgba(59, 130, 246, 0.18) 0%, transparent 50%), radial-gradient(ellipse at 70% 50%, rgba(168, 85, 247, 0.18) 0%, transparent 50%)',
+              animation: 'wave-movement 20s ease-in-out infinite'
+            }}
+          />
+          <div
+            className="absolute inset-0 transition-all duration-700"
+            style={{
+              background: theme === 'dark'
+                ? 'radial-gradient(ellipse at 50% 30%, rgba(243, 167, 61, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 70%, rgba(236, 72, 153, 0.1) 0%, transparent 50%)'
+                : 'radial-gradient(ellipse at 50% 30%, rgba(243, 167, 61, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 50%)',
+              animation: 'wave-movement-reverse 25s ease-in-out infinite'
+            }}
+          />
+        </div>
 
-      {/* Subtle grid overlay with shimmer - theme aware */}
-      <div
-        className="absolute inset-0 transition-opacity duration-700"
-        style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)',
-          backgroundSize: '50px 50px',
-          opacity: theme === 'dark' ? 0.04 : 0.015,
-          animation: 'shimmer 10s ease-in-out infinite'
-        }}
-      />
+        {/* Floating sparkle particles - theme aware */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(30)].map((_, i) => {
+            const colors = theme === 'dark'
+              ? ['rgba(59, 130, 246, 0.5)', 'rgba(168, 85, 247, 0.5)', 'rgba(243, 167, 61, 0.5)', 'rgba(236, 72, 153, 0.5)']
+              : ['rgba(59, 130, 246, 0.7)', 'rgba(168, 85, 247, 0.7)', 'rgba(243, 167, 61, 0.7)', 'rgba(236, 72, 153, 0.7)'];
 
-      {/* 
+            return (
+              <div
+                key={`particle-${i}`}
+                className="absolute rounded-full transition-all duration-700"
+                style={{
+                  width: `${Math.random() * 6 + 2}px`,
+                  height: `${Math.random() * 6 + 2}px`,
+                  background: `radial-gradient(circle, ${colors[i % 4]} 0%, transparent 70%)`,
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animation: `sparkle-float ${Math.random() * 15 + 20}s ease-in-out infinite`,
+                  animationDelay: `${Math.random() * 10}s`,
+                  filter: 'blur(1px)'
+                }}
+              />
+            );
+          })}
+        </div>
+
+        {/* Subtle grid overlay with shimmer - theme aware */}
+        <div
+          className="absolute inset-0 transition-opacity duration-700"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)',
+            backgroundSize: '50px 50px',
+            opacity: theme === 'dark' ? 0.04 : 0.015,
+            animation: 'shimmer 10s ease-in-out infinite'
+          }}
+        />
+
+        {/* 
         Safe usage: This style block contains only static CSS animations defined in the code.
         No user input is interpolated here.
       */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
+        <style dangerouslySetInnerHTML={{
+          __html: `
         @keyframes float-complex {
           0%, 100% { 
             transform: translate(0, 0) scale(1) rotate(0deg);
@@ -528,161 +530,162 @@ export default function LoginPage() {
         }
       `}} />
 
-      <Card className="w-full max-w-md p-8 sm:p-10 relative z-10 backdrop-blur-xl bg-card/90 shadow-2xl border-2 animate-fade-in transition-colors duration-700">
-        {/* Connection Status Indicator */}
-        {connectionStatus === 'offline' && (
-          <Alert className="mb-4 border-destructive/50 bg-destructive/10">
-            <WifiOff className="h-4 w-4" />
-            <AlertDescription>
-              No internet connection. Please check your network and try again.
-            </AlertDescription>
-          </Alert>
-        )}
-        {retryCount > 0 && connectionStatus === 'online' && (
-          <Alert className="mb-4 border-yellow-500/50 bg-yellow-500/10">
-            <AlertCircle className="h-4 w-4 text-yellow-600" />
-            <AlertDescription className="text-yellow-800 dark:text-yellow-200">
-              Retrying connection... (Attempt {retryCount} of 3)
-            </AlertDescription>
-          </Alert>
-        )}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center p-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl mb-6 animate-scale-in">
-            <Sparkles className="h-8 w-8 text-primary" />
+        <Card className="w-full max-w-md p-8 sm:p-10 relative z-10 backdrop-blur-xl bg-card/90 shadow-2xl border-2 animate-fade-in transition-colors duration-700">
+          {/* Connection Status Indicator */}
+          {connectionStatus === 'offline' && (
+            <Alert className="mb-4 border-destructive/50 bg-destructive/10">
+              <WifiOff className="h-4 w-4" />
+              <AlertDescription>
+                No internet connection. Please check your network and try again.
+              </AlertDescription>
+            </Alert>
+          )}
+          {retryCount > 0 && connectionStatus === 'online' && (
+            <Alert className="mb-4 border-yellow-500/50 bg-yellow-500/10">
+              <AlertCircle className="h-4 w-4 text-yellow-600" />
+              <AlertDescription className="text-yellow-800 dark:text-yellow-200">
+                Retrying connection... (Attempt {retryCount} of 3)
+              </AlertDescription>
+            </Alert>
+          )}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center p-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl mb-6 animate-scale-in">
+              <Sparkles className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-3 bg-gradient-to-r from-primary via-purple-600 to-primary bg-clip-text text-transparent animate-fade-in">
+              Welcome Back
+            </h1>
+            <p className="text-muted-foreground animate-fade-in">Sign in to your business dashboard</p>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-3 bg-gradient-to-r from-primary via-purple-600 to-primary bg-clip-text text-transparent animate-fade-in">
-            Welcome Back
-          </h1>
-          <p className="text-muted-foreground animate-fade-in">Sign in to your business dashboard</p>
-        </div>
 
-        {signupSuccess && (
-          <Alert className="mb-6 border-[hsl(var(--marketing-accent))] bg-[hsl(var(--marketing-accent))]/10">
-            <CheckCircle2 className="h-4 w-4 text-[hsl(var(--marketing-accent))]" />
-            <AlertDescription className="text-[hsl(var(--marketing-text))]">
-              Your account has been created successfully! Please sign in to continue.
-            </AlertDescription>
-          </Alert>
-        )}
+          {signupSuccess && (
+            <Alert className="mb-6 border-[hsl(var(--marketing-accent))] bg-[hsl(var(--marketing-accent))]/10">
+              <CheckCircle2 className="h-4 w-4 text-[hsl(var(--marketing-accent))]" />
+              <AlertDescription className="text-[hsl(var(--marketing-text))]">
+                Your account has been created successfully! Please sign in to continue.
+              </AlertDescription>
+            </Alert>
+          )}
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    Email
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="you@business.com"
-                      className="h-11 bg-background/50 border-2 focus:border-primary transition-colors"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => {
-                const [capsLockOn, setCapsLockOn] = useState(false);
-
-                const handleKeyDown = (e: React.KeyboardEvent) => {
-                  if (e.getModifierState("CapsLock")) {
-                    setCapsLockOn(true);
-                  } else {
-                    setCapsLockOn(false);
-                  }
-                };
-
-                const [showPassword, setShowPassword] = useState(false);
-
-                return (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
-                      <Lock className="h-4 w-4 text-muted-foreground" />
-                      Password
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      Email
                     </FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          className="h-11 bg-background/50 border-2 focus:border-primary transition-colors pr-10"
-                          {...field}
-                          onKeyDown={handleKeyDown}
-                          onKeyUp={handleKeyDown}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground focus:outline-none"
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                        {capsLockOn && (
-                          <div className="absolute right-10 top-3 text-yellow-600 flex items-center gap-1 text-xs font-medium animate-pulse">
-                            <AlertCircle className="h-3 w-3" />
-                            CAPS LOCK ON
-                          </div>
-                        )}
-                      </div>
+                      <Input
+                        type="email"
+                        placeholder="you@business.com"
+                        className="h-11 bg-background/50 border-2 focus:border-primary transition-colors"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
-                );
-              }}
-            />
+                )}
+              />
 
-            <Button
-              type="submit"
-              className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all hover-scale mt-8"
-              disabled={isSubmitting}
-              onClick={() => {
-                // Normalize email to lowercase before submission handled by RHF if possible, 
-                // but since we are inside RHF submission we might need to rely on the submit handler transformation.
-                // However, RHF validates on change, so better to handle normalization in onSubmit.
-              }}
-            >
-              {isSubmitting ? (
-                <span className="flex items-center gap-2">
-                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Signing in...
-                </span>
-              ) : (
-                <>
-                  Sign In <ArrowRight className="ml-2 h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </form>
-        </Form>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => {
+                  const [capsLockOn, setCapsLockOn] = useState(false);
 
-        <div className="mt-8 text-center text-sm space-y-3">
-          <p className="text-muted-foreground">
-            Don't have an account?{' '}
-            <a href="/signup" className="text-primary font-semibold hover:underline transition-all story-link">
-              Start free trial
-            </a>
-          </p>
-          <p className="text-xs text-muted-foreground/70 flex items-center justify-center gap-2">
-            <Lock className="h-3 w-3" />
-            Secure authentication powered by FloraIQ
-          </p>
-        </div>
-      </Card>
-    </div>
+                  const handleKeyDown = (e: React.KeyboardEvent) => {
+                    if (e.getModifierState("CapsLock")) {
+                      setCapsLockOn(true);
+                    } else {
+                      setCapsLockOn(false);
+                    }
+                  };
+
+                  const [showPassword, setShowPassword] = useState(false);
+
+                  return (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Lock className="h-4 w-4 text-muted-foreground" />
+                        Password
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            className="h-11 bg-background/50 border-2 focus:border-primary transition-colors pr-10"
+                            {...field}
+                            onKeyDown={handleKeyDown}
+                            onKeyUp={handleKeyDown}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground focus:outline-none"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                          {capsLockOn && (
+                            <div className="absolute right-10 top-3 text-yellow-600 flex items-center gap-1 text-xs font-medium animate-pulse">
+                              <AlertCircle className="h-3 w-3" />
+                              CAPS LOCK ON
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+
+              <Button
+                type="submit"
+                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all hover-scale mt-8"
+                disabled={isSubmitting}
+                onClick={() => {
+                  // Normalize email to lowercase before submission handled by RHF if possible, 
+                  // but since we are inside RHF submission we might need to rely on the submit handler transformation.
+                  // However, RHF validates on change, so better to handle normalization in onSubmit.
+                }}
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Signing in...
+                  </span>
+                ) : (
+                  <>
+                    Sign In <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+          </Form>
+
+          <div className="mt-8 text-center text-sm space-y-3">
+            <p className="text-muted-foreground">
+              Don't have an account?{' '}
+              <a href="/signup" className="text-primary font-semibold hover:underline transition-all story-link">
+                Start free trial
+              </a>
+            </p>
+            <p className="text-xs text-muted-foreground/70 flex items-center justify-center gap-2">
+              <Lock className="h-3 w-3" />
+              Secure authentication powered by FloraIQ
+            </p>
+          </div>
+        </Card>
+      </div>
+    </ForceLightMode>
   );
 }

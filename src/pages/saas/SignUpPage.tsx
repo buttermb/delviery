@@ -49,6 +49,7 @@ import { handleError } from '@/utils/errorHandling/handlers';
 import { SignUp } from '@clerk/clerk-react';
 import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
 import { useAuthSafe } from '@/hooks/useClerkSafe';
+import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 
 // Inner component that safely uses Clerk hooks (only rendered when Clerk is configured)
 function ClerkAuthRedirect({ onNotSignedIn }: { onNotSignedIn: () => void }) {
@@ -606,594 +607,597 @@ export default function SignUpPage() {
   // Render Clerk SignUp when configured and selected
   if (clerkConfigured && useClerkAuth) {
     return (
-      <div className="min-h-screen relative overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20" />
-        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
-        <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
+      <ForceLightMode>
+        <div className="min-h-screen relative overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20" />
+          <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+          <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
 
-        <div className="max-w-md mx-auto relative z-10 pt-8">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-emerald-500/10 backdrop-blur-sm border border-primary/20 mb-4">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">14-Day Free Trial</span>
+          <div className="max-w-md mx-auto relative z-10 pt-8">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-emerald-500/10 backdrop-blur-sm border border-primary/20 mb-4">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-primary">14-Day Free Trial</span>
+              </div>
+              <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent">
+                Start Your Free Trial
+              </h1>
+              <p className="text-muted-foreground">Transform your cannabis distribution in minutes</p>
             </div>
-            <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent">
-              Start Your Free Trial
-            </h1>
-            <p className="text-muted-foreground">Transform your cannabis distribution in minutes</p>
-          </div>
 
-          <SignUp
-            routing="path"
-            path="/signup"
-            signInUrl="/saas/login"
-            afterSignUpUrl="/select-plan"
-            appearance={{
-              elements: {
-                rootBox: 'w-full',
-                card: 'shadow-2xl border-2 border-primary/10 rounded-xl bg-card/95 backdrop-blur-sm',
-                headerTitle: 'text-xl font-bold',
-                headerSubtitle: 'text-muted-foreground',
-                socialButtonsBlockButton: 'border-2 hover:bg-muted transition-colors h-12',
-                formFieldInput: 'border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 h-12',
-                formButtonPrimary: 'bg-gradient-to-r from-emerald-600 to-emerald-800 hover:from-emerald-500 hover:to-emerald-700 text-white font-bold h-14',
-                footerActionLink: 'text-primary hover:text-primary/80',
-              },
-            }}
-          />
+            <SignUp
+              routing="path"
+              path="/signup"
+              signInUrl="/saas/login"
+              afterSignUpUrl="/select-plan"
+              appearance={{
+                elements: {
+                  rootBox: 'w-full',
+                  card: 'shadow-2xl border-2 border-primary/10 rounded-xl bg-card/95 backdrop-blur-sm',
+                  headerTitle: 'text-xl font-bold',
+                  headerSubtitle: 'text-muted-foreground',
+                  socialButtonsBlockButton: 'border-2 hover:bg-muted transition-colors h-12',
+                  formFieldInput: 'border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 h-12',
+                  formButtonPrimary: 'bg-gradient-to-r from-emerald-600 to-emerald-800 hover:from-emerald-500 hover:to-emerald-700 text-white font-bold h-14',
+                  footerActionLink: 'text-primary hover:text-primary/80',
+                },
+              }}
+            />
 
-          <div className="text-center mt-6">
-            <button
-              onClick={() => setUseClerkAuth(false)}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              ← Use email/password signup
-            </button>
+            <div className="text-center mt-6">
+              <button
+                onClick={() => setUseClerkAuth(false)}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ← Use email/password signup
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </ForceLightMode>
     );
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
-      {/* Back to Home Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate('/')}
-        className="absolute top-4 left-4 z-50 text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Home
-      </Button>
+    <ForceLightMode>
+      <div className="min-h-screen relative overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
+        {/* Back to Home Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/')}
+          className="absolute top-4 left-4 z-50 text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Home
+        </Button>
 
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20" />
+        {/* Animated gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20" />
 
-      {/* Floating orbs */}
-      <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
-      <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-purple-500/20 dark:bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
-      <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-emerald-500/15 dark:bg-emerald-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '2s' }} />
+        {/* Floating orbs */}
+        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+        <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-purple-500/20 dark:bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-emerald-500/15 dark:bg-emerald-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '2s' }} />
 
-      {/* Grid pattern overlay */}
-      <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03]" style={{
-        backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)',
-        backgroundSize: '40px 40px'
-      }} />
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03]" style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)',
+          backgroundSize: '40px 40px'
+        }} />
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/10 via-blue-500/10 to-purple-500/10 backdrop-blur-sm border border-emerald-500/20 mb-4 animate-fade-in">
-            <Coins className="h-4 w-4 text-emerald-600" />
-            <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Start Free with {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} Credits • No Card Required</span>
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/10 via-blue-500/10 to-purple-500/10 backdrop-blur-sm border border-emerald-500/20 mb-4 animate-fade-in">
+              <Coins className="h-4 w-4 text-emerald-600" />
+              <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Start Free with {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} Credits • No Card Required</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent animate-fade-in" style={{ animationDelay: '0.1s' }}>
+              Get Started Free Today
+            </h1>
+            <p className="text-muted-foreground text-lg animate-fade-in" style={{ animationDelay: '0.2s' }}>Transform your wholesale distribution in minutes</p>
+            <p className="text-sm text-muted-foreground mt-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              Already have an account?{' '}
+              <Link to="/saas/login" className="text-primary font-medium hover:underline">
+                Sign in
+              </Link>
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            Get Started Free Today
-          </h1>
-          <p className="text-muted-foreground text-lg animate-fade-in" style={{ animationDelay: '0.2s' }}>Transform your wholesale distribution in minutes</p>
-          <p className="text-sm text-muted-foreground mt-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            Already have an account?{' '}
-            <Link to="/saas/login" className="text-primary font-medium hover:underline">
-              Sign in
-            </Link>
-          </p>
-        </div>
 
-        {/* Main Content - Responsive Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6 lg:gap-8">
-          {/* Left Column - Form */}
-          <div className="relative animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            {/* Glow effect */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-emerald-500/20 rounded-2xl blur-xl opacity-75" />
-            <Card className="relative w-full shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/10">
-              <CardContent className="p-6 sm:p-8">
-                {/* Phone Verification Step */}
-                {showPhoneVerification ? (
-                  <div className="space-y-6">
-                    <div>
-                      <h2 className="text-2xl font-semibold mb-1">Verify Your Phone</h2>
-                      <p className="text-sm text-muted-foreground">
-                        For your security, please verify your phone number
-                      </p>
-                    </div>
-                    <PhoneVerificationStep
-                      required={true}
-                      onVerified={(hash, phoneNumber) => {
-                        setPhoneHash(hash);
-                        setShowPhoneVerification(false);
-                        // Re-submit the form with verified phone
-                        if (pendingFormData) {
-                          logger.info('[SIGNUP] Phone verified, resubmitting form');
-                          form.handleSubmit(onSubmit)();
-                        }
-                      }}
-                      onSkip={() => {
-                        // If user skips, still allow signup but log it
-                        logger.warn('[SIGNUP] User skipped phone verification');
-                        setShowPhoneVerification(false);
-                        if (pendingFormData) {
-                          form.handleSubmit(onSubmit)();
-                        }
-                      }}
-                    />
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        setShowPhoneVerification(false);
-                        setPendingFormData(null);
-                      }}
-                      className="w-full"
-                    >
-                      Back to Sign Up
-                    </Button>
-                  </div>
-                ) : (
-                  /* Form Content */
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                      {/* Dynamic Plan Summary Card */}
-                      {selectedPlan !== 'free' && (
-                        <div className="mb-2 p-4 rounded-lg border-2 border-primary bg-primary/5">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <Badge className="bg-primary text-primary-foreground">{planConfig.name} Plan</Badge>
-                              <p className="text-2xl font-bold mt-2">${planConfig.priceMonthly}/mo</p>
-                              <p className="text-sm text-muted-foreground">{planConfig.description}</p>
-                            </div>
-                            <Link to="/pricing" className="text-sm text-primary hover:underline">
-                              Change plan
-                            </Link>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            14-day free trial • Cancel anytime
-                          </p>
-                        </div>
-                      )}
-
+          {/* Main Content - Responsive Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6 lg:gap-8">
+            {/* Left Column - Form */}
+            <div className="relative animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              {/* Glow effect */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-emerald-500/20 rounded-2xl blur-xl opacity-75" />
+              <Card className="relative w-full shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/10">
+                <CardContent className="p-6 sm:p-8">
+                  {/* Phone Verification Step */}
+                  {showPhoneVerification ? (
+                    <div className="space-y-6">
                       <div>
-                        <h2 className="text-2xl font-semibold mb-1">
-                          {selectedPlan === 'free' 
-                            ? 'Create Your Free Account' 
-                            : `Start Your ${planConfig.name} Trial`}
-                        </h2>
+                        <h2 className="text-2xl font-semibold mb-1">Verify Your Phone</h2>
                         <p className="text-sm text-muted-foreground">
-                          {selectedPlan === 'free' 
-                            ? `Get ${FREE_TIER_MONTHLY_CREDITS.toLocaleString()} free credits every month • Upgrade anytime`
-                            : `14-day free trial of ${planConfig.name} • No credit card required to start`}
+                          For your security, please verify your phone number
                         </p>
                       </div>
-
-                      {/* Google OAuth - Prominent placement */}
-                      <div className="space-y-3">
-                        <GoogleSignInButton
-                          className="w-full h-12"
-                        />
-
-                        {/* Clerk SSO Option */}
-                        {clerkConfigured && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setUseClerkAuth(true)}
-                            className="w-full h-12 border-2 hover:bg-muted"
-                          >
-                            <Sparkles className="mr-2 h-4 w-4" />
-                            Use Clerk SSO
-                          </Button>
-                        )}
-
-                        {/* Divider */}
-                        <div className="relative flex items-center py-2">
-                          <div className="flex-grow border-t border-border" />
-                          <span className="flex-shrink mx-4 text-xs text-muted-foreground uppercase tracking-wide">or continue with email</span>
-                          <div className="flex-grow border-t border-border" />
-                        </div>
-                      </div>
-
-                      {/* Required Fields */}
-                      <div className="space-y-5">
-                        <FormField
-                          control={form.control}
-                          name="business_name"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center gap-2">
-                                <Building2 className="h-4 w-4" />
-                                Business Name *
-                              </FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <Input
-                                    placeholder="Big Mike's Wholesale"
-                                    {...field}
-                                    className={cn(
-                                      "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
-                                      field.value && !form.formState.errors.business_name && "border-emerald-500/50"
-                                    )}
-                                  />
-                                  {field.value && !form.formState.errors.business_name && (
-                                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
-                                  )}
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="owner_name"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center gap-2">
-                                <User className="h-4 w-4" />
-                                Your Name *
-                              </FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <Input
-                                    placeholder="John Doe"
-                                    {...field}
-                                    className={cn(
-                                      "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
-                                      field.value && !form.formState.errors.owner_name && "border-emerald-500/50"
-                                    )}
-                                  />
-                                  {field.value && !form.formState.errors.owner_name && (
-                                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
-                                  )}
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center gap-2">
-                                <Mail className="h-4 w-4" />
-                                Email *
-                              </FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <Input
-                                    type="email"
-                                    placeholder="you@business.com"
-                                    {...field}
-                                    className={cn(
-                                      "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
-                                      field.value && !form.formState.errors.email && "border-emerald-500/50"
-                                    )}
-                                  />
-                                  {field.value && !form.formState.errors.email && (
-                                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
-                                  )}
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="password"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center gap-2">
-                                <Lock className="h-4 w-4" />
-                                Password *
-                              </FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <Input
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="••••••••"
-                                    {...field}
-                                    className="h-12 pr-10 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                                    aria-label={showPassword ? "Hide password" : "Show password"}
-                                  >
-                                    {showPassword ? (
-                                      <EyeOff className="h-4 w-4" />
-                                    ) : (
-                                      <Eye className="h-4 w-4" />
-                                    )}
-                                  </button>
-                                </div>
-                              </FormControl>
-                              <PasswordStrengthIndicator password={field.value} />
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* CAPTCHA Verification - Only render if configured */}
-                        {import.meta.env.VITE_TURNSTILE_SITE_KEY && (
-                          <div className="flex justify-center py-2">
-                            <TurnstileWrapper
-                              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-                              onSuccess={(token) => setCaptchaToken(token)}
-                              onError={() => {
-                                setCaptchaToken('');
-                                toast({
-                                  title: 'Verification Failed',
-                                  description: 'CAPTCHA verification failed. Please try again.',
-                                  variant: 'destructive',
-                                });
-                              }}
-                              onExpire={() => {
-                                setCaptchaToken('');
-                              }}
-                              turnstileRef={turnstileRef}
-                            />
+                      <PhoneVerificationStep
+                        required={true}
+                        onVerified={(hash, phoneNumber) => {
+                          setPhoneHash(hash);
+                          setShowPhoneVerification(false);
+                          // Re-submit the form with verified phone
+                          if (pendingFormData) {
+                            logger.info('[SIGNUP] Phone verified, resubmitting form');
+                            form.handleSubmit(onSubmit)();
+                          }
+                        }}
+                        onSkip={() => {
+                          // If user skips, still allow signup but log it
+                          logger.warn('[SIGNUP] User skipped phone verification');
+                          setShowPhoneVerification(false);
+                          if (pendingFormData) {
+                            form.handleSubmit(onSubmit)();
+                          }
+                        }}
+                      />
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setShowPhoneVerification(false);
+                          setPendingFormData(null);
+                        }}
+                        className="w-full"
+                      >
+                        Back to Sign Up
+                      </Button>
+                    </div>
+                  ) : (
+                    /* Form Content */
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        {/* Dynamic Plan Summary Card */}
+                        {selectedPlan !== 'free' && (
+                          <div className="mb-2 p-4 rounded-lg border-2 border-primary bg-primary/5">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <Badge className="bg-primary text-primary-foreground">{planConfig.name} Plan</Badge>
+                                <p className="text-2xl font-bold mt-2">${planConfig.priceMonthly}/mo</p>
+                                <p className="text-sm text-muted-foreground">{planConfig.description}</p>
+                              </div>
+                              <Link to="/pricing" className="text-sm text-primary hover:underline">
+                                Change plan
+                              </Link>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-2">
+                              14-day free trial • Cancel anytime
+                            </p>
                           </div>
                         )}
 
-                        {/* Optional Fields - Collapsible */}
-                        <Collapsible open={showOptionalFields} onOpenChange={setShowOptionalFields}>
-                          <CollapsibleTrigger asChild>
+                        <div>
+                          <h2 className="text-2xl font-semibold mb-1">
+                            {selectedPlan === 'free'
+                              ? 'Create Your Free Account'
+                              : `Start Your ${planConfig.name} Trial`}
+                          </h2>
+                          <p className="text-sm text-muted-foreground">
+                            {selectedPlan === 'free'
+                              ? `Get ${FREE_TIER_MONTHLY_CREDITS.toLocaleString()} free credits every month • Upgrade anytime`
+                              : `14-day free trial of ${planConfig.name} • No credit card required to start`}
+                          </p>
+                        </div>
+
+                        {/* Google OAuth - Prominent placement */}
+                        <div className="space-y-3">
+                          <GoogleSignInButton
+                            className="w-full h-12"
+                          />
+
+                          {/* Clerk SSO Option */}
+                          {clerkConfigured && (
                             <Button
                               type="button"
-                              variant="ghost"
-                              className="w-full justify-between text-muted-foreground hover:text-foreground"
+                              variant="outline"
+                              onClick={() => setUseClerkAuth(true)}
+                              className="w-full h-12 border-2 hover:bg-muted"
                             >
-                              <span className="text-sm">Optional: Business Details</span>
-                              {showOptionalFields ? (
-                                <ChevronUp className="h-4 w-4" />
-                              ) : (
-                                <ChevronDown className="h-4 w-4" />
-                              )}
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              Use Clerk SSO
                             </Button>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent className="space-y-5 pt-2">
-                            <FormField
-                              control={form.control}
-                              name="phone"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="flex items-center gap-2">
-                                    <Phone className="h-4 w-4" />
-                                    Phone
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      placeholder="555-123-4567"
-                                      {...field}
-                                      className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <FormField
-                                control={form.control}
-                                name="state"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="flex items-center gap-2">
-                                      <MapPin className="h-4 w-4" />
-                                      State
-                                    </FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                      <FormControl>
-                                        <SelectTrigger className="h-11">
-                                          <SelectValue placeholder="Select state" />
-                                        </SelectTrigger>
-                                      </FormControl>
-                                      <SelectContent>
-                                        {US_STATES.map((state) => (
-                                          <SelectItem key={state} value={state}>
-                                            {state}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-
-                              <FormField
-                                control={form.control}
-                                name="industry"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="flex items-center gap-2">
-                                      <Briefcase className="h-4 w-4" />
-                                      Industry
-                                    </FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                      <FormControl>
-                                        <SelectTrigger className="h-11">
-                                          <SelectValue placeholder="Select industry" />
-                                        </SelectTrigger>
-                                      </FormControl>
-                                      <SelectContent>
-                                        {INDUSTRIES.map((industry) => (
-                                          <SelectItem key={industry.value} value={industry.value}>
-                                            {industry.label}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-
-                            <FormField
-                              control={form.control}
-                              name="company_size"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="flex items-center gap-2">
-                                    <Users className="h-4 w-4" />
-                                    Company Size
-                                  </FormLabel>
-                                  <Select onValueChange={field.onChange} value={field.value}>
-                                    <FormControl>
-                                      <SelectTrigger className="h-11">
-                                        <SelectValue placeholder="Select company size" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      {COMPANY_SIZES.map((size) => (
-                                        <SelectItem key={size.value} value={size.value}>
-                                          {size.label}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </CollapsibleContent>
-                        </Collapsible>
-
-                        {/* Terms Acceptance */}
-                        <FormField
-                          control={form.control}
-                          name="terms_accepted"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <div className="space-y-1 leading-none">
-                                <FormLabel className="text-sm font-normal cursor-pointer">
-                                  I agree to the{' '}
-                                  <a
-                                    href="/terms"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-primary underline hover:text-primary/80"
-                                  >
-                                    Terms of Service
-                                  </a>{' '}
-                                  and{' '}
-                                  <a
-                                    href="/privacy"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-primary underline hover:text-primary/80"
-                                  >
-                                    Privacy Policy
-                                  </a>
-                                </FormLabel>
-                                <FormMessage />
-                              </div>
-                            </FormItem>
                           )}
-                        />
-                      </div>
 
-                      {/* Submit Button */}
-                      <div className="space-y-4">
-                        <Button
-                          type="submit"
-                          disabled={isSubmitting}
-                          className="w-full h-14 text-base font-semibold bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 hover:shadow-lg hover:shadow-emerald-500/25 hover:scale-[1.02] transition-all duration-200"
-                        >
-                          {isSubmitting ? (
-                            <>
-                              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                              Creating Your Account...
-                            </>
-                          ) : (
-                            <>
-                              <Coins className="mr-2 h-5 w-5" />
-                              Start Free with Credits
-                              <ArrowRight className="ml-2 h-5 w-5" />
-                            </>
-                          )}
-                        </Button>
-
-                        {/* Trust indicators below button */}
-                        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1.5">
-                            <Shield className="h-3.5 w-3.5 text-emerald-500" />
-                            <span>Bank-level security</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Zap className="h-3.5 w-3.5 text-amber-500" />
-                            <span>Setup in 2 min</span>
+                          {/* Divider */}
+                          <div className="relative flex items-center py-2">
+                            <div className="flex-grow border-t border-border" />
+                            <span className="flex-shrink mx-4 text-xs text-muted-foreground uppercase tracking-wide">or continue with email</span>
+                            <div className="flex-grow border-t border-border" />
                           </div>
                         </div>
-                      </div>
-                    </form>
-                  </Form>
-                )}
-              </CardContent>
-            </Card>
-          </div>
 
-          {/* Right Column - Features Showcase (Desktop Only) */}
-          <div className="hidden lg:block animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <div className="sticky top-8">
-              <Suspense fallback={
-                <div className="space-y-4">
-                  <div className="h-48 bg-muted/50 rounded-lg animate-pulse" />
-                  <div className="h-96 bg-muted/50 rounded-lg animate-pulse" />
-                </div>
-              }>
-                <SignupFeaturesShowcase plan={selectedPlan} />
-              </Suspense>
+                        {/* Required Fields */}
+                        <div className="space-y-5">
+                          <FormField
+                            control={form.control}
+                            name="business_name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <Building2 className="h-4 w-4" />
+                                  Business Name *
+                                </FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input
+                                      placeholder="Big Mike's Wholesale"
+                                      {...field}
+                                      className={cn(
+                                        "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
+                                        field.value && !form.formState.errors.business_name && "border-emerald-500/50"
+                                      )}
+                                    />
+                                    {field.value && !form.formState.errors.business_name && (
+                                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
+                                    )}
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="owner_name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <User className="h-4 w-4" />
+                                  Your Name *
+                                </FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input
+                                      placeholder="John Doe"
+                                      {...field}
+                                      className={cn(
+                                        "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
+                                        field.value && !form.formState.errors.owner_name && "border-emerald-500/50"
+                                      )}
+                                    />
+                                    {field.value && !form.formState.errors.owner_name && (
+                                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
+                                    )}
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <Mail className="h-4 w-4" />
+                                  Email *
+                                </FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input
+                                      type="email"
+                                      placeholder="you@business.com"
+                                      {...field}
+                                      className={cn(
+                                        "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
+                                        field.value && !form.formState.errors.email && "border-emerald-500/50"
+                                      )}
+                                    />
+                                    {field.value && !form.formState.errors.email && (
+                                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
+                                    )}
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <Lock className="h-4 w-4" />
+                                  Password *
+                                </FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input
+                                      type={showPassword ? "text" : "password"}
+                                      placeholder="••••••••"
+                                      {...field}
+                                      className="h-12 pr-10 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => setShowPassword(!showPassword)}
+                                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                      aria-label={showPassword ? "Hide password" : "Show password"}
+                                    >
+                                      {showPassword ? (
+                                        <EyeOff className="h-4 w-4" />
+                                      ) : (
+                                        <Eye className="h-4 w-4" />
+                                      )}
+                                    </button>
+                                  </div>
+                                </FormControl>
+                                <PasswordStrengthIndicator password={field.value} />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* CAPTCHA Verification - Only render if configured */}
+                          {import.meta.env.VITE_TURNSTILE_SITE_KEY && (
+                            <div className="flex justify-center py-2">
+                              <TurnstileWrapper
+                                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                                onSuccess={(token) => setCaptchaToken(token)}
+                                onError={() => {
+                                  setCaptchaToken('');
+                                  toast({
+                                    title: 'Verification Failed',
+                                    description: 'CAPTCHA verification failed. Please try again.',
+                                    variant: 'destructive',
+                                  });
+                                }}
+                                onExpire={() => {
+                                  setCaptchaToken('');
+                                }}
+                                turnstileRef={turnstileRef}
+                              />
+                            </div>
+                          )}
+
+                          {/* Optional Fields - Collapsible */}
+                          <Collapsible open={showOptionalFields} onOpenChange={setShowOptionalFields}>
+                            <CollapsibleTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                className="w-full justify-between text-muted-foreground hover:text-foreground"
+                              >
+                                <span className="text-sm">Optional: Business Details</span>
+                                {showOptionalFields ? (
+                                  <ChevronUp className="h-4 w-4" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="space-y-5 pt-2">
+                              <FormField
+                                control={form.control}
+                                name="phone"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="flex items-center gap-2">
+                                      <Phone className="h-4 w-4" />
+                                      Phone
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        placeholder="555-123-4567"
+                                        {...field}
+                                        className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <FormField
+                                  control={form.control}
+                                  name="state"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="flex items-center gap-2">
+                                        <MapPin className="h-4 w-4" />
+                                        State
+                                      </FormLabel>
+                                      <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                          <SelectTrigger className="h-11">
+                                            <SelectValue placeholder="Select state" />
+                                          </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                          {US_STATES.map((state) => (
+                                            <SelectItem key={state} value={state}>
+                                              {state}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={form.control}
+                                  name="industry"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="flex items-center gap-2">
+                                        <Briefcase className="h-4 w-4" />
+                                        Industry
+                                      </FormLabel>
+                                      <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                          <SelectTrigger className="h-11">
+                                            <SelectValue placeholder="Select industry" />
+                                          </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                          {INDUSTRIES.map((industry) => (
+                                            <SelectItem key={industry.value} value={industry.value}>
+                                              {industry.label}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+
+                              <FormField
+                                control={form.control}
+                                name="company_size"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="flex items-center gap-2">
+                                      <Users className="h-4 w-4" />
+                                      Company Size
+                                    </FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                      <FormControl>
+                                        <SelectTrigger className="h-11">
+                                          <SelectValue placeholder="Select company size" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {COMPANY_SIZES.map((size) => (
+                                          <SelectItem key={size.value} value={size.value}>
+                                            {size.label}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </CollapsibleContent>
+                          </Collapsible>
+
+                          {/* Terms Acceptance */}
+                          <FormField
+                            control={form.control}
+                            name="terms_accepted"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                  <FormLabel className="text-sm font-normal cursor-pointer">
+                                    I agree to the{' '}
+                                    <a
+                                      href="/terms"
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-primary underline hover:text-primary/80"
+                                    >
+                                      Terms of Service
+                                    </a>{' '}
+                                    and{' '}
+                                    <a
+                                      href="/privacy"
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-primary underline hover:text-primary/80"
+                                    >
+                                      Privacy Policy
+                                    </a>
+                                  </FormLabel>
+                                  <FormMessage />
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        {/* Submit Button */}
+                        <div className="space-y-4">
+                          <Button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="w-full h-14 text-base font-semibold bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 hover:shadow-lg hover:shadow-emerald-500/25 hover:scale-[1.02] transition-all duration-200"
+                          >
+                            {isSubmitting ? (
+                              <>
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                Creating Your Account...
+                              </>
+                            ) : (
+                              <>
+                                <Coins className="mr-2 h-5 w-5" />
+                                Start Free with Credits
+                                <ArrowRight className="ml-2 h-5 w-5" />
+                              </>
+                            )}
+                          </Button>
+
+                          {/* Trust indicators below button */}
+                          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                              <Shield className="h-3.5 w-3.5 text-emerald-500" />
+                              <span>Bank-level security</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Zap className="h-3.5 w-3.5 text-amber-500" />
+                              <span>Setup in 2 min</span>
+                            </div>
+                          </div>
+                        </div>
+                      </form>
+                    </Form>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right Column - Features Showcase (Desktop Only) */}
+            <div className="hidden lg:block animate-fade-in" style={{ animationDelay: '0.5s' }}>
+              <div className="sticky top-8">
+                <Suspense fallback={
+                  <div className="space-y-4">
+                    <div className="h-48 bg-muted/50 rounded-lg animate-pulse" />
+                    <div className="h-96 bg-muted/50 rounded-lg animate-pulse" />
+                  </div>
+                }>
+                  <SignupFeaturesShowcase plan={selectedPlan} />
+                </Suspense>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Features Showcase - Mobile (Below Form) */}
-        <div className="lg:hidden mt-8 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-          <Suspense fallback={
-            <div className="space-y-4">
-              <div className="h-48 bg-muted/50 rounded-lg animate-pulse" />
-              <div className="h-96 bg-muted/50 rounded-lg animate-pulse" />
-            </div>
-          }>
-            <SignupFeaturesShowcase plan={selectedPlan} />
-          </Suspense>
+          {/* Features Showcase - Mobile (Below Form) */}
+          <div className="lg:hidden mt-8 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+            <Suspense fallback={
+              <div className="space-y-4">
+                <div className="h-48 bg-muted/50 rounded-lg animate-pulse" />
+                <div className="h-96 bg-muted/50 rounded-lg animate-pulse" />
+              </div>
+            }>
+              <SignupFeaturesShowcase plan={selectedPlan} />
+            </Suspense>
+          </div>
         </div>
       </div>
-    </div>
-  );
+      );
 }
