@@ -10,6 +10,7 @@ import {
   Sparkles,
   Coins,
 } from 'lucide-react';
+import { PLAN_CONFIG, type PlanKey } from '@/config/planPricing';
 
 interface SignupFeaturesShowcaseProps {
   plan?: 'free' | 'starter' | 'professional' | 'enterprise';
@@ -96,6 +97,7 @@ const paidFeatures = [
 export function SignupFeaturesShowcase({ plan = 'free' }: SignupFeaturesShowcaseProps) {
   const isFreePlan = plan === 'free';
   const features = isFreePlan ? freeFeatures : paidFeatures;
+  const planConfig = PLAN_CONFIG[plan as PlanKey] || PLAN_CONFIG.starter;
 
   return (
     <div className="space-y-6">
@@ -132,7 +134,7 @@ export function SignupFeaturesShowcase({ plan = 'free' }: SignupFeaturesShowcase
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-baseline justify-center gap-2">
-                    <span className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">$79</span>
+                    <span className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">${planConfig.priceMonthly}</span>
                     <span className="text-muted-foreground">/month</span>
                   </div>
                   <p className="text-sm text-muted-foreground">After trial ends</p>

@@ -289,8 +289,6 @@ export default function PricingPage() {
                           <Sparkles className="h-4 w-4 mr-2" />
                           Start Free
                         </>
-                      ) : plan.name === "ENTERPRISE" ? (
-                        "Contact Sales"
                       ) : (
                         "Start 14-Day Trial"
                       )}
