@@ -12,7 +12,6 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { CTASection } from "@/components/marketing/CTASection";
 import { ModernHero } from "@/components/marketing/ModernHero";
 import { DetailedFeatureSection } from "@/components/marketing/DetailedFeatureSection";
-import { LiveActivityTicker } from "@/components/marketing/LiveActivityTicker";
 import { ScrollProgressIndicator } from "@/components/marketing/ScrollProgressIndicator";
 import { SectionTransition } from "@/components/marketing/SectionTransition";
 import { ConfettiButton } from "@/components/marketing/ConfettiButton";
@@ -21,7 +20,6 @@ import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigat
 import { LiveChatWidget } from "@/components/LiveChatWidget";
 import { MarketingErrorBoundary } from "@/components/marketing/MarketingErrorBoundary";
 import { TestimonialsCarousel } from "@/components/marketing/TestimonialsCarousel";
-import { LiveSocialProof } from "@/components/marketing/LiveSocialProof";
 import { VideoShowcase } from "@/components/marketing/VideoShowcase";
 import { ForceLightMode } from "@/components/marketing/ForceLightMode";
 
@@ -86,9 +84,6 @@ export default function MarketingHome() {
 
         {/* SECTION 1: MODERN HERO */}
         <ModernHero />
-
-        {/* LIVE ACTIVITY TICKER */}
-        <LiveActivityTicker />
 
         {/* TRUSTED BY SECTION */}
         <TrustedBy />
@@ -416,9 +411,6 @@ export default function MarketingHome() {
 
         {/* Sticky Mobile CTA */}
         <StickyMobileCTA />
-
-        {/* Live Social Proof Notifications */}
-        <LiveSocialProof />
 
       </div>
     </ForceLightMode>

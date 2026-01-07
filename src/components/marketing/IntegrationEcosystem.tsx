@@ -1,6 +1,6 @@
 /**
- * IntegrationEcosystem - Flowhub style
- * Clean, flat grid of integrations on light background
+ * IntegrationEcosystem - Clean integration showcase
+ * Shows common, easy-to-integrate tools
  */
 
 import { Link } from "react-router-dom";
@@ -8,15 +8,21 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Puzzle } from "lucide-react";
 
 export function IntegrationEcosystem() {
-  // Placeholder logos - in a real app these would be SVGs
+  // Common, easy-to-integrate tools
   const integrations = [
-    "METRC", "LeafLogix", "Greenbits",
-    "Dutchie", "Jane", "Weedmaps",
-    "QuickBooks", "Sage", "OnFleet"
+    { name: "Stripe", icon: "💳" },
+    { name: "QuickBooks", icon: "📊" },
+    { name: "Zapier", icon: "⚡" },
+    { name: "Slack", icon: "💬" },
+    { name: "Google Sheets", icon: "📗" },
+    { name: "Twilio", icon: "📱" },
+    { name: "Shopify", icon: "🛒" },
+    { name: "Mailchimp", icon: "📧" },
+    { name: "Webhook API", icon: "🔗" },
   ];
 
   return (
-    <section className="py-32 bg-white border-y border-[hsl(var(--marketing-border))]">
+    <section className="py-24 bg-white border-y border-[hsl(var(--marketing-border))]">
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
 
@@ -27,10 +33,10 @@ export function IntegrationEcosystem() {
               <span>Integrations</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-[hsl(var(--marketing-text))] mb-6 leading-tight">
-              Connects with your <br /> everyday tools
+              Connects with tools <br />you already use
             </h2>
             <p className="text-xl text-[hsl(var(--marketing-text-light))] mb-10 leading-relaxed">
-              FloraIQ integrates seamlessly with the software you already use. Sync inventory, financials, and compliance data automatically.
+              FloraIQ integrates with popular business tools. Sync payments, automate workflows, and send notifications without any coding.
             </p>
             <Link to="/integrations">
               <Button
@@ -45,20 +51,20 @@ export function IntegrationEcosystem() {
 
           {/* Right: Logo Grid */}
           <div className="lg:w-1/2 w-full">
-            <div className="grid grid-cols-3 gap-6">
-              {integrations.map((name, index) => (
+            <div className="grid grid-cols-3 gap-4">
+              {integrations.map((item, index) => (
                 <div
                   key={index}
-                  className="aspect-square bg-[hsl(var(--marketing-bg))] rounded-xl flex items-center justify-center p-6 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 hover:scale-105 transition-all duration-300 cursor-pointer border border-transparent hover:border-[hsl(var(--marketing-border))] hover:shadow-lg hover:bg-white"
+                  className="aspect-square bg-[hsl(var(--marketing-bg-subtle))] rounded-xl flex flex-col items-center justify-center p-4 hover:scale-105 transition-all duration-300 cursor-pointer border border-[hsl(var(--marketing-border))] hover:shadow-lg hover:bg-white"
                 >
-                  {/* Placeholder for actual logo */}
-                  <span className="font-bold text-[hsl(var(--marketing-text))] text-center text-sm">{name}</span>
+                  <span className="text-3xl mb-2">{item.icon}</span>
+                  <span className="font-semibold text-[hsl(var(--marketing-text))] text-center text-sm">{item.name}</span>
                 </div>
               ))}
             </div>
-            <div className="mt-8 text-center lg:text-left">
+            <div className="mt-6 text-center lg:text-left">
               <p className="text-sm font-medium text-[hsl(var(--marketing-text-light))]">
-                + over 50 more native integrations
+                + REST API & Webhooks for custom integrations
               </p>
             </div>
           </div>
