@@ -714,8 +714,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     // Initial check
     validateToken();
 
-    // Check every 30 seconds
-    const interval = setInterval(validateToken, 30000);
+    // Check every 2 minutes (reduced from 30s to prevent excessive re-renders)
+    const interval = setInterval(validateToken, 120000);
 
     return () => clearInterval(interval);
   }, [isAuthenticated, token]);
