@@ -123,15 +123,13 @@ function useTierGreeting(userName: string, tier: string) {
 // Priority icon component
 function PriorityIcon({ priority }: { priority: 'critical' | 'important' | 'info' }) {
   const colors = {
-    critical: 'text-red-500',
-    important: 'text-yellow-500',
-    info: 'text-green-500',
+    critical: 'bg-red-500',
+    important: 'bg-yellow-500',
+    info: 'bg-green-500',
   };
 
   return (
-    <span className={cn('text-lg', colors[priority])}>
-      {priority === 'critical' ? '🔴' : priority === 'important' ? '🟡' : '🟢'}
-    </span>
+    <span className={cn('inline-block w-3 h-3 rounded-full', colors[priority])} />
   );
 }
 
@@ -356,7 +354,7 @@ export function HotboxDashboard() {
           id: 'pending',
           label: 'Pending',
           value: `${totalPending}`,
-          subtext: totalPending > 0 ? '🔴 action' : 'none',
+          subtext: totalPending > 0 ? 'action needed' : 'none',
         },
       ];
 
@@ -403,7 +401,7 @@ export function HotboxDashboard() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">
-            {preset.emoji} {tierGreeting.timeGreeting}, {userName}!
+            {tierGreeting.timeGreeting}, {userName}!
           </h1>
           <p className="text-muted-foreground">
             {tierGreeting.tierMessage} • {format(new Date(), 'EEEE, MMMM d')}
@@ -436,7 +434,7 @@ export function HotboxDashboard() {
       <Card className="bg-gradient-to-br from-slate-900 to-slate-800 text-white border-0">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-medium flex items-center gap-2">
-            <span className="text-xl">💰</span> TODAY'S PULSE
+            <DollarSign className="h-5 w-5" /> TODAY'S PULSE
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -474,7 +472,7 @@ export function HotboxDashboard() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-medium flex items-center gap-2">
-            <span className="text-xl">⚡</span> QUICK ACTIONS
+            <Sparkles className="h-5 w-5" /> QUICK ACTIONS
             {personalizedActions.length > 0 && (
               <Badge variant="secondary" className="text-xs">
                 <Sparkles className="h-3 w-3 mr-1" />

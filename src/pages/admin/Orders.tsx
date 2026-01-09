@@ -425,13 +425,13 @@ export default function Orders() {
                 <Download className="mr-2 h-4 w-4" />
                 Export
               </Button>
-              <Button
-                variant="default"
-                className="min-h-[48px] touch-manipulation shadow-lg shadow-primary/20"
-                onClick={() => navigate('wholesale-orders')}
-              >
-                + New Order
-              </Button>
+                <Button
+                  variant="default"
+                  className="min-h-[48px] touch-manipulation shadow-lg shadow-primary/20"
+                  onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/wholesale-orders/new`)}
+                >
+                  + New Order
+                </Button>
               <TakeTourButton
                 tutorialId={ordersTutorial.id}
                 steps={ordersTutorial.steps}
