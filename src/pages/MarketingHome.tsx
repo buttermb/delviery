@@ -203,29 +203,21 @@ export default function MarketingHome() {
 
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
               {/* FREE TIER - With Premium Glow Animation */}
-              <div className="p-6 rounded-3xl border-2 border-emerald-500 bg-gradient-to-b from-emerald-500/10 to-[hsl(var(--marketing-bg-subtle))] relative overflow-hidden transition-all hover:-translate-y-2 hover:shadow-[0_20px_60px_-15px_rgba(16,185,129,0.4)] group">
-                {/* Animated Glow Ring */}
-                <div className="absolute inset-0 rounded-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-500">
-                  <div className="absolute inset-[-2px] rounded-3xl bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-400 opacity-75 blur-sm animate-gradient-border" />
-                </div>
+              <div className="p-6 rounded-3xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 relative overflow-hidden transition-all hover:-translate-y-2 hover:shadow-[0_10px_30px_-10px_rgba(16,185,129,0.2)]">
 
-                {/* Sparkle Effects */}
-                <div className="absolute top-4 right-12 w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <div className="absolute top-8 right-8 w-1 h-1 rounded-full bg-teal-300 animate-ping" style={{ animationDuration: '2s' }} />
-
-                <div className="absolute top-0 right-0 px-4 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold rounded-bl-2xl shadow-lg">
-                  ✨ NO CC REQUIRED
+                <div className="absolute top-0 right-0 px-4 py-1.5 bg-emerald-500 text-white text-[10px] font-bold rounded-bl-2xl shadow-sm">
+                  NO CC REQUIRED
                 </div>
 
                 <div className="relative z-10">
-                  <h3 className="text-xl font-bold mb-1 text-center text-emerald-600 dark:text-emerald-400 tracking-wide">FREE FOREVER</h3>
+                  <h3 className="text-xl font-bold mb-1 text-center text-emerald-700 dark:text-emerald-400 tracking-wide">FREE FOREVER</h3>
                   <div className="text-center mb-2">
-                    <span className="text-5xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">$0</span>
+                    <span className="text-5xl font-bold text-emerald-600 dark:text-emerald-400">$0</span>
                     <span className="text-lg text-[hsl(var(--marketing-text-light))]">/mo</span>
                   </div>
                   <p className="text-sm text-center text-[hsl(var(--marketing-text-light))] mb-4">Perfect for getting started</p>
-                  <div className="text-center mb-6 py-2 px-4 bg-emerald-100 dark:bg-emerald-900/30 rounded-full inline-flex items-center gap-2 mx-auto w-full justify-center">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <div className="text-center mb-6 py-2 px-4 bg-emerald-100 dark:bg-emerald-900/40 rounded-full inline-flex items-center gap-2 mx-auto w-full justify-center">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
                     <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300">500 FREE credits/month</span>
                   </div>
                   <ul className="space-y-3 mb-8">
@@ -239,7 +231,7 @@ export default function MarketingHome() {
                     ))}
                   </ul>
                   <Link to="/signup?plan=free">
-                    <Button className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold h-12 rounded-xl shadow-lg shadow-emerald-500/25 transition-all hover:shadow-emerald-500/40 hover:scale-[1.02]">
+                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-12 rounded-xl shadow-sm transition-all hover:scale-[1.02]">
                       Start Free Now
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>

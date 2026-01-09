@@ -15,7 +15,7 @@ export function SpotlightSection({ children, className = "" }: SpotlightSectionP
     const checkMobile = () => {
       setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
@@ -75,10 +75,10 @@ export function SpotlightSection({ children, className = "" }: SpotlightSectionP
           }}
         />
       )}
-      
+
       {/* Dark base gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--marketing-primary))] via-[hsl(var(--marketing-secondary))] to-[hsl(var(--marketing-primary))] opacity-90" />
-      
+      {/* Gradient removed for cleaner aesthetic */}
+
       {/* Content */}
       <div className="relative z-10">
         {children}

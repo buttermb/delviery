@@ -214,10 +214,21 @@ export default function LiveOrders() {
         data: { orderId, previousStatus, source },
         execute: async () => {
           await updateStatusInDb(orderId, newStatus, source);
+          // Invalidate all related queries to ensure inventory and stats are up to date
           queryClient.invalidateQueries({ queryKey: ['live-orders'] });
+          queryClient.invalidateQueries({ queryKey: ['products'] });
+          queryClient.invalidateQueries({ queryKey: ['inventory'] }); // Legacy support
+          queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
         },
         undo: async () => {
           await updateStatusInDb(orderId, previousStatus, source);
+          // Re-invalidate on undo to restore state
+          queryClient.invalidateQueries({ queryKey: ['live-orders'] });
+          queryClient.invalidateQueries({ queryKey: ['products'] });
+          queryClient.invalidateQueries({ queryKey: ['inventory'] });
+          queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
         },
       });
     } catch (error) {
@@ -259,8 +270,8 @@ export default function LiveOrders() {
             {/* Connection Status */}
             <div
               className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-colors ${isConnected
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                  : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 animate-pulse'
+                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 animate-pulse'
                 }`}
               title={isConnected ? `Connected (${channelCount} channels)` : 'Disconnected - Using polling'}
             >

@@ -25,9 +25,6 @@ export function EnhancedIntegrationHub({ integrations }: EnhancedIntegrationHubP
 
     return (
         <div className="relative w-full max-w-[600px] mx-auto py-12 aspect-square flex items-center justify-center">
-            {/* Background Glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--marketing-primary))]/5 to-[hsl(var(--marketing-accent))]/5 rounded-full blur-3xl" />
-
             {/* Center Hub */}
             <motion.div
                 className="relative z-20"
@@ -36,14 +33,14 @@ export function EnhancedIntegrationHub({ integrations }: EnhancedIntegrationHubP
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, type: 'spring' }}
             >
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.3)] relative z-20">
-                    <div className="absolute inset-0 rounded-full bg-[hsl(var(--marketing-primary))] opacity-20 animate-ping" />
+                <div className="w-24 h-24 rounded-full bg-indigo-600 flex items-center justify-center shadow-lg relative z-20">
+                    <div className="absolute inset-0 rounded-full bg-indigo-600 opacity-20 animate-ping" />
                     <span className="text-white font-bold text-lg relative z-30">FloraIQ</span>
                 </div>
 
                 {/* Hub Rings */}
-                <div className="absolute inset-0 -m-4 border border-[hsl(var(--marketing-primary))]/20 rounded-full animate-[spin_10s_linear_infinite]" />
-                <div className="absolute inset-0 -m-8 border border-[hsl(var(--marketing-primary))]/10 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
+                <div className="absolute inset-0 -m-4 border border-indigo-200 dark:border-indigo-800 rounded-full animate-[spin_10s_linear_infinite]" />
+                <div className="absolute inset-0 -m-8 border border-indigo-100 dark:border-indigo-900 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
             </motion.div>
 
             {/* Orbiting Integrations */}

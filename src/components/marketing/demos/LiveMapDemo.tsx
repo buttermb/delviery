@@ -33,7 +33,7 @@ const INITIAL_DRIVERS: Driver[] = [
 // Mobile-optimized static fallback
 function LiveMapDemoMobile() {
   return (
-    <div className="w-full min-h-[320px] bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl overflow-hidden border border-slate-200 shadow-xl relative p-5">
+    <div className="w-full min-h-[320px] bg-slate-50 dark:bg-zinc-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm relative p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -84,8 +84,8 @@ function LiveMapDemoMobile() {
             <div key={driver.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
               <div className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg ${driver.status === 'delivering' ? 'bg-amber-100' :
-                    driver.status === 'picking_up' ? 'bg-blue-100' :
-                      'bg-slate-100'
+                  driver.status === 'picking_up' ? 'bg-blue-100' :
+                    'bg-slate-100'
                   }`}>
                   {driver.avatar}
                 </div>
@@ -96,8 +96,8 @@ function LiveMapDemoMobile() {
               </div>
               <div className="text-right">
                 <div className={`text-xs px-2 py-0.5 rounded-full ${driver.status === 'delivering' ? 'bg-amber-100 text-amber-700' :
-                    driver.status === 'picking_up' ? 'bg-blue-100 text-blue-700' :
-                      'bg-emerald-100 text-emerald-700'
+                  driver.status === 'picking_up' ? 'bg-blue-100 text-blue-700' :
+                    'bg-emerald-100 text-emerald-700'
                   }`}>
                   {driver.status === 'delivering' ? 'Delivering' :
                     driver.status === 'picking_up' ? 'Pickup' : 'Done'}

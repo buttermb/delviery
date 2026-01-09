@@ -102,25 +102,21 @@ export function SignupFeaturesShowcase({ plan = 'free' }: SignupFeaturesShowcase
   return (
     <div className="space-y-6">
       {/* Pricing Card - Dynamic based on plan */}
-      <Card className={`relative overflow-hidden backdrop-blur-sm border-2 shadow-xl ${isFreePlan
-          ? 'bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-emerald-500/10 border-emerald-500/20'
-          : 'bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-emerald-500/10 border-primary/20'
+      <Card className={`relative overflow-hidden border shadow-md ${isFreePlan
+        ? 'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800'
+        : 'bg-blue-50/50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800'
         }`}>
-        <div className={`absolute inset-0 ${isFreePlan
-            ? 'bg-gradient-to-br from-emerald-500/5 via-teal-500/5 to-emerald-500/5'
-            : 'bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-emerald-500/5'
-          }`} />
         <CardContent className="pt-6 relative z-10">
           <div className="text-center mb-4">
             {isFreePlan ? (
               <>
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-medium mb-3 shadow-lg">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 text-sm font-medium mb-3">
                   <Sparkles className="h-4 w-4" />
                   FREE Forever
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-baseline justify-center gap-2">
-                    <span className="text-5xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">$0</span>
+                    <span className="text-5xl font-bold text-emerald-600 dark:text-emerald-400">$0</span>
                     <span className="text-muted-foreground">/month</span>
                   </div>
                   <p className="text-sm text-muted-foreground">No credit card ever</p>
@@ -128,13 +124,13 @@ export function SignupFeaturesShowcase({ plan = 'free' }: SignupFeaturesShowcase
               </>
             ) : (
               <>
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm font-medium mb-3 shadow-lg animate-pulse" style={{ animationDuration: '3s' }}>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 text-sm font-medium mb-3">
                   <Sparkles className="h-4 w-4" />
                   14-Day Free Trial
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-baseline justify-center gap-2">
-                    <span className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">${planConfig.priceMonthly}</span>
+                    <span className="text-5xl font-bold text-blue-600 dark:text-blue-400">${planConfig.priceMonthly}</span>
                     <span className="text-muted-foreground">/month</span>
                   </div>
                   <p className="text-sm text-muted-foreground">After trial ends</p>
@@ -180,23 +176,20 @@ export function SignupFeaturesShowcase({ plan = 'free' }: SignupFeaturesShowcase
 
       {/* Features Grid */}
       <div>
-        <h3 className={`text-lg font-semibold mb-4 bg-clip-text text-transparent ${isFreePlan
-            ? 'bg-gradient-to-r from-emerald-600 to-teal-600'
-            : 'bg-gradient-to-r from-blue-600 to-purple-600'
-          }`}>What's Included</h3>
+        <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-white">What's Included</h3>
         <div className="grid grid-cols-1 gap-3">
           {features.map((feature, index) => (
             <Card
               key={index}
-              className="hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-transparent hover:border-primary/20 bg-card/50 backdrop-blur-sm"
+              className="hover:shadow-md transition-all duration-200 border border-slate-200 dark:border-slate-800 bg-white dark:bg-zinc-900"
             >
               <CardContent className="pt-4 pb-4">
-                <div className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-lg ${feature.bgColor} flex items-center justify-center flex-shrink-0 shadow-lg`}>
-                    <feature.icon className={`h-5 w-5 ${feature.color}`} />
+                <div className="flex items-start gap-4">
+                  <div className={`w-10 h-10 rounded-lg ${feature.bgColor.replace('bg-gradient-to-br', 'bg').replace('to-', 'bg-').split(' ')[0]} bg-opacity-10 flex items-center justify-center flex-shrink-0`}>
+                    <feature.icon className={`h-5 w-5 ${feature.bgColor.includes('emerald') ? 'text-emerald-600' : feature.bgColor.includes('blue') ? 'text-blue-600' : feature.bgColor.includes('purple') ? 'text-purple-600' : feature.bgColor.includes('orange') ? 'text-orange-600' : 'text-slate-600'}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-sm mb-1">{feature.title}</h4>
+                    <h4 className="font-semibold text-sm mb-1 text-slate-900 dark:text-white">{feature.title}</h4>
                     <p className="text-xs text-muted-foreground">{feature.description}</p>
                   </div>
                 </div>
@@ -207,19 +200,19 @@ export function SignupFeaturesShowcase({ plan = 'free' }: SignupFeaturesShowcase
       </div>
 
       {/* Trust Indicators */}
-      <Card className="bg-gradient-to-br from-muted/50 to-muted/30 backdrop-blur-sm border-2 border-primary/10">
+      <Card className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
         <CardContent className="pt-6">
           <div className="space-y-3 text-sm">
             <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
+              <Shield className="h-5 w-5 text-slate-400" />
               <span className="text-muted-foreground font-medium">SOC 2 Type II Certified</span>
             </div>
             <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
+              <Shield className="h-5 w-5 text-slate-400" />
               <span className="text-muted-foreground font-medium">GDPR & CCPA Compliant</span>
             </div>
             <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
+              <Shield className="h-5 w-5 text-slate-400" />
               <span className="text-muted-foreground font-medium">99.9% Uptime SLA</span>
             </div>
           </div>

@@ -26,7 +26,7 @@ export function FlippableFeatureCard({
   const [isFlipped, setIsFlipped] = useState(false);
 
   return (
-    <motion.div 
+    <motion.div
       className="h-[420px] perspective-1000 cursor-pointer"
       onHoverStart={() => setIsFlipped(true)}
       onHoverEnd={() => setIsFlipped(false)}
@@ -39,7 +39,7 @@ export function FlippableFeatureCard({
         style={{ transformStyle: 'preserve-3d' }}
       >
         {/* FRONT SIDE */}
-        <motion.div 
+        <motion.div
           className="absolute inset-0 backface-hidden p-8 rounded-2xl bg-[hsl(var(--marketing-bg))] border border-[hsl(var(--marketing-border))] shadow-lg flex flex-col"
           style={{ backfaceVisibility: 'hidden' }}
         >
@@ -58,9 +58,9 @@ export function FlippableFeatureCard({
         </motion.div>
 
         {/* BACK SIDE */}
-        <motion.div 
-          className="absolute inset-0 backface-hidden p-8 rounded-2xl bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] shadow-xl flex flex-col justify-between"
-          style={{ 
+        <motion.div
+          className="absolute inset-0 backface-hidden p-8 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl flex flex-col justify-between"
+          style={{
             backfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)'
           }}
@@ -69,11 +69,11 @@ export function FlippableFeatureCard({
             <h3 className="text-xl font-bold mb-6 text-white">
               {title}
             </h3>
-            
+
             {benefits && (
               <ul className="space-y-3 mb-6">
                 {benefits.map((benefit, index) => (
-                  <li 
+                  <li
                     key={index}
                     className="flex items-start gap-3 text-white/90"
                   >
@@ -93,7 +93,7 @@ export function FlippableFeatureCard({
               </div>
             )}
 
-            <a 
+            <a
               href={link}
               className="inline-flex items-center gap-2 text-sm font-medium text-white hover:text-white/80 transition-colors border-b border-white/30 pb-1"
               onClick={(e) => e.stopPropagation()}

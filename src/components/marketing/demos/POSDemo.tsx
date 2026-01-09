@@ -39,7 +39,7 @@ function POSDemoMobile() {
     const total = mockCart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
     return (
-        <div className="w-full min-h-[280px] bg-gradient-to-br from-slate-50 to-indigo-50 rounded-xl overflow-hidden border border-slate-200 shadow-xl relative p-5">
+        <div className="w-full min-h-[280px] bg-slate-50 dark:bg-zinc-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm relative p-5">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">

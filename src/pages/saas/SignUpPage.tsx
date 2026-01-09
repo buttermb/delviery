@@ -608,18 +608,14 @@ export default function SignUpPage() {
   if (clerkConfigured && useClerkAuth) {
     return (
       <ForceLightMode>
-        <div className="min-h-screen relative overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20" />
-          <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
-          <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
-
+        <div className="min-h-screen bg-slate-50 dark:bg-zinc-950/50 relative overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-md mx-auto relative z-10 pt-8">
             <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-emerald-500/10 backdrop-blur-sm border border-primary/20 mb-4">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium text-primary">14-Day Free Trial</span>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 mb-4">
+                <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">14-Day Free Trial</span>
               </div>
-              <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold mb-2 text-slate-900 dark:text-white">
                 Start Your Free Trial
               </h1>
               <p className="text-muted-foreground">Transform your cannabis distribution in minutes</p>
@@ -660,7 +656,7 @@ export default function SignUpPage() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen relative overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-slate-50 dark:bg-zinc-950/50 relative overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
         {/* Back to Home Button */}
         <Button
           variant="ghost"
@@ -669,35 +665,19 @@ export default function SignUpPage() {
           className="absolute top-4 left-4 z-50 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Home
+          Back to Home
         </Button>
 
-        {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20" />
-
-        {/* Floating orbs */}
-        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
-        <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-purple-500/20 dark:bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-emerald-500/15 dark:bg-emerald-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '2s' }} />
-
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03]" style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)',
-          backgroundSize: '40px 40px'
-        }} />
-
-        <div className="max-w-7xl mx-auto relative z-10">
+        <div className="max-w-6xl mx-auto relative z-10 pt-8">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/10 via-blue-500/10 to-purple-500/10 backdrop-blur-sm border border-emerald-500/20 mb-4 animate-fade-in">
-              <Coins className="h-4 w-4 text-emerald-600" />
-              <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Start Free with {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} Credits • No Card Required</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <div className="text-center mb-10">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-slate-900 dark:text-white">
               Get Started Free Today
             </h1>
-            <p className="text-muted-foreground text-lg animate-fade-in" style={{ animationDelay: '0.2s' }}>Transform your wholesale distribution in minutes</p>
-            <p className="text-sm text-muted-foreground mt-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">
+              Transform your wholesale distribution in minutes. No credit card required.
+            </p>
+            <p className="text-sm text-muted-foreground mt-4">
               Already have an account?{' '}
               <Link to="/saas/login" className="text-primary font-medium hover:underline">
                 Sign in
@@ -706,13 +686,11 @@ export default function SignUpPage() {
           </div>
 
           {/* Main Content - Responsive Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8 lg:gap-12">
             {/* Left Column - Form */}
-            <div className="relative animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              {/* Glow effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-emerald-500/20 rounded-2xl blur-xl opacity-75" />
-              <Card className="relative w-full shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/10">
-                <CardContent className="p-6 sm:p-8">
+            <div className="relative">
+              <Card className="w-full shadow-lg border-slate-200 dark:border-slate-800 bg-white dark:bg-zinc-900">
+                <CardContent className="p-6 sm:p-10">
                   {/* Phone Verification Step */}
                   {showPhoneVerification ? (
                     <div className="space-y-6">
@@ -1136,7 +1114,7 @@ export default function SignUpPage() {
                           <Button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full h-14 text-base font-semibold bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 hover:shadow-lg hover:shadow-emerald-500/25 hover:scale-[1.02] transition-all duration-200"
+                            className="w-full h-14 text-base font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all duration-200"
                           >
                             {isSubmitting ? (
                               <>
