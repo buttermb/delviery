@@ -36,22 +36,23 @@ export default function AccountSettings() {
 
   const { save: saveName, status: nameStatus } = useAutoSave<string>({
     onSave: async (newName) => {
-      const { error } = await supabase.functions.invoke('update-account-profile', {
+      const { data, error } = await supabase.functions.invoke('update-account-profile', {
         body: { name: newName },
       });
 
       if (error) throw error;
 
-      // Optimistically update local state logic is handled by query invalidation usually, 
-      // but here we just show success. 
-      // We might want to reload the user/admin context if it doesn't auto-update.
-      // For now, keep it simple.
+      // Check for error in response body (edge functions can return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        throw new Error(typeof data.error === 'string' ? data.error : 'Failed to update profile');
+      }
     },
     onSuccess: () => {
       toast({ title: 'Name updated', description: 'Your display name has been saved.' });
     },
-    onError: () => {
-      toast({ title: 'Error', description: 'Failed to update name.', variant: 'destructive' });
+    onError: (error) => {
+      const message = error instanceof Error ? error.message : 'Failed to update name.';
+      toast({ title: 'Error', description: message, variant: 'destructive' });
     },
   });
 
@@ -93,11 +94,16 @@ export default function AccountSettings() {
         .from('avatars')
         .getPublicUrl(filePath);
 
-      const { error: updateError } = await supabase.functions.invoke('update-account-profile', {
+      const { data: updateData, error: updateError } = await supabase.functions.invoke('update-account-profile', {
         body: { avatar_url: publicUrl },
       });
 
       if (updateError) throw updateError;
+
+      // Check for error in response body (edge functions can return 200 with error)
+      if (updateData && typeof updateData === 'object' && 'error' in updateData && updateData.error) {
+        throw new Error(typeof updateData.error === 'string' ? updateData.error : 'Failed to update avatar');
+      }
 
       setAvatarUrl(publicUrl);
       toast({ title: 'Avatar updated', description: 'Your profile picture has been changed.' });
