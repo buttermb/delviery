@@ -5,6 +5,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { CTASection } from "@/components/marketing/CTASection";
+import { ForceLightMode } from "@/components/marketing/ForceLightMode";
 
 export default function Features() {
   const features = [
@@ -75,79 +76,81 @@ export default function Features() {
   ];
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
-      <SEOHead 
-        title="Features - FloraIQ | Everything You Need in One Platform"
-        description="Comprehensive features for wholesale distributors: disposable menus, inventory tracking, order management, customer portal, and analytics."
-      />
-      
-      <MarketingNav />
+    <ForceLightMode>
+      <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
+        <SEOHead
+          title="Features - FloraIQ | Everything You Need in One Platform"
+          description="Comprehensive features for wholesale distributors: disposable menus, inventory tracking, order management, customer portal, and analytics."
+        />
 
-      <section className="container mx-auto px-4 py-20">
-        <div className="max-w-4xl mx-auto text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
-            Everything You Need in One Platform
-          </h1>
-        </div>
+        <MarketingNav />
 
-        {features.map((feature, index) => (
-          <div key={index} className="max-w-6xl mx-auto mb-24">
-            <div className="border-t border-[hsl(var(--marketing-border))] pt-16">
-              <div className={`grid md:grid-cols-2 gap-12 items-center ${index % 2 === 1 ? "md:flex-row-reverse" : ""}`}>
-                <div className={index % 2 === 1 ? "md:order-2" : ""}>
-                  <div className="w-16 h-16 rounded-xl bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mb-6">
-                    <feature.icon className="h-8 w-8 text-[hsl(var(--marketing-primary))]" />
+        <section className="container mx-auto px-4 py-20">
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+              Everything You Need in One Platform
+            </h1>
+          </div>
+
+          {features.map((feature, index) => (
+            <div key={index} className="max-w-6xl mx-auto mb-24">
+              <div className="border-t border-[hsl(var(--marketing-border))] pt-16">
+                <div className={`grid md:grid-cols-2 gap-12 items-center ${index % 2 === 1 ? "md:flex-row-reverse" : ""}`}>
+                  <div className={index % 2 === 1 ? "md:order-2" : ""}>
+                    <div className="w-16 h-16 rounded-xl bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mb-6">
+                      <feature.icon className="h-8 w-8 text-[hsl(var(--marketing-primary))]" />
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+                      {feature.title}
+                    </h2>
+                    <p className="text-xl text-[hsl(var(--marketing-text-light))] mb-6">
+                      {feature.description}
+                    </p>
+                    <ul className="space-y-3 mb-6">
+                      {feature.benefits.map((benefit, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <CheckCircle className="h-5 w-5 text-[hsl(var(--marketing-accent))] flex-shrink-0 mt-0.5" />
+                          <span className="text-[hsl(var(--marketing-text))]">{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    {index === 0 && (
+                      <Link to="/menu/example">
+                        <Button variant="outline" size="lg">
+                          See Example Menu
+                          <ArrowRight className="ml-2 h-5 w-5" />
+                        </Button>
+                      </Link>
+                    )}
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
-                    {feature.title}
-                  </h2>
-                  <p className="text-xl text-[hsl(var(--marketing-text-light))] mb-6">
-                    {feature.description}
-                  </p>
-                  <ul className="space-y-3 mb-6">
-                    {feature.benefits.map((benefit, i) => (
-                      <li key={i} className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-[hsl(var(--marketing-accent))] flex-shrink-0 mt-0.5" />
-                        <span className="text-[hsl(var(--marketing-text))]">{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  {index === 0 && (
-                    <Link to="/menu/example">
-                      <Button variant="outline" size="lg">
-                        See Example Menu
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-                <div className={index % 2 === 1 ? "md:order-1" : ""}>
-                  <div className="aspect-video bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))] rounded-2xl flex items-center justify-center">
-                    <div className="text-center text-[hsl(var(--marketing-bg))]">
-                      <div className="w-20 h-20 rounded-full bg-[hsl(var(--marketing-bg))]/20 backdrop-blur-sm mx-auto mb-4 flex items-center justify-center">
-                        <feature.icon className="h-10 w-10" />
+                  <div className={index % 2 === 1 ? "md:order-1" : ""}>
+                    <div className="aspect-video bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))] rounded-2xl flex items-center justify-center">
+                      <div className="text-center text-[hsl(var(--marketing-bg))]">
+                        <div className="w-20 h-20 rounded-full bg-[hsl(var(--marketing-bg))]/20 backdrop-blur-sm mx-auto mb-4 flex items-center justify-center">
+                          <feature.icon className="h-10 w-10" />
+                        </div>
+                        <p className="text-sm">Screenshot</p>
                       </div>
-                      <p className="text-sm">Screenshot</p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </section>
+          ))}
+        </section>
 
-      <CTASection
-        title="Ready to Get Started?"
-        description="Start your 14-day free trial and experience all these features."
-        primaryCta={{
-          text: "Start Free Trial →",
-          link: "/signup",
-        }}
-      />
+        <CTASection
+          title="Ready to Get Started?"
+          description="Start your 14-day free trial and experience all these features."
+          primaryCta={{
+            text: "Start Free Trial →",
+            link: "/signup",
+          }}
+        />
 
-      <MarketingFooter />
-    </div>
+        <MarketingFooter />
+      </div>
+    </ForceLightMode>
   );
 }
 
