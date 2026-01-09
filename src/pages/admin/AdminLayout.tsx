@@ -246,10 +246,7 @@ const AdminLayout = () => {
                     <AdminNotificationCenter />
                   </div>
 
-                  {/* Theme toggle - optimized touch target */}
-                  <div className="[&>button]:h-10 [&>button]:w-10 [&>button]:min-h-[44px] [&>button]:min-w-[44px]">
-                    <ThemeToggle />
-                  </div>
+                  {/* Theme toggle removed - ForceLightMode enforces light mode */}
 
                   {/* Offline Status Indicator */}
                   <div className="hidden sm:block">
