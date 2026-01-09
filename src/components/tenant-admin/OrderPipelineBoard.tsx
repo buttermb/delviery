@@ -26,6 +26,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { wholesaleOrderFlowManager, WholesaleOrderStatus } from '@/lib/orders/wholesaleOrderFlowManager';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LastUpdated } from '@/components/ui/last-updated';
@@ -282,19 +283,29 @@ export function OrderPipelineBoard() {
 
     const updateStatusMutation = useMutation({
         mutationFn: async ({ id, status }: { id: string; status: OrderStatus }) => {
-            const { error } = await supabase
-                .from('wholesale_orders')
-                .update({ status })
-                .eq('id', id);
-
-            if (error) throw error;
+            // Use flow manager for proper inventory handling and validation
+            const result = await wholesaleOrderFlowManager.transitionOrderStatus(
+                id,
+                status as WholesaleOrderStatus
+            );
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to update status');
+            }
         },
         onSuccess: () => {
+            // Invalidate all related queries
             queryClient.invalidateQueries({ queryKey: ['pipeline-orders'] });
+            queryClient.invalidateQueries({ queryKey: ['orders'] });
+            queryClient.invalidateQueries({ queryKey: ['products'] });
+            queryClient.invalidateQueries({ queryKey: ['wholesale-inventory'] });
+            queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+            queryClient.invalidateQueries({ queryKey: ['wholesale-clients'] });
             toast.success('Order status updated');
         },
-        onError: () => {
-            toast.error('Failed to update order status');
+        onError: (error: Error) => {
+            toast.error('Failed to update order status', {
+                description: error.message
+            });
         }
     });
 
