@@ -48,6 +48,7 @@ import "nprogress/nprogress.css";
 
 import { NotificationPreferences } from "./components/NotificationPreferences";
 import OfflineBanner from "./components/OfflineBanner";
+import { ScrollToTop } from "./components/ScrollToTop";
 import InstallPWA from "./components/InstallPWA";
 import { DeviceTracker } from "./components/DeviceTracker";
 import { initializeGlobalButtonMonitoring } from "./lib/utils/globalButtonInterceptor";
@@ -555,8 +556,8 @@ const App = () => {
 
                                     <Sonner />
                                     <Suspense fallback={<SuspenseProgressFallback />}>
-                                      {/* Global URL encoding fixer - catches %3F encoding issues */}
                                       <UrlEncodingFixer />
+                                      <ScrollToTop />
                                       <Routes>
                                         {/* Marketing & Public Routes */}
                                         <Route path="/" element={<SmartRootRedirect />} />
