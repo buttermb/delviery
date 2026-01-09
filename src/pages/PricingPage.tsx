@@ -377,7 +377,7 @@ export default function PricingPage() {
             </div>
 
             {/* Value Comparison */}
-            <Card className="p-8 border-[hsl(var(--marketing-accent))]/30 bg-gradient-to-br from-[hsl(var(--marketing-bg))] to-[hsl(var(--marketing-bg-subtle))]">
+            <Card className="p-8 border-[hsl(var(--marketing-accent))]/30 bg-[hsl(var(--marketing-bg-subtle))]">
               <div className="flex flex-col md:flex-row items-center gap-8">
                 <div className="flex-1 text-center md:text-left">
                   <div className="flex items-center gap-2 mb-3 justify-center md:justify-start">
@@ -490,6 +490,49 @@ export default function PricingPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* Trusted By Section */}
+        <section className="container mx-auto px-4 py-16">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-2xl font-bold mb-8 text-[hsl(var(--marketing-text))]">
+              Trusted by 400+ Wholesale Distributors
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+              <div className="p-4 rounded-xl bg-[hsl(var(--marketing-bg-subtle))]">
+                <div className="text-2xl font-bold text-[hsl(var(--marketing-primary))]">$1.4M+</div>
+                <div className="text-sm text-[hsl(var(--marketing-text-light))]">Monthly Orders</div>
+              </div>
+              <div className="p-4 rounded-xl bg-[hsl(var(--marketing-bg-subtle))]">
+                <div className="text-2xl font-bold text-[hsl(var(--marketing-primary))]">15K+</div>
+                <div className="text-sm text-[hsl(var(--marketing-text-light))]">Products Tracked</div>
+              </div>
+              <div className="p-4 rounded-xl bg-[hsl(var(--marketing-bg-subtle))]">
+                <div className="text-2xl font-bold text-[hsl(var(--marketing-primary))]">99.9%</div>
+                <div className="text-sm text-[hsl(var(--marketing-text-light))]">Uptime</div>
+              </div>
+              <div className="p-4 rounded-xl bg-[hsl(var(--marketing-bg-subtle))]">
+                <div className="text-2xl font-bold text-[hsl(var(--marketing-primary))]">4.9★</div>
+                <div className="text-sm text-[hsl(var(--marketing-text-light))]">User Rating</div>
+              </div>
+            </div>
+
+            {/* Testimonial */}
+            <Card className="p-8 text-left">
+              <p className="text-lg text-[hsl(var(--marketing-text))] mb-4 italic">
+                "FloraIQ transformed our operations. We used to spend hours on spreadsheets and phone calls. Now everything is automated. Our team saves 20+ hours per week."
+              </p>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[hsl(var(--marketing-primary))] flex items-center justify-center text-white font-bold">
+                  MG
+                </div>
+                <div>
+                  <div className="font-semibold text-[hsl(var(--marketing-text))]">Michael Green</div>
+                  <div className="text-sm text-[hsl(var(--marketing-text-light))]">Operations Manager, GreenLeaf Distribution</div>
+                </div>
+              </div>
+            </Card>
           </div>
         </section>
 

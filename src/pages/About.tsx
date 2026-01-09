@@ -74,6 +74,26 @@ export default function About() {
               </p>
             </div>
 
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20">
+              <div className="text-center p-6 rounded-xl bg-[hsl(var(--marketing-bg-subtle))]">
+                <div className="text-4xl font-bold text-[hsl(var(--marketing-primary))] mb-2">400+</div>
+                <div className="text-sm text-[hsl(var(--marketing-text-light))]">Active Distributors</div>
+              </div>
+              <div className="text-center p-6 rounded-xl bg-[hsl(var(--marketing-bg-subtle))]">
+                <div className="text-4xl font-bold text-[hsl(var(--marketing-primary))] mb-2">$1.4M</div>
+                <div className="text-sm text-[hsl(var(--marketing-text-light))]">Monthly Orders</div>
+              </div>
+              <div className="text-center p-6 rounded-xl bg-[hsl(var(--marketing-bg-subtle))]">
+                <div className="text-4xl font-bold text-[hsl(var(--marketing-primary))] mb-2">99.9%</div>
+                <div className="text-sm text-[hsl(var(--marketing-text-light))]">Uptime</div>
+              </div>
+              <div className="text-center p-6 rounded-xl bg-[hsl(var(--marketing-bg-subtle))]">
+                <div className="text-4xl font-bold text-[hsl(var(--marketing-primary))] mb-2">24/7</div>
+                <div className="text-sm text-[hsl(var(--marketing-text-light))]">Support</div>
+              </div>
+            </div>
+
             <div className="border-t border-[hsl(var(--marketing-border))] pt-16 mb-16">
               {/* Our Story */}
               <h2 className="text-3xl font-bold mb-6 text-[hsl(var(--marketing-text))]">Our Story</h2>
@@ -109,7 +129,7 @@ export default function About() {
               <div className="grid md:grid-cols-3 gap-8">
                 {team.map((member, index) => (
                   <div key={index} className="text-center">
-                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))] mx-auto mb-4 flex items-center justify-center text-white text-4xl font-bold">
+                    <div className="w-32 h-32 rounded-full bg-[hsl(var(--marketing-primary))] mx-auto mb-4 flex items-center justify-center text-white text-4xl font-bold">
                       {member.name.split(" ").map(n => n[0]).join("")}
                     </div>
                     <h3 className="font-bold text-lg mb-1 text-[hsl(var(--marketing-text))]">{member.name}</h3>
