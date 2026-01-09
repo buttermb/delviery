@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Package, Loader2, ArrowRight } from 'lucide-react';
+import { Package, Loader2, ArrowRight, Flower2, Cookie, Cloud, Diamond } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -35,10 +35,10 @@ interface BatchCategoryEditorProps {
 }
 
 const CATEGORIES = [
-  { value: 'flower', label: 'Flower', emoji: '🌸' },
-  { value: 'edibles', label: 'Edibles', emoji: '🍫' },
-  { value: 'vapes', label: 'Vapes', emoji: '💨' },
-  { value: 'concentrates', label: 'Concentrates', emoji: '💎' },
+  { value: 'flower', label: 'Flower', icon: Flower2 },
+  { value: 'edibles', label: 'Edibles', icon: Cookie },
+  { value: 'vapes', label: 'Vapes', icon: Cloud },
+  { value: 'concentrates', label: 'Concentrates', icon: Diamond },
 ];
 
 export function BatchCategoryEditor({ open, onOpenChange, products, onApply }: BatchCategoryEditorProps) {
@@ -99,7 +99,7 @@ export function BatchCategoryEditor({ open, onOpenChange, products, onApply }: B
                 {CATEGORIES.map((cat) => (
                   <SelectItem key={cat.value} value={cat.value}>
                     <div className="flex items-center gap-2">
-                      <span>{cat.emoji}</span>
+                      <cat.icon className="h-4 w-4" />
                       <span>{cat.label}</span>
                     </div>
                   </SelectItem>
@@ -123,8 +123,8 @@ export function BatchCategoryEditor({ open, onOpenChange, products, onApply }: B
                   <ArrowRight className="h-5 w-5 text-muted-foreground" />
                   <div className="text-center">
                     <p className="text-muted-foreground">New</p>
-                    <p className="font-medium text-primary capitalize">
-                      {CATEGORIES.find(c => c.value === selectedCategory)?.emoji}{' '}
+                    <p className="font-medium text-primary capitalize flex items-center gap-1">
+                      {(() => { const cat = CATEGORIES.find(c => c.value === selectedCategory); return cat ? <cat.icon className="h-4 w-4" /> : null; })()}
                       {selectedCategory}
                     </p>
                   </div>

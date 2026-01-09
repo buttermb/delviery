@@ -5,6 +5,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { safeStorage } from '@/utils/safeStorage';
+import { checkEdgeFunctionError } from '@/lib/utils/checkEdgeFunctionError';
 
 /**
  * Hook to handle Stripe checkout redirect after payment method collection
@@ -76,6 +77,10 @@ export function useStripeRedirectHandler() {
         });
 
         if (error) throw error;
+        
+        // Check for 2xx response with error in body
+        const bodyError = checkEdgeFunctionError(data, 'update-trial-status');
+        if (bodyError) throw bodyError;
 
         logger.info('[StripeRedirect] Trial status updated successfully');
 

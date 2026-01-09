@@ -134,7 +134,7 @@ const NUDGE_CONFIGS: Record<NudgeType, Omit<UpgradeNudge, 'type' | 'metadata'>> 
   },
   high_activity: {
     urgency: 'low',
-    title: 'Power User Detected! ⚡',
+    title: 'Power User Detected!',
     message: "You're getting great value. Upgrade to remove credit costs entirely.",
     cta: 'Upgrade',
     dismissable: true,

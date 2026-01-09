@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Truck, MapPin, Phone, MessageSquare, Star, Clock, DollarSign, Navigation } from "lucide-react";
+import { Truck, MapPin, Phone, MessageSquare, Star, Clock, DollarSign, Navigation, AlertCircle } from "lucide-react";
 import { DeliveryStatusDialog } from "@/components/admin/DeliveryStatusDialog";
 import { AssignDeliveryToRunnerDialog } from "@/components/admin/AssignDeliveryToRunnerDialog";
 import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
@@ -198,7 +198,7 @@ export default function FleetManagement() {
       {/* Active Deliveries */}
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-          🚨 ACTIVE DELIVERIES ({activeDeliveries?.length || 0})
+          <AlertCircle className="h-5 w-5 text-destructive" /> ACTIVE DELIVERIES ({activeDeliveries?.length || 0})
         </h2>
 
         <div className="space-y-3">
@@ -222,9 +222,9 @@ export default function FleetManagement() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <Badge className={getStatusColor(delivery.status)}>
-                          {delivery.status === "in_transit" && "🔴 IN TRANSIT"}
-                          {delivery.status === "picked_up" && "📦 PICKED UP"}
-                          {delivery.status === "assigned" && "📋 ASSIGNED"}
+                          {delivery.status === "in_transit" && "IN TRANSIT"}
+                          {delivery.status === "picked_up" && "PICKED UP"}
+                          {delivery.status === "assigned" && "ASSIGNED"}
                         </Badge>
                         <span className="text-sm text-muted-foreground">
                           Order #{delivery.orders?.order_number}

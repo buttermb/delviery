@@ -144,8 +144,8 @@ export function TeamActivityWidget() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
-                                <Badge variant="default">
-                                    🟢 Active
+                                <Badge variant="default" className="flex items-center gap-1">
+                                    <span className="h-2 w-2 rounded-full bg-emerald-400" /> Active
                                 </Badge>
                                 <div className="text-sm text-muted-foreground">
                                     {member.activityText}

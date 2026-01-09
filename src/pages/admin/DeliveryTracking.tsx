@@ -93,10 +93,10 @@ export default function DeliveryTracking() {
           </div>
         </div>
         <Badge className={getStatusColor(delivery.status)}>
-          {delivery.status === "in_transit" && "🔴 IN TRANSIT"}
-          {delivery.status === "picked_up" && "📦 PICKED UP"}
-          {delivery.status === "assigned" && "📋 ASSIGNED"}
-          {delivery.status === "delivered" && "✅ DELIVERED"}
+          {delivery.status === "in_transit" && "IN TRANSIT"}
+          {delivery.status === "picked_up" && "PICKED UP"}
+          {delivery.status === "assigned" && "ASSIGNED"}
+          {delivery.status === "delivered" && "DELIVERED"}
         </Badge>
       </div>
 
