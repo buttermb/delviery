@@ -33,9 +33,30 @@ export const MenuOrdersTab = ({ orders, isLoading, onOrderUpdate }: MenuOrdersTa
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
+    const updates: Record<string, unknown> = {
+      status: newStatus as any,
+      updated_at: new Date().toISOString()
+    };
+
+    // Add timestamp fields based on status
+    if (newStatus === 'delivered' || newStatus === 'completed') {
+      updates.delivered_at = new Date().toISOString();
+    } else if (newStatus === 'cancelled' || newStatus === 'rejected') {
+      updates.cancelled_at = new Date().toISOString();
+      // Release inventory for cancelled/rejected menu orders
+      try {
+        await supabase.rpc('release_order_inventory', {
+          p_order_id: orderId,
+          p_order_type: 'menu'
+        });
+      } catch (invError) {
+        console.warn('Failed to release inventory:', invError);
+      }
+    }
+
     const { error } = await supabase
       .from('menu_orders')
-      .update({ status: newStatus as any }) // Cast for runtime status value
+      .update(updates)
       .eq('id', orderId);
 
     if (error) {

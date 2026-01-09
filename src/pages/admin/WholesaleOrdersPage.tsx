@@ -332,16 +332,45 @@ export default function WholesaleOrdersPage() {
 
   const handleBulkStatusChange = async (status: string) => {
     try {
-      const table = viewMode === 'selling' ? 'wholesale_orders' : 'purchase_orders';
-      const { error } = await supabase
-        .from(table)
-        .update({ status, updated_at: new Date().toISOString() })
-        .in('id', selectedOrders);
+      let successCount = 0;
+      let failCount = 0;
 
-      if (error) throw error;
+      if (viewMode === 'selling') {
+        // Use flow manager for wholesale orders to handle inventory properly
+        for (const orderId of selectedOrders) {
+          const result = await wholesaleOrderFlowManager.transitionOrderStatus(
+            orderId,
+            status as WholesaleOrderStatus
+          );
+          if (result.success) {
+            successCount++;
+          } else {
+            failCount++;
+            logger.warn(`Failed to update order ${orderId}: ${result.error}`);
+          }
+        }
+      } else {
+        // Direct update for purchase orders
+        const { error } = await supabase
+          .from('purchase_orders')
+          .update({ status, updated_at: new Date().toISOString() })
+          .in('id', selectedOrders);
 
-      toast.success(`Updated ${selectedOrders.length} orders to ${STATUS_CONFIG[status]?.label || status}`);
+        if (error) throw error;
+        successCount = selectedOrders.length;
+      }
+
+      if (failCount > 0) {
+        toast.warning(`Updated ${successCount} orders, ${failCount} failed`);
+      } else {
+        toast.success(`Updated ${successCount} orders to ${STATUS_CONFIG[status]?.label || status}`);
+      }
+      
+      // Invalidate all related queries
       queryClient.invalidateQueries({ queryKey: ['orders', viewMode, tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['wholesale-inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       handleRefresh();
       setSelectedOrders([]);
     } catch (error) {

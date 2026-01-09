@@ -224,12 +224,20 @@ export default function Orders() {
     try {
       const { error } = await supabase
         .from('orders')
-        .update({ status })
+        .update({ 
+          status,
+          ...(status === 'delivered' && { delivered_at: new Date().toISOString() }),
+          ...(status === 'cancelled' && { cancelled_at: new Date().toISOString() }),
+          updated_at: new Date().toISOString()
+        })
         .in('id', selectedOrders);
 
       if (error) throw error;
 
       toast.success(`Updated ${selectedOrders.length} orders to ${status}`);
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
       refetch();
       setSelectedOrders([]);
     } catch (error) {

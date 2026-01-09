@@ -190,6 +190,20 @@ export const wholesaleOrderFlowManager = {
   },
 
   /**
+   * Get list of query keys to invalidate after status change
+   */
+  getInvalidationKeys(): string[][] {
+    return [
+      ['pipeline-orders'],
+      ['orders'],
+      ['products'],
+      ['wholesale-inventory'],
+      ['dashboard-stats'],
+      ['wholesale-clients']
+    ];
+  },
+
+  /**
    * Handle stock operations during status transitions
    * Calls RPC functions to reserve/release/commit stock based on status
    * Note: wholesale_order_items uses product_name - we look up product_id from products table

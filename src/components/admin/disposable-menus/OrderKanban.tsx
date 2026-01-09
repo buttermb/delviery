@@ -97,16 +97,39 @@ export function OrderKanban({ onViewDetails }: OrderKanbanProps) {
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     setUpdatingOrderId(orderId);
     try {
+      const updates: Record<string, unknown> = {
+        status: newStatus as any,
+        updated_at: new Date().toISOString()
+      };
+
+      // Add timestamp fields based on status
+      if (newStatus === 'delivered' || newStatus === 'completed') {
+        updates.delivered_at = new Date().toISOString();
+      } else if (newStatus === 'cancelled' || newStatus === 'rejected') {
+        updates.cancelled_at = new Date().toISOString();
+        // Release inventory for cancelled/rejected menu orders
+        try {
+          await supabase.rpc('release_order_inventory', {
+            p_order_id: orderId,
+            p_order_type: 'menu'
+          });
+        } catch (invError) {
+          // Log but don't block the status update
+          console.warn('Failed to release inventory:', invError);
+        }
+      }
+
       // @ts-ignore - Dynamic status value
       const { error } = await supabase
         .from('menu_orders')
-        .update({ status: newStatus as any, updated_at: new Date().toISOString() })
+        .update(updates)
         .eq('id', orderId);
 
       if (error) throw error;
 
       showSuccessToast('Status Updated', `Order marked as ${newStatus}`);
       queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     } catch (error) {
       showErrorToast('Update Failed', 'Could not update order status');
     } finally {
