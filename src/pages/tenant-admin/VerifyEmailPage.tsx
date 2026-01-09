@@ -45,15 +45,21 @@ export default function VerifyEmailPage() {
     setResending(true);
     try {
       // Call edge function to resend verification email
-      const { error } = await supabase.functions.invoke('send-verification-email', {
+      const { data, error } = await supabase.functions.invoke('send-verification-email', {
         body: { email: admin.email, adminId: admin.id, tenantSlug }
       });
       
       if (error) throw error;
+
+      // Check for error in response body (edge functions can return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        throw new Error(typeof data.error === 'string' ? data.error : 'Failed to send verification email');
+      }
       
       toast.success('Verification email sent! Please check your inbox.');
     } catch (error) {
-      toast.error('Failed to resend verification email. Please try again.');
+      const message = error instanceof Error ? error.message : 'Failed to resend verification email. Please try again.';
+      toast.error(message);
     } finally {
       setResending(false);
     }

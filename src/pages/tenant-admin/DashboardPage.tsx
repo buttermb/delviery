@@ -505,11 +505,16 @@ export default function TenantAdminDashboardPage() {
 
     setGeneratingDemoData(true);
     try {
-      const { error } = await supabase.functions.invoke('seed-demo-data', {
+      const { data, error } = await supabase.functions.invoke('seed-demo-data', {
         body: { tenant_id: tenantId }
       });
 
       if (error) throw error;
+
+      // Check for error in response body (edge functions can return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        throw new Error(typeof data.error === 'string' ? data.error : 'Failed to generate demo data');
+      }
 
       toast({
         title: "Demo Data Generated",

@@ -93,20 +93,25 @@ export default function DataExport() {
       if (dbError) throw dbError;
 
       // 2. Invoke Edge Function (Async Trigger)
-      // We don't await the result of the processing, just the triggering.
-      // Actually, we should probably catch errors if invocation fails entirely.
-      const { error: invokeError } = await supabase.functions.invoke('process-data-export', {
+      const { data: invokeData, error: invokeError } = await supabase.functions.invoke('process-data-export', {
         body: { exportId: job.id }
       });
 
       if (invokeError) {
-        // If trigger fails, mark as failed in UI at least ? 
-        // Or assume it might retry. But better to warn.
-        logger.error("Failed to trigger export function", invokeError);
+        console.error("Failed to trigger export function", invokeError);
         toast({
           title: "Warning",
           description: "Export job created but processing might be delayed.",
           variant: "default"
+        });
+      } else if (invokeData && typeof invokeData === 'object' && 'error' in invokeData && invokeData.error) {
+        // Check for error in response body (edge functions can return 200 with error)
+        const errorMessage = typeof invokeData.error === 'string' ? invokeData.error : 'Export processing failed';
+        console.error("Export function returned error in response", { error: errorMessage });
+        toast({
+          title: "Export Failed",
+          description: errorMessage,
+          variant: "destructive"
         });
       } else {
         toast({
