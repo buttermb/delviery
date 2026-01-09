@@ -985,7 +985,7 @@ export default function TenantAdminDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           <Card>
             <CardHeader className="p-3 sm:p-4 md:p-6">
-              <CardTitle className="text-sm sm:text-base md:text-lg">⚡ Quick Actions</CardTitle>
+              <CardTitle className="text-sm sm:text-base md:text-lg flex items-center gap-1"><Zap className="h-4 w-4" /> Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 p-3 sm:p-4 md:p-6 pt-0">
               <Button variant="outline" className="w-full justify-start min-h-[44px] touch-manipulation" asChild>
@@ -1017,7 +1017,7 @@ export default function TenantAdminDashboardPage() {
             onClick={() => navigate(`/${tenant?.slug}/admin/inventory/products`)}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium">📦 Products</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1"><Package className="h-3 w-3" /> Products</CardTitle>
               <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
@@ -1033,8 +1033,8 @@ export default function TenantAdminDashboardPage() {
                     className="mt-2 h-1.5 sm:h-2"
                   />
                   {getUsagePercentage('products') >= 80 && (
-                    <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2">
-                      ⚠️ You're at {Math.round(getUsagePercentage('products'))}% capacity.
+                    <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2 flex items-start gap-1">
+                      <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" /> You're at {Math.round(getUsagePercentage('products'))}% capacity.
                       Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited products.
                     </p>
                   )}
@@ -1053,7 +1053,7 @@ export default function TenantAdminDashboardPage() {
             onClick={() => navigate(`/${tenant?.slug}/admin/big-plug-clients`)}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium">👥 Customers</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1"><Users className="h-3 w-3" /> Customers</CardTitle>
               <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
                 <Users className="h-4 w-4 sm:h-5 sm:w-5 text-secondary" />
               </div>
@@ -1069,8 +1069,8 @@ export default function TenantAdminDashboardPage() {
                     className="mt-2 h-1.5 sm:h-2"
                   />
                   {getUsagePercentage('customers') >= 80 && (
-                    <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2">
-                      ⚠️ You're at {Math.round(getUsagePercentage('customers'))}% capacity.
+                    <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2 flex items-start gap-1">
+                      <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" /> You're at {Math.round(getUsagePercentage('customers'))}% capacity.
                       Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited customers.
                     </p>
                   )}
@@ -1089,7 +1089,7 @@ export default function TenantAdminDashboardPage() {
             onClick={() => navigate(`/${tenant?.slug}/admin/disposable-menus`)}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium">📱 Menus</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1"><Smartphone className="h-3 w-3" /> Menus</CardTitle>
               <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-accent/10 flex items-center justify-center">
                 <Smartphone className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
               </div>

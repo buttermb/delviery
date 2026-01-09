@@ -29,7 +29,8 @@ import {
   DollarSign,
   FileText,
   XCircle,
-  ArrowRight
+  ArrowRight,
+  Warehouse
 } from 'lucide-react';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -716,8 +717,8 @@ export default function WholesaleOrdersPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
-              {viewMode === 'selling' ? '📦 Wholesale Orders' : '🏗️ Purchase Orders'}
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
+              {viewMode === 'selling' ? <><Package className="h-6 w-6" /> Wholesale Orders</> : <><Warehouse className="h-6 w-6" /> Purchase Orders</>}
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               {viewMode === 'selling'

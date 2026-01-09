@@ -104,7 +104,7 @@ export function TenantStripeConfig() {
 
         if (!silent) {
           toast({
-            title: "✅ Connection Successful",
+            title: "Connection Successful",
             description: data.testMode
               ? "Test mode credentials verified successfully"
               : "Live mode credentials verified successfully",

@@ -67,8 +67,8 @@ export default function AdvancedReportingPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
-            📊 Advanced Reporting & BI
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
+            <BarChart3 className="h-6 w-6" /> Advanced Reporting & BI
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Build custom reports, schedule automated deliveries, and create visual dashboards

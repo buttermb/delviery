@@ -164,6 +164,13 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
       });
 
       if (error) throw error;
+      
+      // Check for 2xx response with error in body
+      if (result && typeof result === 'object' && 'error' in result && result.error) {
+        const errorMessage = typeof result.error === 'string' ? result.error : 'Failed to process return';
+        throw new Error(errorMessage);
+      }
+      
       return result;
     },
     onSuccess: (data) => {

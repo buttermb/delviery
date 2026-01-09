@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, AlertCircle, Loader2 } from "lucide-react";
+import { DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, AlertCircle, Loader2, BarChart } from "lucide-react";
 import { useWholesaleOrders, useWholesaleClients, useWholesalePayments } from "@/hooks/useWholesaleData";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { format, isToday, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
@@ -100,13 +100,13 @@ export default function FinancialCenterReal() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">💰 Financial Command Center</h1>
+        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2"><DollarSign className="h-7 w-7" /> Financial Command Center</h1>
         <p className="text-sm text-muted-foreground mt-1">{format(now, "MMMM d, yyyy")}</p>
       </div>
 
       {/* Today's Snapshot */}
       <div>
-        <h2 className="text-lg font-semibold mb-3">📊 Today's Snapshot</h2>
+        <h2 className="text-lg font-semibold mb-3 flex items-center gap-2"><BarChart className="h-5 w-5" /> Today's Snapshot</h2>
         <div className="grid grid-cols-3 gap-4">
           <Card className="p-4">
             <div className="text-sm text-muted-foreground mb-1">Revenue</div>
@@ -177,7 +177,7 @@ export default function FinancialCenterReal() {
 
       {/* Credit Out (Who Owes You) */}
       <Card className="p-6 border-l-4 border-l-yellow-500">
-        <h2 className="text-lg font-semibold mb-4">🔴 Credit Out (Who Owes You)</h2>
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><AlertCircle className="h-5 w-5 text-destructive" /> Credit Out (Who Owes You)</h2>
 
         <div className="mb-4">
           <div className="text-3xl font-bold font-mono mb-1">
@@ -190,7 +190,7 @@ export default function FinancialCenterReal() {
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-4">
             <div className="flex items-center gap-2 mb-3">
               <AlertCircle className="h-5 w-5 text-destructive" />
-              <span className="font-semibold text-destructive">OVERDUE (🚨 Priority)</span>
+              <span className="font-semibold text-destructive">OVERDUE (Priority)</span>
               <span className="font-mono font-bold ml-auto">
                 ${overdueClients.reduce((sum, c) => sum + c.amount, 0).toLocaleString()}
               </span>
@@ -295,7 +295,7 @@ export default function FinancialCenterReal() {
                         </span>
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {client.warning && <span className="text-destructive">🔴 {client.warning}</span>}
+                        {client.warning && <span className="text-destructive flex items-center gap-1"><AlertCircle className="h-3 w-3" /> {client.warning}</span>}
                       </div>
                     </div>
                   ))}

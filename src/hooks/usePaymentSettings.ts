@@ -216,7 +216,7 @@ export function getEnabledPaymentMethods(settings: PaymentSettings): PaymentMeth
     methods.push({
       id: 'lightning',
       name: 'Lightning',
-      icon: '⚡',
+      icon: 'zap',
       enabled: true,
       address: settings.lightning_address,
       instructions: settings.crypto_instructions,
