@@ -101,24 +101,6 @@ export default function POSHubPage() {
 
                 {/* Register Tab - Full screen POS */}
                 <TabsContent value="register" className="m-0">
-                    {/* Show mini tab switcher in corner for register view with keyboard hints */}
-                    <div className="fixed bottom-4 right-4 z-50 bg-card rounded-lg shadow-lg border p-2 flex flex-col gap-1">
-                        <span className="text-xs text-muted-foreground px-2 pb-1 border-b mb-1">Quick Nav (1-4)</span>
-                        {tabs.map((tab, index) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => handleTabChange(tab.id)}
-                                className={`px-3 py-2 rounded flex items-center gap-2 text-sm transition-colors ${activeTab === tab.id
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'hover:bg-muted text-foreground'
-                                    }`}
-                            >
-                                <kbd className="text-xs opacity-60 font-mono w-4">{index + 1}</kbd>
-                                <tab.icon className="h-4 w-4" />
-                                <span>{tab.label}</span>
-                            </button>
-                        ))}
-                    </div>
                     <PointOfSale />
                 </TabsContent>
 

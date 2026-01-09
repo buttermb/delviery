@@ -50,7 +50,7 @@ const columns: KanbanColumn[] = [
     {
         id: 'urgent',
         title: 'URGENT',
-        emoji: '🔴',
+        emoji: '',
         icon: <AlertCircle className="h-4 w-4" />,
         bgColor: 'bg-red-50 dark:bg-red-950/20',
         headerColor: 'text-red-600 dark:text-red-400',
@@ -59,7 +59,7 @@ const columns: KanbanColumn[] = [
     {
         id: 'today',
         title: 'TODAY',
-        emoji: '⚠️',
+        emoji: '',
         icon: <Clock className="h-4 w-4" />,
         bgColor: 'bg-yellow-50 dark:bg-yellow-950/20',
         headerColor: 'text-yellow-600 dark:text-yellow-400',
@@ -68,7 +68,7 @@ const columns: KanbanColumn[] = [
     {
         id: 'upcoming',
         title: 'UPCOMING',
-        emoji: '📋',
+        emoji: '',
         icon: <Calendar className="h-4 w-4" />,
         bgColor: 'bg-green-50 dark:bg-green-950/20',
         headerColor: 'text-green-600 dark:text-green-400',
@@ -343,7 +343,7 @@ export function AttentionQueueKanban({
         <Card className={className}>
             <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-medium flex items-center gap-2">
-                    <span className="text-xl">⚡</span>
+                    <AlertCircle className="h-5 w-5" />
                     NEEDS YOUR ATTENTION
                     <Badge variant="secondary" className="ml-2">
                         {totalItems}
@@ -362,7 +362,7 @@ export function AttentionQueueKanban({
                         >
                             {/* Column Header */}
                             <div className={cn('flex items-center gap-2 mb-3', column.headerColor)}>
-                                <span className="text-lg">{column.emoji}</span>
+                                {column.icon}
                                 <span className="font-semibold text-sm">{column.title}</span>
                                 <Badge
                                     variant="secondary"

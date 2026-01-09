@@ -46,7 +46,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
 
-type OrderStatus = 'pending' | 'processing' | 'ready' | 'delivered' | 'cancelled';
+type OrderStatus = 'pending' | 'confirmed' | 'ready' | 'delivered' | 'cancelled';
 
 interface PipelineOrder {
     id: string;
@@ -123,9 +123,9 @@ function PipelineColumn({ title, status, orders, icon: Icon, color, onMove }: Co
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            {status !== 'processing' && (
-                                                <DropdownMenuItem onClick={() => onMove(order.id, 'processing')}>
-                                                    Move to Processing
+                                        {status !== 'confirmed' && (
+                                                <DropdownMenuItem onClick={() => onMove(order.id, 'confirmed')}>
+                                                    Move to Confirmed
                                                 </DropdownMenuItem>
                                             )}
                                             {status !== 'ready' && (
@@ -165,13 +165,13 @@ function PipelineColumn({ title, status, orders, icon: Icon, color, onMove }: Co
                                             className="h-6 px-2 text-[10px] hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/30"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                onMove(order.id, 'processing');
+                                                onMove(order.id, 'confirmed');
                                             }}
                                         >
-                                            Process <ArrowRight className="h-3 w-3 ml-1" />
+                                            Confirm <ArrowRight className="h-3 w-3 ml-1" />
                                         </Button>
                                     )}
-                                    {status === 'processing' && (
+                                    {status === 'confirmed' && (
                                         <Button
                                             size="sm"
                                             variant="ghost"
@@ -396,9 +396,9 @@ export function OrderPipelineBoard() {
                     onMove={handleMove}
                 />
                 <PipelineColumn
-                    title="Processing"
-                    status="processing"
-                    orders={filteredOrders.filter(o => o.status === 'processing')}
+                    title="Confirmed"
+                    status="confirmed"
+                    orders={filteredOrders.filter(o => o.status === 'confirmed')}
                     icon={Package}
                     color="text-blue-600 bg-blue-50 dark:bg-blue-900/20"
                     onMove={handleMove}

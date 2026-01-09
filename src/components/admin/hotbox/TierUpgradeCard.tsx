@@ -53,12 +53,12 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const TIER_ORDER: BusinessTier[] = ['street', 'trap', 'block', 'hood', 'empire'];
-const TIER_EMOJIS: Record<BusinessTier, string> = {
-  street: '🛵',
-  trap: '🏪',
-  block: '🏢',
-  hood: '🏙️',
-  empire: '👑',
+const TIER_LABELS: Record<BusinessTier, string> = {
+  street: 'Street',
+  trap: 'Trap',
+  block: 'Block',
+  hood: 'Hood',
+  empire: 'Empire',
 };
 
 interface TierUpgradeCardProps {
@@ -146,7 +146,7 @@ export function TierUpgradeCard({ compact = false }: TierUpgradeCardProps) {
       <div className="p-3 bg-muted/50 rounded-lg space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-lg">{TIER_EMOJIS[tier]}</span>
+            <Crown className="h-4 w-4 text-primary" />
             <span className="font-medium text-sm">{preset.displayName}</span>
           </div>
           {tierOverride && (
@@ -184,7 +184,7 @@ export function TierUpgradeCard({ compact = false }: TierUpgradeCardProps) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-medium flex items-center gap-2">
-            <span className="text-xl">{TIER_EMOJIS[tier]}</span>
+            <TrendingUp className="h-5 w-5" />
             {qualifiesForUpgrade ? 'READY TO UPGRADE!' : 'TIER PROGRESS'}
           </CardTitle>
           <Dialog open={overrideDialogOpen} onOpenChange={setOverrideDialogOpen}>
@@ -214,7 +214,7 @@ export function TierUpgradeCard({ compact = false }: TierUpgradeCardProps) {
                         return (
                           <SelectItem key={t} value={t}>
                             <div className="flex items-center gap-2">
-                              <span>{TIER_EMOJIS[t]}</span>
+                              <span className="font-medium">{TIER_LABELS[t]}</span>
                               <span>{p.displayName}</span>
                               <span className="text-muted-foreground text-xs">({p.revenueRange})</span>
                             </div>
@@ -269,10 +269,10 @@ export function TierUpgradeCard({ compact = false }: TierUpgradeCardProps) {
         <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
           <div className="flex items-center gap-3">
             <div className={cn(
-              'w-12 h-12 rounded-full flex items-center justify-center text-2xl',
+              'w-12 h-12 rounded-full flex items-center justify-center',
               getTierColor(tier)
             )}>
-              {TIER_EMOJIS[tier]}
+              <Crown className="h-6 w-6" />
             </div>
             <div>
               <div className="font-bold text-lg">{preset.displayName} Tier</div>
