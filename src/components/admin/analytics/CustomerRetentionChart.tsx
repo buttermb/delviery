@@ -9,16 +9,54 @@ interface CustomerRetentionChartProps {
     className?: string;
 }
 
+interface CustomerAnalytics {
+    new_customers: number;
+    returning_customers: number;
+    total_customers: number;
+}
+
 export function CustomerRetentionChart({ storeId, className }: CustomerRetentionChartProps) {
     const { data: analytics, isLoading, error } = useQuery({
         queryKey: ['customer-retention', storeId],
-        queryFn: async () => {
+        queryFn: async (): Promise<CustomerAnalytics | null> => {
             if (!storeId) return null;
-            const { data, error } = await supabase
-                .rpc('get_customer_analytics', { p_store_id: storeId });
 
-            if (error) throw error;
-            return data as { new_customers: number; returning_customers: number; total_customers: number };
+            // Calculate customer metrics from storefront_orders table
+            const { data: orders, error } = await supabase
+                .from('storefront_orders')
+                .select('customer_email')
+                .eq('store_id', storeId);
+
+            if (error || !orders) {
+                console.warn('Failed to fetch orders for analytics:', error);
+                return null;
+            }
+
+            // Count unique customers and their order frequency
+            const customerOrderCounts = new Map<string, number>();
+            orders.forEach(order => {
+                const email = order.customer_email;
+                if (email) {
+                    customerOrderCounts.set(email, (customerOrderCounts.get(email) || 0) + 1);
+                }
+            });
+
+            let newCustomers = 0;
+            let returningCustomers = 0;
+
+            customerOrderCounts.forEach((count) => {
+                if (count === 1) {
+                    newCustomers++;
+                } else {
+                    returningCustomers++;
+                }
+            });
+
+            return {
+                new_customers: newCustomers,
+                returning_customers: returningCustomers,
+                total_customers: customerOrderCounts.size,
+            };
         },
         enabled: !!storeId,
     });

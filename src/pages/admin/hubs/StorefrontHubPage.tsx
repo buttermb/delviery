@@ -20,7 +20,6 @@ import {
     Settings,
     Brush,
     Boxes,
-    Boxes,
     Radio,
     BarChart3,
 } from 'lucide-react';
@@ -35,7 +34,6 @@ const StorefrontCustomers = lazy(() => import('@/pages/admin/storefront/Storefro
 const StorefrontCoupons = lazy(() => import('@/pages/admin/storefront/StorefrontCoupons'));
 const StorefrontSettings = lazy(() => import('@/pages/admin/storefront/StorefrontSettings'));
 const StorefrontBuilder = lazy(() => import('@/pages/admin/storefront/StorefrontBuilder'));
-const StorefrontBundles = lazy(() => import('@/pages/admin/storefront/StorefrontBundles'));
 const StorefrontBundles = lazy(() => import('@/pages/admin/storefront/StorefrontBundles'));
 const StorefrontLiveOrders = lazy(() => import('@/pages/admin/storefront/StorefrontLiveOrders'));
 const StorefrontAnalytics = lazy(() => import('@/pages/admin/storefront/StorefrontAnalytics'));
@@ -56,7 +54,6 @@ const tabs = [
     { id: 'orders', label: 'Orders', icon: ShoppingCart, group: 'Operations' },
     { id: 'customers', label: 'Customers', icon: Users, group: 'Operations' },
     // Marketing
-    { id: 'coupons', label: 'Promos', icon: Tag, group: 'Marketing' },
     { id: 'coupons', label: 'Promos', icon: Tag, group: 'Marketing' },
     { id: 'bundles', label: 'Bundles', icon: Boxes, group: 'Marketing' },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, group: 'Marketing' },

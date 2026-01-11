@@ -5,11 +5,16 @@ import { safeStorage } from '@/utils/safeStorage';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, CalendarRange } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 
 interface StorefrontAgeGateProps {
     storeId?: string;
+}
+
+interface StoreAgeSettings {
+    enable_age_gate?: boolean;
+    age_gate_min_age?: number;
 }
 
 export function StorefrontAgeGate({ storeId }: StorefrontAgeGateProps) {
@@ -20,16 +25,38 @@ export function StorefrontAgeGate({ storeId }: StorefrontAgeGateProps) {
     const storageKey = `age_verified_${storeSlug || storeId || 'default'}`;
 
     // Fetch store settings to check if age gate is enabled
+    // Note: These columns may not exist yet, so we handle errors gracefully
     const { data: settings } = useQuery({
         queryKey: ['store-age-settings', storeId],
-        queryFn: async () => {
+        queryFn: async (): Promise<StoreAgeSettings | null> => {
             if (!storeId) return null;
-            const { data } = await supabase
-                .from('marketplace_stores')
-                .select('enable_age_gate, age_gate_min_age')
-                .eq('id', storeId)
-                .maybeSingle();
-            return data;
+            try {
+                // Try to fetch settings - the columns may not exist yet
+                const { data, error } = await supabase
+                    .from('marketplace_stores')
+                    .select('*')
+                    .eq('id', storeId)
+                    .maybeSingle();
+                
+                if (error) {
+                    console.warn('Age gate settings not available:', error);
+                    return null;
+                }
+                
+                // Check if the age gate columns exist in the response
+                const storeData = data as Record<string, unknown> | null;
+                if (storeData && 'enable_age_gate' in storeData) {
+                    return {
+                        enable_age_gate: storeData.enable_age_gate as boolean,
+                        age_gate_min_age: (storeData.age_gate_min_age as number) || 21,
+                    };
+                }
+                
+                return null;
+            } catch (err) {
+                console.warn('Failed to fetch age gate settings:', err);
+                return null;
+            }
         },
         enabled: !!storeId,
         staleTime: 1000 * 60 * 5, // 5 minutes
@@ -67,6 +94,8 @@ export function StorefrontAgeGate({ storeId }: StorefrontAgeGateProps) {
 
     if (!isVisible) return null;
 
+    const minAge = settings?.age_gate_min_age || 21;
+
     return (
         <AnimatePresence>
             <motion.div
@@ -89,7 +118,7 @@ export function StorefrontAgeGate({ storeId }: StorefrontAgeGateProps) {
                                 Age Verification
                             </CardTitle>
                             <CardDescription className="text-zinc-400 text-base">
-                                You must be at least <span className="text-white font-bold">{settings?.age_gate_min_age || 21}</span> years old to access this site.
+                                You must be at least <span className="text-white font-bold">{minAge}</span> years old to access this site.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4 pb-8">
@@ -97,14 +126,14 @@ export function StorefrontAgeGate({ storeId }: StorefrontAgeGateProps) {
                                 className="w-full h-12 text-lg font-medium bg-white text-black hover:bg-zinc-200 transition-colors"
                                 onClick={handleVerify}
                             >
-                                I am {settings?.age_gate_min_age || 21}+
+                                I am {minAge}+
                             </Button>
                             <Button
                                 variant="outline"
                                 className="w-full h-12 text-lg font-medium border-zinc-700 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
                                 onClick={handleReject}
                             >
-                                Enter Site
+                                Leave Site
                             </Button>
                             <p className="text-center text-xs text-zinc-600 mt-4">
                                 By entering, you agree to our Terms of Service and Privacy Policy.

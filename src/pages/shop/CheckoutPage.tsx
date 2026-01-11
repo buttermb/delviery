@@ -1060,35 +1060,34 @@ export default function CheckoutPage() {
                     <span>Loyalty Discount</span>
                     <span>-{formatCurrency(loyaltyDiscount)}</span>
                   </div>
+                )}
+                {dealsDiscount > 0 && (
+                  <div className="space-y-1">
+                    {appliedDeals.map(({ deal, discountAmount }) => (
+                      <div key={deal.id} className="flex justify-between text-sm text-blue-600">
+                        <span>{deal.name}</span>
+                        <span>-{formatCurrency(discountAmount)}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
-              {dealsDiscount > 0 && (
-                <div className="space-y-1">
-                  {appliedDeals.map(({ deal, discountAmount }) => (
-                    <div key={deal.id} className="flex justify-between text-sm text-blue-600">
-                      <span>{deal.name}</span>
-                      <span>-{formatCurrency(discountAmount)}</span>
-                    </div>
-                  ))}
+                {roundingAdjustment !== 0 && (
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Rounding Adjustment</span>
+                    <span>{roundingAdjustment > 0 ? '+' : ''}{formatCurrency(roundingAdjustment)}</span>
+                  </div>
+                )}
+                <Separator />
+                <div className="flex justify-between text-lg font-bold">
+                  <span>Total</span>
+                  <span style={{ color: store.primary_color }}>{formatCurrency(total)}</span>
                 </div>
-              )}
-              {roundingAdjustment !== 0 && (
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Rounding Adjustment</span>
-                  <span>{roundingAdjustment > 0 ? '+' : ''}{formatCurrency(roundingAdjustment)}</span>
-                </div>
-              )}
-              <Separator />
-              <div className="flex justify-between text-lg font-bold">
-                <span>Total</span>
-                <span style={{ color: store.primary_color }}>{formatCurrency(total)}</span>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
-    </div >
   );
 }
 
