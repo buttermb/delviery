@@ -885,35 +885,24 @@ const App = () => {
                                             path="storefront"
                                             element={
                                               <FeatureProtectedRoute featureId="storefront">
-                                                <StorefrontDashboard />
+                                                <Suspense fallback={<SkeletonDashboard />}>
+                                                  <StorefrontHubPage />
+                                                </Suspense>
                                               </FeatureProtectedRoute>
                                             }
                                           />
-                                          <Route
-                                            path="storefront/dashboard"
-                                            element={
-                                              <FeatureProtectedRoute featureId="storefront">
-                                                <StorefrontDashboard />
-                                              </FeatureProtectedRoute>
-                                            }
-                                          />
-                                          <Route
-                                            path="storefront/customize"
-                                            element={
-                                              <FeatureProtectedRoute featureId="storefront">
-                                                <StorefrontBuilder />
-                                              </FeatureProtectedRoute>
-                                            }
-                                          />
-                                          <Route path="storefront/settings" element={<FeatureProtectedRoute featureId="storefront"><StorefrontSettings /></FeatureProtectedRoute>} />
-                                          <Route path="storefront/products" element={<FeatureProtectedRoute featureId="storefront"><StorefrontProducts /></FeatureProtectedRoute>} />
-                                          <Route path="storefront/orders" element={<FeatureProtectedRoute featureId="storefront"><StorefrontOrders /></FeatureProtectedRoute>} />
-                                          <Route path="storefront/orders/:orderId" element={<FeatureProtectedRoute featureId="storefront"><StorefrontOrders /></FeatureProtectedRoute>} />
-                                          <Route path="storefront/live-orders" element={<FeatureProtectedRoute featureId="storefront"><StorefrontLiveOrders /></FeatureProtectedRoute>} />
-                                          <Route path="storefront/customers" element={<FeatureProtectedRoute featureId="storefront"><StorefrontCustomers /></FeatureProtectedRoute>} />
-                                          <Route path="storefront/coupons" element={<FeatureProtectedRoute featureId="storefront"><StorefrontCoupons /></FeatureProtectedRoute>} />
-                                          <Route path="storefront/analytics" element={<FeatureProtectedRoute featureId="storefront"><StorefrontAnalytics /></FeatureProtectedRoute>} />
-                                          <Route path="storefront/bundles" element={<FeatureProtectedRoute featureId="storefront"><StorefrontBundles /></FeatureProtectedRoute>} />
+                                          {/* Redirect legacy sub-routes to the Hub */}
+                                          <Route path="storefront/dashboard" element={<Navigate to="../storefront?tab=dashboard" replace />} />
+                                          <Route path="storefront/products" element={<Navigate to="../storefront?tab=products" replace />} />
+                                          <Route path="storefront/orders" element={<Navigate to="../storefront?tab=orders" replace />} />
+                                          <Route path="storefront/orders/:orderId" element={<Navigate to="../storefront?tab=orders" replace />} />
+                                          <Route path="storefront/live-orders" element={<Navigate to="../storefront?tab=live" replace />} />
+                                          <Route path="storefront/customers" element={<Navigate to="../storefront?tab=customers" replace />} />
+                                          <Route path="storefront/coupons" element={<Navigate to="../storefront?tab=coupons" replace />} />
+                                          <Route path="storefront/analytics" element={<Navigate to="../storefront?tab=analytics" replace />} />
+                                          <Route path="storefront/bundles" element={<Navigate to="../storefront?tab=bundles" replace />} />
+                                          <Route path="storefront/customize" element={<Navigate to="../storefront?tab=builder" replace />} />
+                                          <Route path="storefront/settings" element={<Navigate to="../storefront?tab=settings" replace />} />
 
 
                                           {/* Marketplace Admin (B2C) */}

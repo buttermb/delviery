@@ -54,6 +54,7 @@ interface MarketplaceProduct {
   exclude_from_discounts?: boolean;
   minimum_price?: number;
   effects?: string[];
+  min_expiry_days?: number;
 }
 
 export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryProductGridSectionProps) {
@@ -160,6 +161,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
         metrcRetailId: product.metrc_retail_id,
         excludeFromDiscounts: product.exclude_from_discounts,
         minimumPrice: product.minimum_price,
+        minExpiryDays: product.min_expiry_days,
       });
 
       // Show added state for 2 seconds
@@ -209,7 +211,8 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
         variant: product.strain_type,
         metrcRetailId: product.metrc_retail_id,
         excludeFromDiscounts: product.exclude_from_discounts,
-        minimumPrice: product.minimum_price
+        minimumPrice: product.minimum_price,
+        minExpiryDays: product.min_expiry_days
       });
 
       toast({

@@ -18,6 +18,7 @@ export interface ShopCartItem {
     metrcRetailId?: string | null;
     excludeFromDiscounts?: boolean;
     minimumPrice?: number;
+    minExpiryDays?: number;
 }
 
 const getCartKey = (storeId: string) => `shop_cart_${storeId}`;
@@ -28,8 +29,14 @@ interface UseShopCartOptions {
     onCartChange?: (count: number) => void;
 }
 
+export interface AppliedGiftCard {
+    code: string;
+    balance: number;
+}
+
 export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
     const [cartItems, setCartItems] = useState<ShopCartItem[]>([]);
+    const [appliedGiftCards, setAppliedGiftCards] = useState<AppliedGiftCard[]>([]);
     const [isInitialized, setIsInitialized] = useState(false);
 
     // Load cart from localStorage
@@ -204,6 +211,34 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
         return cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     }, [cartItems]);
 
+    // Apply Gift Card
+    const applyGiftCard = useCallback((card: AppliedGiftCard) => {
+        setAppliedGiftCards(prev => {
+            if (prev.some(c => c.code === card.code)) return prev;
+            return [...prev, card];
+        });
+    }, []);
+
+    // Remove Gift Card
+    const removeGiftCard = useCallback((code: string) => {
+        setAppliedGiftCards(prev => prev.filter(c => c.code !== code));
+    }, []);
+
+    // Get total gift card value applied
+    const getGiftCardTotal = useCallback((orderTotal: number) => {
+        let remainingTotal = orderTotal;
+        let totalApplied = 0;
+
+        // Apply cards in order
+        appliedGiftCards.forEach(card => {
+            const deduction = Math.min(remainingTotal, card.balance);
+            totalApplied += deduction;
+            remainingTotal -= deduction;
+        });
+
+        return totalApplied;
+    }, [appliedGiftCards]);
+
     return {
         cartItems,
         cartCount: getCartCount(),
@@ -214,5 +249,10 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
         removeItem,
         clearCart,
         isInitialized,
+        appliedGiftCards,
+        applyGiftCard,
+        removeGiftCard,
+        getGiftCardTotal,
+        setAppliedGiftCards
     };
 }

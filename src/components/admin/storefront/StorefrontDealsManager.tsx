@@ -53,7 +53,7 @@ interface Deal {
     description: string | null;
     discount_type: 'percentage' | 'fixed';
     discount_value: number;
-    applies_to: 'order' | 'category' | 'brand' | 'collection' | 'product';
+    applies_to: 'order' | 'category' | 'brand' | 'collection' | 'product' | 'expiring_inventory';
     target_value: string | null;
     active_days: number[]; // 0-6
     is_active: boolean;
@@ -212,7 +212,7 @@ export function StorefrontDealsManager({ storeId }: DealsManagerProps) {
             description: '',
             discount_type: 'percentage',
             discount_value: '',
-            applies_to: 'order',
+            applies_to: 'order' as const,
             target_value: '',
             active_days: [0, 1, 2, 3, 4, 5, 6],
             is_active: true,
@@ -458,14 +458,19 @@ export function StorefrontDealsManager({ storeId }: DealsManagerProps) {
                                         <SelectItem value="order">Entire Order</SelectItem>
                                         <SelectItem value="category">Specific Category</SelectItem>
                                         <SelectItem value="brand">Specific Brand</SelectItem>
+                                        <SelectItem value="expiring_inventory">Expiring Inventory</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             {formData.applies_to !== 'order' && (
                                 <div className="space-y-2">
-                                    <Label>Target Name</Label>
+                                    <Label>{formData.applies_to === 'expiring_inventory' ? 'Days Until Expiration' : 'Target Name'}</Label>
                                     <Input
-                                        placeholder={formData.applies_to === 'category' ? 'e.g. Edibles' : 'e.g. Wyld'}
+                                        placeholder={
+                                            formData.applies_to === 'category' ? 'e.g. Edibles' :
+                                                formData.applies_to === 'brand' ? 'e.g. Wyld' :
+                                                    formData.applies_to === 'expiring_inventory' ? 'e.g. 7' : 'e.g. Target'
+                                        }
                                         value={formData.target_value}
                                         onChange={e => setFormData({ ...formData, target_value: e.target.value })}
                                     />

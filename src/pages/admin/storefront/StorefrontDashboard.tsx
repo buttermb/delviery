@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import {
@@ -197,7 +198,7 @@ export default function StorefrontDashboard() {
   const deleteStoreMutation = useMutation({
     mutationFn: async (storeId: string) => {
       if (!tenantId) throw new Error('No tenant context');
-      
+
       // Delete related data first
       await supabase
         .from('marketplace_product_settings')
@@ -296,7 +297,7 @@ export default function StorefrontDashboard() {
 
   const handleSettingsStore = (storeId: string) => {
     selectStore(storeId);
-    navigate(`/${tenantSlug}/admin/storefront/settings`);
+    setSearchParams({ tab: 'settings' });
   };
 
   const handleDeleteStore = (store: { id: string; store_name: string }) => {
@@ -485,7 +486,7 @@ export default function StorefrontDashboard() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => navigate(`/${tenantSlug}/admin/storefront/settings`)}
+            onClick={() => setSearchParams({ tab: 'settings' })}
           >
             <Settings className="w-4 h-4 mr-2" />
             Settings
@@ -577,57 +578,55 @@ export default function StorefrontDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Quick Actions */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <CardTitle className="text-lg">Quick Actions</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-3">
+          <CardContent className="space-y-2">
             <Button
               variant="outline"
-              className="h-auto py-4 flex flex-col items-center gap-2"
-              onClick={() => navigate(`/${tenantSlug}/admin/storefront/products`)}
+              className="w-full justify-start h-12"
+              onClick={() => setSearchParams({ tab: 'live' })}
             >
-              <Package className="w-5 h-5" />
-              <span className="text-sm">Manage Products</span>
+              <ShoppingCart className="w-5 h-5 mr-3 text-blue-500" />
+              <div className="text-left">
+                <span className="font-medium">Live Orders</span>
+                <p className="text-xs text-muted-foreground">Manage incoming orders</p>
+              </div>
             </Button>
             <Button
               variant="outline"
-              className="h-auto py-4 flex flex-col items-center gap-2"
-              onClick={() => navigate(`/${tenantSlug}/admin/storefront/orders`)}
+              className="w-full justify-start h-12"
+              onClick={() => setSearchParams({ tab: 'products' })}
             >
-              <ShoppingCart className="w-5 h-5" />
-              <span className="text-sm">View Orders</span>
+              <Package className="w-5 h-5 mr-3 text-orange-500" />
+              <div className="text-left">
+                <span className="font-medium">Products</span>
+                <p className="text-xs text-muted-foreground">Add or edit listings</p>
+              </div>
             </Button>
             <Button
               variant="outline"
-              className="h-auto py-4 flex flex-col items-center gap-2"
-              onClick={() => navigate(`/${tenantSlug}/admin/storefront/customers`)}
+              className="w-full justify-start h-12"
+              onClick={() => setSearchParams({ tab: 'coupons' })}
             >
-              <Users className="w-5 h-5" />
-              <span className="text-sm">Customers</span>
+              <Percent className="w-5 h-5 mr-3 text-purple-500" />
+              <div className="text-left">
+                <span className="font-medium">Promotions</span>
+                <p className="text-xs text-muted-foreground">Create deals & coupons</p>
+              </div>
             </Button>
+            <Separator className="my-3" />
             <Button
-              variant="outline"
-              className="h-auto py-4 flex flex-col items-center gap-2"
-              onClick={() => navigate(`/${tenantSlug}/admin/storefront/coupons`)}
+              className="w-full"
+              onClick={() => {
+                if (storeUrl) {
+                  navigator.clipboard.writeText(storeUrl);
+                  toast({ title: 'Link copied!', description: 'Share this link with your customers.' });
+                }
+              }}
             >
-              <Percent className="w-5 h-5" />
-              <span className="text-sm">Coupons</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-auto py-4 flex flex-col items-center gap-2"
-              onClick={() => navigate(`/${tenantSlug}/admin/storefront/analytics`)}
-            >
-              <BarChart3 className="w-5 h-5" />
-              <span className="text-sm">Analytics</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-auto py-4 flex flex-col items-center gap-2"
-              onClick={() => navigate(`/${tenantSlug}/admin/storefront/settings`)}
-            >
-              <Palette className="w-5 h-5" />
-              <span className="text-sm">Customize</span>
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Copy Store Link
             </Button>
           </CardContent>
         </Card>
@@ -639,7 +638,7 @@ export default function StorefrontDashboard() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate(`/${tenantSlug}/admin/storefront/orders`)}
+              onClick={() => setSearchParams({ tab: 'orders' })}
             >
               View All
             </Button>

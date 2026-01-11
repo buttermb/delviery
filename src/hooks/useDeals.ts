@@ -9,7 +9,7 @@ export interface Deal {
     description: string | null;
     discount_type: 'percentage' | 'fixed';
     discount_value: number;
-    applies_to: 'order' | 'category' | 'brand' | 'collection' | 'product';
+    applies_to: 'order' | 'category' | 'brand' | 'collection' | 'product' | 'expiring_inventory';
     target_value: string | null;
     active_days: number[];
     is_active: boolean;
@@ -128,6 +128,27 @@ export function useDeals(storeId: string | undefined, cartItems: ShopCartItem[],
                 const maxAllowedDiscount = Math.max(0, discountableSubtotal - minimumAllowedTotal);
                 if (dealDiscount > maxAllowedDiscount) {
                     dealDiscount = maxAllowedDiscount;
+                }
+            } else if (deal.applies_to === 'expiring_inventory') {
+                // Check for items matching expiry criteria
+                const expiryThreshold = parseInt(deal.target_value || '0');
+
+                const eligibleItems = discountableItems.filter(item =>
+                    item.minExpiryDays !== undefined &&
+                    item.minExpiryDays <= expiryThreshold
+                );
+
+                if (eligibleItems.length > 0) {
+                    const eligibleSubtotal = eligibleItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+                    if (deal.discount_type === 'percentage') {
+                        dealDiscount = eligibleSubtotal * (deal.discount_value / 100);
+                    } else {
+                        // For fixed amount on generic items, it's tricky.
+                        // Let's treat it as "up to X off the eligible subtotal"
+                        dealDiscount = deal.discount_value;
+                        if (dealDiscount > eligibleSubtotal) dealDiscount = eligibleSubtotal;
+                    }
                 }
             }
 

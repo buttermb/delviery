@@ -47,7 +47,8 @@ import {
   Target,
   Lightbulb,
   Activity,
-  Sun
+  Sun,
+  Sparkles
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
@@ -101,6 +102,7 @@ interface RpcProduct {
   exclude_from_discounts: boolean;
   minimum_price: number | null;
   effects: string[] | null;
+  min_expiry_days: number | null;
 }
 
 interface ProductDetails {
@@ -128,6 +130,7 @@ interface ProductDetails {
   exclude_from_discounts: boolean;
   minimum_price: number | null;
   effects: string[];
+  min_expiry_days: number | null;
 }
 
 // Transform RPC response to component interface
@@ -157,6 +160,7 @@ function transformProduct(rpc: RpcProduct): ProductDetails {
     exclude_from_discounts: rpc.exclude_from_discounts,
     minimum_price: rpc.minimum_price,
     effects: rpc.effects || [],
+    min_expiry_days: rpc.min_expiry_days,
   };
 }
 
@@ -480,6 +484,7 @@ export default function ProductDetailPage() {
       metrcRetailId: product.metrc_retail_id,
       excludeFromDiscounts: product.exclude_from_discounts,
       minimumPrice: product.minimum_price || undefined,
+      minExpiryDays: product.min_expiry_days,
     });
 
     // Show animation
@@ -497,8 +502,6 @@ export default function ProductDetailPage() {
       setShowAddedAnimation(false);
       setIsAddingToCart(false);
     }, 1500);
-
-    // Toast removed in favor of popup
   };
 
   // Share product
@@ -571,56 +574,14 @@ export default function ProductDetailPage() {
 
   if (productLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumb Skeleton */}
-        <div className="flex gap-2 mb-6">
-          <Skeleton className="h-4 w-12" />
-          <Skeleton className="h-4 w-4" />
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-4 w-4" />
-          <Skeleton className="h-4 w-32" />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Image Skeleton */}
-          <div>
-            <Skeleton className="aspect-square rounded-lg w-full" />
-          </div>
-
-          {/* Info Skeleton */}
-          <div className="space-y-8">
-            {/* Header */}
-            <div className="space-y-4">
-              <Skeleton className="h-10 w-3/4" /> {/* Title */}
-              <Skeleton className="h-5 w-1/3" /> {/* Ratings */}
-              <Skeleton className="h-12 w-1/4" /> {/* Price */}
-            </div>
-
-            <Separator className="opacity-50" />
-
-            {/* Description */}
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-            </div>
-
-            {/* Variants */}
-            <div className="space-y-3">
-              <Skeleton className="h-5 w-16" />
-              <div className="flex gap-2">
-                <Skeleton className="h-10 w-20 rounded-md" />
-                <Skeleton className="h-10 w-20 rounded-md" />
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="space-y-4 pt-4">
-              <div className="flex justify-between items-center">
-                <Skeleton className="h-5 w-20" /> {/* Quantity label */}
-                <Skeleton className="h-10 w-32 rounded-lg" /> {/* Quantity selector */}
-              </div>
-              <Skeleton className="h-14 w-full rounded-lg" /> {/* Add to Cart */}
+      <div className="min-h-screen bg-[#0a0a0a] pt-24 pb-12">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <Skeleton className="h-[600px] w-full rounded-3xl bg-white/5" />
+            <div className="space-y-8">
+              <Skeleton className="h-12 w-3/4 bg-white/5" />
+              <Skeleton className="h-6 w-1/4 bg-white/5" />
+              <Skeleton className="h-24 w-full bg-white/5" />
             </div>
           </div>
         </div>
@@ -651,11 +612,18 @@ export default function ProductDetailPage() {
     : 0;
 
   return (
-    <>
-      {/* Scroll Progress Bar */}
-      <ScrollProgress color={accentColor} />
+    <div className={`min-h-screen ${isLuxuryTheme ? 'bg-[#050505] text-white selection:bg-white/20' : 'bg-background'}`}>
+      {/* Ambient Background Effects */}
+      {isLuxuryTheme && (
+        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/10 blur-[150px] animate-pulse" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-900/10 blur-[150px] animate-pulse" style={{ animationDelay: '2s' }} />
+          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02]" />
+        </div>
+      )}
 
-      {/* Cart Preview Popup */}
+      {/* Cart Popup & Progress */}
+      <ScrollProgress color={accentColor} />
       <CartPreviewPopup
         item={lastAddedItem}
         cartCount={cartCount}
@@ -664,402 +632,322 @@ export default function ProductDetailPage() {
         onClose={() => setLastAddedItem(null)}
       />
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm mb-6">
-          <Link
-            to={`/shop/${storeSlug}`}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            Home
-          </Link>
-          <span className="text-muted-foreground">/</span>
-          <Link
-            to={`/shop/${storeSlug}/products`}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            Products
-          </Link>
-          {product.category && (
-            <>
-              <span className="text-muted-foreground">/</span>
-              <Link
-                to={`/shop/${storeSlug}/products?category=${encodeURIComponent(product.category)}`}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                {product.marketplace_category_name || product.category}
-              </Link>
-            </>
-          )}
-          <span className="text-muted-foreground">/</span>
-          <span className="truncate">{product.name}</span>
-        </nav>
+      <div className="relative z-10 pt-24 pb-20">
+        <div className="container mx-auto px-4 max-w-7xl">
+          {/* Breadcrumbs */}
+          <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-8">
+            <Link to={`/shop/${storeSlug}`} className="hover:text-primary transition-colors">Home</Link>
+            <ChevronRight className="w-4 h-4" />
+            <Link to={`/shop/${storeSlug}/products`} className="hover:text-primary transition-colors">Shop</Link>
+            <ChevronRight className="w-4 h-4" />
+            <span className={isLuxuryTheme ? "text-white/60" : "text-foreground"}>{product.name}</span>
+          </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Image Gallery */}
-          <div className="space-y-4">
-            {/* Main Image */}
-            <div
-              className="aspect-square relative bg-muted rounded-lg overflow-hidden cursor-zoom-in group"
-              onClick={() => setShowZoom(true)}
-            >
-              <AnimatePresence mode="wait">
-                {allImages[selectedImage] ? (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
+            {/* Left Column: Image Gallery (Span 7) */}
+            <div className="lg:col-span-7 space-y-6">
+              <div
+                className="relative aspect-square md:aspect-[4/3] rounded-3xl overflow-hidden bg-white/5 group border border-white/5"
+                onMouseEnter={() => setShowZoom(true)}
+                onMouseLeave={() => setShowZoom(false)}
+              >
+                <AnimatePresence mode="wait">
                   <motion.img
                     key={selectedImage}
-                    src={allImages[selectedImage]}
+                    src={allImages[selectedImage] || '/placeholder.png'}
                     alt={product.name}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    className={`w-full h-full object-cover transition-transform duration-700 ease-out ${showZoom ? 'scale-110' : 'scale-100'}`}
+                    initial={{ opacity: 0, scale: 1.1 }}
+                    animate={{ opacity: 1, scale: showZoom ? 1.1 : 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.4 }}
                   />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Package className="w-24 h-24 text-muted-foreground" />
-                  </div>
-                )}
-              </AnimatePresence>
+                </AnimatePresence>
 
-              {/* Badges */}
-              <div className="absolute top-4 left-4 flex flex-col gap-2">
-                {hasDiscount && (
-                  <Badge style={{ backgroundColor: store.primary_color }}>
-                    -{discountPercent}% OFF
-                  </Badge>
-                )}
-                {!product.in_stock && (
-                  <Badge variant="secondary">Out of Stock</Badge>
-                )}
-                {product.is_featured && (
-                  <Badge variant="outline" className="bg-white">
-                    Featured
-                  </Badge>
-                )}
-              </div>
+                {/* Luxury overlay gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
 
-              {/* Zoom Icon */}
-              <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="bg-white/90 rounded-full p-2">
-                  <ZoomIn className="w-5 h-5" />
-                </div>
-              </div>
-
-              {/* Navigation Arrows */}
-              {allImages.length > 1 && (
-                <>
+                <div className="absolute top-4 right-4 z-20 flex flex-col gap-3">
                   <Button
-                    variant="ghost"
                     size="icon"
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedImage((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
-                    }}
+                    variant="ghost"
+                    className="rounded-full bg-black/20 backdrop-blur-md border border-white/10 hover:bg-white/20 text-white"
+                    onClick={toggleWishlist}
                   >
-                    <ChevronLeft className="w-5 h-5" />
+                    <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
                   </Button>
                   <Button
-                    variant="ghost"
                     size="icon"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedImage((prev) => (prev === allImages.length - 1 ? 0 : prev + 1));
-                    }}
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </Button>
-                </>
-              )}
-            </div>
-
-            {/* Thumbnails */}
-            {allImages.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {allImages.map((img, index) => (
-                  <button
-                    key={index}
-                    className={cn(
-                      'w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all',
-                      selectedImage === index
-                        ? 'border-primary ring-2 ring-primary/20'
-                        : 'border-transparent hover:border-muted-foreground/30'
-                    )}
-                    style={{
-                      borderColor: selectedImage === index ? store.primary_color : undefined,
-                    }}
-                    onClick={() => setSelectedImage(index)}
-                  >
-                    <img
-                      src={img}
-                      alt={`${product.name} ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Product Info */}
-          <div className="space-y-6">
-            {/* Title & Rating */}
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold mb-2">{product.name}</h1>
-              {reviews.length > 0 && (
-                <div className="flex items-center gap-2">
-                  {renderStars(averageRating)}
-                  <span className="text-sm text-muted-foreground">
-                    ({reviews.length} review{reviews.length !== 1 ? 's' : ''})
-                  </span>
-                </div>
-              )}
-              {product.sku && (
-                <p className="text-sm text-muted-foreground mt-1">SKU: {product.sku}</p>
-              )}
-            </div>
-
-            {/* Price */}
-            <div className="flex items-baseline gap-3">
-              <span
-                className="text-3xl font-bold"
-                style={{ color: store.primary_color }}
-              >
-                {formatCurrency(product.display_price)}
-              </span>
-              {hasDiscount && (
-                <>
-                  <span className="text-xl text-muted-foreground line-through">
-                    {formatCurrency(product.compare_at_price!)}
-                  </span>
-                  <Badge variant="destructive">Save {discountPercent}%</Badge>
-                </>
-              )}
-            </div>
-
-            {/* Short Description */}
-            {product.short_description && (
-              <p className="text-muted-foreground">{product.short_description}</p>
-            )}
-
-            {/* Effects */}
-            {product.effects && product.effects.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {product.effects.map((effect, idx) => {
-                  const iconName = effect.toLowerCase();
-                  let IconComponent = Activity; // Default
-
-                  if (iconName.includes('sleep') || iconName.includes('night')) IconComponent = Moon;
-                  else if (iconName.includes('happy') || iconName.includes('mood')) IconComponent = Smile;
-                  else if (iconName.includes('energy') || iconName.includes('uplift')) IconComponent = Zap;
-                  else if (iconName.includes('relax') || iconName.includes('calm')) IconComponent = Sun;
-                  else if (iconName.includes('focus')) IconComponent = Target;
-                  else if (iconName.includes('creat')) IconComponent = Lightbulb;
-
-                  return (
-                    <TooltipProvider key={idx}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border text-sm backdrop-blur-sm">
-                            <IconComponent className="w-4 h-4 text-primary" style={{ color: store.primary_color }} />
-                            <span className="capitalize">{effect}</span>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {effect} effect
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  );
-                })}
-              </div>
-            )}
-
-            <Separator />
-
-            {/* Variants */}
-            {product.variants && product.variants.length > 0 && (
-              <div className="space-y-3">
-                <p className="font-medium">Options</p>
-                <div className="flex flex-wrap gap-2">
-                  {product.variants.map((variant: any) => (
-                    <Button
-                      key={variant.name || variant}
-                      variant={selectedVariant === (variant.name || variant) ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setSelectedVariant(variant.name || variant)}
-                      style={{
-                        backgroundColor:
-                          selectedVariant === (variant.name || variant)
-                            ? store.primary_color
-                            : undefined,
-                      }}
-                    >
-                      {variant.name || variant}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Real-time Stock Warning */}
-            <StockWarning
-              productId={product.product_id}
-              requested={quantity}
-              variant="inline"
-            />
-
-            {/* Quantity */}
-            <div className="space-y-3">
-              <p className="font-medium">Quantity</p>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center border rounded-lg">
-                  <Button
                     variant="ghost"
-                    size="icon"
-                    className="h-10 w-10 rounded-r-none"
-                    onClick={() => handleQuantityChange(-1)}
-                    disabled={quantity <= 1}
+                    className="rounded-full bg-black/20 backdrop-blur-md border border-white/10 hover:bg-white/20 text-white"
                   >
-                    <Minus className="w-4 h-4" />
-                  </Button>
-                  <span className="w-12 text-center font-medium">{quantity}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-10 w-10 rounded-l-none"
-                    onClick={() => handleQuantityChange(1)}
-                    disabled={quantity >= 99}
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-                {!product.in_stock && (
-                  <Badge variant="destructive">Out of Stock</Badge>
-                )}
-              </div>
-            </div>
-
-            {/* Add to Cart & Wishlist */}
-            <div className="flex gap-3">
-              <motion.div
-                className="flex-1"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Button
-                  data-testid="add-to-cart-button"
-                  size="lg"
-                  className="w-full relative overflow-hidden"
-                  style={{ backgroundColor: store.primary_color }}
-                  disabled={!product.in_stock || isAddingToCart}
-                  onClick={handleAddToCart}
-                >
-                  {isAddingToCart && !showAddedAnimation ? (
-                    <span className="flex items-center gap-2">
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Adding...
-                    </span>
-                  ) : showAddedAnimation ? (
-                    <span className="flex items-center gap-2">
-                      <Check className="w-5 h-5" />
-                      Added!
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <ShoppingCart className="w-5 h-5" />
-                      {product.in_stock ? 'Add to Cart' : 'Out of Stock'}
-                    </span>
-                  )}
-                </Button>
-              </motion.div>
-              <Button
-                size="lg"
-                variant="outline"
-                className={cn(isWishlisted && 'text-red-500 border-red-500')}
-                onClick={toggleWishlist}
-              >
-                <Heart className={cn('w-5 h-5', isWishlisted && 'fill-red-500')} />
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="lg" variant="outline">
                     <Share2 className="w-5 h-5" />
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => handleShare('copy')}>
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copy Link
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleShare('facebook')}>
-                    <Facebook className="w-4 h-4 mr-2" />
-                    Facebook
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleShare('twitter')}>
-                    <Twitter className="w-4 h-4 mr-2" />
-                    Twitter
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleShare('whatsapp')}>
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    WhatsApp
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </div>
+
+                {/* Badges */}
+                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                  {discountPercent > 0 && (
+                    <Badge className="bg-red-500/90 hover:bg-red-500 backdrop-blur border-none text-white px-3 py-1 text-xs uppercase tracking-widest">
+                      Sale
+                    </Badge>
+                  )}
+                  {!product.in_stock && (
+                    <Badge className="bg-zinc-800/90 text-zinc-300 backdrop-blur border-white/10 px-3 py-1 text-xs uppercase tracking-widest">
+                      Sold Out
+                    </Badge>
+                  )}
+                  {product.in_stock && product.stock_quantity < 10 && (
+                    <Badge className="bg-amber-500/90 text-black backdrop-blur border-none px-3 py-1 text-xs uppercase tracking-widest">
+                      Low Stock
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Thumbnails */}
+              {allImages.length > 1 && (
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                  {allImages.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImage(idx)}
+                      className={`relative flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden transition-all duration-300 ${selectedImage === idx
+                        ? 'ring-2 ring-primary ring-offset-2 ring-offset-black scale-105 opacity-100'
+                        : 'opacity-50 hover:opacity-80 hover:scale-105'
+                        }`}
+                    >
+                      <img src={img} alt={`${product.name} view ${idx + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Trust Badges */}
-            <div className="grid grid-cols-3 gap-4 py-4">
-              <div className="flex flex-col items-center text-center">
-                <Truck className="w-6 h-6 mb-1" style={{ color: store.primary_color }} />
-                <span className="text-xs text-muted-foreground">Fast Delivery</span>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <Shield className="w-6 h-6 mb-1" style={{ color: store.primary_color }} />
-                <span className="text-xs text-muted-foreground">Secure Payment</span>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <RotateCcw className="w-6 h-6 mb-1" style={{ color: store.primary_color }} />
-                <span className="text-xs text-muted-foreground">Easy Returns</span>
+            {/* Right Column: Details (Span 5) */}
+            <div className="lg:col-span-5 relative">
+              <div className="sticky top-24 space-y-8">
+                {/* Glassmorphism Details Card */}
+                <div className={`rounded-3xl p-8 backdrop-blur-xl ${isLuxuryTheme ? 'bg-white/5 border border-white/10' : 'bg-card border'}`}>
+                  {/* Brand & Category */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      {product.brand && (
+                        <span className="text-sm font-medium tracking-widest uppercase text-white/50">
+                          {product.brand}
+                        </span>
+                      )}
+                      {product.strain_type && (
+                        <>
+                          <span className="w-1 h-1 rounded-full bg-white/20" />
+                          <Badge variant="outline" className={`border-white/10 bg-white/5 ${product.strain_type.toLowerCase() === 'sativa' ? 'text-yellow-400' :
+                            product.strain_type.toLowerCase() === 'indica' ? 'text-purple-400' : 'text-emerald-400'
+                            }`}>
+                            {product.strain_type}
+                          </Badge>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <span className={`text-sm font-medium ${isLuxuryTheme ? 'text-white' : ''}`}>{averageRating.toFixed(1)}</span>
+                      <span className={`text-xs ${isLuxuryTheme ? 'text-white/40' : 'text-muted-foreground'}`}>({reviews.length})</span>
+                    </div>
+                  </div>
+
+                  {/* Title */}
+                  <h1 className={`text-4xl md:text-5xl font-light tracking-tight mb-4 leading-tight ${isLuxuryTheme ? 'text-white' : ''}`}>
+                    {product.name}
+                  </h1>
+
+                  {/* Short Description */}
+                  {product.short_description && (
+                    <p className={`text-lg leading-relaxed mb-6 ${isLuxuryTheme ? 'text-white/60' : 'text-muted-foreground'}`}>
+                      {product.short_description}
+                    </p>
+                  )}
+
+                  {/* Price */}
+                  <div className="flex items-baseline gap-4 mb-8">
+                    <span className="text-3xl font-medium text-emerald-400">
+                      {formatCurrency(product.display_price)}
+                    </span>
+                    {product.compare_at_price && (
+                      <span className={`text-lg line-through ${isLuxuryTheme ? 'text-white/30 decoration-white/30' : 'text-muted-foreground'}`}>
+                        {formatCurrency(product.compare_at_price)}
+                      </span>
+                    )}
+                  </div>
+
+                  <Separator className={isLuxuryTheme ? "bg-white/10 mb-8" : "mb-8"} />
+
+                  {/* Variants */}
+                  {product.variants && product.variants.length > 0 && (
+                    <div className="mb-8 space-y-4">
+                      <span className={`text-sm uppercase tracking-widest font-medium ${isLuxuryTheme ? 'text-white/50' : 'text-muted-foreground'}`}>Select Option</span>
+                      <div className="flex flex-wrap gap-3">
+                        {product.variants.map((variant: any) => {
+                          const variantName = variant.name || variant;
+                          return (
+                            <button
+                              key={variantName}
+                              onClick={() => setSelectedVariant(variantName)}
+                              className={`px-6 py-3 rounded-xl border transition-all duration-300 text-sm font-medium ${selectedVariant === variantName
+                                ? 'bg-white text-black border-white scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]'
+                                : 'bg-transparent text-white/70 border-white/10 hover:border-white/30 hover:bg-white/5'
+                                }`}
+                            >
+                              {variantName}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Add To Cart Actions */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-4">
+                      <div className={`flex items-center rounded-xl border p-1 ${isLuxuryTheme ? 'bg-black/30 border-white/10' : 'bg-muted'}`}>
+                        <button
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          className={`w-10 h-10 flex items-center justify-center rounded-lg transition-colors ${isLuxuryTheme ? 'hover:bg-white/10 text-white' : 'hover:bg-background'
+                            }`}
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <span className={`w-12 text-center text-lg font-medium ${isLuxuryTheme ? 'text-white' : ''}`}>{quantity}</span>
+                        <button
+                          onClick={() => setQuantity(quantity + 1)}
+                          className={`w-10 h-10 flex items-center justify-center rounded-lg transition-colors ${isLuxuryTheme ? 'hover:bg-white/10 text-white' : 'hover:bg-background'
+                            }`}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="flex-1">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={handleAddToCart}
+                          disabled={!product.in_stock || isAddingToCart}
+                          className={`w-full py-4 rounded-xl font-medium text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group ${!product.in_stock
+                            ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                            : isLuxuryTheme
+                              ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white shadow-[0_0_30px_rgba(16,185,129,0.3)]'
+                              : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                            }`}
+                        >
+                          {isAddingToCart ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                              Adding...
+                            </>
+                          ) : (
+                            <>
+                              <ShoppingCart className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                              {product.in_stock ? 'Add to Bag' : 'Out of Stock'}
+                            </>
+                          )}
+                        </motion.button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Effects Badges (if any) */}
+                  {product.effects && product.effects.length > 0 && (
+                    <div className="mt-8 pt-6 border-t border-white/10">
+                      <div className="flex flex-wrap gap-4">
+                        {product.effects.map((effect, idx) => {
+                          const iconName = effect.toLowerCase();
+                          let IconComponent = Activity;
+
+                          if (iconName.includes('sleep') || iconName.includes('night')) IconComponent = Moon;
+                          else if (iconName.includes('happy') || iconName.includes('mood')) IconComponent = Smile;
+                          else if (iconName.includes('energy') || iconName.includes('uplift')) IconComponent = Zap;
+                          else if (iconName.includes('relax') || iconName.includes('calm')) IconComponent = Sun;
+                          else if (iconName.includes('focus')) IconComponent = Target;
+                          else if (iconName.includes('creat')) IconComponent = Lightbulb;
+
+                          return (
+                            <div key={idx} className="flex flex-col items-center gap-2 group">
+                              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-colors">
+                                <IconComponent className="w-5 h-5 text-emerald-400" />
+                              </div>
+                              <span className="text-xs uppercase tracking-wider text-white/40 font-medium">{effect}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Trust Indicators */}
+                  <div className="grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-white/10">
+                    <div className="flex flex-col items-center text-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                        <Truck className="w-4 h-4 text-white/60" />
+                      </div>
+                      <span className="text-[10px] uppercase tracking-wider text-white/40">Fast Delivery</span>
+                    </div>
+                    <div className="flex flex-col items-center text-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                        <Shield className="w-4 h-4 text-white/60" />
+                      </div>
+                      <span className="text-[10px] uppercase tracking-wider text-white/40">Secure</span>
+                    </div>
+                    <div className="flex flex-col items-center text-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                        <RotateCcw className="w-4 h-4 text-white/60" />
+                      </div>
+                      <span className="text-[10px] uppercase tracking-wider text-white/40">Returns</span>
+                    </div>
+                  </div>
+
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Product Details Tabs */}
-        <div className="mt-12">
-          <Tabs defaultValue="description">
-            <TabsList className="w-full justify-start">
-              <TabsTrigger value="description">Description</TabsTrigger>
-              <TabsTrigger value="reviews">
-                Reviews ({reviews.length})
-              </TabsTrigger>
-            </TabsList>
+          {/* Full Width Sections Below Main Grid */}
+          <div className="mt-24 space-y-24">
 
-            <TabsContent value="description" className="mt-6">
-              <Card>
-                <CardContent className="pt-6 prose max-w-none">
-                  {product.description ? (
-                    <div dangerouslySetInnerHTML={{ __html: product.description }} />
-                  ) : (
-                    <p className="text-muted-foreground">No description available.</p>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+            {/* Description & Reviews Tabs Overlay */}
+            <div className={`rounded-3xl p-8 lg:p-12 ${isLuxuryTheme ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-card border'}`}>
+              <Tabs defaultValue="description" className="w-full">
+                <TabsList className="w-full justify-start bg-transparent border-b border-white/10 p-0 h-auto mb-8">
+                  <TabsTrigger
+                    value="description"
+                    className="text-lg px-8 py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 transition-all"
+                  >
+                    Description
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="reviews"
+                    className="text-lg px-8 py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 transition-all"
+                  >
+                    Reviews ({reviews.length})
+                  </TabsTrigger>
+                </TabsList>
 
-            <TabsContent value="reviews" className="mt-6">
-              <Card>
-                <CardContent className="pt-6">
+                <TabsContent value="description" className="mt-0">
+                  <div className={`prose max-w-none ${isLuxuryTheme ? 'prose-invert prose-p:text-white/70 prose-headings:text-white' : ''}`}>
+                    {product.description ? (
+                      <div dangerouslySetInnerHTML={{ __html: product.description }} />
+                    ) : (
+                      <p className="text-white/50">No description available for this product.</p>
+                    )}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="reviews" className="mt-0">
                   {reviews.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Star className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground">No reviews yet</p>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Be the first to review this product
-                      </p>
+                    <div className="text-center py-12">
+                      <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Star className="w-8 h-8 text-white/20" />
+                      </div>
+                      <p className="text-xl font-medium text-white mb-2">No reviews yet</p>
+                      <p className="text-white/50 mb-8">Be the first to share your experience with this product.</p>
                       {store && product && (
                         <ReviewForm
                           storeId={store.id}
@@ -1070,171 +958,194 @@ export default function ProductDetailPage() {
                       )}
                     </div>
                   ) : (
-                    <div className="space-y-6">
-                      <div className="flex items-center justify-between pb-6 border-b">
-                        <div className="flex items-center gap-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                      <div>
+                        {/* Rating Summary */}
+                        <div className="flex items-center gap-8 mb-12 bg-white/5 p-8 rounded-2xl border border-white/5">
                           <div className="text-center">
-                            <p className="text-4xl font-bold">{averageRating.toFixed(1)}</p>
-                            {renderStars(averageRating, 'w-5 h-5')}
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {reviews.length} review{reviews.length !== 1 ? 's' : ''}
-                            </p>
+                            <span className="text-6xl font-light text-white block">{averageRating.toFixed(1)}</span>
+                            <div className="flex justify-center mt-2">
+                              {renderStars(averageRating, 'w-5 h-5')}
+                            </div>
+                            <span className="text-sm text-white/40 mt-2 block">{reviews.length} ratings</span>
+                          </div>
+                          <div className="h-20 w-px bg-white/10" />
+                          <div className="flex-1">
+                            <h3 className="text-2xl font-light text-white mb-2">Customer Reviews</h3>
+                            <p className="text-white/60 mb-6">95% of customers recommended this product</p>
+                            {store && product && (
+                              <ReviewForm
+                                storeId={store.id}
+                                productId={product.product_id}
+                                productName={product.name}
+                                primaryColor={store.primary_color || '#10b981'}
+                              />
+                            )}
                           </div>
                         </div>
-                        {store && product && (
-                          <ReviewForm
-                            storeId={store.id}
-                            productId={product.product_id}
-                            productName={product.name}
-                            primaryColor={store.primary_color || '#10b981'}
-                          />
-                        )}
-                      </div>
 
-                      {/* Review List */}
-                      <div className="space-y-6">
-                        {reviews.map((review) => (
-                          <div key={review.id} className="border-b pb-6 last:border-0">
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <p className="font-medium">
-                                    {review.customer_name || 'Anonymous'}
-                                  </p>
-                                  {review.is_verified_purchase && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      <Check className="w-3 h-3 mr-1" />
-                                      Verified
-                                    </Badge>
-                                  )}
+                        {/* Recent Reviews */}
+                        <div className="space-y-6">
+                          {reviews.map((review) => (
+                            <div key={review.id} className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/5 transition-colors">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500/20 to-purple-500/20 flex items-center justify-center text-white font-medium">
+                                    {review.customer_name?.[0] || 'A'}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-white">
+                                      {review.customer_name || 'Anonymous'}
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                      {renderStars(review.rating, 'w-3 h-3')}
+                                      {review.is_verified_purchase && (
+                                        <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 border-0 text-[10px] h-5 px-1.5">
+                                          Verified
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
-                                {renderStars(review.rating)}
+                                <span className="text-xs text-white/30">
+                                  {formatSmartDate(review.created_at)}
+                                </span>
                               </div>
-                              <span className="text-sm text-muted-foreground">
-                                {formatSmartDate(review.created_at)}
-                              </span>
+                              {review.title && (
+                                <p className="font-medium text-white/90 mb-2">{review.title}</p>
+                              )}
+                              <p className="text-white/60 leading-relaxed">{review.comment}</p>
                             </div>
-                            {review.title && (
-                              <p className="font-medium mt-2">{review.title}</p>
-                            )}
-                            {review.comment && (
-                              <p className="text-muted-foreground mt-1">{review.comment}</p>
-                            )}
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Related Products */}
-        {relatedProducts.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {relatedProducts.map((relatedProduct) => (
-                <Link
-                  key={relatedProduct.product_id}
-                  to={`/shop/${storeSlug}/products/${relatedProduct.product_id}`}
-                >
-                  <Card className="group hover:shadow-lg transition-all overflow-hidden h-full">
-                    <div className="aspect-square relative overflow-hidden bg-muted">
-                      {relatedProduct.image_url ? (
-                        <img
-                          src={relatedProduct.image_url}
-                          alt={relatedProduct.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Package className="w-12 h-12 text-muted-foreground" />
-                        </div>
-                      )}
-                    </div>
-                    <CardContent className="p-4">
-                      <h3 className="font-medium line-clamp-2 mb-1 group-hover:text-primary transition-colors">
-                        {relatedProduct.name}
-                      </h3>
-                      <p className="font-bold" style={{ color: store.primary_color }}>
-                        {formatCurrency(relatedProduct.display_price)}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
+                </TabsContent>
+              </Tabs>
             </div>
-          </div>
-        )}
 
-        {/* Image Zoom Dialog */}
-        <Dialog open={showZoom} onOpenChange={setShowZoom}>
-          <DialogContent className="max-w-4xl p-0">
-            <DialogHeader className="sr-only">
-              <DialogTitle>Product Image</DialogTitle>
-            </DialogHeader>
-            <div className="relative">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 z-10 bg-white/80"
-                onClick={() => setShowZoom(false)}
-              >
-                <X className="w-5 h-5" />
-              </Button>
-              {allImages[selectedImage] && (
-                <img
-                  src={allImages[selectedImage]}
-                  alt={product.name}
-                  className="w-full h-auto"
-                />
-              )}
-              {allImages.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                  {allImages.map((_, index) => (
-                    <button
-                      key={index}
-                      aria-label={`View image ${index + 1}`}
-                      className={cn(
-                        'w-2 h-2 rounded-full transition-all',
-                        selectedImage === index ? 'bg-white w-4' : 'bg-white/50'
-                      )}
-                      onClick={() => setSelectedImage(index)}
-                    />
+            {/* Related Products */}
+            {relatedProducts.length > 0 && (
+              <div className="relative">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-3xl font-light text-white">You May Also Like</h2>
+                  <Link to={`/shop/${storeSlug}/products`} className="text-white/50 hover:text-white transition-colors">
+                    View All
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {relatedProducts.map((relatedProduct) => (
+                    <Link
+                      key={relatedProduct.product_id}
+                      to={`/shop/${storeSlug}/products/${relatedProduct.product_id}`}
+                    >
+                      <div className="group relative rounded-2xl overflow-hidden bg-white/5 border border-white/5 hover:border-emerald-500/50 transition-all duration-300 h-full hover:-translate-y-1 hover:shadow-2xl hover:shadow-emerald-900/20">
+                        <div className="aspect-[4/5] relative overflow-hidden">
+                          {relatedProduct.image_url ? (
+                            <img
+                              src={relatedProduct.image_url}
+                              alt={relatedProduct.name}
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale-[0.2] group-hover:grayscale-0"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-white/5">
+                              <Package className="w-12 h-12 text-white/10" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 pointer-events-none" />
+                          <div className="absolute bottom-4 left-4 right-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                            <Button size="sm" className="w-full bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-lg shadow-emerald-900/50">
+                              View Details
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="p-5">
+                          <h3 className="font-medium text-white line-clamp-1 mb-1 group-hover:text-emerald-400 transition-colors">
+                            {relatedProduct.name}
+                          </h3>
+                          <div className="flex items-center justify-between">
+                            <span className="text-white/60 text-sm">{relatedProduct.category}</span>
+                            <span className="font-bold text-emerald-400">
+                              {formatCurrency(relatedProduct.display_price)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
                   ))}
                 </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+              </div>
+            )}
 
-        {/* Recently Viewed Products */}
-        <RecentlyViewedSection
-          currentProductId={productId}
-          className="mt-16"
-        />
+            {/* Recently Viewed */}
+            <RecentlyViewedSection
+              currentProductId={productId}
+              className="py-12 border-t border-white/5"
+            />
+          </div>
 
-        {/* Enhanced Mobile Sticky Add to Cart */}
-        <EnhancedStickyAddToCart
-          product={{
-            product_id: product.product_id,
-            name: product.name,
-            display_price: product.display_price,
-            compare_at_price: product.compare_at_price,
-            in_stock: product.in_stock,
-            image_url: product.image_url,
-          }}
-          primaryColor={store.primary_color}
-          onAddToCart={async () => {
-            handleAddToCart();
-          }}
-          onToggleWishlist={toggleWishlist}
-          isWishlisted={isWishlisted}
-        />
+
+          {/* Enhanced Mobile Sticky Add to Cart (kept as is) */}
+          <EnhancedStickyAddToCart
+            product={{
+              product_id: product.product_id,
+              name: product.name,
+              display_price: product.display_price,
+              compare_at_price: product.compare_at_price,
+              in_stock: product.in_stock,
+              image_url: product.image_url,
+            }}
+            primaryColor={store.primary_color}
+            onAddToCart={async () => {
+              handleAddToCart();
+            }}
+            onToggleWishlist={toggleWishlist}
+            isWishlisted={isWishlisted}
+          />
+        </div>
       </div>
-    </>
+
+      {/* Image Zoom Dialog */}
+      <Dialog open={showZoom} onOpenChange={setShowZoom}>
+        <DialogContent className="max-w-4xl p-0 bg-black/95 border-none">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Product Image</DialogTitle>
+          </DialogHeader>
+          <div className="relative flex items-center justify-center min-h-[80vh]">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-50 bg-white/10 hover:bg-white/20 text-white rounded-full"
+              onClick={() => setShowZoom(false)}
+            >
+              <X className="w-6 h-6" />
+            </Button>
+            {allImages[selectedImage] && (
+              <img
+                src={allImages[selectedImage]}
+                alt={product.name}
+                className="max-h-[85vh] w-auto object-contain rounded-lg"
+              />
+            )}
+            {allImages.length > 1 && (
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
+                {allImages.map((_, index) => (
+                  <button
+                    key={index}
+                    aria-label={`View image ${index + 1}`}
+                    className={cn(
+                      'w-2.5 h-2.5 rounded-full transition-all duration-300',
+                      selectedImage === index ? 'bg-white w-8' : 'bg-white/30 hover:bg-white/50'
+                    )}
+                    onClick={() => setSelectedImage(index)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

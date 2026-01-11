@@ -98,6 +98,9 @@ export default function CheckoutPage() {
   const [showErrors, setShowErrors] = useState(false);
   const [orderRetryCount, setOrderRetryCount] = useState(0);
 
+  // Express Checkout for returning customers
+  const [hasSavedData, setHasSavedData] = useState(false);
+
   // Loyalty points state
   const [loyaltyDiscount, setLoyaltyDiscount] = useState(0);
   const [loyaltyPointsUsed, setLoyaltyPointsUsed] = useState(0);
@@ -113,6 +116,10 @@ export default function CheckoutPage() {
         if (saved) {
           const parsed = JSON.parse(saved);
           setFormData((prev) => ({ ...prev, ...parsed }));
+          // Check if we have enough saved data for express checkout
+          if (parsed.firstName && parsed.lastName && parsed.email && parsed.street && parsed.city && parsed.zip) {
+            setHasSavedData(true);
+          }
         }
       } catch {
         // Ignore parse errors
@@ -148,6 +155,48 @@ export default function CheckoutPage() {
   // Fetch and calculate active deals
   const { appliedDeals, totalDiscount: dealsDiscount } = useDeals(store?.id, cartItems, formData.email || undefined);
 
+  // Gift Cards
+  const { appliedGiftCards, applyGiftCard, removeGiftCard, getGiftCardTotal } = useShopCart({
+    storeId: store?.id,
+  });
+  const [giftCardCode, setGiftCardCode] = useState('');
+  const [isCheckingGiftCard, setIsCheckingGiftCard] = useState(false);
+
+  // Handle Gift Card Application
+  const handleApplyGiftCard = async () => {
+    if (!giftCardCode.trim() || !store?.id) return;
+    setIsCheckingGiftCard(true);
+
+    try {
+      const { data, error } = await supabase.rpc('validate_marketplace_gift_card', {
+        p_store_id: store.id,
+        p_code: giftCardCode.trim()
+      });
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const card = data[0];
+        if (card.is_valid) {
+          applyGiftCard({
+            code: giftCardCode.trim(),
+            balance: card.current_balance
+          });
+          setGiftCardCode('');
+          toast({ title: 'Gift card applied!', description: `Balance: $${card.current_balance}` });
+        } else {
+          toast({ title: 'Invalid card', description: card.message, variant: 'destructive' });
+        }
+      } else {
+        toast({ title: 'Invalid card', description: 'Card not found', variant: 'destructive' });
+      }
+    } catch (err) {
+      toast({ title: 'Error', description: 'Failed to validate card', variant: 'destructive' });
+    } finally {
+      setIsCheckingGiftCard(false);
+    }
+  };
+
   // Get delivery fee based on zip code (from delivery zones or default)
   const getDeliveryFee = () => {
     if (subtotal >= (store?.free_delivery_threshold || 100)) return 0;
@@ -171,8 +220,12 @@ export default function CheckoutPage() {
 
   // Cart rounding: round to nearest dollar if enabled
   const enableCartRounding = (store as any)?.enable_cart_rounding === true;
-  const total = enableCartRounding ? Math.round(rawTotal) : rawTotal;
-  const roundingAdjustment = enableCartRounding ? (total - rawTotal) : 0;
+  const totalBeforeGiftCards = enableCartRounding ? Math.round(rawTotal) : rawTotal;
+  const roundingAdjustment = enableCartRounding ? (totalBeforeGiftCards - rawTotal) : 0;
+
+  // Calculate Gift Card Deductions
+  const giftCardAmount = getGiftCardTotal(totalBeforeGiftCards);
+  const total = Math.max(0, totalBeforeGiftCards - giftCardAmount);
 
   // Update form field
   const updateField = (field: keyof CheckoutData, value: string) => {
@@ -355,6 +408,17 @@ export default function CheckoutPage() {
         image_url: item.imageUrl,
       }));
 
+      // Calculate gift card usage for RPC
+      let remainingToCover = totalBeforeGiftCards;
+      const giftCardsPayload = appliedGiftCards.map(gc => {
+        const deduction = Math.min(remainingToCover, gc.balance);
+        remainingToCover = Math.max(0, remainingToCover - deduction);
+        return {
+          code: gc.code,
+          amount: deduction
+        };
+      }).filter(gc => gc.amount > 0);
+
       const attemptOrder = async (attempt: number): Promise<any> => {
         try {
           const { data: orderId, error } = await supabase.rpc('create_marketplace_order', {
@@ -362,14 +426,27 @@ export default function CheckoutPage() {
             p_customer_name: `${formData.firstName} ${formData.lastName}`,
             p_customer_email: formData.email,
             p_customer_phone: formData.phone || null,
-            p_delivery_address: `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`,
+            p_delivery_address: JSON.stringify({ // Ensure JSONB compatibility if type expects it, though RPC defines it as JSONB, passing object usually works with supabase-js but stringify is safer if issues arise. Actually supabase-js handles objects fine.
+              street: formData.street,
+              apartment: formData.apartment,
+              city: formData.city,
+              state: formData.state,
+              zip: formData.zip
+            }),
             p_delivery_notes: formData.deliveryNotes || null,
             p_items: orderItems,
             p_subtotal: subtotal,
             p_tax: 0,
             p_delivery_fee: deliveryFee,
-            p_total: total,
+            p_total: total, // This is the amount TO PAY (after GC) ??? No, RPC logic sets v_total = v_subtotal. p_total is ignored in my RPC implementation actually.
+            // Wait, my RPC implementation of create_marketplace_order IGNORES p_total argument!
+            // It calculates v_total := v_subtotal.
+            // So p_total passed here is irrelevant for the DB total, BUT...
+            // the DB total will be the full amount.
+            // The gift_card_amount will be recorded.
+            // So this is fine.
             p_payment_method: formData.paymentMethod,
+            p_gift_cards: giftCardsPayload
           });
 
           if (error) {
@@ -630,6 +707,40 @@ export default function CheckoutPage() {
                 {' '}You can still place a pre-order for delivery/pickup when we open.
               </AlertDescription>
             </Alert>
+          )}
+
+          {/* Express Checkout for Returning Customers */}
+          {hasSavedData && currentStep < 3 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`mb-6 p-4 rounded-lg border ${isLuxuryTheme ? 'bg-white/5 border-white/10' : 'bg-primary/5 border-primary/20'}`}
+            >
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-full ${isLuxuryTheme ? 'bg-white/10' : 'bg-primary/10'}`}>
+                    <Check className={`w-4 h-4 ${isLuxuryTheme ? 'text-white' : 'text-primary'}`} />
+                  </div>
+                  <div>
+                    <p className={`font-medium text-sm ${isLuxuryTheme ? 'text-white' : ''}`}>
+                      Welcome back, {formData.firstName}!
+                    </p>
+                    <p className={`text-xs ${isLuxuryTheme ? 'text-white/60' : 'text-muted-foreground'}`}>
+                      Your info is saved. Ready to checkout?
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => setCurrentStep(3)}
+                  style={{ backgroundColor: themeColor }}
+                  className="text-white"
+                >
+                  <ArrowRight className="w-4 h-4 mr-2" />
+                  Express Checkout
+                </Button>
+              </div>
+            </motion.div>
           )}
 
           <Card className={isLuxuryTheme ? `${cardBg} ${cardBorder}` : ''}>
@@ -1037,62 +1148,151 @@ export default function CheckoutPage() {
                   redeemedDiscount={loyaltyDiscount}
                 />
               )}
+            </CardContent>
+          </Card>
 
-              {/* Totals */}
+          {/* Order Summary */}
+          <Card className={isLuxuryTheme ? `${cardBg} ${cardBorder}` : ''}>
+            <CardHeader>
+              <CardTitle className={isLuxuryTheme ? 'text-white font-light' : ''}>Order Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Gift Card Input */}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Gift Card Code"
+                  value={giftCardCode}
+                  onChange={(e) => setGiftCardCode(e.target.value.toUpperCase())}
+                  className={isLuxuryTheme ? `${inputBg} ${inputBorder} ${inputText}` : ''}
+                />
+                <Button
+                  variant="outline"
+                  onClick={handleApplyGiftCard}
+                  disabled={isCheckingGiftCard || !giftCardCode.trim()}
+                  className={isLuxuryTheme ? 'border-white/10 hover:bg-white/10 text-white' : ''}
+                >
+                  {isCheckingGiftCard ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                </Button>
+              </div>
+
+              {/* Applied Gift Cards */}
+              {appliedGiftCards.length > 0 && (
+                <div className="space-y-2">
+                  {appliedGiftCards.map(card => (
+                    <div key={card.code} className={`flex items-center justify-between p-2 rounded text-sm ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted/50'}`}>
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="w-3 h-3 text-emerald-500" />
+                        <span className="font-mono">{card.code}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-emerald-500">-${formatCurrency(Math.min(card.balance, totalBeforeGiftCards))}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                          onClick={() => removeGiftCard(card.code)}
+                        >
+                          <ArrowLeft className="w-3 h-3 rotate-45" /> {/* Use X icon if available, iterating quickly */}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <Separator className={isLuxuryTheme ? 'bg-white/5' : ''} />
+
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span>{formatCurrency(subtotal)}</span>
+                <div className="flex justify-between">
+                  <span className={textMuted}>Subtotal</span>
+                  <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Delivery</span>
-                  <span>
-                    {deliveryFee === 0 ? (
-                      <Badge variant="secondary" className="bg-green-100 text-green-700">
-                        FREE
-                      </Badge>
-                    ) : (
-                      formatCurrency(deliveryFee)
-                    )}
-                  </span>
-                </div>
-                {loyaltyDiscount > 0 && (
-                  <div className="flex justify-between text-sm text-green-600">
-                    <span>Loyalty Discount</span>
-                    <span>-{formatCurrency(loyaltyDiscount)}</span>
+                {deliveryFee > 0 && (
+                  <div className="flex justify-between">
+                    <span className={textMuted}>Delivery</span>
+                    <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(deliveryFee)}</span>
                   </div>
                 )}
                 {dealsDiscount > 0 && (
-                  <div className="space-y-1">
-                    {appliedDeals.map(({ deal, discountAmount }) => (
-                      <div key={deal.id} className="flex justify-between text-sm text-blue-600">
-                        <span>{deal.name}</span>
-                        <span>-{formatCurrency(discountAmount)}</span>
-                      </div>
-                    ))}
+                  <div className="flex justify-between text-green-500">
+                    <span>Deals & Discounts</span>
+                    <span>-{formatCurrency(dealsDiscount)}</span>
                   </div>
                 )}
-                {roundingAdjustment !== 0 && (
-                  <div className="flex justify-between text-sm text-muted-foreground">
+                {loyaltyDiscount > 0 && (
+                  <div className="flex justify-between text-green-500">
+                    <span>Loyalty Points</span>
+                    <span>-{formatCurrency(loyaltyDiscount)}</span>
+                  </div>
+                )}
+                {enableCartRounding && roundingAdjustment !== 0 && (
+                  <div className="flex justify-between text-blue-500 text-sm">
                     <span>Rounding Adjustment</span>
                     <span>{roundingAdjustment > 0 ? '+' : ''}{formatCurrency(roundingAdjustment)}</span>
                   </div>
                 )}
-                <Separator />
+                {giftCardAmount > 0 && (
+                  <div className="flex justify-between text-emerald-500 font-medium">
+                    <span>Gift Card</span>
+                    <span>-{formatCurrency(giftCardAmount)}</span>
+                  </div>
+                )}
+                <Separator className={isLuxuryTheme ? 'bg-white/5' : ''} />
                 <div className="flex justify-between text-lg font-bold">
-                  <span>Total</span>
-                  <span style={{ color: store.primary_color }}>{formatCurrency(total)}</span>
+                  <span className={isLuxuryTheme ? textPrimary : ''}>Total</span>
+                  <span style={{ color: themeColor }}>{formatCurrency(total)}</span>
                 </div>
               </div>
+
+              {/* Only show Payment method step if total > 0 */}
+              {total === 0 && (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
+                  <p className="text-emerald-500 font-medium text-sm">Order fully covered by Gift Card</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Sticky Mobile Checkout Bar */}
+      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-background/95 backdrop-blur-md border-t p-4 z-50">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-muted-foreground">Order Total</p>
+            <p className="text-lg font-bold" style={{ color: themeColor }}>{formatCurrency(total)}</p>
+          </div>
+          {currentStep < 4 ? (
+            <Button
+              onClick={nextStep}
+              disabled={placeOrderMutation.isPending}
+              style={{ backgroundColor: themeColor }}
+              className="flex-1 max-w-[180px] text-white"
+            >
+              Continue
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          ) : (
+            <Button
+              onClick={handlePlaceOrder}
+              disabled={placeOrderMutation.isPending || !agreeToTerms}
+              style={{ backgroundColor: themeColor }}
+              className="flex-1 max-w-[180px] text-white"
+            >
+              {placeOrderMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                'Place Order'
+              )}
+            </Button>
+          )}
+        </div>
+      </div>
+      {/* Spacer for mobile sticky bar */}
+      <div className="h-24 lg:hidden" />
     </div>
   );
 }
-
-
-
-
-

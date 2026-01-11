@@ -31,6 +31,11 @@ interface Product {
     image_url: string | null;
     category: string;
     in_stock: boolean;
+<<<<<<< HEAD
+=======
+    sales_count?: number;
+    min_expiry_days?: number;
+>>>>>>> 1f1bde20 (feat: Complete Storefront Parity & UX Improvements)
 }
 
 interface CartUpsellsSectionProps {
@@ -115,6 +120,7 @@ export function CartUpsellsSection({
             price: product.price,
             quantity: 1,
             imageUrl: product.image_url || undefined,
+            minExpiryDays: product.min_expiry_days,
         });
         toast({
             title: 'Added to cart',

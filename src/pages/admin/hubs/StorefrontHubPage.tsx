@@ -22,6 +22,7 @@ import {
     Boxes,
     Radio,
     BarChart3,
+    Gift,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback, Fragment } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -37,6 +38,7 @@ const StorefrontBuilder = lazy(() => import('@/pages/admin/storefront/Storefront
 const StorefrontBundles = lazy(() => import('@/pages/admin/storefront/StorefrontBundles'));
 const StorefrontLiveOrders = lazy(() => import('@/pages/admin/storefront/StorefrontLiveOrders'));
 const StorefrontAnalytics = lazy(() => import('@/pages/admin/storefront/StorefrontAnalytics'));
+const StorefrontGiftCards = lazy(() => import('@/pages/admin/storefront/StorefrontGiftCards'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -55,6 +57,7 @@ const tabs = [
     { id: 'customers', label: 'Customers', icon: Users, group: 'Operations' },
     // Marketing
     { id: 'coupons', label: 'Promos', icon: Tag, group: 'Marketing' },
+    { id: 'gift-cards', label: 'Gift Cards', icon: Gift, group: 'Marketing' },
     { id: 'bundles', label: 'Bundles', icon: Boxes, group: 'Marketing' },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, group: 'Marketing' },
     // Customization
@@ -138,6 +141,9 @@ export default function StorefrontHubPage() {
                     </TabsContent>
                     <TabsContent value="analytics" className="m-0 h-full">
                         <Suspense fallback={<TabSkeleton />}><StorefrontAnalytics /></Suspense>
+                    </TabsContent>
+                    <TabsContent value="gift-cards" className="m-0 h-full">
+                        <Suspense fallback={<TabSkeleton />}><StorefrontGiftCards /></Suspense>
                     </TabsContent>
                     <TabsContent value="settings" className="m-0 h-full">
                         <Suspense fallback={<TabSkeleton />}><StorefrontSettings /></Suspense>

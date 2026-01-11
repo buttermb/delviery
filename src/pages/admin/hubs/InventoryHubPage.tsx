@@ -20,6 +20,7 @@ import {
     CreditCard,
     Barcode,
     Menu,
+    Globe,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
@@ -36,6 +37,7 @@ const InventoryMonitoringPage = lazy(() => import('@/pages/admin/InventoryMonito
 const FrontedInventory = lazy(() => import('@/pages/admin/FrontedInventory'));
 const DispatchInventory = lazy(() => import('@/pages/admin/DispatchInventory'));
 const GenerateBarcodes = lazy(() => import('@/pages/admin/GenerateBarcodes'));
+const GlobalProductCatalog = lazy(() => import('@/components/admin/products/GlobalProductCatalog').then(m => ({ default: m.GlobalProductCatalog })));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -47,6 +49,7 @@ const TabSkeleton = () => (
 const tabs = [
     // Catalog
     { id: 'products', label: 'Products', icon: Package, group: 'Catalog' },
+    { id: 'global', label: 'Global', icon: Globe, group: 'Catalog' },
     { id: 'menus', label: 'Menus', icon: Menu, group: 'Catalog' },
     // Levels & Alerts
     { id: 'stock', label: 'Stock', icon: BarChart3, group: 'Levels' },
@@ -124,6 +127,13 @@ export default function InventoryHubPage() {
                 <TabsContent value="menus" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <DisposableMenus />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Global Catalog Tab */}
+                <TabsContent value="global" className="m-0 p-4">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <GlobalProductCatalog />
                     </Suspense>
                 </TabsContent>
 

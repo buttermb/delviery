@@ -539,6 +539,34 @@ export default function CartPage() {
           </div>
         </div>
       )}
+
+      {/* Sticky Mobile Checkout Bar */}
+      {cartItems.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 lg:hidden z-50">
+          <div
+            className={`p-4 border-t shadow-lg ${isLuxuryTheme ? 'bg-black/95 border-white/10 backdrop-blur-xl' : 'bg-white border-gray-200'}`}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className={`text-sm ${textMuted}`}>{cartCount} item{cartCount !== 1 ? 's' : ''}</p>
+                <p className="text-lg font-bold" style={{ color: themeColor }}>{formatCurrency(total)}</p>
+              </div>
+              <Button
+                size="lg"
+                className="px-8"
+                style={{ backgroundColor: themeColor }}
+                onClick={() => navigate(`/shop/${storeSlug}/checkout`)}
+              >
+                Checkout
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Spacer for sticky bar on mobile */}
+      {cartItems.length > 0 && <div className="h-24 lg:hidden" />}
     </div>
   );
 }
