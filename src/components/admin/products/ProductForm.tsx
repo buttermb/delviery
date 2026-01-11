@@ -322,6 +322,26 @@ export function ProductForm({
                         <p className="text-xs text-muted-foreground pl-6">
                             If checked, this product will not be eligible for order-level discounts or promotions.
                         </p>
+
+                        {/* Minimum Price */}
+                        <div className="space-y-2 pt-4 border-t">
+                            <Label>Minimum Allowed Price</Label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={formData.minimum_price}
+                                    onChange={(e) => setFormData({ ...formData, minimum_price: e.target.value })}
+                                    placeholder="0.00"
+                                    className="pl-7"
+                                />
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                Regulatory minimum — discounts will not reduce the price below this amount.
+                            </p>
+                        </div>
                     </TabsContent>
 
                     {/* Inventory Tab */}
