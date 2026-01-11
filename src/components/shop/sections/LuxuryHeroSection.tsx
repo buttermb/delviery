@@ -58,7 +58,10 @@ export function LuxuryHeroSection({ content, styles, storeId }: LuxuryHeroSectio
   const { storeSlug } = useParams();
 
   const accentColor = styles?.accent_color || '#10b981';
-  const backgroundStyle = styles?.background_style || 'mesh';
+  const validStyles: BackgroundStyle[] = ['aesthetic-fluid', 'ambient-light', 'blur-gradient', 'chaos-waves', 'big-blob', 'swirling-curves', 'static'];
+  const backgroundStyle: BackgroundStyle = validStyles.includes(styles?.background_style as BackgroundStyle) 
+    ? (styles?.background_style as BackgroundStyle) 
+    : 'blur-gradient';
   const colorPalette = generateColorPalette(accentColor);
   const seed = storeSlug ? hashCode(storeSlug) : 12345;
 

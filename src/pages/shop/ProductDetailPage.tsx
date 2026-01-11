@@ -96,7 +96,6 @@ interface RpcProduct {
   thc_content: number | null;
   cbd_content: number | null;
   sort_order: number;
-  sort_order: number;
   created_at: string;
   metrc_retail_id: string | null;
   exclude_from_discounts: boolean;
@@ -123,7 +122,6 @@ interface ProductDetails {
   brand: string | null;
   sku: string | null;
   strain_type: string | null;
-  thc_content: number | null;
   thc_content: number | null;
   cbd_content: number | null;
   metrc_retail_id: string | null;

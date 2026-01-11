@@ -42,13 +42,22 @@ export default function DealsPage() {
 
     const { data: deals = [], isLoading } = useQuery({
         queryKey: ['store-active-deals', store?.id],
-        queryFn: async () => {
+        queryFn: async (): Promise<Deal[]> => {
             if (!store?.id) return [];
+            
+            // Query marketplace_deals table directly
             const { data, error } = await supabase
-                .rpc('get_active_store_deals', { p_store_id: store.id });
+                .from('marketplace_deals')
+                .select('*')
+                .eq('store_id', store.id)
+                .eq('is_active', true);
 
-            if (error) throw error;
-            return data as Deal[];
+            if (error) {
+                console.warn('Deals not available:', error);
+                return [];
+            }
+            
+            return (data || []) as unknown as Deal[];
         },
         enabled: !!store?.id,
     });
@@ -89,7 +98,7 @@ export default function DealsPage() {
                     <div className="flex flex-wrap gap-2 mb-2">
                         <Badge variant="secondary" className={isLuxuryTheme ? 'bg-white/10 text-white border-none' : ''}>
                             <Sparkles className="w-3 h-3 mr-1" />
-                            {deal.date_type === 'limited' ? 'Limited Time' : 'Recurring Deal'}
+                            {deal.end_date ? 'Limited Time' : 'Recurring Deal'}
                         </Badge>
                         {deal.applies_to !== 'order' && (
                             <Badge variant="outline" className={isLuxuryTheme ? 'border-white/20 text-white/80' : ''}>

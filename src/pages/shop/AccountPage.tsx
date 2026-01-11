@@ -184,22 +184,11 @@ export default function AccountPage() {
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min expiry
 
-      // Store the code in the database or send via edge function
-      const { error } = await supabase
-        .from('marketplace_magic_codes')
-        .upsert({
-          store_id: store.id,
-          email: email.trim().toLowerCase(),
-          code,
-          expires_at: expiresAt,
-        }, { onConflict: 'store_id,email' });
-
-      if (error) {
-        // If table doesn't exist, fall back to email lookup
-        console.warn('Magic codes table not available, using email lookup');
-        handleEmailLookup();
-        return;
-      }
+      // Magic codes table doesn't exist - fall back to email lookup
+      // In production, you would send a magic code via edge function
+      console.warn('Magic codes feature not available, using email lookup');
+      handleEmailLookup();
+      return;
 
       // In production, this would send an email via edge function
       // For now, we'll show the code in a toast for demo purposes
@@ -222,39 +211,21 @@ export default function AccountPage() {
     }
   };
 
-  // Verify magic code
+  // Verify magic code - simplified since table doesn't exist
   const handleVerifyMagicCode = async () => {
     if (!magicCode || !codeSentTo || !store?.id) return;
 
     setIsVerifyingCode(true);
     try {
-      const { data, error } = await supabase
-        .from('marketplace_magic_codes')
-        .select('*')
-        .eq('store_id', store.id)
-        .eq('email', codeSentTo.toLowerCase())
-        .eq('code', magicCode)
-        .gt('expires_at', new Date().toISOString())
-        .maybeSingle();
-
-      if (error || !data) {
-        toast({
-          title: 'Invalid or expired code',
-          description: 'Please check the code or request a new one.',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      // Delete the used code
-      await supabase
-        .from('marketplace_magic_codes')
-        .delete()
-        .eq('id', data.id);
-
-      // Look up or create customer
+      // Magic codes feature not available - fall back to email lookup
+      console.warn('Magic codes verification not available');
+      toast({
+        title: 'Verification not available',
+        description: 'Please use email lookup instead.',
+        variant: 'destructive',
+      });
+      setShowMagicCode(false);
       setEmail(codeSentTo);
-      await handleEmailLookup();
     } catch (error) {
       logger.error('Failed to verify magic code', error);
       toast({

@@ -62,35 +62,32 @@ export function CartUpsellsSection({
         onCartChange: setCartItemCount,
     });
 
-    // Fetch products from marketplace_products table directly
+    // Fetch products using the RPC that we know exists
     const { data: products = [], isLoading } = useQuery({
         queryKey: ['upsell-products', storeId],
         queryFn: async (): Promise<Product[]> => {
             try {
+                // Use the RPC that exists in the schema
                 const { data, error } = await supabase
-                    .from('marketplace_products')
-                    .select('id, name, price, image_url, category, in_stock')
-                    .eq('store_id', storeId)
-                    .eq('in_stock', true)
-                    .limit(maxItems + excludeProductIds.length + 5);
+                    .rpc('get_marketplace_products', { p_store_id: storeId });
 
                 if (error) {
                     console.warn('Failed to fetch upsell products:', error);
                     return [];
                 }
 
-                const mapped = (data || []).map(p => ({
-                    id: p.id,
-                    name: p.name,
+                const mapped = ((data as any[]) || []).map((p: any) => ({
+                    id: p.product_id,
+                    name: p.product_name,
                     price: p.price,
-                    display_price: p.price,
+                    display_price: p.sale_price || p.price,
                     image_url: p.image_url,
                     category: p.category || '',
-                    in_stock: p.in_stock ?? true,
+                    in_stock: (p.stock_quantity || 0) > 0,
                 }));
 
                 return mapped
-                    .filter(p => !excludeProductIds.includes(p.id))
+                    .filter(p => p.in_stock && !excludeProductIds.includes(p.id))
                     .slice(0, maxItems);
             } catch (err) {
                 console.warn('Failed to fetch upsell products:', err);
