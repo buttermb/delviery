@@ -6986,6 +6986,7 @@ export type Database = {
           id: string
           is_visible: boolean | null
           product_id: string
+          slug: string | null
           store_id: string
           updated_at: string | null
         }
@@ -6998,6 +6999,7 @@ export type Database = {
           id?: string
           is_visible?: boolean | null
           product_id: string
+          slug?: string | null
           store_id: string
           updated_at?: string | null
         }
@@ -7010,6 +7012,7 @@ export type Database = {
           id?: string
           is_visible?: boolean | null
           product_id?: string
+          slug?: string | null
           store_id?: string
           updated_at?: string | null
         }
@@ -14975,6 +14978,7 @@ export type Database = {
       generate_otp: { Args: never; Returns: string }
       generate_po_number: { Args: never; Returns: string }
       generate_pos_transaction_number: { Args: never; Returns: string }
+      generate_product_slug: { Args: { p_name: string }; Returns: string }
       generate_shift_number: { Args: never; Returns: string }
       generate_ticket_number: { Args: never; Returns: string }
       generate_tracking_code: { Args: never; Returns: string }
@@ -15115,6 +15119,31 @@ export type Database = {
           status: string
           total_amount: number
           tracking_code: string
+        }[]
+      }
+      get_product_by_slug: {
+        Args: { p_slug: string; p_store_id: string }
+        Returns: {
+          brand: string
+          category: string
+          cbd_content: number
+          created_at: string
+          description: string
+          image_url: string
+          images: string[]
+          is_featured: boolean
+          is_on_sale: boolean
+          price: number
+          prices: Json
+          product_id: string
+          product_name: string
+          sale_price: number
+          sku: string
+          slug: string
+          sort_order: number
+          stock_quantity: number
+          strain_type: string
+          thc_content: number
         }[]
       }
       get_product_with_images: {

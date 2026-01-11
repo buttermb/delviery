@@ -171,9 +171,13 @@ interface ProductReview {
 }
 
 export default function ProductDetailPage() {
-  const { storeSlug, productId } = useParams();
+  const { storeSlug, productId, productSlug } = useParams();
   const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
+  
+  // Determine if using slug-based or UUID-based URL
+  const isSlugBased = !!productSlug && !productId;
+  const identifier = productSlug || productId;
   const { isLuxuryTheme, accentColor, cardBg, cardBorder, textPrimary, textMuted } = useLuxuryTheme();
   const { toast } = useToast();
 
@@ -200,42 +204,89 @@ export default function ProductDetailPage() {
   // Track recently viewed products
   const { addToRecentlyViewed } = useRecentlyViewed();
 
-  // Fetch product details
+  // Fetch product details - supports both UUID and slug lookups
   const { data: product, isLoading: productLoading } = useQuery({
-    queryKey: ['shop-product', store?.id, productId],
+    queryKey: ['shop-product', store?.id, identifier, isSlugBased],
     queryFn: async () => {
-      if (!store?.id || !productId) return null;
+      if (!store?.id || !identifier) return null;
 
       try {
-        const { data, error } = await supabase
-          .rpc('get_marketplace_products', { p_store_id: store.id });
+        if (isSlugBased) {
+          // Slug-based lookup using the new RPC
+          const { data, error } = await supabase
+            .rpc('get_product_by_slug', { 
+              p_store_id: store.id, 
+              p_slug: identifier 
+            });
 
-        if (error) {
-          logger.error('Failed to fetch product', error);
+          if (error) {
+            logger.error('Failed to fetch product by slug', error);
+            return null;
+          }
+
+          if (data && data.length > 0) {
+            const item = data[0];
+            return {
+              product_id: item.product_id,
+              name: item.product_name,
+              description: item.description,
+              short_description: item.description?.substring(0, 150) || null,
+              category: item.category,
+              price: item.price,
+              display_price: item.sale_price || item.price,
+              compare_at_price: item.sale_price ? item.price : null,
+              image_url: item.image_url,
+              images: item.images || [],
+              in_stock: item.stock_quantity > 0,
+              is_featured: item.is_featured,
+              marketplace_category_name: item.category,
+              variants: [],
+              tags: [],
+              brand: item.brand,
+              sku: item.sku,
+              strain_type: item.strain_type,
+              thc_content: item.thc_content,
+              cbd_content: item.cbd_content,
+              metrc_retail_id: null,
+              exclude_from_discounts: false,
+              minimum_price: null,
+              effects: [],
+              slug: item.slug,
+            } as ProductDetails & { slug?: string };
+          }
           return null;
-        }
+        } else {
+          // UUID-based lookup (existing logic)
+          const { data, error } = await supabase
+            .rpc('get_marketplace_products', { p_store_id: store.id });
 
-        const products = (data || []).map((item: RpcProduct) => transformProduct(item));
-        return products.find((p: ProductDetails) => p.product_id === productId) || null;
+          if (error) {
+            logger.error('Failed to fetch product', error);
+            return null;
+          }
+
+          const products = (data || []).map((item: RpcProduct) => transformProduct(item));
+          return products.find((p: ProductDetails) => p.product_id === identifier) || null;
+        }
       } catch (err) {
         logger.error('Error fetching product', err);
         return null;
       }
     },
-    enabled: !!store?.id && !!productId,
+    enabled: !!store?.id && !!identifier,
   });
 
   // Fetch product reviews
   const { data: reviews = [] } = useQuery({
-    queryKey: ['product-reviews', store?.id, productId],
+    queryKey: ['product-reviews', store?.id, product?.product_id],
     queryFn: async () => {
-      if (!store?.id || !productId) return [];
+      if (!store?.id || !product?.product_id) return [];
 
       const { data, error } = await supabase
         .from('marketplace_reviews')
         .select('*')
         .eq('store_id', store.id)
-        .eq('product_id', productId)
+        .eq('product_id', product.product_id)
         .eq('is_approved', true)
         .order('created_at', { ascending: false })
         .limit(10);
@@ -243,7 +294,7 @@ export default function ProductDetailPage() {
       if (error) throw error;
       return data as ProductReview[];
     },
-    enabled: !!store?.id && !!productId,
+    enabled: !!store?.id && !!product?.product_id,
   });
 
   // Fetch related products
@@ -258,7 +309,7 @@ export default function ProductDetailPage() {
       if (error) throw error;
       return (data || [])
         .map((item: RpcProduct) => transformProduct(item))
-        .filter((p: ProductDetails) => p.product_id !== productId && p.category === product.category)
+        .filter((p: ProductDetails) => p.product_id !== product?.product_id && p.category === product.category)
         .slice(0, 4);
     },
     enabled: !!store?.id && !!product?.category,
@@ -266,11 +317,11 @@ export default function ProductDetailPage() {
 
   // Check wishlist status
   useEffect(() => {
-    if (store?.id && productId) {
+    if (store?.id && product?.product_id) {
       const wishlist = JSON.parse(localStorage.getItem(`shop_wishlist_${store.id}`) || '[]');
-      setIsWishlisted(wishlist.includes(productId));
+      setIsWishlisted(wishlist.includes(product.product_id));
     }
-  }, [store?.id, productId]);
+  }, [store?.id, product?.product_id]);
 
   // Calculate average rating
   const averageRating = useMemo(() => {
@@ -295,9 +346,24 @@ export default function ProductDetailPage() {
       document.title = `${product.name} | ${store.store_name}`;
 
       // Add to recently viewed
-      if (productId) {
-        addToRecentlyViewed(productId);
+      if (product.product_id) {
+        addToRecentlyViewed(product.product_id);
       }
+      
+      // SEO: Add canonical URL with slug if available
+      const productWithSlug = product as ProductDetails & { slug?: string };
+      const canonicalPath = productWithSlug.slug 
+        ? `/shop/${storeSlug}/product/${productWithSlug.slug}`
+        : `/shop/${storeSlug}/products/${product.product_id}`;
+      const canonicalUrl = `${window.location.origin}${canonicalPath}`;
+      
+      let canonicalLink = document.querySelector('link[rel="canonical"]');
+      if (!canonicalLink) {
+        canonicalLink = document.createElement('link');
+        canonicalLink.setAttribute('rel', 'canonical');
+        document.head.appendChild(canonicalLink);
+      }
+      canonicalLink.setAttribute('href', canonicalUrl);
 
       // Update meta description
       const metaDescription = document.querySelector('meta[name="description"]');

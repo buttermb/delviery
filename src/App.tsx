@@ -603,6 +603,8 @@ const App = () => {
                                           <Route index element={<ShopStorefrontPage />} />
                                           <Route path="products" element={<ShopProductCatalogPage />} />
                                           <Route path="products/:productId" element={<ShopProductDetailPage />} />
+                                          {/* SEO-friendly slug-based product URLs */}
+                                          <Route path="product/:productSlug" element={<ShopProductDetailPage />} />
                                           <Route path="cart" element={<ShopCartPage />} />
                                           <Route path="checkout" element={<ShopCheckoutPage />} />
                                           <Route path="express-checkout" element={<SinglePageCheckout />} />
