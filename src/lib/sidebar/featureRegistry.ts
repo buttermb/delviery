@@ -212,7 +212,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'storefront',
     name: 'Storefront',
     icon: Store,
-    path: '/admin/storefront',
+    path: '/admin/storefront-hub',
     category: 'Sales & Orders',
     minTier: 'professional',
   },
