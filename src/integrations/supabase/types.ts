@@ -6359,6 +6359,115 @@ export type Database = {
           },
         ]
       }
+      marketplace_banners: {
+        Row: {
+          button_link: string | null
+          button_text: string | null
+          created_at: string | null
+          display_order: number | null
+          heading: string | null
+          id: string
+          image_url: string
+          is_active: boolean | null
+          store_id: string
+          subheading: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          button_link?: string | null
+          button_text?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          heading?: string | null
+          id?: string
+          image_url: string
+          is_active?: boolean | null
+          store_id: string
+          subheading?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          button_link?: string | null
+          button_text?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          heading?: string | null
+          id?: string
+          image_url?: string
+          is_active?: boolean | null
+          store_id?: string
+          subheading?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_banners_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_carousels: {
+        Row: {
+          background_color: string | null
+          card_style: string | null
+          created_at: string | null
+          filter_category: string | null
+          filter_tag: string | null
+          filter_type: string
+          id: string
+          is_active: boolean | null
+          max_items: number | null
+          sort_order: number | null
+          store_id: string
+          subtitle: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          background_color?: string | null
+          card_style?: string | null
+          created_at?: string | null
+          filter_category?: string | null
+          filter_tag?: string | null
+          filter_type?: string
+          id?: string
+          is_active?: boolean | null
+          max_items?: number | null
+          sort_order?: number | null
+          store_id: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          background_color?: string | null
+          card_style?: string | null
+          created_at?: string | null
+          filter_category?: string | null
+          filter_tag?: string | null
+          filter_type?: string
+          id?: string
+          is_active?: boolean | null
+          max_items?: number | null
+          sort_order?: number | null
+          store_id?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_carousels_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_cart: {
         Row: {
           added_at: string | null
@@ -6513,6 +6622,74 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "marketplace_coupons_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_deals: {
+        Row: {
+          active_days: number[] | null
+          applies_to: string
+          created_at: string | null
+          description: string | null
+          discount_type: string
+          discount_value: number
+          end_date: string | null
+          first_time_only: boolean | null
+          id: string
+          is_active: boolean | null
+          max_uses_per_customer: number | null
+          min_order_amount: number | null
+          name: string
+          start_date: string | null
+          store_id: string
+          target_value: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          active_days?: number[] | null
+          applies_to?: string
+          created_at?: string | null
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          end_date?: string | null
+          first_time_only?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          max_uses_per_customer?: number | null
+          min_order_amount?: number | null
+          name: string
+          start_date?: string | null
+          store_id: string
+          target_value?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          active_days?: number[] | null
+          applies_to?: string
+          created_at?: string | null
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          end_date?: string | null
+          first_time_only?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          max_uses_per_customer?: number | null
+          min_order_amount?: number | null
+          name?: string
+          start_date?: string | null
+          store_id?: string
+          target_value?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_deals_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "marketplace_stores"

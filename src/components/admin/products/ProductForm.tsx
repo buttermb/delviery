@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Select,
     SelectContent,
@@ -35,7 +36,6 @@ export interface ProductFormData {
     image_url: string;
     low_stock_alert: string;
     metrc_retail_id: string;
-    metrc_retail_id: string;
     exclude_from_discounts: boolean;
     minimum_price: string;
 }
@@ -43,8 +43,6 @@ export interface ProductFormData {
 interface ProductFormProps {
     initialData?: Partial<ProductFormData>;
     onSubmit: (data: ProductFormData, imageFile: File | null) => Promise<void>;
-    onCancel: () => void;
-    isLoading: boolean;
     onCancel: () => void;
     isLoading: boolean;
     isEditMode: boolean;
@@ -78,7 +76,6 @@ export function ProductForm({
     onSubmit,
     onCancel,
     isLoading,
-    isEditMode,
     isEditMode,
     storeSettings,
 }: ProductFormProps) {
@@ -399,8 +396,6 @@ export function ProductForm({
                                     type="number"
                                     step="0.1"
                                     value={formData.thc_percent}
-                                    step="0.1"
-                                    value={formData.thc_percent}
                                     onChange={(e) => {
                                         setFormData({ ...formData, thc_percent: e.target.value });
                                         checkPotencyLimit('thc_percent', e.target.value);
@@ -411,8 +406,6 @@ export function ProductForm({
                                 <Label>CBD %</Label>
                                 <Input
                                     type="number"
-                                    step="0.1"
-                                    value={formData.cbd_percent}
                                     step="0.1"
                                     value={formData.cbd_percent}
                                     onChange={(e) => {
