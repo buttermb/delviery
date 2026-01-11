@@ -116,6 +116,19 @@ export function useDeals(storeId: string | undefined, cartItems: ShopCartItem[],
                     dealDiscount = deal.discount_value;
                     if (dealDiscount > discountableSubtotal) dealDiscount = discountableSubtotal;
                 }
+
+                // Enforce minimum price compliance
+                // Calculate the total minimum allowed for all discountable items
+                const minimumAllowedTotal = discountableItems.reduce((sum, item) => {
+                    const minPrice = item.minimumPrice || 0;
+                    return sum + (minPrice * item.quantity);
+                }, 0);
+
+                // Cap the discount so final price doesn't go below minimum
+                const maxAllowedDiscount = Math.max(0, discountableSubtotal - minimumAllowedTotal);
+                if (dealDiscount > maxAllowedDiscount) {
+                    dealDiscount = maxAllowedDiscount;
+                }
             }
 
             if (dealDiscount > 0) {
