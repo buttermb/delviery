@@ -301,12 +301,12 @@ export default function CheckoutPage() {
 
         // Check daily/weekly limits (requires email for tracking)
         if (formData.email && (purchaseLimits.max_daily || purchaseLimits.max_weekly)) {
-          // Get customer's recent orders
+          // Get customer's recent orders from storefront_orders table
           const weekAgo = new Date();
           weekAgo.setDate(weekAgo.getDate() - 7);
 
           const { data: recentOrders, error: ordersError } = await supabase
-            .from('marketplace_orders')
+            .from('storefront_orders')
             .select('total, created_at')
             .eq('store_id', store.id)
             .eq('customer_email', formData.email)
@@ -315,14 +315,15 @@ export default function CheckoutPage() {
 
           if (!ordersError && recentOrders) {
             const today = new Date().toISOString().split('T')[0];
+            const orders = recentOrders as { total: number | null; created_at: string | null }[];
 
             // Calculate daily spending
-            const dailyTotal = recentOrders
-              .filter(o => o.created_at.startsWith(today))
+            const dailyTotal = orders
+              .filter(o => o.created_at?.startsWith(today))
               .reduce((sum, o) => sum + (o.total || 0), 0);
 
             // Calculate weekly spending
-            const weeklyTotal = recentOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+            const weeklyTotal = orders.reduce((sum, o) => sum + (o.total || 0), 0);
 
             // Check daily limit
             if (purchaseLimits.max_daily && (dailyTotal + total) > purchaseLimits.max_daily) {

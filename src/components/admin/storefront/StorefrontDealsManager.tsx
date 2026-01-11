@@ -85,12 +85,26 @@ export function StorefrontDealsManager({ storeId }: DealsManagerProps) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     // Form State
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        name: string;
+        description: string;
+        discount_type: 'percentage' | 'fixed';
+        discount_value: string;
+        applies_to: 'order' | 'category' | 'brand' | 'collection' | 'product';
+        target_value: string;
+        active_days: number[];
+        is_active: boolean;
+        start_date: string;
+        end_date: string;
+        min_order_amount: string;
+        first_time_only: boolean;
+        max_uses_per_customer: string;
+    }>({
         name: '',
         description: '',
-        discount_type: 'percentage' as const,
+        discount_type: 'percentage',
         discount_value: '',
-        applies_to: 'order' as const,
+        applies_to: 'order',
         target_value: '',
         active_days: [0, 1, 2, 3, 4, 5, 6],
         is_active: true,

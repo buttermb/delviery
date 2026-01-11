@@ -137,9 +137,6 @@ export default function ProductManagement() {
   // Filters - initialize from saved preferences
   const [categoryFilter, setCategoryFilter] = useState<string>(preferences.customFilters?.category || "all");
   const [stockStatusFilter, setStockStatusFilter] = useState<string>(preferences.customFilters?.stockStatus || "all");
-  // Filters - initialize from saved preferences
-  const [categoryFilter, setCategoryFilter] = useState<string>(preferences.customFilters?.category || "all");
-  const [stockStatusFilter, setStockStatusFilter] = useState<string>(preferences.customFilters?.stockStatus || "all");
   const [sortBy, setSortBy] = useState<string>(preferences.sortBy || "name");
 
   // Fetch store settings for potency alerts
@@ -341,7 +338,6 @@ export default function ProductManagement() {
         // Add missing required fields with defaults
         price: data.wholesale_price ? parseFloat(data.wholesale_price) : 0, // Legacy field sync
         thca_percentage: null,
-        metrc_retail_id: data.metrc_retail_id || null,
         metrc_retail_id: data.metrc_retail_id || null,
         exclude_from_discounts: data.exclude_from_discounts,
         minimum_price: data.minimum_price ? parseFloat(data.minimum_price) : 0,
