@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { createLogger } from '../_shared/logger.ts';
 

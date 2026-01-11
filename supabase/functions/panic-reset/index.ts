@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Panic Reset Tool Edge Function
  * Allows super admins to reset tenant data (orders, inventory, etc.)

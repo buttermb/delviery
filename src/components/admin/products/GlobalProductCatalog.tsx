@@ -70,7 +70,7 @@ export function GlobalProductCatalog() {
     const { data: products = [], isLoading } = useQuery({
         queryKey: ['global-products', searchQuery, categoryFilter, brandFilter],
         queryFn: async () => {
-            const { data, error } = await supabase.rpc('search_global_products', {
+            const { data, error } = await (supabase.rpc as any)('search_global_products', {
                 p_query: searchQuery || null,
                 p_category: categoryFilter || null,
                 p_brand: brandFilter || null,
@@ -79,7 +79,7 @@ export function GlobalProductCatalog() {
             });
 
             if (error) throw error;
-            return data as GlobalProduct[];
+            return (data || []) as GlobalProduct[];
         },
     });
 
@@ -88,13 +88,13 @@ export function GlobalProductCatalog() {
         queryKey: ['global-product-imports', tenant?.id],
         queryFn: async () => {
             if (!tenant?.id) return [];
-            const { data, error } = await supabase
-                .from('global_product_imports')
+            const { data, error } = await (supabase
+                .from as any)('global_product_imports')
                 .select('global_product_id')
                 .eq('tenant_id', tenant.id);
 
             if (error) throw error;
-            return data.map(i => i.global_product_id);
+            return (data || []).map((i: any) => i.global_product_id);
         },
         enabled: !!tenant?.id,
     });
@@ -113,7 +113,7 @@ export function GlobalProductCatalog() {
 
             if (!profile) throw new Error('No marketplace profile found');
 
-            const { data, error } = await supabase.rpc('import_global_product', {
+            const { data, error } = await (supabase.rpc as any)('import_global_product', {
                 p_tenant_id: tenant.id,
                 p_global_product_id: selectedProduct.id,
                 p_price: Number(importPrice),

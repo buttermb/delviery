@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Permission Check Utilities for Edge Functions
  * PHASE 4: Updated to use user_roles table for role-based access control

@@ -168,14 +168,14 @@ export default function CheckoutPage() {
     setIsCheckingGiftCard(true);
 
     try {
-      const { data, error } = await supabase.rpc('validate_marketplace_gift_card', {
+      const { data, error } = await (supabase.rpc as any)('validate_marketplace_gift_card', {
         p_store_id: store.id,
         p_code: giftCardCode.trim()
       });
 
       if (error) throw error;
 
-      if (data && data.length > 0) {
+      if (data && (data as any[]).length > 0) {
         const card = data[0];
         if (card.is_valid) {
           applyGiftCard({

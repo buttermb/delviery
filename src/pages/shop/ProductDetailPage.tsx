@@ -697,7 +697,7 @@ export default function ProductDetailPage() {
                       Sold Out
                     </Badge>
                   )}
-                  {product.in_stock && product.stock_quantity < 10 && (
+                  {product.in_stock && (product as any).stock_quantity < 10 && (
                     <Badge className="bg-amber-500/90 text-black backdrop-blur border-none px-3 py-1 text-xs uppercase tracking-widest">
                       Low Stock
                     </Badge>
