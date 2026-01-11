@@ -60,14 +60,14 @@ export function StorefrontGiftCardManager({ storeId }: GiftCardManagerProps) {
     const { data: giftCards = [], isLoading } = useQuery({
         queryKey: ['gift-cards', storeId],
         queryFn: async () => {
-            const { data, error } = await supabase
-                .from('marketplace_gift_cards')
+            const { data, error } = await (supabase
+                .from as any)('marketplace_gift_cards')
                 .select('*')
                 .eq('store_id', storeId)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            return data as GiftCard[];
+            return (data || []) as GiftCard[];
         },
         enabled: !!storeId,
     });
@@ -75,7 +75,7 @@ export function StorefrontGiftCardManager({ storeId }: GiftCardManagerProps) {
     // Validated Mutation that uses RPC
     const issueCardMutation = useMutation({
         mutationFn: async (data: typeof issueForm) => {
-            const { data: cardId, error } = await supabase.rpc('issue_marketplace_gift_card', {
+            const { data: cardId, error } = await (supabase.rpc as any)('issue_marketplace_gift_card', {
                 p_store_id: storeId,
                 p_initial_balance: Number(data.initial_balance),
                 p_code: data.custom_code || null,

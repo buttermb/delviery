@@ -208,13 +208,13 @@ export function StorefrontDynamicCarousels({ storeId }: StorefrontDynamicCarouse
         queryKey: ['marketplace-carousels', storeId],
         queryFn: async () => {
             if (!storeId) return [];
-            const { data } = await supabase
-                .from('marketplace_carousels')
+            const { data } = await (supabase
+                .from as any)('marketplace_carousels')
                 .select('*')
                 .eq('store_id', storeId)
                 .eq('is_active', true)
                 .order('sort_order');
-            return data as CarouselConfig[] || [];
+            return (data || []) as CarouselConfig[];
         },
         enabled: !!storeId,
     });

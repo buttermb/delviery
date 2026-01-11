@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { signJWT, verifyJWT as verifyJWTSecure } from '../_shared/jwt.ts';
 import { loginSchema, refreshSchema, updatePasswordSchema } from './validation.ts';

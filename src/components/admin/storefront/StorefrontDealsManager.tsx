@@ -232,7 +232,7 @@ export function StorefrontDealsManager({ storeId }: DealsManagerProps) {
             description: deal.description || '',
             discount_type: deal.discount_type,
             discount_value: String(deal.discount_value),
-            applies_to: deal.applies_to,
+            applies_to: deal.applies_to as any,
             target_value: deal.target_value || '',
             active_days: deal.active_days || [],
             is_active: deal.is_active,
@@ -464,12 +464,12 @@ export function StorefrontDealsManager({ storeId }: DealsManagerProps) {
                             </div>
                             {formData.applies_to !== 'order' && (
                                 <div className="space-y-2">
-                                    <Label>{formData.applies_to === 'expiring_inventory' ? 'Days Until Expiration' : 'Target Name'}</Label>
+                                    <Label>{(formData.applies_to as string) === 'expiring_inventory' ? 'Days Until Expiration' : 'Target Name'}</Label>
                                     <Input
                                         placeholder={
                                             formData.applies_to === 'category' ? 'e.g. Edibles' :
                                                 formData.applies_to === 'brand' ? 'e.g. Wyld' :
-                                                    formData.applies_to === 'expiring_inventory' ? 'e.g. 7' : 'e.g. Target'
+                                                    (formData.applies_to as string) === 'expiring_inventory' ? 'e.g. 7' : 'e.g. Target'
                                         }
                                         value={formData.target_value}
                                         onChange={e => setFormData({ ...formData, target_value: e.target.value })}

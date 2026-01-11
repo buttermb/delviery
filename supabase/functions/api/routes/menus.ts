@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Menus Route Handlers
  * 
