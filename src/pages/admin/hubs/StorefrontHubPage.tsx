@@ -20,6 +20,9 @@ import {
     Settings,
     Brush,
     Boxes,
+    Boxes,
+    Radio,
+    BarChart3,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,6 +36,9 @@ const StorefrontCoupons = lazy(() => import('@/pages/admin/storefront/Storefront
 const StorefrontSettings = lazy(() => import('@/pages/admin/storefront/StorefrontSettings'));
 const StorefrontBuilder = lazy(() => import('@/pages/admin/storefront/StorefrontBuilder'));
 const StorefrontBundles = lazy(() => import('@/pages/admin/storefront/StorefrontBundles'));
+const StorefrontBundles = lazy(() => import('@/pages/admin/storefront/StorefrontBundles'));
+const StorefrontLiveOrders = lazy(() => import('@/pages/admin/storefront/StorefrontLiveOrders'));
+const StorefrontAnalytics = lazy(() => import('@/pages/admin/storefront/StorefrontAnalytics'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -44,13 +50,16 @@ const TabSkeleton = () => (
 const tabs = [
     // Overview
     { id: 'dashboard', label: 'Overview', icon: LayoutDashboard, group: 'Overview' },
+    { id: 'live', label: 'Live', icon: Radio, group: 'Overview' },
     // Store Operations
     { id: 'products', label: 'Catalog', icon: Package, group: 'Operations' },
     { id: 'orders', label: 'Orders', icon: ShoppingCart, group: 'Operations' },
     { id: 'customers', label: 'Customers', icon: Users, group: 'Operations' },
     // Marketing
     { id: 'coupons', label: 'Promos', icon: Tag, group: 'Marketing' },
+    { id: 'coupons', label: 'Promos', icon: Tag, group: 'Marketing' },
     { id: 'bundles', label: 'Bundles', icon: Boxes, group: 'Marketing' },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3, group: 'Marketing' },
     // Customization
     { id: 'builder', label: 'Design', icon: Brush, group: 'Design' },
     { id: 'settings', label: 'Settings', icon: Settings, group: 'Design' },
@@ -109,6 +118,9 @@ export default function StorefrontHubPage() {
                     <TabsContent value="dashboard" className="m-0 h-full">
                         <Suspense fallback={<TabSkeleton />}><StorefrontDashboard /></Suspense>
                     </TabsContent>
+                    <TabsContent value="live" className="m-0 h-full">
+                        <Suspense fallback={<TabSkeleton />}><StorefrontLiveOrders /></Suspense>
+                    </TabsContent>
                     <TabsContent value="products" className="m-0 h-full">
                         <Suspense fallback={<TabSkeleton />}><StorefrontProducts /></Suspense>
                     </TabsContent>
@@ -126,6 +138,9 @@ export default function StorefrontHubPage() {
                     </TabsContent>
                     <TabsContent value="bundles" className="m-0 h-full">
                         <Suspense fallback={<TabSkeleton />}><StorefrontBundles /></Suspense>
+                    </TabsContent>
+                    <TabsContent value="analytics" className="m-0 h-full">
+                        <Suspense fallback={<TabSkeleton />}><StorefrontAnalytics /></Suspense>
                     </TabsContent>
                     <TabsContent value="settings" className="m-0 h-full">
                         <Suspense fallback={<TabSkeleton />}><StorefrontSettings /></Suspense>

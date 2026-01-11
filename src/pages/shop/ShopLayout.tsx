@@ -27,6 +27,7 @@ import { LuxuryNav } from '@/components/shop/LuxuryNav';
 import { LuxuryFooter } from '@/components/shop/LuxuryFooter';
 import { FloatingCartButton } from '@/components/shop/FloatingCartButton';
 import { LuxuryAgeVerification } from '@/components/shop/LuxuryAgeVerification';
+import { StorefrontAgeGate } from '@/components/shop/StorefrontAgeGate';
 import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
 
 interface StoreInfo {
@@ -62,6 +63,8 @@ interface StoreInfo {
     show_delivery_notes?: boolean;
   };
   payment_methods?: string[];
+  // Analytics
+  ga4_measurement_id?: string | null;
 }
 
 interface ShopContextType {
@@ -126,6 +129,45 @@ export default function ShopLayout() {
         : `${store.store_name} | Best Cannabis Delivery`;
     }
   }, [store?.store_name, store?.tagline]);
+
+  // GA4 Analytics: Inject Google Analytics script
+  useEffect(() => {
+    if (store?.ga4_measurement_id && !isPreviewMode) {
+      const measurementId = store.ga4_measurement_id;
+
+      // Check if script already exists
+      if (document.getElementById('ga4-script')) return;
+
+      // Add gtag.js script
+      const script = document.createElement('script');
+      script.id = 'ga4-script';
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+      document.head.appendChild(script);
+
+      // Initialize gtag
+      const inlineScript = document.createElement('script');
+      inlineScript.id = 'ga4-inline';
+      inlineScript.textContent = `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '${measurementId}', {
+          page_path: window.location.pathname,
+          send_page_view: true
+        });
+      `;
+      document.head.appendChild(inlineScript);
+
+      // Track page view on route changes
+      return () => {
+        const existingScript = document.getElementById('ga4-script');
+        const existingInline = document.getElementById('ga4-inline');
+        if (existingScript) existingScript.remove();
+        if (existingInline) existingInline.remove();
+      };
+    }
+  }, [store?.ga4_measurement_id, isPreviewMode]);
 
   // Load cart from localStorage and listen for updates
   useEffect(() => {
@@ -365,6 +407,9 @@ export default function ShopLayout() {
 
           {/* Offline Indicator */}
           <OfflineIndicator position="top" showSyncStatus />
+
+          {/* Global Age Gate */}
+          <StorefrontAgeGate storeId={store?.id} />
         </div>
       </ShopContext.Provider>
     );
@@ -565,6 +610,9 @@ export default function ShopLayout() {
 
         {/* Offline Indicator */}
         <OfflineIndicator position="top" showSyncStatus />
+
+        {/* Global Age Gate */}
+        <StorefrontAgeGate storeId={store?.id} />
       </div>
     </ShopContext.Provider>
   );

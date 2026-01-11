@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ShoppingBag, Star, Plus, ArrowRight, Sparkles, Search, Menu, Filter } from 'lucide-react';
+import { ShoppingBag, Star, Plus, ArrowRight, Sparkles, Search, Menu, Filter, Moon, Smile, Zap, Sun, Target, Lightbulb, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
@@ -14,7 +14,8 @@ export function StorefrontDemo() {
             thc: "24%",
             price: 45,
             image: "https://images.unsplash.com/photo-1603909223429-69bb7101f420?auto=format&fit=crop&q=80&w=800",
-            tag: "Best Seller"
+            tag: "Best Seller",
+            effects: ["Happy", "Creative"]
         },
         {
             id: 2,
@@ -23,7 +24,8 @@ export function StorefrontDemo() {
             thc: "22%",
             price: 50,
             image: "https://images.unsplash.com/photo-1556928045-16f7f50be0f3?auto=format&fit=crop&q=80&w=800",
-            tag: "Premium"
+            tag: "Premium",
+            effects: ["Relaxed", "Sleepy"]
         },
         {
             id: 3,
@@ -32,9 +34,21 @@ export function StorefrontDemo() {
             thc: "26%",
             price: 55,
             image: "https://images.unsplash.com/photo-1589578228447-e1a4e481c6c8?auto=format&fit=crop&q=80&w=800",
-            tag: "Staff Pick"
+            tag: "Staff Pick",
+            effects: ["Energetic", "Focused"]
         }
     ];
+
+    const getEffectIcon = (effect: string) => {
+        const iconName = effect.toLowerCase();
+        if (iconName.includes('sleep') || iconName.includes('night')) return Moon;
+        if (iconName.includes('happy') || iconName.includes('mood')) return Smile;
+        if (iconName.includes('energy') || iconName.includes('uplift')) return Zap;
+        if (iconName.includes('relax') || iconName.includes('calm')) return Sun;
+        if (iconName.includes('focus')) return Target;
+        if (iconName.includes('creat')) return Lightbulb;
+        return Activity;
+    };
 
     return (
         <div className="w-full h-full min-h-[600px] bg-white relative overflow-hidden flex flex-col font-sans border border-slate-200 rounded-xl shadow-2xl">
@@ -144,7 +158,14 @@ export function StorefrontDemo() {
                                         THC: {product.thc}
                                     </div>
                                     <div className="flex items-center gap-1.5 justify-end">
-                                        Min Order: 1lb
+                                        {product.effects?.map((effect: string, idx: number) => {
+                                            const Icon = getEffectIcon(effect);
+                                            return (
+                                                <div key={idx} className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-500" title={effect}>
+                                                    <Icon className="w-3 h-3" />
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>

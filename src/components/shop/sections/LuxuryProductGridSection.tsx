@@ -5,8 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, RefreshCw, Eye, Check, AlertTriangle } from 'lucide-react';
+import { Search, Plus, RefreshCw, Eye, Check, AlertTriangle, Moon, Smile, Zap, Target, Lightbulb, Activity, Sun } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import ProductImage from '@/components/ProductImage';
 import { cleanProductName } from '@/utils/productName';
 import { useShop } from '@/pages/shop/ShopLayout';
@@ -44,6 +50,10 @@ interface MarketplaceProduct {
   is_visible: boolean;
   display_order: number;
   stock_quantity?: number;
+  metrc_retail_id?: string | null;
+  exclude_from_discounts?: boolean;
+  minimum_price?: number;
+  effects?: string[];
 }
 
 export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryProductGridSectionProps) {
@@ -146,7 +156,10 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
         price: product.price,
         imageUrl: product.image_url,
         quantity: 1,
-        variant: product.strain_type // Default to strain type if no variants
+        variant: product.strain_type, // Default to strain type if no variants
+        metrcRetailId: product.metrc_retail_id,
+        excludeFromDiscounts: product.exclude_from_discounts,
+        minimumPrice: product.minimum_price,
       });
 
       // Show added state for 2 seconds
@@ -193,7 +206,10 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
         price: product.price,
         imageUrl: product.image_url,
         quantity,
-        variant: product.strain_type
+        variant: product.strain_type,
+        metrcRetailId: product.metrc_retail_id,
+        excludeFromDiscounts: product.exclude_from_discounts,
+        minimumPrice: product.minimum_price
       });
 
       toast({
@@ -283,7 +299,34 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <Skeleton key={i} className="h-96 rounded-2xl bg-white/5" />
+              <div key={i} className="bg-white/[0.02] border border-white/[0.05] rounded-2xl overflow-hidden h-full flex flex-col">
+                {/* Image Skeleton */}
+                <div className="relative h-64 bg-white/[0.03]">
+                  <Skeleton className="absolute inset-0 bg-white/5 animate-pulse" />
+                  {/* Badge position */}
+                  <Skeleton className="absolute top-4 left-4 h-5 w-16 rounded-full bg-white/10" />
+                </div>
+
+                {/* Content Skeleton */}
+                <div className="p-5 flex-1 flex flex-col space-y-3">
+                  {/* Category line */}
+                  <Skeleton className="h-3 w-20 bg-white/10 rounded-full" />
+
+                  {/* Title lines */}
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-3/4 bg-white/10 rounded-md" />
+                  </div>
+
+                  {/* Spacer */}
+                  <div className="flex-1" />
+
+                  {/* Footer (Price + Button) */}
+                  <div className="flex justify-between items-center pt-4 border-t border-white/5 mt-2">
+                    <Skeleton className="h-6 w-24 bg-white/10 rounded-md" />
+                    <Skeleton className="h-10 w-10 rounded-full bg-white/10" />
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         ) : error ? (
@@ -363,6 +406,41 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                         {product.stock_quantity !== undefined && product.stock_quantity <= 0 && (
                           <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-5">
                             <span className="text-white/80 text-lg font-serif italic">Out of Stock</span>
+                          </div>
+                        )}
+
+                        {/* Effects badges */}
+                        {/* Effects badges */}
+                        {product.effects && product.effects.length > 0 && (
+                          <div className="absolute bottom-4 left-4 flex flex-wrap gap-1 z-10 max-w-[70%]">
+                            {product.effects.slice(0, 4).map((effect, idx) => {
+                              const iconName = effect.toLowerCase();
+                              let IconComponent = Activity; // Default
+
+                              if (iconName.includes('sleep') || iconName.includes('night')) IconComponent = Moon;
+                              else if (iconName.includes('happy') || iconName.includes('mood')) IconComponent = Smile;
+                              else if (iconName.includes('energy') || iconName.includes('uplift')) IconComponent = Zap;
+                              else if (iconName.includes('relax') || iconName.includes('calm')) IconComponent = Sun;
+                              else if (iconName.includes('focus')) IconComponent = Target;
+                              else if (iconName.includes('creat')) IconComponent = Lightbulb;
+
+                              return (
+                                <TooltipProvider key={idx}>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div
+                                        className="w-6 h-6 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 text-white/90 shadow-sm"
+                                      >
+                                        <IconComponent className="w-3.5 h-3.5" />
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="bg-black/90 border-white/10 text-xs text-white">
+                                      {effect}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              );
+                            })}
                           </div>
                         )}
 

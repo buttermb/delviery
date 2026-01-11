@@ -2,6 +2,9 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useRef, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { AnimatePresence } from 'framer-motion';
 import { DynamicBackground, type BackgroundStyle } from '../DynamicBackground';
 
 export interface LuxuryHeroSectionProps {
@@ -57,24 +60,87 @@ function hashCode(str: string): number {
   return Math.abs(hash);
 }
 
+interface Banner {
+  id: string;
+  heading: string | null;
+  subheading: string | null;
+  button_text: string | null;
+  button_link: string | null;
+  image_url: string;
+}
+
 export function LuxuryHeroSection({ content, styles, storeId }: LuxuryHeroSectionProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   const { storeSlug } = useParams();
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+
+  // Fetch banners
+  const { data: banners = [] } = useQuery({
+    queryKey: ['storefront-banners', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const { data, error } = await supabase.rpc('get_marketplace_banners', { p_store_id: storeId });
+      if (error) { // Fallback if RPC fails or not exists
+        const { data: tableData } = await supabase
+          .from('marketplace_banners')
+          .select('*')
+          .eq('store_id', storeId)
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
+        return tableData as Banner[] || [];
+      }
+      return data as Banner[];
+    },
+    enabled: !!storeId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Rotation logic
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentBannerIndex((prev) => (prev + 1) % banners.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [banners.length]);
+
+  // Determine current content
+  const currentBanner = banners.length > 0 ? banners[currentBannerIndex] : null;
+
+  const defaultContent = {
+    heading_line_1: "Premium",
+    heading_line_2: "Flower",
+    subheading: "Curated strains from licensed cultivators. Lab-verified quality.<br/>Same-day delivery throughout NYC.",
+    cta_primary_text: "Explore Collection",
+    cta_primary_link: `/shop/${storeSlug}/products`,
+    cta_secondary_text: "Learn More",
+    cta_secondary_link: `/shop/${storeSlug}/about`,
+  };
+
+  const displayContent = currentBanner ? {
+    heading_line_1: currentBanner.heading?.split(' ')[0] || "Premium",
+    heading_line_2: currentBanner.heading?.split(' ').slice(1).join(' ') || "Quality",
+    subheading: currentBanner.subheading || "",
+    cta_primary_text: currentBanner.button_text || "Shop Now",
+    cta_primary_link: currentBanner.button_link || `/shop/${storeSlug}/products`,
+    cta_secondary_text: null,
+    cta_secondary_link: null,
+  } : { ...defaultContent, ...content };
 
   const {
-    heading_line_1 = "Premium",
-    heading_line_2 = "Flower",
-    subheading = "Curated strains from licensed cultivators. Lab-verified quality.<br/>Same-day delivery throughout NYC.",
-    cta_primary_text = "Explore Collection",
-    cta_primary_link = `/shop/${storeSlug}/products`,
-    cta_secondary_text = "Learn More",
-    cta_secondary_link = `/shop/${storeSlug}/about`,
-    trust_badges = true
-  } = content || {};
+    heading_line_1,
+    heading_line_2,
+    subheading,
+    cta_primary_text,
+    cta_primary_link,
+    cta_secondary_text,
+    cta_secondary_link,
+  } = displayContent;
+
 
   const accentColor = styles?.accent_color || '#10b981';
   const backgroundStyle = styles?.background_style || 'aesthetic-fluid';
-  
+
   // Generate seed from storeId for consistent patterns per store
   const seed = storeId ? hashCode(storeId) : 1000;
   const colorPalette = generateColorPalette(accentColor);
@@ -124,16 +190,39 @@ export function LuxuryHeroSection({ content, styles, storeId }: LuxuryHeroSectio
       <div className="absolute inset-0 z-0">
         {/* Base dark layer */}
         <div className="absolute inset-0 bg-gradient-to-br from-neutral-950 via-black to-neutral-950" />
-        
-        {/* WebGL Animated Background */}
-        <DynamicBackground
-          style={backgroundStyle}
-          colors={colorPalette}
-          seed={seed}
-          loop={true}
-          pauseWhenHidden={true}
-          className="opacity-60"
-        />
+
+        {/* WebGL Animated Background (only if no banner image) */}
+        {!currentBanner?.image_url && (
+          <DynamicBackground
+            style={backgroundStyle}
+            colors={colorPalette}
+            seed={seed}
+            loop={true}
+            pauseWhenHidden={true}
+            className="opacity-60"
+          />
+        )}
+
+        {/* Banner Image Background */}
+        <AnimatePresence mode="wait">
+          {currentBanner?.image_url && (
+            <motion.div
+              key={currentBanner.image_url}
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.5 }}
+              className="absolute inset-0 z-0"
+            >
+              <img
+                src={currentBanner.image_url}
+                alt="Hero"
+                className="w-full h-full object-cover opacity-60"
+              />
+              <div className="absolute inset-0 bg-black/40" />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Spotlight Effect - overlays the WebGL background */}
         <div
@@ -150,6 +239,21 @@ export function LuxuryHeroSection({ content, styles, storeId }: LuxuryHeroSectio
       {/* Content */}
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-5xl mx-auto text-center">
+
+          {/* Banner Navigation Dots */}
+          {banners.length > 1 && (
+            <div className="absolute bottom-32 left-0 right-0 flex justify-center gap-2 z-20">
+              {banners.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentBannerIndex(idx)}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentBannerIndex ? 'w-8 bg-white' : 'w-2 bg-white/30 hover:bg-white/50'
+                    }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Badge */}
           <motion.div
@@ -168,39 +272,43 @@ export function LuxuryHeroSection({ content, styles, storeId }: LuxuryHeroSectio
           </motion.div>
 
           {/* Headline - Split for reveal effect */}
-          <motion.div
-            className="mb-10 relative"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <h1 className="flex flex-col items-center justify-center leading-[0.9]">
-              <div className="overflow-hidden mb-2">
-                <span className="block text-white font-serif italic text-[clamp(4rem,13vw,8.5rem)] tracking-[-0.03em]">
-                  {heading_line_1.split("").map((char, i) => (
-                    <motion.span key={i} variants={letterVariants} className="inline-block relative">
-                      {char === " " ? "\u00A0" : char}
-                    </motion.span>
-                  ))}
-                </span>
-              </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentBannerIndex}
+              className="mb-10 relative"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit={{ opacity: 0, y: -20, transition: { duration: 0.5 } }}
+            >
+              <h1 className="flex flex-col items-center justify-center leading-[0.9]">
+                <div className="overflow-hidden mb-2">
+                  <span className="block text-white font-serif italic text-[clamp(4rem,13vw,8.5rem)] tracking-[-0.03em]">
+                    {heading_line_1.split("").map((char, i) => (
+                      <motion.span key={i} variants={letterVariants} className="inline-block relative">
+                        {char === " " ? "\u00A0" : char}
+                      </motion.span>
+                    ))}
+                  </span>
+                </div>
 
-              <div className="overflow-hidden">
-                <span
-                  className="block font-serif text-[clamp(4rem,13vw,8.5rem)] tracking-[-0.03em]"
-                  style={{ color: 'transparent', WebkitTextStroke: '1px rgba(255,255,255,0.7)' }}
-                >
-                  <motion.span variants={letterVariants} className="inline-block">
-                    {/* Gradient Text Overlay */}
-                    <span className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-white/40 bg-clip-text text-transparent fill-mode-forwards" style={{ WebkitTextStroke: '0px' }}>
+                <div className="overflow-hidden">
+                  <span
+                    className="block font-serif text-[clamp(4rem,13vw,8.5rem)] tracking-[-0.03em]"
+                    style={{ color: 'transparent', WebkitTextStroke: '1px rgba(255,255,255,0.7)' }}
+                  >
+                    <motion.span variants={letterVariants} className="inline-block">
+                      {/* Gradient Text Overlay */}
+                      <span className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-white/40 bg-clip-text text-transparent fill-mode-forwards" style={{ WebkitTextStroke: '0px' }}>
+                        {heading_line_2}
+                      </span>
                       {heading_line_2}
-                    </span>
-                    {heading_line_2}
-                  </motion.span>
-                </span>
-              </div>
-            </h1>
-          </motion.div>
+                    </motion.span>
+                  </span>
+                </div>
+              </h1>
+            </motion.div>
+          </AnimatePresence>
 
           {/* Subheading */}
           <motion.div
@@ -214,9 +322,10 @@ export function LuxuryHeroSection({ content, styles, storeId }: LuxuryHeroSectio
 
           {/* CTA Buttons */}
           <motion.div
+            key={`btns-${currentBannerIndex}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 1.2 }}
+            transition={{ duration: 1, delay: 0.5 }} // Reduced delay for smoother rotation
             className="flex flex-col sm:flex-row items-center justify-center gap-6"
           >
             <Link to={cta_primary_link}>
@@ -233,14 +342,16 @@ export function LuxuryHeroSection({ content, styles, storeId }: LuxuryHeroSectio
               </Button>
             </Link>
 
-            <Link to={cta_secondary_link}>
-              <Button
-                variant="outline"
-                className="px-12 py-7 text-white text-sm font-medium tracking-widest uppercase rounded-none border border-white/20 hover:border-white hover:bg-white/5 transition-all duration-300 backdrop-blur-sm"
-              >
-                {cta_secondary_text}
-              </Button>
-            </Link>
+            {cta_secondary_text && cta_secondary_link && (
+              <Link to={cta_secondary_link}>
+                <Button
+                  variant="outline"
+                  className="px-12 py-7 text-white text-sm font-medium tracking-widest uppercase rounded-none border border-white/20 hover:border-white hover:bg-white/5 transition-all duration-300 backdrop-blur-sm"
+                >
+                  {cta_secondary_text}
+                </Button>
+              </Link>
+            )}
           </motion.div>
 
         </div>

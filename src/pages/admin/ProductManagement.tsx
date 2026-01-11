@@ -90,7 +90,12 @@ const mapProductToForm = (product: Product): ProductFormData => ({
   available_quantity: product.available_quantity?.toString() || "",
   description: product.description || "",
   image_url: product.image_url || "",
+
   low_stock_alert: product.low_stock_alert?.toString() || "10",
+  metrc_retail_id: (product as any).metrc_retail_id || "",
+
+  exclude_from_discounts: (product as any).exclude_from_discounts || false,
+  minimum_price: (product as any).minimum_price?.toString() || "",
 });
 
 export default function ProductManagement() {
@@ -132,7 +137,35 @@ export default function ProductManagement() {
   // Filters - initialize from saved preferences
   const [categoryFilter, setCategoryFilter] = useState<string>(preferences.customFilters?.category || "all");
   const [stockStatusFilter, setStockStatusFilter] = useState<string>(preferences.customFilters?.stockStatus || "all");
+  // Filters - initialize from saved preferences
+  const [categoryFilter, setCategoryFilter] = useState<string>(preferences.customFilters?.category || "all");
+  const [stockStatusFilter, setStockStatusFilter] = useState<string>(preferences.customFilters?.stockStatus || "all");
   const [sortBy, setSortBy] = useState<string>(preferences.sortBy || "name");
+
+  // Fetch store settings for potency alerts
+  const { data: storeSettings } = useQuery({
+    queryKey: ['store-settings-potency'],
+    queryFn: async () => {
+      // Find the marketplace profile for this tenant
+      const { data: profile } = await supabase
+        .from('marketplace_profiles')
+        .select('*')
+        .eq('tenant_id', tenant?.id)
+        .maybeSingle();
+
+      if (!profile) return null;
+
+      // Get store settings
+      const { data: store } = await supabase
+        .from('marketplace_stores')
+        .select('potency_limit_thc, potency_limit_cbd')
+        .eq('id', profile.id)
+        .maybeSingle();
+
+      return store;
+    },
+    enabled: !!tenant?.id
+  });
 
   // Track previous filter values to avoid unnecessary saves
   const prevFiltersRef = useRef({ sortBy, categoryFilter, stockStatusFilter });
@@ -162,11 +195,11 @@ export default function ProductManagement() {
   const [bulkPriceEditorOpen, setBulkPriceEditorOpen] = useState(false);
   const [batchCategoryEditorOpen, setBatchCategoryEditorOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
-  
+
   // Optimistic locking for concurrent edit protection
   const { updateWithLock, isUpdating: isLockUpdating } = useOptimisticLock('products');
   const productVersionRef = useRef<number>(1);
-  
+
   // Batch delete confirmation dialog
   const { dialogState: batchDeleteDialogState, confirm: confirmBatchDelete, closeDialog: closeBatchDeleteDialog, setLoading: setBatchDeleteLoading } = useConfirmDialog();
 
@@ -308,15 +341,19 @@ export default function ProductManagement() {
         // Add missing required fields with defaults
         price: data.wholesale_price ? parseFloat(data.wholesale_price) : 0, // Legacy field sync
         thca_percentage: null,
+        metrc_retail_id: data.metrc_retail_id || null,
+        metrc_retail_id: data.metrc_retail_id || null,
+        exclude_from_discounts: data.exclude_from_discounts,
+        minimum_price: data.minimum_price ? parseFloat(data.minimum_price) : 0,
       };
 
       if (editingProduct) {
         if (!tenant?.id) throw new Error('No tenant context');
-        
+
         // Use optimistic locking to prevent concurrent edit conflicts
         const expectedVersion = (editingProduct as any).version || 1;
         const result = await updateWithLock(editingProduct.id, productData, expectedVersion);
-        
+
         if (!result.success) {
           if (result.conflictDetected) {
             toast.error("This product was modified by another user. Please refresh and try again.");
@@ -324,7 +361,7 @@ export default function ProductManagement() {
           }
           throw new Error(result.error || 'Failed to update product');
         }
-        
+
         toast.success("Product updated");
         // Update state with new version
         setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...productData, version: expectedVersion + 1 } : p));
@@ -361,14 +398,14 @@ export default function ProductManagement() {
         .from('order_items')
         .select('*', { count: 'exact', head: true })
         .eq('product_id', productToDelete.id);
-      
+
       const { count: wholesaleCount } = await supabase
         .from('wholesale_order_items')
         .select('*', { count: 'exact', head: true })
         .eq('product_name', productToDelete.name);
-      
+
       const totalUsage = (orderItemCount || 0) + (wholesaleCount || 0);
-      
+
       if (totalUsage > 0) {
         toast.error("Cannot delete product", {
           description: `This product is used in ${totalUsage} order(s). Consider marking it as inactive instead.`
@@ -420,7 +457,7 @@ export default function ProductManagement() {
 
   const handleCombinedBatchDelete = () => {
     if (!tenant?.id || combinedBatchProducts.length === 0) return;
-    
+
     confirmBatchDelete({
       title: 'Delete Products',
       description: `Are you sure you want to delete ${combinedBatchProducts.length} products? This action cannot be undone.`,
@@ -430,29 +467,29 @@ export default function ProductManagement() {
         try {
           const ids = combinedBatchProducts.map(p => p.id);
           const names = combinedBatchProducts.map(p => p.name);
-          
+
           // Check for products used in orders
           const { data: orderItems } = await supabase
             .from('order_items')
             .select('product_id')
             .in('product_id', ids);
-          
+
           const { data: wholesaleItems } = await supabase
             .from('wholesale_order_items')
             .select('product_name')
             .in('product_name', names);
-          
+
           const usedProductIds = new Set(orderItems?.map(i => i.product_id) || []);
           const usedProductNames = new Set(wholesaleItems?.map(i => i.product_name) || []);
-          
+
           // Filter out products that are used in orders
           const deletableIds = ids.filter(id => {
             const product = combinedBatchProducts.find(p => p.id === id);
             return !usedProductIds.has(id) && (!product || !usedProductNames.has(product.name));
           });
-          
+
           const skippedCount = ids.length - deletableIds.length;
-          
+
           if (deletableIds.length === 0) {
             toast.error("Cannot delete products", {
               description: "All selected products are used in existing orders."
@@ -460,10 +497,10 @@ export default function ProductManagement() {
             closeBatchDeleteDialog();
             return;
           }
-          
+
           const { error } = await supabase.from('products').delete().in('id', deletableIds).eq('tenant_id', tenant.id);
           if (error) throw error;
-          
+
           if (skippedCount > 0) {
             toast.warning(`Deleted ${deletableIds.length} products, skipped ${skippedCount}`, {
               description: `${skippedCount} product(s) with existing orders were not deleted.`
@@ -471,7 +508,7 @@ export default function ProductManagement() {
           } else {
             toast.success(`${deletableIds.length} products deleted`);
           }
-          
+
           setProducts(prev => prev.filter(p => !deletableIds.includes(p.id)));
           handleCombinedBatchClear();
           closeBatchDeleteDialog();

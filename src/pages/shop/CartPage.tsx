@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
 import { useShopCart, ShopCartItem } from '@/hooks/useShopCart';
+import { useDeals } from '@/hooks/useDeals';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,7 @@ import { logger } from '@/lib/logger';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart,
+  ShoppingBag,
   Plus,
   Minus,
   Trash2,
@@ -27,11 +29,13 @@ import {
   Truck,
   Tag,
   Loader2,
-  Zap
+  Zap,
+  QrCode
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { CartItemStockWarning, CartStockSummary, useCartStockCheck } from '@/components/shop/CartStockWarning';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
+import { CartUpsellsSection } from '@/components/shop/CartUpsellsSection';
 
 interface AppliedCoupon {
   code: string;
@@ -69,6 +73,9 @@ export default function CartPage() {
     storeId: store?.id,
     onCartChange: setCartItemCount,
   });
+
+  // Fetch and calculate active deals
+  const { appliedDeals, totalDiscount: dealsDiscount } = useDeals(store?.id, cartItems);
 
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
@@ -171,8 +178,9 @@ export default function CartPage() {
   // Calculate totals
   const freeDeliveryThreshold = store?.free_delivery_threshold || 100;
   const deliveryFee = subtotal >= freeDeliveryThreshold ? 0 : (store?.default_delivery_fee || 5);
-  const discount = appliedCoupon?.discount || 0;
-  const total = subtotal + deliveryFee - discount;
+  const couponDiscount = appliedCoupon?.discount || 0;
+  const totalDiscount = dealsDiscount + couponDiscount;
+  const total = Math.max(0, subtotal + deliveryFee - totalDiscount);
 
   const progressToFreeDelivery = Math.min(100, (subtotal / freeDeliveryThreshold) * 100);
   const amountToFreeDelivery = Math.max(0, freeDeliveryThreshold - subtotal);
@@ -193,23 +201,41 @@ export default function CartPage() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
         >
-          <Card className={isLuxuryTheme ? `${cardBg} ${cardBorder}` : ''}>
-            <CardContent className="py-16 text-center">
+          <Card className={isLuxuryTheme ? 'bg-white/[0.02] border-white/[0.05] relative overflow-hidden' : ''}>
+            {/* Background Gradient for Luxury Theme */}
+            {isLuxuryTheme && (
+              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] via-transparent to-transparent pointer-events-none" />
+            )}
+
+            <CardContent className="py-24 text-center relative z-10">
               <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                animate={{
+                  y: [0, -10, 0],
+                  filter: ['drop-shadow(0 0 0px rgba(255,255,255,0))', 'drop-shadow(0 0 10px rgba(255,255,255,0.2))', 'drop-shadow(0 0 0px rgba(255,255,255,0))']
+                }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="mb-8 relative inline-block"
               >
-                <ShoppingCart className={`w-16 h-16 mx-auto mb-4 ${isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground'}`} />
+                <div className={`p-6 rounded-full ${isLuxuryTheme ? 'bg-white/5 border border-white/10' : 'bg-muted/50'}`}>
+                  <ShoppingBag className={`w-12 h-12 ${isLuxuryTheme ? 'text-white/60' : 'text-muted-foreground'}`} strokeWidth={1.5} />
+                </div>
               </motion.div>
-              <h2 className={`text-xl font-semibold mb-2 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>
-                Your cart is empty
+
+              <h2 className={`text-2xl md:text-3xl font-light mb-4 ${isLuxuryTheme ? 'text-white' : ''}`}>
+                Your cart is currently empty
               </h2>
-              <p className={`mb-6 ${textMuted}`}>
-                Add some products to get started
+              <p className={`text-lg mb-8 max-w-sm mx-auto ${textMuted}`}>
+                Explore our curated collection of premium cannabis products.
               </p>
+
               <Link to={`/shop/${storeSlug}/products`}>
-                <Button style={{ backgroundColor: themeColor }}>
-                  Browse Products
+                <Button
+                  size="lg"
+                  className="rounded-full px-8 h-12 text-base font-medium transition-all hover:scale-105"
+                  style={{ backgroundColor: themeColor, color: isLuxuryTheme ? '#000' : '#fff' }}
+                >
+                  Continuue Shopping
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
             </CardContent>
@@ -221,22 +247,27 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-4">
             {/* Free Delivery Progress */}
             {deliveryFee > 0 && (
-              <Card className={isLuxuryTheme ? `${cardBg} ${cardBorder}` : 'bg-primary/5'}>
-                <CardContent className="py-4">
-                  <div className="flex items-center gap-3 mb-2">
+              <Card className={isLuxuryTheme ? 'bg-white/[0.02] border-white/[0.05]' : 'bg-primary/5'}>
+                <CardContent className="py-5">
+                  <div className="flex items-center gap-3 mb-3">
                     <Truck className="w-5 h-5" style={{ color: themeColor }} />
-                    <span className={`text-sm ${isLuxuryTheme ? textPrimary : ''}`}>
-                      Add <strong>{formatCurrency(amountToFreeDelivery)}</strong> more for free delivery
+                    <span className={`text-sm tracking-wide ${isLuxuryTheme ? textPrimary : ''}`}>
+                      Add <span className="font-semibold" style={{ color: themeColor }}>{formatCurrency(amountToFreeDelivery)}</span> more for free delivery
                     </span>
                   </div>
-                  <div className={`w-full rounded-full h-2 ${isLuxuryTheme ? 'bg-white/10' : 'bg-muted'}`}>
-                    <div
-                      className="h-2 rounded-full transition-all duration-300"
+                  <div className={`w-full rounded-full h-1.5 ${isLuxuryTheme ? 'bg-white/10' : 'bg-muted'}`}>
+                    <motion.div
+                      className="h-1.5 rounded-full relative"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progressToFreeDelivery}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
                       style={{
-                        width: `${progressToFreeDelivery}%`,
                         backgroundColor: themeColor,
+                        boxShadow: isLuxuryTheme ? `0 0 10px ${themeColor}60` : 'none'
                       }}
-                    />
+                    >
+                      {isLuxuryTheme && <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white shadow-lg" />}
+                    </motion.div>
                   </div>
                 </CardContent>
               </Card>
@@ -290,6 +321,12 @@ export default function CartPage() {
                         >
                           {item.name}
                         </Link>
+                        {item.metrcRetailId && (
+                          <div className="flex items-center gap-1 mt-1 text-xs text-blue-500">
+                            <QrCode className="w-3 h-3" />
+                            <span>Metrc ID: {item.metrcRetailId}</span>
+                          </div>
+                        )}
                         {item.variant && (
                           <p className={`text-xs mt-0.5 ${textMuted}`}>{item.variant}</p>
                         )}
@@ -346,6 +383,15 @@ export default function CartPage() {
                 </AnimatePresence>
               </CardContent>
             </Card>
+
+            {/* Upsells Section - You Might Also Like */}
+            {store?.id && (
+              <CartUpsellsSection
+                storeId={store.id}
+                excludeProductIds={cartItems.map(item => item.productId)}
+                maxItems={8}
+              />
+            )}
           </div>
 
           {/* Order Summary */}
@@ -399,6 +445,25 @@ export default function CartPage() {
                   </div>
                 )}
 
+                {/* Active Deals */}
+                {appliedDeals.length > 0 && (
+                  <div className="space-y-2">
+                    {appliedDeals.map(({ deal, discountAmount }) => (
+                      <div key={deal.id} className={`flex items-center justify-between p-3 rounded-lg ${isLuxuryTheme ? 'bg-blue-500/10' : 'bg-blue-50'}`}>
+                        <div className="flex items-center gap-2">
+                          <Tag className={`w-4 h-4 ${isLuxuryTheme ? 'text-blue-400' : 'text-blue-600'}`} />
+                          <span className={`text-sm font-medium ${isLuxuryTheme ? 'text-blue-400' : 'text-blue-600'}`}>
+                            {deal.name}
+                          </span>
+                        </div>
+                        <span className={`text-sm font-bold ${isLuxuryTheme ? 'text-blue-400' : 'text-blue-600'}`}>
+                          -{formatCurrency(discountAmount)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <Separator className={isLuxuryTheme ? 'bg-white/10' : ''} />
 
                 {/* Totals */}
@@ -407,10 +472,10 @@ export default function CartPage() {
                     <span className={textMuted}>Subtotal</span>
                     <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(subtotal)}</span>
                   </div>
-                  {discount > 0 && (
+                  {totalDiscount > 0 && (
                     <div className={`flex justify-between ${isLuxuryTheme ? 'text-green-400' : 'text-green-600'}`}>
                       <span>Discount</span>
-                      <span>-{formatCurrency(discount)}</span>
+                      <span>-{formatCurrency(totalDiscount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between">

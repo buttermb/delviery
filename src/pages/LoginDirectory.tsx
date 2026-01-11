@@ -1,11 +1,17 @@
-import { logger } from '@/lib/logger';
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Shield, Building2, ShoppingCart, ArrowRight, Users, Cog, Package, Truck } from "lucide-react";
+import {
+  Building2,
+  ShoppingCart,
+  ArrowRight,
+  Package,
+  Truck,
+  LockKeyhole,
+  Check
+} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { safeStorage } from "@/utils/safeStorage";
@@ -13,301 +19,232 @@ import { ForceLightMode } from "@/components/marketing/ForceLightMode";
 
 export default function LoginDirectory() {
   const navigate = useNavigate();
-  const loginPortals = [
-    {
-      icon: Shield,
-      title: "Super Admin",
-      badge: "Platform Management",
-      description: "Access the platform-wide administration panel. Manage all tenants, monitor system health, and configure global settings.",
-      features: [
-        "Manage all tenant accounts",
-        "System monitoring & analytics",
-        "Platform-wide settings",
-        "Billing & subscriptions"
-      ],
-      loginUrl: "/super-admin/login",
-      buttonText: "Super Admin Login",
-      color: "from-red-500/10 to-red-500/5 border-red-500/20",
-      iconColor: "text-red-600",
-      forWho: "Platform administrators only"
-    },
+
+  // Main user portals
+  const mainPortals = [
     {
       icon: Building2,
       title: "Business Owner",
-      badge: "Tenant Admin",
-      description: "Manage your cannabis business operations, inventory, compliance, and marketplace presence. Access retail, wholesale, and delivery management tools.",
+      subtitle: "Dispensary & Retail Management",
+      description: "Complete control over your cannabis operations with real-time inventory, compliance tracking, and marketplace tools.",
       features: [
-        "Inventory & compliance tracking",
-        "Retail & wholesale orders",
-        "Team & delivery management",
-        "Marketplace selling (Medium+ tier)"
+        "Real-time inventory sync",
+        "Compliance & METRC integration",
+        "POS & retail management",
+        "Wholesale marketplace access"
       ],
       loginUrl: "/saas/login",
-      buttonText: "Business Admin Login",
-      color: "from-blue-500/10 to-blue-500/5 border-blue-500/20",
+      buttonText: "Access Business Portal",
       iconColor: "text-blue-600",
-      forWho: "Business owners & administrators"
+      bgColor: "bg-blue-50",
+      borderColor: "hover:border-blue-200"
     },
     {
       icon: ShoppingCart,
-      title: "Customer Portal",
-      badge: "Customer Access",
-      description: "Shop cannabis products from local dispensaries (Retail Mode) or browse wholesale marketplace for bulk purchases (Wholesale Mode - business license required).",
+      title: "Customer",
+      subtitle: "Shop & Order Cannabis",
+      description: "Browse products from licensed dispensaries, place orders for pickup or delivery, and track everything in real-time.",
       features: [
-        "Browse & order products (Retail)",
-        "Wholesale marketplace (B2B)",
-        "Switch between Retail/Wholesale",
-        "Order tracking & history"
+        "Browse local dispensaries",
+        "Secure online ordering",
+        "Real-time order tracking",
+        "Loyalty rewards & deals"
       ],
       loginUrl: "/customer/login",
-      buttonText: "Customer Login",
-      color: "from-green-500/10 to-green-500/5 border-green-500/20",
-      iconColor: "text-green-600",
-      forWho: "Retail & wholesale customers"
+      buttonText: "Start Shopping",
+      iconColor: "text-emerald-600",
+      bgColor: "bg-emerald-50",
+      borderColor: "hover:border-emerald-200"
     },
     {
       icon: Truck,
-      title: "Courier Portal",
-      badge: "Delivery Driver",
-      description: "Access your courier dashboard for licensed cannabis delivery. View available orders, manage deliveries, track earnings, and update your status.",
+      title: "Courier",
+      subtitle: "Delivery Driver Portal",
+      description: "Manage your delivery routes, accept orders, track earnings, and maintain compliance—all from one dashboard.",
       features: [
-        "View available orders",
-        "Track active deliveries",
-        "Real-time earnings",
-        "Location & compliance tracking"
+        "Smart route optimization",
+        "Real-time order queue",
+        "Earnings & tip tracking",
+        "Compliance documentation"
       ],
       loginUrl: "/courier/login",
-      buttonText: "Courier Login",
-      color: "from-orange-500/10 to-orange-500/5 border-orange-500/20",
+      buttonText: "Driver Dashboard",
       iconColor: "text-orange-600",
-      forWho: "Licensed delivery drivers"
+      bgColor: "bg-orange-50",
+      borderColor: "hover:border-orange-200"
     },
     {
       icon: Package,
-      title: "Vendor Portal",
-      badge: "Supplier Access",
-      description: "External vendor access for suppliers and partners. Manage your product listings, view orders, and track payments in the FloraIQ marketplace.",
+      title: "Vendor",
+      subtitle: "Supplier & Wholesale",
+      description: "List your products on the B2B marketplace, manage wholesale orders, and connect with dispensaries across the network.",
       features: [
-        "Manage product listings",
-        "View wholesale orders",
-        "Track payments & invoices",
-        "Communication with buyers"
+        "Product catalog management",
+        "Wholesale order fulfillment",
+        "Invoice & payment tracking",
+        "Direct buyer messaging"
       ],
       loginUrl: "/vendor/login",
-      buttonText: "Vendor Login",
-      color: "from-purple-500/10 to-purple-500/5 border-purple-500/20",
-      iconColor: "text-purple-600",
-      forWho: "External suppliers & vendors"
+      buttonText: "Vendor Portal",
+      iconColor: "text-violet-600",
+      bgColor: "bg-violet-50",
+      borderColor: "hover:border-violet-200"
     }
   ];
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-white flex flex-col font-sans">
         <SEOHead
-          title="Login Portal Directory | FloraIQ"
-          description="Access your FloraIQ cannabis technology platform. Choose from Business Admin, Customer, Courier, Vendor, or Super Admin portals."
+          title="Login | FloraIQ - Cannabis Technology Platform"
+          description="Access your FloraIQ cannabis technology platform. Choose from Business Admin, Customer, Courier, or Vendor portals."
         />
 
         <MarketingNav />
 
-        {/* Hero Section */}
-        <section className="pt-32 pb-20 bg-gradient-to-b from-primary/5 to-background">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center">
-              <Badge className="mb-4">Login Portal</Badge>
-              <h1 className="text-5xl md:text-6xl font-bold mb-6 text-foreground">
-                Welcome Back to
-                <span className="block text-primary">FloraIQ</span>
+        <main className="flex-grow pt-28 pb-16">
+          <div className="container mx-auto px-4 max-w-5xl">
+
+            {/* Header */}
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <p className="text-sm font-medium text-primary mb-4">Cannabis Technology Platform</p>
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-4">
+                Welcome to FloraIQ
               </h1>
-              <p className="text-xl text-muted-foreground mb-8">
-                Access your FloraIQ cannabis technology platform based on your role.
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Select your portal to access the platform
               </p>
             </div>
-          </div>
-        </section>
 
-        {/* Login Options */}
-        <section className="py-20">
-          <div className="container mx-auto px-4">
-            <div className="max-w-6xl mx-auto space-y-8">
-              {loginPortals.map((portal, index) => (
+            {/* Main Portal Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mx-auto mb-16">
+              {mainPortals.map((portal, index) => (
                 <Card
                   key={index}
-                  className={`overflow-hidden hover:shadow-xl transition-all bg-gradient-to-br ${portal.color}`}
+                  className={`group overflow-hidden transition-all duration-200 hover:shadow-lg border ${portal.borderColor} hover:-translate-y-0.5`}
                 >
-                  <CardContent className="p-8">
-                    <div className="grid md:grid-cols-[auto_1fr_auto] gap-6 items-start">
-                      {/* Icon */}
-                      <div className={`p-4 rounded-xl bg-background shadow-sm`}>
-                        <portal.icon className={`h-12 w-12 ${portal.iconColor}`} />
+                  <CardContent className="p-6 h-full flex flex-col">
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={`p-3 rounded-xl ${portal.bgColor} ${portal.iconColor}`}>
+                        <portal.icon className="h-6 w-6" strokeWidth={1.5} />
                       </div>
+                    </div>
 
-                      {/* Content */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h2 className="text-2xl font-bold text-foreground">{portal.title}</h2>
-                          <Badge variant="outline">{portal.badge}</Badge>
+                    {/* Content */}
+                    <div className="mb-4">
+                      <h2 className="text-xl font-semibold text-foreground mb-1">{portal.title}</h2>
+                      <p className="text-sm text-muted-foreground/80 mb-3">{portal.subtitle}</p>
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        {portal.description}
+                      </p>
+                    </div>
+
+                    {/* Features */}
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 mb-5">
+                      {portal.features.map((feature, i) => (
+                        <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Check className={`h-3 w-3 ${portal.iconColor} flex-shrink-0`} />
+                          <span>{feature}</span>
                         </div>
-                        <p className="text-muted-foreground mb-4">{portal.description}</p>
+                      ))}
+                    </div>
 
-                        {/* Features */}
-                        <div className="grid sm:grid-cols-2 gap-2 mb-4">
-                          {portal.features.map((feature, i) => (
-                            <div key={i} className="flex items-start gap-2 text-sm">
-                              <div className={`p-0.5 rounded-full ${portal.iconColor} bg-background mt-0.5`}>
-                                <Package className="h-3 w-3" />
-                              </div>
-                              <span className="text-foreground">{feature}</span>
-                            </div>
-                          ))}
-                        </div>
-
-                        <p className="text-xs text-muted-foreground italic">
-                          <Users className="h-3 w-3 inline mr-1" />
-                          {portal.forWho}
-                        </p>
-                      </div>
-
-                      {/* Action Button */}
-                      <div className="flex flex-col gap-3">
-                        <Link
-                          to={portal.loginUrl}
-                          onClick={async (e) => {
-                            // For business owner login, check if we have a saved tenant
-                            if (portal.title === "Business Owner") {
-                              const lastTenant = safeStorage.getItem('lastTenantSlug');
-                              if (lastTenant) {
-                                e.preventDefault();
-
-                                try {
-                                  // Validate tenant exists via edge function
-                                  const { data, error } = await supabase.functions.invoke('validate-tenant', {
-                                    body: { slug: lastTenant }
-                                  });
-
-                                  if (error || !data?.valid) {
-                                    // Invalid tenant - clear and fall back to generic login
-                                    logger.warn('[LoginDirectory] Invalid tenant slug, clearing', { slug: lastTenant });
-                                    safeStorage.removeItem('lastTenantSlug');
-                                    navigate('/saas/login');
-                                    return;
-                                  }
-
-                                  // Valid tenant - proceed with redirect
-                                  navigate(`/${lastTenant}/admin/login`);
-                                } catch (err) {
-                                  // Network error - fall back to generic login
-                                  logger.error('[LoginDirectory] Tenant validation failed', err);
+                    {/* CTA */}
+                    <div className="pt-4 mt-auto border-t">
+                      <Link
+                        to={portal.loginUrl}
+                        className="block"
+                        onClick={async (e) => {
+                          if (portal.title === "Business Owner") {
+                            const lastTenant = safeStorage.getItem('lastTenantSlug');
+                            if (lastTenant) {
+                              e.preventDefault();
+                              try {
+                                const { data, error } = await supabase.functions.invoke('validate-tenant', {
+                                  body: { slug: lastTenant }
+                                });
+                                if (error || !data?.valid) {
+                                  safeStorage.removeItem('lastTenantSlug');
                                   navigate('/saas/login');
+                                  return;
                                 }
+                                navigate(`/${lastTenant}/admin/login`);
+                              } catch (err) {
+                                navigate('/saas/login');
                               }
                             }
-                          }}
-                        >
-                          <Button size="lg" className="w-full">
-                            {portal.buttonText}
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </Button>
-                        </Link>
-                      </div>
+                          }
+                        }}
+                      >
+                        <Button className="w-full" size="lg">
+                          {portal.buttonText}
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
-          </div>
-        </section>
 
-        {/* New User Section */}
-        <section className="py-20 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto">
-              <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-                <CardContent className="p-8 text-center">
-                  <div className="p-4 rounded-lg bg-primary/10 w-fit mx-auto mb-4">
-                    <Cog className="h-8 w-8 text-primary" />
-                  </div>
-                  <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
-                    New to FloraIQ?
-                  </h2>
-                  <p className="text-muted-foreground mb-6">
-                    Ready to transform your cannabis business? Start your 14-day free trial today.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <Link to="/signup">
-                      <Button size="lg">
-                        Start Free Trial
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <Link to="/demo">
-                      <Button size="lg" variant="outline">
-                        Schedule a Demo
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
+            {/* Bottom Section */}
+            <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 py-8 border-t">
 
-        {/* Community Forum Section */}
-        <section className="py-20">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto">
-              <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
-                <CardContent className="p-8 text-center">
-                  <div className="p-4 rounded-lg bg-green-500/10 w-fit mx-auto mb-4">
-                    <Users className="h-8 w-8 text-green-600" />
-                  </div>
-                  <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
-                    Join Our Community Forum
-                  </h2>
-                  <p className="text-muted-foreground mb-6">
-                    Connect with other cannabis professionals, share experiences, ask questions, and stay updated with industry insights.
-                  </p>
-                  <Link to="/community">
-                    <Button size="lg">
-                      Visit Community Forum
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
+              {/* New User */}
+              <div className="text-center p-5">
+                <h3 className="font-semibold mb-2">New to FloraIQ?</h3>
+                <p className="text-sm text-muted-foreground mb-4">Start your 14-day free trial.</p>
+                <div className="flex flex-col gap-2">
+                  <Link to="/signup">
+                    <Button className="w-full">Start Free Trial</Button>
                   </Link>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
+                  <Link to="/demo">
+                    <Button variant="outline" className="w-full">Request Demo</Button>
+                  </Link>
+                </div>
+              </div>
 
-        {/* Help Section */}
-        <section className="py-20">
-          <div className="container mx-auto px-4">
-            <div className="max-w-2xl mx-auto text-center">
-              <h3 className="text-2xl font-bold mb-4 text-foreground">
-                Need Help Logging In?
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                If you're unsure which portal to use or having trouble logging in, our support team is here to help.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/support">
-                  <Button variant="outline">
-                    Contact Support
-                  </Button>
-                </Link>
-                <Link to="/faq">
-                  <Button variant="outline">
-                    View FAQ
-                  </Button>
+              {/* Community */}
+              <div className="text-center p-5">
+                <h3 className="font-semibold mb-2">Join the Community</h3>
+                <p className="text-sm text-muted-foreground mb-4">Connect with cannabis professionals.</p>
+                <Link to="/community">
+                  <Button variant="outline" className="w-full">Visit Forum</Button>
                 </Link>
               </div>
+
+              {/* Support */}
+              <div className="text-center p-5">
+                <h3 className="font-semibold mb-2">Need Support?</h3>
+                <p className="text-sm text-muted-foreground mb-4">Our team is available 24/7.</p>
+                <div className="flex flex-col gap-2">
+                  <Link to="/support">
+                    <Button variant="outline" className="w-full">Contact Support</Button>
+                  </Link>
+                  <Link to="/faq">
+                    <Button variant="ghost" className="w-full text-muted-foreground">View FAQ</Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Admin Footer Link */}
+            <div className="mt-10 text-center">
+              <Link
+                to="/super-admin/login"
+                className="inline-flex items-center gap-2 text-xs text-muted-foreground/50 hover:text-primary transition-colors"
+              >
+                <LockKeyhole className="h-3 w-3" />
+                <span>Platform Administration</span>
+              </Link>
             </div>
           </div>
-        </section>
+        </main>
 
         <MarketingFooter />
       </div>
     </ForceLightMode>
   );
 }
+

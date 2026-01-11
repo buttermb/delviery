@@ -15,6 +15,9 @@ export interface ShopCartItem {
     name: string;
     imageUrl: string | null;
     variant?: string;
+    metrcRetailId?: string | null;
+    excludeFromDiscounts?: boolean;
+    minimumPrice?: number;
 }
 
 const getCartKey = (storeId: string) => `shop_cart_${storeId}`;

@@ -40,10 +40,23 @@ import {
   Facebook,
   Twitter,
   MessageCircle,
-  Loader2
+  Loader2,
+  Moon,
+  Smile,
+  Zap,
+  Target,
+  Lightbulb,
+  Activity,
+  Sun
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -83,7 +96,12 @@ interface RpcProduct {
   thc_content: number | null;
   cbd_content: number | null;
   sort_order: number;
+  sort_order: number;
   created_at: string;
+  metrc_retail_id: string | null;
+  exclude_from_discounts: boolean;
+  minimum_price: number | null;
+  effects: string[] | null;
 }
 
 interface ProductDetails {
@@ -106,7 +124,12 @@ interface ProductDetails {
   sku: string | null;
   strain_type: string | null;
   thc_content: number | null;
+  thc_content: number | null;
   cbd_content: number | null;
+  metrc_retail_id: string | null;
+  exclude_from_discounts: boolean;
+  minimum_price: number | null;
+  effects: string[];
 }
 
 // Transform RPC response to component interface
@@ -132,6 +155,10 @@ function transformProduct(rpc: RpcProduct): ProductDetails {
     strain_type: rpc.strain_type,
     thc_content: rpc.thc_content,
     cbd_content: rpc.cbd_content,
+    metrc_retail_id: rpc.metrc_retail_id,
+    exclude_from_discounts: rpc.exclude_from_discounts,
+    minimum_price: rpc.minimum_price,
+    effects: rpc.effects || [],
   };
 }
 
@@ -253,17 +280,6 @@ export default function ProductDetailPage() {
     return reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
   }, [reviews]);
 
-  // SEO: Update page title and track view
-  useEffect(() => {
-    if (product && store) {
-      document.title = `${product.name} | ${store.store_name}`;
-      // Add to recently viewed
-      if (productId) {
-        addToRecentlyViewed(productId);
-      }
-    }
-  }, [product, store, productId, addToRecentlyViewed]);
-
   // Get all images
   const allImages = useMemo(() => {
     if (!product) return [];
@@ -273,6 +289,82 @@ export default function ProductDetailPage() {
     }
     return images.length ? images : [product.image_url].filter(Boolean);
   }, [product]);
+
+  // SEO: Update page title, meta tags, and structured data
+  useEffect(() => {
+    if (product && store) {
+      // Update title
+      document.title = `${product.name} | ${store.store_name}`;
+
+      // Add to recently viewed
+      if (productId) {
+        addToRecentlyViewed(productId);
+      }
+
+      // Update meta description
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', product.short_description || product.description || `Buy ${product.name} at ${store.store_name}`);
+      } else {
+        const newMeta = document.createElement('meta');
+        newMeta.name = 'description';
+        newMeta.content = product.short_description || product.description || `Buy ${product.name} at ${store.store_name}`;
+        document.head.appendChild(newMeta);
+      }
+
+      // Add JSON-LD structured data for rich snippets
+      const existingScript = document.getElementById('product-jsonld');
+      if (existingScript) {
+        existingScript.remove();
+      }
+
+      const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: product.name,
+        description: product.description || product.short_description,
+        image: allImages.length > 0 ? allImages : undefined,
+        sku: product.sku,
+        brand: product.brand ? {
+          '@type': 'Brand',
+          name: product.brand
+        } : undefined,
+        offers: {
+          '@type': 'Offer',
+          url: window.location.href,
+          priceCurrency: 'USD',
+          price: product.display_price,
+          availability: product.in_stock
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
+          seller: {
+            '@type': 'Organization',
+            name: store.store_name
+          }
+        },
+        aggregateRating: reviews.length > 0 ? {
+          '@type': 'AggregateRating',
+          ratingValue: averageRating.toFixed(1),
+          reviewCount: reviews.length
+        } : undefined
+      };
+
+      const script = document.createElement('script');
+      script.id = 'product-jsonld';
+      script.type = 'application/ld+json';
+      script.textContent = JSON.stringify(jsonLd);
+      document.head.appendChild(script);
+
+      // Cleanup on unmount
+      return () => {
+        const scriptToRemove = document.getElementById('product-jsonld');
+        if (scriptToRemove) {
+          scriptToRemove.remove();
+        }
+      };
+    }
+  }, [product, store, productId, addToRecentlyViewed, allImages, reviews, averageRating]);
+
 
   // Handle quantity change
   const handleQuantityChange = (delta: number) => {
@@ -321,6 +413,9 @@ export default function ProductDetailPage() {
       name: product.name,
       imageUrl: product.image_url,
       variant: selectedVariant || undefined,
+      metrcRetailId: product.metrc_retail_id,
+      excludeFromDiscounts: product.exclude_from_discounts,
+      minimumPrice: product.minimum_price || undefined,
     });
 
     // Show animation
@@ -413,13 +508,56 @@ export default function ProductDetailPage() {
   if (productLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <Skeleton className="aspect-square rounded-lg" />
-          <div className="space-y-4">
-            <Skeleton className="h-8 w-3/4" />
-            <Skeleton className="h-6 w-1/4" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-12 w-full" />
+        {/* Breadcrumb Skeleton */}
+        <div className="flex gap-2 mb-6">
+          <Skeleton className="h-4 w-12" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+          {/* Image Skeleton */}
+          <div>
+            <Skeleton className="aspect-square rounded-lg w-full" />
+          </div>
+
+          {/* Info Skeleton */}
+          <div className="space-y-8">
+            {/* Header */}
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-3/4" /> {/* Title */}
+              <Skeleton className="h-5 w-1/3" /> {/* Ratings */}
+              <Skeleton className="h-12 w-1/4" /> {/* Price */}
+            </div>
+
+            <Separator className="opacity-50" />
+
+            {/* Description */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+
+            {/* Variants */}
+            <div className="space-y-3">
+              <Skeleton className="h-5 w-16" />
+              <div className="flex gap-2">
+                <Skeleton className="h-10 w-20 rounded-md" />
+                <Skeleton className="h-10 w-20 rounded-md" />
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="space-y-4 pt-4">
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-5 w-20" /> {/* Quantity label */}
+                <Skeleton className="h-10 w-32 rounded-lg" /> {/* Quantity selector */}
+              </div>
+              <Skeleton className="h-14 w-full rounded-lg" /> {/* Add to Cart */}
+            </div>
           </div>
         </div>
       </div>
@@ -640,6 +778,39 @@ export default function ProductDetailPage() {
             {/* Short Description */}
             {product.short_description && (
               <p className="text-muted-foreground">{product.short_description}</p>
+            )}
+
+            {/* Effects */}
+            {product.effects && product.effects.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {product.effects.map((effect, idx) => {
+                  const iconName = effect.toLowerCase();
+                  let IconComponent = Activity; // Default
+
+                  if (iconName.includes('sleep') || iconName.includes('night')) IconComponent = Moon;
+                  else if (iconName.includes('happy') || iconName.includes('mood')) IconComponent = Smile;
+                  else if (iconName.includes('energy') || iconName.includes('uplift')) IconComponent = Zap;
+                  else if (iconName.includes('relax') || iconName.includes('calm')) IconComponent = Sun;
+                  else if (iconName.includes('focus')) IconComponent = Target;
+                  else if (iconName.includes('creat')) IconComponent = Lightbulb;
+
+                  return (
+                    <TooltipProvider key={idx}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border text-sm backdrop-blur-sm">
+                            <IconComponent className="w-4 h-4 text-primary" style={{ color: store.primary_color }} />
+                            <span className="capitalize">{effect}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {effect} effect
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  );
+                })}
+              </div>
             )}
 
             <Separator />

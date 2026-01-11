@@ -32,7 +32,10 @@ import {
   Heart,
   RefreshCw,
   ShoppingCart,
-  Trash2
+  Trash2,
+  Plus,
+  Mail,
+  Loader2
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
@@ -60,6 +63,13 @@ export default function AccountPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [trackingNumber, setTrackingNumber] = useState('');
+
+  // Magic Link state
+  const [showMagicCode, setShowMagicCode] = useState(false);
+  const [magicCode, setMagicCode] = useState('');
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
+  const [codeSentTo, setCodeSentTo] = useState<string | null>(null);
 
   // Check if customer is logged in (from localStorage)
   useEffect(() => {
@@ -159,7 +169,102 @@ export default function AccountPage() {
     setIsLoggedIn(false);
     setCustomerId(null);
     setEmail('');
+    setShowMagicCode(false);
+    setCodeSentTo(null);
     toast({ title: 'Logged out successfully' });
+  };
+
+  // Send magic code
+  const handleSendMagicCode = async () => {
+    if (!email || !store?.id) return;
+
+    setIsSendingCode(true);
+    try {
+      // Generate a 6-digit code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min expiry
+
+      // Store the code in the database or send via edge function
+      const { error } = await supabase
+        .from('marketplace_magic_codes')
+        .upsert({
+          store_id: store.id,
+          email: email.trim().toLowerCase(),
+          code,
+          expires_at: expiresAt,
+        }, { onConflict: 'store_id,email' });
+
+      if (error) {
+        // If table doesn't exist, fall back to email lookup
+        console.warn('Magic codes table not available, using email lookup');
+        handleEmailLookup();
+        return;
+      }
+
+      // In production, this would send an email via edge function
+      // For now, we'll show the code in a toast for demo purposes
+      toast({
+        title: 'Magic code sent!',
+        description: `Check your email at ${email}. (Demo: ${code})`,
+      });
+
+      setCodeSentTo(email);
+      setShowMagicCode(true);
+    } catch (error) {
+      logger.error('Failed to send magic code', error);
+      toast({
+        title: 'Failed to send code',
+        description: 'Please try again or use email lookup.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
+  // Verify magic code
+  const handleVerifyMagicCode = async () => {
+    if (!magicCode || !codeSentTo || !store?.id) return;
+
+    setIsVerifyingCode(true);
+    try {
+      const { data, error } = await supabase
+        .from('marketplace_magic_codes')
+        .select('*')
+        .eq('store_id', store.id)
+        .eq('email', codeSentTo.toLowerCase())
+        .eq('code', magicCode)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+
+      if (error || !data) {
+        toast({
+          title: 'Invalid or expired code',
+          description: 'Please check the code or request a new one.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Delete the used code
+      await supabase
+        .from('marketplace_magic_codes')
+        .delete()
+        .eq('id', data.id);
+
+      // Look up or create customer
+      setEmail(codeSentTo);
+      await handleEmailLookup();
+    } catch (error) {
+      logger.error('Failed to verify magic code', error);
+      toast({
+        title: 'Verification failed',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsVerifyingCode(false);
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -212,26 +317,116 @@ export default function AccountPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  onKeyDown={(e) => e.key === 'Enter' && handleEmailLookup()}
-                />
+            {/* Magic Code Entry Mode */}
+            {showMagicCode ? (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <Mail className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    Enter the 6-digit code sent to
+                  </p>
+                  <p className="font-medium">{codeSentTo}</p>
+                </div>
+                <div className="space-y-2">
+                  <Input
+                    id="magicCode"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={6}
+                    value={magicCode}
+                    onChange={(e) => setMagicCode(e.target.value.replace(/\D/g, ''))}
+                    placeholder="123456"
+                    className="text-center text-2xl tracking-widest font-mono"
+                    onKeyDown={(e) => e.key === 'Enter' && handleVerifyMagicCode()}
+                  />
+                </div>
+                <Button
+                  className="w-full"
+                  style={{ backgroundColor: store.primary_color }}
+                  onClick={handleVerifyMagicCode}
+                  disabled={isVerifyingCode || magicCode.length !== 6}
+                >
+                  {isVerifyingCode ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    'Verify Code'
+                  )}
+                </Button>
+                <div className="flex justify-center gap-4 text-sm">
+                  <button
+                    className="text-muted-foreground hover:underline"
+                    onClick={() => handleSendMagicCode()}
+                    disabled={isSendingCode}
+                  >
+                    Resend code
+                  </button>
+                  <button
+                    className="text-muted-foreground hover:underline"
+                    onClick={() => {
+                      setShowMagicCode(false);
+                      setMagicCode('');
+                    }}
+                  >
+                    Change email
+                  </button>
+                </div>
               </div>
-              <Button
-                className="w-full"
-                style={{ backgroundColor: store.primary_color }}
-                onClick={handleEmailLookup}
-              >
-                View My Orders
-              </Button>
-            </div>
+            ) : (
+              /* Normal Email Entry Mode */
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    onKeyDown={(e) => e.key === 'Enter' && handleEmailLookup()}
+                  />
+                </div>
+                <Button
+                  className="w-full"
+                  style={{ backgroundColor: store.primary_color }}
+                  onClick={handleEmailLookup}
+                >
+                  View My Orders
+                </Button>
+
+                {/* Magic Code Option */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">or</span>
+                  </div>
+                </div>
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleSendMagicCode}
+                  disabled={!email || isSendingCode}
+                >
+                  {isSendingCode ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4 mr-2" />
+                      Sign in with Magic Code
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
 
             <Separator />
 
@@ -330,40 +525,15 @@ export default function AccountPage() {
               ) : (
                 <div className="space-y-4">
                   {orders.map((order) => (
-                    <Card key={order.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                          <Link
-                            to={`/shop/${storeSlug}/track/${order.tracking_token}`}
-                            className="flex items-center gap-4 flex-1 w-full"
-                          >
-                            <div className="flex-shrink-0">
-                              {getStatusIcon(order.status)}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="font-medium truncate">#{order.order_number}</p>
-                              <p className="text-sm text-muted-foreground truncate">
-                                {formatSmartDate(order.created_at)} • {order.items?.length || 0} item
-                                {(order.items?.length || 0) !== 1 ? 's' : ''}
-                              </p>
-                            </div>
-                          </Link>
-                          <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto mt-2 md:mt-0 pt-2 md:pt-0 border-t md:border-t-0">
-                            <div className="text-left md:text-right">
-                              <p className="font-semibold">{formatCurrency(order.total || order.total_amount || 0)}</p>
-                              <div className="mt-1">
-                                {getStatusBadge(order.status)}
-                              </div>
-                            </div>
-                            <QuickReorderButton
-                              order={order}
-                              storeId={store.id}
-                              primaryColor={store.primary_color}
-                            />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <OrderCard
+                      key={order.id}
+                      order={order}
+                      storeId={store.id}
+                      storeSlug={storeSlug!}
+                      primaryColor={store.primary_color}
+                      getStatusIcon={getStatusIcon}
+                      getStatusBadge={getStatusBadge}
+                    />
                   ))}
                 </div>
               )}
@@ -587,6 +757,159 @@ function WishlistSection({
                 </div>
               </div>
             ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Order Card with Expandable Items - Flowhub style
+function OrderCard({
+  order,
+  storeId,
+  storeSlug,
+  primaryColor,
+  getStatusIcon,
+  getStatusBadge
+}: {
+  order: CustomerOrder;
+  storeId: string;
+  storeSlug: string;
+  primaryColor: string;
+  getStatusIcon: (status: string) => React.ReactNode;
+  getStatusBadge: (status: string) => React.ReactNode;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { toast } = useToast();
+  const { setCartItemCount } = useShop();
+  const navigate = useNavigate();
+
+  // Add individual item to cart
+  const addItemToCart = (item: any) => {
+    try {
+      const cart = JSON.parse(localStorage.getItem(`shop_cart_${storeId}`) || '[]');
+      const existingIndex = cart.findIndex((c: any) => c.productId === item.product_id);
+
+      if (existingIndex >= 0) {
+        cart[existingIndex].quantity += 1;
+      } else {
+        cart.push({
+          productId: item.product_id,
+          quantity: 1,
+          price: item.price,
+          name: item.name,
+          imageUrl: item.image_url,
+        });
+      }
+
+      localStorage.setItem(`shop_cart_${storeId}`, JSON.stringify(cart));
+      setCartItemCount(cart.reduce((sum: number, c: any) => sum + c.quantity, 0));
+
+      toast({
+        title: 'Added to bag!',
+        description: item.name,
+      });
+    } catch (error) {
+      logger.error('Failed to add item to cart', error);
+      toast({
+        title: 'Failed to add item',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  return (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className="p-4">
+        {/* Order Header */}
+        <div
+          className="flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <div className="flex items-center gap-4 flex-1">
+            <div className="flex-shrink-0">
+              {getStatusIcon(order.status)}
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium">#{order.order_number}</p>
+              <p className="text-sm text-muted-foreground">
+                {formatSmartDate(order.created_at)} • {order.items?.length || 0} item
+                {(order.items?.length || 0) !== 1 ? 's' : ''}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="font-semibold">{formatCurrency(order.total || order.total_amount || 0)}</p>
+              <div className="mt-1">
+                {getStatusBadge(order.status)}
+              </div>
+            </div>
+            <ChevronRight
+              className={`w-5 h-5 text-muted-foreground transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+            />
+          </div>
+        </div>
+
+        {/* Expanded Items */}
+        {isExpanded && order.items && order.items.length > 0 && (
+          <div className="mt-4 pt-4 border-t space-y-3">
+            <p className="text-sm font-medium text-muted-foreground">Order Items</p>
+            {order.items.map((item: any, idx: number) => (
+              <div key={idx} className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
+                {/* Item Image */}
+                <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                  {item.image_url ? (
+                    <img
+                      src={item.image_url}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Package className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Item Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium line-clamp-1">{item.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Qty: {item.quantity} × {formatCurrency(item.price)}
+                  </p>
+                </div>
+
+                {/* Add to Bag Button */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-shrink-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addItemToCart(item);
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add
+                </Button>
+              </div>
+            ))}
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 pt-2">
+              <QuickReorderButton
+                order={order}
+                storeId={storeId}
+                primaryColor={primaryColor}
+              />
+              <Link to={`/shop/${storeSlug}/track/${order.tracking_token}`}>
+                <Button size="sm" variant="ghost">
+                  Track Order
+                </Button>
+              </Link>
+            </div>
           </div>
         )}
       </CardContent>

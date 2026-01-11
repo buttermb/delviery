@@ -6,10 +6,12 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
 import { useShopCart, ShopCartItem } from '@/hooks/useShopCart';
+import { useDeals } from '@/hooks/useDeals';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +37,10 @@ import {
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
+import { CheckoutLoyalty } from '@/components/shop/CheckoutLoyalty';
+import { useStoreStatus } from '@/hooks/useStoreStatus';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Clock } from 'lucide-react';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -70,6 +76,10 @@ export default function CheckoutPage() {
   const { isLuxuryTheme, accentColor, cardBg, cardBorder, textPrimary, textMuted, inputBg, inputBorder, inputText } = useLuxuryTheme();
   const { toast } = useToast();
 
+  // Check store status
+  const { data: storeStatus } = useStoreStatus(store?.id);
+  const isStoreClosed = storeStatus?.isOpen === false;
+
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<CheckoutData>({
     firstName: '',
@@ -87,6 +97,10 @@ export default function CheckoutPage() {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const [orderRetryCount, setOrderRetryCount] = useState(0);
+
+  // Loyalty points state
+  const [loyaltyDiscount, setLoyaltyDiscount] = useState(0);
+  const [loyaltyPointsUsed, setLoyaltyPointsUsed] = useState(0);
 
   // Form persistence key
   const formStorageKey = store?.id ? `checkout_form_${store.id}` : null;
@@ -131,6 +145,9 @@ export default function CheckoutPage() {
     }
   }, [isInitialized, cartItems.length, navigate, storeSlug, toast]);
 
+  // Fetch and calculate active deals
+  const { appliedDeals, totalDiscount: dealsDiscount } = useDeals(store?.id, cartItems, formData.email || undefined);
+
   // Get delivery fee based on zip code (from delivery zones or default)
   const getDeliveryFee = () => {
     if (subtotal >= (store?.free_delivery_threshold || 100)) return 0;
@@ -150,7 +167,12 @@ export default function CheckoutPage() {
   // Calculate totals
   const freeDeliveryThreshold = store?.free_delivery_threshold || 100;
   const deliveryFee = getDeliveryFee();
-  const total = subtotal + deliveryFee;
+  const rawTotal = Math.max(0, subtotal + deliveryFee - loyaltyDiscount - dealsDiscount);
+
+  // Cart rounding: round to nearest dollar if enabled
+  const enableCartRounding = (store as any)?.enable_cart_rounding === true;
+  const total = enableCartRounding ? Math.round(rawTotal) : rawTotal;
+  const roundingAdjustment = enableCartRounding ? (total - rawTotal) : 0;
 
   // Update form field
   const updateField = (field: keyof CheckoutData, value: string) => {
@@ -263,6 +285,63 @@ export default function CheckoutPage() {
         }
         if (outOfStock.length > 0) {
           throw new Error(`Some items are out of stock: ${outOfStock.join(', ')}`);
+        }
+      }
+
+      // Validate purchase limits
+      const purchaseLimits = (store as any)?.purchase_limits;
+      if (purchaseLimits?.enabled) {
+        // Check max per order limit
+        if (purchaseLimits.max_per_order && total > purchaseLimits.max_per_order) {
+          throw new Error(
+            `Order exceeds maximum limit of $${purchaseLimits.max_per_order} per transaction. ` +
+            `Your order total is $${total.toFixed(2)}.`
+          );
+        }
+
+        // Check daily/weekly limits (requires email for tracking)
+        if (formData.email && (purchaseLimits.max_daily || purchaseLimits.max_weekly)) {
+          // Get customer's recent orders
+          const weekAgo = new Date();
+          weekAgo.setDate(weekAgo.getDate() - 7);
+
+          const { data: recentOrders, error: ordersError } = await supabase
+            .from('marketplace_orders')
+            .select('total, created_at')
+            .eq('store_id', store.id)
+            .eq('customer_email', formData.email)
+            .gte('created_at', weekAgo.toISOString())
+            .neq('status', 'cancelled');
+
+          if (!ordersError && recentOrders) {
+            const today = new Date().toISOString().split('T')[0];
+
+            // Calculate daily spending
+            const dailyTotal = recentOrders
+              .filter(o => o.created_at.startsWith(today))
+              .reduce((sum, o) => sum + (o.total || 0), 0);
+
+            // Calculate weekly spending
+            const weeklyTotal = recentOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+
+            // Check daily limit
+            if (purchaseLimits.max_daily && (dailyTotal + total) > purchaseLimits.max_daily) {
+              const remaining = Math.max(0, purchaseLimits.max_daily - dailyTotal);
+              throw new Error(
+                `You've reached your daily purchase limit of $${purchaseLimits.max_daily}. ` +
+                `You can spend $${remaining.toFixed(2)} more today.`
+              );
+            }
+
+            // Check weekly limit
+            if (purchaseLimits.max_weekly && (weeklyTotal + total) > purchaseLimits.max_weekly) {
+              const remaining = Math.max(0, purchaseLimits.max_weekly - weeklyTotal);
+              throw new Error(
+                `You've reached your weekly purchase limit of $${purchaseLimits.max_weekly}. ` +
+                `You can spend $${remaining.toFixed(2)} more this week.`
+              );
+            }
+          }
         }
       }
 
@@ -473,33 +552,57 @@ export default function CheckoutPage() {
             const Icon = step.icon;
             const isActive = currentStep === step.id;
             const isComplete = currentStep > step.id;
+            const isFuture = currentStep < step.id;
 
             return (
               <div
                 key={step.id}
-                className={`flex-1 flex flex-col items-center relative ${index < STEPS.length - 1 ? `after:content-[""] after:absolute after:top-5 after:left-[calc(50%+20px)] after:w-[calc(100%-40px)] after:h-0.5 ${isLuxuryTheme ? 'after:bg-white/10' : 'after:bg-muted'}` : ''
-                  } ${isComplete ? (isLuxuryTheme ? 'after:bg-white/30' : 'after:bg-primary') : ''}`}
+                className="flex-1 flex flex-col items-center relative"
               >
+                {/* Connecting Line */}
+                {index < STEPS.length - 1 && (
+                  <div className={`absolute top-5 left-[calc(50%+20px)] w-[calc(100%-40px)] h-[2px] ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
+                    <motion.div
+                      className="h-full"
+                      initial={{ width: "0%" }}
+                      animate={{ width: isComplete ? "100%" : "0%" }}
+                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                      style={{ backgroundColor: themeColor }}
+                    />
+                  </div>
+                )}
+
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center z-10 ${isActive
-                    ? 'ring-2 ring-offset-2'
-                    : ''
-                    } ${!isComplete && !isActive ? (isLuxuryTheme ? 'bg-white/10 text-white/50' : 'bg-muted text-muted-foreground') : ''}`}
+                  className={`relative w-10 h-10 rounded-full flex items-center justify-center z-10 transition-all duration-300 ${isActive ? 'ring-2 ring-offset-4 ring-offset-background scale-110' : ''
+                    } ${isFuture ? (isLuxuryTheme ? 'bg-white/5 text-white/20' : 'bg-muted text-muted-foreground') : ''
+                    }`}
                   style={{
                     backgroundColor: isComplete || isActive ? themeColor : undefined,
-                    color: isComplete || isActive ? 'white' : undefined,
-                    ringColor: isActive ? themeColor : undefined,
-                    '--tw-ring-offset-color': isLuxuryTheme ? '#000' : undefined,
-                  } as React.CSSProperties}
+                    color: isComplete || isActive ? '#fff' : undefined,
+                    boxShadow: isActive && isLuxuryTheme ? `0 0 20px ${themeColor}60` : undefined,
+                    borderColor: isLuxuryTheme ? '#000' : undefined
+                  }}
                 >
                   {isComplete ? (
                     <Check className="w-5 h-5" />
                   ) : (
                     <Icon className="w-5 h-5" />
                   )}
+
+                  {/* Active Pulse Ring */}
+                  {isActive && (
+                    <motion.div
+                      className="absolute inset-0 rounded-full"
+                      initial={{ scale: 1, opacity: 0.5 }}
+                      animate={{ scale: 1.5, opacity: 0 }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      style={{ border: `1px solid ${themeColor}` }}
+                    />
+                  )}
                 </div>
+
                 <span
-                  className={`text-sm mt-2 font-medium ${isActive ? '' : (isLuxuryTheme ? 'text-white/40' : 'text-muted-foreground')
+                  className={`text-xs uppercase tracking-widest mt-4 font-semibold transition-colors duration-300 ${isActive ? 'text-primary' : (isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground')
                     }`}
                   style={{ color: isActive ? themeColor : undefined }}
                 >
@@ -514,262 +617,306 @@ export default function CheckoutPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Form */}
         <div className="lg:col-span-2">
+
+          {/* Store Closed Warning */}
+          {isStoreClosed && (
+            <Alert className="border-yellow-500/50 bg-yellow-500/10 mb-6">
+              <Clock className="h-4 w-4 text-yellow-500" />
+              <AlertTitle className="text-yellow-500">Store is currently closed</AlertTitle>
+              <AlertDescription className="text-yellow-500/90">
+                {storeStatus?.reason || 'We are currently closed for new orders.'}
+                {storeStatus?.nextOpen && ` We open again at ${storeStatus.nextOpen}.`}
+                {' '}You can still place a pre-order for delivery/pickup when we open.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <Card className={isLuxuryTheme ? `${cardBg} ${cardBorder}` : ''}>
-            <CardContent className="pt-6">
-              {/* Step 1: Contact Information */}
-              {currentStep === 1 && (
-                <div className="space-y-4">
-                  <h2 className={`text-xl font-semibold mb-4 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>Contact Information</h2>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name *</Label>
-                      <Input
-                        id="firstName"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={(e) => updateField('firstName', e.target.value)}
-                        placeholder="John"
-                        className={showErrors && !formData.firstName ? "border-red-500 focus-visible:ring-red-500" : ""}
-                      />
-                      {showErrors && !formData.firstName && (
-                        <p className="text-xs text-red-500">Required</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name *</Label>
-                      <Input
-                        id="lastName"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={(e) => updateField('lastName', e.target.value)}
-                        placeholder="Doe"
-                        className={showErrors && !formData.lastName ? "border-red-500 focus-visible:ring-red-500" : ""}
-                      />
-                      {showErrors && !formData.lastName && (
-                        <p className="text-xs text-red-500">Required</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => updateField('email', e.target.value)}
-                      placeholder="john@example.com"
-                      className={showErrors && !formData.email ? "border-red-500 focus-visible:ring-red-500" : ""}
-                    />
-                    {showErrors && !formData.email && (
-                      <p className="text-xs text-red-500">Required</p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">
-                      Phone {store.checkout_settings?.require_phone ? '*' : '(Optional)'}
-                    </Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => updateField('phone', e.target.value)}
-                      placeholder="(555) 123-4567"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Step 2: Delivery Address */}
-              {currentStep === 2 && (
-                <div className="space-y-4">
-                  <h2 className="text-xl font-semibold mb-4">Delivery Address</h2>
-
-                  {/* Address Autocomplete */}
-                  <div className="space-y-2">
-                    <Label htmlFor="street">Street Address *</Label>
-                    <CheckoutAddressAutocomplete
-                      defaultValue={formData.street}
-                      placeholder="Start typing your address..."
-                      onAddressSelect={(address) => {
-                        updateField('street', address.street);
-                        updateField('city', address.city);
-                        updateField('state', address.state);
-                        updateField('zip', address.zip);
-                      }}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="apartment">Apartment, Suite, etc. (Optional)</Label>
-                    <Input
-                      id="apartment"
-                      name="apartment"
-                      value={formData.apartment}
-                      onChange={(e) => updateField('apartment', e.target.value)}
-                      placeholder="Apt 4B"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City *</Label>
-                      <Input
-                        id="city"
-                        name="city"
-                        value={formData.city}
-                        onChange={(e) => updateField('city', e.target.value)}
-                        placeholder="New York"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="state">State</Label>
-                      <Input
-                        id="state"
-                        name="state"
-                        value={formData.state}
-                        onChange={(e) => updateField('state', e.target.value)}
-                        placeholder="NY"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="zip">ZIP Code *</Label>
-                    <Input
-                      id="zip"
-                      name="zip"
-                      value={formData.zip}
-                      onChange={(e) => updateField('zip', e.target.value)}
-                      placeholder="10001"
-                    />
-                  </div>
-                  {store.checkout_settings?.show_delivery_notes && (
-                    <div className="space-y-2">
-                      <Label htmlFor="deliveryNotes">Delivery Instructions (Optional)</Label>
-                      <Textarea
-                        id="deliveryNotes"
-                        value={formData.deliveryNotes}
-                        onChange={(e) => updateField('deliveryNotes', e.target.value)}
-                        placeholder="Ring doorbell, leave at door, etc."
-                        rows={3}
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Step 3: Payment Method */}
-              {currentStep === 3 && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
-
-                  {/* Express Payment Options */}
-                  <div className="space-y-4">
-                    <ExpressPaymentButtons
-                      showDivider={true}
-                      size="lg"
-                    />
-                  </div>
-
-                  {/* Standard Payment Methods */}
-                  <RadioGroup
-                    value={formData.paymentMethod}
-                    onValueChange={(value) => updateField('paymentMethod', value)}
-                    className="space-y-3"
+            <CardContent className="pt-6 overflow-hidden">
+              <AnimatePresence mode="wait">
+                {/* Step 1: Contact Information */}
+                {currentStep === 1 && (
+                  <motion.div
+                    key="step1"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-4"
                   >
-                    {(store.payment_methods || ['cash']).map((method: string) => (
-                      <div
-                        key={method}
-                        className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50"
-                        onClick={() => updateField('paymentMethod', method)}
-                      >
-                        <RadioGroupItem value={method} id={method} />
-                        <Label htmlFor={method} className="flex-1 cursor-pointer capitalize">
-                          {method === 'cash' && 'Cash on Delivery'}
-                          {method === 'card' && 'Credit/Debit Card'}
-                          {method === 'paypal' && 'PayPal'}
-                          {method === 'bitcoin' && 'Bitcoin'}
-                          {method === 'venmo' && 'Venmo'}
-                          {method === 'zelle' && 'Zelle'}
-                          {!['cash', 'card', 'paypal', 'bitcoin', 'venmo', 'zelle'].includes(method) && method}
-                        </Label>
+                    <h2 className={`text-xl font-semibold mb-4 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>Contact Information</h2>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">First Name *</Label>
+                        <Input
+                          id="firstName"
+                          name="firstName"
+                          value={formData.firstName}
+                          onChange={(e) => updateField('firstName', e.target.value)}
+                          placeholder="John"
+                          className={showErrors && !formData.firstName ? "border-red-500 focus-visible:ring-red-500" : ""}
+                        />
+                        {showErrors && !formData.firstName && (
+                          <p className="text-xs text-red-500">Required</p>
+                        )}
                       </div>
-                    ))}
-                  </RadioGroup>
-                </div>
-              )}
-
-              {/* Step 4: Review Order */}
-              {currentStep === 4 && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold mb-4">Review Your Order</h2>
-
-                  {/* Contact Summary */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium">Contact</h3>
-                      <Button variant="ghost" size="sm" onClick={() => setCurrentStep(1)}>
-                        Edit
-                      </Button>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Last Name *</Label>
+                        <Input
+                          id="lastName"
+                          name="lastName"
+                          value={formData.lastName}
+                          onChange={(e) => updateField('lastName', e.target.value)}
+                          placeholder="Doe"
+                          className={showErrors && !formData.lastName ? "border-red-500 focus-visible:ring-red-500" : ""}
+                        />
+                        {showErrors && !formData.lastName && (
+                          <p className="text-xs text-red-500">Required</p>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {formData.firstName} {formData.lastName}<br />
-                      {formData.email}<br />
-                      {formData.phone}
-                    </p>
-                  </div>
-
-                  <Separator />
-
-                  {/* Delivery Summary */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium">Delivery Address</h3>
-                      <Button variant="ghost" size="sm" onClick={() => setCurrentStep(2)}>
-                        Edit
-                      </Button>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email *</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => updateField('email', e.target.value)}
+                        placeholder="john@example.com"
+                        className={showErrors && !formData.email ? "border-red-500 focus-visible:ring-red-500" : ""}
+                      />
+                      {showErrors && !formData.email && (
+                        <p className="text-xs text-red-500">Required</p>
+                      )}
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {formData.street}
-                      {formData.apartment && `, ${formData.apartment}`}<br />
-                      {formData.city}, {formData.state} {formData.zip}
-                    </p>
-                    {formData.deliveryNotes && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Notes: {formData.deliveryNotes}
-                      </p>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">
+                        Phone {store.checkout_settings?.require_phone ? '*' : '(Optional)'}
+                      </Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => updateField('phone', e.target.value)}
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Step 2: Delivery Address */}
+                {currentStep === 2 && (
+                  <motion.div
+                    key="step2"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-4"
+                  >
+                    <h2 className="text-xl font-semibold mb-4">Delivery Address</h2>
+
+                    {/* Address Autocomplete */}
+                    <div className="space-y-2">
+                      <Label htmlFor="street">Street Address *</Label>
+                      <CheckoutAddressAutocomplete
+                        defaultValue={formData.street}
+                        placeholder="Start typing your address..."
+                        onAddressSelect={(address) => {
+                          updateField('street', address.street);
+                          updateField('city', address.city);
+                          updateField('state', address.state);
+                          updateField('zip', address.zip);
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="apartment">Apartment, Suite, etc. (Optional)</Label>
+                      <Input
+                        id="apartment"
+                        name="apartment"
+                        value={formData.apartment}
+                        onChange={(e) => updateField('apartment', e.target.value)}
+                        placeholder="Apt 4B"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="city">City *</Label>
+                        <Input
+                          id="city"
+                          name="city"
+                          value={formData.city}
+                          onChange={(e) => updateField('city', e.target.value)}
+                          placeholder="New York"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="state">State</Label>
+                        <Input
+                          id="state"
+                          name="state"
+                          value={formData.state}
+                          onChange={(e) => updateField('state', e.target.value)}
+                          placeholder="NY"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="zip">ZIP Code *</Label>
+                      <Input
+                        id="zip"
+                        name="zip"
+                        value={formData.zip}
+                        onChange={(e) => updateField('zip', e.target.value)}
+                        placeholder="10001"
+                      />
+                    </div>
+                    {store.checkout_settings?.show_delivery_notes && (
+                      <div className="space-y-2">
+                        <Label htmlFor="deliveryNotes">Delivery Instructions (Optional)</Label>
+                        <Textarea
+                          id="deliveryNotes"
+                          value={formData.deliveryNotes}
+                          onChange={(e) => updateField('deliveryNotes', e.target.value)}
+                          placeholder="Ring doorbell, leave at door, etc."
+                          rows={3}
+                        />
+                      </div>
                     )}
-                  </div>
+                  </motion.div>
+                )}
 
-                  <Separator />
+                {/* Step 3: Payment Method */}
+                {currentStep === 3 && (
+                  <motion.div
+                    key="step3"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-6"
+                  >
+                    <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
 
-                  {/* Payment Summary */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium">Payment</h3>
-                      <Button variant="ghost" size="sm" onClick={() => setCurrentStep(3)}>
-                        Edit
-                      </Button>
+                    {/* Express Payment Options */}
+                    <div className="space-y-4">
+                      <ExpressPaymentButtons
+                        showDivider={true}
+                        size="lg"
+                      />
                     </div>
-                    <p className="text-sm text-muted-foreground capitalize">
-                      {formData.paymentMethod === 'cash' ? 'Cash on Delivery' : formData.paymentMethod}
-                    </p>
-                  </div>
 
-                  <Separator />
+                    {/* Standard Payment Methods */}
+                    <RadioGroup
+                      value={formData.paymentMethod}
+                      onValueChange={(value) => updateField('paymentMethod', value)}
+                      className="space-y-3"
+                    >
+                      {(store.payment_methods || ['cash']).map((method: string) => (
+                        <div
+                          key={method}
+                          className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50"
+                          onClick={() => updateField('paymentMethod', method)}
+                        >
+                          <RadioGroupItem value={method} id={method} />
+                          <Label htmlFor={method} className="flex-1 cursor-pointer capitalize">
+                            {method === 'cash' && 'Cash on Delivery'}
+                            {method === 'card' && 'Credit/Debit Card'}
+                            {method === 'paypal' && 'PayPal'}
+                            {method === 'bitcoin' && 'Bitcoin'}
+                            {method === 'venmo' && 'Venmo'}
+                            {method === 'zelle' && 'Zelle'}
+                            {!['cash', 'card', 'paypal', 'bitcoin', 'venmo', 'zelle'].includes(method) && method}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </motion.div>
+                )}
 
-                  {/* Terms */}
-                  <div className="flex items-start gap-2">
-                    <Checkbox
-                      id="terms"
-                      checked={agreeToTerms}
-                      onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
-                    />
-                    <Label htmlFor="terms" className="text-sm text-muted-foreground">
-                      I agree to the terms and conditions and confirm that my order details are correct.
-                    </Label>
-                  </div>
-                </div>
-              )}
+                {/* Step 4: Review Order */}
+                {currentStep === 4 && (
+                  <motion.div
+                    key="step4"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-6"
+                  >
+                    <h2 className="text-xl font-semibold mb-4">Review Your Order</h2>
+
+                    {/* Contact Summary */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium">Contact</h3>
+                        <Button variant="ghost" size="sm" onClick={() => setCurrentStep(1)}>
+                          Edit
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {formData.firstName} {formData.lastName}<br />
+                        {formData.email}<br />
+                        {formData.phone}
+                      </p>
+                    </div>
+
+                    <Separator />
+
+                    {/* Delivery Summary */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium">Delivery Address</h3>
+                        <Button variant="ghost" size="sm" onClick={() => setCurrentStep(2)}>
+                          Edit
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {formData.street}
+                        {formData.apartment && `, ${formData.apartment}`}<br />
+                        {formData.city}, {formData.state} {formData.zip}
+                      </p>
+                      {formData.deliveryNotes && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Notes: {formData.deliveryNotes}
+                        </p>
+                      )}
+                    </div>
+
+                    <Separator />
+
+                    {/* Payment Summary */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium">Payment</h3>
+                        <Button variant="ghost" size="sm" onClick={() => setCurrentStep(3)}>
+                          Edit
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground capitalize">
+                        {formData.paymentMethod === 'cash' ? 'Cash on Delivery' : formData.paymentMethod}
+                      </p>
+                    </div>
+
+                    <Separator />
+
+                    {/* Terms */}
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="terms"
+                        checked={agreeToTerms}
+                        onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
+                      />
+                      <Label htmlFor="terms" className="text-sm text-muted-foreground">
+                        I agree to the terms and conditions and confirm that my order details are correct.
+                      </Label>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Navigation Buttons */}
               <div className="flex justify-between mt-8">
@@ -808,8 +955,18 @@ export default function CheckoutPage() {
                       </>
                     ) : (
                       <>
-                        Place Order
-                        <Check className="w-4 h-4 ml-2" />
+                        {/* Dynamic Button Text based on Status */}
+                        {isStoreClosed ? (
+                          <>
+                            <Clock className="w-4 h-4 mr-2" />
+                            Place Pre-Order
+                          </>
+                        ) : (
+                          <>
+                            <Check className="w-4 h-4 mr-2" />
+                            Place Order
+                          </>
+                        )}
                       </>
                     )}
                   </Button>
@@ -861,6 +1018,25 @@ export default function CheckoutPage() {
 
               <Separator />
 
+              {/* Loyalty Points Redemption */}
+              {store?.id && formData.email && (
+                <CheckoutLoyalty
+                  storeId={store.id}
+                  customerEmail={formData.email}
+                  orderSubtotal={subtotal}
+                  onPointsRedeemed={(discount, points) => {
+                    setLoyaltyDiscount(discount);
+                    setLoyaltyPointsUsed(points);
+                  }}
+                  onPointsRemoved={() => {
+                    setLoyaltyDiscount(0);
+                    setLoyaltyPointsUsed(0);
+                  }}
+                  redeemedPoints={loyaltyPointsUsed}
+                  redeemedDiscount={loyaltyDiscount}
+                />
+              )}
+
               {/* Totals */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
@@ -879,17 +1055,40 @@ export default function CheckoutPage() {
                     )}
                   </span>
                 </div>
-                <Separator />
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total</span>
-                  <span style={{ color: store.primary_color }}>{formatCurrency(total)}</span>
+                {loyaltyDiscount > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Loyalty Discount</span>
+                    <span>-{formatCurrency(loyaltyDiscount)}</span>
+                  </div>
+                  </div>
+                )}
+              {dealsDiscount > 0 && (
+                <div className="space-y-1">
+                  {appliedDeals.map(({ deal, discountAmount }) => (
+                    <div key={deal.id} className="flex justify-between text-sm text-blue-600">
+                      <span>{deal.name}</span>
+                      <span>-{formatCurrency(discountAmount)}</span>
+                    </div>
+                  ))}
                 </div>
+              )}
+              {roundingAdjustment !== 0 && (
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Rounding Adjustment</span>
+                  <span>{roundingAdjustment > 0 ? '+' : ''}{formatCurrency(roundingAdjustment)}</span>
+                </div>
+              )}
+              <Separator />
+              <div className="flex justify-between text-lg font-bold">
+                <span>Total</span>
+                <span style={{ color: store.primary_color }}>{formatCurrency(total)}</span>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
+    </div >
   );
 }
 

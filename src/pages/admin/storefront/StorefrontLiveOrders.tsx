@@ -1,9 +1,9 @@
 /**
  * Storefront Live Orders Page
- * Real-time order management for the storefront
+ * Real-time order management with Kanban board view
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,19 +18,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import {
-  ArrowLeft,
   RefreshCw,
   Search,
   Filter,
-  MapPin,
   Package,
-  Clock,
-  Truck,
-  DollarSign,
-  CheckCircle,
-  Phone,
-  User,
-  Eye
+  LayoutGrid,
+  List,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
@@ -41,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { StorefrontLiveOrdersKanban } from '@/components/admin/storefront/StorefrontLiveOrdersKanban';
 
 interface LiveOrder {
   id: string;
@@ -59,24 +55,6 @@ interface LiveOrder {
   items: any[];
 }
 
-const STATUS_FLOW = {
-  pending: 'confirmed',
-  confirmed: 'preparing',
-  preparing: 'ready',
-  ready: 'out_for_delivery',
-  out_for_delivery: 'delivered',
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-yellow-500',
-  confirmed: 'bg-blue-500',
-  preparing: 'bg-purple-500',
-  ready: 'bg-indigo-500',
-  out_for_delivery: 'bg-orange-500',
-  delivered: 'bg-green-500',
-  cancelled: 'bg-red-500',
-};
-
 export default function StorefrontLiveOrders() {
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams();
@@ -88,6 +66,9 @@ export default function StorefrontLiveOrders() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [previousOrderCount, setPreviousOrderCount] = useState<number>(0);
 
   // Fetch store
   const { data: store } = useQuery({
@@ -128,8 +109,36 @@ export default function StorefrontLiveOrders() {
       return (data || []) as unknown as LiveOrder[];
     },
     enabled: !!store?.id,
-    refetchInterval: autoRefresh ? 15000 : false, // Auto-refresh every 15s
+    refetchInterval: autoRefresh ? 10000 : false, // Auto-refresh every 10s
   });
+
+  // Play sound on new order
+  const playNewOrderSound = useCallback(() => {
+    if (soundEnabled && typeof window !== 'undefined') {
+      try {
+        const audio = new Audio('/sounds/new-order.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(() => {
+          // Autoplay blocked, ignore
+        });
+      } catch (e) {
+        // No sound file, ignore
+      }
+    }
+  }, [soundEnabled]);
+
+  // Detect new orders
+  useEffect(() => {
+    const pendingOrders = orders.filter(o => o.status === 'pending').length;
+    if (pendingOrders > previousOrderCount && previousOrderCount > 0) {
+      playNewOrderSound();
+      toast({
+        title: 'New Order!',
+        description: `You have a new storefront order.`,
+      });
+    }
+    setPreviousOrderCount(pendingOrders);
+  }, [orders, previousOrderCount, playNewOrderSound, toast]);
 
   // Set up realtime subscription
   useEffect(() => {
@@ -160,7 +169,7 @@ export default function StorefrontLiveOrders() {
   const updateStatusMutation = useMutation({
     mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: string }) => {
       if (!store?.id) throw new Error('No store context');
-      
+
       const { error } = await supabase
         .from('marketplace_orders')
         .update({ status: newStatus, updated_at: new Date().toISOString() })
@@ -190,6 +199,14 @@ export default function StorefrontLiveOrders() {
     return status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
+  const handleStatusChange = (orderId: string, newStatus: string) => {
+    updateStatusMutation.mutate({ orderId, newStatus });
+  };
+
+  const handleViewDetails = (orderId: string) => {
+    navigate(`/${tenantSlug}/admin/storefront-hub?tab=orders&order=${orderId}`);
+  };
+
   // Filter orders by search
   const filteredOrders = orders.filter((order) => {
     if (!searchQuery) return true;
@@ -201,6 +218,11 @@ export default function StorefrontLiveOrders() {
     );
   });
 
+  // Stats
+  const pendingCount = orders.filter(o => o.status === 'pending').length;
+  const preparingCount = orders.filter(o => o.status === 'preparing' || o.status === 'confirmed').length;
+  const readyCount = orders.filter(o => o.status === 'ready').length;
+
   if (!store) {
     return (
       <div className="container mx-auto p-6">
@@ -209,7 +231,7 @@ export default function StorefrontLiveOrders() {
             <p className="text-muted-foreground">Please create a store first.</p>
             <Button
               className="mt-4"
-              onClick={() => navigate(`/${tenantSlug}/admin/storefront`)}
+              onClick={() => navigate(`/${tenantSlug}/admin/storefront-hub`)}
             >
               Go to Dashboard
             </Button>
@@ -220,28 +242,56 @@ export default function StorefrontLiveOrders() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-4">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(`/${tenantSlug}/admin/storefront`)}
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              Live Orders
-              <Badge variant="secondary" className="animate-pulse">
-                {filteredOrders.length} active
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            Live Orders
+            {pendingCount > 0 && (
+              <Badge variant="destructive" className="animate-pulse">
+                {pendingCount} new
               </Badge>
-            </h1>
-            <p className="text-muted-foreground">Real-time order management</p>
-          </div>
+            )}
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            {filteredOrders.length} active orders • {preparingCount} preparing • {readyCount} ready
+          </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Sound Toggle */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            title={soundEnabled ? 'Mute notifications' : 'Enable notifications'}
+          >
+            {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          </Button>
+
+          {/* View Toggle */}
+          <div className="flex items-center border rounded-lg overflow-hidden">
+            <Button
+              variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+              size="sm"
+              className="rounded-none"
+              onClick={() => setViewMode('kanban')}
+            >
+              <LayoutGrid className="h-4 w-4 mr-1" />
+              Board
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              className="rounded-none"
+              onClick={() => setViewMode('list')}
+            >
+              <List className="h-4 w-4 mr-1" />
+              List
+            </Button>
+          </div>
+
+          {/* Auto-refresh */}
           <div className="flex items-center gap-2">
             <Switch
               id="auto-refresh"
@@ -249,7 +299,7 @@ export default function StorefrontLiveOrders() {
               onCheckedChange={setAutoRefresh}
             />
             <Label htmlFor="auto-refresh" className="text-sm">
-              Auto-refresh
+              Auto
             </Label>
           </div>
           <Button variant="outline" size="icon" onClick={() => refetch()}>
@@ -259,209 +309,92 @@ export default function StorefrontLiveOrders() {
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by order #, name, or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-[180px]">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="All Active" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Active</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="preparing">Preparing</SelectItem>
-                <SelectItem value="ready">Ready</SelectItem>
-                <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col md:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search orders..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full md:w-[180px]">
+            <Filter className="w-4 h-4 mr-2" />
+            <SelectValue placeholder="All Active" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Active</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="preparing">Preparing</SelectItem>
+            <SelectItem value="ready">Ready</SelectItem>
+            <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-      {/* Orders */}
+      {/* Content */}
       {isLoading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-48" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-[400px] rounded-lg" />
           ))}
         </div>
       ) : filteredOrders.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center">
-            <Package className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+          <CardContent className="py-16 text-center">
+            <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
             <p className="text-lg font-semibold">No active orders</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-1">
               New orders will appear here in real-time
             </p>
           </CardContent>
         </Card>
+      ) : viewMode === 'kanban' ? (
+        <StorefrontLiveOrdersKanban
+          orders={filteredOrders}
+          onStatusChange={handleStatusChange}
+          onViewDetails={handleViewDetails}
+          isLoading={isLoading}
+        />
       ) : (
-        <div className="grid gap-4">
-          {filteredOrders.map((order) => {
-            const nextStatus = STATUS_FLOW[order.status as keyof typeof STATUS_FLOW];
-
-            return (
-              <Card key={order.id}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
+        // List View (simplified)
+        <div className="space-y-3">
+          {filteredOrders.map((order) => (
+            <Card
+              key={order.id}
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => handleViewDetails(order.id)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
                     <div>
-                      <CardTitle className="text-xl">
-                        Order #{order.order_number}
-                      </CardTitle>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                        <Clock className="w-4 h-4" />
-                        {formatSmartDate(order.created_at)}
-                      </div>
+                      <p className="font-semibold">#{order.order_number}</p>
+                      <p className="text-sm text-muted-foreground">{order.customer_name || 'Guest'}</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className={STATUS_COLORS[order.status] || 'bg-gray-500'}>
-                        {formatStatus(order.status)}
-                      </Badge>
-                      {order.payment_method && (
-                        <Badge variant="outline" className="capitalize">
-                          {order.payment_method}
-                        </Badge>
-                      )}
-                    </div>
+                    <Badge variant="secondary">{order.items?.length || 0} items</Badge>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {/* Customer Info */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-semibold">
-                        <User className="w-4 h-4 text-primary" />
-                        Customer
-                      </div>
-                      <div className="text-sm pl-6">
-                        <p className="font-medium">{order.customer_name || 'Guest'}</p>
-                        {order.customer_email && (
-                          <p className="text-muted-foreground">{order.customer_email}</p>
-                        )}
-                        {order.customer_phone && (
-                          <p className="text-muted-foreground flex items-center gap-1">
-                            <Phone className="w-3 h-3" />
-                            {order.customer_phone}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Delivery Info */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-semibold">
-                        <MapPin className="w-4 h-4 text-primary" />
-                        Delivery Address
-                      </div>
-                      <div className="text-sm pl-6">
-                        {order.delivery_address ? (
-                          <>
-                            <p>{order.delivery_address.street}</p>
-                            {order.delivery_address.apartment && (
-                              <p>{order.delivery_address.apartment}</p>
-                            )}
-                            <p className="text-muted-foreground">
-                              {order.delivery_address.city}, {order.delivery_address.state} {order.delivery_address.zip}
-                            </p>
-                          </>
-                        ) : (
-                          <p className="text-muted-foreground">No address provided</p>
-                        )}
-                        {order.delivery_notes && (
-                          <p className="text-muted-foreground italic mt-1">
-                            Note: {order.delivery_notes}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                  <div className="flex items-center gap-3">
+                    <Badge className={
+                      order.status === 'pending' ? 'bg-amber-500' :
+                        order.status === 'preparing' ? 'bg-blue-500' :
+                          order.status === 'ready' ? 'bg-green-500' :
+                            order.status === 'out_for_delivery' ? 'bg-purple-500' :
+                              'bg-gray-500'
+                    }>
+                      {formatStatus(order.status)}
+                    </Badge>
+                    <span className="font-semibold">{formatCurrency(order.total)}</span>
                   </div>
-
-                  {/* Order Items */}
-                  <div className="space-y-2 pt-2 border-t">
-                    <div className="flex items-center gap-2 text-sm font-semibold">
-                      <Package className="w-4 h-4 text-primary" />
-                      Items ({order.items?.length || 0})
-                    </div>
-                    <div className="pl-6 space-y-1">
-                      {order.items?.map((item: any, idx: number) => (
-                        <div key={idx} className="flex justify-between text-sm">
-                          <span>
-                            {item.name} × {item.quantity}
-                          </span>
-                          <span className="text-muted-foreground">
-                            {formatCurrency(item.price * item.quantity)}
-                          </span>
-                        </div>
-                      ))}
-                      <div className="flex justify-between text-sm pt-2 border-t">
-                        <span className="text-muted-foreground">Subtotal</span>
-                        <span>{formatCurrency(order.subtotal)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Delivery</span>
-                        <span>
-                          {order.delivery_fee === 0 ? (
-                            <Badge variant="secondary" className="text-xs">FREE</Badge>
-                          ) : (
-                            formatCurrency(order.delivery_fee)
-                          )}
-                        </span>
-                      </div>
-                      <div className="flex justify-between font-semibold pt-2 border-t">
-                        <span>Total</span>
-                        <span className="flex items-center gap-1">
-                          <DollarSign className="w-3 h-3" />
-                          {order.total.toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-2 pt-2">
-                    {nextStatus && (
-                      <Button
-                        size="sm"
-                        onClick={() =>
-                          updateStatusMutation.mutate({
-                            orderId: order.id,
-                            newStatus: nextStatus,
-                          })
-                        }
-                        disabled={updateStatusMutation.isPending}
-                      >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Mark as {formatStatus(nextStatus)}
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() =>
-                        navigate(`/${tenantSlug}/admin/storefront/orders/${order.id}`)
-                      }
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      View Details
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>
   );
 }
+

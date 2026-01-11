@@ -35,7 +35,8 @@ import {
   MapPin,
   Plus,
   Trash2,
-  Sparkles
+  Sparkles,
+  Shield
 } from 'lucide-react';
 import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog';
 import { generateUrlToken } from '@/utils/menuHelpers';
@@ -78,6 +79,7 @@ interface StoreSettings {
   meta_title: string | null;
   meta_description: string | null;
   og_image_url: string | null;
+  ga4_measurement_id: string | null;
   is_active: boolean;
   is_public: boolean;
   require_account: boolean;
@@ -98,6 +100,13 @@ interface StoreSettings {
     enable_tips: boolean;
   };
   operating_hours: Record<string, { open: string; close: string; closed: boolean }>;
+  // Purchase limits for compliance
+  purchase_limits: {
+    enabled: boolean;
+    max_per_order: number | null;
+    max_daily: number | null;
+    max_weekly: number | null;
+  } | null;
 }
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -215,6 +224,7 @@ export default function StorefrontSettings() {
           meta_title: formData.meta_title,
           meta_description: formData.meta_description,
           og_image_url: formData.og_image_url,
+          ga4_measurement_id: formData.ga4_measurement_id,
           is_public: formData.is_public,
           require_account: formData.require_account,
           require_age_verification: formData.require_age_verification,
@@ -227,6 +237,7 @@ export default function StorefrontSettings() {
           default_delivery_fee: formData.default_delivery_fee,
           checkout_settings: formData.checkout_settings,
           operating_hours: formData.operating_hours,
+          purchase_limits: formData.purchase_limits as unknown as Json,
         })
         .eq('id', store.id);
 
@@ -992,6 +1003,112 @@ export default function StorefrontSettings() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Purchase Limits Card */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                Purchase Limits
+              </CardTitle>
+              <CardDescription>Set limits for regulatory compliance</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Enable Purchase Limits</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Enforce limits on order quantities
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.purchase_limits?.enabled ?? false}
+                  onCheckedChange={(checked) =>
+                    updateField('purchase_limits', {
+                      ...formData.purchase_limits,
+                      enabled: checked,
+                      max_per_order: formData.purchase_limits?.max_per_order ?? null,
+                      max_daily: formData.purchase_limits?.max_daily ?? null,
+                      max_weekly: formData.purchase_limits?.max_weekly ?? null,
+                    })
+                  }
+                />
+              </div>
+
+              {formData.purchase_limits?.enabled && (
+                <div className="space-y-4 pl-4 border-l-2 border-muted">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="max_per_order">Max Per Order ($)</Label>
+                      <Input
+                        id="max_per_order"
+                        type="number"
+                        step="1"
+                        placeholder="No limit"
+                        value={formData.purchase_limits?.max_per_order || ''}
+                        onChange={(e) =>
+                          updateField('purchase_limits', {
+                            ...formData.purchase_limits,
+                            enabled: true,
+                            max_per_order: e.target.value ? parseInt(e.target.value) : null,
+                          })
+                        }
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Maximum total value per transaction
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="max_daily">Max Daily ($)</Label>
+                      <Input
+                        id="max_daily"
+                        type="number"
+                        step="1"
+                        placeholder="No limit"
+                        value={formData.purchase_limits?.max_daily || ''}
+                        onChange={(e) =>
+                          updateField('purchase_limits', {
+                            ...formData.purchase_limits,
+                            enabled: true,
+                            max_daily: e.target.value ? parseInt(e.target.value) : null,
+                          })
+                        }
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Maximum per customer per day
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="max_weekly">Max Weekly ($)</Label>
+                      <Input
+                        id="max_weekly"
+                        type="number"
+                        step="1"
+                        placeholder="No limit"
+                        value={formData.purchase_limits?.max_weekly || ''}
+                        onChange={(e) =>
+                          updateField('purchase_limits', {
+                            ...formData.purchase_limits,
+                            enabled: true,
+                            max_weekly: e.target.value ? parseInt(e.target.value) : null,
+                          })
+                        }
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Maximum per customer per week
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md">
+                    💡 Daily and weekly limits are tracked by customer email address.
+                    Customers must provide an email to enforce these limits.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Hours Tab */}
@@ -1097,6 +1214,22 @@ export default function StorefrontSettings() {
                 />
                 <p className="text-xs text-muted-foreground">
                   Point a CNAME record to our servers to use a custom domain
+                </p>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <Label htmlFor="ga4_measurement_id">Google Analytics 4 Measurement ID</Label>
+                <Input
+                  id="ga4_measurement_id"
+                  value={formData.ga4_measurement_id || ''}
+                  onChange={(e) => updateField('ga4_measurement_id', e.target.value)}
+                  placeholder="G-XXXXXXXXXX"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter your GA4 Measurement ID to track page views, add-to-cart events, and purchases.
+                  Find it in your Google Analytics admin under Data Streams.
                 </p>
               </div>
             </CardContent>

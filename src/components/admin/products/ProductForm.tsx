@@ -34,6 +34,10 @@ export interface ProductFormData {
     description: string;
     image_url: string;
     low_stock_alert: string;
+    metrc_retail_id: string;
+    metrc_retail_id: string;
+    exclude_from_discounts: boolean;
+    minimum_price: string;
 }
 
 interface ProductFormProps {
@@ -41,7 +45,10 @@ interface ProductFormProps {
     onSubmit: (data: ProductFormData, imageFile: File | null) => Promise<void>;
     onCancel: () => void;
     isLoading: boolean;
+    onCancel: () => void;
+    isLoading: boolean;
     isEditMode: boolean;
+    storeSettings?: any; // Pass in settings for potency limits
 }
 
 const DEFAULT_FORM_DATA: ProductFormData = {
@@ -61,6 +68,9 @@ const DEFAULT_FORM_DATA: ProductFormData = {
     description: "",
     image_url: "",
     low_stock_alert: "10",
+    metrc_retail_id: "",
+    exclude_from_discounts: false,
+    minimum_price: "",
 };
 
 export function ProductForm({
@@ -69,11 +79,24 @@ export function ProductForm({
     onCancel,
     isLoading,
     isEditMode,
+    isEditMode,
+    storeSettings,
 }: ProductFormProps) {
     const [formData, setFormData] = useState<ProductFormData>(DEFAULT_FORM_DATA);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState("details");
+
+    const checkPotencyLimit = (field: 'thc_percent' | 'cbd_percent', value: string) => {
+        const numVal = parseFloat(value);
+        if (!storeSettings || isNaN(numVal)) return;
+
+        const limit = field === 'thc_percent' ? storeSettings.potency_limit_thc : storeSettings.potency_limit_cbd;
+
+        if (limit && numVal > limit) {
+            toast.warning(`Potency Alert: Value exceeds store limit of ${limit}%`);
+        }
+    };
 
     useEffect(() => {
         if (initialData) {
@@ -288,6 +311,20 @@ export function ProductForm({
                                 </div>
                             </div>
                         )}
+
+                        <div className="flex items-center space-x-2 pt-4">
+                            <Checkbox
+                                id="exclude_discounts"
+                                checked={formData.exclude_from_discounts}
+                                onCheckedChange={(checked) => setFormData({ ...formData, exclude_from_discounts: checked as boolean })}
+                            />
+                            <Label htmlFor="exclude_discounts" className="cursor-pointer">
+                                Exclude from Disounts
+                            </Label>
+                        </div>
+                        <p className="text-xs text-muted-foreground pl-6">
+                            If checked, this product will not be eligible for order-level discounts or promotions.
+                        </p>
                     </TabsContent>
 
                     {/* Inventory Tab */}
@@ -343,6 +380,16 @@ export function ProductForm({
                                 />
                                 <p className="text-xs text-muted-foreground">Alert when stock falls below this level</p>
                             </div>
+
+                            <div className="space-y-2">
+                                <Label>Metrc Retail ID</Label>
+                                <Input
+                                    value={formData.metrc_retail_id}
+                                    onChange={(e) => setFormData({ ...formData, metrc_retail_id: e.target.value })}
+                                    placeholder="e.g. 1A40603000..."
+                                />
+                                <p className="text-xs text-muted-foreground">Regulatory tracking ID to display on cart.</p>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -352,7 +399,12 @@ export function ProductForm({
                                     type="number"
                                     step="0.1"
                                     value={formData.thc_percent}
-                                    onChange={(e) => setFormData({ ...formData, thc_percent: e.target.value })}
+                                    step="0.1"
+                                    value={formData.thc_percent}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, thc_percent: e.target.value });
+                                        checkPotencyLimit('thc_percent', e.target.value);
+                                    }}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -361,7 +413,12 @@ export function ProductForm({
                                     type="number"
                                     step="0.1"
                                     value={formData.cbd_percent}
-                                    onChange={(e) => setFormData({ ...formData, cbd_percent: e.target.value })}
+                                    step="0.1"
+                                    value={formData.cbd_percent}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, cbd_percent: e.target.value });
+                                        checkPotencyLimit('cbd_percent', e.target.value);
+                                    }}
                                 />
                             </div>
                         </div>
