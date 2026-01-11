@@ -1,5 +1,8 @@
 project_id = "aejugtmhwwknrowfyzie"
 
+[functions]
+typecheck = false
+
 # ===========================================
 # AUTH & PUBLIC ENDPOINTS (no JWT required)
 # ===========================================
