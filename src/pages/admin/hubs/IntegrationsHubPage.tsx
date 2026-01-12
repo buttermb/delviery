@@ -78,14 +78,16 @@ export default function IntegrationsHubPage() {
                             </p>
                         </div>
                     </div>
-                    <TabsList className="grid w-full max-w-3xl grid-cols-7">
-                        {tabs.map((tab) => (
-                            <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-                                <tab.icon className="h-4 w-4" />
-                                <span className="hidden sm:inline">{tab.label}</span>
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
+                    <div className="overflow-x-auto">
+                        <TabsList className="inline-flex min-w-max gap-0.5">
+                            {tabs.map((tab) => (
+                                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                    <tab.icon className="h-4 w-4" />
+                                    <span className="hidden sm:inline">{tab.label}</span>
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                    </div>
                 </div>
 
                 <TabsContent value="overview" className="m-0">

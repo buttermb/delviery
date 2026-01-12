@@ -33,6 +33,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -152,6 +153,11 @@ export default function HelpHubPage() {
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header */}
                 <div className="border-b bg-card px-4 py-4">
+                    <HubBreadcrumbs
+                        hubName="help-hub"
+                        hubHref="help-hub"
+                        currentTab={tabs.find(t => t.id === activeTab)?.label}
+                    />
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h1 className="text-2xl font-bold">Help Center</h1>
