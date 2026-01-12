@@ -218,7 +218,7 @@ export function StorefrontDynamicCarousels({ storeId }: StorefrontDynamicCarouse
         <div className="space-y-8 my-8">
             {carousels.map((carousel) => {
                 // Filter products based on carousel config
-                let displayProducts: Product[] = [];
+                let displayProducts: MarketplaceProduct[] = [];
 
                 if (carousel.filter_type === 'manual') {
                     displayProducts = products.filter(p =>

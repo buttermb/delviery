@@ -14805,6 +14805,10 @@ export type Database = {
         }
         Returns: Json
       }
+      complete_reservation: {
+        Args: { p_order_id: string; p_session_id: string }
+        Returns: Json
+      }
       confirm_menu_order: {
         Args: {
           p_order_data: Json
@@ -15360,6 +15364,7 @@ export type Database = {
         }
         Returns: Json
       }
+      redeem_coupon: { Args: { p_coupon_id: string }; Returns: Json }
       refresh_dashboard_metrics: { Args: never; Returns: undefined }
       refresh_menu_analytics: { Args: never; Returns: undefined }
       regenerate_backup_codes: {
@@ -15456,6 +15461,19 @@ export type Database = {
       update_tenant_tier: {
         Args: { p_override?: boolean; p_tenant_id: string; p_tier: string }
         Returns: undefined
+      }
+      validate_cart_items: {
+        Args: { p_items: Json; p_store_id: string }
+        Returns: Json
+      }
+      validate_coupon: {
+        Args: {
+          p_cart_items?: Json
+          p_code: string
+          p_store_id: string
+          p_subtotal: number
+        }
+        Returns: Json
       }
       validate_courier_pin_session: {
         Args: { p_courier_id: string; p_session_token: string }

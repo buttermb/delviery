@@ -48,7 +48,6 @@ import { WishlistButton } from '@/components/shop/WishlistButton';
 import { useWishlist } from '@/hooks/useWishlist';
 import { ProductQuickViewModal } from '@/components/shop/ProductQuickViewModal';
 import { EnhancedPriceSlider } from '@/components/shop/EnhancedPriceSlider';
-import { EnhancedPriceSlider } from '@/components/shop/EnhancedPriceSlider';
 import { StockWarning } from '@/components/shop/StockWarning';
 import { useShopCart } from '@/hooks/useShopCart';
 import { StorefrontProductCard, type MarketplaceProduct } from '@/components/shop/StorefrontProductCard';
