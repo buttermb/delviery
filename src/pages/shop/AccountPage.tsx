@@ -180,21 +180,19 @@ export default function AccountPage() {
 
     setIsSendingCode(true);
     try {
-      // Generate a 6-digit code
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min expiry
+      // Call RPC to generate and store code
+      const { data: code, error } = await supabase.rpc('request_magic_code', {
+        p_store_id: store.id,
+        p_email: email.trim()
+      });
 
-      // Magic codes table doesn't exist - fall back to email lookup
-      // In production, you would send a magic code via edge function
-      console.warn('Magic codes feature not available, using email lookup');
-      handleEmailLookup();
-      return;
+      if (error) throw error;
 
-      // In production, this would send an email via edge function
-      // For now, we'll show the code in a toast for demo purposes
+      // In production, this would be sent via email.
+      // For this demo/MVP, we show it in the toast as confirmed by requirement.
       toast({
         title: 'Magic code sent!',
-        description: `Check your email at ${email}. (Demo: ${code})`,
+        description: `Check your email at ${email}. (Code: ${code})`,
       });
 
       setCodeSentTo(email);
@@ -211,26 +209,44 @@ export default function AccountPage() {
     }
   };
 
-  // Verify magic code - simplified since table doesn't exist
+  // Verify magic code
   const handleVerifyMagicCode = async () => {
     if (!magicCode || !codeSentTo || !store?.id) return;
 
     setIsVerifyingCode(true);
     try {
-      // Magic codes feature not available - fall back to email lookup
-      console.warn('Magic codes verification not available');
-      toast({
-        title: 'Verification not available',
-        description: 'Please use email lookup instead.',
-        variant: 'destructive',
+      const { data: customer, error } = await supabase.rpc('verify_magic_code', {
+        p_store_id: store.id,
+        p_email: codeSentTo.trim(),
+        p_code: magicCode.trim()
       });
+
+      if (error) throw error;
+
+      if (!customer) {
+        toast({
+          title: 'Account not found',
+          description: 'No account found with this email. Please sign up or place an order.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Success - Login
+      localStorage.setItem(`shop_customer_${store.id}`, JSON.stringify(customer));
+      setCustomerId(customer.id);
+      setEmail(customer.email);
+      setIsLoggedIn(true);
+
+      toast({ title: `Welcome back, ${customer.first_name || 'Customer'}!` });
       setShowMagicCode(false);
-      setEmail(codeSentTo);
-    } catch (error) {
+      setMagicCode('');
+
+    } catch (error: any) {
       logger.error('Failed to verify magic code', error);
       toast({
         title: 'Verification failed',
-        description: 'Please try again.',
+        description: error.message || 'Invalid code or expired.',
         variant: 'destructive',
       });
     } finally {
