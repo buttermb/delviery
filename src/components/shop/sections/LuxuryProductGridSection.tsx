@@ -222,7 +222,8 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                   {isActive && (
                     <motion.div
                       layoutId="activeCategoryPill"
-                      className="absolute inset-0 bg-[#015358] rounded-full shadow-lg shadow-teal-900/20 -z-10"
+                      className="absolute inset-0 rounded-full shadow-lg -z-10"
+                      style={{ backgroundColor: customAccent }}
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
@@ -242,9 +243,10 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mb-10 pl-1 border-l-4 border-[#0EC7BA] ml-1"
+            className="mb-10 pl-1 ml-1"
+            style={{ borderLeft: `4px solid ${customAccent}` }}
           >
-            <h2 className="text-4xl font-extrabold text-[#015358] ml-4 tracking-tight">{heading}</h2>
+            <h2 className="text-4xl font-extrabold ml-4 tracking-tight" style={{ color: customAccent }}>{heading}</h2>
             {subheading && <p className="text-neutral-500 ml-4 mt-2 font-medium">{subheading}</p>}
           </motion.div>
         )}
@@ -265,11 +267,12 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
             <div className="w-20 h-20 bg-neutral-50 rounded-full flex items-center justify-center mb-6 text-neutral-300">
               <Search className="w-10 h-10" />
             </div>
-            <h3 className="text-2xl font-bold text-[#015358]">No matches found</h3>
+            <h3 className="text-2xl font-bold" style={{ color: customAccent }}>No matches found</h3>
             <p className="text-neutral-500 mt-2 max-w-md mx-auto">We couldn't find any products matching your filters.</p>
             <Button
               onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
-              className="mt-8 bg-[#015358] text-white hover:bg-[#003d3f] rounded-full px-8 py-6 text-lg font-bold shadow-lg shadow-teal-900/10"
+              className="mt-8 text-white rounded-full px-8 py-6 text-lg font-bold shadow-lg"
+              style={{ backgroundColor: customAccent }}
             >
               View All Products
             </Button>
@@ -298,6 +301,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                   isInWishlist={isInWishlist(product.product_id)}
                   onQuickView={() => setQuickViewProduct(product)}
                   index={index}
+                  accentColor={customAccent}
                 />
               ))}
             </AnimatePresence>
@@ -334,7 +338,8 @@ function StorefrontProductCard({
   onToggleWishlist,
   isInWishlist,
   onQuickView,
-  index
+  index,
+  accentColor = '#015358'
 }: {
   product: MarketplaceProduct;
   storeSlug?: string;
@@ -345,6 +350,7 @@ function StorefrontProductCard({
   isInWishlist: boolean;
   onQuickView: () => void;
   index: number;
+  accentColor?: string;
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const cleanedName = cleanProductName(product.product_name);
@@ -429,8 +435,8 @@ function StorefrontProductCard({
         {/* Content */}
         <div className="p-5 flex flex-col flex-1">
           <div className="flex-1 space-y-2">
-            <Link to={`/shop/${storeSlug}/product/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`} className="group-hover:text-[#0EC7BA] transition-colors block">
-              <h3 className="font-bold text-[#015358] text-lg leading-snug line-clamp-2" title={cleanedName}>
+            <Link to={`/shop/${storeSlug}/product/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`} className="group-hover:opacity-80 transition-colors block">
+              <h3 className="font-bold text-lg leading-snug line-clamp-2" style={{ color: accentColor }} title={cleanedName}>
                 {cleanedName}
               </h3>
             </Link>
@@ -447,7 +453,7 @@ function StorefrontProductCard({
           {/* Footer */}
           <div className="pt-5 mt-2 flex items-center justify-between border-t border-neutral-50">
             <div className="flex flex-col">
-              <span className="text-xl font-extrabold text-[#015358]">${product.price?.toFixed(2)}</span>
+              <span className="text-xl font-extrabold" style={{ color: accentColor }}>${product.price?.toFixed(2)}</span>
               {product.unit_type && <span className="text-[10px] text-neutral-400 font-medium">per {product.unit_type}</span>}
             </div>
 
@@ -461,8 +467,9 @@ function StorefrontProductCard({
                   ? "bg-emerald-500 text-white hover:bg-emerald-600 w-auto"
                   : isOutStock
                     ? "bg-neutral-100 text-neutral-300 cursor-not-allowed"
-                    : "bg-[#015358] text-white hover:bg-[#0EC7BA] hover:text-[#015358] hover:shadow-lg hover:shadow-teal-900/20 active:scale-95"
+                    : "text-white hover:opacity-90 hover:shadow-lg active:scale-95"
               )}
+              style={!isAdded && !isOutStock ? { backgroundColor: accentColor } : undefined}
             >
               <AnimatePresence mode="wait">
                 {isAdded ? (

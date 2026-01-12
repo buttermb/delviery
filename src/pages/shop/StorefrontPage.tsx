@@ -15,8 +15,8 @@ import { LuxuryFeaturesSection } from '@/components/shop/sections/LuxuryFeatures
 const SECTION_COMPONENTS: Record<string, any> = {
   hero: HeroSection,
   features: FeaturesSection,
-  product_grid: ProductGridSection,
-  // Luxury theme sections
+  product_grid: LuxuryProductGridSection, // Use luxury grid as default for better UX
+  // Luxury theme sections (kept for backwards compatibility)
   luxury_hero: LuxuryHeroSection,
   luxury_products: LuxuryProductGridSection,
   luxury_features: LuxuryFeaturesSection,
