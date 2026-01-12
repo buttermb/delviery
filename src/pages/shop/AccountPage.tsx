@@ -289,32 +289,32 @@ export default function AccountPage() {
   // Not logged in view
   if (!isLoggedIn) {
     return (
-      <div className="container mx-auto px-4 py-12 max-w-md">
-        <Card>
-          <CardHeader className="text-center">
+      <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-[60vh]">
+        <Card className="w-full max-w-md border-none shadow-xl rounded-3xl overflow-hidden bg-white">
+          <CardHeader className="text-center pb-2 pt-8">
             <div
-              className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
-              style={{ backgroundColor: `${store.primary_color}15` }}
+              className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center shadow-inner"
+              style={{ backgroundColor: `${store.primary_color}10` }}
             >
-              <User className="w-8 h-8" style={{ color: store.primary_color }} />
+              <User className="w-10 h-10" style={{ color: store.primary_color }} />
             </div>
-            <CardTitle>Your Account</CardTitle>
-            <CardDescription>
-              Enter your email to view orders and manage your account
+            <CardTitle className="text-3xl font-extrabold tracking-tight text-neutral-900">Welcome Back</CardTitle>
+            <CardDescription className="text-neutral-500 text-base mt-2">
+              Sign in to view orders and manage your account
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-8 p-8">
             {/* Magic Code Entry Mode */}
             {showMagicCode ? (
-              <div className="space-y-4">
-                <div className="text-center">
-                  <Mail className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Enter the 6-digit code sent to
+              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                <div className="text-center bg-neutral-50 p-6 rounded-2xl border border-neutral-100">
+                  <Mail className="w-10 h-10 mx-auto mb-3 text-neutral-400" />
+                  <p className="text-sm text-neutral-500 mb-1">
+                    We sent a 6-digit code to
                   </p>
-                  <p className="font-medium">{codeSentTo}</p>
+                  <p className="font-bold text-neutral-900 text-lg">{codeSentTo}</p>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Input
                     id="magicCode"
                     type="text"
@@ -323,36 +323,38 @@ export default function AccountPage() {
                     maxLength={6}
                     value={magicCode}
                     onChange={(e) => setMagicCode(e.target.value.replace(/\D/g, ''))}
-                    placeholder="123456"
-                    className="text-center text-2xl tracking-widest font-mono"
+                    placeholder="000000"
+                    className="text-center text-3xl tracking-[1em] font-mono h-16 rounded-xl border-neutral-200 focus:border-neutral-900 focus:ring-neutral-900 bg-white"
                     onKeyDown={(e) => e.key === 'Enter' && handleVerifyMagicCode()}
+                    autoFocus
                   />
+                  <p className="text-xs text-center text-neutral-400">Enter the 6-digit verification code</p>
                 </div>
                 <Button
-                  className="w-full"
+                  className="w-full h-14 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
                   style={{ backgroundColor: store.primary_color }}
                   onClick={handleVerifyMagicCode}
                   disabled={isVerifyingCode || magicCode.length !== 6}
                 >
                   {isVerifyingCode ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader2 className="w-5 h-5 mr-3 animate-spin" />
                       Verifying...
                     </>
                   ) : (
-                    'Verify Code'
+                    'Verify & Sign In'
                   )}
                 </Button>
-                <div className="flex justify-center gap-4 text-sm">
+                <div className="flex justify-center gap-6 text-sm pt-2">
                   <button
-                    className="text-muted-foreground hover:underline"
+                    className="text-neutral-500 hover:text-neutral-900 font-medium transition-colors"
                     onClick={() => handleSendMagicCode()}
                     disabled={isSendingCode}
                   >
                     Resend code
                   </button>
                   <button
-                    className="text-muted-foreground hover:underline"
+                    className="text-neutral-500 hover:text-neutral-900 font-medium transition-colors"
                     onClick={() => {
                       setShowMagicCode(false);
                       setMagicCode('');
@@ -364,62 +366,71 @@ export default function AccountPage() {
               </div>
             ) : (
               /* Normal Email Entry Mode */
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+              <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
+                <div className="space-y-3">
+                  <Label htmlFor="email" className="text-neutral-700 font-semibold ml-1">Email Address</Label>
                   <Input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
+                    placeholder="name@example.com"
+                    className="h-14 px-4 text-lg rounded-xl border-neutral-200 focus:border-neutral-900 focus:ring-neutral-900 bg-neutral-50 focus:bg-white transition-all"
                     onKeyDown={(e) => e.key === 'Enter' && handleEmailLookup()}
                   />
                 </div>
-                <Button
-                  className="w-full"
-                  style={{ backgroundColor: store.primary_color }}
-                  onClick={handleEmailLookup}
-                >
-                  View My Orders
-                </Button>
 
-                {/* Magic Code Option */}
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
+                <div className="space-y-3">
+                  <Button
+                    className="w-full h-14 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                    style={{ backgroundColor: store.primary_color }}
+                    onClick={handleEmailLookup}
+                  >
+                    Sign In
+                  </Button>
+
+                  <div className="relative py-3">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-neutral-200" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase tracking-wider font-bold">
+                      <span className="bg-white px-4 text-neutral-400">or continue with</span>
+                    </div>
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">or</span>
-                  </div>
+
+                  <Button
+                    variant="outline"
+                    className="w-full h-14 text-lg font-semibold rounded-xl border-2 hover:bg-neutral-50 hover:border-neutral-300 transition-all text-neutral-700"
+                    onClick={handleSendMagicCode}
+                    disabled={!email || isSendingCode}
+                  >
+                    {isSendingCode ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                        Sending Code...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="w-5 h-5 mr-3" />
+                        Send Magic Code
+                      </>
+                    )}
+                  </Button>
+                  <p className="text-xs text-center text-neutral-400 px-4">
+                    We'll determine if you have an account. If not, we'll help you create one or track your order.
+                  </p>
                 </div>
-
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleSendMagicCode}
-                  disabled={!email || isSendingCode}
-                >
-                  {isSendingCode ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="w-4 h-4 mr-2" />
-                      Sign in with Magic Code
-                    </>
-                  )}
-                </Button>
               </div>
             )}
 
-            <Separator />
-
-            <div className="space-y-4">
-              <p className="text-sm text-center text-muted-foreground">
-                Or track an order by number
+            <div className="pt-2">
+              <div className="relative py-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-dashed border-neutral-200" />
+                </div>
+              </div>
+              <p className="text-sm text-center text-neutral-500 mb-4 font-medium">
+                Just looking to track an order?
               </p>
               <div className="flex gap-2">
                 <Input
@@ -427,21 +438,24 @@ export default function AccountPage() {
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleTrackOrder()}
+                  className="h-12 rounded-lg bg-neutral-50 border-neutral-200 focus:bg-white"
                 />
-                <Button variant="outline" onClick={handleTrackOrder}>
-                  <Search className="w-4 h-4" />
+                <Button variant="secondary" onClick={handleTrackOrder} className="h-12 w-12 rounded-lg shrink-0">
+                  <Search className="w-5 h-5" />
                 </Button>
               </div>
             </div>
 
-            <Separator />
+            <Separator className="bg-neutral-100" />
 
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-2">
+            <div className="text-center pb-2">
+              <p className="text-sm text-neutral-500 mb-3">
                 Don't have an account yet?
               </p>
               <Link to={`/shop/${storeSlug}/products`}>
-                <Button variant="outline">Start Shopping</Button>
+                <Button variant="ghost" className="font-bold text-neutral-900 hover:bg-neutral-100 rounded-full px-6">
+                  Start Shopping <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
               </Link>
             </div>
           </CardContent>
@@ -452,15 +466,23 @@ export default function AccountPage() {
 
   // Logged in view
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold">My Account</h1>
-          <p className="text-muted-foreground">{email}</p>
+    <div className="container mx-auto px-4 py-8 min-h-screen bg-[#F5F7F8]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 bg-white p-6 rounded-3xl shadow-sm border border-neutral-100">
+        <div className="flex items-center gap-5">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg" style={{ backgroundColor: store.primary_color }}>
+            {email.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900">My Account</h1>
+            <div className="flex items-center gap-2 text-neutral-500 font-medium">
+              <Mail className="w-4 h-4" />
+              {email}
+            </div>
+          </div>
         </div>
-        <Button variant="outline" onClick={handleLogout}>
+        <Button variant="outline" onClick={handleLogout} className="rounded-full px-6 py-5 border-neutral-200 hover:bg-neutral-50 hover:text-red-600 hover:border-red-200 transition-colors">
           <LogOut className="w-4 h-4 mr-2" />
-          Log Out
+          Sign Out
         </Button>
       </div>
 
@@ -496,33 +518,36 @@ export default function AccountPage() {
                     <Skeleton key={i} className="h-24" />
                   ))}
                 </div>
-              ) : orders.length === 0 ? (
-                <div className="text-center py-12">
-                  <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="font-semibold mb-2">No orders yet</h3>
-                  <p className="text-muted-foreground mb-4">
-                    You haven't placed any orders yet.
+              ) : (
+                <div className="text-center py-16 bg-neutral-50 rounded-2xl border border-dashed border-neutral-200">
+                  <Package className="w-16 h-16 mx-auto mb-4 text-neutral-300" />
+                  <h3 className="text-xl font-bold mb-2 text-neutral-900">No orders yet</h3>
+                  <p className="text-neutral-500 mb-6 max-w-sm mx-auto">
+                    You haven't placed any orders yet. Start exploring our collection today.
                   </p>
                   <Link to={`/shop/${storeSlug}/products`}>
-                    <Button style={{ backgroundColor: store.primary_color }}>
+                    <Button
+                      className="rounded-full px-8 py-6 font-bold shadow-lg hover:shadow-xl transition-all"
+                      style={{ backgroundColor: store.primary_color }}
+                    >
                       Start Shopping
                     </Button>
                   </Link>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {orders.map((order) => (
-                    <OrderCard
-                      key={order.id}
-                      order={order}
-                      storeId={store.id}
-                      storeSlug={storeSlug!}
-                      primaryColor={store.primary_color}
-                      getStatusIcon={getStatusIcon}
-                      getStatusBadge={getStatusBadge}
-                    />
-                  ))}
-                </div>
+              <div className="space-y-4">
+                {orders.map((order) => (
+                  <OrderCard
+                    key={order.id}
+                    order={order}
+                    storeId={store.id}
+                    storeSlug={storeSlug!}
+                    primaryColor={store.primary_color}
+                    getStatusIcon={getStatusIcon}
+                    getStatusBadge={getStatusBadge}
+                  />
+                ))}
+              </div>
               )}
             </CardContent>
           </Card>
@@ -530,36 +555,43 @@ export default function AccountPage() {
 
         {/* Wishlist Tab */}
         <TabsContent value="wishlist">
-          <WishlistSection storeId={store.id} storeSlug={storeSlug!} primaryColor={store.primary_color} />
+          <WishlistSection
+            storeId={store.id}
+            storeSlug={storeSlug!}
+            primaryColor={store.primary_color}
+            accentColor={accentColor}
+          />
         </TabsContent>
 
         {/* Track Order Tab */}
         <TabsContent value="track">
-          <Card>
+          <Card className="border-none shadow-sm">
             <CardHeader>
-              <CardTitle>Track an Order</CardTitle>
+              <CardTitle className="text-2xl font-bold">Track an Order</CardTitle>
               <CardDescription>
-                Enter your order number or tracking code
+                Enter your order number or tracking code to see live updates
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="max-w-md mx-auto space-y-4">
-                <div className="flex gap-2">
+              <div className="max-w-md space-y-4">
+                <div className="flex gap-3">
                   <Input
                     placeholder="Order number or tracking code"
                     value={trackingNumber}
                     onChange={(e) => setTrackingNumber(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleTrackOrder()}
+                    className="h-12 text-lg"
                   />
                   <Button
+                    className="h-12 px-6 font-bold rounded-lg"
                     style={{ backgroundColor: store.primary_color }}
                     onClick={handleTrackOrder}
                   >
                     Track
                   </Button>
                 </div>
-                <p className="text-sm text-muted-foreground text-center">
-                  You can find your order number in the confirmation email
+                <p className="text-sm text-neutral-500">
+                  You can find your order number in the confirmation email sent to you.
                 </p>
               </div>
             </CardContent>
@@ -574,11 +606,13 @@ export default function AccountPage() {
 function WishlistSection({
   storeId,
   storeSlug,
-  primaryColor
+  primaryColor,
+  accentColor
 }: {
   storeId: string;
   storeSlug: string;
   primaryColor: string;
+  accentColor?: string;
 }) {
   const { toast } = useToast();
   const { setCartItemCount } = useShop();
@@ -650,14 +684,14 @@ function WishlistSection({
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="border-none shadow-sm">
         <CardHeader>
           <CardTitle>My Wishlist</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-24" />
+              <Skeleton key={i} className="h-32 rounded-xl" />
             ))}
           </div>
         </CardContent>
@@ -666,66 +700,70 @@ function WishlistSection({
   }
 
   return (
-    <Card>
+    <Card className="border-none shadow-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Heart className="w-5 h-5" />
+        <CardTitle className="flex items-center gap-2 text-2xl font-bold">
+          <Heart className="w-6 h-6 text-red-500 fill-current" />
           My Wishlist ({products.length})
         </CardTitle>
         <CardDescription>
-          Items you've saved for later
+          Your curated collection of favorites
         </CardDescription>
       </CardHeader>
       <CardContent>
         {products.length === 0 ? (
-          <div className="text-center py-12">
-            <Heart className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="font-semibold mb-2">Your wishlist is empty</h3>
-            <p className="text-muted-foreground mb-4">
-              Save items you love by clicking the heart icon
+          <div className="text-center py-16 bg-neutral-50 rounded-2xl border border-dashed border-neutral-200">
+            <Heart className="w-16 h-16 mx-auto mb-4 text-neutral-300" />
+            <h3 className="text-xl font-bold mb-2 text-neutral-900">Your wishlist is empty</h3>
+            <p className="text-neutral-500 mb-6 max-w-sm mx-auto">
+              Save items you love by clicking the heart icon while shopping.
             </p>
             <Link to={`/shop/${storeSlug}/products`}>
-              <Button style={{ backgroundColor: primaryColor }}>
+              <Button
+                className="rounded-full px-8 py-6 font-bold shadow-lg hover:shadow-xl transition-all"
+                style={{ backgroundColor: primaryColor }}
+              >
                 Browse Products
               </Button>
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4">
             {products.map((product: any) => (
               <div
                 key={product.product_id}
-                className="flex items-center gap-4 p-4 border rounded-lg"
+                className="flex items-center gap-6 p-6 border border-neutral-100 rounded-2xl bg-white hover:shadow-md transition-shadow group"
               >
                 <Link to={`/shop/${storeSlug}/products/${product.product_id}`}>
-                  <div className="w-20 h-20 bg-muted rounded-lg overflow-hidden flex-shrink-0">
+                  <div className="w-24 h-24 bg-neutral-100 rounded-xl overflow-hidden flex-shrink-0 relative">
                     {product.image_url ? (
                       <img
                         src={product.image_url}
                         alt={product.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Package className="w-8 h-8 text-muted-foreground" />
+                        <Package className="w-8 h-8 text-neutral-300" />
                       </div>
                     )}
                   </div>
                 </Link>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 space-y-1">
                   <Link to={`/shop/${storeSlug}/products/${product.product_id}`}>
-                    <h4 className="font-medium hover:underline">{product.name}</h4>
+                    <h4 className="font-bold text-lg text-neutral-900 hover:text-neutral-700 transition-colors">{product.name}</h4>
                   </Link>
-                  <p className="text-lg font-bold" style={{ color: primaryColor }}>
+                  <p className="text-xl font-bold" style={{ color: primaryColor }}>
                     {formatCurrency(product.display_price)}
                   </p>
                   {!product.in_stock && (
-                    <Badge variant="secondary">Out of Stock</Badge>
+                    <Badge variant="secondary" className="bg-neutral-100 text-neutral-500">Out of Stock</Badge>
                   )}
                 </div>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <Button
-                    size="sm"
+                    size="lg"
+                    className="font-bold rounded-full shadow-sm hover:shadow-md transition-all"
                     style={{ backgroundColor: primaryColor }}
                     disabled={!product.in_stock}
                     onClick={() => addToCart(product)}
@@ -734,12 +772,12 @@ function WishlistSection({
                     Add to Cart
                   </Button>
                   <Button
-                    size="sm"
-                    variant="outline"
+                    size="lg"
+                    variant="ghost"
+                    className="text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-full"
                     onClick={() => removeFromWishlist(product.product_id)}
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Remove
+                    <Trash2 className="w-5 h-5" />
                   </Button>
                 </div>
               </div>
