@@ -419,10 +419,6 @@ export default function DispatchInventory() {
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="sm" onClick={() => navigateToAdmin('inventory/fronted')}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
           <h1 className="text-3xl font-bold">🚚 Dispatch/Front Inventory</h1>
         </div>
 

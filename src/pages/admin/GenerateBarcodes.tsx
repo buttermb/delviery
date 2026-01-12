@@ -341,17 +341,11 @@ export default function GenerateBarcodes() {
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigateToAdmin('inventory')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Barcode & QR Code Generator</h1>
-            <p className="text-muted-foreground">
-              Generate professional barcodes and QR codes for inventory tracking
-            </p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold">Barcode & QR Code Generator</h1>
+          <p className="text-muted-foreground">
+            Generate professional barcodes and QR codes for inventory tracking
+          </p>
         </div>
       </div>
 

@@ -99,10 +99,6 @@ export default function AdvancedAnalytics() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-2">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
         <h1 className="text-3xl font-bold">Advanced Analytics</h1>
         <p className="text-muted-foreground">Deep insights and business intelligence</p>
       </div>
