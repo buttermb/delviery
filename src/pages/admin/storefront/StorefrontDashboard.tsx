@@ -441,10 +441,10 @@ export default function StorefrontDashboard() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* Streamlined Header */}
+      <div className="flex flex-col gap-4 md:gap-0 md:flex-row md:items-start md:justify-between">
         <div className="flex items-center gap-4">
-          {/* Store Selector */}
+          {/* Store Selector - only show if multiple stores */}
           {stores.length > 1 && (
             <StoreSelector
               stores={stores}
@@ -456,48 +456,61 @@ export default function StorefrontDashboard() {
           )}
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold">{activeStore?.store_name}</h1>
-              <Badge variant={activeStore?.is_active ? 'default' : 'secondary'}>
-                {activeStore?.is_active ? 'Live' : 'Draft'}
+              <h1 className="text-2xl md:text-3xl font-bold">{activeStore?.store_name}</h1>
+              <Badge
+                variant={activeStore?.is_active ? 'default' : 'secondary'}
+                className={activeStore?.is_active ? 'bg-green-500' : ''}
+              >
+                {activeStore?.is_active ? '● Live' : 'Draft'}
               </Badge>
             </div>
-            <p className="text-muted-foreground">{activeStore?.tagline || 'Your online storefront'}</p>
+            <p className="text-muted-foreground text-sm">{activeStore?.tagline || 'Your online storefront'}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {stores.length > 1 && (
-            <Button variant="outline" onClick={handleViewAllStores}>
-              <LayoutGrid className="w-4 h-4 mr-2" />
-              All Stores
+
+        {/* Simplified Action Buttons */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Primary CTA: Go Live or Preview */}
+          {!activeStore?.is_active ? (
+            <Button
+              size="lg"
+              onClick={() => toggleStoreMutation.mutate(true)}
+              disabled={toggleStoreMutation.isPending}
+              className="bg-green-600 hover:bg-green-700 gap-2"
+            >
+              <Globe className="w-4 h-4" />
+              Launch Store
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => toggleStoreMutation.mutate(false)}
+              disabled={toggleStoreMutation.isPending}
+            >
+              Pause Store
             </Button>
           )}
+
+          {/* Preview Button */}
           {activeStore?.slug && (
-            <StorePreviewButton
-              storeSlug={activeStore.slug}
-              storeName={activeStore.store_name}
-            />
+            <Button
+              variant="outline"
+              onClick={() => window.open(`/shop/${activeStore.slug}`, '_blank')}
+              className="gap-2"
+            >
+              <ExternalLink className="w-4 h-4" />
+              <span className="hidden sm:inline">View Store</span>
+            </Button>
           )}
+
+          {/* Settings - Icon only on mobile */}
           <Button
-            variant={activeStore?.is_active ? 'secondary' : 'default'}
-            onClick={() => toggleStoreMutation.mutate(!activeStore?.is_active)}
-            disabled={toggleStoreMutation.isPending}
-          >
-            {activeStore?.is_active ? 'Pause Store' : 'Go Live'}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setSearchParams({ tab: 'settings' })}
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            Settings
-          </Button>
-          <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={() => activeStore && handleDeleteStore(activeStore)}
+            onClick={() => setSearchParams({ tab: 'settings' })}
+            title="Settings"
           >
-            <Trash2 className="w-4 h-4" />
+            <Settings className="w-4 h-4" />
           </Button>
         </div>
       </div>

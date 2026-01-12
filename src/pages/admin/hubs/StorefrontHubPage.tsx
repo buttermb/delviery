@@ -23,9 +23,11 @@ import {
     Radio,
     BarChart3,
     Gift,
+    ExternalLink,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback, Fragment } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
 const StorefrontDashboard = lazy(() => import('@/pages/admin/storefront/StorefrontDashboard'));
@@ -90,6 +92,18 @@ export default function StorefrontHubPage() {
                             <p className="text-muted-foreground text-sm">
                                 Manage your online store
                             </p>
+                        </div>
+                        {/* Quick Actions - Always Visible */}
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => window.open(`/shop`, '_blank')}
+                                className="gap-2"
+                            >
+                                <ExternalLink className="h-4 w-4" />
+                                <span className="hidden sm:inline">View Store</span>
+                            </Button>
                         </div>
                     </div>
                     <div className="overflow-x-auto">
