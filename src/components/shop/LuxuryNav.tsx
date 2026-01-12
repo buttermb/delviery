@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Search, ShoppingBag, Menu, X, User } from 'lucide-react';
 import { useShop } from '@/pages/shop/ShopLayout';
