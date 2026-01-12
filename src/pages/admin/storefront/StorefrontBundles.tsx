@@ -515,21 +515,12 @@ export default function StorefrontBundles() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(`/${tenantSlug}/admin/storefront`)}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Product Bundles</h1>
-            <p className="text-muted-foreground">
-              Create bundles to offer discounts on multiple products
-            </p>
-          </div>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Product Bundles</h1>
+          <p className="text-muted-foreground">
+            Create bundles to offer discounts on multiple products
+          </p>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
