@@ -354,21 +354,21 @@ export default function StorefrontProducts() {
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(`/${tenantSlug}/admin/storefront`)}
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Store Products</h1>
-            <p className="text-muted-foreground">
-              {visibleCount} of {products.length} products visible in store
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold">Catalog Management</h1>
+          <p className="text-muted-foreground">
+            {visibleCount} of {products.length} products visible in store
+          </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => window.open(`/shop/${tenantSlug}`, '_blank')}
+          className="gap-2"
+        >
+          <Eye className="w-4 h-4" />
+          Preview Store
+        </Button>
       </div>
 
       {/* Filters and Actions */}

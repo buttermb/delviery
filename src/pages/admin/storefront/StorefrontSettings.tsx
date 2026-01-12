@@ -323,21 +323,12 @@ export default function StorefrontSettings() {
   return (
     <div className="container mx-auto p-6 max-w-5xl space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(`/${tenantSlug}/admin/storefront`)}
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Store Settings</h1>
-            <p className="text-muted-foreground">Configure your online storefront</p>
-          </div>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Store Settings</h1>
+          <p className="text-muted-foreground">Configure your online storefront</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={() => setShareDialogOpen(true)}>
             <Share2 className="w-4 h-4 mr-2" />
             Share

@@ -254,28 +254,19 @@ export default function StorefrontOrders() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(`/${tenantSlug}/admin/storefront`)}
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Store Orders</h1>
-            <p className="text-muted-foreground">
-              {orders.length} total orders
-            </p>
-          </div>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Order History</h1>
+          <p className="text-muted-foreground">
+            {orders.length} total orders
+          </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => refetch()}>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" size="sm">
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
