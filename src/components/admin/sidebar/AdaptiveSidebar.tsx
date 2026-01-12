@@ -28,7 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, ChevronDown, User, HelpCircle, Layout, RefreshCw, Search } from 'lucide-react';
+import { LogOut, Settings, ChevronDown, User, HelpCircle, Layout, RefreshCw, Search, Plus, ShoppingCart, LayoutDashboard, Package } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarMigration } from '@/hooks/useSidebarMigration';
@@ -101,37 +101,28 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   return (
     <>
       <Sidebar data-tutorial="navigation-sidebar" collapsible={collapsible}>
+        {/* Streamlined Header with Integrated Credits */}
         <SidebarHeader className="p-0 border-b">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-full p-4 flex items-center gap-3 hover:bg-accent/50 transition-colors group cursor-pointer relative overflow-hidden min-h-[64px]">
-                {/* Subtle pulse animation on the background */}
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-lg flex-shrink-0 relative z-10 group-hover:scale-105 transition-transform">
+              <button className="w-full p-3 flex items-center gap-3 hover:bg-accent/50 transition-colors group cursor-pointer">
+                <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-base flex-shrink-0 group-hover:scale-105 transition-transform">
                   {tenant?.slug?.charAt(0).toUpperCase() || "T"}
                 </div>
-                <div className="flex flex-col min-w-0 flex-1 relative z-10 gap-0.5">
+                <div className="flex flex-col min-w-0 flex-1 gap-0">
                   <span className="font-semibold text-sm truncate">{tenant?.slug || "Tenant Admin"}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">Admin</span>
-                    <Badge
-                      variant="secondary"
-                      className="text-[10px] px-1.5 py-0.5 h-5 cursor-pointer hover:bg-primary/10 transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/${tenantSlug}/admin/settings?tab=sidebar`);
-                      }}
-                    >
-                      <Layout className="h-3 w-3 mr-1" />
-                      {presetNames[currentPreset]}
-                    </Badge>
+                  <div className="flex items-center gap-1.5">
+                    <CreditBalance variant="compact" showLabel={false} />
                   </div>
                 </div>
-                <ChevronDown className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors relative z-10 flex-shrink-0" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuItem onClick={() => navigate(`/${tenantSlug}/admin/dashboard`)}>
+                <LayoutDashboard className="h-4 w-4 mr-2" />
+                Dashboard
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate(`/${tenantSlug}/admin/settings`)}>
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
@@ -153,24 +144,52 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
           </DropdownMenu>
         </SidebarHeader>
 
-        {/* Credit Balance for Free Tier Users */}
-        <div className="px-3 py-2 border-b">
-          <CreditBalance variant="default" showLabel={true} />
-        </div>
-
-        {/* Quick Search Button */}
-        <div className="px-3 py-2 border-b">
+        {/* Unified Search & Quick Actions Bar */}
+        <div className="px-3 py-2 border-b space-y-2">
+          {/* Search */}
           <Button
             variant="outline"
-            className="w-full justify-start text-muted-foreground hover:text-foreground"
+            size="sm"
+            className="w-full justify-start text-muted-foreground hover:text-foreground h-9"
             onClick={() => useCommandPaletteStore.getState().setOpen(true)}
           >
             <Search className="mr-2 h-4 w-4" />
-            <span className="flex-1 text-left">Search...</span>
+            <span className="flex-1 text-left text-sm">Search...</span>
             <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-              <span className="text-xs">⌘</span>K
+              ⌘K
             </kbd>
           </Button>
+
+          {/* Quick Actions */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 h-8 text-xs gap-1.5"
+              onClick={() => navigate(`/${tenantSlug}/admin/orders/new`)}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Order
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 h-8 text-xs gap-1.5"
+              onClick={() => navigate(`/${tenantSlug}/admin/inventory/products/new`)}
+            >
+              <Package className="h-3.5 w-3.5" />
+              Product
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 h-8 text-xs gap-1.5"
+              onClick={() => navigate(`/${tenantSlug}/admin/pos`)}
+            >
+              <ShoppingCart className="h-3.5 w-3.5" />
+              POS
+            </Button>
+          </div>
         </div>
 
         <SidebarContent>
@@ -245,9 +264,30 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
           </Suspense>
         </SidebarContent>
 
-        <SidebarFooter className="p-4 border-t">
-          <div className="text-xs text-muted-foreground text-center py-1">
-            Press <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">⌘B</kbd> to toggle
+        {/* Useful Footer with Quick Links */}
+        <SidebarFooter className="p-2 border-t">
+          <div className="flex items-center justify-between gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => navigate(`/${tenantSlug}/admin/settings`)}
+            >
+              <Settings className="h-3.5 w-3.5 mr-1" />
+              Settings
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => navigate(`/${tenantSlug}/admin/help`)}
+            >
+              <HelpCircle className="h-3.5 w-3.5 mr-1" />
+              Help
+            </Button>
+          </div>
+          <div className="text-[10px] text-muted-foreground/60 text-center mt-1">
+            <kbd className="px-1 py-0.5 rounded bg-muted/50 font-mono">⌘B</kbd> toggle • <kbd className="px-1 py-0.5 rounded bg-muted/50 font-mono">⌘K</kbd> search
           </div>
         </SidebarFooter>
       </Sidebar>

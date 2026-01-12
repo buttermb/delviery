@@ -13,6 +13,7 @@ import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import type { SidebarSection as SidebarSectionType, SidebarItem } from '@/types/sidebar';
 import type { FeatureId } from '@/lib/featureConfig';
 import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 
 interface SidebarSectionProps {
   section: SidebarSectionType;
@@ -34,10 +35,10 @@ export function SidebarSection({
   // Sync with preferences
   useEffect(() => {
     // Guard: Ensure collapsedSections is an array
-    const collapsedSections = Array.isArray(preferences?.collapsedSections) 
-      ? preferences.collapsedSections 
+    const collapsedSections = Array.isArray(preferences?.collapsedSections)
+      ? preferences.collapsedSections
       : [];
-    
+
     const shouldBeCollapsed = collapsedSections.includes(section.section);
     if (section.pinned) {
       setIsOpen(true); // Pinned sections always open
@@ -67,8 +68,13 @@ export function SidebarSection({
         disabled={section.pinned}
       >
         <CollapsibleTrigger asChild>
-          <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 px-3 py-2 rounded-md min-h-[40px]">
-            <span className="text-xs font-semibold uppercase tracking-wider">{section.section}</span>
+          <SidebarGroupLabel
+            className={cn(
+              "flex items-center justify-between cursor-pointer hover:bg-accent/50 px-3 py-2 rounded-md min-h-[40px] transition-all",
+              isOpen && "border-l-2 border-primary/50"
+            )}
+          >
+            <span className="text-sm font-semibold text-muted-foreground group-hover:text-foreground capitalize">{section.section}</span>
             {!section.pinned && (
               <div className="flex items-center">
                 {isOpen ? (
@@ -85,7 +91,7 @@ export function SidebarSection({
             <SidebarMenu>
               {section.items.map((item, index) => {
                 const hasAccess = item.featureId ? canAccess(item.featureId) : true;
-                
+
                 return (
                   <SidebarMenuItem
                     key={`${section.section}-${item.id}-${index}`}
@@ -101,7 +107,7 @@ export function SidebarSection({
           </SidebarGroupContent>
         </CollapsibleContent>
       </Collapsible>
-    </SidebarGroup>
+    </SidebarGroup >
   );
 }
 
