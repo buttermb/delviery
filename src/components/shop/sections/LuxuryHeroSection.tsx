@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { useRef, useEffect, useState } from 'react';
+import { useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { DynamicBackground, type BackgroundStyle } from '../DynamicBackground';
+import { type BackgroundStyle } from '../DynamicBackground';
+import { ChevronRight } from 'lucide-react';
 
 export interface LuxuryHeroSectionProps {
   content: {
@@ -22,64 +23,56 @@ export interface LuxuryHeroSectionProps {
   storeId?: string;
 }
 
-function generateColorPalette(accentColor: string): string[] {
-  const base = accentColor || '#10b981';
-  return [
-    base,
-    adjustColor(base, -10),
-    adjustColor(base, -20),
-    adjustColor(base, -30),
-    '#0a0a0a',
-    base,
-  ];
-}
-
-function adjustColor(hex: string, percent: number): string {
-  const num = parseInt(hex.replace('#', ''), 16);
-  const amt = Math.round(2.55 * percent);
-  const R = Math.max(0, Math.min(255, (num >> 16) + amt));
-  const G = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amt));
-  const B = Math.max(0, Math.min(255, (num & 0x0000FF) + amt));
-  return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
-}
-
-function hashCode(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash);
-}
-
 export function LuxuryHeroSection({ content, styles, storeId }: LuxuryHeroSectionProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   const { storeSlug } = useParams();
 
-  const accentColor = styles?.accent_color || '#10b981';
-  const validStyles: BackgroundStyle[] = ['aesthetic-fluid', 'ambient-light', 'blur-gradient', 'chaos-waves', 'big-blob', 'swirling-curves', 'static'];
-  const backgroundStyle: BackgroundStyle = validStyles.includes(styles?.background_style as BackgroundStyle) 
-    ? (styles?.background_style as BackgroundStyle) 
-    : 'blur-gradient';
-  const colorPalette = generateColorPalette(accentColor);
-  const seed = storeSlug ? hashCode(storeSlug) : 12345;
+  const accentColor = styles?.accent_color || '#0EC7BA';
 
   return (
     <section
       ref={heroRef}
-      className="relative min-h-[70vh] flex items-center justify-center overflow-hidden"
+      className="relative min-h-[60vh] flex items-center justify-center overflow-hidden bg-[#015358]"
     >
-      {/* Dynamic Background */}
-      <DynamicBackground
-        style={backgroundStyle}
-        colors={colorPalette}
-        seed={seed}
-        className="absolute inset-0"
-      />
+      {/* Animated Mesh Gradient Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          animate={{
+            scale: [1, 1.1, 1],
+            rotate: [0, 5, -5, 0],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute -top-[50%] -left-[20%] w-[140%] h-[200%] opacity-40 blur-[100px]"
+          style={{
+            background: `radial-gradient(circle at center, ${accentColor}, transparent 70%)`
+          }}
+        />
+        <motion.div
+          animate={{
+            scale: [1.2, 1, 1.2],
+            rotate: [0, -5, 5, 0],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute -bottom-[50%] -right-[20%] w-[140%] h-[200%] opacity-20 blur-[120px]"
+          style={{
+            background: 'radial-gradient(circle at center, #ffffff, transparent 70%)'
+          }}
+        />
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+        {/* Pattern Overlay */}
+        <div className="absolute inset-0 opacity-20" style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)',
+          backgroundSize: '32px 32px'
+        }}></div>
+      </div>
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center">
@@ -87,20 +80,36 @@ export function LuxuryHeroSection({ content, styles, storeId }: LuxuryHeroSectio
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="max-w-4xl mx-auto space-y-6"
+          className="max-w-4xl mx-auto space-y-8"
         >
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm mx-auto"
+          >
+            <span className="flex h-2 w-2 rounded-full bg-[#0EC7BA] animate-pulse"></span>
+            <span className="text-white/90 text-xs font-medium tracking-wide uppercase">Now Delivering</span>
+          </motion.div>
+
           {/* Heading */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-light text-white tracking-tight">
+          <h1 className="text-5xl md:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[1.1] drop-shadow-sm">
             {content.heading_line_1 && (
               <span className="block">{content.heading_line_1}</span>
             )}
             {content.heading_line_2 && (
               <span
-                className="block mt-2"
-                style={{ color: accentColor }}
+                className="block text-transparent bg-clip-text bg-gradient-to-r from-[#0EC7BA] to-white"
               >
                 {content.heading_line_2}
               </span>
+            )}
+            {!content.heading_line_1 && !content.heading_line_2 && (
+              <>
+                <span className="block">Premium</span>
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#0EC7BA] to-white">Cannabis</span>
+              </>
             )}
           </h1>
 
@@ -110,7 +119,7 @@ export function LuxuryHeroSection({ content, styles, storeId }: LuxuryHeroSectio
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto font-light"
+              className="text-lg md:text-2xl text-white/80 max-w-2xl mx-auto font-medium leading-relaxed"
             >
               {content.subheading}
             </motion.p>
@@ -121,28 +130,32 @@ export function LuxuryHeroSection({ content, styles, storeId }: LuxuryHeroSectio
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center pt-4"
+            className="flex flex-col sm:flex-row gap-4 justify-center pt-8 items-center"
           >
             {content.cta_primary_text && (
-              <Link to={content.cta_primary_link || `/shop/${storeSlug}`}>
+              <Link to={content.cta_primary_link || `/shop/${storeSlug}/products`}>
                 <Button
                   size="lg"
-                  className="min-w-[200px] h-14 text-lg font-medium rounded-full transition-all duration-300 hover:scale-105"
+                  className="group relative min-w-[200px] h-14 text-lg font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-[0_0_40px_-10px_rgba(14,199,186,0.5)] overflow-hidden"
                   style={{
-                    backgroundColor: accentColor,
-                    color: '#000',
+                    backgroundColor: '#0EC7BA',
+                    color: '#015358',
                   }}
                 >
-                  {content.cta_primary_text}
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    {content.cta_primary_text}
+                    <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                  </span>
+                  <div className="absolute inset-0 bg-white/20 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300" />
                 </Button>
               </Link>
             )}
             {content.cta_secondary_text && (
-              <Link to={content.cta_secondary_link || `/shop/${storeSlug}/menu`}>
+              <Link to={content.cta_secondary_link || `/shop/${storeSlug}/products`}>
                 <Button
                   size="lg"
                   variant="outline"
-                  className="min-w-[200px] h-14 text-lg font-medium rounded-full border-white/30 text-white hover:bg-white/10 transition-all duration-300"
+                  className="min-w-[200px] h-14 text-lg font-bold rounded-full border-white/30 text-white hover:bg-white/10 hover:border-white transition-all duration-300 backdrop-blur-sm"
                 >
                   {content.cta_secondary_text}
                 </Button>
@@ -156,25 +169,30 @@ export function LuxuryHeroSection({ content, styles, storeId }: LuxuryHeroSectio
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7, duration: 0.6 }}
-              className="flex flex-wrap justify-center gap-6 pt-8"
+              className="flex flex-wrap justify-center gap-8 pt-10 border-t border-white/10 max-w-3xl mx-auto"
             >
-              <div className="flex items-center gap-2 text-white/60 text-sm">
-                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                  ✓
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-md">
+                  <svg className="w-5 h-5 text-[#0EC7BA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </div>
-                <span>Licensed & Verified</span>
+                <div className="text-left">
+                  <div className="text-white font-bold text-sm">Verified</div>
+                  <div className="text-white/50 text-xs">Licensed Store</div>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-white/60 text-sm">
-                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                  🚀
+
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-md">
+                  <svg className="w-5 h-5 text-[#0EC7BA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
                 </div>
-                <span>Fast Delivery</span>
-              </div>
-              <div className="flex items-center gap-2 text-white/60 text-sm">
-                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                  ⭐
+                <div className="text-left">
+                  <div className="text-white font-bold text-sm">Fast</div>
+                  <div className="text-white/50 text-xs">Local Delivery</div>
                 </div>
-                <span>Premium Quality</span>
               </div>
             </motion.div>
           )}

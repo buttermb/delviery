@@ -378,6 +378,11 @@ export function AdminDebugPanel() {
     return null;
   }
 
+  // Hide on shop routes to prevent UI clutter
+  if (location.pathname.includes('/shop/')) {
+    return null;
+  }
+
   // Dev mode on non-admin routes: Use simplified panel without tenant auth
   if (isDev && !isOnAdminRoute) {
     return <SimplifiedDebugPanel />;

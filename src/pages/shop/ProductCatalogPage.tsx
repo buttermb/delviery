@@ -143,29 +143,45 @@ export default function ProductCatalogPage() {
   const { data: products = [], isLoading: productsLoading, error: productsError, refetch: refetchProducts } = useQuery({
     queryKey: ['shop-products', store?.id],
     queryFn: async () => {
-      if (!store?.id) return [];
+      queryFn: async () => {
+        logger.info('ProductCatalogPage: Fetching products', { storeId: store?.id, type: typeof store?.id });
 
-      try {
-        const { data, error } = await supabase
-          .rpc('get_marketplace_products', { p_store_id: store.id });
-
-        // Handle missing RPC function gracefully
-        if (error) {
-          if (error.code === 'PGRST202' || error.message?.includes('does not exist')) {
-            logger.warn('get_marketplace_products RPC not found', { storeId: store.id });
-            return [];
-          }
-          logger.error('Products fetch failed', error, { storeId: store.id });
-          throw error;
+        if (!store?.id) {
+          logger.warn('ProductCatalogPage: No storeId available');
+          return [];
         }
-        return (data || []).map((item: RpcProduct) => transformProduct(item));
-      } catch (err) {
-        logger.error('Error fetching products', err, { storeId: store.id });
-        throw err;
-      }
-    },
-    enabled: !!store?.id,
-    retry: 2,
+
+        // Validation
+        if (store.id.length < 32) {
+          logger.warn('ProductCatalogPage: Invalid storeId format', { storeId: store.id });
+          return [];
+        }
+
+        try {
+          const { data, error } = await supabase
+            .rpc('get_marketplace_products', { p_store_id: store.id });
+
+          // Handle missing RPC function gracefully
+          if (error) {
+            if (error.code === 'PGRST202' || error.message?.includes('does not exist') || error.code === '42883') {
+              logger.warn('get_marketplace_products RPC not found or signature mismatch', { storeId: store.id, error });
+              return [];
+            }
+            if (error.code === '22P02') { // Invalid text representation
+              logger.warn('ProductCatalogPage: Invalid UUID input', { storeId: store.id });
+              return [];
+            }
+            logger.error('Products fetch failed', error, { storeId: store.id });
+            throw error;
+          }
+          return (data || []).map((item: RpcProduct) => transformProduct(item));
+        } catch (err) {
+          logger.error('Error fetching products', err, { storeId: store.id });
+          throw err;
+        }
+      },
+        enabled: !!store?.id,
+          retry: 1,
   });
 
   // Fetch categories with error handling

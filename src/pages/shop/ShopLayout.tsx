@@ -365,7 +365,7 @@ export default function ShopLayout() {
   if (isLuxuryTheme) {
     return (
       <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode }}>
-        <div className="min-h-screen bg-black text-white" style={themeStyles}>
+        <div className="min-h-screen bg-[#F5F7F8] text-neutral-900" style={themeStyles}>
           {/* Admin Preview Banner */}
           {isPreviewMode && (
             <div className="bg-amber-500 text-amber-950 px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
