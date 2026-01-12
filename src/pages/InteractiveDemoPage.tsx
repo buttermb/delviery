@@ -289,6 +289,7 @@ export default function InteractiveDemoPage() {
                 <CTASection
                     title="Ready to modernise your operations?"
                     description="Join the platform built for the future of cannabis distribution."
+                    primaryCta={{ text: "Get Started", link: "/register" }}
                 />
 
                 <MarketingFooter />

@@ -97,7 +97,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
           logger.error('Failed to fetch products', error);
           return [];
         }
-        return (data as MarketplaceProduct[]) || [];
+        return (data as unknown as MarketplaceProduct[]) || [];
       } catch (err) {
         logger.error('Error fetching products', err);
         return [];

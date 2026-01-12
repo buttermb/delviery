@@ -112,7 +112,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
                 <div className="flex flex-col min-w-0 flex-1 gap-0">
                   <span className="font-semibold text-sm truncate">{tenant?.slug || "Tenant Admin"}</span>
                   <div className="flex items-center gap-1.5">
-                    <CreditBalance variant="compact" showLabel={false} />
+                    <CreditBalance variant="badge" showLabel={false} />
                   </div>
                 </div>
                 <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" />
