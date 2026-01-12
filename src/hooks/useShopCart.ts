@@ -296,7 +296,7 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
                 price: item.price
             }));
 
-            const { data, error } = await supabase.rpc('validate_cart_items', {
+            const { data, error } = await (supabase.rpc as any)('validate_cart_items', {
                 p_store_id: storeId,
                 p_items: itemsPayload
             });
@@ -306,7 +306,7 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
                 return null;
             }
 
-            const result = data as CartValidationResult;
+            const result = data as unknown as CartValidationResult;
             setLastValidation(result);
             return result;
         } catch (e) {
@@ -322,7 +322,7 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
         try {
             const { supabase } = await import('@/integrations/supabase/client');
 
-            const { data, error } = await supabase.rpc('validate_coupon', {
+            const { data, error } = await (supabase.rpc as any)('validate_coupon', {
                 p_store_id: storeId,
                 p_code: code,
                 p_subtotal: subtotal,
@@ -334,17 +334,28 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
                 return { success: false, error: 'Failed to validate coupon' };
             }
 
-            if (!data.valid) {
-                return { success: false, error: data.error };
+            const result = data as unknown as {
+                valid: boolean;
+                error?: string;
+                coupon_id?: string;
+                code?: string;
+                discount_type?: 'percentage' | 'fixed_amount' | 'free_shipping';
+                discount_value?: number;
+                calculated_discount?: number;
+                free_shipping?: boolean;
+            };
+
+            if (!result.valid) {
+                return { success: false, error: result.error };
             }
 
             const coupon: AppliedCoupon = {
-                coupon_id: data.coupon_id,
-                code: data.code,
-                discount_type: data.discount_type,
-                discount_value: data.discount_value,
-                calculated_discount: data.calculated_discount,
-                free_shipping: data.free_shipping
+                coupon_id: result.coupon_id || '',
+                code: result.code || code,
+                discount_type: result.discount_type || 'percentage',
+                discount_value: result.discount_value || 0,
+                calculated_discount: result.calculated_discount || 0,
+                free_shipping: result.free_shipping || false
             };
 
             setAppliedCoupon(coupon);

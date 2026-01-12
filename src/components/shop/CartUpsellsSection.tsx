@@ -3,6 +3,7 @@
  * Shows bestselling products to encourage larger basket sizes
  */
 
+import { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +15,7 @@ import { useLuxuryTheme } from '@/components/shop/luxury';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { useShopCart } from '@/hooks/useShopCart';
 import { StorefrontProductCard, type MarketplaceProduct } from '@/components/shop/StorefrontProductCard';
+import { TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
 
 
 interface CartUpsellsSectionProps {
@@ -122,10 +124,10 @@ export function CartUpsellsSection({
         });
     };
 
-    const handleAddToCart = async (product: Product) => {
+    const handleAddToCart = async (product: MarketplaceProduct) => {
         await addItem({
-            productId: product.id,
-            name: product.name,
+            productId: product.product_id,
+            name: product.product_name,
             price: product.price,
             quantity: 1,
             imageUrl: product.image_url || undefined,
@@ -133,7 +135,7 @@ export function CartUpsellsSection({
         });
         toast({
             title: 'Added to cart',
-            description: `${product.name} has been added to your cart.`
+            description: `${product.product_name} has been added to your cart.`
         });
     };
 

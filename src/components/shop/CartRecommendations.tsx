@@ -50,7 +50,7 @@ export function CartRecommendations({
 
       if (error) throw error;
 
-      const products = data as Product[];
+      const products = (data as unknown as any[]) || [];
 
       // Filter out items already in cart and out of stock items
       const availableProducts = products.filter(
