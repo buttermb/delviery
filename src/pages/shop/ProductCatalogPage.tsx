@@ -48,7 +48,11 @@ import { WishlistButton } from '@/components/shop/WishlistButton';
 import { useWishlist } from '@/hooks/useWishlist';
 import { ProductQuickViewModal } from '@/components/shop/ProductQuickViewModal';
 import { EnhancedPriceSlider } from '@/components/shop/EnhancedPriceSlider';
+import { EnhancedPriceSlider } from '@/components/shop/EnhancedPriceSlider';
 import { StockWarning } from '@/components/shop/StockWarning';
+import { useShopCart } from '@/hooks/useShopCart';
+import { StorefrontProductCard, type MarketplaceProduct } from '@/components/shop/StorefrontProductCard';
+import { useToast } from '@/hooks/use-toast';
 
 interface RpcProduct {
   product_id: string;
@@ -138,6 +142,67 @@ export default function ProductCatalogPage() {
 
   // Wishlist integration
   const { items: wishlistItems, toggleItem: toggleWishlist, isInWishlist } = useWishlist({ storeId: store?.id });
+  const { toast } = useToast();
+  const [addedProducts, setAddedProducts] = useState<Set<string>>(new Set());
+
+  // Cart integration for Quick Add
+  const { addItem, cartItems } = useShopCart({
+    storeId: store?.id,
+    onCartChange: () => { },
+  });
+
+  const handleQuickAdd = (e: React.MouseEvent, product: ProductWithSettings) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      addItem({
+        productId: product.product_id,
+        name: product.name,
+        price: product.display_price,
+        imageUrl: product.image_url,
+        quantity: 1,
+        variant: product.strain_type || undefined,
+        metrcRetailId: undefined, // Not available in ProductWithSettings, defaulting
+        excludeFromDiscounts: false,
+      });
+
+      setAddedProducts(prev => new Set(prev).add(product.product_id));
+      toast({ title: "Added to cart", duration: 2000 });
+
+      setTimeout(() => {
+        setAddedProducts(prev => {
+          const next = new Set(prev);
+          next.delete(product.product_id);
+          return next;
+        });
+      }, 2000);
+    } catch (error) {
+      toast({
+        title: "Failed to add",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Helper to map ProductWithSettings to MarketplaceProduct
+  const mapToMarketplaceProduct = (p: ProductWithSettings): MarketplaceProduct => ({
+    product_id: p.product_id,
+    product_name: p.name,
+    category: p.marketplace_category_name || p.category || 'Uncategorized',
+    strain_type: p.strain_type || '', // Default to empty string if null
+    price: p.display_price,
+    description: p.description || '',
+    image_url: p.image_url,
+    images: p.images,
+    thc_content: p.thc_content,
+    cbd_content: p.cbd_content,
+    is_visible: true,
+    display_order: 0,
+    stock_quantity: p.in_stock ? 100 : 0, // Mock stock if boolean is used
+    unit_type: undefined // Not in ProductWithSettings
+  });
 
   // Fetch products with error handling
   const { data: products = [], isLoading: productsLoading, error: productsError, refetch: refetchProducts } = useQuery({
@@ -470,12 +535,23 @@ export default function ProductCatalogPage() {
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredProducts.map((product) => (
-            <ProductCard
+            <StorefrontProductCard
               key={product.product_id}
-              product={product}
+              product={mapToMarketplaceProduct(product)}
               storeSlug={storeSlug!}
-              primaryColor={store.primary_color}
+              isPreviewMode={false}
+              onQuickAdd={(e) => handleQuickAdd(e, product)}
+              isAdded={addedProducts.has(product.product_id)}
+              onToggleWishlist={() => toggleWishlist({
+                productId: product.product_id,
+                name: product.name,
+                price: product.display_price,
+                imageUrl: product.image_url,
+              })}
+              isInWishlist={isInWishlist(product.product_id)}
               onQuickView={() => setQuickViewProductId(product.product_id)}
+              index={0} // No staggered delay for grid here to avoid mass re-render complexity
+              accentColor={store.primary_color}
             />
           ))}
         </div>
@@ -502,108 +578,8 @@ export default function ProductCatalogPage() {
   );
 }
 
-// Product Card Component (Grid View)
-function ProductCard({
-  product,
-  storeSlug,
-  primaryColor,
-  onQuickView,
-}: {
-  product: ProductWithSettings;
-  storeSlug: string;
-  primaryColor: string;
-  onQuickView?: () => void;
-}) {
-  const { toggleItem, isInWishlist } = useWishlist();
-  const hasDiscount =
-    product.compare_at_price && product.compare_at_price > product.display_price;
-  const discountPercent = hasDiscount
-    ? Math.round((1 - product.display_price / product.compare_at_price!) * 100)
-    : 0;
+// Product Card Component (Grid View) - Legacy component removed, replaced by shared StorefrontProductCard
 
-  return (
-    <Link to={`/shop/${storeSlug}/products/${product.product_id}`}>
-      <Card data-testid="product-card" className="group hover:shadow-lg transition-all overflow-hidden h-full">
-        <div className="aspect-square relative overflow-hidden bg-muted">
-          {product.image_url ? (
-            <img
-              src={product.image_url}
-              alt={product.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Package className="w-16 h-16 text-muted-foreground" />
-            </div>
-          )}
-          {hasDiscount && (
-            <Badge
-              className="absolute top-2 left-2"
-              style={{ backgroundColor: primaryColor }}
-            >
-              -{discountPercent}%
-            </Badge>
-          )}
-          {!product.in_stock && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <Badge variant="secondary">Out of Stock</Badge>
-            </div>
-          )}
-
-          {/* Wishlist Button */}
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <WishlistButton
-              isInWishlist={isInWishlist(product.product_id)}
-              onToggle={() => toggleItem({
-                productId: product.product_id,
-                name: product.name,
-                price: product.display_price,
-                imageUrl: product.image_url,
-              })}
-              size="sm"
-            />
-          </div>
-
-          {/* Quick View Button */}
-          {onQuickView && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onQuickView();
-                }}
-                className="gap-2"
-              >
-                <Eye className="w-4 h-4" />
-                Quick View
-              </Button>
-            </div>
-          )}
-        </div>
-        <CardContent className="p-4">
-          <p className="text-xs text-muted-foreground mb-1">
-            {product.marketplace_category_name || product.category || "Uncategorized"}
-          </p>
-          <h3 className="font-medium line-clamp-2 mb-2 group-hover:text-primary transition-colors">
-            {product.name}
-          </h3>
-          <div className="flex items-center gap-2">
-            <span className="font-bold" style={{ color: primaryColor }}>
-              {formatCurrency(product.display_price)}
-            </span>
-            {hasDiscount && (
-              <span className="text-sm text-muted-foreground line-through">
-                {formatCurrency(product.compare_at_price!)}
-              </span>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
-  );
-}
 
 // Product List Item Component (List View)
 function ProductListItem({

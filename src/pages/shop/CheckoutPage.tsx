@@ -138,11 +138,32 @@ export default function CheckoutPage() {
     }
   }, [formData, formStorageKey]);
 
-  // Use unified cart hook
-  const { cartItems, cartCount, subtotal, clearCart, isInitialized } = useShopCart({
+  // Use unified cart hook with coupon support
+  const {
+    cartItems,
+    cartCount,
+    subtotal,
+    clearCart,
+    isInitialized,
+    applyCoupon,
+    removeCoupon,
+    appliedCoupon,
+    getCouponDiscount,
+    validateCart,
+    lastValidation
+  } = useShopCart({
     storeId: store?.id,
     onCartChange: setCartItemCount,
   });
+
+  // Coupon state
+  const [couponCode, setCouponCode] = useState('');
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+
+  // Minimum order validation
+  const minimumOrderAmount = (store as any)?.minimum_order_amount || 0;
+  const isUnderMinimumOrder = minimumOrderAmount > 0 && subtotal < minimumOrderAmount;
 
   // Redirect to cart if empty
   useEffect(() => {
@@ -152,8 +173,32 @@ export default function CheckoutPage() {
     }
   }, [isInitialized, cartItems.length, navigate, storeSlug, toast]);
 
+  // Validate cart on mount
+  useEffect(() => {
+    if (isInitialized && cartItems.length > 0 && store?.id) {
+      validateCart();
+    }
+  }, [isInitialized, cartItems.length, store?.id]);
+
   // Fetch and calculate active deals
   const { appliedDeals, totalDiscount: dealsDiscount } = useDeals(store?.id, cartItems, formData.email || undefined);
+
+  // Apply coupon handler
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setIsApplyingCoupon(true);
+    setCouponError(null);
+
+    const result = await applyCoupon(couponCode.trim(), subtotal);
+
+    if (result.success) {
+      toast({ title: 'Coupon applied!', description: `Saved ${formatCurrency(result.coupon?.calculated_discount || 0)}` });
+      setCouponCode('');
+    } else {
+      setCouponError(result.error || 'Invalid coupon');
+    }
+    setIsApplyingCoupon(false);
+  };
 
   // Gift Cards
   const { appliedGiftCards, applyGiftCard, removeGiftCard, getGiftCardTotal } = useShopCart({
@@ -216,7 +261,10 @@ export default function CheckoutPage() {
   // Calculate totals
   const freeDeliveryThreshold = store?.free_delivery_threshold || 100;
   const deliveryFee = getDeliveryFee();
-  const rawTotal = Math.max(0, subtotal + deliveryFee - loyaltyDiscount - dealsDiscount);
+  const couponDiscount = getCouponDiscount(subtotal);
+  const freeShipping = appliedCoupon?.free_shipping === true;
+  const effectiveDeliveryFee = freeShipping ? 0 : deliveryFee;
+  const rawTotal = Math.max(0, subtotal + effectiveDeliveryFee - loyaltyDiscount - dealsDiscount - couponDiscount);
 
   // Cart rounding: round to nearest dollar if enabled
   const enableCartRounding = (store as any)?.enable_cart_rounding === true;
@@ -409,59 +457,88 @@ export default function CheckoutPage() {
       }));
 
       // Calculate gift card usage for RPC
-      let remainingToCover = totalBeforeGiftCards;
-      const giftCardsPayload = appliedGiftCards.map(gc => {
-        const deduction = Math.min(remainingToCover, gc.balance);
-        remainingToCover = Math.max(0, remainingToCover - deduction);
-        return {
-          code: gc.code,
-          amount: deduction
-        };
-      }).filter(gc => gc.amount > 0);
-
+      // Attempt to place order with retries
+      // Attempt to place order with retries
       const attemptOrder = async (attempt: number): Promise<any> => {
         try {
-          const { data: orderId, error } = await supabase.rpc('create_marketplace_order', {
-            p_store_id: store.id,
-            p_customer_name: `${formData.firstName} ${formData.lastName}`,
-            p_customer_email: formData.email,
-            p_customer_phone: formData.phone || null,
-            p_delivery_address: JSON.stringify({ // Ensure JSONB compatibility if type expects it, though RPC defines it as JSONB, passing object usually works with supabase-js but stringify is safer if issues arise. Actually supabase-js handles objects fine.
-              street: formData.street,
-              apartment: formData.apartment,
-              city: formData.city,
-              state: formData.state,
-              zip: formData.zip
-            }),
-            p_delivery_notes: formData.deliveryNotes || null,
-            p_items: orderItems,
-            p_subtotal: subtotal,
-            p_tax: 0,
-            p_delivery_fee: deliveryFee,
-            p_total: total, // This is the amount TO PAY (after GC) ??? No, RPC logic sets v_total = v_subtotal. p_total is ignored in my RPC implementation actually.
-            // Wait, my RPC implementation of create_marketplace_order IGNORES p_total argument!
-            // It calculates v_total := v_subtotal.
-            // So p_total passed here is irrelevant for the DB total, BUT...
-            // the DB total will be the full amount.
-            // The gift_card_amount will be recorded.
-            // So this is fine.
-            p_payment_method: formData.paymentMethod,
-            p_gift_cards: giftCardsPayload
-          });
+          if (!store?.id) throw new Error('Store ID missing');
 
-          if (error) {
+          // Session ID for reservation (using guest email or random string if not available yet)
+          const sessionId = formData.email || `guest_${Date.now()}`;
+
+          // 1. Reserve Inventory (Critical Step)
+          for (const item of cartItems) {
+            const { data: reserveData, error: reserveError } = await supabase.rpc('reserve_inventory', {
+              p_product_id: item.productId,
+              p_store_id: store.id,
+              p_session_id: sessionId,
+              p_quantity: item.quantity
+            });
+
+            if (reserveError) throw reserveError;
+            if (!reserveData.success) {
+              throw new Error(`Failed to reserve ${item.name}: ${reserveData.error}`);
+            }
+          }
+
+          // 2. Create Order
+          const { data: order, error: orderError } = await supabase
+            .rpc('create_marketplace_order', {
+              p_store_id: store.id,
+              p_items: cartItems.map(item => ({
+                product_id: item.productId,
+                quantity: item.quantity,
+                price: item.price,
+                variant: item.variant
+              })),
+              p_customer_info: {
+                first_name: formData.firstName,
+                last_name: formData.lastName,
+                email: formData.email,
+                phone: formData.phone,
+                address: {
+                  street: formData.street,
+                  apartment: formData.apartment,
+                  city: formData.city,
+                  state: formData.state,
+                  zip: formData.zip
+                },
+                delivery_notes: formData.deliveryNotes
+              },
+              p_delivery_fee: effectiveDeliveryFee,
+              p_discount_total: loyaltyDiscount + dealsDiscount + couponDiscount,
+              p_payment_method: formData.paymentMethod,
+              p_metadata: {
+                coupon_code: appliedCoupon?.code,
+                gift_cards: appliedGiftCards.map(c => c.code),
+                loyalty_points_used: loyaltyPointsUsed,
+                loyalty_discount: loyaltyDiscount,
+              }
+            });
+
+          if (orderError) {
             // Handle case where RPC function doesn't exist - don't retry
-            if (error.message?.includes('function') || error.code === '42883') {
+            if (orderError.message?.includes('function') || orderError.code === '42883') {
               throw new Error('Order system is not configured. Please contact the store.');
             }
-            throw error;
+            throw orderError;
           }
 
-          if (!orderId) {
-            throw new Error('Failed to create order');
+          if (!order) throw new Error('Failed to create order');
+
+          // 3. Complete Reservations
+          await supabase.rpc('complete_reservation', {
+            p_session_id: sessionId,
+            p_order_id: order.order_id
+          });
+
+          // 4. Redeem Coupon
+          if (appliedCoupon?.coupon_id) {
+            await supabase.rpc('redeem_coupon', { p_coupon_id: appliedCoupon.coupon_id });
           }
 
-          return { order_id: orderId };
+          return order;
+
         } catch (err: any) {
           const isNetworkError = err instanceof Error &&
             (err.message.toLowerCase().includes('network') ||
@@ -470,12 +547,11 @@ export default function CheckoutPage() {
               err.message.toLowerCase().includes('failed to fetch'));
 
           // Retry on network errors
-          if (isNetworkError && attempt < MAX_ORDER_RETRIES) {
+          if (isNetworkError && attempt < 3) { // Hardcoded 3 for simplicity or import constant
             setOrderRetryCount(attempt);
             toast({
-              title: `Connection issue, retrying (${attempt}/${MAX_ORDER_RETRIES})...`,
+              title: `Connection issue, retrying (${attempt}/3)...`,
             });
-            // Exponential backoff: 1s, 2s, 4s
             await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
             return attemptOrder(attempt + 1);
           }

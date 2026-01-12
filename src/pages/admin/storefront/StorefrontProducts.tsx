@@ -28,7 +28,9 @@ import {
   Filter,
   CheckSquare,
   Square,
-  RefreshCw
+  RefreshCw,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import {
@@ -62,6 +64,7 @@ interface ProductSetting {
   product_id: string;
   is_visible: boolean;
   display_price: number | null;
+  sale_price?: number | null;
   display_order: number;
 }
 
@@ -328,6 +331,53 @@ export default function StorefrontProducts() {
     });
   };
 
+  // Update display order mutation
+  const updateOrderMutation = useMutation({
+    mutationFn: async ({ productId, newOrder }: { productId: string; newOrder: number }) => {
+      if (!store?.id) throw new Error('No store');
+
+      const existing = settingsMap.get(productId);
+
+      if (existing) {
+        const { error } = await supabase
+          .from('marketplace_product_settings')
+          .update({ display_order: newOrder })
+          .eq('id', existing.id)
+          .eq('store_id', store.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('marketplace_product_settings')
+          .insert({
+            store_id: store.id,
+            product_id: productId,
+            display_order: newOrder,
+            is_visible: true,
+          });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marketplace-product-settings'] });
+    },
+    onError: (error) => {
+      logger.error('Failed to update order', error, { component: 'StorefrontProducts' });
+      toast({
+        title: 'Error',
+        description: 'Failed to update display order.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleMoveUp = (productId: string, currentOrder: number) => {
+    updateOrderMutation.mutate({ productId, newOrder: Math.max(0, currentOrder - 1) });
+  };
+
+  const handleMoveDown = (productId: string, currentOrder: number) => {
+    updateOrderMutation.mutate({ productId, newOrder: currentOrder + 1 });
+  };
+
   const isLoading = productsLoading || settingsLoading;
 
   if (!store) {
@@ -471,6 +521,7 @@ export default function StorefrontProducts() {
                       onCheckedChange={toggleSelectAll}
                     />
                   </TableHead>
+                  <TableHead className="w-16">Order</TableHead>
                   <TableHead>Product</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Original Price</TableHead>
@@ -493,6 +544,30 @@ export default function StorefrontProducts() {
                           checked={selectedProducts.has(product.id)}
                           onCheckedChange={() => toggleSelect(product.id)}
                         />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6"
+                            onClick={() => handleMoveUp(product.id, setting?.display_order ?? 999)}
+                            disabled={updateOrderMutation.isPending}
+                            title="Move up"
+                          >
+                            <ArrowUp className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6"
+                            onClick={() => handleMoveDown(product.id, setting?.display_order ?? 999)}
+                            disabled={updateOrderMutation.isPending}
+                            title="Move down"
+                          >
+                            <ArrowDown className="w-3 h-3" />
+                          </Button>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -566,7 +641,7 @@ export default function StorefrontProducts() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </div >
   );
 }
 

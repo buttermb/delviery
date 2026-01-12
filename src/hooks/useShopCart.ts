@@ -23,6 +23,7 @@ export interface ShopCartItem {
 
 const getCartKey = (storeId: string) => `shop_cart_${storeId}`;
 const GUEST_CART_KEY = 'guest_cart';
+const MAX_QUANTITY_PER_ITEM = 10; // Maximum quantity per product in cart
 
 interface UseShopCartOptions {
     storeId: string | undefined;
@@ -34,10 +35,40 @@ export interface AppliedGiftCard {
     balance: number;
 }
 
+interface AppliedCoupon {
+    coupon_id: string;
+    code: string;
+    discount_type: 'percentage' | 'fixed_amount' | 'free_shipping';
+    discount_value: number;
+    calculated_discount: number;
+    free_shipping: boolean;
+}
+
+interface CartValidationResult {
+    valid: boolean;
+    issues: Array<{
+        product_id: string;
+        issue: string;
+        message: string;
+        old_price?: number;
+        new_price?: number;
+        available?: number;
+    }>;
+    validated_items: Array<{
+        product_id: string;
+        name: string;
+        quantity: number;
+        price: number;
+        in_stock: boolean;
+    }>;
+}
+
 export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
     const [cartItems, setCartItems] = useState<ShopCartItem[]>([]);
     const [appliedGiftCards, setAppliedGiftCards] = useState<AppliedGiftCard[]>([]);
+    const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
+    const [lastValidation, setLastValidation] = useState<CartValidationResult | null>(null);
 
     // Load cart from localStorage
     const loadCart = useCallback((): ShopCartItem[] => {
@@ -140,10 +171,20 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
 
         let newCart: ShopCartItem[];
         if (existingIndex >= 0) {
-            newCart = [...currentCart];
-            newCart[existingIndex].quantity += quantity;
+            const newQuantity = currentCart[existingIndex].quantity + quantity;
+            // Enforce max quantity limit
+            if (newQuantity > MAX_QUANTITY_PER_ITEM) {
+                logger.warn('Max quantity reached', { productId: item.productId, maxQuantity: MAX_QUANTITY_PER_ITEM });
+                newCart = [...currentCart];
+                newCart[existingIndex].quantity = MAX_QUANTITY_PER_ITEM;
+            } else {
+                newCart = [...currentCart];
+                newCart[existingIndex].quantity = newQuantity;
+            }
         } else {
-            newCart = [...currentCart, { ...item, quantity }];
+            // Enforce max quantity on new item too
+            const cappedQuantity = Math.min(quantity, MAX_QUANTITY_PER_ITEM);
+            newCart = [...currentCart, { ...item, quantity: cappedQuantity }];
         }
 
         saveCart(newCart);
@@ -171,11 +212,13 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
     // Set exact quantity
     const setQuantity = useCallback((productId: string, quantity: number, variant?: string) => {
         const currentCart = loadCart();
+        // Enforce max quantity limit
+        const cappedQuantity = Math.min(Math.max(0, quantity), MAX_QUANTITY_PER_ITEM);
 
         const newCart = currentCart
             .map((item) => {
                 if (item.productId === productId && item.variant === variant) {
-                    return { ...item, quantity: Math.max(0, quantity) };
+                    return { ...item, quantity: cappedQuantity };
                 }
                 return item;
             })
@@ -239,6 +282,96 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
         return totalApplied;
     }, [appliedGiftCards]);
 
+    // Validate cart items against current stock/prices (calls RPC)
+    const validateCart = useCallback(async (): Promise<CartValidationResult | null> => {
+        if (!storeId || cartItems.length === 0) return null;
+
+        try {
+            // Dynamic import to avoid circular deps
+            const { supabase } = await import('@/integrations/supabase/client');
+
+            const itemsPayload = cartItems.map(item => ({
+                product_id: item.productId,
+                quantity: item.quantity,
+                price: item.price
+            }));
+
+            const { data, error } = await supabase.rpc('validate_cart_items', {
+                p_store_id: storeId,
+                p_items: itemsPayload
+            });
+
+            if (error) {
+                logger.error('Cart validation failed', error);
+                return null;
+            }
+
+            const result = data as CartValidationResult;
+            setLastValidation(result);
+            return result;
+        } catch (e) {
+            logger.error('Cart validation error', e);
+            return null;
+        }
+    }, [storeId, cartItems]);
+
+    // Apply coupon code
+    const applyCoupon = useCallback(async (code: string, subtotal: number): Promise<{ success: boolean; error?: string; coupon?: AppliedCoupon }> => {
+        if (!storeId) return { success: false, error: 'No store' };
+
+        try {
+            const { supabase } = await import('@/integrations/supabase/client');
+
+            const { data, error } = await supabase.rpc('validate_coupon', {
+                p_store_id: storeId,
+                p_code: code,
+                p_subtotal: subtotal,
+                p_cart_items: cartItems.map(i => ({ product_id: i.productId, quantity: i.quantity }))
+            });
+
+            if (error) {
+                logger.error('Coupon validation failed', error);
+                return { success: false, error: 'Failed to validate coupon' };
+            }
+
+            if (!data.valid) {
+                return { success: false, error: data.error };
+            }
+
+            const coupon: AppliedCoupon = {
+                coupon_id: data.coupon_id,
+                code: data.code,
+                discount_type: data.discount_type,
+                discount_value: data.discount_value,
+                calculated_discount: data.calculated_discount,
+                free_shipping: data.free_shipping
+            };
+
+            setAppliedCoupon(coupon);
+            return { success: true, coupon };
+        } catch (e) {
+            logger.error('Coupon apply error', e);
+            return { success: false, error: 'Failed to apply coupon' };
+        }
+    }, [storeId, cartItems]);
+
+    // Remove applied coupon
+    const removeCoupon = useCallback(() => {
+        setAppliedCoupon(null);
+    }, []);
+
+    // Get discount amount from coupon
+    const getCouponDiscount = useCallback((subtotal: number): number => {
+        if (!appliedCoupon) return 0;
+
+        if (appliedCoupon.discount_type === 'percentage') {
+            return Math.min(subtotal * (appliedCoupon.discount_value / 100), appliedCoupon.calculated_discount);
+        } else if (appliedCoupon.discount_type === 'fixed_amount') {
+            return Math.min(appliedCoupon.discount_value, subtotal);
+        }
+        return 0;
+    }, [appliedCoupon]);
+
     return {
         cartItems,
         cartCount: getCartCount(),
@@ -249,10 +382,21 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
         removeItem,
         clearCart,
         isInitialized,
+        // Gift cards
         appliedGiftCards,
         applyGiftCard,
         removeGiftCard,
         getGiftCardTotal,
-        setAppliedGiftCards
+        setAppliedGiftCards,
+        // Coupons
+        appliedCoupon,
+        applyCoupon,
+        removeCoupon,
+        getCouponDiscount,
+        // Validation
+        validateCart,
+        lastValidation,
+        // Constants
+        MAX_QUANTITY_PER_ITEM
     };
 }

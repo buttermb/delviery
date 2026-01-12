@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind, ChevronRight, ChevronLeft, AlertTriangle, LucideIcon } from "lucide-react";
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
 import { useIsMobile } from "@/hooks/use-mobile";
-// Actually ProductCatalog imported MobileSearch from "./MobileSearch" which was in same dir. I need to check where that is or use simple input.
-// Note: MobileSearch is likely just a wrapper around Input.
+import { useShopCart } from "@/hooks/useShopCart";
+import { useToast } from "@/hooks/use-toast";
+import { StorefrontProductCard, type MarketplaceProduct } from "@/components/shop/StorefrontProductCard";
 
 export interface ProductGridSectionProps {
     content: {
@@ -47,6 +48,30 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
     const isMobile = useIsMobile();
     const [searchQuery, setSearchQuery] = useState("");
     const [premiumFilter, setPremiumFilter] = useState(false);
+    const { toast } = useToast();
+
+    // Cart integration
+    const { addItem } = useShopCart({
+        storeId: storeId,
+        onCartChange: () => { },
+    });
+
+    const handleQuickAdd = (e: React.MouseEvent, product: any) => {
+        e.preventDefault();
+
+        addItem({
+            productId: product.id,
+            name: product.name,
+            price: product.price,
+            quantity: 1,
+            imageUrl: product.images?.[0],
+            // variant: product.strain_type // Add if available in data
+        });
+        toast({
+            title: 'Added to cart',
+            description: `${product.name} has been added to your cart.`
+        });
+    };
 
     // Fetch products
     const { data: allProducts = [], isLoading, error } = useQuery<any[]>({
@@ -73,9 +98,9 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                             `)
                             .eq('store_id', storeId)
                             .eq('is_visible', true);
-                        
+
                         if (fallbackError) throw fallbackError;
-                        
+
                         return ((fallbackData as any[]) || []).map((item: any) => ({
                             ...item.products,
                             id: item.product_id,
@@ -255,26 +280,34 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                                 ref={(el) => scrollContainerRef.current[category.key] = el}
                                                 className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4 px-4 md:px-0"
                                             >
-                                                {products.map((product) => (
+                                                {products.map((product, index) => (
                                                     <div key={product.id} className="w-[280px] md:w-[320px] flex-shrink-0">
-                                                        {/* Simplified Card for Grid Preview */}
-                                                        <div className="rounded-xl overflow-hidden border bg-white shadow-sm h-full flex flex-col">
-                                                            <div className="aspect-square bg-neutral-100 relative">
-                                                                {(product.images && product.images[0]) ? (
-                                                                    <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
-                                                                ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center text-neutral-300">No Image</div>
-                                                                )}
-                                                            </div>
-                                                            <div className="p-4 flex-1 flex flex-col">
-                                                                <h4 className="font-bold text-lg mb-1 line-clamp-1 text-black">{product.name}</h4>
-                                                                <p className="text-sm text-neutral-500 mb-2">{product.strain_name || product.category || 'Product'}</p>
-                                                                <div className="mt-auto flex justify-between items-center">
-                                                                    <span className="font-semibold text-black">${Number(product.price).toFixed(2)}</span>
-                                                                    <Button size="sm" style={{ backgroundColor: accent_color }}>Add</Button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        <StorefrontProductCard
+                                                            product={{
+                                                                product_id: product.id,
+                                                                product_name: product.name,
+                                                                category: product.category || '',
+                                                                strain_type: product.strain_type || '', // Fallback
+                                                                price: Number(product.price),
+                                                                description: product.description || '',
+                                                                image_url: product.images?.[0] || null,
+                                                                images: product.images || [],
+                                                                thc_content: null,
+                                                                cbd_content: null,
+                                                                is_visible: true,
+                                                                display_order: 0,
+                                                                stock_quantity: product.in_stock ? 100 : 0 // Fallback if accurate quantity unknown
+                                                            }}
+                                                            storeSlug="" // Optional or fetch from context if needed for links
+                                                            isPreviewMode={false}
+                                                            onQuickAdd={(e) => handleQuickAdd(e, product)}
+                                                            isAdded={false}
+                                                            onToggleWishlist={() => { }}
+                                                            isInWishlist={false}
+                                                            onQuickView={() => { }}
+                                                            index={index}
+                                                            accentColor={accent_color}
+                                                        />
                                                     </div>
                                                 ))}
                                             </div>

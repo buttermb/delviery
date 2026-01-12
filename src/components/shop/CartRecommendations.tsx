@@ -18,19 +18,15 @@ import { cn } from '@/lib/utils';
 interface CartRecommendationsProps {
   storeId: string;
   cartItems: ShopCartItem[];
-  primaryColor: string;
+  primaryColor: string; // Passed from parent, likely store.primary_color. Should we check if isLuxuryTheme is active here?
   className?: string;
+  isLuxuryTheme?: boolean;
+  accentColor?: string;
 }
 
-interface Product {
-  product_id: string;
-  product_name: string;
-  price: number;
-  sale_price: number | null;
-  image_url: string | null;
-  category: string | null;
-  stock_quantity: number;
-}
+import { StorefrontProductCard, type MarketplaceProduct } from '@/components/shop/StorefrontProductCard';
+
+// Product interface replaced by MarketplaceProduct import
 
 export function CartRecommendations({
   storeId,
@@ -55,7 +51,7 @@ export function CartRecommendations({
       if (error) throw error;
 
       const products = data as Product[];
-      
+
       // Filter out items already in cart and out of stock items
       const availableProducts = products.filter(
         p => !cartProductIds.includes(p.product_id) && p.stock_quantity > 0
@@ -74,18 +70,42 @@ export function CartRecommendations({
       );
 
       // Return mix of same category and other products
-      return [...sameCategoryProducts, ...otherProducts].slice(0, 4);
+      const mixed = [...sameCategoryProducts, ...otherProducts].slice(0, 4);
+
+      // Map to MarketplaceProduct
+      return mixed.map(p => ({
+        product_id: p.product_id,
+        product_name: p.product_name,
+        category: p.category || '',
+        strain_type: p.strain_type || '', // Ensure field exists
+        price: p.price,
+        description: p.description || '',
+        image_url: p.image_url,
+        images: p.images || [],
+        thc_content: p.thc_content,
+        cbd_content: p.cbd_content,
+        is_visible: true,
+        display_order: 0,
+        stock_quantity: p.stock_quantity,
+        unit_type: p.unit_type,
+        min_expiry_days: p.min_expiry_days
+      })) as MarketplaceProduct[];
     },
     enabled: !!storeId && cartItems.length > 0,
   });
 
-  const handleQuickAdd = (product: Product) => {
+  const handleQuickAdd = (e: React.MouseEvent, product: MarketplaceProduct) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     addItem({
       productId: product.product_id,
       quantity: 1,
-      price: product.sale_price || product.price,
+      price: product.price,
       name: product.product_name,
       imageUrl: product.image_url,
+      minExpiryDays: product.min_expiry_days,
+      variant: product.strain_type
     });
 
     toast({
@@ -106,70 +126,22 @@ export function CartRecommendations({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-3">
-          {recommendations.map((product) => {
-            const displayPrice = product.sale_price || product.price;
-            const hasDiscount = product.sale_price && product.sale_price < product.price;
-
-            return (
-              <div
-                key={product.product_id}
-                className="group flex flex-col rounded-lg border bg-card p-2 transition-all hover:shadow-md"
-              >
-                <Link
-                  to={`/shop/${storeSlug}/products/${product.product_id}`}
-                  className="relative aspect-square rounded-md overflow-hidden bg-muted mb-2"
-                >
-                  {product.image_url ? (
-                    <img
-                      src={product.image_url}
-                      alt={product.product_name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Package className="w-8 h-8 text-muted-foreground" />
-                    </div>
-                  )}
-                  {hasDiscount && (
-                    <Badge
-                      className="absolute top-1 left-1 text-xs"
-                      style={{ backgroundColor: primaryColor }}
-                    >
-                      Sale
-                    </Badge>
-                  )}
-                </Link>
-
-                <Link
-                  to={`/shop/${storeSlug}/products/${product.product_id}`}
-                  className="text-sm font-medium line-clamp-2 hover:underline mb-1"
-                >
-                  {product.product_name}
-                </Link>
-
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-bold" style={{ color: primaryColor }}>
-                    {formatCurrency(displayPrice)}
-                  </span>
-                  {hasDiscount && (
-                    <span className="text-xs text-muted-foreground line-through">
-                      {formatCurrency(product.price)}
-                    </span>
-                  )}
-                </div>
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-full mt-auto gap-1"
-                  onClick={() => handleQuickAdd(product)}
-                >
-                  <Plus className="w-3 h-3" />
-                  Add
-                </Button>
-              </div>
-            );
-          })}
+          {recommendations.map((product, index) => (
+            <div key={product.product_id} className="h-full">
+              <StorefrontProductCard
+                product={product}
+                storeSlug={storeSlug!}
+                isPreviewMode={false}
+                onQuickAdd={(e) => handleQuickAdd(e, product)}
+                isAdded={false}
+                onToggleWishlist={() => { }}
+                isInWishlist={false}
+                onQuickView={() => { }}
+                index={index}
+                accentColor={primaryColor} // Fallback nicely
+              />
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

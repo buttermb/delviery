@@ -14,20 +14,16 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
 import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
+import { useShopCart } from '@/hooks/useShopCart';
+import { useToast } from '@/hooks/use-toast';
+import { StorefrontProductCard, type MarketplaceProduct } from '@/components/shop/StorefrontProductCard';
 
 interface RecentlyViewedSectionProps {
     currentProductId?: string;
     className?: string;
 }
 
-interface ProductData {
-    product_id: string;
-    product_name: string;
-    price: number;
-    sale_price: number | null;
-    image_url: string | null;
-    stock_quantity: number;
-}
+// ProductData replaced by MarketplaceProduct import
 
 export function RecentlyViewedSection({ currentProductId, className = '' }: RecentlyViewedSectionProps) {
     const { storeSlug } = useParams();
@@ -40,10 +36,17 @@ export function RecentlyViewedSection({ currentProductId, className = '' }: Rece
         ? recentlyViewed.filter((id) => id !== currentProductId)
         : recentlyViewed;
 
+    // Cart integration
+    const { addItem } = useShopCart({
+        storeId: store?.id,
+        onCartChange: () => { },
+    });
+    const { toast } = useToast();
+
     // Fetch product details
     const { data: products = [], isLoading } = useQuery({
         queryKey: ['recently-viewed-products', store?.id, productIds],
-        queryFn: async () => {
+        queryFn: async (): Promise<MarketplaceProduct[]> => {
             if (!store?.id || productIds.length === 0) return [];
 
             try {
@@ -55,11 +58,31 @@ export function RecentlyViewedSection({ currentProductId, className = '' }: Rece
                     return [];
                 }
 
-                const allProducts = (data || []) as ProductData[];
+                const allProducts = (data || []) as any[];
+
+                // Map to MarketplaceProduct
+                const mappedProducts = allProducts.map(p => ({
+                    product_id: p.product_id,
+                    product_name: p.product_name,
+                    category: p.category || '',
+                    strain_type: p.strain_type || '',
+                    price: p.price,
+                    description: p.description || '',
+                    image_url: p.image_url,
+                    images: p.images || [],
+                    thc_content: p.thc_content,
+                    cbd_content: p.cbd_content,
+                    is_visible: true,
+                    display_order: 0,
+                    stock_quantity: p.stock_quantity,
+                    unit_type: p.unit_type,
+                    min_expiry_days: p.min_expiry_days
+                }));
+
                 // Filter and sort by recently viewed order
                 const viewedProducts = productIds
-                    .map((id) => allProducts.find((p) => p.product_id === id))
-                    .filter((p) => p !== undefined) as ProductData[];
+                    .map((id) => mappedProducts.find((p) => p.product_id === id))
+                    .filter((p) => p !== undefined) as MarketplaceProduct[];
 
                 return viewedProducts;
             } catch (err) {
@@ -69,6 +92,25 @@ export function RecentlyViewedSection({ currentProductId, className = '' }: Rece
         },
         enabled: !!store?.id && productIds.length > 0,
     });
+
+    const handleQuickAdd = async (e: React.MouseEvent, product: MarketplaceProduct) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        await addItem({
+            productId: product.product_id,
+            name: product.product_name,
+            price: product.price,
+            quantity: 1,
+            imageUrl: product.image_url,
+            minExpiryDays: product.min_expiry_days,
+            variant: product.strain_type
+        });
+        toast({
+            title: 'Added to cart',
+            description: `${product.product_name} has been added to your cart.`
+        });
+    };
 
     const scroll = (direction: 'left' | 'right') => {
         if (!scrollContainerRef.current) return;
@@ -120,66 +162,25 @@ export function RecentlyViewedSection({ currentProductId, className = '' }: Rece
                         />
                     ))
                 ) : (
-                    products.map((product) => {
-                        const displayPrice = product.sale_price || product.price;
-                        const hasDiscount = product.sale_price && product.sale_price < product.price;
-                        const inStock = product.stock_quantity > 0;
-
-                        return (
-                            <Link
-                                key={product.product_id}
-                                to={`/shop/${storeSlug}/products/${product.product_id}`}
-                                className="flex-shrink-0 w-48 snap-start group"
-                            >
-                                <Card className="h-full hover:shadow-lg transition-shadow">
-                                    <div className="aspect-square relative bg-muted rounded-t-lg overflow-hidden">
-                                        {product.image_url ? (
-                                            <img
-                                                src={product.image_url}
-                                                alt={product.product_name}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <Package className="w-12 h-12 text-muted-foreground" />
-                                            </div>
-                                        )}
-                                        {hasDiscount && (
-                                            <Badge
-                                                className="absolute top-2 left-2"
-                                                style={{ backgroundColor: store.primary_color }}
-                                            >
-                                                Sale
-                                            </Badge>
-                                        )}
-                                        {!inStock && (
-                                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                                <Badge variant="secondary">Out of Stock</Badge>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <CardContent className="p-3">
-                                        <h3 className="font-medium text-sm line-clamp-2 mb-1 group-hover:text-primary transition-colors">
-                                            {product.product_name}
-                                        </h3>
-                                        <div className="flex items-center gap-1.5">
-                                            <span
-                                                className="font-bold text-sm"
-                                                style={{ color: store.primary_color }}
-                                            >
-                                                {formatCurrency(displayPrice)}
-                                            </span>
-                                            {hasDiscount && (
-                                                <span className="text-xs text-muted-foreground line-through">
-                                                    {formatCurrency(product.price)}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </Link>
-                        );
-                    })
+                    products.map((product, index) => (
+                        <div
+                            key={product.product_id}
+                            className="w-48 flex-shrink-0 snap-start"
+                        >
+                            <StorefrontProductCard
+                                product={product}
+                                storeSlug={storeSlug!}
+                                isPreviewMode={false}
+                                onQuickAdd={(e) => handleQuickAdd(e, product)}
+                                isAdded={false}
+                                onToggleWishlist={() => { }}
+                                isInWishlist={false}
+                                onQuickView={() => { }}
+                                index={index}
+                                accentColor={store.primary_color}
+                            />
+                        </div>
+                    ))
                 )}
             </div>
         </div>
