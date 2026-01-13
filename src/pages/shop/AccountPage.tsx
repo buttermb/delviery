@@ -181,7 +181,7 @@ export default function AccountPage() {
     setIsSendingCode(true);
     try {
       // Call RPC to generate and store code
-      const { data: code, error } = await supabase.rpc('request_magic_code', {
+      const { data: code, error } = await (supabase.rpc as any)('request_magic_code', {
         p_store_id: store.id,
         p_email: email.trim()
       });
@@ -215,11 +215,12 @@ export default function AccountPage() {
 
     setIsVerifyingCode(true);
     try {
-      const { data: customer, error } = await supabase.rpc('verify_magic_code', {
+      const { data: customerData, error } = await (supabase.rpc as any)('verify_magic_code', {
         p_store_id: store.id,
         p_email: codeSentTo.trim(),
         p_code: magicCode.trim()
       });
+      const customer = customerData as { id: string; email: string; first_name?: string } | null;
 
       if (error) throw error;
 
@@ -518,7 +519,7 @@ export default function AccountPage() {
                     <Skeleton key={i} className="h-24" />
                   ))}
                 </div>
-              ) : (
+              ) : orders.length === 0 ? (
                 <div className="text-center py-16 bg-neutral-50 rounded-2xl border border-dashed border-neutral-200">
                   <Package className="w-16 h-16 mx-auto mb-4 text-neutral-300" />
                   <h3 className="text-xl font-bold mb-2 text-neutral-900">No orders yet</h3>
