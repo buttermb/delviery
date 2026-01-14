@@ -170,7 +170,7 @@ export default function LoginPage() {
         body: JSON.stringify({
           email: data.email,
           password: data.password,
-          tenantSlug: tenant.slug,
+          tenantSlug: tenant.slug.toLowerCase(),
         }),
         timeout: 30000,
         retryConfig: {
@@ -194,7 +194,14 @@ export default function LoginPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Login failed' }));
-        const error = new Error(errorData.error || 'Login failed');
+
+        // Enhance error message with details if available
+        let errorMessage = errorData.error || 'Login failed';
+        if (errorData.details) {
+          errorMessage += `: ${JSON.stringify(errorData.details)}`;
+        }
+
+        const error = new Error(errorMessage);
         authFlowLogger.failFlow(flowId, error, category);
         throw error;
       }

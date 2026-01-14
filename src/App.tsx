@@ -624,8 +624,8 @@ const App = () => {
                                         <Route path="/saas/login" element={<SaasLoginPage />} />
                                         <Route path="/verify-email" element={<VerifyEmailPage />} />
 
-                                        {/* Redirect admin routes without tenant slug */}
-                                        <Route path="/admin/*" element={<Navigate to="/login" replace />} />
+                                        {/* Redirect admin routes without tenant slug - go directly to business login */}
+                                        <Route path="/admin/*" element={<Navigate to="/saas/login" replace />} />
 
                                         {/* Invitation Acceptance */}
                                         <Route path="/invite/:token" element={<InvitationAcceptPage />} />
@@ -1044,8 +1044,8 @@ const App = () => {
                                           }
                                         />
 
-                                        {/* Catch-all route for /admin/* paths without tenant slug - redirect to login */}
-                                        <Route path="/admin/*" element={<Navigate to="/login" replace />} />
+                                        {/* Catch-all route for /admin/* paths without tenant slug - go directly to business login */}
+                                        <Route path="/admin/*" element={<Navigate to="/saas/login" replace />} />
 
                                         {/* ==================== COURIER PORTAL ==================== */}
                                         <Route path="/courier/login" element={<CourierLoginPage />} />

@@ -62,10 +62,16 @@ export function StorefrontProductCard({
     const hasSalePrice = product.sale_price != null && product.sale_price < product.price;
     const displayPrice = hasSalePrice ? product.sale_price : product.price;
 
+    // Check if product is new (added in last 7 days) - based on display_order as proxy
+    const isNew = product.display_order !== undefined && product.display_order <= 7;
+
     // Use secondary image on hover if available
     const displayImage = isHovered && product.images && product.images.length > 1
         ? product.images[1]
         : product.image_url;
+
+    // Get first 2 effects for display
+    const displayEffects = product.effects?.slice(0, 2) || [];
 
     return (
         <motion.div
@@ -110,8 +116,13 @@ export function StorefrontProductCard({
                         </button>
                     </div>
 
-                    {/* Stock / Type / Sale Badges */}
+                    {/* Stock / Type / Sale / New Badges */}
                     <div className="absolute top-4 left-4 flex flex-col gap-2 pointer-events-none">
+                        {isNew && !hasSalePrice && (
+                            <span className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase rounded-lg shadow-sm">
+                                New
+                            </span>
+                        )}
                         {hasSalePrice && (
                             <span className="bg-red-500 text-white backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase rounded-lg shadow-sm">
                                 Sale
@@ -159,58 +170,77 @@ export function StorefrontProductCard({
                                 {product.cbd_content && <span className="bg-neutral-100 px-2 py-1 rounded-md">{product.cbd_content}% CBD</span>}
                             </div>
                         )}
-                    </div>
 
-                    {/* Footer */}
-                    <div className="pt-5 mt-2 flex items-center justify-between border-t border-neutral-50">
-                        <div className="flex flex-col">
-                            <div className="flex items-baseline gap-2">
-                                {displayPrice === 0 ? (
-                                    <span className="text-xl font-extrabold text-emerald-600">Free</span>
-                                ) : (
-                                    <span className="text-xl font-extrabold" style={{ color: accentColor }}>${displayPrice?.toFixed(2)}</span>
-                                )}
-                                {hasSalePrice && (
-                                    <span className="text-sm text-neutral-400 line-through">${product.price?.toFixed(2)}</span>
-                                )}
-                            </div>
-                            {product.unit_type && <span className="text-[10px] text-neutral-400 font-medium">per {product.unit_type}</span>}
-                        </div>
-
-                        <Button
-                            onClick={onQuickAdd}
-                            disabled={isOutStock}
-                            size="sm"
-                            className={cn(
-                                "rounded-full h-10 px-5 font-bold transition-all duration-300 shadow-md",
-                                isAdded
-                                    ? "bg-emerald-500 text-white hover:bg-emerald-600 w-auto"
-                                    : isOutStock
-                                        ? "bg-neutral-100 text-neutral-300 cursor-not-allowed"
-                                        : "text-white hover:opacity-90 hover:shadow-lg active:scale-95"
-                            )}
-                            style={!isAdded && !isOutStock ? { backgroundColor: accentColor } : undefined}
-                        >
-                            <AnimatePresence mode="wait">
-                                {isAdded ? (
-                                    <motion.div
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        exit={{ scale: 0 }}
-                                        className="flex items-center"
+                        {/* Effects Tags */}
+                        {displayEffects.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                                {displayEffects.map((effect, idx) => (
+                                    <span
+                                        key={idx}
+                                        className="text-[10px] px-2 py-0.5 rounded-full border font-medium"
+                                        style={{
+                                            borderColor: `${accentColor}30`,
+                                            color: accentColor,
+                                            backgroundColor: `${accentColor}08`
+                                        }}
                                     >
-                                        <Check className="w-4 h-4 mr-1.5" strokeWidth={3} />
-                                        <span className="text-xs uppercase tracking-wider">Added</span>
-                                    </motion.div>
-                                ) : (
-                                    <div className="flex items-center">
-                                        <Plus className="w-4 h-4 mr-1.5" strokeWidth={3} />
-                                        <span className="text-xs uppercase tracking-wider">Add</span>
-                                    </div>
-                                )}
-                            </AnimatePresence>
-                        </Button>
+                                        {effect}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
+                </div>
+
+                {/* Footer */}
+                <div className="pt-5 mt-2 flex items-center justify-between border-t border-neutral-50">
+                    <div className="flex flex-col">
+                        <div className="flex items-baseline gap-2">
+                            {displayPrice === 0 ? (
+                                <span className="text-xl font-extrabold text-emerald-600">Free</span>
+                            ) : (
+                                <span className="text-xl font-extrabold" style={{ color: accentColor }}>${displayPrice?.toFixed(2)}</span>
+                            )}
+                            {hasSalePrice && (
+                                <span className="text-sm text-neutral-400 line-through">${product.price?.toFixed(2)}</span>
+                            )}
+                        </div>
+                        {product.unit_type && <span className="text-[10px] text-neutral-400 font-medium">per {product.unit_type}</span>}
+                    </div>
+
+                    <Button
+                        onClick={onQuickAdd}
+                        disabled={isOutStock}
+                        size="sm"
+                        className={cn(
+                            "rounded-full h-10 px-5 font-bold transition-all duration-300 shadow-md",
+                            isAdded
+                                ? "bg-emerald-500 text-white hover:bg-emerald-600 w-auto"
+                                : isOutStock
+                                    ? "bg-neutral-100 text-neutral-300 cursor-not-allowed"
+                                    : "text-white hover:opacity-90 hover:shadow-lg active:scale-95"
+                        )}
+                        style={!isAdded && !isOutStock ? { backgroundColor: accentColor } : undefined}
+                    >
+                        <AnimatePresence mode="wait">
+                            {isAdded ? (
+                                <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    exit={{ scale: 0 }}
+                                    className="flex items-center"
+                                >
+                                    <Check className="w-4 h-4 mr-1.5" strokeWidth={3} />
+                                    <span className="text-xs uppercase tracking-wider">Added</span>
+                                </motion.div>
+                            ) : (
+                                <div className="flex items-center">
+                                    <Plus className="w-4 h-4 mr-1.5" strokeWidth={3} />
+                                    <span className="text-xs uppercase tracking-wider">Add</span>
+                                </div>
+                            )}
+                        </AnimatePresence>
+                    </Button>
                 </div>
             </div>
         </motion.div>

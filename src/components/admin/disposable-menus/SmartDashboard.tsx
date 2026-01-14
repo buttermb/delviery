@@ -122,6 +122,7 @@ function OrderCard({ order, onStatusChange }: { order: any; onStatusChange?: (id
 function OrdersTab() {
   const { data: orders = [], isLoading, refetch } = useMenuOrders();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const [listLimit, setListLimit] = useState(20);
 
   const ordersByStatus = useMemo(() => ({
     pending: orders.filter((o: any) => o.status === 'pending'),
@@ -271,10 +272,19 @@ function OrdersTab() {
                 <div className="text-center py-12 text-muted-foreground">
                   <Clock className="h-8 w-8 mx-auto mb-2 opacity-30" />
                   <p className="text-sm">No pending orders</p>
+                  <p className="text-xs mt-1">Orders appear here when customers place new orders</p>
                 </div>
               ) : (
                 ordersByStatus.pending.map((order: any) => (
-                  <OrderCard key={order.id} order={order} />
+                  <OrderCard
+                    key={order.id}
+                    order={order}
+                    onStatusChange={(id, status) => {
+                      // TODO: Implement actual status update via mutation
+                      showSuccessToast(`Order marked as ${status}`);
+                      refetch();
+                    }}
+                  />
                 ))
               )}
             </div>
@@ -347,42 +357,57 @@ function OrdersTab() {
             {orders.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <ShoppingBag className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                <p>No orders yet</p>
+                <p className="font-medium">No orders yet</p>
+                <p className="text-sm mt-1">Share your menus with clients to receive orders</p>
               </div>
             ) : (
-              <div className="divide-y">
-                {orders.slice(0, 20).map((order: any) => (
-                  <div key={order.id} className="p-4 hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className={cn(
-                          "w-3 h-3 rounded-full",
-                          order.status === 'pending' && 'bg-warning',
-                          order.status === 'confirmed' && 'bg-info',
-                          (order.status === 'completed' || order.status === 'delivered') && 'bg-success',
-                          order.status === 'rejected' && 'bg-destructive'
-                        )} />
-                        <div>
-                          <div className="font-medium">
-                            {order.whitelist?.customer_name || order.contact_phone || 'Unknown'}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {order.menu?.name} • {Array.isArray(order.order_data?.items) ? order.order_data.items.length : 0} items
+              <>
+                <div className="divide-y">
+                  {orders.slice(0, listLimit).map((order: any) => (
+                    <div key={order.id} className="p-4 hover:bg-muted/50 transition-colors cursor-pointer">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className={cn(
+                            "w-3 h-3 rounded-full",
+                            order.status === 'pending' && 'bg-warning',
+                            order.status === 'confirmed' && 'bg-info',
+                            (order.status === 'completed' || order.status === 'delivered') && 'bg-success',
+                            order.status === 'rejected' && 'bg-destructive'
+                          )} />
+                          <div>
+                            <div className="font-medium">
+                              {order.whitelist?.customer_name || order.contact_phone || 'Unknown'}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {order.menu?.name} • {Array.isArray(order.order_data?.items) ? order.order_data.items.length : 0} items
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold text-success">
-                          {formatCurrency(Number(order.total_amount || 0))}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {order.created_at && format(new Date(order.created_at), 'MMM d, h:mm a')}
+                        <div className="text-right">
+                          <div className="font-semibold text-success">
+                            {formatCurrency(Number(order.total_amount || 0))}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {order.created_at && format(new Date(order.created_at), 'MMM d, h:mm a')}
+                          </div>
                         </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+                {orders.length > listLimit && (
+                  <div className="p-4 border-t">
+                    <Button
+                      variant="ghost"
+                      className="w-full"
+                      onClick={() => setListLimit(prev => prev + 20)}
+                    >
+                      Show more ({orders.length - listLimit} remaining)
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>

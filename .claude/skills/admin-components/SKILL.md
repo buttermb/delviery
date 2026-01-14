@@ -1,9 +1,40 @@
 ---
 name: admin-components
-description: FloraIQ admin panel component patterns. Tenant-aware hooks, permission guards, TanStack Query patterns, and shadcn/ui integration.
+description: FloraIQ admin panel component patterns. Use when building admin UI, hub pages, permission-gated features, or tenant-aware components. Includes hub architecture, TanStack Query patterns, and shadcn/ui integration.
 ---
 
 # Admin Components Skill
+
+## Hub Architecture
+
+FloraIQ admin has 12 specialized hubs. Each hub follows this structure:
+
+```tsx
+import { HubBreadcrumbs } from '@/components/admin/navigation/HubBreadcrumbs';
+
+export function ProductsHub() {
+  const { tenant } = useTenantAdminAuth();
+  
+  return (
+    <div className="p-6">
+      <HubBreadcrumbs
+        items={[
+          { label: 'Admin', href: `/${tenant?.slug}/admin` },
+          { label: 'Products' }
+        ]}
+      />
+      <HubHeader title="Products Hub" />
+      <HubTabs tabs={productsTabs} />
+    </div>
+  );
+}
+```
+
+### Tab Ordering Convention
+1. **Overview** - Always first
+2. **Core Functions** - Main CRUD operations  
+3. **Analytics/Reports** - Data views
+4. **Settings/Config** - Always last
 
 ## Component Template
 

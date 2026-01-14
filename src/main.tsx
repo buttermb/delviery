@@ -34,9 +34,9 @@ const MAX_CHUNK_RELOADS = 3;
 window.addEventListener('error', (event) => {
   const errorMessage = event.message || '';
   const isChunkError = errorMessage.includes('chunk') ||
-    errorMessage.includes('Loading') ||
+    errorMessage.toLowerCase().includes('loading chunk') ||
+    errorMessage.toLowerCase().includes('loading module') ||
     errorMessage.includes('createContext') ||
-    errorMessage.includes('Failed to fetch') ||
     (event.filename && event.filename.includes('chunk'));
 
   if (isChunkError && chunkReloadCount < MAX_CHUNK_RELOADS) {

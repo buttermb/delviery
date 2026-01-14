@@ -11,10 +11,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
-import { 
-    Plus, GripVertical, Trash2, Save, ArrowLeft, Layout, Palette, Type, 
-    Monitor, Smartphone, Tablet, Copy, Eye, EyeOff, Undo2, Redo2, 
-    FileText, Image, MessageSquare, HelpCircle, Mail, Sparkles
+import {
+    Plus, GripVertical, Trash2, Save, ArrowLeft, Layout, Palette, Type,
+    Monitor, Smartphone, Tablet, Copy, Eye, EyeOff, Undo2, Redo2,
+    FileText, Image, MessageSquare, HelpCircle, Mail, Sparkles, X, ZoomIn, ZoomOut
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { HeroSection } from '@/components/shop/sections/HeroSection';
@@ -76,15 +76,15 @@ interface SectionConfig {
 }
 
 // Sortable section item component
-function SortableSectionItem({ 
-    section, 
-    isSelected, 
-    onSelect, 
-    onRemove, 
-    onDuplicate, 
+function SortableSectionItem({
+    section,
+    isSelected,
+    onSelect,
+    onRemove,
+    onDuplicate,
     onToggleVisibility,
-    sectionLabel 
-}: { 
+    sectionLabel
+}: {
     section: SectionConfig;
     isSelected: boolean;
     onSelect: () => void;
@@ -115,13 +115,12 @@ function SortableSectionItem({
             ref={setNodeRef}
             style={style}
             onClick={onSelect}
-            className={`flex items-center justify-between p-3 rounded-md border cursor-pointer transition-colors ${
-                isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted'
-            } ${isHidden ? 'opacity-50' : ''}`}
+            className={`flex items-center justify-between p-3 rounded-md border cursor-pointer transition-colors ${isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted'
+                } ${isHidden ? 'opacity-50' : ''}`}
         >
             <div className="flex items-center gap-3">
-                <button 
-                    {...attributes} 
+                <button
+                    {...attributes}
                     {...listeners}
                     className="touch-none cursor-grab active:cursor-grabbing"
                 >
@@ -166,6 +165,8 @@ export default function StorefrontBuilder() {
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState('sections');
     const [devicePreview, setDevicePreview] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+    const [rightPanelOpen, setRightPanelOpen] = useState(true);
+    const [previewZoom, setPreviewZoom] = useState(0.85);
 
     // Builder State
     const [layoutConfig, setLayoutConfig] = useState<SectionConfig[]>([]);
@@ -328,7 +329,7 @@ export default function StorefrontBuilder() {
 
     const toggleVisibility = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        const newConfig = layoutConfig.map(s => 
+        const newConfig = layoutConfig.map(s =>
             s.id === id ? { ...s, visible: !(s.visible ?? true) } : s
         );
         setLayoutConfig(newConfig);
@@ -373,13 +374,20 @@ export default function StorefrontBuilder() {
 
     const selectedSection = layoutConfig.find(s => s.id === selectedSectionId);
 
-    // Preview Scale Calculation
+    // Preview scale - use transform to fit content without breaking layout
     const getPreviewStyle = () => {
+        // Apply user-controlled zoom
         switch (devicePreview) {
-            case 'mobile': return { width: '375px', height: '100%' };
-            case 'tablet': return { width: '768px', height: '100%' };
-            default: return { width: '100%', height: '100%' };
+            case 'mobile': return { width: '375px', transform: `scale(${previewZoom * 0.9})`, transformOrigin: 'top center' };
+            case 'tablet': return { width: '768px', transform: `scale(${previewZoom * 0.85})`, transformOrigin: 'top center' };
+            default: return { width: '1200px', transform: `scale(${previewZoom})`, transformOrigin: 'top center' };
         }
+    };
+
+    // Auto-open right panel when selecting a section
+    const handleSelectSection = (id: string) => {
+        setSelectedSectionId(id);
+        if (!rightPanelOpen) setRightPanelOpen(true);
     };
 
     return (
@@ -407,18 +415,18 @@ export default function StorefrontBuilder() {
                     </div>
                     <Separator orientation="vertical" className="h-6" />
                     <div className="flex gap-1">
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-7 w-7"
                             onClick={undo}
                             disabled={historyIndex <= 0}
                         >
                             <Undo2 className="w-4 h-4" />
                         </Button>
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-7 w-7"
                             onClick={redo}
                             disabled={historyIndex >= history.length - 1}
@@ -426,8 +434,38 @@ export default function StorefrontBuilder() {
                             <Redo2 className="w-4 h-4" />
                         </Button>
                     </div>
+                    <Separator orientation="vertical" className="h-6" />
+                    {/* Zoom controls */}
+                    <div className="flex items-center gap-1 bg-muted rounded-md p-1">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => setPreviewZoom(Math.max(0.5, previewZoom - 0.1))}
+                            disabled={previewZoom <= 0.5}
+                        >
+                            <ZoomOut className="w-3 h-3" />
+                        </Button>
+                        <span className="text-xs w-10 text-center">{Math.round(previewZoom * 100)}%</span>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => setPreviewZoom(Math.min(1.2, previewZoom + 0.1))}
+                            disabled={previewZoom >= 1.2}
+                        >
+                            <ZoomIn className="w-3 h-3" />
+                        </Button>
+                    </div>
                 </div>
                 <div className="flex gap-2">
+                    {/* Toggle right panel button when closed */}
+                    {selectedSection && !rightPanelOpen && (
+                        <Button variant="outline" size="sm" onClick={() => setRightPanelOpen(true)}>
+                            <Eye className="w-4 h-4 mr-2" />
+                            Edit Section
+                        </Button>
+                    )}
                     <Button variant="outline">Preview Live</Button>
                     <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
                         <Save className="w-4 h-4 mr-2" />
@@ -437,8 +475,8 @@ export default function StorefrontBuilder() {
             </div>
 
             <div className="flex flex-1 min-h-0 overflow-hidden">
-                {/* Left Sidebar: Controls */}
-                <div className="w-80 bg-background border-r flex flex-col shrink-0 z-10 min-h-0">
+                {/* Left Sidebar: Controls - narrower for more preview space */}
+                <div className="w-64 bg-background border-r flex flex-col shrink-0 z-10 min-h-0">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
                         <TabsList className="grid w-full grid-cols-3 p-4 pb-0 h-auto bg-transparent">
                             <TabsTrigger value="sections">Sections</TabsTrigger>
@@ -454,11 +492,11 @@ export default function StorefrontBuilder() {
                                         <Label>Add Section</Label>
                                         <div className="grid grid-cols-2 gap-2">
                                             {Object.entries(SECTION_TYPES).map(([key, { label, icon: Icon }]) => (
-                                                <Button 
+                                                <Button
                                                     key={key}
-                                                    variant="outline" 
-                                                    size="sm" 
-                                                    onClick={() => addSection(key as keyof typeof SECTION_TYPES)} 
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => addSection(key as keyof typeof SECTION_TYPES)}
                                                     className="justify-start text-xs"
                                                 >
                                                     <Plus className="w-3 h-3 mr-1" />
@@ -487,7 +525,7 @@ export default function StorefrontBuilder() {
                                                             key={section.id}
                                                             section={section}
                                                             isSelected={selectedSectionId === section.id}
-                                                            onSelect={() => setSelectedSectionId(section.id)}
+                                                            onSelect={() => handleSelectSection(section.id)}
                                                             onRemove={(e) => removeSection(section.id, e)}
                                                             onDuplicate={(e) => duplicateSection(section.id, e)}
                                                             onToggleVisibility={(e) => toggleVisibility(section.id, e)}
@@ -517,21 +555,21 @@ export default function StorefrontBuilder() {
                                                 <div key={colorKey} className="flex items-center justify-between">
                                                     <span className="text-sm text-muted-foreground capitalize">{colorKey}</span>
                                                     <div className="flex items-center gap-2">
-                                                        <Input 
-                                                            type="color" 
+                                                        <Input
+                                                            type="color"
                                                             className="w-8 h-8 p-0 border-0 cursor-pointer"
                                                             value={themeConfig.colors?.[colorKey] || '#000000'}
-                                                            onChange={(e) => setThemeConfig({ 
-                                                                ...themeConfig, 
-                                                                colors: { ...themeConfig.colors, [colorKey]: e.target.value } 
+                                                            onChange={(e) => setThemeConfig({
+                                                                ...themeConfig,
+                                                                colors: { ...themeConfig.colors, [colorKey]: e.target.value }
                                                             })}
                                                         />
                                                         <Input
                                                             className="w-24 h-8 text-xs"
                                                             value={themeConfig.colors?.[colorKey] || '#000000'}
-                                                            onChange={(e) => setThemeConfig({ 
-                                                                ...themeConfig, 
-                                                                colors: { ...themeConfig.colors, [colorKey]: e.target.value } 
+                                                            onChange={(e) => setThemeConfig({
+                                                                ...themeConfig,
+                                                                colors: { ...themeConfig.colors, [colorKey]: e.target.value }
                                                             })}
                                                         />
                                                     </div>
@@ -574,7 +612,7 @@ export default function StorefrontBuilder() {
                                     <p className="text-xs text-muted-foreground">Start with a pre-built layout</p>
                                     <div className="space-y-2">
                                         {Object.entries(TEMPLATES).map(([key, template]) => (
-                                            <Card 
+                                            <Card
                                                 key={key}
                                                 className="cursor-pointer hover:border-primary transition-colors"
                                                 onClick={() => applyTemplate(key as keyof typeof TEMPLATES)}
@@ -604,15 +642,13 @@ export default function StorefrontBuilder() {
                     </Tabs>
                 </div>
 
-                {/* Center: Live Preview */}
-                <div className="flex-1 bg-muted flex items-center justify-center p-4 md:p-8 overflow-hidden relative min-w-0 min-h-0">
+                {/* Center: Live Preview - uses transform scaling */}
+                <div className="flex-1 bg-muted flex items-start justify-center p-4 overflow-auto relative min-w-0 min-h-0">
                     <div
-                        className="bg-background shadow-2xl overflow-y-auto transition-all duration-300 relative max-h-full min-h-0"
+                        className="bg-background shadow-2xl overflow-visible transition-all duration-300 relative"
                         style={{
-                            width: devicePreview === 'mobile' ? '375px' : devicePreview === 'tablet' ? '768px' : '100%',
-                            maxWidth: devicePreview === 'desktop' ? 'calc(100% - 2rem)' : undefined,
-                            height: '100%',
-                            scrollbarWidth: 'none',
+                            ...getPreviewStyle(),
+                            minHeight: '800px',
                         }}
                     >
                         {/* Simulated Header */}
@@ -635,7 +671,7 @@ export default function StorefrontBuilder() {
                                     <div
                                         key={section.id}
                                         className={`relative group ${selectedSectionId === section.id ? 'ring-2 ring-primary ring-inset z-10' : ''}`}
-                                        onClick={() => setSelectedSectionId(section.id)}
+                                        onClick={() => handleSelectSection(section.id)}
                                     >
                                         <Component content={section.content} styles={section.styles} storeId={store?.id} />
 
@@ -647,22 +683,36 @@ export default function StorefrontBuilder() {
                                 );
                             })}
                             {layoutConfig.length === 0 && (
-                                <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
+                                <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
                                     <Layout className="w-16 h-16 mb-4 opacity-50" />
-                                    <p>Your store canvas is empty</p>
-                                    <Button variant="link" onClick={() => { setActiveTab('templates'); }}>Choose a Template</Button>
+                                    <p className="text-lg font-medium mb-2">Your store canvas is empty</p>
+                                    <p className="text-sm mb-6">Get started with a template or add sections manually</p>
+                                    <div className="flex gap-3">
+                                        <Button variant="default" onClick={() => applyTemplate('standard')}>
+                                            <Sparkles className="w-4 h-4 mr-2" />
+                                            Quick Start (Standard)
+                                        </Button>
+                                        <Button variant="outline" onClick={() => setActiveTab('templates')}>
+                                            Browse Templates
+                                        </Button>
+                                    </div>
                                 </div>
                             )}
                         </div>
                     </div>
                 </div>
 
-                {/* Right Sidebar: Property Editor */}
-                {selectedSection && (
-                    <div className="w-80 bg-background border-l flex flex-col shrink-0 z-10 animate-in slide-in-from-right-10 duration-200">
-                        <div className="p-4 border-b">
-                            <h3 className="font-semibold text-sm uppercase text-muted-foreground mb-1">Editing</h3>
-                            <p className="font-medium">{SECTION_TYPES[selectedSection.type as keyof typeof SECTION_TYPES]?.label}</p>
+                {/* Right Sidebar: Property Editor - collapsible */}
+                {selectedSection && rightPanelOpen && (
+                    <div className="w-72 bg-background border-l flex flex-col shrink-0 z-10 animate-in slide-in-from-right-10 duration-200">
+                        <div className="p-4 border-b flex items-center justify-between">
+                            <div>
+                                <h3 className="font-semibold text-xs uppercase text-muted-foreground mb-1">Editing</h3>
+                                <p className="font-medium text-sm">{SECTION_TYPES[selectedSection.type as keyof typeof SECTION_TYPES]?.label}</p>
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setRightPanelOpen(false)}>
+                                <X className="w-4 h-4" />
+                            </Button>
                         </div>
                         <ScrollArea className="flex-1 p-4">
                             <Accordion type="single" collapsible defaultValue="content" className="w-full">

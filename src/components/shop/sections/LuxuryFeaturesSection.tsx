@@ -95,10 +95,12 @@ export function LuxuryFeaturesSection({ content, styles }: LuxuryFeaturesSection
           </p>
         </motion.div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        {/* Bento Grid Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto auto-rows-[180px]">
           {features.map((feature, index) => {
             const Icon = iconMap[feature.icon] || Shield;
+            // First and fourth items are larger (span 2 columns)
+            const isLarge = index === 0 || index === 3;
 
             return (
               <motion.div
@@ -106,38 +108,56 @@ export function LuxuryFeaturesSection({ content, styles }: LuxuryFeaturesSection
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="group"
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                className={`group ${isLarge ? 'md:col-span-2' : ''}`}
               >
-                <div className="relative h-full p-6 md:p-8 bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] hover:border-white/20 rounded-2xl transition-all duration-500 hover:-translate-y-2">
-                  {/* Hover glow */}
+                <div className="relative h-full p-6 md:p-8 bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] hover:border-white/20 rounded-3xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-white/5 overflow-hidden">
+                  {/* Animated gradient background on hover */}
                   <div
-                    className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
                     style={{
-                      background: `radial-gradient(circle at top left, ${accentColor}15 0%, transparent 60%)`
+                      background: `radial-gradient(ellipse at top left, ${accentColor}20 0%, transparent 50%)`
                     }}
                   />
 
-                  {/* Icon */}
+                  {/* Corner accent */}
                   <div
-                    className="w-14 h-14 rounded-full flex items-center justify-center mb-6 relative border border-white/5 group-hover:border-white/20 transition-colors duration-500"
-                    style={{
-                      background: `linear-gradient(135deg, ${accentColor}10 0%, transparent 100%)`
-                    }}
-                  >
-                    <Icon
-                      className="w-6 h-6 transform group-hover:scale-110 transition-transform duration-500"
-                      style={{ color: accentColor }}
-                    />
-                  </div>
+                    className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-30 transition-opacity duration-700"
+                    style={{ backgroundColor: accentColor }}
+                  />
 
-                  {/* Content */}
-                  <h3 className="text-white text-xl font-serif italic font-light tracking-wide mb-3 relative group-hover:text-white transition-colors">
-                    {feature.title}
-                  </h3>
-                  <p className="text-white/40 text-sm font-sans font-light leading-relaxed relative group-hover:text-white/60 transition-colors">
-                    {feature.description}
-                  </p>
+                  <div className="relative z-10 h-full flex flex-col">
+                    {/* Icon with gradient background */}
+                    <div
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-white/10 group-hover:border-white/20 transition-all duration-500 group-hover:scale-110"
+                      style={{
+                        background: `linear-gradient(135deg, ${accentColor}25 0%, ${accentColor}05 100%)`
+                      }}
+                    >
+                      <Icon
+                        className="w-5 h-5 transition-transform duration-500 group-hover:scale-110"
+                        style={{ color: accentColor }}
+                      />
+                    </div>
+
+                    {/* Content */}
+                    <h3 className="text-white text-lg font-bold tracking-wide mb-2 group-hover:text-white transition-colors">
+                      {feature.title}
+                    </h3>
+                    <p className="text-white/40 text-sm font-light leading-relaxed group-hover:text-white/60 transition-colors flex-1">
+                      {feature.description}
+                    </p>
+
+                    {/* Subtle arrow indicator on large cards */}
+                    {isLarge && (
+                      <div className="flex items-center gap-1 mt-4 text-white/20 group-hover:text-white/50 transition-colors">
+                        <span className="text-xs font-medium uppercase tracking-wider">Learn more</span>
+                        <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             );

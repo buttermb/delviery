@@ -32,7 +32,9 @@ import {
   MapPin,
   CreditCard,
   ShoppingCart,
-  Loader2
+  Loader2,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
@@ -44,6 +46,9 @@ import { Clock } from 'lucide-react';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Phone validation - accepts formats: (555) 123-4567, 555-123-4567, 5551234567, +1 555-123-4567
+const PHONE_REGEX = /^[\+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
 
 interface CheckoutData {
   // Contact
@@ -98,12 +103,18 @@ export default function CheckoutPage() {
   const [showErrors, setShowErrors] = useState(false);
   const [orderRetryCount, setOrderRetryCount] = useState(0);
 
+  // Idempotency key to prevent double orders on retry
+  const [idempotencyKey] = useState(() => `order_${crypto.randomUUID()}`);
+
   // Express Checkout for returning customers
   const [hasSavedData, setHasSavedData] = useState(false);
 
   // Loyalty points state
   const [loyaltyDiscount, setLoyaltyDiscount] = useState(0);
   const [loyaltyPointsUsed, setLoyaltyPointsUsed] = useState(0);
+
+  // Mobile order summary toggle
+  const [mobileSummaryExpanded, setMobileSummaryExpanded] = useState(false);
 
   // Form persistence key
   const formStorageKey = store?.id ? `checkout_form_${store.id}` : null;
@@ -295,6 +306,11 @@ export default function CheckoutPage() {
         }
         if ((store as any)?.checkout_settings?.require_phone && !formData.phone) {
           toast({ title: 'Phone number is required', variant: 'destructive' });
+          return false;
+        }
+        // Validate phone format if provided
+        if (formData.phone && !PHONE_REGEX.test(formData.phone.replace(/\s/g, ''))) {
+          toast({ title: 'Invalid phone number', description: 'Please enter a valid phone number.', variant: 'destructive' });
           return false;
         }
         return true;
@@ -490,7 +506,8 @@ export default function CheckoutPage() {
               p_tax: 0,
               p_delivery_fee: effectiveDeliveryFee,
               p_total: total,
-              p_payment_method: formData.paymentMethod
+              p_payment_method: formData.paymentMethod,
+              p_idempotency_key: idempotencyKey // Prevent double orders on retry
             });
 
           if (orderError) {
@@ -744,6 +761,92 @@ export default function CheckoutPage() {
             );
           })}
         </nav>
+      </div>
+
+      {/* Mobile Order Summary - Collapsible (visible only on mobile) */}
+      <div className="lg:hidden mb-6">
+        <button
+          onClick={() => setMobileSummaryExpanded(!mobileSummaryExpanded)}
+          className={`w-full p-4 rounded-lg border flex items-center justify-between transition-colors ${isLuxuryTheme
+            ? 'bg-white/5 border-white/10 text-white'
+            : 'bg-muted/50 border-border'
+            }`}
+        >
+          <div className="flex items-center gap-3">
+            <ShoppingCart className="w-5 h-5" style={{ color: themeColor }} />
+            <span className="font-medium">
+              {cartCount} {cartCount === 1 ? 'item' : 'items'}
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="font-bold" style={{ color: themeColor }}>
+              {formatCurrency(total)}
+            </span>
+            {mobileSummaryExpanded ? (
+              <ChevronUp className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            )}
+          </div>
+        </button>
+
+        <AnimatePresence>
+          {mobileSummaryExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className={`p-4 mt-2 rounded-lg border space-y-3 ${isLuxuryTheme ? 'bg-white/5 border-white/10' : 'bg-card border-border'
+                }`}>
+                {/* Cart Items */}
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {cartItems.map((item) => (
+                    <div key={item.productId} className="flex items-center justify-between text-sm">
+                      <span className={`truncate max-w-[60%] ${isLuxuryTheme ? 'text-white/80' : ''}`}>
+                        {item.quantity}× {item.name}
+                      </span>
+                      <span className={isLuxuryTheme ? 'text-white/60' : 'text-muted-foreground'}>
+                        {formatCurrency(item.price * item.quantity)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <Separator className={isLuxuryTheme ? 'bg-white/10' : ''} />
+
+                {/* Summary */}
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className={isLuxuryTheme ? 'text-white/60' : 'text-muted-foreground'}>Subtotal</span>
+                    <span className={isLuxuryTheme ? 'text-white' : ''}>{formatCurrency(subtotal)}</span>
+                  </div>
+                  {effectiveDeliveryFee > 0 && (
+                    <div className="flex justify-between">
+                      <span className={isLuxuryTheme ? 'text-white/60' : 'text-muted-foreground'}>Delivery</span>
+                      <span className={isLuxuryTheme ? 'text-white' : ''}>{formatCurrency(effectiveDeliveryFee)}</span>
+                    </div>
+                  )}
+                  {couponDiscount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount</span>
+                      <span>-{formatCurrency(couponDiscount)}</span>
+                    </div>
+                  )}
+                </div>
+
+                <Separator className={isLuxuryTheme ? 'bg-white/10' : ''} />
+
+                <div className="flex justify-between font-bold">
+                  <span className={isLuxuryTheme ? 'text-white' : ''}>Total</span>
+                  <span style={{ color: themeColor }}>{formatCurrency(total)}</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { type BackgroundStyle } from '../DynamicBackground';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 
 export interface LuxuryHeroSectionProps {
   content: {
@@ -198,6 +198,22 @@ export function LuxuryHeroSection({ content, styles, storeId }: LuxuryHeroSectio
           )}
         </motion.div>
       </div>
+
+      {/* Scroll Indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2, duration: 0.6 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+      >
+        <span className="text-white/40 text-xs font-medium uppercase tracking-widest">Scroll</span>
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <ChevronDown className="w-6 h-6 text-white/60" />
+        </motion.div>
+      </motion.div>
     </section>
   );
 }
