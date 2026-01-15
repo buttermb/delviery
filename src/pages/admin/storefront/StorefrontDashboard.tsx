@@ -45,6 +45,7 @@ import { CreateStoreDialog } from '@/components/admin/storefront/CreateStoreDial
 import { StoreSelector } from '@/components/admin/storefront/StoreSelector';
 import { StoreListView } from '@/components/admin/storefront/StoreListView';
 import { SmartOnboardingWidget } from '@/components/admin/storefront/SmartOnboardingWidget';
+import { OnboardingProgressChecklist } from '@/components/admin/storefront/OnboardingProgressChecklist';
 
 interface MarketplaceStore {
   id: string;
@@ -648,6 +649,13 @@ export default function StorefrontDashboard() {
           </Card>
         </div>
       )}
+
+      {/* Onboarding Progress Checklist */}
+      <OnboardingProgressChecklist
+        productCount={productStats?.total || 0}
+        storeIsActive={activeStore?.is_active || false}
+        storeHasCustomization={!!(activeStore?.logo_url || activeStore?.banner_url)}
+      />
 
       {/* Sales Funnel Analytics */}
       {activeStoreId && (
