@@ -1,4 +1,26 @@
-import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+
+// Input validation schema
+const WhitelistManageSchema = z.object({
+  action: z.enum(['add', 'revoke', 'regenerate'], {
+    errorMap: () => ({ message: 'Action must be: add, revoke, or regenerate' })
+  }),
+  menu_id: z.string().uuid('Invalid menu ID format').optional(),
+  whitelist_id: z.string().uuid('Invalid whitelist ID format').optional(),
+  customer_name: z.string().min(1).max(255).optional(),
+  customer_phone: z.string().max(20).optional(),
+  customer_email: z.string().email('Invalid email format').optional(),
+}).refine(
+  (data) => {
+    // 'add' requires menu_id and at least one contact method
+    if (data.action === 'add') {
+      return data.menu_id && (data.customer_phone || data.customer_email);
+    }
+    // 'revoke' and 'regenerate' require whitelist_id
+    return data.whitelist_id !== undefined;
+  },
+  { message: 'Missing required fields for this action' }
+);
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -11,7 +33,21 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { action, menu_id, whitelist_id, customer_name, customer_phone, customer_email } = await req.json();
+    // Validate input
+    const body = await req.json();
+    const validationResult = WhitelistManageSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({
+          error: 'Invalid input',
+          details: validationResult.error.errors
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { action, menu_id, whitelist_id, customer_name, customer_phone, customer_email } = validationResult.data;
 
     console.log('Managing whitelist:', { action, menu_id, whitelist_id });
 
@@ -25,7 +61,7 @@ serve(async (req) => {
 
     // Get tenant_id from user
     let tenantId: string | null = null;
-    
+
     // Try to get from tenant_users table
     const { data: tenantUser } = await supabase
       .from('tenant_users')
@@ -72,12 +108,12 @@ serve(async (req) => {
       }
     }
 
-    const response: { success: boolean; whitelist_id?: string; [key: string]: unknown } = { success: true };
+    const response: { success: boolean; whitelist_id?: string;[key: string]: unknown } = { success: true };
 
     switch (action) {
       case 'add':
         const generateToken = () => {
-          return Array.from({ length: 32 }, () => 
+          return Array.from({ length: 32 }, () =>
             Math.random().toString(36)[2] || '0'
           ).join('');
         };
@@ -118,7 +154,7 @@ serve(async (req) => {
       case 'revoke':
         const { error: revokeError } = await supabase
           .from('menu_whitelist')
-          .update({ 
+          .update({
             status: 'revoked',
             revoked_at: new Date().toISOString()
           })
@@ -140,13 +176,13 @@ serve(async (req) => {
         break;
 
       case 'regenerate':
-        const newToken = Array.from({ length: 32 }, () => 
+        const newToken = Array.from({ length: 32 }, () =>
           Math.random().toString(36)[2] || '0'
         ).join('');
 
         const { data: updatedEntry, error: regenError } = await supabase
           .from('menu_whitelist')
-          .update({ 
+          .update({
             access_token: newToken,
             status: 'active',
             revoked_at: null

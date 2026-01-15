@@ -1,4 +1,14 @@
-import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+
+// Input validation schema
+const BurnMenuSchema = z.object({
+  menu_id: z.string().uuid('Invalid menu ID format'),
+  burn_type: z.enum(['soft', 'hard']).default('soft'),
+  reason: z.string().max(500).optional(),
+  regenerate: z.boolean().optional().default(false),
+  auto_regenerate: z.boolean().optional().default(false),
+  migrate_customers: z.boolean().optional().default(false),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -11,7 +21,21 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { menu_id, burn_type, reason, regenerate, auto_regenerate, migrate_customers } = await req.json();
+    // Validate input
+    const body = await req.json();
+    const validationResult = BurnMenuSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({
+          error: 'Invalid input',
+          details: validationResult.error.errors
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { menu_id, burn_type, reason, regenerate, auto_regenerate, migrate_customers } = validationResult.data;
 
     console.log('Burning menu:', { menu_id, burn_type, reason, regenerate });
 
@@ -25,7 +49,7 @@ serve(async (req) => {
 
     // Get tenant_id from user
     let tenantId: string | null = null;
-    
+
     // Try to get from tenant_users table
     const { data: tenantUser } = await supabase
       .from('tenant_users')
@@ -78,12 +102,12 @@ serve(async (req) => {
 
     if (burn_type === 'hard') {
       console.log('Performing hard burn - deleting menu data');
-      
+
       await supabase.from('menu_access_logs').delete().eq('menu_id', menu_id);
       await supabase.from('menu_whitelist').delete().eq('menu_id', menu_id);
       await supabase.from('menu_orders').delete().eq('menu_id', menu_id);
       await supabase.from('menu_security_events').delete().eq('menu_id', menu_id);
-      
+
       const { error: deleteError } = await supabase
         .from('disposable_menus')
         .delete()
@@ -96,7 +120,7 @@ serve(async (req) => {
       console.log('Hard burn completed');
     } else {
       console.log('Performing soft burn - marking as burned');
-      
+
       const { error: updateError } = await supabase
         .from('disposable_menus')
         .update(updateData)
@@ -128,7 +152,7 @@ serve(async (req) => {
 
     if (regenerate) {
       console.log('Regenerating menu');
-      
+
       const generateAccessCode = () => {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
         let code = '';
@@ -149,14 +173,14 @@ serve(async (req) => {
 
       const newAccessCode = generateAccessCode();
       const newUrlToken = generateUrlToken();
-      
+
       // Hash the new access code
       const encoder = new TextEncoder();
       const data = encoder.encode(newAccessCode);
       const hashBuffer = await crypto.subtle.digest('SHA-256', data);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const newAccessCodeHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-      
+
       const newExpiresAt = new Date();
       newExpiresAt.setHours(newExpiresAt.getHours() + 24);
 
@@ -178,13 +202,13 @@ serve(async (req) => {
         console.error('Regeneration error:', createError);
       } else {
         const shareableUrl = `${req.headers.get('origin') || Deno.env.get('SITE_URL') || 'https://your-domain.com'}/menu/${newUrlToken}`;
-        
+
         // Copy products from old menu
         const { data: oldProducts } = await supabase
           .from('disposable_menu_products')
           .select('product_id, custom_price, display_order, display_availability')
           .eq('menu_id', menu_id);
-        
+
         if (oldProducts && oldProducts.length > 0) {
           const newProducts = oldProducts.map(p => ({
             menu_id: newMenu.id,
@@ -193,22 +217,22 @@ serve(async (req) => {
             display_order: p.display_order,
             display_availability: p.display_availability,
           }));
-          
+
           await supabase
             .from('disposable_menu_products')
             .insert(newProducts);
         }
-        
+
         // Auto-reinvite customers if requested
         const customersToNotify: any[] = [];
-        
+
         if (auto_regenerate && migrate_customers && whitelistEntries && whitelistEntries.length > 0) {
           console.log(`Auto-reinviting ${whitelistEntries.length} customers`);
-          
+
           for (const entry of whitelistEntries) {
             // Create new access token
             const newToken = crypto.randomUUID();
-            
+
             // Create new whitelist entry
             const { data: newEntry } = await supabase
               .from('menu_access_whitelist')
@@ -223,12 +247,12 @@ serve(async (req) => {
               })
               .select()
               .single();
-            
+
             if (newEntry) {
               // Send SMS invite via send-menu-access-link function
               const inviteUrl = `${req.headers.get('origin') || Deno.env.get('SITE_URL')}/menu/${newToken}`;
               const smsMessage = `Menu updated for security.\n\nNew Link: ${inviteUrl}\nNew Code: ${newAccessCode}\n\nOld link no longer works.`;
-              
+
               if (entry.customer_phone) {
                 // Invoke SMS function
                 try {
@@ -238,7 +262,7 @@ serve(async (req) => {
                       message: smsMessage,
                     },
                   });
-                  
+
                   // Log invitation
                   await supabase.from('invitations').insert({
                     menu_id: newMenu.id,
@@ -249,7 +273,7 @@ serve(async (req) => {
                     unique_link: inviteUrl,
                     status: 'sent',
                   });
-                  
+
                   customersToNotify.push({
                     name: entry.customer_name,
                     phone: entry.customer_phone,
@@ -267,7 +291,7 @@ serve(async (req) => {
             }
           }
         }
-        
+
         response.regenerated_menu = newMenu;
         response.regenerated_menu_id = newMenu.id;
         response.access_code = newAccessCode;
