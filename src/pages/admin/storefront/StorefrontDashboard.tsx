@@ -175,6 +175,50 @@ export default function StorefrontDashboard() {
     enabled: !!activeStoreId && !!tenantId,
   });
 
+  // Fetch revenue trend (today vs yesterday)
+  const { data: revenueTrend } = useQuery({
+    queryKey: ['marketplace-revenue-trend', activeStoreId],
+    queryFn: async () => {
+      if (!activeStoreId) return { todayRevenue: 0, yesterdayRevenue: 0, percentChange: 0 };
+
+      const today = new Date();
+      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const startOfYesterday = new Date(startOfToday);
+      startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+
+      // Today's revenue
+      const { data: todayOrders } = await supabase
+        .from('storefront_orders')
+        .select('total')
+        .eq('store_id', activeStoreId)
+        .gte('created_at', startOfToday.toISOString())
+        .not('status', 'eq', 'cancelled');
+
+      // Yesterday's revenue  
+      const { data: yesterdayOrders } = await supabase
+        .from('storefront_orders')
+        .select('total')
+        .eq('store_id', activeStoreId)
+        .gte('created_at', startOfYesterday.toISOString())
+        .lt('created_at', startOfToday.toISOString())
+        .not('status', 'eq', 'cancelled');
+
+      const todayRevenue = (todayOrders || []).reduce((sum, o) => sum + (o.total || 0), 0);
+      const yesterdayRevenue = (yesterdayOrders || []).reduce((sum, o) => sum + (o.total || 0), 0);
+
+      let percentChange = 0;
+      if (yesterdayRevenue > 0) {
+        percentChange = ((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100;
+      } else if (todayRevenue > 0) {
+        percentChange = 100; // New revenue from nothing
+      }
+
+      return { todayRevenue, yesterdayRevenue, percentChange: Math.round(percentChange) };
+    },
+    enabled: !!activeStoreId,
+    refetchInterval: 30000, // Refresh every 30 seconds for "live" feel
+  });
+
   // Toggle store status
   const toggleStoreMutation = useMutation({
     mutationFn: async (isActive: boolean) => {
@@ -530,7 +574,24 @@ export default function StorefrontDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Revenue</p>
-                  <p className="text-2xl font-bold">{formatCurrency(activeStore?.total_revenue || 0)}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-2xl font-bold">{formatCurrency(activeStore?.total_revenue || 0)}</p>
+                    {revenueTrend && revenueTrend.percentChange !== 0 && (
+                      <span className={`flex items-center text-xs font-medium ${revenueTrend.percentChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {revenueTrend.percentChange > 0 ? (
+                          <TrendingUp className="w-3 h-3 mr-0.5" />
+                        ) : (
+                          <TrendingDown className="w-3 h-3 mr-0.5" />
+                        )}
+                        {Math.abs(revenueTrend.percentChange)}%
+                      </span>
+                    )}
+                  </div>
+                  {revenueTrend && revenueTrend.todayRevenue > 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Today: {formatCurrency(revenueTrend.todayRevenue)}
+                    </p>
+                  )}
                 </div>
                 <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
                   <DollarSign className="w-6 h-6 text-green-500" />
