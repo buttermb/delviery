@@ -1,15 +1,15 @@
 /**
- * Quick Create Menu - Single-page form with collapsible sections
- * Faster than the wizard for power users
+ * Quick Create Menu - Mobile-first design with template quick-select
+ * Optimized for touch with large tap targets and swipe gestures
  */
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter, DrawerTrigger } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -19,9 +19,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
-import { 
-  ChevronDown, ChevronUp, Loader2, Check, Package, Users, 
-  Shield, Calendar, Copy, ExternalLink, Sparkles
+import { useMediaQuery } from '@/hooks/use-media-query';
+import { TEMPLATES, type MenuTemplate } from './MenuTemplates';
+import {
+  ChevronDown, ChevronUp, Loader2, Check, Package, Users,
+  Shield, Calendar, Copy, Sparkles, Truck, Zap, Crown, MapPin
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -36,6 +38,10 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
   const { tenant } = useTenantAdminAuth();
   const createMenu = useCreateDisposableMenu();
   const { checkLimit, recordAction, limitsApply } = useFreeTierLimits();
+  const isMobile = useMediaQuery('(max-width: 768px)');
+
+  // Template state
+  const [selectedTemplate, setSelectedTemplate] = useState<MenuTemplate | null>(null);
 
   // Form state
   const [name, setName] = useState('');
@@ -47,9 +53,37 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
   const [requireGeofence, setRequireGeofence] = useState(false);
   const [maxViews, setMaxViews] = useState<number | null>(null);
 
+  // OPSEC settings from template
+  const [screenshotProtection, setScreenshotProtection] = useState(true);
+  const [watermarkEnabled, setWatermarkEnabled] = useState(true);
+  const [deviceFingerprinting, setDeviceFingerprinting] = useState(true);
+
   // Section open states
   const [productsOpen, setProductsOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
+
+  // Template icon map for quick-select
+  const templateIcons: Record<string, typeof Truck> = {
+    'delivery-menu': Truck,
+    'popup-event': MapPin,
+    'wholesale-drop': Crown,
+    'member-club': Sparkles,
+    'custom': Zap,
+  };
+
+  // Apply template settings
+  const applyTemplate = (template: MenuTemplate) => {
+    setSelectedTemplate(template);
+    setNeverExpires(template.expirationDays >= 30);
+    setExpirationDays(template.expirationDays.toString());
+    setMaxViews(template.maxViews === 'unlimited' ? null : template.maxViews);
+    setRequireGeofence(template.security_settings.require_geofence);
+    setScreenshotProtection(template.security_settings.screenshot_protection_enabled);
+    setWatermarkEnabled(template.security_settings.watermark_enabled);
+    setDeviceFingerprinting(template.security_settings.device_fingerprinting);
+    setProductsOpen(true); // Auto-open products after template select
+    toast.success(`${template.name} template applied!`);
+  };
 
   // Generate access code
   const generateAccessCode = () => {
@@ -85,7 +119,7 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
   const filteredProducts = useMemo(() => {
     if (!productSearch) return products;
     const query = productSearch.toLowerCase();
-    return products.filter((p: any) => 
+    return products.filter((p: any) =>
       p.product_name?.toLowerCase().includes(query) ||
       p.category?.toLowerCase().includes(query)
     );
@@ -93,8 +127,8 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
 
   // Toggle product selection
   const toggleProduct = (productId: string) => {
-    setSelectedProducts(prev => 
-      prev.includes(productId) 
+    setSelectedProducts(prev =>
+      prev.includes(productId)
         ? prev.filter(id => id !== productId)
         : [...prev, productId]
     );
@@ -136,12 +170,15 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
         product_ids: selectedProducts,
         access_code: accessCode,
         never_expires: neverExpires,
-        expiration_date: neverExpires 
-          ? undefined 
+        expiration_date: neverExpires
+          ? undefined
           : new Date(Date.now() + parseInt(expirationDays) * 24 * 60 * 60 * 1000).toISOString(),
         security_settings: {
           require_geofence: requireGeofence,
           max_views: maxViews,
+          screenshot_protection_enabled: screenshotProtection,
+          watermark_enabled: watermarkEnabled,
+          device_fingerprinting: deviceFingerprinting,
         },
       });
 
@@ -185,6 +222,50 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
 
         <ScrollArea className="flex-1 px-6">
           <div className="space-y-6 pb-6">
+            {/* Template Quick-Select - Mobile optimized horizontal scroll */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground uppercase tracking-wide">
+                Quick Start Template
+              </Label>
+              <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+                {TEMPLATES.slice(0, 4).map((template) => {
+                  const Icon = templateIcons[template.id] || Sparkles;
+                  const isSelected = selectedTemplate?.id === template.id;
+                  return (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => applyTemplate(template)}
+                      className={cn(
+                        "flex-shrink-0 flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all min-w-[80px]",
+                        "active:scale-95 touch-manipulation", // Mobile touch optimization
+                        isSelected
+                          ? "border-violet-500 bg-violet-50 dark:bg-violet-900/20"
+                          : "border-muted hover:border-muted-foreground/30"
+                      )}
+                    >
+                      <div className={cn(
+                        "p-2 rounded-lg",
+                        isSelected ? "bg-violet-500 text-white" : "bg-muted"
+                      )}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <span className="text-xs font-medium truncate max-w-[70px]">
+                        {template.name.split(' ')[0]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedTemplate && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Badge variant="outline" className="text-[10px]">
+                    {selectedTemplate.tagline}
+                  </Badge>
+                </div>
+              )}
+            </div>
+
             {/* Basic Info - Always visible */}
             <div className="space-y-4">
               <div className="space-y-2">
@@ -255,7 +336,7 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
                     value={productSearch}
                     onChange={(e) => setProductSearch(e.target.value)}
                   />
-                  
+
                   {productsLoading ? (
                     <div className="text-center py-4 text-muted-foreground">
                       <Loader2 className="h-5 w-5 animate-spin mx-auto" />
