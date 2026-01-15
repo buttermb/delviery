@@ -1,4 +1,4 @@
-// @ts-nocheck
+// Edge Function: super-admin-auth
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { signJWT, verifyJWT as verifyJWTSecure } from '../_shared/jwt.ts';
 import { loginSchema, refreshSchema, updatePasswordSchema } from './validation.ts';
@@ -34,7 +34,7 @@ async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder();
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const passwordData = encoder.encode(password);
-  
+
   const key = await crypto.subtle.importKey(
     "raw",
     passwordData,
@@ -42,7 +42,7 @@ async function hashPassword(password: string): Promise<string> {
     false,
     ["deriveBits"]
   );
-  
+
   const hashBuffer = await crypto.subtle.deriveBits(
     {
       name: "PBKDF2",
@@ -53,12 +53,12 @@ async function hashPassword(password: string): Promise<string> {
     key,
     256
   );
-  
+
   const hashArray = new Uint8Array(hashBuffer);
   const combined = new Uint8Array(salt.length + hashArray.length);
   combined.set(salt);
   combined.set(hashArray, salt.length);
-  
+
   return base64Encode(combined.buffer);
 }
 
@@ -77,14 +77,14 @@ async function comparePassword(password: string, hashValue: string): Promise<boo
       console.log('SHA-256 comparison - match:', computedHash === hashValue.toLowerCase());
       return computedHash === hashValue.toLowerCase();
     }
-    
+
     // New PBKDF2 format (base64 encoded)
     const encoder = new TextEncoder();
     const combined = Uint8Array.from(atob(hashValue), c => c.charCodeAt(0));
-    
+
     const salt = combined.slice(0, 16);
     const storedHash = combined.slice(16);
-    
+
     const passwordData = encoder.encode(password);
     const key = await crypto.subtle.importKey(
       "raw",
@@ -93,7 +93,7 @@ async function comparePassword(password: string, hashValue: string): Promise<boo
       false,
       ["deriveBits"]
     );
-    
+
     const hashBuffer = await crypto.subtle.deriveBits(
       {
         name: "PBKDF2",
@@ -104,15 +104,15 @@ async function comparePassword(password: string, hashValue: string): Promise<boo
       key,
       256
     );
-    
+
     const hashArray = new Uint8Array(hashBuffer);
-    
+
     if (hashArray.length !== storedHash.length) return false;
-    
+
     for (let i = 0; i < hashArray.length; i++) {
       if (hashArray[i] !== storedHash[i]) return false;
     }
-    
+
     return true;
   } catch (error) {
     // console.error OK in edge functions (server-side)
@@ -125,7 +125,7 @@ serve(async (req) => {
   // Get origin from request for CORS
   const origin = req.headers.get('origin');
   const hasCredentials = req.headers.get('cookie') || req.headers.get('authorization');
-  
+
   // Allowed origins for CORS
   const allowedOrigins: (string | RegExp)[] = [
     'https://floraiqcrm.com',
@@ -138,7 +138,7 @@ serve(async (req) => {
     'https://lovable.app',
     'https://lovable.dev',
   ];
-  
+
   const isOriginAllowed = (checkOrigin: string | null): boolean => {
     if (!checkOrigin) return false;
     return allowedOrigins.some(allowed => {
@@ -148,32 +148,32 @@ serve(async (req) => {
       return allowed.test(checkOrigin);
     });
   };
-  
+
   // Determine the origin to use in response
   const requestOrigin = origin && isOriginAllowed(origin) ? origin : null;
-  
+
   // Reject requests with credentials from non-allowed origins
   if (hasCredentials && !requestOrigin) {
     return new Response(
-      JSON.stringify({ error: 'Origin not allowed' }), 
-      { 
+      JSON.stringify({ error: 'Origin not allowed' }),
+      {
         status: 403,
         headers: { 'Content-Type': 'application/json' }
       }
     );
   }
-  
+
   const corsHeadersWithOrigin: Record<string, string> = {
     'Access-Control-Allow-Origin': requestOrigin || '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, cookie',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
   };
-  
+
   // Add credentials header when we have a valid origin
   if (requestOrigin) {
     corsHeadersWithOrigin['Access-Control-Allow-Credentials'] = 'true';
   }
-  
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeadersWithOrigin });
   }
@@ -185,7 +185,7 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
-    
+
     let body: any = {};
     if (req.method === "POST") {
       try {
@@ -204,9 +204,9 @@ serve(async (req) => {
       const validationResult = loginSchema.safeParse(body);
       if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ 
-            error: "Validation failed", 
-            details: validationResult.error.errors 
+          JSON.stringify({
+            error: "Validation failed",
+            details: validationResult.error.errors
           }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -246,7 +246,7 @@ serve(async (req) => {
       // Verify password
       const validPassword = await comparePassword(password, superAdmin.password_hash);
       console.log('Password validation result:', validPassword);
-      
+
       if (!validPassword) {
         console.log('Password verification failed');
         return new Response(
@@ -259,7 +259,7 @@ serve(async (req) => {
       // PHASE 2: HYBRID AUTH - Create Supabase auth user for RLS access
       // ============================================================================
       let supabaseSession = null;
-      
+
       try {
         // Check if Supabase auth user exists
         const { data: existingAuthUsers } = await supabase.auth.admin.listUsers();
@@ -301,7 +301,7 @@ serve(async (req) => {
             console.error('Failed to create Supabase auth user:', createError);
           } else if (newAuthUser.user) {
             console.log('Supabase auth user created successfully');
-            
+
             // Generate session for the new user
             const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
               type: 'magiclink',
@@ -450,9 +450,9 @@ serve(async (req) => {
       const validationResult = refreshSchema.safeParse(body);
       if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ 
-            error: "Validation failed", 
-            details: validationResult.error.errors 
+          JSON.stringify({
+            error: "Validation failed",
+            details: validationResult.error.errors
           }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -506,9 +506,9 @@ serve(async (req) => {
       const validationResult = updatePasswordSchema.safeParse(body);
       if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ 
-            error: "Validation failed", 
-            details: validationResult.error.errors 
+          JSON.stringify({
+            error: "Validation failed",
+            details: validationResult.error.errors
           }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );

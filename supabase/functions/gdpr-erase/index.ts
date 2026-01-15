@@ -1,4 +1,4 @@
-// @ts-nocheck
+// Edge Function: gdpr-erase
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { withZenProtection } from '../_shared/zen-firewall.ts';
 
@@ -53,7 +53,7 @@ serve(
 
       // Get target user ID
       let targetUserId = user_id || user.id;
-      
+
       if (email && email !== user.email) {
         // Only allow users to delete their own data unless super admin
         const { data: superAdmin } = await supabase
@@ -62,7 +62,7 @@ serve(
           .eq('user_id', user.id)
           .eq('status', 'active')
           .maybeSingle();
-        
+
         if (!superAdmin) {
           return new Response(
             JSON.stringify({ error: 'Unauthorized - can only delete own data' }),

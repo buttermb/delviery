@@ -1,4 +1,4 @@
-// @ts-nocheck
+// Edge Function: tenant-admin-auth
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { loginSchema, refreshSchema, setupPasswordSchema } from './validation.ts';
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from '../_shared/rateLimiting.ts';
@@ -115,10 +115,10 @@ serve(async (req) => {
       );
 
       if (!rateLimitResult.allowed) {
-        console.warn('[LOGIN] Rate limit exceeded', { 
-          clientIP, 
+        console.warn('[LOGIN] Rate limit exceeded', {
+          clientIP,
           email: email.toLowerCase(),
-          tenantSlug 
+          tenantSlug
         });
         return new Response(
           JSON.stringify({
@@ -127,8 +127,8 @@ serve(async (req) => {
           }),
           {
             status: 429,
-            headers: { 
-              ...corsHeadersWithOrigin, 
+            headers: {
+              ...corsHeadersWithOrigin,
               'Content-Type': 'application/json',
               ...getRateLimitHeaders(rateLimitResult),
             },

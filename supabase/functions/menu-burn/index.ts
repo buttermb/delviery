@@ -93,18 +93,36 @@ serve(async (req) => {
       );
     }
 
-    const updateData: any = {
-      status: 'burned',
-      burned_at: new Date().toISOString(),
-      burned_by: user.id,
-      burn_reason: reason || 'Manual burn'
-    };
+    // Use atomic burn function to prevent race conditions
+    if (burn_type === 'soft') {
+      console.log('Performing atomic soft burn');
 
-    if (burn_type === 'hard') {
+      const { data: burnResult, error: burnError } = await supabase
+        .rpc('burn_menu_atomic', {
+          p_menu_id: menu_id,
+          p_burn_type: 'soft',
+          p_reason: reason || 'Manual burn',
+          p_burned_by: user.id
+        });
+
+      if (burnError) {
+        console.error('Atomic burn failed:', burnError);
+        throw burnError;
+      }
+
+      if (!burnResult?.success) {
+        return new Response(
+          JSON.stringify({ error: burnResult?.error || 'Burn failed' }),
+          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log('Atomic soft burn completed');
+    } else {
       console.log('Performing hard burn - deleting menu data');
 
       await supabase.from('menu_access_logs').delete().eq('menu_id', menu_id);
-      await supabase.from('menu_whitelist').delete().eq('menu_id', menu_id);
+      await supabase.from('menu_access_whitelist').delete().eq('menu_id', menu_id);
       await supabase.from('menu_orders').delete().eq('menu_id', menu_id);
       await supabase.from('menu_security_events').delete().eq('menu_id', menu_id);
 
@@ -118,19 +136,6 @@ serve(async (req) => {
       }
 
       console.log('Hard burn completed');
-    } else {
-      console.log('Performing soft burn - marking as burned');
-
-      const { error: updateError } = await supabase
-        .from('disposable_menus')
-        .update(updateData)
-        .eq('id', menu_id);
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      console.log('Soft burn completed');
     }
 
     await supabase.from('menu_security_events').insert({

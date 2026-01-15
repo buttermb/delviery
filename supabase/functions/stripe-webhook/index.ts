@@ -1,4 +1,4 @@
-// @ts-nocheck
+// Edge Function: stripe-webhook
 /**
  * Stripe Webhook Handler
  * Processes Stripe events and updates tenant subscriptions
@@ -41,7 +41,7 @@ serve(async (req) => {
       console.error('[STRIPE-WEBHOOK] CRITICAL: STRIPE_WEBHOOK_SECRET is not configured!');
       return new Response('Webhook secret not configured', { status: 500 });
     }
-    
+
     try {
       rawEvent = await stripe.webhooks.constructEventAsync(body, signature, STRIPE_WEBHOOK_SECRET);
       console.log('[STRIPE-WEBHOOK] Signature verified successfully for event:', rawEvent.id);
@@ -148,7 +148,7 @@ serve(async (req) => {
         let subscriptionTier = 'starter'; // default
         if (plan) {
           const planName = (plan.name || plan.slug || '').toLowerCase().trim();
-          
+
           // Exact match first
           if (planName === 'enterprise') {
             subscriptionTier = 'enterprise';
@@ -182,12 +182,12 @@ serve(async (req) => {
             apiVersion: '2023-10-16',
           });
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-          
+
           if (subscription.status === 'trialing' && subscription.trial_end) {
             subscriptionStatus = 'trial';
             trialEndsAt = new Date(subscription.trial_end * 1000).toISOString();
           }
-          
+
           // Check if payment method was added
           paymentMethodAdded = !!subscription.default_payment_method;
 
@@ -198,9 +198,9 @@ serve(async (req) => {
           }
         }
 
-        console.log('[STRIPE-WEBHOOK] Checkout completed:', { 
-          planId, 
-          planName: plan?.name, 
+        console.log('[STRIPE-WEBHOOK] Checkout completed:', {
+          planId,
+          planName: plan?.name,
           resolvedTier: subscriptionTier,
           billingCycle,
           subscriptionStatus,
@@ -277,7 +277,7 @@ serve(async (req) => {
 
       case 'customer.subscription.trial_will_end': {
         const tenantId = object.metadata?.tenant_id;
-        
+
         if (tenantId) {
           await supabase.from('trial_events').insert({
             tenant_id: tenantId,
@@ -288,7 +288,7 @@ serve(async (req) => {
             },
           });
         }
-        
+
         break;
       }
 
@@ -301,10 +301,10 @@ serve(async (req) => {
           // Normalize status: Stripe uses 'canceled', we use 'cancelled'
           const normalizedStatus = object.status === 'canceled' ? 'cancelled' : object.status;
           const status = isDeleted ? 'cancelled' : normalizedStatus;
-          
+
           // Check if trial converted to active
           const wasTrialing = object.status === 'active' && object.trial_end;
-          
+
           const updateData: any = {
             subscription_status: status,
             updated_at: new Date().toISOString(),
@@ -317,13 +317,13 @@ serve(async (req) => {
             }
             updateData.is_free_tier = false;
             updateData.credits_enabled = false;
-            
+
             // SYNC: Also update tenant_credits when becoming active
             await supabase
               .from('tenant_credits')
               .update({ is_free_tier: false })
               .eq('tenant_id', tenantId);
-            
+
             if (wasTrialing) {
               await supabase.from('trial_events').insert({
                 tenant_id: tenantId,
@@ -334,7 +334,7 @@ serve(async (req) => {
                 },
               });
             }
-            
+
             console.log('[STRIPE-WEBHOOK] Subscription active, synced is_free_tier=false:', { tenantId, status });
           }
 
@@ -343,7 +343,7 @@ serve(async (req) => {
           if (isDeleted || status === 'cancelled' || status === 'unpaid') {
             updateData.is_free_tier = true;
             updateData.credits_enabled = true;
-            
+
             // Grant them free credits when reverting to free tier
             await supabase.rpc('grant_free_credits', {
               p_tenant_id: tenantId,
@@ -440,7 +440,7 @@ serve(async (req) => {
 
       case 'payment_method.attached': {
         const customerId = object.customer;
-        
+
         if (customerId) {
           await supabase
             .from('tenants')
@@ -456,7 +456,7 @@ serve(async (req) => {
 
       case 'payment_method.detached': {
         const customerId = object.customer;
-        
+
         if (customerId) {
           await supabase
             .from('tenants')
@@ -465,14 +465,14 @@ serve(async (req) => {
               updated_at: new Date().toISOString(),
             })
             .eq('stripe_customer_id', customerId);
-            
+
           // Log warning event
           const { data: tenant } = await supabase
             .from('tenants')
             .select('id')
             .eq('stripe_customer_id', customerId)
             .single();
-            
+
           if (tenant) {
             await supabase.from('trial_events').insert({
               tenant_id: tenant.id,

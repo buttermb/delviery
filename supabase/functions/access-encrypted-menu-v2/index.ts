@@ -1,4 +1,4 @@
-// @ts-nocheck
+// Edge Function: access-encrypted-menu-v2 (Security Hardened)
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { createLogger } from '../_shared/logger.ts';
 import { MenuCache } from '../_shared/menu-cache.ts';

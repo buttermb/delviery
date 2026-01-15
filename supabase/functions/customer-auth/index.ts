@@ -1,4 +1,4 @@
-// @ts-nocheck
+// Edge Function: customer-auth
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { hashPassword, comparePassword } from '../_shared/password.ts';
 import { signJWT, verifyJWT as verifyJWTSecure } from '../_shared/jwt.ts';
@@ -28,7 +28,7 @@ serve(async (req) => {
   // Get origin from request for CORS
   const origin = req.headers.get('origin');
   const hasCredentials = req.headers.get('cookie') || req.headers.get('authorization');
-  
+
   // Allowed origins for CORS
   const allowedOrigins: (string | RegExp)[] = [
     'https://floraiqcrm.com',
@@ -41,7 +41,7 @@ serve(async (req) => {
     'https://lovable.app',
     'https://lovable.dev',
   ];
-  
+
   const isOriginAllowed = (checkOrigin: string | null): boolean => {
     if (!checkOrigin) return false;
     return allowedOrigins.some(allowed => {
@@ -51,32 +51,32 @@ serve(async (req) => {
       return allowed.test(checkOrigin);
     });
   };
-  
+
   // Determine the origin to use in response
   const requestOrigin = origin && isOriginAllowed(origin) ? origin : null;
-  
+
   // Reject requests with credentials from non-allowed origins
   if (hasCredentials && !requestOrigin) {
     return new Response(
-      JSON.stringify({ error: 'Origin not allowed' }), 
-      { 
+      JSON.stringify({ error: 'Origin not allowed' }),
+      {
         status: 403,
         headers: { 'Content-Type': 'application/json' }
       }
     );
   }
-  
+
   const corsHeadersWithOrigin: Record<string, string> = {
     'Access-Control-Allow-Origin': requestOrigin || '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, cookie',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
   };
-  
+
   // Add credentials header when we have a valid origin
   if (requestOrigin) {
     corsHeadersWithOrigin['Access-Control-Allow-Credentials'] = 'true';
   }
-  
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeadersWithOrigin });
   }
@@ -88,7 +88,7 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
-    
+
     let requestBody: any = {};
     if (action !== 'verify' && action !== 'logout' && req.method === 'POST') {
       try {
@@ -104,9 +104,9 @@ serve(async (req) => {
       const validationResult = signupSchema.safeParse(requestBody);
       if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ 
-            error: "Validation failed", 
-            details: validationResult.error.errors 
+          JSON.stringify({
+            error: "Validation failed",
+            details: validationResult.error.errors
           }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -161,7 +161,7 @@ serve(async (req) => {
 
       if (tenantUserExists) {
         return new Response(
-          JSON.stringify({ 
+          JSON.stringify({
             error: "This email is registered as a staff account",
             message: `This email is registered as a staff account. Please use the staff login at /${tenant.slug}/admin/login instead.`
           }),
@@ -179,7 +179,7 @@ serve(async (req) => {
         const age = today.getFullYear() - birthDate.getFullYear();
         const monthDiff = today.getMonth() - birthDate.getMonth();
         const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
-        
+
         const minimumAge = tenant.minimum_age || 21;
         if (actualAge < minimumAge) {
           return new Response(
@@ -334,9 +334,9 @@ serve(async (req) => {
       const validationResult = loginSchema.safeParse(requestBody);
       if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ 
-            error: "Validation failed", 
-            details: validationResult.error.errors 
+          JSON.stringify({
+            error: "Validation failed",
+            details: validationResult.error.errors
           }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -387,7 +387,7 @@ serve(async (req) => {
       // Check email verification
       if (!customerUser.email_verified) {
         return new Response(
-          JSON.stringify({ 
+          JSON.stringify({
             error: "Email not verified",
             requires_verification: true,
             customer_user_id: customerUser.id,
@@ -561,14 +561,14 @@ serve(async (req) => {
       }
 
       const rawBody = await req.json();
-      
+
       // Validate input with Zod
       const validationResult = updatePasswordSchema.safeParse(rawBody);
       if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ 
-            error: "Validation failed", 
-            details: validationResult.error.errors 
+          JSON.stringify({
+            error: "Validation failed",
+            details: validationResult.error.errors
           }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
