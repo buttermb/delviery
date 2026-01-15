@@ -44,6 +44,7 @@ import { DeleteStoreDialog } from '@/components/admin/storefront/DeleteStoreDial
 import { CreateStoreDialog } from '@/components/admin/storefront/CreateStoreDialog';
 import { StoreSelector } from '@/components/admin/storefront/StoreSelector';
 import { StoreListView } from '@/components/admin/storefront/StoreListView';
+import { SmartOnboardingWidget } from '@/components/admin/storefront/SmartOnboardingWidget';
 
 interface MarketplaceStore {
   id: string;
@@ -519,69 +520,73 @@ export default function StorefrontDashboard() {
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-2xl font-bold">{formatCurrency(activeStore?.total_revenue || 0)}</p>
+      {/* Smart Onboarding Widget or Quick Stats */}
+      {productStats && productStats.total === 0 ? (
+        <SmartOnboardingWidget productCount={0} className="mb-2" />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Revenue</p>
+                  <p className="text-2xl font-bold">{formatCurrency(activeStore?.total_revenue || 0)}</p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <DollarSign className="w-6 h-6 text-green-500" />
+                </div>
               </div>
-              <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-green-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Orders</p>
-                <p className="text-2xl font-bold">{activeStore?.total_orders || 0}</p>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Orders</p>
+                  <p className="text-2xl font-bold">{activeStore?.total_orders || 0}</p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <ShoppingCart className="w-6 h-6 text-blue-500" />
+                </div>
               </div>
-              <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6 text-blue-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Customers</p>
-                <p className="text-2xl font-bold">{activeStore?.total_customers || 0}</p>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Customers</p>
+                  <p className="text-2xl font-bold">{activeStore?.total_customers || 0}</p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-purple-500" />
+                </div>
               </div>
-              <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center">
-                <Users className="w-6 h-6 text-purple-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Products Listed</p>
-                <p className="text-2xl font-bold">
-                  {productStats?.visible || 0}
-                  <span className="text-sm text-muted-foreground font-normal">
-                    /{productStats?.total || 0}
-                  </span>
-                </p>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Products Listed</p>
+                  <p className="text-2xl font-bold">
+                    {productStats?.visible || 0}
+                    <span className="text-sm text-muted-foreground font-normal">
+                      /{productStats?.total || 0}
+                    </span>
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center">
+                  <Package className="w-6 h-6 text-orange-500" />
+                </div>
               </div>
-              <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center">
-                <Package className="w-6 h-6 text-orange-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Sales Funnel Analytics */}
       {activeStoreId && (
