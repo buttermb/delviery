@@ -70,6 +70,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Skeleton } from "@/components/ui/skeleton";
 import CopyButton from "@/components/CopyButton";
 import { ExportButton } from "@/components/ui/ExportButton";
+import { InlineEditableCell } from "@/components/admin/products/InlineEditableCell";
 
 type Product = Database['public']['Tables']['products']['Row'];
 type ProductUpdate = Database['public']['Tables']['products']['Update'];
@@ -580,6 +581,35 @@ export default function ProductManagement() {
     }
   };
 
+  // Inline quick edit handler
+  const handleInlineUpdate = async (productId: string, field: keyof Product, value: string) => {
+    if (!tenant?.id) return;
+
+    let updateValue: number | string | null = value;
+    if (field === 'wholesale_price' || field === 'retail_price' || field === 'available_quantity') {
+      updateValue = value ? parseFloat(value) : null;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ [field]: updateValue } as Record<string, unknown>)
+        .eq('id', productId)
+        .eq('tenant_id', tenant.id);
+
+      if (error) throw error;
+
+      setProducts((prev) =>
+        prev.map((p) => (p.id === productId ? { ...p, [field]: updateValue } : p))
+      );
+      toast.success('Updated!');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Update failed';
+      toast.error(errorMessage);
+      throw err;
+    }
+  };
+
 
   // --- Table Columns Definition ---
   const columns: ResponsiveColumn<Product>[] = [
@@ -616,7 +646,12 @@ export default function ProductManagement() {
       accessorKey: "name",
       cell: (product) => (
         <div className="flex flex-col">
-          <span className="font-medium text-foreground">{product.name}</span>
+          <InlineEditableCell
+            value={product.name}
+            onSave={(v) => handleInlineUpdate(product.id, 'name', v)}
+            type="text"
+            className="font-medium text-foreground"
+          />
           {product.sku && (
             <span className="text-xs text-muted-foreground flex items-center gap-1">
               SKU: {product.sku}
@@ -640,19 +675,31 @@ export default function ProductManagement() {
       accessorKey: "wholesale_price",
       className: "text-right",
       cell: (product) => (
-        <div className="font-mono font-medium">
-          {product.wholesale_price ? `$${product.wholesale_price}` : '-'}
-        </div>
+        <InlineEditableCell
+          value={product.wholesale_price}
+          onSave={(v) => handleInlineUpdate(product.id, 'wholesale_price', v)}
+          type="currency"
+          displayValue={product.wholesale_price ? `$${product.wholesale_price}` : undefined}
+          className="font-mono font-medium justify-end"
+        />
       )
     },
     {
       header: "Stock",
       accessorKey: "available_quantity",
       cell: (product) => (
-        <InventoryStatusBadge
-          quantity={product.available_quantity || 0}
-          lowStockThreshold={product.low_stock_alert || 10}
-        />
+        <div className="flex items-center gap-2">
+          <InlineEditableCell
+            value={product.available_quantity}
+            onSave={(v) => handleInlineUpdate(product.id, 'available_quantity', v)}
+            type="number"
+            className="w-12"
+          />
+          <InventoryStatusBadge
+            quantity={product.available_quantity || 0}
+            lowStockThreshold={product.low_stock_alert || 10}
+          />
+        </div>
       )
     },
     {
