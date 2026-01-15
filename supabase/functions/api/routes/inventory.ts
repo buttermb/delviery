@@ -1,4 +1,4 @@
-// @ts-nocheck
+// Edge Function: Inventory Route Handlers (Security Hardened)
 /**
  * Inventory Route Handlers
  * 
@@ -93,7 +93,7 @@ async function listProducts(req: Request, params: Record<string, string>): Promi
   try {
     const { supabase, tenantId } = await getAuthContext(req);
     const url = new URL(req.url);
-    
+
     const category = url.searchParams.get('category');
     const search = url.searchParams.get('search');
     const inStock = url.searchParams.get('in_stock');
@@ -127,9 +127,9 @@ async function listProducts(req: Request, params: Record<string, string>): Promi
       return errorResponse(error.message);
     }
 
-    return jsonResponse({ 
-      data, 
-      pagination: { total: count, limit, offset } 
+    return jsonResponse({
+      data,
+      pagination: { total: count, limit, offset }
     });
   } catch (error) {
     return errorResponse(error instanceof Error ? error.message : 'Unknown error', 401);
@@ -260,7 +260,7 @@ async function updateProduct(req: Request, params: Record<string, string>): Prom
   }
 }
 
-// Adjust stock
+// Adjust stock - ATOMIC with row locking
 async function adjustStock(req: Request, params: Record<string, string>): Promise<Response> {
   try {
     const { supabase, tenantId, userId } = await getAuthContext(req);
@@ -275,50 +275,24 @@ async function adjustStock(req: Request, params: Record<string, string>): Promis
 
     const input = validation.data;
 
-    // Get current stock
-    const { data: product } = await supabase
-      .from('products')
-      .select('stock_quantity, name')
-      .eq('id', productId)
-      .eq('tenant_id', tenantId)
-      .single();
-
-    if (!product) {
-      return errorResponse('Product not found', 404);
-    }
-
-    const newQuantity = product.stock_quantity + input.quantity_change;
-    if (newQuantity < 0) {
-      return errorResponse('Insufficient stock');
-    }
-
-    // Update stock
-    const { data, error } = await supabase
-      .from('products')
-      .update({ stock_quantity: newQuantity })
-      .eq('id', productId)
-      .eq('tenant_id', tenantId)
-      .select()
-      .single();
+    // Use atomic RPC to prevent race conditions
+    const { data: result, error } = await supabase.rpc('atomic_adjust_stock', {
+      p_product_id: productId,
+      p_tenant_id: tenantId,
+      p_quantity_change: input.quantity_change,
+      p_movement_type: input.movement_type,
+      p_reason: input.reason || null,
+      p_reference_id: input.reference_id || null,
+      p_performed_by: userId
+    });
 
     if (error) {
       return errorResponse(error.message);
     }
 
-    // Log stock movement (if stock_movements table exists)
-    try {
-      await supabase.from('stock_movements').insert({
-        tenant_id: tenantId,
-        product_id: productId,
-        movement_type: input.movement_type,
-        quantity_change: input.quantity_change,
-        reference_type: input.reference_type,
-        reference_id: input.reference_id,
-        notes: input.reason,
-        performed_by: userId,
-      });
-    } catch {
-      // Table might not exist yet - that's ok
+    if (!result?.success) {
+      return errorResponse(result?.error || 'Stock adjustment failed',
+        result?.error === 'Insufficient stock' ? 409 : 400);
     }
 
     // Log audit event
@@ -330,19 +304,19 @@ async function adjustStock(req: Request, params: Record<string, string>): Promis
       p_actor_id: userId,
       p_target_type: 'product',
       p_target_id: productId,
-      p_details: { 
-        previous_quantity: product.stock_quantity,
+      p_details: {
+        previous_quantity: result.previous_quantity,
         change: input.quantity_change,
-        new_quantity: newQuantity,
+        new_quantity: result.new_quantity,
         movement_type: input.movement_type,
         reason: input.reason,
       },
     });
 
-    return jsonResponse({ 
-      data,
-      previous_quantity: product.stock_quantity,
-      new_quantity: newQuantity,
+    return jsonResponse({
+      data: { id: productId, stock_quantity: result.new_quantity },
+      previous_quantity: result.previous_quantity,
+      new_quantity: result.new_quantity,
     });
   } catch (error) {
     return errorResponse(error instanceof Error ? error.message : 'Unknown error', 401);
@@ -379,7 +353,7 @@ async function getLowStockAlerts(req: Request, params: Record<string, string>): 
       p => p.stock_quantity <= (p.low_stock_threshold || 0)
     );
 
-    return jsonResponse({ 
+    return jsonResponse({
       data: alerts,
       count: alerts.length,
     });
