@@ -64,8 +64,8 @@ export default function MarketingHome() {
       <div className="min-h-screen bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] font-sans overflow-x-hidden">
 
         <SEOHead
-          title="FloraIQ - Modern Operating System for Cannabis Distribution"
-          description="Start for free with 500 credits/month. Secure disposable menus, real-time inventory, and automated logistics. No credit card required."
+          title="FloraIQ - Secure Disposable Menus for Cannabis Operators"
+          description="Create encrypted, disposable menus in 30 seconds. Auto-burn on screenshot, device fingerprinting, OPSEC-grade security. No demo required."
           structuredData={{
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
@@ -73,7 +73,7 @@ export default function MarketingHome() {
             "applicationCategory": "BusinessApplication",
             "offers": {
               "@type": "Offer",
-              "price": "99",
+              "price": "0",
               "priceCurrency": "USD"
             }
           }}
@@ -372,15 +372,15 @@ export default function MarketingHome() {
 
         {/* SECTION 10: FINAL CTA */}
         <CTASection
-          title="Ready to Transform Your Cannabis Distribution?"
-          description="Start for free today. No credit card required."
+          title="Ready to Create Your First Secure Menu?"
+          description="Live in 60 seconds. No demo. No contract."
           primaryCta={{
-            text: "Start Free Trial",
-            link: "/signup?plan=free",
+            text: "Create Menu Free",
+            link: "/signup?plan=free&flow=menu",
           }}
           secondaryCta={{
-            text: "View Pricing",
-            link: "/pricing",
+            text: "Watch Demo",
+            link: "/demo",
           }}
           variant="default"
         />

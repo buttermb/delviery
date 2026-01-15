@@ -22,54 +22,57 @@ export function ModernHero() {
         {/* Centered Hero Content */}
         <div className="max-w-5xl mx-auto text-center mb-10 md:mb-16">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-white border border-[hsl(var(--marketing-border))] shadow-sm mb-6 md:mb-8 animate-fade-in text-xs md:text-sm font-semibold text-[hsl(var(--marketing-primary))]">
-            <span className="w-2 h-2 rounded-full bg-[hsl(var(--marketing-accent))]"></span>
-            The #1 Platform for Cannabis Distribution
+          <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-emerald-50 border border-emerald-200 shadow-sm mb-6 md:mb-8 animate-fade-in text-xs md:text-sm font-semibold text-emerald-700">
+            <ShieldCheck className="w-4 h-4" />
+            OPSEC-Grade Security • No Demo Required
           </div>
 
           {/* Headline - Responsive sizing */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[5rem] font-bold tracking-tight mb-6 md:mb-8 text-[hsl(var(--marketing-text))] leading-[1.1] max-w-4xl mx-auto">
-            Simplify your <br className="hidden sm:block" />
+            Create a Secure Menu <br className="hidden sm:block" />
             <span className="relative inline-block">
-              cannabis operations
-              {/* Gold underline accent */}
-              <svg className="absolute w-full h-2 md:h-3 -bottom-1 left-0 text-[hsl(var(--marketing-accent))]" viewBox="0 0 100 10" preserveAspectRatio="none">
-                <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" opacity="0.3" />
+              in 30 Seconds
+              {/* Emerald underline accent */}
+              <svg className="absolute w-full h-2 md:h-3 -bottom-1 left-0 text-emerald-500" viewBox="0 0 100 10" preserveAspectRatio="none">
+                <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" opacity="0.4" />
               </svg>
             </span>
           </h1>
 
           {/* Subheadline */}
-          <p className="text-lg md:text-xl lg:text-2xl text-[hsl(var(--marketing-text-light))] mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed px-4 md:px-0">
-            Manage inventory, compliance, and delivery logistics from a single, secure operating system.
+          <p className="text-lg md:text-xl lg:text-2xl text-[hsl(var(--marketing-text-light))] mb-4 max-w-2xl mx-auto leading-relaxed px-4 md:px-0">
+            Encrypted URLs • Auto-Burn on Screenshot • Device Fingerprinting
+          </p>
+          <p className="text-base md:text-lg text-[hsl(var(--marketing-text-light))]/70 mb-8 md:mb-10 max-w-xl mx-auto">
+            The only menu system built for operators who need to disappear.
           </p>
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center mb-10 md:mb-16 px-4 md:px-0">
-            <Link to="/demo" className="w-full sm:w-auto">
+            <Link to="/signup?plan=free&flow=menu" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full sm:w-auto h-14 md:h-16 px-8 md:px-10 text-base md:text-lg font-bold bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+                className="w-full sm:w-auto h-14 md:h-16 px-8 md:px-10 text-base md:text-lg font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
               >
-                Book a Demo
+                Create Menu Free
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
 
-            <Link to="/signup?plan=free" className="w-full sm:w-auto">
+            <Link to="/demo" className="w-full sm:w-auto">
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto h-14 md:h-16 px-8 md:px-10 text-base md:text-lg font-bold border-2 border-[hsl(var(--marketing-border))] text-[hsl(var(--marketing-text))] hover:bg-white hover:border-[hsl(var(--marketing-primary))] rounded-lg transition-all duration-300"
+                className="w-full sm:w-auto h-14 md:h-16 px-8 md:px-10 text-base md:text-lg font-bold border-2 border-[hsl(var(--marketing-border))] text-[hsl(var(--marketing-text))] hover:bg-white hover:border-emerald-500 rounded-lg transition-all duration-300"
               >
-                Start Free Trial
+                Watch Demo
               </Button>
             </Link>
           </div>
 
           {/* Trust Indicators */}
           <p className="text-xs md:text-sm font-semibold text-[hsl(var(--marketing-text-light))] uppercase tracking-widest mb-4">
-            Trusted by active distributors
+            170+ features • No sales call • Live in 60 seconds
           </p>
         </div>
 
