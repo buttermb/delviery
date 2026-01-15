@@ -1,6 +1,7 @@
 // Marketplace tables not in generated types yet
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { MarketplaceStore } from '@/types/marketplace-extended';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,6 +32,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { ThemePresetStrip } from '@/components/admin/storefront/ThemePresetSelector';
+import { THEME_PRESETS, applyThemeToConfig, type ThemePreset } from '@/lib/storefrontThemes';
+import { logger } from '@/lib/logger';
 
 // Define available section types
 const SECTION_TYPES = {
@@ -163,6 +167,23 @@ export default function StorefrontBuilder() {
     const { tenant } = useTenantAdminAuth();
     const { toast } = useToast();
     const queryClient = useQueryClient();
+    const [searchParams] = useSearchParams();
+
+    // URL params for menu → storefront conversion
+    const fromMenuId = searchParams.get('from_menu');
+    const menuName = searchParams.get('menu_name');
+
+    // Log if this is a menu → storefront conversion
+    useEffect(() => {
+        if (fromMenuId) {
+            logger.info('StorefrontBuilder opened from menu', { menuId: fromMenuId, menuName });
+            toast({
+                title: 'Creating Storefront from Menu',
+                description: `Starting with products from "${menuName || 'your menu'}"`,
+            });
+        }
+    }, [fromMenuId, menuName, toast]);
+
     const [activeTab, setActiveTab] = useState('sections');
     const [devicePreview, setDevicePreview] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
     const [rightPanelOpen, setRightPanelOpen] = useState(true);
@@ -170,11 +191,23 @@ export default function StorefrontBuilder() {
 
     // Builder State
     const [layoutConfig, setLayoutConfig] = useState<SectionConfig[]>([]);
-    const [themeConfig, setThemeConfig] = useState<any>({
+    const [themeConfig, setThemeConfig] = useState<Record<string, unknown>>({
         colors: { primary: '#000000', secondary: '#ffffff', accent: '#3b82f6', background: '#ffffff', text: '#000000' },
         typography: { fontFamily: 'Inter' }
     });
+    const [selectedThemeId, setSelectedThemeId] = useState<string | undefined>(undefined);
     const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+
+    // Handle theme selection
+    const handleThemeSelect = useCallback((theme: ThemePreset) => {
+        logger.debug('Applying theme preset', { themeId: theme.id });
+        setSelectedThemeId(theme.id);
+        setThemeConfig(prevConfig => applyThemeToConfig(prevConfig, theme));
+        toast({
+            title: 'Theme Applied',
+            description: `${theme.name} theme has been applied to your storefront`,
+        });
+    }, [toast]);
 
     // History for undo/redo
     const [history, setHistory] = useState<SectionConfig[][]>([]);
