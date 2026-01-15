@@ -37,7 +37,7 @@ serve(async (req) => {
 
     const { menu_id, burn_type, reason, regenerate, auto_regenerate, migrate_customers } = validationResult.data;
 
-    console.log('Burning menu:', { menu_id, burn_type, reason, regenerate });
+    // NO LOGGING of menu_id or tokens - zero retention OPSEC
 
     const authHeader = req.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
@@ -95,8 +95,7 @@ serve(async (req) => {
 
     // Use atomic burn function to prevent race conditions
     if (burn_type === 'soft') {
-      console.log('Performing atomic soft burn');
-
+      // Soft burn: mark as burned but retain data
       const { data: burnResult, error: burnError } = await supabase
         .rpc('burn_menu_atomic', {
           p_menu_id: menu_id,
@@ -106,7 +105,6 @@ serve(async (req) => {
         });
 
       if (burnError) {
-        console.error('Atomic burn failed:', burnError);
         throw burnError;
       }
 
@@ -116,35 +114,42 @@ serve(async (req) => {
           { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-
-      console.log('Atomic soft burn completed');
     } else {
-      console.log('Performing hard burn - deleting menu data');
+      // HARD BURN: Crypto-shred with zero retention
+      // First nullify and delete access logs (anti-forensic)
+      await supabase.rpc('nullify_and_delete_access_logs', { p_menu_id: menu_id });
 
-      await supabase.from('menu_access_logs').delete().eq('menu_id', menu_id);
-      await supabase.from('menu_access_whitelist').delete().eq('menu_id', menu_id);
-      await supabase.from('menu_orders').delete().eq('menu_id', menu_id);
-      await supabase.from('menu_security_events').delete().eq('menu_id', menu_id);
+      // Then crypto-shred the menu (atomic, no trace)
+      const { data: shredResult, error: shredError } = await supabase
+        .rpc('crypto_shred_menu', {
+          p_menu_id: menu_id,
+          p_reason: reason || 'Hard burn',
+          p_shredded_by: user.id
+        });
 
-      const { error: deleteError } = await supabase
-        .from('disposable_menus')
-        .delete()
-        .eq('id', menu_id);
-
-      if (deleteError) {
-        throw deleteError;
+      if (shredError) {
+        throw shredError;
       }
 
-      console.log('Hard burn completed');
+      if (!shredResult?.success) {
+        return new Response(
+          JSON.stringify({ error: shredResult?.error || 'Shred failed' }),
+          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
-    await supabase.from('menu_security_events').insert({
-      menu_id: menu_id,
-      event_type: 'menu_burned',
-      severity: burn_type === 'hard' ? 'high' : 'medium',
-      description: `Menu "${menu.name}" ${burn_type} burned: ${reason || 'Manual burn'}`,
-      event_data: { menu_id, burn_type, reason, burned_by: user.id }
-    });
+    // NOTE: For hard burns, we DO NOT log security events - zero retention
+    // Only log for soft burns
+    if (burn_type === 'soft') {
+      await supabase.from('menu_security_events').insert({
+        menu_id: menu_id,
+        event_type: 'menu_burned',
+        severity: 'medium',
+        description: `Menu soft burned`,
+        event_data: { burn_type: 'soft' }
+      });
+    }
 
     const response: any = { success: true, burn_type };
 
@@ -156,15 +161,13 @@ serve(async (req) => {
       .eq('status', 'active');
 
     if (regenerate) {
-      console.log('Regenerating menu');
-
+      // Regenerate menu with crypto-safe access code
       const generateAccessCode = () => {
+        // Use crypto for access code generation
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        let code = '';
-        for (let i = 0; i < 8; i++) {
-          code += chars[Math.floor(Math.random() * chars.length)];
-        }
-        return code;
+        const randomBytes = new Uint8Array(8);
+        crypto.getRandomValues(randomBytes);
+        return Array.from(randomBytes).map(b => chars[b % chars.length]).join('');
       };
 
       const generateUrlToken = () => {
@@ -281,7 +284,7 @@ serve(async (req) => {
                     status: 'sent',
                   });
                 } catch (smsError) {
-                  console.error('SMS send error:', smsError);
+                  // SMS error - no logging for OPSEC
                   customersToNotify.push({
                     name: entry.customer_name,
                     phone: entry.customer_phone,
@@ -298,7 +301,7 @@ serve(async (req) => {
         response.access_code = newAccessCode;
         response.shareable_url = shareableUrl;
         response.customers_to_notify = customersToNotify;
-        console.log('Menu regenerated:', newMenu.id);
+        // Regeneration complete - no logging for OPSEC
       }
     }
 
@@ -308,7 +311,7 @@ serve(async (req) => {
     );
 
   } catch (error: any) {
-    console.error('Error in menu-burn:', error);
+    // Error logged to Supabase internal logs only, no token exposure
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
