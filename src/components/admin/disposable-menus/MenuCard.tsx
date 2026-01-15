@@ -1,10 +1,10 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Eye, Users, ShoppingCart, Flame, Copy, ExternalLink, 
-  Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus, 
-  MoreHorizontal, MessageSquare, DollarSign, CreditCard
+import {
+  Eye, Users, ShoppingCart, Flame, Copy, ExternalLink,
+  Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus,
+  MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store
 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -285,8 +285,22 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                   </DropdownMenuItem>
                   {isActive && (
                     <>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          // Navigate to StorefrontBuilder with menu pre-loaded
+                          const params = new URLSearchParams({
+                            from_menu: menu.id,
+                            menu_name: menu.name || 'My Storefront',
+                          });
+                          window.location.href = `/admin/storefront/builder?${params.toString()}`;
+                        }}
+                        className="text-violet-600 focus:text-violet-700 focus:bg-violet-50"
+                      >
+                        <Store className="h-4 w-4 mr-2" />
+                        Turn Into Storefront
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={() => setBurnDialogOpen(true)}
                         className="text-destructive focus:text-destructive"
                       >
@@ -318,12 +332,12 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
       </Card>
 
       {/* Dialogs */}
-      <BurnMenuDialog 
+      <BurnMenuDialog
         menu={menu}
         open={burnDialogOpen}
         onOpenChange={setBurnDialogOpen}
       />
-      
+
       <ManageAccessDialog
         menu={menu}
         open={manageAccessOpen}
