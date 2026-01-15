@@ -1,4 +1,4 @@
-// @ts-nocheck - Type checking suppressed due to Supabase client type issues
+// Edge Function: wholesale-order-create (Security Hardened)
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { validateWholesaleOrderCreate } from './validation.ts';
 import { withCreditGate, CREDIT_ACTIONS } from '../_shared/creditGate.ts';
@@ -10,117 +10,117 @@ serve(async (req) => {
 
   // Wrap with credit gating for free tier users
   return withCreditGate(req, CREDIT_ACTIONS.CREATE_ORDER, async (creditTenantId, serviceClient) => {
-  try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-    );
+    try {
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      );
 
-    const rawBody = await req.json();
-    const { 
-      client_id, 
-      items, 
-      delivery_address, 
-      delivery_notes,
-      idempotency_key,
-      tenant_id 
-    } = validateWholesaleOrderCreate(rawBody);
+      const rawBody = await req.json();
+      const {
+        client_id,
+        items,
+        delivery_address,
+        delivery_notes,
+        idempotency_key,
+        tenant_id
+      } = validateWholesaleOrderCreate(rawBody);
 
-    // Get tenant_id from auth context if not provided
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    let resolvedTenantId = tenant_id;
-    
-    if (!resolvedTenantId && user) {
-      const { data: tenantUser } = await supabaseClient
-        .from('tenant_users')
-        .select('tenant_id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      resolvedTenantId = tenantUser?.tenant_id;
-    }
+      // Get tenant_id from auth context if not provided
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      let resolvedTenantId = tenant_id;
 
-    if (!resolvedTenantId) {
+      if (!resolvedTenantId && user) {
+        const { data: tenantUser } = await supabaseClient
+          .from('tenant_users')
+          .select('tenant_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        resolvedTenantId = tenantUser?.tenant_id;
+      }
+
+      if (!resolvedTenantId) {
+        return new Response(
+          JSON.stringify({ error: 'Tenant ID required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Try atomic RPC first (preferred - single transaction, prevents race conditions)
+      const { data: rpcResult, error: rpcError } = await supabaseClient.rpc('create_wholesale_order_atomic', {
+        p_tenant_id: resolvedTenantId,
+        p_client_id: client_id,
+        p_items: items.map((item: { inventory_id: string; quantity_lbs: number; price_per_lb?: number }) => ({
+          inventory_id: item.inventory_id,
+          quantity_lbs: item.quantity_lbs,
+          price_per_lb: item.price_per_lb || null
+        })),
+        p_delivery_address: delivery_address || null,
+        p_delivery_notes: delivery_notes || null,
+        p_payment_method: 'credit',
+        p_idempotency_key: idempotency_key || null
+      });
+
+      if (rpcError) {
+        // If RPC doesn't exist, fall back to legacy method
+        if (rpcError.code === 'PGRST202' || rpcError.message?.includes('does not exist')) {
+          console.log('[WHOLESALE_ORDER] Atomic RPC not available, using legacy method');
+          return await handleLegacyOrderCreate(supabaseClient, client_id, items, delivery_address, delivery_notes);
+        }
+
+        // Handle specific business errors from RPC
+        if (rpcError.message?.includes('Credit limit exceeded')) {
+          return new Response(
+            JSON.stringify({ error: rpcError.message }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        if (rpcError.message?.includes('Insufficient inventory')) {
+          return new Response(
+            JSON.stringify({ error: rpcError.message }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        if (rpcError.message?.includes('Client not found')) {
+          return new Response(
+            JSON.stringify({ error: 'Client not found' }),
+            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        throw rpcError;
+      }
+
+      // RPC succeeded
+      const result = rpcResult as {
+        success: boolean;
+        order_id: string;
+        order_number: string;
+        total_amount: number;
+        new_client_balance: number;
+        idempotent?: boolean;
+      };
+
       return new Response(
-        JSON.stringify({ error: 'Tenant ID required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({
+          success: true,
+          order_id: result.order_id,
+          order_number: result.order_number,
+          total_amount: result.total_amount,
+          new_client_balance: result.new_client_balance,
+          idempotent: result.idempotent || false
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+
+    } catch (error) {
+      console.error('[WHOLESALE_ORDER] Error:', error);
+      return new Response(
+        JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    // Try atomic RPC first (preferred - single transaction, prevents race conditions)
-    const { data: rpcResult, error: rpcError } = await supabaseClient.rpc('create_wholesale_order_atomic', {
-      p_tenant_id: resolvedTenantId,
-      p_client_id: client_id,
-      p_items: items.map((item: { inventory_id: string; quantity_lbs: number; price_per_lb?: number }) => ({
-        inventory_id: item.inventory_id,
-        quantity_lbs: item.quantity_lbs,
-        price_per_lb: item.price_per_lb || null
-      })),
-      p_delivery_address: delivery_address || null,
-      p_delivery_notes: delivery_notes || null,
-      p_payment_method: 'credit',
-      p_idempotency_key: idempotency_key || null
-    });
-
-    if (rpcError) {
-      // If RPC doesn't exist, fall back to legacy method
-      if (rpcError.code === 'PGRST202' || rpcError.message?.includes('does not exist')) {
-        console.log('[WHOLESALE_ORDER] Atomic RPC not available, using legacy method');
-        return await handleLegacyOrderCreate(supabaseClient, client_id, items, delivery_address, delivery_notes);
-      }
-      
-      // Handle specific business errors from RPC
-      if (rpcError.message?.includes('Credit limit exceeded')) {
-        return new Response(
-          JSON.stringify({ error: rpcError.message }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      if (rpcError.message?.includes('Insufficient inventory')) {
-        return new Response(
-          JSON.stringify({ error: rpcError.message }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      if (rpcError.message?.includes('Client not found')) {
-        return new Response(
-          JSON.stringify({ error: 'Client not found' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      throw rpcError;
-    }
-
-    // RPC succeeded
-    const result = rpcResult as { 
-      success: boolean; 
-      order_id: string; 
-      order_number: string; 
-      total_amount: number;
-      new_client_balance: number;
-      idempotent?: boolean;
-    };
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        order_id: result.order_id,
-        order_number: result.order_number,
-        total_amount: result.total_amount,
-        new_client_balance: result.new_client_balance,
-        idempotent: result.idempotent || false
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
-  } catch (error) {
-    console.error('[WHOLESALE_ORDER] Error:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
   }); // End of withCreditGate
 });
 
@@ -180,7 +180,7 @@ async function handleLegacyOrderCreate(
   const newBalance = (client.outstanding_balance || 0) + totalAmount;
   if (newBalance > (client.credit_limit || 0)) {
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Credit limit exceeded',
         available_credit: (client.credit_limit || 0) - (client.outstanding_balance || 0),
         order_total: totalAmount
@@ -240,8 +240,8 @@ async function handleLegacyOrderCreate(
   }
 
   return new Response(
-    JSON.stringify({ 
-      success: true, 
+    JSON.stringify({
+      success: true,
       order_id: order.id,
       order_number: order.order_number,
       total_amount: totalAmount,
