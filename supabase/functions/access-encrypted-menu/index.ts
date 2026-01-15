@@ -1,4 +1,4 @@
-// @ts-nocheck
+// Edge Function: access-encrypted-menu (Security Hardened)
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { withZenProtection } from '../_shared/zen-firewall.ts';
 
@@ -68,7 +68,7 @@ serve(withZenProtection(async (req) => {
       await supabase.from('menu_access_logs').insert({
         ip_address: req.headers.get('x-forwarded-for') || 'unknown',
         user_agent: req.headers.get('user-agent') || 'unknown',
-        access_code_correct: false,
+        action: 'failed_menu_lookup',
       });
 
       return new Response(
@@ -77,22 +77,77 @@ serve(withZenProtection(async (req) => {
       );
     }
 
-    // Verify access code
-    if (menu.access_code_hash !== providedHash) {
+    // SECURITY: Rate limiting - check failed attempts in last 15 minutes
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    const { count: failedAttempts } = await supabase
+      .from('menu_access_logs')
+      .select('*', { count: 'exact', head: true })
+      .eq('ip_address', ip)
+      .eq('action', 'failed_access_code')
+      .gte('accessed_at', new Date(Date.now() - 15 * 60 * 1000).toISOString());
+
+    if (failedAttempts && failedAttempts > 5) {
+      await supabase.from('menu_security_events').insert({
+        menu_id: menu.id,
+        event_type: 'rate_limit_exceeded',
+        severity: 'high',
+        event_data: { ip, failed_attempts: failedAttempts },
+      });
+
+      return new Response(
+        JSON.stringify({ error: 'Too many failed attempts. Try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // SECURITY: Device ban check
+    if (accessData.device_fingerprint) {
+      const { data: bannedDevice } = await supabase
+        .from('banned_devices')
+        .select('id')
+        .eq('fingerprint', accessData.device_fingerprint)
+        .maybeSingle();
+
+      if (bannedDevice) {
+        await supabase.from('menu_security_events').insert({
+          menu_id: menu.id,
+          event_type: 'banned_device_access',
+          severity: 'critical',
+          event_data: { fingerprint: accessData.device_fingerprint },
+        });
+
+        return new Response(
+          JSON.stringify({ error: 'Device access revoked' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // SECURITY: Timing-safe access code comparison
+    // Compare hash lengths first (constant time for equal lengths)
+    const storedHash = menu.access_code_hash || '';
+    let codeMatch = storedHash.length === providedHash.length;
+
+    // Constant-time comparison to prevent timing attacks
+    for (let i = 0; i < storedHash.length && i < providedHash.length; i++) {
+      codeMatch = codeMatch && (storedHash.charCodeAt(i) === providedHash.charCodeAt(i));
+    }
+
+    if (!codeMatch) {
       // Log failed access attempt
       await supabase.from('menu_access_logs').insert({
         menu_id: menu.id,
         ip_address: req.headers.get('x-forwarded-for') || 'unknown',
         user_agent: req.headers.get('user-agent') || 'unknown',
         device_fingerprint: accessData.device_fingerprint,
-        access_code_correct: false,
+        action: 'failed_access_code',
       });
 
       await supabase.from('menu_security_events').insert({
         menu_id: menu.id,
         event_type: 'failed_access_code',
         severity: 'medium',
-        details: { attempted_at: new Date().toISOString() },
+        event_data: { attempted_at: new Date().toISOString() },
       });
 
       return new Response(
@@ -126,13 +181,28 @@ serve(withZenProtection(async (req) => {
       }
     }
 
-    // Verify geofencing if required
-    const securitySettings = menu.security_settings as Record<string, any>;
-    if (securitySettings?.require_geofence && accessData.geolocation) {
+    // SECURITY: Verify geofencing if required
+    const securitySettings = menu.security_settings as Record<string, unknown>;
+    if (securitySettings?.require_geofence) {
+      // Geofence REQUIRED but location not provided
+      if (!accessData.geolocation) {
+        await supabase.from('menu_security_events').insert({
+          menu_id: menu.id,
+          event_type: 'geofence_location_denied',
+          severity: 'medium',
+          event_data: { reason: 'location_not_provided' },
+        });
+
+        return new Response(
+          JSON.stringify({ error: 'Location access required to view this menu' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       const { latitude, longitude } = accessData.geolocation;
-      const centerLat = securitySettings.geofence_lat;
-      const centerLng = securitySettings.geofence_lng;
-      const radiusKm = securitySettings.geofence_radius;
+      const centerLat = securitySettings.geofence_lat as number;
+      const centerLng = securitySettings.geofence_lng as number;
+      const radiusKm = securitySettings.geofence_radius as number;
 
       // Calculate distance using Haversine formula
       const R = 6371; // Earth's radius in km
@@ -150,7 +220,7 @@ serve(withZenProtection(async (req) => {
           menu_id: menu.id,
           event_type: 'geofence_violation',
           severity: 'high',
-          details: { distance_km: distance, allowed_radius_km: radiusKm },
+          event_data: { distance_km: distance, allowed_radius_km: radiusKm },
         });
 
         return new Response(
