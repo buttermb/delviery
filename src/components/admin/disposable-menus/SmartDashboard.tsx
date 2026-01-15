@@ -1,4 +1,5 @@
-import { useState, useMemo, Suspense, lazy } from 'react';
+import { useState, useMemo, Suspense, lazy, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Plus, Search, Settings, LayoutGrid, ShoppingBag, Eye, Users, DollarSign,
   RefreshCw, Filter, TrendingUp, Flame, Clock, Shield, ChevronRight,
@@ -493,15 +494,28 @@ function SetupTab() {
   );
 }
 
+// SmartDashboard Component
 export function SmartDashboard() {
   const { tenant } = useTenantAdminAuth();
-  const [wizardOpen, setWizardOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('menus');
-  const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'burned'>('all');
 
   const { data: menus = [], isLoading, refetch } = useDisposableMenus(tenant?.id);
   const { data: orders = [] } = useMenuOrders();
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [wizardOpen, setWizardOpen] = useState(false);
+
+  // Auto-open wizard if query param present
+  useEffect(() => {
+    if (searchParams.get('action') === 'create') {
+      setWizardOpen(true);
+      // Optional: clear param so it doesn't reopen on refresh, 
+      // but keeping it allows bookmarking "Create Menu" page.
+    }
+  }, [searchParams]);
 
   // Calculate quick stats
   const stats = useMemo(() => {
@@ -775,4 +789,4 @@ export function SmartDashboard() {
   );
 }
 
-export default SmartDashboard;
+

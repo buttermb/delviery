@@ -30,7 +30,11 @@ import {
   Globe,
   Percent,
   Trash2,
-  LayoutGrid
+  LayoutGrid,
+  FileText,
+  ClipboardList,
+  TrendingUp,
+  TrendingDown
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
@@ -589,57 +593,51 @@ export default function StorefrontDashboard() {
 
       {/* Quick Actions + Recent Orders */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
         {/* Quick Actions */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Quick Actions</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-4">
+            {/* New Order */}
             <Button
-              variant="outline"
-              className="w-full justify-start h-12"
-              onClick={() => setSearchParams({ tab: 'live' })}
+              className="w-full justify-start h-16 text-lg relative overflow-hidden group"
+              onClick={() => navigate(`/${tenantSlug}/admin/cash-register`)}
             >
-              <ShoppingCart className="w-5 h-5 mr-3 text-blue-500" />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent group-hover:opacity-100 opacity-0 transition-opacity" />
+              <ClipboardList className="w-6 h-6 mr-4 text-primary-foreground" />
               <div className="text-left">
-                <span className="font-medium">Live Orders</span>
-                <p className="text-xs text-muted-foreground">Manage incoming orders</p>
+                <span className="font-semibold block">New Order</span>
+                <p className="text-xs font-normal opacity-90">Quick order entry</p>
               </div>
             </Button>
+
+            {/* Create Menu */}
             <Button
               variant="outline"
-              className="w-full justify-start h-12"
-              onClick={() => setSearchParams({ tab: 'products' })}
+              className="w-full justify-start h-16 text-lg hover:border-primary/50 hover:bg-primary/5"
+              onClick={() => navigate(`/${tenantSlug}/admin/disposable-menus?action=create`)}
             >
-              <Package className="w-5 h-5 mr-3 text-orange-500" />
+              <FileText className="w-6 h-6 mr-4 text-violet-500" />
               <div className="text-left">
-                <span className="font-medium">Products</span>
-                <p className="text-xs text-muted-foreground">Add or edit listings</p>
+                <span className="font-semibold block">Create Menu</span>
+                <p className="text-xs text-muted-foreground font-normal">Launch disposable menu</p>
               </div>
             </Button>
+
+            {/* View Live Store */}
             <Button
               variant="outline"
-              className="w-full justify-start h-12"
-              onClick={() => setSearchParams({ tab: 'coupons' })}
+              className="w-full justify-start h-16 text-lg hover:border-blue-500/50 hover:bg-blue-500/5"
+              onClick={() => storeUrl && window.open(storeUrl, '_blank')}
+              disabled={!storeUrl}
             >
-              <Percent className="w-5 h-5 mr-3 text-purple-500" />
+              <ExternalLink className="w-6 h-6 mr-4 text-blue-500" />
               <div className="text-left">
-                <span className="font-medium">Promotions</span>
-                <p className="text-xs text-muted-foreground">Create deals & coupons</p>
+                <span className="font-semibold block">View Live Store</span>
+                <p className="text-xs text-muted-foreground font-normal">Open in new tab</p>
               </div>
-            </Button>
-            <Separator className="my-3" />
-            <Button
-              className="w-full"
-              onClick={() => {
-                if (storeUrl) {
-                  navigator.clipboard.writeText(storeUrl);
-                  toast({ title: 'Link copied!', description: 'Share this link with your customers.' });
-                }
-              }}
-            >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Copy Store Link
             </Button>
           </CardContent>
         </Card>
