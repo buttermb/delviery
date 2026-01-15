@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useMenuCart } from '@/contexts/MenuCartContext';
 import { toast } from '@/hooks/use-toast';
-import { ShoppingCart, Search, ZoomIn, Plus, Check } from 'lucide-react';
+import { ShoppingCart, Search, ZoomIn, Plus, Check, Clock } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface Product {
@@ -34,9 +34,10 @@ interface EnhancedMenuProductGridProps {
   products: Product[];
   menuId: string;
   whitelistEntryId?: string;
+  onQuickReserve?: (product: Product, weight?: string, price?: number) => void;
 }
 
-export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridProps) {
+export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMenuProductGridProps) {
   const { items, addItem } = useMenuCart();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -52,7 +53,7 @@ export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridPro
   const filteredProducts = products
     .filter(p => {
       const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           p.description?.toLowerCase().includes(searchQuery.toLowerCase());
+        p.description?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
       return matchesSearch && matchesCategory;
     })
@@ -62,7 +63,7 @@ export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridPro
     });
 
   const getCartQuantity = (productId: string, weight?: string) => {
-    return items.find(item => 
+    return items.find(item =>
       item.productId === productId && item.selectedWeight === weight
     )?.quantity || 0;
   };
@@ -70,11 +71,11 @@ export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridPro
   const addToCart = (product: Product) => {
     const prices = product.prices || {};
     const availableWeights = Object.keys(prices);
-    
+
     // Get selected weight or default to 3.5g
-    const selectedWeight = selectedWeights[product.id] || 
+    const selectedWeight = selectedWeights[product.id] ||
       (availableWeights.includes('3.5g') ? '3.5g' : availableWeights[0]);
-    
+
     const price = prices[selectedWeight] || product.price;
 
     addItem({
@@ -192,7 +193,7 @@ export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridPro
                       <ShoppingCart className="h-16 w-16 opacity-20" />
                     </div>
                   )}
-                  
+
                   {/* Category Badge */}
                   {product.category && (
                     <Badge className="absolute top-2 left-2 capitalize">
@@ -214,14 +215,13 @@ export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridPro
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
                       {product.strain_type && (
-                        <Badge 
-                          variant="outline" 
-                          className={`text-xs ${
-                            product.strain_type === 'Indica' ? 'border-purple-500 text-purple-500' :
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${product.strain_type === 'Indica' ? 'border-purple-500 text-purple-500' :
                             product.strain_type === 'Sativa' ? 'border-green-500 text-green-500' :
-                            product.strain_type === 'Hybrid' ? 'border-orange-500 text-orange-500' :
-                            'border-blue-500 text-blue-500'
-                          }`}
+                              product.strain_type === 'Hybrid' ? 'border-orange-500 text-orange-500' :
+                                'border-blue-500 text-blue-500'
+                            }`}
                         >
                           {product.strain_type}
                         </Badge>
@@ -232,7 +232,7 @@ export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridPro
                         {product.description}
                       </p>
                     )}
-                    
+
                     {/* THC/CBD Info */}
                     {(product.thc_percentage || product.cbd_percentage) && (
                       <div className="flex gap-2 mt-2">
@@ -248,7 +248,7 @@ export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridPro
                         )}
                       </div>
                     )}
-                    
+
                     {/* Effects */}
                     {product.effects && product.effects.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
@@ -267,7 +267,7 @@ export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridPro
                       <Label className="text-xs text-muted-foreground">Select Size:</Label>
                       <div className="grid grid-cols-4 gap-2">
                         {Object.entries(product.prices).map(([weight, price]) => {
-                          const isSelected = selectedWeights[product.id] === weight || 
+                          const isSelected = selectedWeights[product.id] === weight ||
                             (!selectedWeights[product.id] && weight === '3.5g');
                           return (
                             <Button
@@ -323,13 +323,31 @@ export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridPro
                         )}
                       </span>
                     </Button>
-                    <Button
-                      onClick={() => setSelectedProduct(product)}
-                      variant="outline"
-                      size="lg"
-                    >
-                      Details
-                    </Button>
+                    {onQuickReserve ? (
+                      <Button
+                        onClick={() => {
+                          const prices = product.prices || {};
+                          const weight = selectedWeights[product.id] ||
+                            (Object.keys(prices).includes('3.5g') ? '3.5g' : Object.keys(prices)[0]);
+                          const price = prices[weight] || product.price;
+                          onQuickReserve(product, weight, price);
+                        }}
+                        variant="secondary"
+                        size="lg"
+                        className="bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600"
+                      >
+                        <Clock className="h-4 w-4 mr-1" />
+                        Reserve
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => setSelectedProduct(product)}
+                        variant="outline"
+                        size="lg"
+                      >
+                        Details
+                      </Button>
+                    )}
                   </div>
                 </div>
               </Card>
