@@ -9,6 +9,7 @@ interface MenuTemplate {
   id: string;
   name: string;
   description: string;
+  tagline: string;
   icon: React.ComponentType<{ className?: string }>;
   expirationDays: number;
   burnAfterRead: boolean;
@@ -16,74 +17,116 @@ interface MenuTemplate {
   accessType: 'invite_only' | 'shared' | 'hybrid';
   requireAccessCode: boolean;
   color: string;
-  menuType?: 'product' | 'forum'; // New field to distinguish menu types
+  menuType?: 'product' | 'forum';
+  // OPSEC settings
+  security_settings: {
+    screenshot_protection_enabled: boolean;
+    watermark_enabled: boolean;
+    require_geofence: boolean;
+    device_fingerprinting: boolean;
+  };
 }
 
 const TEMPLATES: MenuTemplate[] = [
   {
-    id: 'weekly-special',
-    name: 'Weekly Special',
-    description: 'Perfect for weekly promotions and limited-time offers',
+    id: 'delivery-menu',
+    name: 'Delivery Menu',
+    description: 'Secure menu for delivery orders with burn protection',
+    tagline: '24hr burn • Screenshot protected',
     icon: Clock,
-    expirationDays: 7,
-    burnAfterRead: false,
+    expirationDays: 1,
+    burnAfterRead: true,
     maxViews: 'unlimited',
-    accessType: 'invite_only',
+    accessType: 'shared',
     requireAccessCode: true,
-    color: 'bg-info',
+    color: 'bg-emerald-500',
     menuType: 'product',
+    security_settings: {
+      screenshot_protection_enabled: true,
+      watermark_enabled: true,
+      require_geofence: false,
+      device_fingerprinting: true,
+    },
   },
   {
-    id: 'flash-sale',
-    name: 'Flash Sale',
-    description: '24-hour flash sales with high urgency',
+    id: 'popup-event',
+    name: 'Pop-Up Event',
+    description: 'Location-locked menu for events and pop-ups',
+    tagline: 'Geofenced • Time-limited',
     icon: Zap,
     expirationDays: 1,
     burnAfterRead: false,
     maxViews: 100,
     accessType: 'shared',
     requireAccessCode: false,
-    color: 'bg-warning',
+    color: 'bg-amber-500',
     menuType: 'product',
+    security_settings: {
+      screenshot_protection_enabled: true,
+      watermark_enabled: false,
+      require_geofence: true,
+      device_fingerprinting: true,
+    },
   },
   {
-    id: 'vip-menu',
-    name: 'VIP Menu',
-    description: 'Exclusive menu for premium customers',
+    id: 'wholesale-drop',
+    name: 'Wholesale Drop',
+    description: 'Invite-only menu for B2B buyers with view limits',
+    tagline: 'Invite only • 50 views max',
     icon: Crown,
-    expirationDays: 30,
+    expirationDays: 7,
     burnAfterRead: false,
-    maxViews: 'unlimited',
+    maxViews: 50,
     accessType: 'invite_only',
     requireAccessCode: true,
-    color: 'bg-primary',
+    color: 'bg-violet-500',
     menuType: 'product',
+    security_settings: {
+      screenshot_protection_enabled: true,
+      watermark_enabled: true,
+      require_geofence: false,
+      device_fingerprinting: true,
+    },
   },
   {
-    id: 'forum-menu',
-    name: 'Forum Menu',
-    description: 'Create a menu that links to the community forum',
-    icon: MessageSquare,
-    expirationDays: 90,
-    burnAfterRead: false,
-    maxViews: 'unlimited',
-    accessType: 'shared',
-    requireAccessCode: false,
-    color: 'bg-success',
-    menuType: 'forum',
-  },
-  {
-    id: 'custom',
-    name: 'Custom',
-    description: 'Start from scratch with all options',
+    id: 'member-club',
+    name: 'Member Club',
+    description: 'VIP menu for loyal customers with extended access',
+    tagline: 'Code protected • 30-day access',
     icon: Sparkles,
     expirationDays: 30,
     burnAfterRead: false,
     maxViews: 'unlimited',
     accessType: 'invite_only',
     requireAccessCode: true,
-    color: 'bg-muted',
+    color: 'bg-pink-500',
     menuType: 'product',
+    security_settings: {
+      screenshot_protection_enabled: false,
+      watermark_enabled: true,
+      require_geofence: false,
+      device_fingerprinting: false,
+    },
+  },
+  {
+    id: 'custom',
+    name: 'Custom',
+    description: 'Start from scratch with full control',
+    tagline: 'All options available',
+    icon: MessageSquare,
+    expirationDays: 7,
+    burnAfterRead: false,
+    maxViews: 'unlimited',
+    accessType: 'invite_only',
+    requireAccessCode: true,
+    color: 'bg-slate-500',
+    menuType: 'product',
+    security_settings: {
+      screenshot_protection_enabled: true,
+      watermark_enabled: true,
+      require_geofence: false,
+      device_fingerprinting: true,
+    },
   },
 ];
 
@@ -98,7 +141,7 @@ export const MenuTemplates = ({ onSelectTemplate, selectedTemplateId }: MenuTemp
       {TEMPLATES.map((template) => {
         const Icon = template.icon;
         const isSelected = selectedTemplateId === template.id;
-        
+
         return (
           <Card
             key={template.id}
@@ -127,40 +170,54 @@ export const MenuTemplates = ({ onSelectTemplate, selectedTemplateId }: MenuTemp
               </div>
             </CardHeader>
             <CardContent>
+              {/* Tagline */}
+              <p className="text-xs font-medium text-muted-foreground mb-3">
+                {template.tagline}
+              </p>
+
+              {/* Security Features */}
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {template.security_settings.screenshot_protection_enabled && (
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    📸 Screenshot Protection
+                  </Badge>
+                )}
+                {template.security_settings.require_geofence && (
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    📍 Geofenced
+                  </Badge>
+                )}
+                {template.burnAfterRead && (
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    🔥 Auto-Burn
+                  </Badge>
+                )}
+                {template.security_settings.device_fingerprinting && (
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    🔒 Device Lock
+                  </Badge>
+                )}
+              </div>
+
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Expiration:</span>
+                  <span className="text-muted-foreground">Expires:</span>
                   <span className="font-medium">
-                    {template.expirationDays === 1 
-                      ? '24 hours' 
+                    {template.expirationDays === 1
+                      ? '24 hours'
                       : template.expirationDays === 7
-                      ? '7 days'
-                      : template.expirationDays === 30
-                      ? '30 days'
-                      : template.expirationDays === 90
-                      ? '90 days'
-                      : 'Custom'}
+                        ? '7 days'
+                        : template.expirationDays === 30
+                          ? '30 days'
+                          : `${template.expirationDays} days`}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Access:</span>
-                  <Badge variant="outline" className="text-xs">
-                    {template.accessType.replace('_', ' ')}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Max Views:</span>
+                  <span className="text-muted-foreground">Views:</span>
                   <span className="font-medium">
-                    {template.maxViews === 'unlimited' ? '∞' : template.maxViews}
+                    {template.maxViews === 'unlimited' ? 'Unlimited' : `${template.maxViews} max`}
                   </span>
                 </div>
-                {template.requireAccessCode && (
-                  <div className="flex items-center gap-2 pt-2 border-t">
-                    <Badge variant="secondary" className="text-xs">
-                      Access Code Required
-                    </Badge>
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
