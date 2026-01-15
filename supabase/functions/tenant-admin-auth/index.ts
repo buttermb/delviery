@@ -86,10 +86,11 @@ serve(async (req) => {
       // Validate input with Zod
       const validationResult = loginSchema.safeParse(requestBody);
       if (!validationResult.success) {
+        const zodError = validationResult as { success: false; error: { errors: unknown[] } };
         return new Response(
           JSON.stringify({
             error: 'Validation failed',
-            details: validationResult.error.errors
+            details: zodError.error.errors
           }),
           { status: 400, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
@@ -325,10 +326,11 @@ serve(async (req) => {
       // Validate input with Zod
       const validationResult = refreshSchema.safeParse(requestBody);
       if (!validationResult.success) {
+        const zodError = validationResult as { success: false; error: { errors: unknown[] } };
         return new Response(
           JSON.stringify({
             error: 'Validation failed',
-            details: validationResult.error.errors
+            details: zodError.error.errors
           }),
           { status: 400, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
@@ -411,10 +413,11 @@ serve(async (req) => {
       // Validate input with Zod
       const validationResult = setupPasswordSchema.safeParse(rawBody);
       if (!validationResult.success) {
+        const zodError = validationResult as { success: false; error: { errors: unknown[] } };
         return new Response(
           JSON.stringify({
             error: 'Validation failed',
-            details: validationResult.error.errors
+            details: zodError.error.errors
           }),
           { status: 400, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );

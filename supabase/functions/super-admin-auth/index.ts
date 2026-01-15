@@ -203,10 +203,11 @@ serve(async (req) => {
       // Validate input with Zod
       const validationResult = loginSchema.safeParse(body);
       if (!validationResult.success) {
+        const zodError = validationResult as { success: false; error: { errors: unknown[] } };
         return new Response(
           JSON.stringify({
             error: "Validation failed",
-            details: validationResult.error.errors
+            details: zodError.error.errors
           }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -264,7 +265,7 @@ serve(async (req) => {
         // Check if Supabase auth user exists
         const { data: existingAuthUsers } = await supabase.auth.admin.listUsers();
         const existingAuthUser = existingAuthUsers?.users?.find(
-          (u) => u.email?.toLowerCase() === email.toLowerCase()
+          (u: { email?: string }) => u.email?.toLowerCase() === email.toLowerCase()
         );
 
         if (existingAuthUser) {
@@ -449,10 +450,11 @@ serve(async (req) => {
       // Validate input with Zod
       const validationResult = refreshSchema.safeParse(body);
       if (!validationResult.success) {
+        const zodError = validationResult as { success: false; error: { errors: unknown[] } };
         return new Response(
           JSON.stringify({
             error: "Validation failed",
-            details: validationResult.error.errors
+            details: zodError.error.errors
           }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -505,10 +507,11 @@ serve(async (req) => {
       // Validate input with Zod
       const validationResult = updatePasswordSchema.safeParse(body);
       if (!validationResult.success) {
+        const zodError = validationResult as { success: false; error: { errors: unknown[] } };
         return new Response(
           JSON.stringify({
             error: "Validation failed",
-            details: validationResult.error.errors
+            details: zodError.error.errors
           }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );

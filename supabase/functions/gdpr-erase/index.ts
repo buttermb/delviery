@@ -72,7 +72,7 @@ serve(
 
         // Get user by email
         const { data: targetUser } = await supabase.auth.admin.listUsers();
-        const foundUser = targetUser?.users.find((u) => u.email === email);
+        const foundUser = targetUser?.users.find((u: { email?: string }) => u.email === email);
         if (foundUser) {
           targetUserId = foundUser.id;
         }

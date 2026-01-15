@@ -36,11 +36,12 @@ serve(async (req: Request) => {
     const validationResult = accessMenuSchema.safeParse(rawBody);
 
     if (!validationResult.success) {
-      logger.warn('Validation failed', { errors: validationResult.error.flatten() });
+      const zodError = validationResult as { success: false; error: { flatten: () => { fieldErrors: Record<string, string[]> } } };
+      logger.warn('Validation failed', { errors: zodError.error.flatten() });
       return new Response(
         JSON.stringify({
           error: 'Validation failed',
-          details: validationResult.error.flatten().fieldErrors,
+          details: zodError.error.flatten().fieldErrors,
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

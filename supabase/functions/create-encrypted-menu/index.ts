@@ -45,10 +45,11 @@ serve(withZenProtection(async (req) => {
     const validationResult = CreateMenuSchema.safeParse(body);
 
     if (!validationResult.success) {
+      const zodError = validationResult as { success: false; error: { errors: unknown[] } };
       return new Response(
         JSON.stringify({
           error: 'Invalid input',
-          details: validationResult.error.errors
+          details: zodError.error.errors
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -98,10 +99,11 @@ serve(withZenProtection(async (req) => {
 
     // Add products if provided
     if (menuData.products && menuData.products.length > 0) {
-      // Validate that all product_ids exist and belong to the tenant
+      // Validate that all product_ids exist in wholesale_inventory and belong to the tenant
+      // (disposable_menu_products.product_id references wholesale_inventory.id)
       const productIds = menuData.products.map(p => p.product_id);
       const { data: existingProducts, error: validationError } = await supabase
-        .from('products')
+        .from('wholesale_inventory')
         .select('id')
         .eq('tenant_id', menuData.tenant_id)
         .in('id', productIds);
