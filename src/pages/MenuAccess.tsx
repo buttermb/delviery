@@ -51,6 +51,15 @@ interface AccessValidation {
       show_product_images: boolean;
       show_availability: boolean;
     };
+    security_settings?: {
+      screenshot_protection_enabled?: boolean;
+      watermark_enabled?: boolean;
+      watermark_text?: string;
+      require_geofence?: boolean;
+      geofence_lat?: number;
+      geofence_lng?: number;
+      geofence_radius?: number;
+    };
   };
   violations?: string[];
   remaining_views?: number | null;
@@ -80,14 +89,21 @@ export default function MenuAccess() {
   const geoChecking = false;
   const geoViolation = null;
 
-  // Initialize screenshot protection
+  // Initialize screenshot protection based on menu security settings
+  const securitySettings = validation?.menu_data?.security_settings;
+  const screenshotProtectionEnabled = Boolean(securitySettings?.screenshot_protection_enabled ?? true);
+  const watermarkEnabled = Boolean(securitySettings?.watermark_enabled ?? true);
+  const watermarkText = securitySettings?.watermark_text
+    || validation?.whitelist_entry?.customer_name
+    || 'CONFIDENTIAL';
+
   useScreenshotProtection({
     menuId: validation?.menu_data?.id || '',
     customerId: validation?.whitelist_entry?.id,
     customerName: validation?.whitelist_entry?.customer_name,
-    enabled: false, // Simplified for now
-    watermarkEnabled: false,
-    watermarkText: undefined,
+    enabled: screenshotProtectionEnabled && Boolean(validation?.access_granted),
+    watermarkEnabled: watermarkEnabled,
+    watermarkText: watermarkText,
   });
 
   useEffect(() => {
@@ -209,8 +225,8 @@ export default function MenuAccess() {
                 {!geoAccessGranted
                   ? 'You must be within the allowed location to access this menu.'
                   : !isWithinTimeRestriction()
-                  ? 'This menu is only available during specific hours.'
-                  : error || 'You do not have permission to view this menu.'}
+                    ? 'This menu is only available during specific hours.'
+                    : error || 'You do not have permission to view this menu.'}
               </AlertDescription>
             </Alert>
 
@@ -254,53 +270,53 @@ export default function MenuAccess() {
   return (
     <MenuCartProvider>
       <div className="min-h-screen bg-background">
-      <MenuHeader
-        title={menuData.name}
-        description={menuData.description}
-        expiresAt={null}
-        customerName={validation.whitelist_entry?.customer_name}
-      />
-
-      <div className="container mx-auto px-4 py-8">
-        {/* Success message */}
-        <Alert className="mb-6 border-primary/50 bg-primary/5">
-          <CheckCircle2 className="h-4 w-4 text-primary" />
-          <AlertDescription>
-            Welcome! You have been granted access to this exclusive menu.
-            {validation.remaining_views && validation.remaining_views > 0 && (
-              <> ({validation.remaining_views} views remaining)</>
-            )}
-          </AlertDescription>
-        </Alert>
-
-        {/* Products */}
-        <EnhancedMenuProductGrid 
-          products={menuData.products} 
-          menuId={menuData.id}
-          whitelistEntryId={validation.whitelist_entry?.id}
+        <MenuHeader
+          title={menuData.name}
+          description={menuData.description}
+          expiresAt={null}
+          customerName={validation.whitelist_entry?.customer_name}
         />
 
-        {/* Floating Cart Button */}
-        <CartButton onClick={() => setCartOpen(true)} />
+        <div className="container mx-auto px-4 py-8">
+          {/* Success message */}
+          <Alert className="mb-6 border-primary/50 bg-primary/5">
+            <CheckCircle2 className="h-4 w-4 text-primary" />
+            <AlertDescription>
+              Welcome! You have been granted access to this exclusive menu.
+              {validation.remaining_views && validation.remaining_views > 0 && (
+                <> ({validation.remaining_views} views remaining)</>
+              )}
+            </AlertDescription>
+          </Alert>
 
-        {/* Cart Drawer */}
-        <CartDrawer
-          open={cartOpen}
-          onClose={() => setCartOpen(false)}
-          onCheckout={() => {
-            setCartOpen(false);
-            setOrderFormOpen(true);
-          }}
-        />
+          {/* Products */}
+          <EnhancedMenuProductGrid
+            products={menuData.products}
+            menuId={menuData.id}
+            whitelistEntryId={validation.whitelist_entry?.id}
+          />
 
-        {/* Modern Checkout Flow */}
-        <ModernCheckoutFlow
-          open={orderFormOpen}
-          onClose={() => setOrderFormOpen(false)}
-          menuId={menuData.id}
-          whitelistEntryId={validation.whitelist_entry?.id}
-        />
-      </div>
+          {/* Floating Cart Button */}
+          <CartButton onClick={() => setCartOpen(true)} />
+
+          {/* Cart Drawer */}
+          <CartDrawer
+            open={cartOpen}
+            onClose={() => setCartOpen(false)}
+            onCheckout={() => {
+              setCartOpen(false);
+              setOrderFormOpen(true);
+            }}
+          />
+
+          {/* Modern Checkout Flow */}
+          <ModernCheckoutFlow
+            open={orderFormOpen}
+            onClose={() => setOrderFormOpen(false)}
+            menuId={menuData.id}
+            whitelistEntryId={validation.whitelist_entry?.id}
+          />
+        </div>
       </div>
     </MenuCartProvider>
   );
