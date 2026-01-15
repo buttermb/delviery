@@ -38,10 +38,11 @@ serve(async (req) => {
     const validationResult = WhitelistManageSchema.safeParse(body);
 
     if (!validationResult.success) {
+      const zodError = validationResult as { success: false; error: { errors: unknown[] } };
       return new Response(
         JSON.stringify({
           error: 'Invalid input',
-          details: validationResult.error.errors
+          details: zodError.error.errors
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

@@ -72,7 +72,7 @@ serve(async (req) => {
     // Calculate risk factors
     const factors: RiskFactors = {
       nameRisk: assessNameRisk(profile),
-      addressRisk: await assessAddressRisk(address, supabaseClient),
+      addressRisk: await assessAddressRisk(address, supabaseClient as any),
       behaviorRisk: assessBehaviorRisk(profile, orders || []),
       paymentRisk: assessPaymentRisk(profile),
       deviceRisk: assessDeviceRisk(devices || []),
@@ -198,7 +198,7 @@ async function assessAddressRisk(address: Address | null, supabaseClient: Return
       .single();
 
     if (riskFactor) {
-      risk += riskFactor.risk_level * 4; // Scale 1-10 to 4-40
+      risk += ((riskFactor as { risk_level: number }).risk_level) * 4; // Scale 1-10 to 4-40
     }
   }
 

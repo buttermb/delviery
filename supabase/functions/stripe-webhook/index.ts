@@ -82,7 +82,7 @@ serve(async (req) => {
 
         // Handle credit purchase
         if (checkoutType === 'credit_purchase') {
-          const credits = parseInt(object.metadata?.credits || '0', 10);
+          const credits = parseInt(String(object.metadata?.credits || '0'), 10);
           const packageSlug = object.metadata?.package_slug;
 
           if (!tenantId || !credits) {
