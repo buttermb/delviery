@@ -1,4 +1,4 @@
-// @ts-nocheck
+// Edge Function: create-encrypted-menu
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { withZenProtection } from '../_shared/zen-firewall.ts';
 
@@ -122,9 +122,9 @@ serve(withZenProtection(async (req) => {
         console.error('Invalid product IDs:', invalidProducts);
         await supabase.from('disposable_menus').delete().eq('id', menu.id);
         return new Response(
-          JSON.stringify({ 
-            error: 'Invalid product IDs', 
-            details: `The following product IDs do not exist or do not belong to this tenant: ${invalidProducts.join(', ')}` 
+          JSON.stringify({
+            error: 'Invalid product IDs',
+            details: `The following product IDs do not exist or do not belong to this tenant: ${invalidProducts.join(', ')}`
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
