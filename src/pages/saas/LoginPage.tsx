@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, CheckCircle2, Sparkles, Lock, Mail, Wifi, WifiOff, AlertCircle, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Sparkles, Lock, Mail, Wifi, WifiOff, AlertCircle, Eye, EyeOff, ArrowLeft, Wand2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -46,6 +46,8 @@ export default function LoginPage() {
   const { toast } = useToast();
   const { theme } = useTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSendingMagicLink, setIsSendingMagicLink] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unknown');
   const [retryCount, setRetryCount] = useState(0);
   const [searchParams] = useSearchParams();
@@ -342,6 +344,11 @@ export default function LoginPage() {
                         type="email"
                         placeholder="you@business.com"
                         className="h-11 bg-white dark:bg-zinc-950 border-slate-200 dark:border-slate-800 focus:border-primary transition-colors"
+                        autoComplete="email"
+                        inputMode="email"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        spellCheck={false}
                         {...field}
                       />
                     </FormControl>
@@ -378,6 +385,10 @@ export default function LoginPage() {
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
                             className="h-11 bg-white dark:bg-zinc-950 border-slate-200 dark:border-slate-800 focus:border-primary transition-colors pr-10"
+                            autoComplete="current-password"
+                            autoCapitalize="none"
+                            autoCorrect="off"
+                            spellCheck={false}
                             {...field}
                             onKeyDown={handleKeyDown}
                             onKeyUp={handleKeyDown}
@@ -430,6 +441,67 @@ export default function LoginPage() {
               </Button>
             </form>
           </Form>
+
+          {/* Magic Link Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-slate-200 dark:border-slate-800" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white dark:bg-zinc-900 px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          {/* Magic Link Button */}
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-11 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-zinc-800"
+            disabled={isSendingMagicLink || !form.watch('email')}
+            onClick={async () => {
+              const email = form.watch('email');
+              if (!email) {
+                toast({ title: 'Enter your email first', variant: 'destructive' });
+                return;
+              }
+              setIsSendingMagicLink(true);
+              try {
+                const { error } = await supabase.auth.signInWithOtp({
+                  email,
+                  options: { emailRedirectTo: window.location.origin + '/login-callback' }
+                });
+                if (error) throw error;
+                setMagicLinkSent(true);
+                toast({
+                  title: 'Check your email!',
+                  description: 'We sent you a login link. Click it to sign in instantly.',
+                });
+              } catch (error) {
+                toast({ title: 'Failed to send magic link', variant: 'destructive' });
+              } finally {
+                setIsSendingMagicLink(false);
+              }
+            }}
+          >
+            {isSendingMagicLink ? (
+              <span className="flex items-center gap-2">
+                <div className="h-4 w-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                Sending...
+              </span>
+            ) : magicLinkSent ? (
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                Check your email
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Wand2 className="h-4 w-4" />
+                Send Magic Link (no password)
+              </span>
+            )}
+          </Button>
 
           <div className="mt-8 text-center text-sm space-y-3">
             <p className="text-muted-foreground">
