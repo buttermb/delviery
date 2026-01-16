@@ -46,37 +46,9 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { usePrefetchDashboard } from '@/hooks/usePrefetchDashboard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { handleError } from '@/utils/errorHandling/handlers';
-import { SignUp } from '@clerk/clerk-react';
-import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
-import { useAuthSafe } from '@/hooks/useClerkSafe';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 
-// Inner component that safely uses Clerk hooks (only rendered when Clerk is configured)
-function ClerkAuthRedirect({ onNotSignedIn }: { onNotSignedIn: () => void }) {
-  const { isSignedIn, isLoaded } = useAuthSafe();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isLoaded) {
-      if (isSignedIn) {
-        navigate('/select-plan', { replace: true });
-      } else {
-        onNotSignedIn();
-      }
-    }
-  }, [isLoaded, isSignedIn, navigate, onNotSignedIn]);
-
-  // Show loading while checking auth
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  return null;
-}
 
 const signupSchema = z.object({
   business_name: z.string()
@@ -141,17 +113,7 @@ export default function SignUpPage() {
   const { toast } = useToast();
   const { handleSignupSuccess } = useTenantAdminAuth();
   const { prefetch } = usePrefetchDashboard();
-  const clerkConfigured = useClerkConfigured();
-  const [searchParams] = useSearchParams();
-  const selectedPlan = (searchParams.get('plan') || 'free') as PlanKey;
-  const planConfig = getPlanConfig(selectedPlan);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string>('');
-  const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
   const [showOptionalFields, setShowOptionalFields] = useState(false);
-  const [useClerkAuth, setUseClerkAuth] = useState(false);
-  const [clerkChecked, setClerkChecked] = useState(!clerkConfigured);
   const turnstileRef = useRef<TurnstileInstance | null>(null);
 
   // Phone verification state
@@ -176,9 +138,7 @@ export default function SignUpPage() {
   });
 
   // Handle Clerk auth check callback
-  const handleClerkNotSignedIn = useCallback(() => {
-    setClerkChecked(true);
-  }, []);
+
 
   // Use defined hooks before any return
   // Auto-save form data to localStorage with expiry
@@ -217,10 +177,7 @@ export default function SignUpPage() {
     }
   }, [form]);
 
-  // If Clerk is configured and we haven't checked auth yet, render the auth checker
-  if (clerkConfigured && !clerkChecked && !useClerkAuth) {
-    return <ClerkAuthRedirect onNotSignedIn={handleClerkNotSignedIn} />;
-  }
+
 
   // Auto-save form data to localStorage with expiry
   useEffect(() => {
@@ -604,55 +561,7 @@ export default function SignUpPage() {
     }
   };
 
-  // Render Clerk SignUp when configured and selected
-  if (clerkConfigured && useClerkAuth) {
-    return (
-      <ForceLightMode>
-        <div className="min-h-screen bg-slate-50 dark:bg-zinc-950/50 relative overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md mx-auto relative z-10 pt-8">
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 mb-4">
-                <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">14-Day Free Trial</span>
-              </div>
-              <h1 className="text-3xl font-bold mb-2 text-slate-900 dark:text-white">
-                Start Your Free Trial
-              </h1>
-              <p className="text-muted-foreground">Transform your cannabis distribution in minutes</p>
-            </div>
 
-            <SignUp
-              routing="path"
-              path="/signup"
-              signInUrl="/saas/login"
-              afterSignUpUrl="/select-plan"
-              appearance={{
-                elements: {
-                  rootBox: 'w-full',
-                  card: 'shadow-2xl border-2 border-primary/10 rounded-xl bg-card/95 backdrop-blur-sm',
-                  headerTitle: 'text-xl font-bold',
-                  headerSubtitle: 'text-muted-foreground',
-                  socialButtonsBlockButton: 'border-2 hover:bg-muted transition-colors h-12',
-                  formFieldInput: 'border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 h-12',
-                  formButtonPrimary: 'bg-gradient-to-r from-emerald-600 to-emerald-800 hover:from-emerald-500 hover:to-emerald-700 text-white font-bold h-14',
-                  footerActionLink: 'text-primary hover:text-primary/80',
-                },
-              }}
-            />
-
-            <div className="text-center mt-6">
-              <button
-                onClick={() => setUseClerkAuth(false)}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                ← Use email/password signup
-              </button>
-            </div>
-          </div>
-        </div>
-      </ForceLightMode>
-    );
-  }
 
   return (
     <ForceLightMode>
@@ -773,18 +682,7 @@ export default function SignUpPage() {
                             className="w-full h-12"
                           />
 
-                          {/* Clerk SSO Option */}
-                          {clerkConfigured && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => setUseClerkAuth(true)}
-                              className="w-full h-12 border-2 hover:bg-muted"
-                            >
-                              <Sparkles className="mr-2 h-4 w-4" />
-                              Use Clerk SSO
-                            </Button>
-                          )}
+
 
                           {/* Divider */}
                           <div className="relative flex items-center py-2">

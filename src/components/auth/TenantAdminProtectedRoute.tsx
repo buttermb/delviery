@@ -9,9 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { VerificationProvider } from '@/contexts/VerificationContext';
 import { handleError } from '@/utils/errorHandling/handlers';
-import { useAuthSafe, useUserSafe } from '@/hooks/useClerkSafe';
-import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
-import { useClerkSupabaseSync } from '@/hooks/useClerkSupabaseSync';
 
 interface TenantAdminProtectedRouteProps {
   children: ReactNode;
@@ -30,10 +27,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const { admin, tenant, token, loading } = useTenantAdminAuth();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const navigate = useNavigate();
-  const clerkConfigured = useClerkConfigured();
-  const { isSignedIn: clerkSignedIn, isLoaded: clerkLoaded } = useAuthSafe();
-  const { user: clerkUser } = useUserSafe();
-  const { syncedUser, isLoading: clerkSyncLoading } = useClerkSupabaseSync();
+  // Clerk logic removed
   const [verifying, setVerifying] = useState(false); // CRITICAL FIX: Start as false, not true
   const [verified, setVerified] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
@@ -41,11 +35,10 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const location = useLocation();
   const totalWaitStartRef = useRef<number | null>(null);
 
-  // If Clerk is configured and user is signed in, check Clerk auth first
-  const useClerkAuth = clerkConfigured && clerkSignedIn;
-  const effectiveLoading = useClerkAuth ? !clerkLoaded || clerkSyncLoading : loading;
-  const effectiveAdmin = useClerkAuth ? syncedUser : admin;
-  const effectiveTenant = useClerkAuth ? (syncedUser?.tenantId ? { slug: tenantSlug, id: syncedUser.tenantId } : null) : tenant;
+  // Consolidated auth variables
+  const effectiveLoading = loading;
+  const effectiveAdmin = admin;
+  const effectiveTenant = tenant;
 
   // Use lock to prevent concurrent verification requests
   const verificationLockRef = useRef(false);
@@ -160,9 +153,9 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     }
 
     logger.debug('[PROTECTED ROUTE] ✅ Auth context loaded', {
-      adminEmail: effectiveAdmin.email || clerkUser?.primaryEmailAddress?.emailAddress,
+      adminEmail: effectiveAdmin.email,
       tenantSlug: effectiveTenant.slug,
-      authMethod: useClerkAuth ? 'Clerk' : 'Supabase',
+      authMethod: 'Supabase',
     });
 
     // Skip if already checking
@@ -305,7 +298,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       clearTimeout(verificationTimeout);
     };
     // Remove verified, skipVerification, and verifying from deps to prevent infinite loops
-  }, [tenantSlug, location.pathname, effectiveAdmin, effectiveTenant, effectiveLoading, useClerkAuth, clerkUser]);
+  }, [tenantSlug, location.pathname, effectiveAdmin, effectiveTenant, effectiveLoading]);
 
   // Loading state - wait for auth AND verification (unless skipped OR not authenticated)
   // If user is not authenticated (no admin/tenant), let it fall through to redirect
@@ -315,10 +308,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
   // Not authenticated - redirect to login
   if (!effectiveAdmin || !effectiveTenant) {
-    // If using Clerk and not signed in, Clerk will handle redirect
-    if (clerkConfigured && !clerkSignedIn && clerkLoaded) {
-      return <Navigate to={tenantSlug ? `/${tenantSlug}/admin/login` : '/saas/login'} replace />;
-    }
+
     // Extract tenant slug from URL path
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const tenantSlugFromUrl = pathSegments[0];

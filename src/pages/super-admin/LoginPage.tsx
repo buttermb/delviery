@@ -11,35 +11,22 @@ import { Link } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
-import { SignIn } from '@clerk/clerk-react';
-import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
-import { useAuthSafe } from '@/hooks/useClerkSafe';
+
 
 export default function SuperAdminLoginPage() {
   const navigate = useNavigate();
   const { login } = useSuperAdminAuth();
-  const clerkConfigured = useClerkConfigured();
-  const { isSignedIn, isLoaded: clerkLoaded } = useAuthSafe();
-  useAuthRedirect(); // Redirect if already logged in
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [useClerkAuth, setUseClerkAuth] = useState(false);
-
-  // Redirect if already signed in with Clerk
-  useEffect(() => {
-    if (clerkConfigured && clerkLoaded && isSignedIn) {
-      navigate('/super-admin/dashboard', { replace: true });
-    }
-  }, [clerkConfigured, clerkLoaded, isSignedIn, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       await login(email, password);
-      
+
       toast({
         title: "Welcome, Super Admin!",
         description: "Logged in successfully",
@@ -57,45 +44,7 @@ export default function SuperAdminLoginPage() {
     }
   };
 
-  // Render Clerk SignIn when configured and selected
-  if (clerkConfigured && useClerkAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[hsl(var(--super-admin-bg))] p-4">
-        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--super-admin-primary))]/20 via-[hsl(var(--super-admin-secondary))]/20 to-[hsl(var(--super-admin-bg))]" />
-        
-        <div className="relative z-10 w-full max-w-md">
-          <div className="text-center mb-6">
-            <Shield className="h-12 w-12 text-[hsl(var(--super-admin-primary))] mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">Platform Administration</h1>
-            <p className="text-[hsl(var(--super-admin-text-muted))]">Super Admin Access</p>
-          </div>
-          
-          <SignIn
-            routing="path"
-            path="/super-admin/login"
-            afterSignInUrl="/super-admin/dashboard"
-            appearance={{
-              elements: {
-                rootBox: 'w-full',
-                card: 'shadow-xl border-2 border-[hsl(var(--super-admin-primary))]/20 rounded-xl bg-card backdrop-blur-xl',
-                formButtonPrimary: 'bg-gradient-to-r from-[hsl(var(--super-admin-primary))] to-[hsl(var(--super-admin-secondary))] hover:opacity-90',
-                socialButtonsBlockButton: 'border-2 hover:bg-muted transition-colors',
-              },
-            }}
-          />
-          
-          <div className="text-center mt-4">
-            <button
-              onClick={() => setUseClerkAuth(false)}
-              className="text-sm text-[hsl(var(--super-admin-text-muted))] hover:text-[hsl(var(--super-admin-text))] transition-colors"
-            >
-              ← Use email/password login
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[hsl(var(--super-admin-bg))] p-4">
@@ -223,17 +172,7 @@ export default function SuperAdminLoginPage() {
               className="bg-[hsl(var(--super-admin-bg))]/50 border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-[hsl(var(--super-admin-bg))]/70"
             />
 
-            {/* Clerk Auth Option */}
-            {clerkConfigured && (
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setUseClerkAuth(true)}
-                className="w-full text-[hsl(var(--super-admin-text-muted))] hover:text-[hsl(var(--super-admin-text))]"
-              >
-                Use Clerk SSO →
-              </Button>
-            )}
+
           </form>
 
           {/* Forgot Password */}
