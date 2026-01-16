@@ -187,6 +187,7 @@ export default function SignUpPage() {
 
 
 
+
   // Auto-save form data to localStorage with expiry
   useEffect(() => {
     const subscription = form.watch((value) => {
