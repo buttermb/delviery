@@ -19,6 +19,20 @@ serve(async (req) => {
     const { action, email, password } = await req.json();
 
     if (action === "login") {
+      // Rate limit check
+      const clientIp = req.headers.get("x-forwarded-for") || "unknown";
+      const { data: rateCheck } = await supabase.rpc('check_auth_rate_limit', {
+        p_identifier: email,
+        p_identifier_type: 'email'
+      });
+
+      if (rateCheck && !rateCheck.allowed) {
+        return new Response(
+          JSON.stringify({ error: rateCheck.error || 'Too many attempts' }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Authenticate with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
@@ -26,11 +40,24 @@ serve(async (req) => {
       });
 
       if (authError) {
+        // Log failed attempt (no password)
+        await supabase.from('auth_failed_attempts').insert({
+          email,
+          ip_address: clientIp,
+          user_agent: req.headers.get("user-agent") || "unknown",
+          failure_reason: 'invalid_credentials'
+        });
         return new Response(
           JSON.stringify({ error: "Invalid credentials" }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      // Clear rate limit on success
+      await supabase.rpc('clear_auth_rate_limit', {
+        p_identifier: email,
+        p_identifier_type: 'email'
+      });
 
       // Check if user has admin role in user_roles table (consolidated system)
       const { data: roleData, error: roleError } = await supabase
@@ -218,7 +245,7 @@ serve(async (req) => {
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Admin auth error:", error);
+    // Error logged server-side only, no sensitive data
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Authentication failed" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

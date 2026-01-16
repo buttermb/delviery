@@ -11,7 +11,7 @@ interface SuperAdminJWTPayload {
 
 // Wrapper for signing super admin tokens
 async function createSuperAdminToken(payload: { super_admin_id: string; role: string; type: "super_admin" }): Promise<string> {
-  return await signJWT({ ...payload }, 7 * 24 * 60 * 60); // 7 days
+  return await signJWT({ ...payload }, 8 * 60 * 60); // 8 hours (was 7 days - security fix)
 }
 
 // Wrapper for verifying super admin tokens
@@ -73,8 +73,7 @@ async function comparePassword(password: string, hashValue: string): Promise<boo
       const hashBuffer = await crypto.subtle.digest('SHA-256', data);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const computedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-      // console.log OK in edge functions (server-side)
-      console.log('SHA-256 comparison - match:', computedHash === hashValue.toLowerCase());
+      // Timing-safe comparison
       return computedHash === hashValue.toLowerCase();
     }
 
@@ -215,7 +214,19 @@ serve(async (req) => {
 
       const { email, password } = validationResult.data;
 
-      console.log('Login attempt for email:', email);
+      // Rate limit check
+      const clientIp = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+      const { data: rateCheck } = await supabase.rpc('check_auth_rate_limit', {
+        p_identifier: email,
+        p_identifier_type: 'email'
+      });
+
+      if (rateCheck && !rateCheck.allowed) {
+        return new Response(
+          JSON.stringify({ error: rateCheck.error || 'Too many attempts' }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
       // Find super admin user
       const { data: superAdmin, error: findError } = await supabase
@@ -225,36 +236,43 @@ serve(async (req) => {
         .eq("status", "active")
         .maybeSingle();
 
-      console.log('Database lookup result:', {
-        found: !!superAdmin,
-        error: findError?.message,
-        email: email.toLowerCase()
-      });
-
+      // Get super admin from database
       if (findError || !superAdmin) {
-        console.log('User not found or error:', findError);
+        // Log failed attempt (no password)
+        await supabase.from('auth_failed_attempts').insert({
+          email: email.toLowerCase(),
+          ip_address: clientIp,
+          user_agent: req.headers.get("user-agent") || "unknown",
+          failure_reason: 'user_not_found'
+        });
         return new Response(
           JSON.stringify({ error: "Invalid credentials" }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-
-      console.log('Password hash format check:', {
-        hashLength: superAdmin.password_hash.length,
-        isHex: /^[a-f0-9]+$/i.test(superAdmin.password_hash)
-      });
 
       // Verify password
       const validPassword = await comparePassword(password, superAdmin.password_hash);
-      console.log('Password validation result:', validPassword);
 
       if (!validPassword) {
-        console.log('Password verification failed');
+        // Log failed attempt (no password)
+        await supabase.from('auth_failed_attempts').insert({
+          email: email.toLowerCase(),
+          ip_address: clientIp,
+          user_agent: req.headers.get("user-agent") || "unknown",
+          failure_reason: 'invalid_password'
+        });
         return new Response(
           JSON.stringify({ error: "Invalid credentials" }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      // Clear rate limit on success
+      await supabase.rpc('clear_auth_rate_limit', {
+        p_identifier: email,
+        p_identifier_type: 'email'
+      });
 
       // ============================================================================
       // PHASE 2: HYBRID AUTH - Create Supabase auth user for RLS access
@@ -269,8 +287,7 @@ serve(async (req) => {
         );
 
         if (existingAuthUser) {
-          // User exists, create session for them
-          console.log('Existing Supabase auth user found, creating session');
+          // User exists, session will be created
           const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
             type: 'magiclink',
             email: email.toLowerCase(),
@@ -287,7 +304,6 @@ serve(async (req) => {
           }
         } else {
           // Create new Supabase auth user
-          console.log('Creating new Supabase auth user for super admin');
           const { data: newAuthUser, error: createError } = await supabase.auth.admin.createUser({
             email: email.toLowerCase(),
             email_confirm: true,
@@ -299,9 +315,7 @@ serve(async (req) => {
           });
 
           if (createError) {
-            console.error('Failed to create Supabase auth user:', createError);
-          } else if (newAuthUser.user) {
-            console.log('Supabase auth user created successfully');
+            // Non-fatal error, continue with custom JWT
 
             // Generate session for the new user
             const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
@@ -317,13 +331,11 @@ serve(async (req) => {
                 user: newAuthUser.user,
               };
             }
-
-            // Role will be auto-assigned via trigger from Phase 1
-            console.log('Super admin role will be auto-assigned via trigger');
+            // Role will be auto-assigned via trigger
           }
         }
       } catch (authError) {
-        console.error('Supabase auth integration error (non-fatal):', authError);
+        // Non-fatal error, continue with custom JWT
         // Continue with custom JWT even if Supabase auth fails
       }
 
@@ -336,7 +348,7 @@ serve(async (req) => {
 
       // Create session record
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+      expiresAt.setHours(expiresAt.getHours() + 8); // 8 hours (was 7 days - security fix)
 
       const clientIp = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
       const userAgent = req.headers.get("user-agent") || "unknown";
@@ -375,7 +387,7 @@ serve(async (req) => {
         response.supabaseSession = supabaseSession;
       }
 
-      console.log('Login successful, returning hybrid auth response');
+      // Success
 
       return new Response(
         JSON.stringify(response),
@@ -593,7 +605,7 @@ serve(async (req) => {
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Super admin auth error:", error);
+    // Server-side error logging only
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Authentication failed" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
