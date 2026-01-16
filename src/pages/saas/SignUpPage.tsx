@@ -115,6 +115,9 @@ export default function SignUpPage() {
   const { prefetch } = usePrefetchDashboard();
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const turnstileRef = useRef<TurnstileInstance | null>(null);
+  const [searchParams] = useSearchParams();
+  const selectedPlan = (searchParams.get('plan') as PlanKey) || 'free';
+  const planConfig = getPlanConfig(selectedPlan);
 
   // Phone verification state
   const [showPhoneVerification, setShowPhoneVerification] = useState(false);
@@ -138,6 +141,11 @@ export default function SignUpPage() {
   });
 
   // Handle Clerk auth check callback
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
 
 
   // Use defined hooks before any return
