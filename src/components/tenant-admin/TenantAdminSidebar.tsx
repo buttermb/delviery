@@ -298,7 +298,7 @@ export function TenantAdminSidebar() {
       // But always show categories with accessible features
       return category.hasAccessibleFeatures || category.upgradeHints.length > 0;
     });
-  }, [canAccess]);
+  }, [canAccess, tenantSlug]);
 
   const isActive = (url: string) => {
     const fullPath = `/${tenantSlug}${url}`;

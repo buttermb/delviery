@@ -53,6 +53,13 @@ type TenantUser = {
   [key: string]: unknown;
 };
 
+interface SuperAdminAuditLog {
+  id: string;
+  action: string;
+  details?: Record<string, unknown> | null;
+  created_at: string;
+}
+
 export default function TenantDetailPage() {
   const { tenantId } = useParams<{ tenantId: string }>();
   const navigate = useNavigate();
@@ -80,10 +87,6 @@ export default function TenantDetailPage() {
     },
     enabled: !!tenantId && isValidUUID,
   });
-
-  // Early return for invalid UUID logic handled in render
-  // Hooks below are disabled if !isValidUUID, so they won't run network requests
-  // but we must not return early to satisfy rules-of-hooks
 
   // Fetch subscription plan
   const { data: plan } = useQuery({
@@ -235,6 +238,11 @@ export default function TenantDetailPage() {
     },
   });
 
+  // Early return for invalid UUID logic handled in render
+  // Hooks above are disabled if !isValidUUID, so they won't run network requests
+  // but we must not return early to satisfy rules-of-hooks
+
+  // NOTE: Moved this check to AFTER all hooks are defined
   if (!isValidUUID) {
     return (
       <div className="container py-8">
@@ -900,7 +908,7 @@ export default function TenantDetailPage() {
                                               </thead>
                                               <tbody>
                                                 ${Array.isArray(invoice.line_items) && invoice.line_items.length > 0
-                                          ? invoice.line_items.map((item: InvoiceLineItem) => `
+                                          ? (invoice.line_items as InvoiceLineItem[]).map((item) => `
                                                     <tr>
                                                       <td>${item.description || item.name || 'N/A'}</td>
                                                       <td>${item.quantity || 1}</td>
@@ -1094,7 +1102,7 @@ export default function TenantDetailPage() {
               <CardContent>
                 {activityLogs && activityLogs.length > 0 ? (
                   <div className="space-y-3">
-                    {activityLogs.map((log: any) => (
+                    {activityLogs.map((log: SuperAdminAuditLog) => (
                       <div key={log.id} className="flex items-start justify-between p-3 border border-white/10 rounded-lg">
                         <div className="space-y-1">
                           <p className="font-medium text-[hsl(var(--super-admin-text))]">
@@ -1158,7 +1166,7 @@ export default function TenantDetailPage() {
                     <div className="flex justify-between mb-2">
                       <span className="text-sm text-[hsl(var(--super-admin-text))]/70">Monthly Orders</span>
                       <span className="text-sm font-medium text-[hsl(var(--super-admin-text))]">
-                        {(tenant as any).monthly_orders || 0}
+                        {tenant.monthly_orders || 0}
                       </span>
                     </div>
                   </div>

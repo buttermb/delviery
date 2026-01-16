@@ -96,7 +96,7 @@ const signupSchema = z.object({
     .max(72, 'Password must be less than 72 characters')
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must include uppercase, lowercase, and a number'),
   phone: z.string()
-    .regex(/^[\d\s\-\(\)\+]*$/, 'Phone number contains invalid characters')
+    .regex(/^[\d\s\-()+\\]*$/, 'Phone number contains invalid characters')
     .max(20, 'Phone number is too long')
     .optional(),
   state: z.string().optional(),
@@ -218,45 +218,10 @@ export default function SignUpPage() {
   }, [form]);
 
   // If Clerk is configured and we haven't checked auth yet, render the auth checker
+  // Moved AFTER hooks to comply with Rules of Hooks
   if (clerkConfigured && !clerkChecked && !useClerkAuth) {
     return <ClerkAuthRedirect onNotSignedIn={handleClerkNotSignedIn} />;
   }
-
-  // Auto-save form data to localStorage with expiry
-  useEffect(() => {
-    const subscription = form.watch((value) => {
-      try {
-        const expiryTime = Date.now() + (DRAFT_EXPIRY_HOURS * 60 * 60 * 1000);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
-        localStorage.setItem(STORAGE_EXPIRY_KEY, expiryTime.toString());
-      } catch (error) {
-        logger.error('Failed to save form data to localStorage', error);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
-
-  // Load saved form data on mount (with expiry check)
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      const expiry = localStorage.getItem(STORAGE_EXPIRY_KEY);
-
-      if (saved && expiry) {
-        const expiryTime = parseInt(expiry, 10);
-        const now = Date.now();
-
-        if (now < expiryTime) {
-          // Data is still valid
-          const parsed = JSON.parse(saved);
-          form.reset(parsed);
-        }
-        // Note: Expired data is cleared when form is submitted successfully
-      }
-    } catch (error) {
-      logger.error('Failed to load form data from localStorage', error);
-    }
-  }, [form]);
 
   const onSubmit = async (data: SignupFormData) => {
     // Client-side rate limiting

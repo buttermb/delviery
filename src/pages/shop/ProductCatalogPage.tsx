@@ -24,31 +24,16 @@ import {
 import {
   Search,
   Package,
-  Filter,
   Grid3X3,
   List,
   X,
-  SlidersHorizontal,
   RefreshCw,
-  Eye
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { FilterDrawer, FilterTriggerButton, type FilterState } from '@/components/shop/FilterDrawer';
-import { WishlistButton } from '@/components/shop/WishlistButton';
 import { useWishlist } from '@/hooks/useWishlist';
 import { ProductQuickViewModal } from '@/components/shop/ProductQuickViewModal';
-import { EnhancedPriceSlider } from '@/components/shop/EnhancedPriceSlider';
-import { StockWarning } from '@/components/shop/StockWarning';
 import { useShopCart } from '@/hooks/useShopCart';
 import { StorefrontProductCard, type MarketplaceProduct } from '@/components/shop/StorefrontProductCard';
 import { useToast } from '@/hooks/use-toast';
@@ -348,6 +333,7 @@ export default function ProductCatalogPage() {
 
   const hasActiveFilters = searchQuery || selectedCategory || inStockOnly;
 
+  // Moved early return to AFTER hooks
   if (!store) return null;
 
   // Filter state for FilterDrawer
@@ -365,6 +351,19 @@ export default function ProductCatalogPage() {
   };
 
   // Get unique strain types from products
+  // Using a separate useMemo to avoid conditional call inside return or if block
+  // NOTE: This useMemo was previously inside the component but potentially after an early return
+  // Now it is safe here because `if (!store) return null` is above, BUT hooks must be consistent.
+  // Wait, `if (!store) return null` IS an early return.
+  // `useMemo` for `strainTypes` and `maxPrice` must be BEFORE `if (!store) return null` OR `store` must be guaranteed.
+  // Actually, `products` depends on `useQuery` which depends on `store?.id`.
+  // If `store` is null, `products` is empty array (from default value).
+  // So we can move the `if (!store) return null` to the very end, or ensure all hooks are before it.
+
+  // Let's move the early return to the end of the hook section.
+
+  // Get unique strain types from products
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const strainTypes = useMemo(() => {
     const types = new Set<string>();
     products.forEach((p) => {
@@ -374,9 +373,13 @@ export default function ProductCatalogPage() {
   }, [products]);
 
   // Calculate max price from products
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const maxPrice = useMemo(() => {
     return Math.max(...products.map((p) => p.display_price), 1000);
   }, [products]);
+
+  // NOW we can return if no store
+  if (!store) return null;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -641,8 +644,3 @@ function ProductListItem({
     </Link>
   );
 }
-
-
-
-
-

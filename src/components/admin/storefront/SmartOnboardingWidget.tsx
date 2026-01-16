@@ -17,9 +17,6 @@ export function SmartOnboardingWidget({ productCount, className }: SmartOnboardi
     const { tenant } = useTenantAdminAuth();
     const queryClient = useQueryClient();
 
-    // If products exist, don't show the widget
-    if (productCount > 0) return null;
-
     const addSampleProductMutation = useMutation({
         mutationFn: async () => {
             if (!tenant?.id) throw new Error("No tenant context");
@@ -70,6 +67,9 @@ export function SmartOnboardingWidget({ productCount, className }: SmartOnboardi
             });
         }
     });
+
+    // If products exist, don't show the widget
+    if (productCount > 0) return null;
 
     return (
         <Card className={`border-dashed border-2 bg-muted/20 ${className}`}>

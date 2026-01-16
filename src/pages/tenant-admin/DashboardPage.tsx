@@ -454,6 +454,7 @@ export default function TenantAdminDashboardPage() {
       return () => clearTimeout(timer);
     }
     // Only run once per location change, not on every state update
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]); // Changed from location.state to location.pathname
 
   // Auto-show Quick Start for completely empty accounts (new users)
@@ -566,13 +567,18 @@ export default function TenantAdminDashboardPage() {
   const tenantUsage = useMemo(() => (tenant as any)?.usage || {}, [tenant]);
   const tenantLimits = useMemo(() => (tenant as any)?.limits || {}, [tenant]);
 
+  const tenantSlug = tenant?.slug;
+  const productCount = tenantUsage.products || 0;
+  const customerCount = tenantUsage.customers || 0;
+  const menuCount = tenantUsage.menus || 0;
+
   // Memoize onboarding progress
   const onboardingSteps = useMemo(() => [
-    { id: "products", completed: (tenantUsage.products || 0) > 0, title: "Add your first product", link: `/${tenant?.slug}/admin/inventory/products` },
-    { id: "customers", completed: (tenantUsage.customers || 0) > 0, title: "Add a customer", link: `/${tenant?.slug}/admin/customers` },
-    { id: "menu", completed: (tenantUsage.menus || 0) > 0, title: "Create a disposable menu", link: `/${tenant?.slug}/admin/disposable-menus` },
-    { id: "profile", completed: false, title: "Complete your business profile", link: `/${tenant?.slug}/admin/settings` },
-  ], [tenantUsage.products, tenantUsage.customers, tenantUsage.menus, tenant?.slug]);
+    { id: "products", completed: productCount > 0, title: "Add your first product", link: `/${tenantSlug}/admin/inventory/products` },
+    { id: "customers", completed: customerCount > 0, title: "Add a customer", link: `/${tenantSlug}/admin/customers` },
+    { id: "menu", completed: menuCount > 0, title: "Create a disposable menu", link: `/${tenantSlug}/admin/disposable-menus` },
+    { id: "profile", completed: false, title: "Complete your business profile", link: `/${tenantSlug}/admin/settings` },
+  ], [productCount, customerCount, menuCount, tenantSlug]);
 
   const completedSteps = onboardingSteps.filter(step => step.completed).length;
   const onboardingProgress = onboardingSteps.length > 0

@@ -25,11 +25,6 @@ export function CreditBalance({
   const { credits, isFreeTier, setIsPurchaseModalOpen } = useCredits();
   const { tenant } = useTenantAdminAuth();
 
-  // Don't show credit balance for paid users (non-free tier)
-  if (!isFreeTier) {
-    return null;
-  }
-
   // Fetch usage stats for tooltip
   const { data: usageStats } = useQuery({
     queryKey: ['credit-usage-quick', tenant?.id],
@@ -64,6 +59,11 @@ export function CreditBalance({
     enabled: !!tenant?.id && credits > 0,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // Don't show credit balance for paid users (non-free tier)
+  if (!isFreeTier) {
+    return null;
+  }
 
   // Color logic
   const getColorClass = (amount: number) => {

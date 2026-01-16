@@ -1,10 +1,10 @@
-import { logger } from '@/lib/logger';
 /**
  * SAAS Login Page
  * Login for existing tenants
  */
 
-import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,11 +27,9 @@ import {
 } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, CheckCircle2, Sparkles, Lock, Mail, Wifi, WifiOff, AlertCircle, Eye, EyeOff, ArrowLeft, Wand2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Sparkles, Lock, Mail, WifiOff, AlertCircle, Eye, EyeOff, ArrowLeft, Wand2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import ThemeToggle from '@/components/ThemeToggle';
-import { useTheme } from '@/contexts/ThemeContext';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 
 const loginSchema = z.object({
@@ -44,7 +42,6 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { theme } = useTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSendingMagicLink, setIsSendingMagicLink] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
@@ -52,7 +49,6 @@ export default function LoginPage() {
   const [retryCount, setRetryCount] = useState(0);
   const [searchParams] = useSearchParams();
   const signupSuccess = searchParams.get('signup') === 'success';
-  const tenantSlug = searchParams.get('tenant');
 
   // Monitor connection status
   useEffect(() => {
@@ -164,7 +160,7 @@ export default function LoginPage() {
       authFlowLogger.logFetchAttempt(flowId, url, 1);
       const fetchStartTime = performance.now();
 
-      const { response, attempts, category } = await resilientFetch(url, {
+      const { response, category } = await resilientFetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -357,66 +353,7 @@ export default function LoginPage() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => {
-                  const [capsLockOn, setCapsLockOn] = useState(false);
-
-                  const handleKeyDown = (e: React.KeyboardEvent) => {
-                    if (e.getModifierState("CapsLock")) {
-                      setCapsLockOn(true);
-                    } else {
-                      setCapsLockOn(false);
-                    }
-                  };
-
-                  const [showPassword, setShowPassword] = useState(false);
-
-                  return (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Lock className="h-4 w-4 text-muted-foreground" />
-                        Password
-                      </FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type={showPassword ? "text" : "password"}
-                            placeholder="••••••••"
-                            className="h-11 bg-white dark:bg-zinc-950 border-slate-200 dark:border-slate-800 focus:border-primary transition-colors pr-10"
-                            autoComplete="current-password"
-                            autoCapitalize="none"
-                            autoCorrect="off"
-                            spellCheck={false}
-                            {...field}
-                            onKeyDown={handleKeyDown}
-                            onKeyUp={handleKeyDown}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground focus:outline-none"
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </button>
-                          {capsLockOn && (
-                            <div className="absolute right-10 top-3 text-amber-600 flex items-center gap-1 text-xs font-medium animate-pulse">
-                              <AlertCircle className="h-3 w-3" />
-                              CAPS LOCK ON
-                            </div>
-                          )}
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
+              <PasswordInput form={form} />
 
               <Button
                 type="submit"
@@ -518,5 +455,76 @@ export default function LoginPage() {
         </Card>
       </div>
     </ForceLightMode>
+  );
+}
+
+// Extracted Password Input to avoid nested hooks
+function PasswordInput({ form }: { form: any }) {
+  const [capsLockOn, setCapsLockOn] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.getModifierState("CapsLock")) {
+      setCapsLockOn(true);
+    } else {
+      setCapsLockOn(false);
+    }
+  };
+
+  const handleKeyUp = (e: React.KeyboardEvent) => {
+    if (e.getModifierState("CapsLock")) {
+      setCapsLockOn(true);
+    } else {
+      setCapsLockOn(false);
+    }
+  };
+
+  return (
+    <FormField
+      control={form.control}
+      name="password"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel className="flex items-center gap-2">
+            <Lock className="h-4 w-4 text-muted-foreground" />
+            Password
+          </FormLabel>
+          <FormControl>
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="h-11 bg-white dark:bg-zinc-950 border-slate-200 dark:border-slate-800 focus:border-primary transition-colors pr-10"
+                autoComplete="current-password"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                {...field}
+                onKeyDown={handleKeyDown}
+                onKeyUp={handleKeyUp}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground focus:outline-none"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+              {capsLockOn && (
+                <div className="absolute right-10 top-3 text-amber-600 flex items-center gap-1 text-xs font-medium animate-pulse">
+                  <AlertCircle className="h-3 w-3" />
+                  CAPS LOCK ON
+                </div>
+              )}
+            </div>
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   );
 }
