@@ -1,4 +1,4 @@
-// @ts-nocheck
+// API Credit Metering Middleware - Type-safe implementation
 /**
  * API Credit Metering Middleware
  * 
@@ -39,20 +39,20 @@ export const API_CREDIT_COSTS: Record<string, number> = {
   'GET /inventory': 1,
   'GET /menus': 1,
   'GET /menus/:id': 1,
-  
+
   // Create operations - higher cost
   'POST /orders': 25,
   'POST /products': 10,
   'POST /customers': 5,
   'POST /inventory': 10,
   'POST /menus': 100,
-  
+
   // Bulk operations - highest cost
   'POST /orders/bulk': 100,
   'POST /products/bulk': 50,
   'POST /customers/bulk': 50,
   'POST /inventory/bulk': 25,
-  
+
   // Update operations - moderate cost
   'PUT /orders/:id': 10,
   'PATCH /orders/:id': 5,
@@ -62,22 +62,22 @@ export const API_CREDIT_COSTS: Record<string, number> = {
   'PATCH /customers/:id': 2,
   'PUT /inventory/:id': 3,
   'PATCH /inventory/:id': 2,
-  
+
   // Delete operations - low cost (cleanup)
   'DELETE /orders/:id': 1,
   'DELETE /products/:id': 1,
   'DELETE /customers/:id': 1,
-  
+
   // Communication endpoints - high cost
   'POST /sms/send': 25,
   'POST /email/send': 10,
   'POST /notifications/send': 15,
-  
+
   // Analytics/Reports - moderate cost
   'GET /reports/:type': 25,
   'POST /reports/generate': 75,
   'GET /analytics/:type': 10,
-  
+
   // Default fallbacks
   'GET *': 1,
   'POST *': 10,
@@ -140,13 +140,13 @@ export async function withApiCreditMeter(
 
     if (!tenantInfo) {
       return new Response(
-        JSON.stringify({ 
-          error: 'Unauthorized', 
-          message: 'Invalid or missing API key' 
+        JSON.stringify({
+          error: 'Unauthorized',
+          message: 'Invalid or missing API key'
         }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
@@ -176,14 +176,14 @@ export async function withApiCreditMeter(
           currentBalance: result.newBalance,
           endpoint: getEndpointKey(req),
         }),
-        { 
-          status: 402, 
-          headers: { 
-            ...corsHeaders, 
+        {
+          status: 402,
+          headers: {
+            ...corsHeaders,
             'Content-Type': 'application/json',
             'X-Credits-Required': String(result.creditsCost),
             'X-Credits-Balance': String(result.newBalance),
-          } 
+          }
         }
       );
     }
@@ -207,13 +207,13 @@ export async function withApiCreditMeter(
   } catch (error) {
     console.error('API credit meter error:', error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Internal server error',
-        message: (error as Error).message 
+        message: (error as Error).message
       }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
@@ -313,7 +313,7 @@ function getEndpointKey(req: Request): string {
  */
 function getApiCreditCost(req: Request): number {
   const endpointKey = getEndpointKey(req);
-  
+
   // Try exact match first
   if (API_CREDIT_COSTS[endpointKey]) {
     return API_CREDIT_COSTS[endpointKey];
@@ -398,7 +398,7 @@ async function logApiUsage(
 ): Promise<void> {
   try {
     const url = new URL(req.url);
-    
+
     await supabase
       .from('api_usage_logs')
       .insert({

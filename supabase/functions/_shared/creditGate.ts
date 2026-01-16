@@ -1,4 +1,4 @@
-// @ts-nocheck
+// Credit Gate Middleware - Type-safe implementation
 /**
  * Credit Gate Middleware
  * 
@@ -79,13 +79,13 @@ export async function withCreditGate(
   try {
     // Get tenant from JWT or request body
     const tenantInfo = await getTenantFromRequest(req, supabaseClient);
-    
+
     if (!tenantInfo) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized - no tenant found' }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
@@ -125,9 +125,9 @@ export async function withCreditGate(
           currentBalance: creditResult.newBalance,
           actionKey,
         }),
-        { 
+        {
           status: 402, // Payment Required
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
@@ -148,13 +148,13 @@ export async function withCreditGate(
   } catch (error) {
     console.error('Credit gate error:', error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Internal server error',
-        message: error.message 
+        message: error.message
       }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
@@ -177,7 +177,7 @@ async function getTenantFromRequest(
     const { data: { user } } = await supabaseClient.auth.getUser(
       authHeader.replace('Bearer ', '')
     );
-    
+
     if (user) {
       // Get tenant from tenant_users
       const { data: tenantUser } = await supabaseClient
@@ -325,7 +325,7 @@ export async function checkCreditsAvailable(
 }> {
   // Get tenant info
   const tenantInfo = await getTenantInfo(supabaseClient, tenantId);
-  
+
   if (!tenantInfo || !tenantInfo.isFreeTier) {
     return {
       hasCredits: true,
@@ -371,41 +371,41 @@ export const CREDIT_ACTIONS = {
   CREATE_ORDER: 'create_order',
   UPDATE_ORDER_STATUS: 'update_order_status',
   CANCEL_ORDER: 'cancel_order',
-  
+
   // Products
   ADD_PRODUCT: 'add_product',
   EDIT_PRODUCT: 'edit_product',
   DELETE_PRODUCT: 'delete_product',
   BULK_IMPORT_PRODUCTS: 'bulk_import_products',
-  
+
   // Customers
   ADD_CUSTOMER: 'add_customer',
   EDIT_CUSTOMER: 'edit_customer',
   DELETE_CUSTOMER: 'delete_customer',
-  
+
   // Finance
   GENERATE_INVOICE: 'generate_invoice',
   SEND_INVOICE: 'send_invoice',
   RECORD_PAYMENT: 'record_payment',
-  
+
   // Communication
   SEND_SMS: 'send_sms',
   SEND_EMAIL: 'send_email',
   SEND_MENU_LINK: 'send_menu_link',
-  
+
   // Reports & Exports
   GENERATE_REPORT: 'generate_report',
   EXPORT_CSV: 'export_csv',
   EXPORT_PDF: 'export_pdf',
-  
+
   // AI Features
   MENU_OCR: 'menu_ocr',
   AI_SUGGESTIONS: 'ai_suggestions',
   AI_ANALYTICS: 'ai_analytics',
-  
+
   // API
   API_CALL: 'api_call',
-  
+
   // Menus
   CREATE_MENU: 'create_menu',
   SHARE_MENU: 'share_menu',
