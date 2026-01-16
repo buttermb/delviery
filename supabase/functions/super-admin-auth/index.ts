@@ -414,6 +414,18 @@ serve(async (req) => {
         );
       }
 
+      // Check if token is blacklisted (immediate revocation)
+      const { data: isBlacklisted } = await supabase.rpc('is_token_blacklisted', {
+        p_jti: token.substring(0, 32)
+      });
+
+      if (isBlacklisted) {
+        return new Response(
+          JSON.stringify({ error: "Token has been revoked" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Verify session exists and is valid
       const { data: session, error: sessionError } = await supabase
         .from("super_admin_sessions")
@@ -591,6 +603,24 @@ serve(async (req) => {
       const authHeader = req.headers.get("Authorization");
       if (authHeader && authHeader.startsWith("Bearer ")) {
         const token = authHeader.replace("Bearer ", "");
+
+        // Verify token to get user ID and expiry
+        const payload = await verifySuperAdminToken(token);
+
+        if (payload) {
+          // Add to token blacklist for immediate revocation
+          const tokenExpiry = new Date();
+          tokenExpiry.setHours(tokenExpiry.getHours() + 8); // Match token expiry
+
+          await supabase.rpc('blacklist_token', {
+            p_jti: token.substring(0, 32), // Use first 32 chars as JTI
+            p_user_id: payload.super_admin_id,
+            p_expires_at: tokenExpiry.toISOString(),
+            p_reason: 'logout'
+          });
+        }
+
+        // Also delete from sessions table
         await supabase.from("super_admin_sessions").delete().eq("token", token);
       }
 
