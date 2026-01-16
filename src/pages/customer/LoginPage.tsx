@@ -13,6 +13,7 @@ import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 export default function CustomerLoginPage() {

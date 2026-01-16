@@ -86,7 +86,6 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       hasTenant: !!effectiveTenant,
       tenantSlug,
       pathname: location.pathname,
-      useClerkAuth,
     });
 
     // Skip if already verified or skipped - MUST be first check to prevent loops
