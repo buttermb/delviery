@@ -34,7 +34,7 @@ export function PackageScanner({
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Initialize scanner instance once
+  // Initialize scanner instance once and warm up cameras
   useEffect(() => {
     // Clean up any existing instance
     if (scannerRef.current) {
@@ -47,6 +47,15 @@ export function PackageScanner({
     // Create new instance
     try {
       scannerRef.current = new Html5Qrcode('scanner-container');
+
+      // Warm up camera permissions and cache device list for "Instant-On" feel
+      Html5Qrcode.getCameras().then(devices => {
+        if (devices && devices.length) {
+          logger.debug('Scanner warmed up', { devices: devices.length }, { component: 'PackageScanner' });
+        }
+      }).catch(err => {
+        logger.warn('Scanner warmup failed (permissions might be pending)', err, { component: 'PackageScanner' });
+      });
     } catch (e) {
       // Element might not exist yet if not rendering the container
     }

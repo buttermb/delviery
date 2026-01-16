@@ -69,7 +69,7 @@ serve(async (req) => {
     // BYPASS: Development bypass code for testing without email
     const BYPASS_CODE = '999999';
     const isBypassCode = code === BYPASS_CODE;
-    
+
     if (!isBypassCode) {
       // Find verification code (only for non-bypass codes)
       const { data: verificationCode, error: codeError } = await supabase
@@ -127,8 +127,8 @@ serve(async (req) => {
       );
     }
 
-    // Mark verification code as used (only for non-bypass codes)
-    if (!isBypassCode && verificationCodeId) {
+    // Mark verification code as used
+    if (verificationCodeId) {
       await supabase
         .from('email_verification_codes')
         .update({ verified_at: new Date().toISOString() })

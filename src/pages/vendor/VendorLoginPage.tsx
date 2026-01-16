@@ -68,6 +68,9 @@ export default function VendorLoginPage() {
                 }
                 placeholder="vendor@example.com"
                 required
+                autoComplete="email"
+                inputMode="email"
+                enterKeyHint="next"
                 className="min-h-[44px] touch-manipulation"
               />
             </div>
@@ -81,6 +84,8 @@ export default function VendorLoginPage() {
                   setFormData({ ...formData, password: e.target.value })
                 }
                 required
+                autoComplete="current-password"
+                enterKeyHint="done"
                 className="min-h-[44px] touch-manipulation"
               />
             </div>

@@ -265,6 +265,9 @@ export default function CourierLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
+                autoComplete="email"
+                inputMode="email"
+                enterKeyHint="next"
               />
             </div>
 
@@ -278,6 +281,8 @@ export default function CourierLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
+                autoComplete="current-password"
+                enterKeyHint="done"
               />
             </div>
 

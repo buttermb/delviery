@@ -120,6 +120,9 @@ export default function SuperAdminLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
+                autoComplete="email"
+                inputMode="email"
+                enterKeyHint="next"
                 className="bg-[hsl(var(--super-admin-bg))]/50 border-white/10 text-[hsl(var(--super-admin-text))] placeholder:text-[hsl(var(--super-admin-text))]/50 focus:border-[hsl(var(--super-admin-primary))] focus:ring-[hsl(var(--super-admin-primary))]/20 transition-all"
               />
             </div>
@@ -136,6 +139,8 @@ export default function SuperAdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
+                autoComplete="current-password"
+                enterKeyHint="done"
                 className="bg-[hsl(var(--super-admin-bg))]/50 border-white/10 text-[hsl(var(--super-admin-text))] placeholder:text-[hsl(var(--super-admin-text))]/50 focus:border-[hsl(var(--super-admin-primary))] focus:ring-[hsl(var(--super-admin-primary))]/20 transition-all"
               />
             </div>

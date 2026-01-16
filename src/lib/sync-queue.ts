@@ -1,6 +1,7 @@
 import { db } from './idb';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { v4 as uuidv4 } from 'uuid';
 
 interface SyncManager {
     register(tag: string): Promise<void>;
@@ -71,6 +72,13 @@ export const syncQueue = {
     },
 
     async add(url: string, method: string, body: any) {
+        // Enforce idempotency: Inject UUID if not present and body is an object
+        if (body && typeof body === 'object' && !Array.isArray(body)) {
+            if (!body.idempotencyKey && !body.idempotency_key) {
+                body = { ...body, idempotencyKey: uuidv4() };
+            }
+        }
+
         await db.addToSyncQueue({ url, method, body });
 
         // Register background sync if available

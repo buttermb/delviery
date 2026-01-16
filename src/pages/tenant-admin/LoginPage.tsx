@@ -205,6 +205,9 @@ export default function TenantAdminLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
+                autoComplete="email"
+                inputMode="email"
+                enterKeyHint="next"
                 className="min-h-[44px] sm:h-12 bg-background/50 backdrop-blur-sm transition-all text-sm sm:text-base touch-manipulation"
               />
             </div>
@@ -221,6 +224,8 @@ export default function TenantAdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
+                autoComplete="current-password"
+                enterKeyHint="done"
                 className="min-h-[44px] sm:h-12 bg-background/50 backdrop-blur-sm transition-all text-sm sm:text-base touch-manipulation"
               />
             </div>

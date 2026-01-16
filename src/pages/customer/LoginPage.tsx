@@ -69,6 +69,8 @@ export default function CustomerLoginPage() {
     fetchTenant();
   }, [tenantSlug]);
 
+  const [isMagicLinkMode, setIsMagicLinkMode] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -84,14 +86,45 @@ export default function CustomerLoginPage() {
     setLoading(true);
 
     try {
-      await login(email, password, tenantSlug);
+      if (isMagicLinkMode) {
+        // Send Magic Link
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        // We use the apiFetch util effectively acting as a proxy to the secure backend function
+        // Note: We are calling the function directly here as verified in the audit
+        const response = await fetch(`${supabaseUrl}/functions/v1/magic-link-login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            email,
+            redirectTo: `${window.location.origin}/${tenantSlug}/customer/auth/callback`
+          })
+        });
 
-      toast({
-        title: "Welcome!",
-        description: `Logged in successfully`,
-      });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Failed to send magic link');
+        }
 
-      navigate(`/${tenantSlug}/shop/dashboard`, { replace: true });
+        const result = await response.json();
+        toast({
+          title: "Magic Link Sent!",
+          description: result.message || "Check your email for the login link.",
+        });
+        setIsMagicLinkMode(false); // Reset to avoid confusion
+      } else {
+        // Standard Password Login
+        await login(email, password, tenantSlug);
+
+        toast({
+          title: "Welcome!",
+          description: `Logged in successfully`,
+        });
+
+        navigate(`/${tenantSlug}/shop/dashboard`, { replace: true });
+      }
     } catch (error: unknown) {
       logger.error("Customer login error", error);
 
@@ -112,6 +145,7 @@ export default function CustomerLoginPage() {
         title: "Login failed",
         description: error instanceof Error ? error.message : "Invalid credentials",
       });
+    } finally {
       setLoading(false);
     }
   };
@@ -180,39 +214,85 @@ export default function CustomerLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
+                autoComplete="email"
+                inputMode="email"
+                enterKeyHint="next"
                 className="h-12 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-slate-200">
-                Password
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-                className="h-12 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
-              />
-            </div>
+            {isMagicLinkMode ? (
+              // Magic Link Mode
+              <>
+                <Button
+                  type="submit"
+                  className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] rounded-lg"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      Send Magic Link
+                    </>
+                  )}
+                </Button>
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsMagicLinkMode(false)}
+                    className="text-sm text-indigo-400 hover:text-indigo-300"
+                  >
+                    Use Password instead
+                  </button>
+                </div>
+              </>
+            ) : (
+              // Password Mode
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-medium text-slate-200">
+                    Password
+                  </Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                    enterKeyHint="done"
+                    className="h-12 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
+                  />
+                </div>
 
-            <Button
-              type="submit"
-              className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] rounded-lg"
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <>
-                  <ShoppingBag className="mr-2 h-5 w-5" />
-                  Sign In to Shop
-                </>
-              )}
-            </Button>
+                <Button
+                  type="submit"
+                  className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] rounded-lg"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      <ShoppingBag className="mr-2 h-5 w-5" />
+                      Sign In to Shop
+                    </>
+                  )}
+                </Button>
+
+                <div className="text-center mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsMagicLinkMode(true)}
+                    className="text-sm text-slate-400 hover:text-white transition-colors"
+                  >
+                    Send magic link instead
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* Divider */}
             <div className="relative my-5">

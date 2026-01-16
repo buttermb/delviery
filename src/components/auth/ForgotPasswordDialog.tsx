@@ -109,6 +109,9 @@ export function ForgotPasswordDialog({ userType, tenantSlug, trigger }: ForgotPa
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
+              inputMode="email"
+              enterKeyHint="send"
+              autoComplete="email"
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>

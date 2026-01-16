@@ -110,20 +110,20 @@ export default function CustomerVerifyEmailPage() {
 
       // Auto-login after verification
       try {
-      // Get customer user to find tenant
-      const { data: customerUser } = await supabase
-        .from('customer_users' as any)
-        .select('tenant_id')
-        .eq('email', email.toLowerCase())
-        .maybeSingle();
-
-      if (customerUser && tenantSlug) {
-        // Get tenant slug for navigation
-        const { data: tenantData } = await supabase
-          .from('tenants')
-          .select('slug')
-          .eq('id', (customerUser as any).tenant_id)
+        // Get customer user to find tenant
+        const { data: customerUser } = await supabase
+          .from('customer_users' as any)
+          .select('tenant_id')
+          .eq('email', email.toLowerCase())
           .maybeSingle();
+
+        if (customerUser && tenantSlug) {
+          // Get tenant slug for navigation
+          const { data: tenantData } = await supabase
+            .from('tenants')
+            .select('slug')
+            .eq('id', (customerUser as any).tenant_id)
+            .maybeSingle();
 
           if (tenantData) {
             // Redirect to login page with auto-login hint
@@ -295,14 +295,7 @@ export default function CustomerVerifyEmailPage() {
               <p className="text-xs text-muted-foreground text-center">
                 Enter the 6-digit code sent to your email
               </p>
-              <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md">
-                <p className="text-xs text-blue-900 dark:text-blue-100 text-center font-medium">
-                  🔓 Development Bypass Code: <span className="font-mono font-bold">999999</span>
-                </p>
-                <p className="text-xs text-blue-700 dark:text-blue-300 text-center mt-1">
-                  Use this code to verify without email setup
-                </p>
-              </div>
+
             </div>
 
             <Button

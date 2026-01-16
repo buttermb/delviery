@@ -346,6 +346,7 @@ export default function LoginPage() {
                         className="h-11 bg-white dark:bg-zinc-950 border-slate-200 dark:border-slate-800 focus:border-primary transition-colors"
                         autoComplete="email"
                         inputMode="email"
+                        enterKeyHint="next"
                         autoCapitalize="none"
                         autoCorrect="off"
                         spellCheck={false}
@@ -386,6 +387,7 @@ export default function LoginPage() {
                             placeholder="••••••••"
                             className="h-11 bg-white dark:bg-zinc-950 border-slate-200 dark:border-slate-800 focus:border-primary transition-colors pr-10"
                             autoComplete="current-password"
+                            enterKeyHint="done"
                             autoCapitalize="none"
                             autoCorrect="off"
                             spellCheck={false}
