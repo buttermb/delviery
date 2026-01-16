@@ -191,7 +191,10 @@ export default function StorefrontBuilder() {
 
     // Builder State
     const [layoutConfig, setLayoutConfig] = useState<SectionConfig[]>([]);
-    const [themeConfig, setThemeConfig] = useState<Record<string, unknown>>({
+    const [themeConfig, setThemeConfig] = useState<{
+        colors: { primary: string; secondary: string; accent: string; background: string; text: string };
+        typography: { fontFamily: string };
+    }>({
         colors: { primary: '#000000', secondary: '#ffffff', accent: '#3b82f6', background: '#ffffff', text: '#000000' },
         typography: { fontFamily: 'Inter' }
     });
@@ -202,7 +205,20 @@ export default function StorefrontBuilder() {
     const handleThemeSelect = useCallback((theme: ThemePreset) => {
         logger.debug('Applying theme preset', { themeId: theme.id });
         setSelectedThemeId(theme.id);
-        setThemeConfig(prevConfig => applyThemeToConfig(prevConfig, theme));
+        // Apply theme colors to our config structure
+        setThemeConfig(prevConfig => ({
+            ...prevConfig,
+            colors: {
+                primary: theme.colors.primary,
+                secondary: theme.colors.secondary,
+                accent: theme.colors.accent,
+                background: theme.colors.background,
+                text: theme.colors.foreground,
+            },
+            typography: {
+                fontFamily: theme.typography.fontFamily.split(',')[0].trim(),
+            }
+        }));
         toast({
             title: 'Theme Applied',
             description: `${theme.name} theme has been applied to your storefront`,
@@ -296,8 +312,8 @@ export default function StorefrontBuilder() {
             const { error } = await supabase
                 .from('marketplace_stores')
                 .update({
-                    layout_config: JSON.parse(JSON.stringify(layoutConfig)),
-                    theme_config: themeConfig,
+                    layout_config: JSON.parse(JSON.stringify(layoutConfig)) as any,
+                    theme_config: themeConfig as any,
                     updated_at: new Date().toISOString()
                 })
                 .eq('tenant_id', tenant?.id);

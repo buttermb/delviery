@@ -33,10 +33,10 @@ export function SalesByCategoryChart({ storeId, className }: SalesByCategoryChar
         queryFn: async (): Promise<CategorySales[]> => {
             if (!storeId) return [];
 
-            // Get orders for this store
+            // Get orders for this store with items embedded
             const { data: orders, error: ordersError } = await supabase
                 .from('storefront_orders')
-                .select('id')
+                .select('id, items, total')
                 .eq('store_id', storeId);
 
             if (ordersError || !orders?.length) {
@@ -44,31 +44,15 @@ export function SalesByCategoryChart({ storeId, className }: SalesByCategoryChar
                 return [];
             }
 
-            const orderIds = orders.map(o => o.id);
-
-            // Get order items with product category info
-            const { data: items, error: itemsError } = await supabase
-                .from('storefront_order_items')
-                .select(`
-                    quantity,
-                    unit_price,
-                    products:product_id (
-                        category
-                    )
-                `)
-                .in('order_id', orderIds);
-
-            if (itemsError || !items?.length) {
-                console.warn('No order items found:', itemsError);
-                return [];
-            }
-
-            // Aggregate sales by category
+            // Aggregate sales by category from order items (stored as JSON)
             const categoryMap = new Map<string, number>();
-            items.forEach((item: any) => {
-                const category = item.products?.category || 'Uncategorized';
-                const revenue = (item.quantity || 1) * (item.unit_price || 0);
-                categoryMap.set(category, (categoryMap.get(category) || 0) + revenue);
+            orders.forEach((order: any) => {
+                const items = order.items as any[] || [];
+                items.forEach((item: any) => {
+                    const category = item.category || 'Uncategorized';
+                    const revenue = (item.quantity || 1) * (item.price || 0);
+                    categoryMap.set(category, (categoryMap.get(category) || 0) + revenue);
+                });
             });
 
             // Convert to array and sort by value
