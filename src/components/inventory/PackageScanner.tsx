@@ -4,9 +4,9 @@ import { logger } from '@/lib/logger';
  * For runners/couriers to scan packages and manage transfers
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { Scan, Package, MapPin, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { Scan, Package, MapPin, CheckCircle2, XCircle, AlertCircle, Flashlight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -26,22 +26,79 @@ export function PackageScanner({
   mode = 'general'
 }: PackageScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
-  const [scanner, setScanner] = useState<Html5Qrcode | null>(null);
+  const [torchOn, setTorchOn] = useState(false);
   const [lastScanned, setLastScanned] = useState<PackageQRData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const scannerRef = useRef<HTMLDivElement>(null);
 
+  // Use a ref to hold the scanner instance so it persists across renders
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Initialize scanner instance once
   useEffect(() => {
+    // Clean up any existing instance
+    if (scannerRef.current) {
+      if (scannerRef.current.isScanning) {
+        scannerRef.current.stop().catch(() => { });
+        scannerRef.current.clear();
+      }
+    }
+
+    // Create new instance
+    try {
+      scannerRef.current = new Html5Qrcode('scanner-container');
+    } catch (e) {
+      // Element might not exist yet if not rendering the container
+    }
+
     return () => {
-      if (scanner) {
-        scanner.stop().catch(() => {});
+      // Cleanup on unmount
+      if (scannerRef.current) {
+        if (scannerRef.current.isScanning) {
+          scannerRef.current.stop().catch(err => console.warn('Scanner stop error', err));
+        }
+        scannerRef.current.clear();
+        scannerRef.current = null;
       }
     };
-  }, [scanner]);
+  }, []);
+
+  const handleScanResult = useCallback(async (decodedText: string) => {
+    try {
+      const qrData = parseQRCodeData(decodedText);
+
+      if (qrData.type !== 'package') {
+        throw new Error('Scanned QR code is not a package');
+      }
+
+      const packageData = qrData as PackageQRData;
+
+      // Validate transfer match if in transfer mode
+      if (currentTransferId && mode !== 'general') {
+        // Check if package is part of current transfer
+        // This would need to be validated against the database
+      }
+
+      setLastScanned(packageData);
+      setError(null);
+
+      // Utilize the stable ref to stop scanning
+      if (scannerRef.current && scannerRef.current.isScanning) {
+        await scannerRef.current.stop();
+        scannerRef.current.clear();
+        setIsScanning(false);
+        setTorchOn(false); // Reset torch state
+      }
+
+      onScanSuccess?.(packageData);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Invalid QR code';
+      setError(errorMsg);
+      onScanError?.(errorMsg);
+    }
+  }, [currentTransferId, mode, onScanSuccess, onScanError]);
 
   const startScanning = async () => {
-    if (!scannerRef.current) return;
-
     // Check if we're on HTTPS (required for camera access)
     if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
       setError('Camera access requires HTTPS connection. Please use https:// in the URL.');
@@ -50,9 +107,12 @@ export function PackageScanner({
     }
 
     try {
-      const html5QrCode = new Html5Qrcode('scanner-container');
-      
-      await html5QrCode.start(
+      // Re-initialize if null (should handle cases where component remounted logic is tricky)
+      if (!scannerRef.current) {
+        scannerRef.current = new Html5Qrcode('scanner-container');
+      }
+
+      await scannerRef.current.start(
         { facingMode: 'environment' },
         {
           fps: 10,
@@ -66,15 +126,14 @@ export function PackageScanner({
         }
       );
 
-      setScanner(html5QrCode);
       setIsScanning(true);
       setError(null);
     } catch (err) {
       let errorMsg = 'Failed to start scanner';
-      
+
       if (err instanceof Error) {
         errorMsg = err.message;
-        
+
         // Provide user-friendly messages for common errors
         if (errorMsg.includes('Permission denied') || errorMsg.includes('NotAllowedError')) {
           errorMsg = 'Camera access denied. Please enable camera permissions in your browser settings and try again.';
@@ -84,7 +143,7 @@ export function PackageScanner({
           errorMsg = 'Camera scanning is not supported on this device or browser. Please use a modern browser like Chrome, Safari, or Firefox.';
         }
       }
-      
+
       setError(errorMsg);
       setIsScanning(false);
       onScanError?.(errorMsg);
@@ -92,45 +151,33 @@ export function PackageScanner({
   };
 
   const stopScanning = async () => {
-    if (scanner) {
+    if (scannerRef.current && isScanning) {
       try {
-        await scanner.stop();
-        scanner.clear();
-        setScanner(null);
+        await scannerRef.current.stop();
+        scannerRef.current.clear();
         setIsScanning(false);
+        setTorchOn(false);
       } catch (err) {
         logger.error('Error stopping scanner:', err);
       }
     }
   };
 
-  const handleScanResult = async (decodedText: string) => {
-    try {
-      const qrData = parseQRCodeData(decodedText);
-
-      if (qrData.type !== 'package') {
-        throw new Error('Scanned QR code is not a package');
+  const toggleTorch = async () => {
+    if (scannerRef.current && isScanning) {
+      try {
+        const newTorchState = !torchOn;
+        await scannerRef.current.applyVideoConstraints({
+          advanced: [{ torch: newTorchState }] as any
+        });
+        setTorchOn(newTorchState);
+      } catch (err) {
+        logger.warn('Torch toggle failed', err);
+        // Fallback user message
+        if (err instanceof Error && err.name === 'OverconstrainedError') {
+          // Torch not supported
+        }
       }
-
-      const packageData = qrData as PackageQRData;
-      
-      // Validate transfer match if in transfer mode
-      if (currentTransferId && mode !== 'general') {
-        // Check if package is part of current transfer
-        // This would need to be validated against the database
-      }
-
-      setLastScanned(packageData);
-      setError(null);
-      
-      // Stop scanning after successful scan
-      await stopScanning();
-      
-      onScanSuccess?.(packageData);
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Invalid QR code';
-      setError(errorMsg);
-      onScanError?.(errorMsg);
     }
   };
 
@@ -150,19 +197,34 @@ export function PackageScanner({
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Scanner Container */}
-          <div
-            id="scanner-container"
-            ref={scannerRef}
-            className={`w-full aspect-square rounded-lg border-2 border-dashed overflow-hidden bg-muted ${
-              isScanning ? 'border-primary' : 'border-muted-foreground'
-            }`}
-          >
-            {!isScanning && (
-              <div className="h-full flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <Scan className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">Camera scanner will appear here</p>
+          <div className="relative">
+            <div
+              id="scanner-container"
+              ref={containerRef}
+              className={`w-full aspect-square rounded-lg border-2 border-dashed overflow-hidden bg-muted ${isScanning ? 'border-primary' : 'border-muted-foreground'
+                }`}
+            >
+              {!isScanning && (
+                <div className="h-full flex items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <Scan className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Camera scanner will appear here</p>
+                  </div>
                 </div>
+              )}
+            </div>
+
+            {/* Overlay Flash Button */}
+            {isScanning && (
+              <div className="absolute bottom-4 right-4 z-10">
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className={`rounded-full h-12 w-12 shadow-lg ${torchOn ? 'bg-yellow-400 text-black hover:bg-yellow-500' : 'bg-black/50 text-white hover:bg-black/70'}`}
+                  onClick={toggleTorch}
+                >
+                  <Flashlight className={`h-6 w-6 ${torchOn ? 'fill-current' : ''}`} />
+                </Button>
               </div>
             )}
           </div>
@@ -258,4 +320,3 @@ export function PackageScanner({
     </div>
   );
 }
-

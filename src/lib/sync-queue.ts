@@ -22,6 +22,14 @@ export const syncQueue = {
 
         for (const item of queue) {
             try {
+                // Exponential backoff check
+                if (item.retryCount > 0) {
+                    const backoffTime = Math.pow(2, item.retryCount) * 1000; // 2s, 4s, 8s...
+                    if (Date.now() - item.timestamp < backoffTime) {
+                        continue; // Skip if in backoff period
+                    }
+                }
+
                 const response = await fetch(item.url, {
                     method: item.method,
                     headers: {
@@ -34,15 +42,32 @@ export const syncQueue = {
                     await db.removeFromSyncQueue(item.timestamp);
                     logger.info(`Synced item: ${item.url}`, null, { component: 'SyncQueue' });
                 } else {
-                    logger.error(`Failed to sync item: ${item.url}`, response.statusText, { component: 'SyncQueue' });
-                    // Optional: Implement retry logic or max retries here
+                    // Increment retry count
+                    const newItem = { ...item, retryCount: (item.retryCount || 0) + 1 };
+
+                    if (newItem.retryCount > 5) {
+                        logger.error(`Max retries reached for item: ${item.url}`, null, { component: 'SyncQueue' });
+                        await db.removeFromSyncQueue(item.timestamp); // Give up
+                    } else {
+                        // Update in DB (we need to expose an update method or just re-add)
+                        // Since idb.ts keys by timestamp, we can just put it back
+                        const dbInstance = await import('./idb').then(m => m.initDB());
+                        await dbInstance.put('syncQueue', newItem);
+                        logger.warn(`Sync failed, retrying later (${newItem.retryCount}/5)`, response.statusText, { component: 'SyncQueue' });
+                    }
                 }
             } catch (error) {
                 logger.error(`Error syncing item: ${item.url}`, error, { component: 'SyncQueue' });
+                // Increment retry count on network error too
+                const newItem = { ...item, retryCount: (item.retryCount || 0) + 1 };
+                if (newItem.retryCount <= 5) {
+                    const dbInstance = await import('./idb').then(m => m.initDB());
+                    await dbInstance.put('syncQueue', newItem);
+                }
             }
         }
 
-        toast.success('Offline changes synced!');
+        toast.success('Offline changes processing...');
     },
 
     async add(url: string, method: string, body: any) {

@@ -12,8 +12,34 @@ import { ArrowRight, ShieldCheck, MousePointer2, Smartphone, Play } from "lucide
 import { BusinessAdminDemo } from "./demos/BusinessAdminDemo";
 import { useMobileOptimized } from "@/hooks/useMobileOptimized";
 
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+
+const ROTATING_FEATURES = [
+  {
+    badge: "OPSEC-Grade Security • No Demo Required",
+    sub: "Encrypted URLs • Auto-Burn on Screenshot • Device Fingerprinting"
+  },
+  {
+    badge: "Built for Speed • Live in Seconds",
+    sub: "Instant Catalog Creation • One-Click Publishing • Real-Time Sync"
+  },
+  {
+    badge: "Complete Anonymity • Zero Footprint",
+    sub: "No Tracking • Burner-Friendly • Anti-Forensic Design"
+  }
+];
+
 export function ModernHero() {
   const { isMobile, isTouchDevice, shouldUseStaticFallback } = useMobileOptimized();
+  const [featureIndex, setFeatureIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setFeatureIndex((prev) => (prev + 1) % ROTATING_FEATURES.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <section className="relative min-h-[90vh] md:min-h-[90vh] bg-[hsl(var(--marketing-bg))] pt-24 md:pt-32 pb-16 md:pb-24 overflow-hidden">
@@ -21,10 +47,21 @@ export function ModernHero() {
 
         {/* Centered Hero Content */}
         <div className="max-w-5xl mx-auto text-center mb-10 md:mb-16">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-emerald-50 border border-emerald-200 shadow-sm mb-6 md:mb-8 animate-fade-in text-xs md:text-sm font-semibold text-emerald-700">
-            <ShieldCheck className="w-4 h-4" />
-            OPSEC-Grade Security • No Demo Required
+          {/* Rotating Badge */}
+          <div className="h-12 mb-6 md:mb-8 flex items-center justify-center">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={featureIndex}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-emerald-50 border border-emerald-200 shadow-sm text-xs md:text-sm font-semibold text-emerald-700"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                {ROTATING_FEATURES[featureIndex].badge}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* Headline - Responsive sizing */}
@@ -39,10 +76,22 @@ export function ModernHero() {
             </span>
           </h1>
 
-          {/* Subheadline */}
-          <p className="text-lg md:text-xl lg:text-2xl text-[hsl(var(--marketing-text-light))] mb-4 max-w-2xl mx-auto leading-relaxed px-4 md:px-0">
-            Encrypted URLs • Auto-Burn on Screenshot • Device Fingerprinting
-          </p>
+          {/* Rotating Subheadline */}
+          <div className="h-16 md:h-12 mb-4 flex items-center justify-center">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={featureIndex}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.4 }}
+                className="text-lg md:text-xl lg:text-2xl text-[hsl(var(--marketing-text-light))] max-w-2xl mx-auto leading-relaxed px-4 md:px-0 bg-clip-text text-transparent bg-gradient-to-r from-[hsl(var(--marketing-text))] via-[hsl(var(--marketing-text-light))] to-[hsl(var(--marketing-text))]"
+              >
+                {ROTATING_FEATURES[featureIndex].sub}
+              </motion.p>
+            </AnimatePresence>
+          </div>
+
           <p className="text-base md:text-lg text-[hsl(var(--marketing-text-light))]/70 mb-8 md:mb-10 max-w-xl mx-auto">
             The only menu system built for operators who need to disappear.
           </p>

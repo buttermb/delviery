@@ -5,7 +5,10 @@
   "version": "1.0.0",
   "start_url": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#0f1419",
   "theme_color": "#2dd4bf",
   "orientation": "any",
@@ -129,22 +132,6 @@
           "sizes": "96x96"
         }
       ]
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/screenshots/dashboard-wide.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Admin Dashboard"
-    },
-    {
-      "src": "/screenshots/dashboard-narrow.png",
-      "sizes": "540x960",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Mobile Dashboard"
     }
   ],
   "related_applications": [],

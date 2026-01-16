@@ -4,10 +4,10 @@
 // Framework: Workbox v7 | Cache Strategy: Network-first with fallback
 // Build System: Vite 5.0 | State Management: TanStack Query
 // Contact: contact@webflowstudios.dev for technical inquiries
-// Version: 4.0.0 | Last Updated: January 2025 | FORCE CACHE BUST
+// Version: 4.1.0 | Last Updated: January 2025 | FORCE CACHE BUST
 
 // Cache Configuration - Simplified versioning
-const CACHE_VERSION = 'v12'; // Increment this manually on each deploy - bumped to fix response cloning issues
+const CACHE_VERSION = 'v13'; // Increment this manually on each deploy
 const CACHE_NAME = `nym-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nym-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE = `nym-images-${CACHE_VERSION}`;
@@ -20,9 +20,9 @@ const CACHE_DURATION = {
 
 // Endpoints that should always fetch fresh data
 const REALTIME_BYPASS_PATTERNS = [
-  '/rest/v1/',           // Supabase REST API
-  '/realtime/v1/',       // Supabase Realtime
-  '/functions/v1/',      // Edge functions
+  /.*\/rest\/v1\/.*/,           // Supabase REST API
+  /.*\/realtime\/v1\/.*/,       // Supabase Realtime
+  /.*\/functions\/v1\/.*/,      // Edge functions
 ];
 
 // Critical admin endpoints that need fresh data
@@ -108,7 +108,9 @@ self.addEventListener('fetch', (event) => {
   }
 
   // API calls - Stale-while-revalidate for non-admin endpoints
-  if (url.pathname.includes('/rest/v1/') || url.pathname.includes('/functions/v1/')) {
+  const isRealtime = REALTIME_BYPASS_PATTERNS.some(pattern => pattern.test(url.href));
+
+  if (isRealtime) {
     const isAdminOrRealtime = ADMIN_ENDPOINTS.some(endpoint => url.pathname.includes(endpoint));
 
     if (isAdminOrRealtime) {
@@ -322,13 +324,74 @@ self.addEventListener('sync', (event) => {
   } else if (event.tag === 'sync-order-status') {
     event.waitUntil(syncOrderStatus());
   } else if (event.tag === 'sync-queue') {
-    // Generic sync queue handled by the client-side sync-queue.ts 
-    // or we can implement the actual sync logic here if we want true background sync
-    // For now, we'll just log it, as the client-side listener on 'online' handles most cases
-    // effectively. True background sync requires duplicating the API logic here.
-    console.log('Background sync triggered for sync-queue');
+    event.waitUntil(processSyncQueue());
   }
 });
+
+// IDB Helper function for SW (no external imports allowed in SW)
+function getDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('floraiq-db', 2);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+  });
+}
+
+async function processSyncQueue() {
+  console.log('[SW] Processing sync queue...');
+
+  try {
+    const db = await getDB();
+    const transaction = db.transaction(['syncQueue'], 'readwrite');
+    const store = transaction.objectStore('syncQueue');
+    const request = store.getAll();
+
+    return new Promise((resolve, reject) => {
+      request.onsuccess = async () => {
+        const items = request.result;
+        if (!items || items.length === 0) {
+          console.log('[SW] No items in sync queue');
+          resolve();
+          return;
+        }
+
+        console.log(`[SW] Found ${items.length} items to sync`);
+
+        for (const item of items) {
+          try {
+            console.log('[SW] Syncing item:', item.url);
+            const response = await fetch(item.url, {
+              method: item.method,
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(item.body),
+            });
+
+            if (response.ok) {
+              // Note: We need a new transaction for each delete if we're inside an async loop 
+              // that awaits fetch, because the original transaction might close.
+              // Alternatively, we can collect IDs to delete and do it in one batch, 
+              // but we want subsequent network calls to proceed even if one fails.
+              const deleteTx = db.transaction(['syncQueue'], 'readwrite');
+              deleteTx.objectStore('syncQueue').delete(item.timestamp);
+              console.log('[SW] Item synced and removed:', item.url);
+            } else {
+              console.error('[SW] Failed to sync item:', item.url, response.status);
+              // Simple retry logic could go here: increment retry count in DB
+            }
+          } catch (error) {
+            console.error('[SW] Error processing sync item:', error);
+          }
+        }
+        resolve();
+      };
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.error('[SW] Failed to open DB for sync:', error);
+  }
+}
 
 async function syncLocationData() {
   try {
