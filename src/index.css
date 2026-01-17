@@ -314,8 +314,8 @@ body.keyboard-open [data-radix-dialog-content] {
   [class*="backdrop-blur"] {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    background-color: rgba(0, 0, 0, 0.8) !important;
-    /* Solid fallback */
+    background-color: hsl(var(--card) / 0.95) !important;
+    /* Solid fallback using theme card color */
   }
 
   /* Disable complex box shadows on mobile */
@@ -599,53 +599,53 @@ body.keyboard-open [data-radix-dialog-content] {
     --motion-normal: 1;
     --motion-preference: var(--motion-normal);
 
-    /* Super Admin Colors - Light Theme */
-    --super-admin-primary: 239 84% 60%;
-    /* Indigo - Bright for light theme */
-    --super-admin-secondary: 271 81% 60%;
-    /* Purple - Bright for light theme */
-    --super-admin-accent: 38 92% 50%;
-    /* Amber - Bright for light theme */
+    /* Super Admin Colors - Light Theme - Premium Indigo */
+    --super-admin-primary: 254 70% 28%;
+    /* #2E1679 - Deep Indigo */
+    --super-admin-secondary: 265 89% 60%;
+    /* #A855F7 - Vivid Purple */
+    --super-admin-accent: 35 89% 60%;
+    /* #F3A73D - Gold */
     --super-admin-bg: 0 0% 100%;
     /* #ffffff - White */
-    --super-admin-surface: 220 14% 96%;
-    /* #f8fafc - Slate 50 */
-    --super-admin-border: 220 13% 91%;
-    /* #e2e8f0 - Slate 200 */
+    --super-admin-surface: 254 30% 98.5%;
+    /* #fdfdff - Very faint indigo tint */
+    --super-admin-border: 254 20% 93%;
+    /* #eef2ff - Subtle indigo border */
     --super-admin-text: 222 47% 11%;
     /* #111827 - Gray 900 */
     --super-admin-text-light: 215 20% 65%;
     /* #6b7280 - Gray 500 */
 
-    /* Tenant Admin Colors - Light Theme */
-    --tenant-primary: 217 91% 55%;
-    /* #2563eb - Blue 600 */
-    --tenant-secondary: 160 84% 35%;
-    /* #059669 - Green 600 */
-    --tenant-accent: 38 92% 45%;
-    /* #d97706 - Amber 600 */
+    /* Tenant Admin Colors - Light Theme - Premium Indigo */
+    --tenant-primary: 254 70% 28%;
+    /* #2E1679 - Deep Indigo */
+    --tenant-secondary: 265 89% 60%;
+    /* #A855F7 - Vivid Purple */
+    --tenant-accent: 35 89% 60%;
+    /* #F3A73D - Gold */
     --tenant-bg: 0 0% 100%;
     /* #ffffff - White */
-    --tenant-surface: 220 14% 96%;
-    /* #f8fafc - Slate 50 */
-    --tenant-border: 220 13% 91%;
-    /* #e2e8f0 - Slate 200 */
+    --tenant-surface: 254 30% 98.5%;
+    /* #fdfdff - Very faint indigo tint */
+    --tenant-border: 254 20% 93%;
+    /* #eef2ff - Subtle indigo border */
     --tenant-text: 222 47% 11%;
     /* #1e293b - Slate 800 */
     --tenant-text-light: 215 20% 65%;
     /* #64748b - Slate 500 */
 
-    /* Customer Portal Colors - Light Theme */
-    --customer-primary: 160 84% 35%;
-    /* #059669 - Emerald 600 */
-    --customer-secondary: 199 89% 45%;
-    /* #0284c7 - Sky 600 */
-    --customer-accent: 0 84% 55%;
-    /* #dc2626 - Red 600 */
+    /* Customer Portal Colors - Light Theme - Premium Emerald */
+    --customer-primary: 160 84% 39%;
+    /* #10B981 - Rich Emerald */
+    --customer-secondary: 254 70% 28%;
+    /* #2E1679 - Indigo Accent */
+    --customer-accent: 35 89% 60%;
+    /* #F3A73D - Gold */
     --customer-bg: 0 0% 100%;
     /* #ffffff - White */
-    --customer-surface: 220 14% 96%;
-    /* #f9fafb - Gray 50 */
+    --customer-surface: 254 30% 99%;
+    /* #fdfdff - Hint of tint */
     --customer-border: 220 13% 91%;
     /* #e5e7eb - Gray 200 */
     --customer-text: 222 47% 11%;
@@ -807,37 +807,37 @@ body.keyboard-open [data-radix-dialog-content] {
     --motion-normal: 1;
     --motion-preference: var(--motion-normal);
 
-    /* Super Admin Colors - Dark Theme */
-    --super-admin-primary: 239 84% 45%;
-    /* Indigo - Muted for dark theme */
-    --super-admin-secondary: 271 81% 48%;
-    /* Purple - Muted for dark theme */
-    --super-admin-accent: 38 92% 42%;
-    /* Amber - Muted for dark theme */
-    --super-admin-bg: 222 47% 11%;
-    /* #0f172a - Slate 900 */
-    --super-admin-surface: 215 28% 17%;
-    /* #1e293b - Slate 800 */
-    --super-admin-border: 217 33% 25%;
-    /* #334155 - Slate 700 */
+    /* Super Admin Colors - Dark Theme - Premium Indigo */
+    --super-admin-primary: 254 80% 65%;
+    /* Bright Indigo */
+    --super-admin-secondary: 265 89% 65%;
+    /* Bright Purple */
+    --super-admin-accent: 35 89% 60%;
+    /* Gold */
+    --super-admin-bg: 222 47% 8%;
+    /* Dark Slate */
+    --super-admin-surface: 222 40% 12%;
+    /* Dark Surface */
+    --super-admin-border: 222 30% 20%;
+    /* Dark Border */
     --super-admin-text: 210 40% 98%;
-    /* #f1f5f9 - Slate 100 */
-    --super-admin-text-light: 215 28% 64%;
-    /* #94a3b8 - Slate 400 */
+    /* White */
+    --super-admin-text-light: 215 20% 70%;
+    /* Gray 400 */
 
-    /* Tenant Admin Colors - Dark Theme */
-    --tenant-primary: 217 91% 65%;
-    /* Blue - Brighter for dark */
-    --tenant-secondary: 160 84% 45%;
-    /* Green - Brighter for dark */
-    --tenant-accent: 38 92% 55%;
-    /* Amber - Brighter for dark */
+    /* Tenant Admin Colors - Dark Theme - Premium Indigo */
+    --tenant-primary: 254 80% 65%;
+    /* Bright Indigo */
+    --tenant-secondary: 265 89% 65%;
+    /* Bright Purple */
+    --tenant-accent: 35 89% 60%;
+    /* Gold */
     --tenant-bg: 222 47% 8%;
-    /* Dark background */
+    /* Dark Slate */
     --tenant-surface: 222 40% 12%;
-    /* Dark surface */
-    --tenant-border: 222 30% 25%;
-    /* Dark border */
+    /* Dark Surface */
+    --tenant-border: 222 30% 20%;
+    /* Dark Border */
     --tenant-text: 0 0% 100%;
     /* White */
     --tenant-text-light: 215 20% 75%;
@@ -845,17 +845,17 @@ body.keyboard-open [data-radix-dialog-content] {
 
     /* Customer Portal Colors - Dark Theme */
     --customer-primary: 160 84% 45%;
-    /* Emerald - Brighter for dark */
-    --customer-secondary: 199 89% 55%;
-    /* Sky - Brighter for dark */
-    --customer-accent: 0 84% 65%;
-    /* Red - Brighter for dark */
+    /* Emerald */
+    --customer-secondary: 254 70% 60%;
+    /* Indigo Accent */
+    --customer-accent: 35 89% 60%;
+    /* Gold */
     --customer-bg: 222 47% 8%;
-    /* Dark background */
+    /* Dark Slate */
     --customer-surface: 222 40% 12%;
-    /* Dark surface */
-    --customer-border: 222 30% 25%;
-    /* Dark border */
+    /* Dark Surface */
+    --customer-border: 222 30% 20%;
+    /* Dark Border */
     --customer-text: 0 0% 100%;
     /* White */
     --customer-text-light: 215 20% 75%;
@@ -1155,7 +1155,7 @@ body.keyboard-open [data-radix-dialog-content] {
   /* Smooth hover states */
   button:hover:not(:disabled),
   a:hover {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Loading state animations */
@@ -1321,7 +1321,7 @@ body.keyboard-open [data-radix-dialog-content] {
   .animate-on-scroll {
     opacity: 0;
     transform: translateY(30px);
-    transition: all 0.6s ease-out;
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
   }
 
   .animate-on-scroll.visible {
@@ -1368,7 +1368,7 @@ body.keyboard-open [data-radix-dialog-content] {
 
   /* Card hover effects */
   .card-hover {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .card-hover:hover {
@@ -1404,7 +1404,7 @@ body.keyboard-open [data-radix-dialog-content] {
   .page-enter-active {
     opacity: 1;
     transform: translateY(0);
-    transition: all 0.3s ease-out;
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
   }
 
   /* Skeleton loading */
@@ -1556,7 +1556,7 @@ body.keyboard-open [data-radix-dialog-content] {
   }
 
   .card-lift {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .card-lift:hover {
@@ -1895,12 +1895,13 @@ body.keyboard-open [data-radix-dialog-content] {
   /* iOS-Specific Mobile Optimizations */
   @media (max-width: 1024px) {
 
-    /* iOS momentum scrolling */
-    main,
-    [role="main"],
+    /* iOS momentum scrolling - ONLY apply to body, not nested containers */
+    /* CRITICAL FIX: Removed `-webkit-overflow-scrolling: touch` from main
+     * This was causing scroll hijacking where the grid scrolled instead of the page.
+     * The body element already has this property set globally at line 49.
+     */
     .mobile-scroll-container {
       -webkit-overflow-scrolling: touch;
-      overflow-y: auto;
     }
 
     /* REMOVED: Global html/body scroll lock - was preventing admin layout scrolling
@@ -1912,9 +1913,12 @@ body.keyboard-open [data-radix-dialog-content] {
       overscroll-behavior: none;
     }
 
-    /* Ensure main content can scroll independently */
+    /* CRITICAL FIX: main element should NOT have overflow-y: auto
+     * This was creating a nested scroll container that hijacked page scroll.
+     * The page (body) should scroll, not individual content containers.
+     */
     main {
-      overflow-y: auto;
+      overflow: visible;
       /* Removed fixed height constraint - let content determine height */
     }
   }
@@ -2264,7 +2268,7 @@ body.keyboard-open [data-radix-dialog-content] {
 
   /* Trust badge hover */
   .trust-badge {
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
   }
 
   .trust-badge:hover {

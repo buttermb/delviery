@@ -100,19 +100,21 @@ export function StorefrontProductCard({
                     <div className="absolute top-4 right-4 flex flex-col gap-2 translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 ease-out z-10">
                         <button
                             onClick={(e) => { e.preventDefault(); onToggleWishlist(); }}
+                            aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
                             className={cn(
                                 "w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-colors border",
                                 isInWishlist ? "bg-red-50 text-red-500 border-red-100" : "bg-white text-neutral-400 hover:text-red-500 border-white"
                             )}
                         >
-                            <svg className={cn("w-5 h-5 transition-transform active:scale-75", isInWishlist && "fill-current")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
+                            <svg className={cn("w-5 h-5 transition-transform active:scale-75", isInWishlist && "fill-current")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
                         </button>
                         <button
                             onClick={(e) => { e.preventDefault(); onQuickView(); }}
+                            aria-label="Quick view product"
                             className="w-10 h-10 rounded-full bg-white text-neutral-400 hover:text-[#015358] border border-white flex items-center justify-center shadow-lg transition-colors delay-75"
                             style={{ color: isHovered ? accentColor : undefined }}
                         >
-                            <Eye className="w-5 h-5" />
+                            <Eye className="w-5 h-5" aria-hidden="true" />
                         </button>
                     </div>
 
@@ -230,12 +232,12 @@ export function StorefrontProductCard({
                                     exit={{ scale: 0 }}
                                     className="flex items-center"
                                 >
-                                    <Check className="w-4 h-4 mr-1.5" strokeWidth={3} />
+                                    <Check className="w-4 h-4 mr-1.5" strokeWidth={3} aria-hidden="true" />
                                     <span className="text-xs uppercase tracking-wider">Added</span>
                                 </motion.div>
                             ) : (
                                 <div className="flex items-center">
-                                    <Plus className="w-4 h-4 mr-1.5" strokeWidth={3} />
+                                    <Plus className="w-4 h-4 mr-1.5" strokeWidth={3} aria-hidden="true" />
                                     <span className="text-xs uppercase tracking-wider">Add</span>
                                 </div>
                             )}

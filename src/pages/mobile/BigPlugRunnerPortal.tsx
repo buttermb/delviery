@@ -104,7 +104,7 @@ export function BigPlugRunnerPortal() {
 
   if (!runnerId) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="min-h-dvh flex items-center justify-center p-4">
         <Card className="p-8 max-w-md w-full">
           <h2 className="text-2xl font-bold mb-4">Runner Login</h2>
           <p className="text-muted-foreground mb-4">Enter your runner ID to access the portal</p>
@@ -133,7 +133,7 @@ export function BigPlugRunnerPortal() {
   const activeDelivery = activeDeliveries?.[0];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 space-y-4">
+    <div className="min-h-dvh bg-gray-50 p-4 space-y-4">
       {/* Header */}
       <div className="bg-white rounded-lg p-4 shadow">
         <div className="flex items-center justify-between mb-2">

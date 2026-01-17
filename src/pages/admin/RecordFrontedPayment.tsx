@@ -107,7 +107,7 @@ export default function RecordFrontedPayment() {
 
   if (!frontedItem) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-dvh flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
@@ -116,7 +116,7 @@ export default function RecordFrontedPayment() {
   const amountOwed = (frontedItem.expected_revenue || 0) - (frontedItem.payment_received || 0);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <SEOHead title="Record Payment | Inventory Management" />
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">

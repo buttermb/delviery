@@ -190,7 +190,7 @@ export default function CartPage() {
   const themeColor = isLuxuryTheme ? accentColor : store.primary_color;
 
   return (
-    <div className={`container mx-auto px-4 py-8 ${isLuxuryTheme ? 'min-h-screen' : ''}`}>
+    <div className={`container mx-auto px-4 py-8 ${isLuxuryTheme ? 'min-h-dvh' : ''}`}>
       <h1 className={`text-3xl font-bold mb-8 ${isLuxuryTheme ? 'text-white font-extralight tracking-wide' : ''}`}>
         Shopping Cart
       </h1>

@@ -76,7 +76,7 @@ export default function TrialExpiredPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--tenant-bg))]">
+    <div className="min-h-dvh bg-[hsl(var(--tenant-bg))]">
       {/* Header */}
       <header className="border-b border-[hsl(var(--tenant-border))] bg-white sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-6 py-4">

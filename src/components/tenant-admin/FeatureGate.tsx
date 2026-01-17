@@ -79,7 +79,7 @@ export function FeatureGate({ featureId, children, fallback }: FeatureGateProps)
   
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+      <div className="min-h-dvh flex items-center justify-center bg-background p-6">
         <div className="max-w-md w-full text-center space-y-4">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
             <span className="text-3xl">{icon}</span>

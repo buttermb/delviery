@@ -61,7 +61,7 @@ export function HeroSection({ content, styles }: HeroSectionProps) {
     }, []);
 
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden" style={{ backgroundColor: background_gradient_start }}>
+        <section className="relative min-h-dvh flex items-center justify-center overflow-hidden" style={{ backgroundColor: background_gradient_start }}>
 
             {/* Animated background */}
             <div className="absolute inset-0">

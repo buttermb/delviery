@@ -31,7 +31,7 @@ export default function ComingSoonPage({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+    <div className="min-h-dvh flex items-center justify-center p-4 bg-background">
       <Card className="max-w-2xl w-full">
         <CardContent className="pt-12 pb-12 text-center space-y-6">
           {/* Icon */}

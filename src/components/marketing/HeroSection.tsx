@@ -54,7 +54,7 @@ export function HeroSection() {
   ];
 
   return (
-    <section ref={ref} className="hero-gradient text-white py-20 md:py-32 relative overflow-hidden min-h-screen flex items-center">
+    <section ref={ref} className="hero-gradient text-white py-20 md:py-32 relative overflow-hidden min-h-dvh flex items-center">
       {/* Conditionally render heavy animations - desktop only when in view */}
       {!isMobile && shouldAnimate && (
         <Suspense fallback={null}>

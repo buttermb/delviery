@@ -48,7 +48,7 @@ export default function ClientPortalPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-4 md:p-8">
+      <div className="min-h-dvh bg-background p-4 md:p-8">
         <div className="max-w-6xl mx-auto space-y-6">
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-64 w-full" />
@@ -61,7 +61,7 @@ export default function ClientPortalPage() {
   // Error state (404 for invalid token)
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-background flex items-center justify-center p-4">
         <Alert className="max-w-md" variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Portal Access Denied</AlertTitle>
@@ -75,7 +75,7 @@ export default function ClientPortalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-6">
         {/* Header */}
         <PortalHeader client={data.client} />

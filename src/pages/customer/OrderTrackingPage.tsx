@@ -69,7 +69,7 @@ export default function OrderTrackingPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--customer-bg))]">
+      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--customer-bg))]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -77,7 +77,7 @@ export default function OrderTrackingPage() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
+      <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
         <CustomerMobileNav />
         <div className="container mx-auto p-6">
           <Card>
@@ -97,7 +97,7 @@ export default function OrderTrackingPage() {
   const orderStatus = (order.status as OrderStatus) || "pending";
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
+    <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
       <CustomerMobileNav />
 
       <div className="container mx-auto p-4 md:p-6 space-y-6">

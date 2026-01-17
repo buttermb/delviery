@@ -141,7 +141,7 @@ export function ModernSidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-background border-r border-border flex flex-col z-40">
+    <aside className="fixed left-0 top-0 h-dvh w-64 bg-background border-r border-border flex flex-col z-40">
       {/* Header */}
       <div className="p-4 border-b border-border">
         <NavLink to={getFullPath('/admin/dashboard')} className="flex items-center gap-2">

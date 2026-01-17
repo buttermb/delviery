@@ -431,7 +431,7 @@ export default function TenantAdminBillingPage() {
   const isOnTrial = tenant?.subscription_status === 'trial';
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <div className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {/* Back Button and Header */}
         <div className="flex items-center gap-4">

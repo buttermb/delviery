@@ -10,7 +10,7 @@ export default function CourierSettingsPage() {
   const { courier, role } = useCourier();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container flex h-16 items-center gap-4 px-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/courier/dashboard')}>

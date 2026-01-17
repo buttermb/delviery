@@ -195,7 +195,7 @@ export function PackageScanner({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Scan className="h-5 w-5" />
+            <Scan className="h-5 w-5" aria-hidden="true" />
             Package Scanner
           </CardTitle>
           <CardDescription>
@@ -216,7 +216,7 @@ export function PackageScanner({
               {!isScanning && (
                 <div className="h-full flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
-                    <Scan className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <Scan className="h-12 w-12 mx-auto mb-2 opacity-50" aria-hidden="true" />
                     <p className="text-sm">Camera scanner will appear here</p>
                   </div>
                 </div>
@@ -229,10 +229,12 @@ export function PackageScanner({
                 <Button
                   variant="secondary"
                   size="icon"
+                  aria-label={torchOn ? "Turn off flashlight" : "Turn on flashlight"}
+                  aria-pressed={torchOn}
                   className={`rounded-full h-12 w-12 shadow-lg ${torchOn ? 'bg-yellow-400 text-black hover:bg-yellow-500' : 'bg-black/50 text-white hover:bg-black/70'}`}
                   onClick={toggleTorch}
                 >
-                  <Flashlight className={`h-6 w-6 ${torchOn ? 'fill-current' : ''}`} />
+                  <Flashlight className={`h-6 w-6 ${torchOn ? 'fill-current' : ''}`} aria-hidden="true" />
                 </Button>
               </div>
             )}
@@ -242,7 +244,7 @@ export function PackageScanner({
           <div className="flex gap-2">
             {!isScanning ? (
               <Button onClick={startScanning} className="flex-1" size="lg">
-                <Scan className="h-4 w-4 mr-2" />
+                <Scan className="h-4 w-4 mr-2" aria-hidden="true" />
                 Start Scanning
               </Button>
             ) : (
@@ -256,7 +258,7 @@ export function PackageScanner({
           {error && (
             <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
               <div className="flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 text-destructive mt-0.5" />
+                <AlertCircle className="h-4 w-4 text-destructive mt-0.5" aria-hidden="true" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-destructive">Scan Error</p>
                   <p className="text-xs text-destructive/80 mt-1">{error}</p>
@@ -271,7 +273,7 @@ export function PackageScanner({
               <CardContent className="pt-4">
                 <div className="flex items-start gap-3">
                   <div className="rounded-full bg-primary/10 p-2">
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
+                    <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden="true" />
                   </div>
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center justify-between">
@@ -280,11 +282,11 @@ export function PackageScanner({
                     </div>
                     <div className="space-y-1 text-sm">
                       <div className="flex items-center gap-2">
-                        <Package className="h-4 w-4 text-muted-foreground" />
+                        <Package className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                         <span className="font-medium">{lastScanned.product.name}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <MapPin className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                         <span>{lastScanned.location.name}</span>
                       </div>
                       <div>

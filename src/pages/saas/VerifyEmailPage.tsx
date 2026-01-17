@@ -112,7 +112,7 @@ export default function VerifyEmailPage() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4 relative">
+      <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4 relative">
         {/* Back Button */}
         <Button
           variant="ghost"

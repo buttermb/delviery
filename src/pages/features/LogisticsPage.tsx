@@ -94,7 +94,7 @@ const faqs = [
 export default function LogisticsPage() {
     return (
         <ForceLightMode>
-            <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+            <div className="min-h-dvh bg-slate-50 font-sans text-slate-900">
                 <SEOHead
                     title="Smart Cannabis Delivery Route Optimization | Driver Tracking | FloraIQ"
                     description="Reduce fuel costs by 30% and increase delivery stops per hour with FloraIQ's intelligent route optimization. Real-time GPS tracking, proof of delivery, and driver mobile app. Start your free trial."

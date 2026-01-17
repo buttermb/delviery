@@ -354,7 +354,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   // Show error UI after multiple failures
   if (verificationError) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="min-h-dvh flex items-center justify-center p-4">
         <Card className="max-w-md w-full p-6">
           <div className="flex items-center gap-3 mb-4">
             <AlertCircle className="h-6 w-6 text-destructive" />

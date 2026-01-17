@@ -20,7 +20,7 @@ export default function NotFoundPage() {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-6">
+    <div className="flex min-h-dvh items-center justify-center bg-background p-6">
       <Card className="max-w-2xl w-full">
         <CardContent className="pt-12 pb-12 px-6 text-center space-y-8">
           {/* 404 Display */}

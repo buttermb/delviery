@@ -238,7 +238,7 @@ export default function ShopLayout() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-dvh bg-background">
         <header className="border-b">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <Skeleton className="h-10 w-40" />
@@ -263,7 +263,7 @@ export default function ShopLayout() {
   // Store not found
   if (error || !store) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-dvh bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-2">Store Not Found</h1>
           <p className="text-muted-foreground mb-4">
@@ -278,7 +278,7 @@ export default function ShopLayout() {
   // Store inactive - show different message for public vs preview
   if (!store.is_active && !isPreviewMode) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-dvh bg-background flex items-center justify-center">
         <div className="text-center">
           <Clock className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
           <h1 className="text-2xl font-bold mb-2">Coming Soon</h1>
@@ -310,7 +310,7 @@ export default function ShopLayout() {
 
     return (
       <div
-        className="min-h-screen flex items-center justify-center"
+        className="min-h-dvh flex items-center justify-center"
         style={{ backgroundColor: store.primary_color }}
       >
         <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
@@ -365,7 +365,7 @@ export default function ShopLayout() {
   if (isLuxuryTheme) {
     return (
       <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode }}>
-        <div className="min-h-screen bg-[#F5F7F8] text-neutral-900" style={themeStyles}>
+        <div className="min-h-dvh bg-[#F5F7F8] text-neutral-900" style={themeStyles}>
           {/* Admin Preview Banner */}
           {isPreviewMode && (
             <div className="bg-amber-500 text-amber-950 px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
@@ -419,7 +419,7 @@ export default function ShopLayout() {
   return (
     <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode }}>
       <div
-        className={`min-h-screen ${isLuxuryTheme ? 'bg-black' : 'bg-background'}`}
+        className={`min-h-dvh ${isLuxuryTheme ? 'bg-black' : 'bg-background'}`}
         style={themeStyles}
       >
         {/* Admin Preview Banner */}

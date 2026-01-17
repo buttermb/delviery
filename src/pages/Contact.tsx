@@ -49,7 +49,7 @@ export default function Contact() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
+      <div className="min-h-dvh bg-[hsl(var(--marketing-bg))]">
         <SEOHead
           title="Contact Us - FloraIQ | Get in Touch"
           description="Contact FloraIQ support, sales, or schedule a demo. We're here to help with your wholesale distribution needs."

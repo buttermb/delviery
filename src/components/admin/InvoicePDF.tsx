@@ -239,7 +239,7 @@ export function InvoiceDownloadButton({ invoice }: { invoice: InvoiceData }) {
 // Component for viewing PDF in browser
 export function InvoiceViewer({ invoice }: { invoice: InvoiceData }) {
   return (
-    <div className="w-full h-screen">
+    <div className="w-full h-dvh">
       <PDFViewer width="100%" height="100%">
         <InvoicePDF invoice={invoice} />
       </PDFViewer>

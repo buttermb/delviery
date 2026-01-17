@@ -126,7 +126,7 @@ export default function InteractiveDemoPage() {
 
     return (
         <ForceLightMode>
-            <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 selection:bg-emerald-100 selection:text-emerald-900">
+            <div className="min-h-dvh bg-neutral-50 font-sans text-neutral-900 selection:bg-emerald-100 selection:text-emerald-900">
                 <SEOHead
                     title="Interactive Product Tour - FloraIQ"
                     description="Explore the FloraIQ platform. Interactive demos of Dashboard, Logistics, Inventory, and POS features."

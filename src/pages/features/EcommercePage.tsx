@@ -109,7 +109,7 @@ const testimonials = [
 export default function EcommercePage() {
     return (
         <ForceLightMode>
-            <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+            <div className="min-h-dvh bg-slate-50 font-sans text-slate-900">
                 <SEOHead
                     title="B2B Cannabis E-Commerce Platform | Wholesale Ordering Portal | FloraIQ"
                     description="Give your retailers a modern B2B ordering experience. Live inventory sync, custom price tiers, one-click reordering, and 24/7 online ordering. Retailers order 3x more often. Start your free trial."

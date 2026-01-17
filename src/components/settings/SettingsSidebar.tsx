@@ -83,7 +83,7 @@ export function SettingsSidebar({
     <div
       className={cn(
         'flex flex-col bg-muted/30 border-r',
-        isMobile ? 'w-full h-full' : 'w-64 min-h-screen sticky top-0',
+        isMobile ? 'w-full h-full' : 'w-64 min-h-dvh sticky top-0',
         className
       )}
     >

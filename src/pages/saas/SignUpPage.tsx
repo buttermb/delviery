@@ -574,7 +574,7 @@ export default function SignUpPage() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen bg-slate-50 dark:bg-zinc-950/50 relative overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-dvh bg-slate-50 dark:bg-zinc-950/50 relative overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
         {/* Back to Home Button */}
         <Button
           variant="ghost"

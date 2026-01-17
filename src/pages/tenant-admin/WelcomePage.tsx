@@ -93,7 +93,7 @@ export default function TenantAdminWelcomePage() {
     : 14;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[hsl(var(--tenant-bg))] to-[hsl(var(--tenant-surface))]/30">
+    <div className="min-h-dvh bg-gradient-to-br from-[hsl(var(--tenant-bg))] to-[hsl(var(--tenant-surface))]/30">
       <div className="container mx-auto px-2 sm:px-4 py-6 sm:py-8 md:py-12 max-w-6xl">
         {/* Welcome Header */}
         <div className="text-center mb-6 sm:mb-8 md:mb-12">

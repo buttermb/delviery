@@ -178,7 +178,7 @@ export default function WelcomeOnboarding() {
   }, [isComplete, showCompletionModal, effectiveTenantId]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-dvh bg-white">
       <SEOHead
         title="Welcome to DevPanel"
         description="Your account is ready. Let's get you set up."

@@ -135,7 +135,7 @@ function ProductCard({
 
   return (
     <Card className={cn(
-      "overflow-hidden transition-all duration-300 group",
+      "overflow-hidden transition-colors duration-300 group",
       "hover:shadow-xl hover:shadow-primary/10",
       justAdded && "ring-2 ring-emerald-500 ring-offset-2"
     )}>
@@ -239,7 +239,7 @@ function ProductCard({
                 variant={selectedWeight === weight ? 'default' : 'outline'}
                 onClick={() => onWeightChange(weight)}
                 className={cn(
-                  "h-9 px-3 text-sm font-medium transition-all",
+                  "h-9 px-3 text-sm font-medium transition-colors",
                   selectedWeight === weight && "shadow-md"
                 )}
               >
@@ -451,7 +451,7 @@ const SecureMenuView = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-dvh bg-background flex items-center justify-center">
         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     );
@@ -466,7 +466,7 @@ const SecureMenuView = () => {
   const cartMap = new Map(cartItems.map(item => [item.productId, item]));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+    <div className="min-h-dvh bg-gradient-to-b from-background to-muted/30">
       {/* Header */}
       <div className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20 shadow-sm">
         <div className="container mx-auto px-4 py-4">

@@ -7,7 +7,7 @@ const Hero = () => {
   const navigate = useNavigate();
   
   return (
-    <section className="relative min-h-[85vh] md:min-h-screen flex items-center justify-center overflow-hidden bg-background">
+    <section className="relative min-h-[85vh] md:min-h-dvh flex items-center justify-center overflow-hidden bg-background">
       {/* Solid gradient background - no image */}
       <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/20 to-background z-0" />
       

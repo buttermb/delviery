@@ -117,7 +117,7 @@ export default function CustomerForgotPasswordPage() {
 
   if (tenantLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--customer-bg))]">
+      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--customer-bg))]">
         <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--customer-primary))]" />
       </div>
     );
@@ -125,7 +125,7 @@ export default function CustomerForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--customer-bg))] p-4">
+      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--customer-bg))] p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="text-center space-y-4">
@@ -157,7 +157,7 @@ export default function CustomerForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--customer-bg))] p-4">
+    <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--customer-bg))] p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">

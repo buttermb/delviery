@@ -561,7 +561,7 @@ export function SmartDashboard() {
   }, [menus]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+    <div className="min-h-dvh bg-gradient-to-b from-background to-muted/20">
       {/* Enhanced Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-lg border-b shadow-sm">
         <div className="container mx-auto px-4 py-4">

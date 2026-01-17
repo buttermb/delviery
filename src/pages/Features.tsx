@@ -77,7 +77,7 @@ export default function Features() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
+      <div className="min-h-dvh bg-[hsl(var(--marketing-bg))]">
         <SEOHead
           title="Features - FloraIQ | Everything You Need in One Platform"
           description="Comprehensive features for wholesale distributors: disposable menus, inventory tracking, order management, customer portal, and analytics."

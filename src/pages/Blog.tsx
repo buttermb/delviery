@@ -69,7 +69,7 @@ export default function Blog() {
   const categories = ["All Posts", "Best Practices", "Industry Insights", "Guides", "Operations", "Case Studies", "Business"];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <SEOHead
         title="Blog - Insights & Resources | FloraIQ"
         description="Read the latest insights, best practices, and industry trends for wholesale distribution management. Expert tips to help grow your business."

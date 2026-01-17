@@ -63,7 +63,7 @@ export default function Careers() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <SEOHead
         title="Careers - Join Our Team | FloraIQ"
         description="Join FloraIQ and help revolutionize wholesale distribution management. Explore open positions and build your career with us."

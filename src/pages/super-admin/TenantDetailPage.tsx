@@ -257,7 +257,7 @@ export default function TenantDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--super-admin-bg))]">
+      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--super-admin-bg))]">
         <p className="text-[hsl(var(--super-admin-text))]/70">Loading tenant details...</p>
       </div>
     );
@@ -265,7 +265,7 @@ export default function TenantDetailPage() {
 
   if (!tenant) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--super-admin-bg))]">
+      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--super-admin-bg))]">
         <Card className="max-w-md bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl border-white/10">
           <CardContent className="pt-6">
             <p className="text-center text-[hsl(var(--super-admin-text))]/70">Tenant not found</p>
@@ -300,7 +300,7 @@ export default function TenantDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--super-admin-bg))]">
+    <div className="min-h-dvh bg-[hsl(var(--super-admin-bg))]">
       <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

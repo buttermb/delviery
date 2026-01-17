@@ -39,7 +39,7 @@ export function SaasAdminLayout() {
 
   return (
     <SidebarProvider defaultOpen>
-      <div className="min-h-screen flex w-full bg-[hsl(var(--super-admin-bg))]">
+      <div className="min-h-dvh flex w-full bg-[hsl(var(--super-admin-bg))]">
         <SaasAdminSidebar />
 
         <div className="flex-1 flex flex-col min-h-0">

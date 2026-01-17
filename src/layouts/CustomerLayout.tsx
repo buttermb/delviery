@@ -10,7 +10,7 @@ interface CustomerLayoutProps {
 
 export default function CustomerLayout({ children, showBackHome = false }: CustomerLayoutProps) {
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="min-h-dvh bg-black flex flex-col">
       
       {/* Navigation - Same as homepage */}
       <Navigation />

@@ -36,7 +36,7 @@ export default function IntegrationsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
+    <div className="min-h-dvh bg-[hsl(var(--marketing-bg))]">
       <SEOHead
         title="Integrations - DevPanel"
         description="Connect DevPanel with your favorite tools and platforms. REST API, Webhooks, and more."

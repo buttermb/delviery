@@ -96,7 +96,7 @@ export class ErrorBoundary extends Component<Props, State> {
         : 'We encountered an unexpected error. Don\'t worry, your data is safe.');
 
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <div className="min-h-dvh flex items-center justify-center p-4 bg-background">
           <Card className="max-w-md w-full">
             <CardHeader>
               <div className="flex items-center gap-2">

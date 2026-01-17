@@ -23,7 +23,7 @@ export function PlatformSidebar() {
     const isActive = (href: string) => location.pathname === href;
 
     return (
-        <div className="w-64 h-screen bg-card border-r flex flex-col fixed left-0 top-0 z-40">
+        <div className="w-64 h-dvh bg-card border-r flex flex-col fixed left-0 top-0 z-40">
             <div className="p-6 border-b flex items-center gap-3">
                 <div className="w-8 h-8 bg-destructive rounded-lg flex items-center justify-center text-destructive-foreground font-bold">P</div>
                 <div>

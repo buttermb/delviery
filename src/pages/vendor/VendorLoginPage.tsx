@@ -47,7 +47,7 @@ export default function VendorLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-muted/50">
+    <div className="min-h-dvh flex items-center justify-center p-4 bg-muted/50">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Vendor Portal Login</CardTitle>

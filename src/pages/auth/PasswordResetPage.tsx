@@ -179,7 +179,7 @@ export default function PasswordResetPage() {
 
   if (verifying) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${theme.bg} p-4`}>
+      <div className={`min-h-dvh flex items-center justify-center ${theme.bg} p-4`}>
         <Card className={`max-w-md w-full ${theme.card} shadow-xl`}>
           <CardContent className="pt-6 text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-[hsl(var(--super-admin-primary))]" />
@@ -192,7 +192,7 @@ export default function PasswordResetPage() {
 
   if (!valid) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${theme.bg} p-4`}>
+      <div className={`min-h-dvh flex items-center justify-center ${theme.bg} p-4`}>
         <Card className={`max-w-md w-full ${theme.card} shadow-xl`}>
           <CardHeader>
             <CardTitle className={`flex items-center gap-2 ${theme.text}`}>
@@ -231,7 +231,7 @@ export default function PasswordResetPage() {
 
   if (success) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${theme.bg} p-4`}>
+      <div className={`min-h-dvh flex items-center justify-center ${theme.bg} p-4`}>
         <Card className={`max-w-md w-full ${theme.card} shadow-xl`}>
           <CardContent className="pt-6 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
@@ -249,7 +249,7 @@ export default function PasswordResetPage() {
   }
 
   return (
-    <div className={`min-h-screen flex items-center justify-center ${theme.bg} p-4`}>
+    <div className={`min-h-dvh flex items-center justify-center ${theme.bg} p-4`}>
       <Card className={`max-w-md w-full ${theme.card} shadow-xl`}>
         <CardHeader>
           <CardTitle className={`flex items-center gap-2 ${theme.text}`}>

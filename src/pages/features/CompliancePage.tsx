@@ -94,7 +94,7 @@ const faqs = [
 export default function CompliancePage() {
     return (
         <ForceLightMode>
-            <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+            <div className="min-h-dvh bg-slate-50 font-sans text-slate-900">
                 <SEOHead
                     title="Automated Cannabis Compliance Software | Metrc Integration | FloraIQ"
                     description="Stay audit-ready 24/7 with FloraIQ's automated compliance platform. Real-time Metrc sync every 5 minutes, auto-generated manifests, discrepancy alerts, and complete audit trail. Start your free trial today."

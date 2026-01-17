@@ -14,7 +14,7 @@ export default function StatusPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
+    <div className="min-h-dvh bg-[hsl(var(--marketing-bg))]">
       <SEOHead 
         title="System Status - DevPanel"
         description="Current status and uptime for all DevPanel services"

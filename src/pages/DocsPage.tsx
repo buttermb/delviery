@@ -35,7 +35,7 @@ export default function DocsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <SEOHead 
         title="API Documentation - DevPanel"
         description="Complete API documentation for DevPanel. RESTful endpoints, authentication, and integration guides."

@@ -385,7 +385,7 @@ export default function DeliveryManagement() {
   );
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-dvh bg-background p-6">
       <SEOHead title="Delivery Management | Admin" description="Manage deliveries and couriers" />
 
       {/* Header */}

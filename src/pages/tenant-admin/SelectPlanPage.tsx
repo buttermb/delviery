@@ -275,7 +275,7 @@ export default function SelectPlanPage() {
 
   if (loadingPlans) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-dvh bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
           <p className="text-muted-foreground">Loading plans...</p>
@@ -286,7 +286,7 @@ export default function SelectPlanPage() {
 
   if (plans.length === 0) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>No Plans Available</CardTitle>
@@ -305,7 +305,7 @@ export default function SelectPlanPage() {
   // Enterprise guard
   if (isEnterprise && hasActiveSubscription) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-2xl">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
@@ -369,7 +369,7 @@ export default function SelectPlanPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-4">
+    <div className="min-h-dvh bg-gradient-to-b from-background to-muted/20 py-12 px-4">
       <div className="w-full max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">

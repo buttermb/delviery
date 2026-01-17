@@ -14,7 +14,7 @@ export const ViewLimitExceeded = ({
   contactInfo
 }: ViewLimitExceededProps) => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+    <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <Card className="w-full max-w-md p-8 text-center">
         <div className="flex justify-center mb-6">
           <div className="relative">

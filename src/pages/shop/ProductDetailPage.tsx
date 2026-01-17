@@ -574,7 +574,7 @@ export default function ProductDetailPage() {
 
   if (productLoading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] pt-24 pb-12">
+      <div className="min-h-dvh bg-[#0a0a0a] pt-24 pb-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <Skeleton className="h-[600px] w-full rounded-3xl bg-white/5" />
@@ -612,7 +612,7 @@ export default function ProductDetailPage() {
     : 0;
 
   return (
-    <div className={`min-h-screen ${isLuxuryTheme ? 'bg-[#050505] text-white selection:bg-white/20' : 'bg-background'}`}>
+    <div className={`min-h-dvh ${isLuxuryTheme ? 'bg-[#050505] text-white selection:bg-white/20' : 'bg-background'}`}>
       {/* Ambient Background Effects */}
       {isLuxuryTheme && (
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">

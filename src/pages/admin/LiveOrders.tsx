@@ -244,7 +244,7 @@ export default function LiveOrders() {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-slate-50 dark:bg-zinc-950">
+    <div className="flex flex-col h-dvh overflow-hidden bg-slate-50 dark:bg-zinc-950">
       <SEOHead
         title="Live Orders | Command Center"
         description="Real-time kitchen and delivery swimlanes"

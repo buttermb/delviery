@@ -120,7 +120,7 @@ export default function RecordFrontedSale() {
   const totalUnits = scannedItems.reduce((sum, i) => sum + i.quantity, 0);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <SEOHead title="Record Sale | Inventory Management" />
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">

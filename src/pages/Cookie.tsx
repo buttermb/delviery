@@ -50,7 +50,7 @@ export default function Cookie() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <SEOHead
         title="Cookie Policy | FloraIQ"
         description="Learn about how FloraIQ uses cookies and similar technologies to improve your experience on our website."

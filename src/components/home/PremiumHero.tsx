@@ -42,7 +42,7 @@ export function PremiumHero() {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0A0A0A]">
+    <section className="relative min-h-dvh flex items-center justify-center overflow-hidden bg-[#0A0A0A]">
       
       {/* Animated background */}
       <div className="absolute inset-0">

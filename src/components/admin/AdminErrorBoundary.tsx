@@ -128,7 +128,7 @@ export class AdminErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-muted/20">
+        <div className="min-h-dvh flex items-center justify-center p-4 bg-muted/20">
           <Card className="max-w-2xl w-full">
             <CardHeader>
               <div className="flex items-center gap-2 text-destructive">

@@ -51,7 +51,7 @@ export default function About() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
+      <div className="min-h-dvh bg-[hsl(var(--marketing-bg))]">
         <SEOHead
           title="About Us - FloraIQ | Our Mission, Story & Values"
           description="FloraIQ was built by distributors, for distributors. Learn about our mission to modernize wholesale distribution and our team."

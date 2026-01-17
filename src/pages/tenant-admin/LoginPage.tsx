@@ -88,7 +88,7 @@ export default function TenantAdminLoginPage() {
 
   if (tenantLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--tenant-bg))]">
+      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--tenant-bg))]">
         <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--tenant-primary))]" />
       </div>
     );
@@ -96,7 +96,7 @@ export default function TenantAdminLoginPage() {
 
   if (!tenant) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4">
+      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4">
         <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--tenant-surface))] p-8">
           <div className="text-center mb-6">
             <Building2 className="h-12 w-12 text-[hsl(var(--tenant-text-light))] mx-auto mb-4" />
@@ -115,7 +115,7 @@ export default function TenantAdminLoginPage() {
 
   if (mfaRequired) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4">
+      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4">
         <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--tenant-surface))] p-8">
           <TwoFactorVerification
             onVerified={() => {
@@ -137,7 +137,7 @@ export default function TenantAdminLoginPage() {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4 relative overflow-hidden">
+    <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4 relative overflow-hidden">
       {/* Back to Home Button */}
       <Link
         to="/"
@@ -165,7 +165,7 @@ export default function TenantAdminLoginPage() {
       {/* Card Container with Glow Effect */}
       <div className="relative z-10 w-full max-w-md">
         <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--tenant-primary))]/20 to-[hsl(var(--tenant-secondary))]/20 rounded-2xl blur-xl" />
-        <div className="relative bg-card rounded-2xl shadow-2xl border border-border backdrop-blur-sm p-4 sm:p-6 md:p-8">
+        <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 sm:p-6 md:p-8">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
             <div className="flex justify-center mb-3 sm:mb-4">
@@ -208,7 +208,7 @@ export default function TenantAdminLoginPage() {
                 autoComplete="email"
                 inputMode="email"
                 enterKeyHint="next"
-                className="min-h-[44px] sm:h-12 bg-background/50 backdrop-blur-sm transition-all text-sm sm:text-base touch-manipulation"
+                className="min-h-[44px] sm:h-12 bg-white border-gray-200 transition-all text-sm sm:text-base touch-manipulation focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]"
               />
             </div>
 
@@ -226,7 +226,7 @@ export default function TenantAdminLoginPage() {
                 disabled={loading}
                 autoComplete="current-password"
                 enterKeyHint="done"
-                className="min-h-[44px] sm:h-12 bg-background/50 backdrop-blur-sm transition-all text-sm sm:text-base touch-manipulation"
+                className="min-h-[44px] sm:h-12 bg-white border-gray-200 transition-all text-sm sm:text-base touch-manipulation focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]"
               />
             </div>
 

@@ -95,7 +95,7 @@ export default function OrdersListPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0 flex items-center justify-center">
+      <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0 flex items-center justify-center">
         <div className="text-center">
           <RefreshCw className="h-8 w-8 animate-spin text-[hsl(var(--customer-primary))] mx-auto mb-4" />
           <p className="text-[hsl(var(--customer-text-light))]">Loading orders...</p>
@@ -105,7 +105,7 @@ export default function OrdersListPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
+    <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
       {/* Mobile Top Navigation */}
       <CustomerMobileNav />
       

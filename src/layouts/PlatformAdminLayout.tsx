@@ -10,7 +10,7 @@ export default function PlatformAdminLayout() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-screen">
+            <div className="flex items-center justify-center h-dvh">
                 <Loader2 className="h-8 w-8 animate-spin" />
             </div>
         );
@@ -22,11 +22,11 @@ export default function PlatformAdminLayout() {
 
     return (
         <SidebarProvider>
-            <div className="flex min-h-screen w-full bg-muted/40 animate-in fade-in duration-300">
+            <div className="flex min-h-dvh w-full bg-muted/40 animate-in fade-in duration-300">
                 <PlatformSidebar />
                 {/* Main content offset matching sidebar width */}
-                <div className="pl-64 flex-1 flex flex-col min-h-screen">
-                    <main className="flex-1 overflow-y-auto">
+                <div className="pl-64 flex-1 flex flex-col min-h-dvh">
+                    <main className="flex-1 overflow-visible">
                         <div className="p-8">
                             <Outlet />
                         </div>

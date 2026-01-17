@@ -146,14 +146,14 @@ export function AuthPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-dvh flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+    <div className="min-h-dvh bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-4">
         <Button variant="ghost" size="sm" asChild className="mb-4">
           <Link to="/">

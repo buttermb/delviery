@@ -136,18 +136,18 @@ export default function CustomerSignUpPage() {
 
   if (tenantLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--customer-bg))]">
-        <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--customer-primary))]" />
+      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--customer-bg))]">
+        <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--customer-primary))]" aria-hidden="true" />
       </div>
     );
   }
 
   if (!tenant) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--customer-bg))] p-4">
+      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--customer-bg))] p-4">
         <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--customer-border))] p-8">
           <div className="text-center mb-6">
-            <ShoppingBag className="h-12 w-12 text-[hsl(var(--customer-text-light))] mx-auto mb-4" />
+            <ShoppingBag className="h-12 w-12 text-[hsl(var(--customer-text-light))] mx-auto mb-4" aria-hidden="true" />
             <h1 className="text-2xl font-bold text-[hsl(var(--customer-text))] mb-2">Store Not Found</h1>
             <p className="text-[hsl(var(--customer-text-light))]">
               The store "{tenantSlug}" could not be found or is inactive.
@@ -166,7 +166,7 @@ export default function CustomerSignUpPage() {
   const logo = whiteLabel?.logo;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-dvh flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Subtle animated accents */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[hsl(var(--customer-primary))]/20 rounded-full blur-3xl" />
@@ -179,9 +179,9 @@ export default function CustomerSignUpPage() {
           {/* Back Button */}
           <Link
             to={`/${tenantSlug}/customer/login`}
-            className="inline-flex items-center text-sm text-slate-400 hover:text-white mb-6 transition-colors"
+            className="inline-flex items-center text-sm text-slate-400 hover:text-white mb-6 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 rounded-sm"
           >
-            <ArrowLeft className="h-4 w-4 mr-1" />
+            <ArrowLeft className="h-4 w-4 mr-1" aria-hidden="true" />
             Back to login
           </Link>
 
@@ -192,7 +192,7 @@ export default function CustomerSignUpPage() {
                 <img src={logo} alt={businessName} className="h-16 object-contain" />
               ) : (
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[hsl(var(--customer-primary))] shadow-xl">
-                  <ShoppingBag className="w-8 h-8 text-white" />
+                  <ShoppingBag className="w-8 h-8 text-white" aria-hidden="true" />
                 </div>
               )}
             </div>
@@ -219,6 +219,7 @@ export default function CustomerSignUpPage() {
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   required
                   disabled={loading}
+                  autoComplete="given-name"
                   className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
                 />
               </div>
@@ -235,6 +236,7 @@ export default function CustomerSignUpPage() {
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   required
                   disabled={loading}
+                  autoComplete="family-name"
                   className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
                 />
               </div>
@@ -330,10 +332,10 @@ export default function CustomerSignUpPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] rounded-lg"
+              className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-transform duration-300 hover:scale-[1.02] rounded-lg"
             >
               {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
               ) : (
                 "Create Account"
               )}

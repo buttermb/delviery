@@ -27,7 +27,7 @@ export default function CourierEarningsPage() {
   const totals = data?.totals || { commission: 0, tips: 0, bonuses: 0, deliveryFees: 0, total: 0 };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container flex h-16 items-center gap-4 px-4">

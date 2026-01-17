@@ -170,7 +170,7 @@ export default function WholesaleCartPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background pb-16 lg:pb-0">
+      <div className="min-h-dvh bg-background pb-16 lg:pb-0">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-center py-12">
             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
@@ -181,7 +181,7 @@ export default function WholesaleCartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-16 lg:pb-0">
+    <div className="min-h-dvh bg-background pb-16 lg:pb-0">
       {/* Mode Banner */}
       <div className="bg-primary/5 border-b border-primary/20">
         <div className="container mx-auto px-4 py-4">

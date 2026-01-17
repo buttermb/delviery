@@ -163,7 +163,7 @@ export default function WholesaleOrderDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background pb-16 lg:pb-0">
+      <div className="min-h-dvh bg-background pb-16 lg:pb-0">
         <div className="bg-primary/5 border-b border-primary/20">
           <div className="container mx-auto px-4 py-4">
             <ModeBanner currentMode={mode} onModeChange={setMode} />
@@ -180,7 +180,7 @@ export default function WholesaleOrderDetailPage() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-background pb-16 lg:pb-0">
+      <div className="min-h-dvh bg-background pb-16 lg:pb-0">
         <div className="bg-primary/5 border-b border-primary/20">
           <div className="container mx-auto px-4 py-4">
             <ModeBanner currentMode={mode} onModeChange={setMode} />
@@ -221,7 +221,7 @@ export default function WholesaleOrderDetailPage() {
   } || {};
 
   return (
-    <div className="min-h-screen bg-background pb-16 lg:pb-0">
+    <div className="min-h-dvh bg-background pb-16 lg:pb-0">
       {/* Mode Banner */}
       <div className="bg-primary/5 border-b border-primary/20">
         <div className="container mx-auto px-4 py-4">

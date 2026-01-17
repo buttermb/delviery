@@ -91,7 +91,7 @@ export default function StorefrontPage() {
     ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       {sections.map((section: any) => {
         const Component = SECTION_COMPONENTS[section.type];
         if (!Component) {

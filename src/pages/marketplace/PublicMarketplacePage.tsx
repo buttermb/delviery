@@ -103,7 +103,7 @@ export default function PublicMarketplacePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <SEOHead
         title="Wholesale Cannabis Marketplace - FloraIQ"
         description="Browse wholesale cannabis products from verified suppliers. Find premium products, compare prices, and connect with licensed distributors."

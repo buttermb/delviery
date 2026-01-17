@@ -364,7 +364,7 @@ export default function SuperAdminEnhanced() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       {/* Header Bar */}
       <header className="border-b bg-card sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">

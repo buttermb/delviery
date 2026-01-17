@@ -70,7 +70,7 @@ export default function Security() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <SEOHead
         title="Security & Compliance | FloraIQ"
         description="Learn about FloraIQ's enterprise-grade security measures, certifications, and commitment to protecting your business data."

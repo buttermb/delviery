@@ -114,7 +114,7 @@ export default function CustomerDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
+    <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
       {/* Mobile Top Navigation */}
       <CustomerMobileNav />
       
@@ -393,7 +393,7 @@ export default function CustomerDashboardPage() {
                 {recentOrders.map((order: any) => (
                   <div
                     key={order.id}
-                    className="flex items-center justify-between p-4 border border-[hsl(var(--customer-border))] rounded-lg hover:bg-[hsl(var(--customer-surface))] hover:shadow-md cursor-pointer transition-all card-lift"
+                    className="flex items-center justify-between p-4 border border-[hsl(var(--customer-border))] rounded-lg hover:bg-[hsl(var(--customer-surface))] hover:shadow-md cursor-pointer transition-colors card-lift"
                     onClick={() => navigate(`/${tenant?.slug}/shop/orders/${order.id}`)}
                   >
                     <div>

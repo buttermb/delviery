@@ -22,7 +22,7 @@ export default function InvoicePublicPage() {
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+            <div className="flex flex-col items-center justify-center min-h-dvh bg-gradient-to-br from-slate-50 to-slate-100">
                 <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
                 <p className="text-muted-foreground">Loading invoice...</p>
             </div>
@@ -31,7 +31,7 @@ export default function InvoicePublicPage() {
 
     if (error || !invoice) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+            <div className="flex flex-col items-center justify-center min-h-dvh bg-gradient-to-br from-slate-50 to-slate-100 p-4">
                 <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
                     <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <AlertCircle className="h-8 w-8 text-red-500" />
@@ -67,7 +67,7 @@ export default function InvoicePublicPage() {
     const isOverdue = invoice.status === "overdue" || (invoice.status !== "paid" && new Date(invoice.due_date) < new Date());
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-dvh bg-gradient-to-br from-slate-50 via-white to-slate-100 py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto space-y-6">
                 {/* Header Actions */}
                 <div className="flex justify-between items-center print:hidden">

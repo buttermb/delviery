@@ -87,7 +87,7 @@ function CodeInput({
             "w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-mono font-bold",
             "border-2 rounded-lg bg-background/80 backdrop-blur-sm",
             "focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary",
-            "transition-all duration-200",
+            "transition-colors duration-200",
             value[index] ? "border-primary/50 bg-primary/5" : "border-muted-foreground/30",
             disabled && "opacity-50 cursor-not-allowed"
           )}
@@ -118,7 +118,7 @@ function StepIndicator({
         return (
           <div key={step.id} className="flex items-center">
             <div className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all",
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors",
               isActive && "bg-primary text-primary-foreground",
               isComplete && "bg-primary/20 text-primary",
               !isActive && !isComplete && "bg-muted text-muted-foreground"
@@ -287,7 +287,7 @@ const SecureMenuAccess = () => {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-dvh relative overflow-hidden">
       {/* Animated gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <div className="absolute inset-0 opacity-30">
@@ -298,7 +298,7 @@ const SecureMenuAccess = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+      <div className="relative z-10 min-h-dvh flex items-center justify-center p-4">
         <div className="w-full max-w-md space-y-6">
           {/* Header */}
           <div className="text-center space-y-4">

@@ -69,7 +69,7 @@ export default function EncryptedStorePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30">
+      <div className="min-h-dvh flex items-center justify-center bg-muted/30">
         <Card className="w-full max-w-md">
           <CardContent className="pt-8 pb-8 flex flex-col items-center text-center">
             <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
@@ -85,7 +85,7 @@ export default function EncryptedStorePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30">
+      <div className="min-h-dvh flex items-center justify-center bg-muted/30">
         <Card className="w-full max-w-md">
           <CardContent className="pt-8 pb-8 flex flex-col items-center text-center">
             <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
@@ -106,7 +106,7 @@ export default function EncryptedStorePage() {
 
   // Show a brief loading state while redirecting
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30">
+    <div className="min-h-dvh flex items-center justify-center bg-muted/30">
       <Card className="w-full max-w-md">
         <CardContent className="pt-8 pb-8 flex flex-col items-center text-center">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">

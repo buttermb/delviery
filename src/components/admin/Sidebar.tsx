@@ -129,7 +129,7 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-40 h-screen bg-background border-r transition-transform duration-300',
+          'fixed top-0 left-0 z-40 h-dvh bg-background border-r transition-transform duration-300',
           'w-64 lg:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}

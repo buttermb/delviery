@@ -66,7 +66,7 @@ export default function FinanceHubPage() {
     }, [setSearchParams]);
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-dvh bg-background">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <div className="border-b bg-card px-4 py-4">
                     <HubBreadcrumbs

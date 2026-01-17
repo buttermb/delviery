@@ -86,7 +86,7 @@ export function ForgotPasswordDialog({ userType, tenantSlug, trigger }: ForgotPa
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <button className="text-sm text-muted-foreground hover:text-foreground">
+          <button className="text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
             Forgot password?
           </button>
         )}
@@ -117,12 +117,12 @@ export function ForgotPasswordDialog({ userType, tenantSlug, trigger }: ForgotPa
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                 Sending...
               </>
             ) : (
               <>
-                <Mail className="mr-2 h-4 w-4" />
+                <Mail className="mr-2 h-4 w-4" aria-hidden="true" />
                 Send Reset Link
               </>
             )}

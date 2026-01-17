@@ -48,7 +48,7 @@ export default function Press() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <SEOHead
         title="Press & Media - Latest News | DevPanel"
         description="Latest press releases, media coverage, and resources about DevPanel. Download our media kit and stay updated with company news."

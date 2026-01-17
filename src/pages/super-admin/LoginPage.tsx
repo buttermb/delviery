@@ -47,7 +47,7 @@ export default function SuperAdminLoginPage() {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[hsl(var(--super-admin-bg))] p-4">
+    <div className="min-h-dvh flex items-center justify-center relative overflow-hidden bg-[hsl(var(--super-admin-bg))] p-4">
       {/* Back to Home Button */}
       <Link
         to="/"
@@ -90,7 +90,7 @@ export default function SuperAdminLoginPage() {
 
       {/* Frosted Glass Card */}
       <div className="relative z-10 w-full max-w-md">
-        <div className="backdrop-blur-xl bg-[hsl(var(--super-admin-surface))]/80 border border-white/10 rounded-2xl shadow-2xl p-8">
+        <div className="bg-white border border-gray-100 rounded-2xl shadow-2xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
@@ -123,7 +123,7 @@ export default function SuperAdminLoginPage() {
                 autoComplete="email"
                 inputMode="email"
                 enterKeyHint="next"
-                className="bg-[hsl(var(--super-admin-bg))]/50 border-white/10 text-[hsl(var(--super-admin-text))] placeholder:text-[hsl(var(--super-admin-text))]/50 focus:border-[hsl(var(--super-admin-primary))] focus:ring-[hsl(var(--super-admin-primary))]/20 transition-all"
+                className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-[hsl(var(--super-admin-primary))] focus:ring-[hsl(var(--super-admin-primary))]/20 transition-all"
               />
             </div>
 
@@ -141,7 +141,7 @@ export default function SuperAdminLoginPage() {
                 disabled={loading}
                 autoComplete="current-password"
                 enterKeyHint="done"
-                className="bg-[hsl(var(--super-admin-bg))]/50 border-white/10 text-[hsl(var(--super-admin-text))] placeholder:text-[hsl(var(--super-admin-text))]/50 focus:border-[hsl(var(--super-admin-primary))] focus:ring-[hsl(var(--super-admin-primary))]/20 transition-all"
+                className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-[hsl(var(--super-admin-primary))] focus:ring-[hsl(var(--super-admin-primary))]/20 transition-all"
               />
             </div>
 

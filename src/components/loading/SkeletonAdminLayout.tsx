@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 
 export const SkeletonAdminLayout = () => {
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-dvh bg-background">
       {/* Sidebar skeleton */}
       <div className="hidden md:flex w-64 border-r bg-muted/40 p-4">
         <div className="space-y-4 w-full">

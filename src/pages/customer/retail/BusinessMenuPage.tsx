@@ -226,7 +226,7 @@ export default function BusinessMenuPage() {
 
   if (!business) {
     return (
-      <div className="min-h-screen bg-background pb-16 lg:pb-0">
+      <div className="min-h-dvh bg-background pb-16 lg:pb-0">
         <SEOHead
           title="Business Not Found - FloraIQ"
           description="The business you're looking for doesn't exist."
@@ -258,7 +258,7 @@ export default function BusinessMenuPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-16 lg:pb-0">
+    <div className="min-h-dvh bg-background pb-16 lg:pb-0">
       <SEOHead
         title={business ? `${business.business_name} - Products & Menu` : 'Business Menu - FloraIQ'}
         description={business ? `Browse products from ${business.business_name}. Shop cannabis products with secure checkout and fast delivery.` : 'Browse business products and menu items.'}

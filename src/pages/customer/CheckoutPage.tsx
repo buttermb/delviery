@@ -238,7 +238,7 @@ export default function CheckoutPage() {
 
   if (orderPlaced) {
     return (
-      <div className="min-h-screen bg-[hsl(var(--customer-bg))] flex items-center justify-center p-6">
+      <div className="min-h-dvh bg-[hsl(var(--customer-bg))] flex items-center justify-center p-6">
         <SuccessState
           type="order_placed"
           details={orderNumber}
@@ -267,7 +267,7 @@ export default function CheckoutPage() {
   const selectedAddress = savedAddresses.find(addr => addr.id === deliveryInfo.addressId);
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
+    <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
       {/* Mobile Top Navigation */}
       <CustomerMobileNav />
 
@@ -299,16 +299,16 @@ export default function CheckoutPage() {
                 <div className="flex flex-col items-center flex-1">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors ${index <= currentStepIndex
-                        ? "bg-[hsl(var(--customer-primary))] text-white"
-                        : "bg-[hsl(var(--customer-surface))] text-[hsl(var(--customer-text-light))]"
+                      ? "bg-[hsl(var(--customer-primary))] text-white"
+                      : "bg-[hsl(var(--customer-surface))] text-[hsl(var(--customer-text-light))]"
                       }`}
                   >
                     <step.icon className="h-5 w-5" />
                   </div>
                   <span
                     className={`text-sm font-medium ${index <= currentStepIndex
-                        ? "text-[hsl(var(--customer-primary))]"
-                        : "text-[hsl(var(--customer-text-light))]"
+                      ? "text-[hsl(var(--customer-primary))]"
+                      : "text-[hsl(var(--customer-text-light))]"
                       }`}
                   >
                     {step.label}
@@ -317,8 +317,8 @@ export default function CheckoutPage() {
                 {index < steps.length - 1 && (
                   <div
                     className={`flex-1 h-1 mx-2 transition-colors ${index < currentStepIndex
-                        ? "bg-[hsl(var(--customer-primary))]"
-                        : "bg-[hsl(var(--customer-surface))]"
+                      ? "bg-[hsl(var(--customer-primary))]"
+                      : "bg-[hsl(var(--customer-surface))]"
                       }`}
                   />
                 )}
@@ -327,7 +327,7 @@ export default function CheckoutPage() {
           </div>
           <div className="w-full bg-[hsl(var(--customer-surface))] rounded-full h-2">
             <div
-              className="bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] h-2 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] h-2 rounded-full transition-[width] duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>

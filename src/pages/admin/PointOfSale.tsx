@@ -504,7 +504,7 @@ export default function PointOfSale() {
   return (
     <div className={cn(
       "bg-background transition-all duration-300",
-      isFullScreen ? "fixed inset-0 z-[100] p-4 flex flex-col h-screen overflow-hidden" : "p-6 min-h-screen"
+      isFullScreen ? "fixed inset-0 z-[100] p-4 flex flex-col h-dvh overflow-hidden" : "p-6 min-h-dvh"
     )}>
       <SEOHead title="Point of Sale | Admin" description="Process sales and manage transactions" />
 

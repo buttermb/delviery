@@ -97,7 +97,7 @@ export function RouteView({ deliveries, currentLat, currentLng }: RouteViewProps
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-dvh">
       {/* Map */}
       <div className="flex-1 relative">
         <Map

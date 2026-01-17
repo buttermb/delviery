@@ -60,7 +60,7 @@ export default function VendorOrderDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex h-screen items-center justify-center">
+            <div className="flex h-dvh items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         );
@@ -68,7 +68,7 @@ export default function VendorOrderDetailPage() {
 
     if (!order) {
         return (
-            <div className="flex flex-col items-center justify-center h-screen gap-4">
+            <div className="flex flex-col items-center justify-center h-dvh gap-4">
                 <h1 className="text-2xl font-bold">Order Not Found</h1>
                 <Button onClick={() => navigate('/vendor/dashboard')}>Return to Dashboard</Button>
             </div>
@@ -76,7 +76,7 @@ export default function VendorOrderDetailPage() {
     }
 
     return (
-        <div className="min-h-screen bg-background container mx-auto px-4 py-8 space-y-6">
+        <div className="min-h-dvh bg-background container mx-auto px-4 py-8 space-y-6">
             {/* Header */}
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" onClick={() => navigate('/vendor/dashboard')}>

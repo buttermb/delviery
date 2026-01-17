@@ -197,7 +197,7 @@ export default function CustomerMenuViewPage() {
 
   if (menuLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--customer-bg))]">
+      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--customer-bg))]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -205,7 +205,7 @@ export default function CustomerMenuViewPage() {
 
   if (!menu) {
     return (
-      <div className="min-h-screen bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
+      <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
         <CustomerMobileNav />
         <div className="container mx-auto p-6">
           <Card className="bg-white border-[hsl(var(--customer-border))]">
@@ -230,7 +230,7 @@ export default function CustomerMenuViewPage() {
   const requiresAccessCode = !!menu.access_code;
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
+    <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
       {/* Mobile Top Navigation */}
       <CustomerMobileNav />
 

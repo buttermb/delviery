@@ -263,7 +263,7 @@ export default function SelectPlanPage() {
 
   if (checkingAuth || loadingPlans) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-dvh bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
           <p className="text-muted-foreground">Loading plans...</p>
@@ -274,7 +274,7 @@ export default function SelectPlanPage() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-4 relative">
+      <div className="min-h-dvh bg-gradient-to-b from-background to-muted/20 py-12 px-4 relative">
         {/* Back Button */}
         <Button
           variant="ghost"

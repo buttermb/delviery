@@ -174,7 +174,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="text-center space-y-6 p-8">
         {status === "loading" && (
           <>

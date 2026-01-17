@@ -166,7 +166,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
   const activeCategory = selectedCategory || "All";
 
   return (
-    <section className="min-h-screen bg-[#F5F7F8] pb-32" id="products">
+    <section className="min-h-dvh bg-[#F5F7F8] pb-32" id="products">
 
       {/* Search Overlay (if active) */}
       <AnimatePresence>

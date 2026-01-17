@@ -207,7 +207,7 @@ export default function CustomerSettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
+    <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
       {/* Mobile Top Navigation */}
       <CustomerMobileNav />
       

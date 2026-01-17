@@ -156,7 +156,7 @@ export default function AccountSignup() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
+    <div className="min-h-dvh bg-[hsl(var(--marketing-bg))]">
       <SEOHead
         title="Start Your 14-Day Free Trial - FloraIQ"
         description="Sign up for FloraIQ. No credit card required. Get started in 60 seconds."

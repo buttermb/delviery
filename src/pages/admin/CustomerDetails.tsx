@@ -186,7 +186,7 @@ export default function CustomerDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-dvh flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
@@ -194,7 +194,7 @@ export default function CustomerDetails() {
 
   if (!customer) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-dvh flex items-center justify-center">
         <p>Customer not found</p>
       </div>
     );
@@ -204,7 +204,7 @@ export default function CustomerDetails() {
 
   return (
     <SwipeBackWrapper onBack={() => navigateToAdmin('customer-management')}>
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-dvh bg-gray-50 p-6">
         <SEOHead title={`${customer.first_name} ${customer.last_name} | Customer Details`} />
 
         <div className="max-w-7xl mx-auto space-y-6">

@@ -160,7 +160,7 @@ export default function WholesaleOrdersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-16 lg:pb-0">
+    <div className="min-h-dvh bg-background pb-16 lg:pb-0">
       {/* Mode Banner */}
       <div className="bg-primary/5 border-b border-primary/20">
         <div className="container mx-auto px-4 py-4">

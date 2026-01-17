@@ -196,7 +196,7 @@ export default function MenuAccess() {
 
   if (loading || geoChecking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-dvh flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center gap-4">
@@ -211,7 +211,7 @@ export default function MenuAccess() {
 
   if (error || !validation?.access_granted || !geoAccessGranted || !isWithinTimeRestriction()) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-dvh flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
@@ -269,7 +269,7 @@ export default function MenuAccess() {
 
   return (
     <MenuCartProvider>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-dvh bg-background">
         <MenuHeader
           title={menuData.name}
           description={menuData.description}

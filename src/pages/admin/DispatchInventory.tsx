@@ -411,7 +411,7 @@ export default function DispatchInventory() {
   const totals = calculateTotals();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <SEOHead
         title="Dispatch Inventory | Inventory Management"
         description="Front products to drivers or locations"

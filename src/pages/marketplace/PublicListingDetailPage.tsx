@@ -66,7 +66,7 @@ export default function PublicListingDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-dvh bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -74,7 +74,7 @@ export default function PublicListingDetailPage() {
 
   if (!listing) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-dvh bg-background">
         <div className="container mx-auto px-4 py-12">
           <Card>
             <CardContent className="py-12">
@@ -97,7 +97,7 @@ export default function PublicListingDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <SEOHead
         title={`${listing.product_name} - Wholesale Marketplace`}
         description={listing.description || `Browse ${listing.product_name} from ${listing.marketplace_profiles?.business_name} on the FloraIQ wholesale marketplace.`}

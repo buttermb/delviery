@@ -121,7 +121,7 @@ export default function DriverPortal() {
     : null;
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-dvh bg-background pb-20">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b p-4">
         <div className="flex items-center gap-4">

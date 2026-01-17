@@ -31,7 +31,7 @@ export default function DemoConfirmation() {
     : "2:00 PM PST";
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
+    <div className="min-h-dvh bg-[hsl(var(--marketing-bg))]">
       <SEOHead
         title="Demo Scheduled - FloraIQ"
         description="Your demo has been scheduled. We look forward to showing you FloraIQ."

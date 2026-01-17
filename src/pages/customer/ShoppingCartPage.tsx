@@ -183,14 +183,14 @@ export default function ShoppingCartPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--customer-bg))]">
+      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--customer-bg))]">
         <p className="text-[hsl(var(--customer-text-light))]">Loading cart...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
+    <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
       {/* Mobile Top Navigation */}
       <CustomerMobileNav />
       

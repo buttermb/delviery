@@ -145,7 +145,7 @@ export default function DealsPage() {
     );
 
     return (
-        <div className={`min-h-screen pb-20 pt-24 ${isLuxuryTheme ? 'bg-neutral-950' : 'bg-gray-50'}`}>
+        <div className={`min-h-dvh pb-20 pt-24 ${isLuxuryTheme ? 'bg-neutral-950' : 'bg-gray-50'}`}>
             <div className="container mx-auto px-4 max-w-4xl">
                 <div className="text-center mb-12 space-y-4">
                     <h1 className={`text-4xl md:text-5xl font-bold tracking-tight ${isLuxuryTheme ? 'text-white' : 'text-gray-900'}`}>

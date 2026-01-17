@@ -36,7 +36,7 @@ export default function MobileTestPage() {
     };
 
     return (
-        <div className="min-h-screen bg-muted/30 pb-20">
+        <div className="min-h-dvh bg-muted/30 pb-20">
             <div className="p-4 space-y-6">
                 <h1 className="text-2xl font-bold">Mobile Components Test</h1>
 

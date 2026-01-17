@@ -274,7 +274,7 @@ export default function LoginPage() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen bg-slate-50 dark:bg-zinc-950/50 relative overflow-hidden flex items-center justify-center p-4 sm:p-6">
+      <div className="min-h-dvh bg-slate-50 dark:bg-zinc-950/50 relative overflow-hidden flex items-center justify-center p-4 sm:p-6">
         {/* Back to Home Button */}
         <Button
           variant="ghost"

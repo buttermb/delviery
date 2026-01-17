@@ -94,7 +94,7 @@ export default function LoginDirectory() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen bg-white flex flex-col font-sans">
+      <div className="min-h-dvh bg-white flex flex-col font-sans">
         <SEOHead
           title="Login | FloraIQ - Cannabis Technology Platform"
           description="Access your FloraIQ cannabis technology platform. Choose from Business Admin, Customer, Courier, or Vendor portals."

@@ -895,7 +895,7 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
   ];
 
   return (
-    <div className={cn("min-h-screen bg-background pb-20 md:pb-8", embedded && "min-h-0 pb-4")}>
+    <div className={cn("min-h-dvh bg-background pb-20 md:pb-8", embedded && "min-h-0 pb-4")}>
       {/* Header - only show when not embedded */}
       {!embedded && (
         <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b border-border">

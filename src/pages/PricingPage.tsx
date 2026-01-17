@@ -172,7 +172,7 @@ export default function PricingPage() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
+      <div className="min-h-dvh bg-[hsl(var(--marketing-bg))]">
         <SEOHead
           title="Pricing - DevPanel | Simple, Transparent Pricing"
           description="Simple, transparent pricing for wholesale distributors. Plans from $79/month. Start free, upgrade as you grow. 14-day free trial."

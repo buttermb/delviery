@@ -467,7 +467,7 @@ export default function AccountPage() {
 
   // Logged in view
   return (
-    <div className="container mx-auto px-4 py-8 min-h-screen bg-[#F5F7F8]">
+    <div className="container mx-auto px-4 py-8 min-h-dvh bg-[#F5F7F8]">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 bg-white p-6 rounded-3xl shadow-sm border border-neutral-100">
         <div className="flex items-center gap-5">
           <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg" style={{ backgroundColor: store.primary_color }}>

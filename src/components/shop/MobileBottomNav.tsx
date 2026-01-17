@@ -33,7 +33,7 @@ export function MobileBottomNav({ cartItemCount, primaryColor }: MobileBottomNav
   };
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50 safe-area-pb">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50 safe-area-pb" role="navigation" aria-label="Main">
       <div className="grid grid-cols-5 h-16">
         {navItems.map(({ path, icon: Icon, label, badge, exact }) => {
           const active = isActive(path, exact);
@@ -41,14 +41,15 @@ export function MobileBottomNav({ cartItemCount, primaryColor }: MobileBottomNav
             <Link
               key={path}
               to={path}
+              aria-current={active ? 'page' : undefined}
               className={cn(
-                'flex flex-col items-center justify-center gap-1 transition-colors relative',
+                'flex flex-col items-center justify-center gap-1 transition-colors relative min-h-[44px] min-w-[44px]',
                 active ? 'text-primary' : 'text-muted-foreground'
               )}
               style={{ color: active ? primaryColor : undefined }}
             >
               <div className="relative">
-                <Icon className="w-5 h-5" />
+                <Icon className="w-5 h-5" aria-hidden="true" />
                 {badge !== undefined && badge > 0 && (
                   <Badge
                     className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]"

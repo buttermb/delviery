@@ -185,7 +185,7 @@ export function SuperAdminLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       {/* Top Navigation */}
       <TopNav
         onCommandPaletteOpen={() => setCommandPaletteOpen(true)}

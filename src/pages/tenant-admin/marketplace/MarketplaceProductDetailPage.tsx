@@ -156,7 +156,7 @@ export default function MarketplaceProductDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex h-screen items-center justify-center">
+            <div className="flex h-dvh items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         );
@@ -164,7 +164,7 @@ export default function MarketplaceProductDetailPage() {
 
     if (!product) {
         return (
-            <div className="flex flex-col items-center justify-center h-screen gap-4">
+            <div className="flex flex-col items-center justify-center h-dvh gap-4">
                 <h1 className="text-2xl font-bold">Product Not Found</h1>
                 <Button onClick={() => navigate(`/${tenant?.slug}/admin/marketplace/browse`)}>Back to Marketplace</Button>
             </div>

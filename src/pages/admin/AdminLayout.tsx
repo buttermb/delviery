@@ -134,7 +134,7 @@ const AdminLayout = () => {
 
         {/* Unified Layout with Sidebar (Optimized or Classic) */}
         <SidebarProvider>
-          <div className="min-h-screen flex w-full">
+          <div className="min-h-dvh flex w-full">
             <SidebarErrorBoundary>
               {isOptimized ? (
                 <OptimizedSidebar userTier="PROFESSIONAL" />

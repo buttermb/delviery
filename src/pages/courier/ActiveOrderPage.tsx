@@ -153,7 +153,7 @@ export default function CourierActiveOrderPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-dvh flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
       </div>
     );
@@ -161,7 +161,7 @@ export default function CourierActiveOrderPage() {
 
   if (!order) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-dvh flex items-center justify-center">
         <div className="text-center space-y-4">
           <Package className="mx-auto h-12 w-12 text-muted-foreground" />
           <p className="text-muted-foreground">Order not found</p>
@@ -172,7 +172,7 @@ export default function CourierActiveOrderPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container flex h-16 items-center gap-4 px-4">

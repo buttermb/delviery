@@ -61,7 +61,7 @@ export default function MarketingHome() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] font-sans overflow-x-hidden">
+      <div className="min-h-dvh bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] font-sans overflow-x-hidden">
 
         <SEOHead
           title="FloraIQ - Secure Disposable Menus for Cannabis Operators"

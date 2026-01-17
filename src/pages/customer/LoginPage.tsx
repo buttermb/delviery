@@ -20,7 +20,14 @@ export default function CustomerLoginPage() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { login } = useCustomerAuth();
-  const { user } = useAuth(); // Use Supabase auth
+  const { user } = useAuth();
+
+  // State declarations (RAMS fix: missing state)
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [tenant, setTenant] = useState<any>(null);
+  const [tenantLoading, setTenantLoading] = useState(true);
 
   useAuthRedirect(); // Redirect if already logged in
 
@@ -153,15 +160,15 @@ export default function CustomerLoginPage() {
 
   if (tenantLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--customer-bg))]">
-        <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--customer-primary))]" />
+      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--customer-bg))]">
+        <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--customer-primary))]" aria-hidden="true" />
       </div>
     );
   }
 
   if (!tenant) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--customer-bg))] p-4">
+      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--customer-bg))] p-4">
         <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--customer-border))] p-8">
           <div className="text-center mb-6">
             <ShoppingBag className="h-12 w-12 text-[hsl(var(--customer-text-light))] mx-auto mb-4" />
@@ -182,7 +189,7 @@ export default function CustomerLoginPage() {
   const logo = tenant.white_label?.logo;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-dvh flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Subtle animated accents */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[hsl(var(--customer-primary))]/20 rounded-full blur-3xl" />
@@ -193,7 +200,7 @@ export default function CustomerLoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[hsl(var(--customer-primary))] mb-4 shadow-xl animate-scale-in">
-            <ShoppingBag className="w-8 h-8 text-white" />
+            <ShoppingBag className="w-8 h-8 text-white" aria-hidden="true" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
             Welcome Back
@@ -227,7 +234,7 @@ export default function CustomerLoginPage() {
               <>
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] rounded-lg"
+                  className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-transform duration-300 hover:scale-[1.02] rounded-lg"
                   disabled={loading}
                 >
                   {loading ? (
@@ -243,7 +250,7 @@ export default function CustomerLoginPage() {
                   <button
                     type="button"
                     onClick={() => setIsMagicLinkMode(false)}
-                    className="text-sm text-indigo-400 hover:text-indigo-300"
+                    className="text-sm text-indigo-400 hover:text-indigo-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 rounded-sm"
                   >
                     Use Password instead
                   </button>
@@ -270,7 +277,7 @@ export default function CustomerLoginPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] rounded-lg"
+                  className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-transform duration-300 hover:scale-[1.02] rounded-lg"
                   disabled={loading}
                 >
                   {loading ? (
@@ -287,7 +294,7 @@ export default function CustomerLoginPage() {
                   <button
                     type="button"
                     onClick={() => setIsMagicLinkMode(true)}
-                    className="text-sm text-slate-400 hover:text-white transition-colors"
+                    className="text-sm text-slate-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 rounded-sm"
                   >
                     Send magic link instead
                   </button>
@@ -319,7 +326,7 @@ export default function CustomerLoginPage() {
           <div className="mt-6 space-y-4">
             <div className="flex items-center justify-center gap-3 text-sm">
               <ForgotPasswordDialog userType="customer" tenantSlug={tenantSlug}>
-                <button className="text-slate-400 hover:text-white font-medium transition-colors">
+                <button className="text-slate-400 hover:text-white font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 rounded-sm">
                   Forgot password?
                 </button>
               </ForgotPasswordDialog>

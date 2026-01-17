@@ -100,7 +100,7 @@ export default function SuperAdminSettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--super-admin-bg))] p-6">
+    <div className="min-h-dvh bg-[hsl(var(--super-admin-bg))] p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div>

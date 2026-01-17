@@ -66,7 +66,7 @@ export default function VendorDashboardPage() {
   const totalRevenue = orders?.filter(o => o.payment_status === 'paid').reduce((sum, o) => sum + Number(o.total_amount), 0) || 0;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       {/* Header */}
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
