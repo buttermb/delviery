@@ -427,6 +427,7 @@ const TenantAdminAuthCallback = lazy(() => import("./pages/auth/AuthCallbackPage
 const SuperAdminAuthCallback = lazy(() => import("./pages/auth/AuthCallbackPage").then(m => ({ default: m.SuperAdminAuthCallback })));
 const CustomerAuthCallback = lazy(() => import("./pages/auth/AuthCallbackPage").then(m => ({ default: m.CustomerAuthCallback })));
 const MFAChallengePage = lazy(() => import("./pages/auth/MFAChallengePage"));
+const AuthConfirmPage = lazy(() => import("./pages/auth/AuthConfirmPage"));
 
 // Feature Pages (Marketing)
 import FeatureCompliancePage from "./pages/features/CompliancePage";
@@ -624,6 +625,8 @@ const App = () => {
                                       <Route path="/select-plan%3F/*" element={<EncodedUrlRedirect />} />
                                       <Route path="/saas/login" element={<SaasLoginPage />} />
                                       <Route path="/verify-email" element={<VerifyEmailPage />} />
+                                      <Route path="/auth/confirm" element={<AuthConfirmPage />} />
+
 
                                       {/* Redirect admin routes without tenant slug - go directly to business login */}
                                       <Route path="/admin/*" element={<Navigate to="/saas/login" replace />} />
