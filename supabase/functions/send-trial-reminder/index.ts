@@ -1,17 +1,54 @@
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
 
+/**
+ * SECURITY FIX: Added internal API key authentication.
+ * This is a cron/internal-only function that should not be publicly callable.
+ */
+
+const INTERNAL_API_KEY = Deno.env.get("INTERNAL_API_KEY") || "";
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // ========================
+    // SECURITY: Require internal API key for this cron-only function
+    // ========================
+    const providedKey = req.headers.get("x-internal-api-key");
+
+    if (!INTERNAL_API_KEY) {
+      console.error("[TRIAL REMINDER] INTERNAL_API_KEY not configured");
+      return new Response(
+        JSON.stringify({ error: "Function not properly configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!providedKey || providedKey !== INTERNAL_API_KEY) {
+      console.warn("[TRIAL REMINDER] Unauthorized access attempt");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    // ========================
+
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
     const { tenant_id, days_remaining, has_payment_method } = await req.json();
+
+    // Validate required fields
+    if (!tenant_id || days_remaining === undefined) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields: tenant_id, days_remaining" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     console.log(`[TRIAL REMINDER] Sending for tenant ${tenant_id}, ${days_remaining} days left`);
 

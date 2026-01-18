@@ -16,6 +16,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical, Printer, Store } from "lucide-react";
+import { useProductThumbnail } from "@/hooks/useOptimizedImage";
+import LongPressMenu from "@/components/mobile/LongPressMenu";
 
 interface Product {
   id: string;
@@ -52,6 +54,9 @@ export function ProductCard({
   const reorderPoint = typeof product.low_stock_alert === 'number' ? product.low_stock_alert : 10;
   const stockQuantity = availableQty;
 
+  // Optimized image for mobile performance
+  const { src: optimizedImageSrc, srcSet } = useProductThumbnail(product.image_url);
+
   const profitMargin = (cost: number, price: number) => {
     if (!cost || !price) return 0;
     return (((price - cost) / price) * 100).toFixed(1);
@@ -61,7 +66,16 @@ export function ProductCard({
   const wholesalePrice = Number(product.wholesale_price || 0);
   const margin = profitMargin(costPerUnit, wholesalePrice);
 
-  return (
+  // Build long-press menu items for mobile
+  const longPressItems = [
+    ...(onEdit ? [{ label: 'Edit', icon: <Edit className="h-4 w-4" />, onSelect: () => onEdit(product.id) }] : []),
+    ...(onAddToMenu ? [{ label: 'Add to Menu', icon: <Package className="h-4 w-4" />, onSelect: () => onAddToMenu(product.id) }] : []),
+    ...(onPrintLabel && product.sku ? [{ label: 'Print Label', icon: <Printer className="h-4 w-4" />, onSelect: onPrintLabel }] : []),
+    ...(onPublish ? [{ label: 'Publish to Store', icon: <Store className="h-4 w-4" />, onSelect: () => onPublish(product.id) }] : []),
+    ...(onDelete ? [{ label: 'Delete', icon: <Trash2 className="h-4 w-4" />, onSelect: () => onDelete(product.id), destructive: true }] : []),
+  ];
+
+  const cardContent = (
     <Card
       className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] hover:shadow-lg transition-all duration-300 overflow-hidden group hover:scale-[1.02] hover:border-[hsl(var(--tenant-primary))]/30"
     >
@@ -69,8 +83,10 @@ export function ProductCard({
       {product.image_url ? (
         <div className="relative aspect-square overflow-hidden bg-[hsl(var(--tenant-surface))]">
           <img
-            src={product.image_url}
+            src={optimizedImageSrc || product.image_url}
+            srcSet={srcSet}
             alt={product.name}
+            loading="lazy"
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
           {product.category && (
@@ -233,4 +249,15 @@ export function ProductCard({
       </CardContent>
     </Card>
   );
+
+  // Wrap with LongPressMenu for mobile context actions
+  if (longPressItems.length > 0) {
+    return (
+      <LongPressMenu items={longPressItems}>
+        {cardContent}
+      </LongPressMenu>
+    );
+  }
+
+  return cardContent;
 }

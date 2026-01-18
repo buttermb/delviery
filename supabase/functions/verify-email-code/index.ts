@@ -1,6 +1,9 @@
 /**
  * Verify Email Code
  * Verifies customer email using verification code
+ * 
+ * SECURITY: All bypass/development codes have been removed.
+ * Email verification requires a valid code from email_verification_codes table.
  */
 
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
@@ -66,50 +69,49 @@ serve(async (req) => {
       );
     }
 
-    // BYPASS: Development bypass code for testing without email
-    const BYPASS_CODE = '999999';
-    const isBypassCode = code === BYPASS_CODE;
+    // SECURITY: All codes must be validated against email_verification_codes table
+    // No bypass codes are allowed in production
+    const { data: verificationCode, error: codeError } = await supabase
+      .from('email_verification_codes')
+      .select('*')
+      .eq('customer_user_id', customerUser.id)
+      .eq('code', code)
+      .eq('email', email.toLowerCase())
+      .is('verified_at', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    if (!isBypassCode) {
-      // Find verification code (only for non-bypass codes)
-      const { data: verificationCode, error: codeError } = await supabase
-        .from('email_verification_codes')
-        .select('*')
-        .eq('customer_user_id', customerUser.id)
-        .eq('code', code)
-        .eq('email', email.toLowerCase())
-        .is('verified_at', null)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (codeError || !verificationCode) {
-        return new Response(
-          JSON.stringify({ error: 'Invalid verification code' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Check expiration
-      if (new Date(verificationCode.expires_at) < new Date()) {
-        return new Response(
-          JSON.stringify({ error: 'Verification code has expired. Please request a new one.' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Check attempts
-      if (verificationCode.attempts >= verificationCode.max_attempts) {
-        return new Response(
-          JSON.stringify({ error: 'Too many verification attempts. Please request a new code.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Mark verification code as used (after successful verification below)
-      // Store for later use
-      var verificationCodeId = verificationCode.id;
+    if (codeError || !verificationCode) {
+      // Log failed attempt for security monitoring
+      console.warn(`[VERIFY-EMAIL] Invalid code attempt for email: ${email}`);
+      return new Response(
+        JSON.stringify({ error: 'Invalid verification code' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+
+    // Check expiration
+    if (new Date(verificationCode.expires_at) < new Date()) {
+      return new Response(
+        JSON.stringify({ error: 'Verification code has expired. Please request a new one.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check attempts
+    if (verificationCode.attempts >= verificationCode.max_attempts) {
+      return new Response(
+        JSON.stringify({ error: 'Too many verification attempts. Please request a new code.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Increment attempt counter (for rate limiting)
+    await supabase
+      .from('email_verification_codes')
+      .update({ attempts: verificationCode.attempts + 1 })
+      .eq('id', verificationCode.id);
 
     // Verify email
     const { error: updateError } = await supabase
@@ -128,12 +130,12 @@ serve(async (req) => {
     }
 
     // Mark verification code as used
-    if (verificationCodeId) {
-      await supabase
-        .from('email_verification_codes')
-        .update({ verified_at: new Date().toISOString() })
-        .eq('id', verificationCodeId);
-    }
+    await supabase
+      .from('email_verification_codes')
+      .update({ verified_at: new Date().toISOString() })
+      .eq('id', verificationCode.id);
+
+    console.log(`[VERIFY-EMAIL] Successfully verified email for customer: ${customerUser.id}`);
 
     return new Response(
       JSON.stringify({
@@ -153,4 +155,3 @@ serve(async (req) => {
     );
   }
 });
-

@@ -48,6 +48,7 @@ import "nprogress/nprogress.css";
 
 import { NotificationPreferences } from "./components/NotificationPreferences";
 import OfflineBanner from "./components/OfflineBanner";
+import { UpdateBanner } from "./components/mobile/UpdateBanner";
 import { ScrollToTop } from "./components/ScrollToTop";
 import InstallPWA from "./components/InstallPWA";
 import { DeviceTracker } from "./components/DeviceTracker";
@@ -550,6 +551,7 @@ const App = () => {
                                 <WhiteLabelProvider>
                                   <SkipToContent />
                                   <OfflineBanner />
+                                  <UpdateBanner />
                                   <InstallPWA />
                                   <DeviceTracker />
 

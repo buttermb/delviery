@@ -1,14 +1,12 @@
-// Generate Report Edge Function
-// Generates custom reports from various tables
+/**
+ * Generate Report Edge Function
+ * Generates custom reports from various tables
+ * 
+ * SECURITY FIX: Added JWT authentication and tenant ownership verification.
+ * Reports are scoped to the caller's authenticated tenant only.
+ */
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -17,26 +15,67 @@ serve(async (req) => {
   }
 
   try {
+    // ========================
+    // SECURITY: Extract and validate JWT
+    // ========================
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
+      );
+    }
+
+    const jwt = authHeader.replace("Bearer ", "");
+
+    // Create authenticated Supabase client
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
       {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
+        global: { headers: { Authorization: `Bearer ${jwt}` } },
       }
     );
 
-    const { report_type, tenant_id, date_range, filters } = await req.json();
-
-    if (!report_type || !tenant_id) {
+    // Get authenticated user
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
       return new Response(
-        JSON.stringify({ error: "report_type and tenant_id are required" }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
-        }
+        JSON.stringify({ error: "Invalid or expired token" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
+      );
+    }
+
+    // ========================
+    // SECURITY: Look up user's tenant (derive, don't trust client)
+    // ========================
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    const { data: tenantUser, error: tenantUserError } = await serviceClient
+      .from("tenant_users")
+      .select("tenant_id, role, tenants!inner(id, name)")
+      .eq("user_id", user.id)
+      .single();
+
+    if (tenantUserError || !tenantUser) {
+      return new Response(
+        JSON.stringify({ error: "User not associated with a tenant" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+      );
+    }
+
+    // Use the authenticated user's tenant_id (not from client!)
+    const tenant_id = tenantUser.tenant_id;
+
+    const { report_type, date_range, filters } = await req.json();
+
+    if (!report_type) {
+      return new Response(
+        JSON.stringify({ error: "report_type is required" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
       );
     }
 
@@ -47,7 +86,7 @@ serve(async (req) => {
     switch (report_type) {
       case "sales":
         // Sales report
-        const { data: orders, error: ordersError } = await supabaseClient
+        const { data: orders, error: ordersError } = await serviceClient
           .from("orders")
           .select("*")
           .eq("tenant_id", tenant_id)
@@ -66,7 +105,7 @@ serve(async (req) => {
 
       case "inventory":
         // Inventory report
-        const { data: products, error: productsError } = await supabaseClient
+        const { data: products, error: productsError } = await serviceClient
           .from("products")
           .select("*")
           .eq("tenant_id", tenant_id);
@@ -83,7 +122,7 @@ serve(async (req) => {
 
       case "customers":
         // Customer report
-        const { data: customers, error: customersError } = await supabaseClient
+        const { data: customers, error: customersError } = await serviceClient
           .from("customers")
           .select("*")
           .eq("tenant_id", tenant_id)
@@ -104,17 +143,15 @@ serve(async (req) => {
       default:
         return new Response(
           JSON.stringify({ error: `Unknown report_type: ${report_type}` }),
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 400,
-          }
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
         );
     }
 
-    // Log report execution if table exists
+    // Log report execution
     try {
-      await supabaseClient.from("report_executions").insert({
+      await serviceClient.from("report_executions").insert({
         tenant_id,
+        user_id: user.id,
         report_type,
         filters: filters || {},
         executed_at: new Date().toISOString(),
@@ -125,6 +162,8 @@ serve(async (req) => {
       console.warn("Could not log report execution:", error);
     }
 
+    console.log(`[GENERATE-REPORT] ${report_type} report generated for tenant ${tenant_id} by user ${user.email}`);
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -132,20 +171,14 @@ serve(async (req) => {
         data: reportData,
         generated_at: new Date().toISOString(),
       }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error("[GENERATE-REPORT] Error:", errorMessage);
     return new Response(
       JSON.stringify({ error: errorMessage }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
-      }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
     );
   }
 });
-

@@ -3,12 +3,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-internal-api-key',
 };
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const INTERNAL_API_KEY = Deno.env.get('INTERNAL_API_KEY') || '';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -16,6 +16,30 @@ serve(async (req) => {
   }
 
   try {
+    // ========================
+    // SECURITY: Require internal API key for this cron-only function
+    // ========================
+    const providedKey = req.headers.get('x-internal-api-key');
+
+    if (!INTERNAL_API_KEY) {
+      console.error('[RETRY_EMAILS] INTERNAL_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ error: 'Function not properly configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!providedKey || providedKey !== INTERNAL_API_KEY) {
+      console.warn('[RETRY_EMAILS] Unauthorized access attempt');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    // ========================
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
     console.log('[RETRY_EMAILS] Starting retry job...');
 
     // Get failed emails ready for retry
@@ -48,7 +72,7 @@ serve(async (req) => {
         // TODO: Integrate with actual email provider (Resend/SendGrid)
         // For now, simulate email send
         console.log(`[RETRY_EMAILS] Retrying email to ${email.recipient}, template: ${email.template}`);
-        
+
         // Log success
         await supabase.from('email_logs').insert({
           tenant_id: email.tenant_id,
@@ -65,7 +89,7 @@ serve(async (req) => {
 
       } catch (sendError: any) {
         console.error(`[RETRY_EMAILS] Failed to send to ${email.recipient}:`, sendError.message);
-        
+
         // Exponential backoff: 5min, 15min, 45min
         const backoffMinutes = 5 * Math.pow(3, email.retry_count);
         const nextRetry = new Date(Date.now() + backoffMinutes * 60 * 1000);
@@ -79,7 +103,7 @@ serve(async (req) => {
             updated_at: new Date().toISOString(),
           })
           .eq('id', email.id);
-        
+
         failCount++;
       }
     }

@@ -158,7 +158,7 @@ export default function LoginPage() {
       }
 
       // Call tenant-admin-auth to set up complete authentication
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
       const url = `${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`;
 
       authFlowLogger.logFetchAttempt(flowId, url, 1);

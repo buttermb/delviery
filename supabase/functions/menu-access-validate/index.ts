@@ -9,7 +9,7 @@ serve(async (req) => {
     console.log('=== EDGE FUNCTION INVOKED ===');
     console.log('Timestamp:', new Date().toISOString());
     console.log('Request method:', req.method);
-    
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -32,7 +32,7 @@ serve(async (req) => {
     if (!encrypted_url_token) {
       console.error('Missing encrypted_url_token');
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'Missing menu token',
           field: 'encrypted_url_token'
         }),
@@ -73,16 +73,16 @@ serve(async (req) => {
       .eq('encrypted_url_token', encrypted_url_token)
       .maybeSingle();
 
-    console.log('Query result:', JSON.stringify({ 
-      hasMenu: !!menu, 
+    console.log('Query result:', JSON.stringify({
+      hasMenu: !!menu,
       menuProductsCount: menu?.disposable_menu_products?.length || 0,
-      firstProduct: menu?.disposable_menu_products?.[0] 
+      firstProduct: menu?.disposable_menu_products?.[0]
     }));
 
     if (menuError) {
       console.error('Menu lookup error:', menuError);
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           access_granted: false,
           violations: ['Database error'],
           error: menuError.message
@@ -94,7 +94,7 @@ serve(async (req) => {
     if (!menu) {
       console.log('Menu not found for token:', encrypted_url_token);
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           access_granted: false,
           violations: ['Invalid menu URL']
         }),
@@ -107,7 +107,7 @@ serve(async (req) => {
     // Check menu status
     if (menu.status !== 'active') {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           access_granted: false,
           violations: ['Menu is no longer available']
         }),
@@ -121,7 +121,7 @@ serve(async (req) => {
       const expiration = new Date(menu.expiration_date);
       if (now > expiration) {
         return new Response(
-          JSON.stringify({ 
+          JSON.stringify({
             access_granted: false,
             violations: ['Menu has expired']
           }),
@@ -137,7 +137,7 @@ serve(async (req) => {
       if (!access_code) {
         console.error('Menu requires access code but none provided');
         return new Response(
-          JSON.stringify({ 
+          JSON.stringify({
             error: 'Access code required',
             field: 'access_code',
             access_granted: false,
@@ -168,7 +168,7 @@ serve(async (req) => {
         });
 
         return new Response(
-          JSON.stringify({ 
+          JSON.stringify({
             access_granted: false,
             violations: ['Incorrect access code']
           }),
@@ -225,48 +225,61 @@ serve(async (req) => {
     }
 
     // Check whitelist if invite-only
-    if (security_settings.access_type === 'invite_only' && unique_access_token) {
-      const { data: whitelist } = await supabaseClient
-        .from('menu_access_whitelist')
-        .select('*')
-        .eq('menu_id', menu.id)
-        .eq('unique_access_token', unique_access_token)
-        .single();
-
-      if (!whitelist || whitelist.status === 'revoked' || whitelist.status === 'blocked') {
-        violations.push('Access revoked or not invited');
+    // SECURITY FIX: For invite_only menus, ALWAYS require unique_access_token
+    if (security_settings.access_type === 'invite_only') {
+      // Token is REQUIRED for invite-only menus
+      if (!unique_access_token) {
+        violations.push('Invite token required for this menu');
+        await supabaseClient.from('menu_security_events').insert({
+          menu_id: menu.id,
+          event_type: 'missing_invite_token',
+          severity: 'high',
+          event_data: { ip_address, device_fingerprint }
+        });
       } else {
-        whitelist_entry = whitelist;
+        // Validate the provided token
+        const { data: whitelist } = await supabaseClient
+          .from('menu_access_whitelist')
+          .select('*')
+          .eq('menu_id', menu.id)
+          .eq('unique_access_token', unique_access_token)
+          .single();
 
-        // Check device locking
-        if (security_settings.device_locking?.enabled && whitelist.device_fingerprint) {
-          if (whitelist.device_fingerprint !== device_fingerprint) {
-            violations.push('Different device detected');
-            await supabaseClient.from('menu_security_events').insert({
-              menu_id: menu.id,
-              access_whitelist_id: whitelist.id,
-              event_type: 'new_device_detected',
-              severity: 'high',
-              event_data: { 
-                old_fingerprint: whitelist.device_fingerprint,
-                new_fingerprint: device_fingerprint
-              }
-            });
+        if (!whitelist || whitelist.status === 'revoked' || whitelist.status === 'blocked') {
+          violations.push('Access revoked or not invited');
+        } else {
+          whitelist_entry = whitelist;
+
+          // Check device locking
+          if (security_settings.device_locking?.enabled && whitelist.device_fingerprint) {
+            if (whitelist.device_fingerprint !== device_fingerprint) {
+              violations.push('Different device detected');
+              await supabaseClient.from('menu_security_events').insert({
+                menu_id: menu.id,
+                access_whitelist_id: whitelist.id,
+                event_type: 'new_device_detected',
+                severity: 'high',
+                event_data: {
+                  old_fingerprint: whitelist.device_fingerprint,
+                  new_fingerprint: device_fingerprint
+                }
+              });
+            }
           }
-        }
 
-        // Check view limits
-        if (security_settings.view_limits?.enabled) {
-          const maxViews = security_settings.view_limits.max_views_per_week || 5;
-          if (whitelist.view_count >= maxViews) {
-            violations.push(`View limit reached (${maxViews} per week)`);
-            await supabaseClient.from('menu_security_events').insert({
-              menu_id: menu.id,
-              access_whitelist_id: whitelist.id,
-              event_type: 'excessive_views',
-              severity: 'medium',
-              event_data: { view_count: whitelist.view_count, max_views: maxViews }
-            });
+          // Check view limits
+          if (security_settings.view_limits?.enabled) {
+            const maxViews = security_settings.view_limits.max_views_per_week || 5;
+            if (whitelist.view_count >= maxViews) {
+              violations.push(`View limit reached (${maxViews} per week)`);
+              await supabaseClient.from('menu_security_events').insert({
+                menu_id: menu.id,
+                access_whitelist_id: whitelist.id,
+                event_type: 'excessive_views',
+                severity: 'medium',
+                event_data: { view_count: whitelist.view_count, max_views: maxViews }
+              });
+            }
           }
         }
       }
@@ -335,8 +348,8 @@ serve(async (req) => {
             },
             security_settings: security_settings // Include security_settings so frontend can check menu_type
           },
-          remaining_views: whitelist_entry 
-            ? (security_settings.view_limits?.max_views_per_week || 999) - whitelist_entry.view_count 
+          remaining_views: whitelist_entry
+            ? (security_settings.view_limits?.max_views_per_week || 999) - whitelist_entry.view_count
             : null
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -354,7 +367,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Unhandled error in menu-access-validate:', error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined
       }),

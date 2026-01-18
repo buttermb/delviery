@@ -58,7 +58,7 @@ const TENANT_KEY = STORAGE_KEYS.CUSTOMER_TENANT_DATA;
 
 // Validate environment variables
 const validateEnvironment = (): { valid: boolean; error?: string } => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
   if (!supabaseUrl) {
     return { valid: false, error: 'Missing VITE_SUPABASE_URL environment variable' };
@@ -142,7 +142,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(envCheck.error || 'Environment configuration error');
       }
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
       const { response } = await resilientFetch(
         `${supabaseUrl}/functions/v1/customer-auth?action=verify`,
         {
@@ -194,7 +194,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(envCheck.error || 'Environment configuration error');
       }
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
       const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, {
         email,
@@ -327,7 +327,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       if (token) {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
         await resilientFetch(
           `${supabaseUrl}/functions/v1/customer-auth?action=logout`,
           {
