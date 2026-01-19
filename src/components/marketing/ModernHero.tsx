@@ -65,7 +65,7 @@ export function ModernHero() {
           </div>
 
           {/* Headline - Responsive sizing */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[5rem] font-bold tracking-tight mb-6 md:mb-8 text-[hsl(var(--marketing-text))] leading-[1.1] max-w-4xl mx-auto">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[5rem] font-serif font-bold tracking-tight mb-6 md:mb-8 text-[hsl(var(--marketing-text))] leading-[1.1] max-w-4xl mx-auto">
             Create a Secure Menu <br className="hidden sm:block" />
             <span className="relative inline-block">
               in 30 Seconds

@@ -14,20 +14,20 @@ const sizeMap = {
   xl: { container: 'text-4xl', flora: 'text-4xl', iq: 'text-5xl' },
 };
 
-const FloraIQLogo = ({ 
-  size = 'md', 
+const FloraIQLogo = ({
+  size = 'md',
   className = '',
-  disableAnimation = false 
+  disableAnimation = false
 }: FloraIQLogoProps) => {
   const sizes = sizeMap[size];
 
   return (
-    <div className={cn('flex items-center gap-1 font-bold tracking-tight', sizes.container, className)}>
+    <div className={cn('flex items-center gap-1 font-serif font-bold tracking-tight', sizes.container, className)}>
       {/* Flora - Cannabis green */}
       <span className="bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent font-black">
         Flora
       </span>
-      
+
       {/* IQ - Animated tech purple/blue with pulse glow */}
       {disableAnimation ? (
         <span className="bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-400 bg-clip-text text-transparent font-black">
