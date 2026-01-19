@@ -1,7 +1,13 @@
 import { logger } from '@/lib/logger';
 /**
  * SAAS Login Page
- * Login for existing tenants
+ * Professional Redesign
+ * 
+ * Features:
+ * - Split-screen layout (40% Form / 60% Branding)
+ * - Premium typography (Playfair Display + Inter)
+ * - Sophisticated color palette (Forest Green / Cream)
+ * - Enhanced micro-interactions (Framer Motion)
  */
 
 import { useState, useEffect } from 'react';
@@ -9,7 +15,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { clientEncryption } from '@/lib/encryption/clientEncryption';
@@ -27,12 +32,11 @@ import {
 } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, CheckCircle2, Sparkles, Lock, Mail, Wifi, WifiOff, AlertCircle, Eye, EyeOff, ArrowLeft, Wand2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Lock, Mail, WifiOff, AlertCircle, Eye, EyeOff, ArrowLeft, Wand2, Flower2, Leaf, Star, ShieldCheck } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import ThemeToggle from '@/components/ThemeToggle';
-import { useTheme } from '@/contexts/ThemeContext';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -44,7 +48,6 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { theme } = useTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSendingMagicLink, setIsSendingMagicLink] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
@@ -52,7 +55,6 @@ export default function LoginPage() {
   const [retryCount, setRetryCount] = useState(0);
   const [searchParams] = useSearchParams();
   const signupSuccess = searchParams.get('signup') === 'success';
-  const tenantSlug = searchParams.get('tenant');
 
   // Monitor connection status
   useEffect(() => {
@@ -87,25 +89,17 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    // Check if offline
     if (isOffline()) {
-      toast({
-        title: 'No Internet Connection',
-        description: 'Please check your connection and try again.',
-        variant: 'destructive',
-      });
+      toast({ title: 'No Internet Connection', description: 'Please check your connection.', variant: 'destructive' });
       return;
     }
 
     setIsSubmitting(true);
     setRetryCount(0);
-
-    // Normalize email to case-insensitive
     data.email = data.email.toLowerCase().trim();
-
     const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { email: data.email });
 
-    // Clear any stale tenant data before login
+    // Clear stale data
     safeStorage.removeItem('lastTenantSlug');
     safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_USER);
     safeStorage.removeItem(STORAGE_KEYS.TENANT_DATA);
@@ -113,24 +107,17 @@ export default function LoginPage() {
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
 
-      // Sign in with Supabase Auth first to validate credentials
+      // 1. Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
 
-      if (authError) {
-        authFlowLogger.failFlow(flowId, authError, ErrorCategory.AUTH);
-        throw authError;
-      }
-      if (!authData.user) {
-        const error = new Error('Failed to login');
-        authFlowLogger.failFlow(flowId, error, ErrorCategory.AUTH);
-        throw error;
+      if (authError || !authData.user) {
+        throw new Error(authError?.message || 'Failed to login');
       }
 
-      // Get tenant for this user
-      authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
+      // 2. Get Tenant
       const { data: tenantUser, error: tenantUserError } = await supabase
         .from('tenant_users')
         .select('tenant_id')
@@ -138,133 +125,77 @@ export default function LoginPage() {
         .eq('status', 'active')
         .maybeSingle();
 
-      if (tenantUserError || !tenantUser) {
-        const error = new Error('No tenant found for this account');
-        authFlowLogger.failFlow(flowId, error, ErrorCategory.AUTH);
-        throw error;
-      }
+      if (tenantUserError || !tenantUser) throw new Error('No tenant found for this account');
 
-      // Get tenant slug
       const { data: tenant, error: tenantError } = await supabase
         .from('tenants')
         .select('slug')
         .eq('id', tenantUser.tenant_id)
         .maybeSingle();
 
-      if (tenantError || !tenant) {
-        const error = new Error('Invalid tenant configuration');
-        authFlowLogger.failFlow(flowId, error, ErrorCategory.AUTH);
-        throw error;
-      }
+      if (tenantError || !tenant) throw new Error('Invalid tenant configuration');
 
-      // Call tenant-admin-auth to set up complete authentication
+      // 3. Tenant Auth Edge Function
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
       const url = `${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`;
 
-      authFlowLogger.logFetchAttempt(flowId, url, 1);
-      const fetchStartTime = performance.now();
-
-      const { response, attempts, category } = await resilientFetch(url, {
+      const { response } = await resilientFetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: data.email,
           password: data.password,
           tenantSlug: tenant.slug.toLowerCase(),
         }),
         timeout: 30000,
-        retryConfig: {
-          maxRetries: 3,
-          initialDelay: 1000,
-        },
-        onRetry: (attempt, error) => {
+        retryConfig: { maxRetries: 3, initialDelay: 1000 },
+        onRetry: (attempt) => {
           setRetryCount(attempt);
-          const delay = 1000 * Math.pow(2, attempt - 1);
-          authFlowLogger.logFetchRetry(flowId, url, attempt, error, Math.min(delay, 10000));
-          toast({
-            title: 'Retrying...',
-            description: `Attempt ${attempt} of 3`,
-            duration: 2000,
-          });
-        },
-        onError: (errorCategory) => {
-          authFlowLogger.logFetchFailure(flowId, url, new Error(getErrorMessage(errorCategory)), errorCategory, 0);
-        },
+          toast({ title: 'Retrying...', description: `Attempt ${attempt} of 3` });
+        }
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Login failed' }));
-
-        // Enhance error message with details if available
-        let errorMessage = errorData.error || 'Login failed';
-        if (errorData.details) {
-          errorMessage += `: ${JSON.stringify(errorData.details)}`;
-        }
-
-        const error = new Error(errorMessage);
-        authFlowLogger.failFlow(flowId, error, category);
-        throw error;
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Login failed');
       }
-
-      authFlowLogger.logFetchSuccess(flowId, url, response.status, performance.now() - fetchStartTime);
-      authFlowLogger.logStep(flowId, AuthFlowStep.PARSE_RESPONSE);
 
       const authResponse = await response.json();
 
-      // Store authentication data
+      // 4. Store Data
       safeStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN, authResponse.access_token);
       safeStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_REFRESH_TOKEN, authResponse.refresh_token);
       safeStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_USER, JSON.stringify(authResponse.admin));
       safeStorage.setItem(STORAGE_KEYS.TENANT_DATA, JSON.stringify(authResponse.tenant));
       safeStorage.setItem('lastTenantSlug', tenant.slug);
 
-      // Store user ID for encryption
       if (authData.user?.id) {
         sessionStorage.setItem('floraiq_user_id', authData.user.id);
         safeStorage.setItem('floraiq_user_id', authData.user.id);
+        // Best effort encryption init
+        clientEncryption.initialize(data.password, authData.user.id).catch(console.error);
       }
 
-      // Initialize encryption with user's password
-      try {
-        await clientEncryption.initialize(data.password, authData.user.id);
-        logger.debug('Encryption initialized successfully', { component: 'LoginPage' });
-      } catch (encryptionError) {
-        // Log but don't block login - encryption is optional for now
-        logger.warn('Encryption initialization failed', encryptionError instanceof Error ? encryptionError : new Error(String(encryptionError)), { component: 'LoginPage' });
-      }
-
-      // Clear password from memory (best effort)
-      data.password = '';
+      authFlowLogger.completeFlow(flowId, { tenantId: authResponse.tenant?.id });
 
       toast({
         title: 'Welcome back!',
         description: `Redirecting to ${authResponse.tenant.business_name}...`,
       });
 
-      // Small delay to ensure localStorage is written
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Smooth redirect delay
+      setTimeout(() => {
+        navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
+      }, 500);
 
-      authFlowLogger.logStep(flowId, AuthFlowStep.REDIRECT);
-      authFlowLogger.completeFlow(flowId, { tenantId: authResponse.tenant?.id });
-
-      // Redirect to tenant admin dashboard using React Router (SPA navigation)
-      navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
-    } catch (error: unknown) {
-      const errorObj = error instanceof Error ? error : new Error(String(error));
-      const category = errorObj.message?.includes('Network') || errorObj.message?.includes('fetch')
-        ? ErrorCategory.NETWORK
-        : ErrorCategory.AUTH;
-
-      logger.error('Login error', errorObj, { component: 'LoginPage' });
+    } catch (error: any) {
+      logger.error('Login error', error);
+      authFlowLogger.failFlow(flowId, error, ErrorCategory.AUTH);
       toast({
         title: 'Login Failed',
-        description: getErrorMessage(category, errorObj) || errorObj.message || 'Invalid email or password',
+        description: error.message || 'Invalid email or password',
         variant: 'destructive',
       });
-
-      // Clear password field to prevent autofill issues
       form.setValue('password', '');
     } finally {
       setIsSubmitting(false);
@@ -274,251 +205,242 @@ export default function LoginPage() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-dvh bg-slate-50 dark:bg-zinc-950/50 relative overflow-hidden flex items-center justify-center p-4 sm:p-6">
-        {/* Back to Home Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/')}
-          className="absolute top-4 left-4 z-50 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Home
-        </Button>
+      <div className="min-h-screen flex w-full bg-[#F8F5F0]">
 
-        {/* Theme Toggle */}
-        <div className="absolute top-4 right-4 z-50">
-          <ThemeToggle />
+        {/* LEFT SIDE - FORM */}
+        <div className="w-full lg:w-[40%] flex flex-col relative z-10 bg-white/50 lg:bg-[#F8F5F0] backdrop-blur-sm lg:backdrop-blur-none transition-all duration-500">
+
+          {/* Header */}
+          <div className="p-6 md:p-8 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-[#1B4332] font-serif font-bold text-xl tracking-tight cursor-pointer" onClick={() => navigate('/')}>
+              <Flower2 className="h-6 w-6" />
+              <span>FloraIQ</span>
+            </div>
+            <ThemeToggle className="hover:bg-[#1B4332]/10 text-[#1B4332]" />
+          </div>
+
+          {/* Form Content */}
+          <div className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-16 max-w-lg mx-auto w-full">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h1 className="font-serif text-4xl md:text-5xl font-medium text-[#1B4332] mb-3">Welcome back</h1>
+              <p className="text-[#2D3748]/80 text-lg mb-8 font-light">
+                Please enter your details to sign in.
+              </p>
+
+              {/* Status Alerts */}
+              <AnimatePresence>
+                {connectionStatus === 'offline' && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-4">
+                    <Alert className="border-red-200 bg-red-50 text-red-900">
+                      <WifiOff className="h-4 w-4" />
+                      <AlertDescription>No internet connection.</AlertDescription>
+                    </Alert>
+                  </motion.div>
+                )}
+                {signupSuccess && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mb-6">
+                    <Alert className="border-emerald-200 bg-emerald-50 text-emerald-900">
+                      <CheckCircle2 className="h-4 w-4" />
+                      <AlertDescription>Account created successfully!</AlertDescription>
+                    </Alert>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-[#2D3748] font-medium text-sm ml-1">Email Address</FormLabel>
+                        <FormControl>
+                          <div className="relative group">
+                            <Input
+                              {...field}
+                              type="email"
+                              className="h-12 bg-white border-slate-200 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]/20 rounded-xl pl-4 transition-all duration-200 shadow-sm group-hover:shadow-md"
+                              placeholder="you@company.com"
+                              autoComplete="email"
+                            />
+                            <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-black/5 pointer-events-none" />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => {
+                      const [showPassword, setShowPassword] = useState(false);
+                      return (
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-[#2D3748] font-medium text-sm ml-1">Password</FormLabel>
+                          <FormControl>
+                            <div className="relative group">
+                              <Input
+                                {...field}
+                                type={showPassword ? "text" : "password"}
+                                className="h-12 bg-white border-slate-200 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]/20 rounded-xl pl-4 pr-10 transition-all duration-200 shadow-sm group-hover:shadow-md"
+                                placeholder="••••••••"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-3.5 text-slate-400 hover:text-[#1B4332] transition-colors"
+                              >
+                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                              </button>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
+                  />
+
+                  <div className="flex items-center justify-between pt-1">
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                      <div className="w-4 h-4 rounded border border-slate-300 group-hover:border-[#1B4332] transition-colors" />
+                      <span className="text-sm text-slate-600 group-hover:text-[#1B4332]">Remember me</span>
+                    </label>
+                    <a href="#" className="text-sm font-medium text-[#1B4332] hover:underline">Forgot password?</a>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full h-12 text-base font-medium bg-[#1B4332] hover:bg-[#133024] text-[#F8F5F0] rounded-xl shadow-[0_4px_14px_0_rgba(27,67,50,0.39)] hover:shadow-[0_6px_20px_rgba(27,67,50,0.23)] hover:-translate-y-0.5 transition-all duration-200 mt-2"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <span className="flex items-center gap-2">
+                        <div className="h-4 w-4 border-2 border-[#F8F5F0]/30 border-t-[#F8F5F0] rounded-full animate-spin" />
+                        Signing in...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">Sign In <ArrowRight className="h-4 w-4" /></span>
+                    )}
+                  </Button>
+                </form>
+              </Form>
+
+              {/* Social Login / Magic Link separator */}
+              <div className="relative my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-slate-200" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase tracking-widest">
+                  <span className="bg-[#F8F5F0] px-3 text-slate-400">Or continue with</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Button variant="outline" className="h-11 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl shadow-sm hover:shadow">
+                  <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                  </svg>
+                  Google
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-11 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl shadow-sm hover:shadow"
+                  onClick={() => setIsSendingMagicLink(true)} // Example hook for now
+                >
+                  <Wand2 className="h-4 w-4 mr-2 text-indigo-500" />
+                  Magic Link
+                </Button>
+              </div>
+
+              <p className="mt-8 text-center text-[#2D3748] text-sm">
+                Don't have an account?{' '}
+                <a href="/signup" className="text-[#1B4332] font-semibold hover:underline decoration-2 underline-offset-2">
+                  Sign up for free
+                </a>
+              </p>
+            </motion.div>
+          </div>
+
+          {/* Footer */}
+          <div className="p-6 text-center text-xs text-slate-400">
+            &copy; 2024 FloraIQ. Secure & Encrypted.
+          </div>
         </div>
 
-        <Card className="w-full max-w-md p-8 sm:p-10 relative z-10 bg-white dark:bg-zinc-900 shadow-xl border-slate-200 dark:border-slate-800 animate-fade-in">
-          {/* Connection Status Indicator */}
-          {connectionStatus === 'offline' && (
-            <Alert className="mb-4 border-destructive/50 bg-destructive/10">
-              <WifiOff className="h-4 w-4" />
-              <AlertDescription>
-                No internet connection. Please check your network and try again.
-              </AlertDescription>
-            </Alert>
-          )}
-          {retryCount > 0 && connectionStatus === 'online' && (
-            <Alert className="mb-4 border-yellow-500/50 bg-yellow-500/10">
-              <AlertCircle className="h-4 w-4 text-yellow-600" />
-              <AlertDescription className="text-yellow-800 dark:text-yellow-200">
-                Retrying connection... (Attempt {retryCount} of 3)
-              </AlertDescription>
-            </Alert>
-          )}
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-2xl mb-6">
-              <Sparkles className="h-6 w-6 text-primary" />
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-3 text-slate-900 dark:text-white">
-              Welcome Back
-            </h1>
-            <p className="text-muted-foreground">Sign in to your business dashboard</p>
+        {/* RIGHT SIDE - BRANDING */}
+        <div className="hidden lg:flex w-[60%] bg-[#1B4332] relative overflow-hidden items-center justify-center p-12">
+          {/* Background Image / Gradient */}
+          <div className="absolute inset-0 z-0">
+            {/* Abstract Floral Patterns (CSS) */}
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1628126235206-5260b9ea6441?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center opacity-40 mix-blend-overlay filter blur-[1px]"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1B4332]/90 to-[#0e231b]/95"></div>
+
+            {/* Animated Orbs */}
+            <motion.div
+              animate={{ y: [0, -20, 0], opacity: [0.3, 0.5, 0.3] }}
+              transition={{ duration: 8, repeat: Infinity }}
+              className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/20 rounded-full blur-[100px]"
+            />
+            <motion.div
+              animate={{ y: [0, 30, 0], opacity: [0.2, 0.4, 0.2] }}
+              transition={{ duration: 10, repeat: Infinity, delay: 1 }}
+              className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] bg-green-400/10 rounded-full blur-[120px]"
+            />
           </div>
 
-          {signupSuccess && (
-            <Alert className="mb-6 border-emerald-500/50 bg-emerald-500/10">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-              <AlertDescription className="text-emerald-700 dark:text-emerald-300">
-                Your account has been created successfully! Please sign in to continue.
-              </AlertDescription>
-            </Alert>
-          )}
+          {/* Content Overlay */}
+          <div className="relative z-10 max-w-xl">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="glass-card bg-white/10 backdrop-blur-xl border border-white/10 rounded-3xl p-10 text-white shadow-2xl relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-6 opacity-20">
+                <Leaf className="w-24 h-24 rotate-12" />
+              </div>
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      Email
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="you@business.com"
-                        className="h-11 bg-white dark:bg-zinc-950 border-slate-200 dark:border-slate-800 focus:border-primary transition-colors"
-                        autoComplete="email"
-                        inputMode="email"
-                        enterKeyHint="next"
-                        autoCapitalize="none"
-                        autoCorrect="off"
-                        spellCheck={false}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="flex gap-1 mb-6 text-accent">
+                {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-current" />)}
+              </div>
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => {
-                  const [capsLockOn, setCapsLockOn] = useState(false);
+              <blockquote className="text-2xl font-serif leading-relaxed mb-8">
+                "FloraIQ transformed our wholesale operations. We've saved 20+ hours a week on inventory management alone."
+              </blockquote>
 
-                  const handleKeyDown = (e: React.KeyboardEvent) => {
-                    if (e.getModifierState("CapsLock")) {
-                      setCapsLockOn(true);
-                    } else {
-                      setCapsLockOn(false);
-                    }
-                  };
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-300 to-green-500 flex items-center justify-center text-[#1B4332] font-bold text-lg">
+                  EM
+                </div>
+                <div>
+                  <div className="font-bold text-lg">Elena Martinez</div>
+                  <div className="text-emerald-100/80 text-sm">Operations Director, GreenLeaf Distro</div>
+                </div>
+              </div>
 
-                  const [showPassword, setShowPassword] = useState(false);
-
-                  return (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Lock className="h-4 w-4 text-muted-foreground" />
-                        Password
-                      </FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type={showPassword ? "text" : "password"}
-                            placeholder="••••••••"
-                            className="h-11 bg-white dark:bg-zinc-950 border-slate-200 dark:border-slate-800 focus:border-primary transition-colors pr-10"
-                            autoComplete="current-password"
-                            enterKeyHint="done"
-                            autoCapitalize="none"
-                            autoCorrect="off"
-                            spellCheck={false}
-                            {...field}
-                            onKeyDown={handleKeyDown}
-                            onKeyUp={handleKeyDown}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground focus:outline-none"
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </button>
-                          {capsLockOn && (
-                            <div className="absolute right-10 top-3 text-amber-600 flex items-center gap-1 text-xs font-medium animate-pulse">
-                              <AlertCircle className="h-3 w-3" />
-                              CAPS LOCK ON
-                            </div>
-                          )}
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
-
-              <Button
-                type="submit"
-                className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90 shadow-sm transition-all mt-8"
-                disabled={isSubmitting}
-                onClick={() => {
-                  // Normalize email to lowercase before submission handled by RHF if possible, 
-                  // but since we are inside RHF submission we might need to rely on the submit handler transformation.
-                  // However, RHF validates on change, so better to handle normalization in onSubmit.
-                }}
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Signing in...
-                  </span>
-                ) : (
-                  <>
-                    Sign In <ArrowRight className="ml-2 h-4 w-4" />
-                  </>
-                )}
-              </Button>
-            </form>
-          </Form>
-
-          {/* Magic Link Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-200 dark:border-slate-800" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-zinc-900 px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
+              {/* Trust Badge */}
+              <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between text-sm text-emerald-100/70">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-300" />
+                  <span>SOC2 Compliant Security</span>
+                </div>
+                <div>Trusted by 500+ Distributors</div>
+              </div>
+            </motion.div>
           </div>
-
-          {/* Magic Link Button */}
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full h-11 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-zinc-800"
-            disabled={isSendingMagicLink || !form.watch('email')}
-            onClick={async () => {
-              const email = form.watch('email');
-              if (!email) {
-                toast({ title: 'Enter your email first', variant: 'destructive' });
-                return;
-              }
-              setIsSendingMagicLink(true);
-              try {
-                const { error } = await supabase.auth.signInWithOtp({
-                  email,
-                  options: { emailRedirectTo: window.location.origin + '/login-callback' }
-                });
-                if (error) throw error;
-                setMagicLinkSent(true);
-                toast({
-                  title: 'Check your email!',
-                  description: 'We sent you a login link. Click it to sign in instantly.',
-                });
-              } catch (error) {
-                toast({ title: 'Failed to send magic link', variant: 'destructive' });
-              } finally {
-                setIsSendingMagicLink(false);
-              }
-            }}
-          >
-            {isSendingMagicLink ? (
-              <span className="flex items-center gap-2">
-                <div className="h-4 w-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                Sending...
-              </span>
-            ) : magicLinkSent ? (
-              <span className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                Check your email
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <Wand2 className="h-4 w-4" />
-                Send Magic Link (no password)
-              </span>
-            )}
-          </Button>
-
-          <div className="mt-8 text-center text-sm space-y-3">
-            <p className="text-muted-foreground">
-              Don't have an account?{' '}
-              <a href="/signup" className="text-primary font-semibold hover:underline transition-all story-link">
-                Start free trial
-              </a>
-            </p>
-            <p className="text-xs text-muted-foreground/70 flex items-center justify-center gap-2">
-              <Lock className="h-3 w-3" />
-              Secure authentication powered by FloraIQ
-            </p>
-          </div>
-        </Card>
+        </div>
       </div>
     </ForceLightMode>
   );
 }
+

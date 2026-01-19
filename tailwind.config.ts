@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        serif: ['Playfair Display', 'serif'],
       },
       fontSize: {
         'xs': ['var(--font-size-xs)', { lineHeight: 'var(--line-height-normal)' }],
