@@ -647,7 +647,7 @@ export function VideoShowcase() {
   const DemoComponent = currentSlide.Demo;
 
   return (
-    <section className="py-32 bg-[hsl(var(--marketing-bg))] relative overflow-hidden" ref={containerRef}>
+    <section className="py-32 bg-[hsl(var(--marketing-bg))] relative overflow-x-hidden" ref={containerRef}>
       {/* Background Effects */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <AnimatePresence mode="wait">

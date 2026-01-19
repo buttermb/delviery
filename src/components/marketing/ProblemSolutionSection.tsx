@@ -55,7 +55,7 @@ export function ProblemSolutionSection() {
   const [activeTab, setActiveTab] = useState<'before' | 'after'>('before');
 
   return (
-    <section className="py-12 md:py-20 bg-[hsl(var(--marketing-bg))] relative overflow-hidden">
+    <section className="py-12 md:py-20 bg-[hsl(var(--marketing-bg))] relative overflow-x-hidden">
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[hsl(var(--marketing-primary))] opacity-5 blur-[100px] rounded-full pointer-events-none" />
 

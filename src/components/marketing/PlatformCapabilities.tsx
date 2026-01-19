@@ -29,7 +29,7 @@ export function PlatformCapabilities() {
   ];
 
   return (
-    <section className="py-24 bg-[hsl(var(--marketing-bg))] overflow-hidden">
+    <section className="py-24 bg-[hsl(var(--marketing-bg))] overflow-x-hidden">
       <div className="container mx-auto px-4">
 
         <div className="text-center max-w-3xl mx-auto mb-20">

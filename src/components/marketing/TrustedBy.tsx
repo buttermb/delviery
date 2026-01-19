@@ -21,7 +21,7 @@ const DISTRIBUTORS = [
 
 export function TrustedBy() {
     return (
-        <section className="py-10 border-y border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg-subtle))/0.3] overflow-hidden">
+        <section className="py-10 border-y border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg-subtle))/0.3] overflow-x-hidden">
             <div className="container mx-auto px-4 text-center mb-8">
                 <p className="text-sm font-medium text-[hsl(var(--marketing-text-light))] uppercase tracking-wider">
                     Trusted by <span className="text-[hsl(var(--marketing-primary))] font-bold">500+</span> Cannabis Distributors
