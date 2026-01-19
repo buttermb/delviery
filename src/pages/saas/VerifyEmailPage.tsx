@@ -128,7 +128,7 @@ export default function VerifyEmailPage() {
             <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
               <Mail className="h-8 w-8 text-emerald-600" />
             </div>
-            <h1 className="text-2xl font-bold mb-2">Verify Your Email</h1>
+            <h1 className="text-2xl font-serif font-bold mb-2">Verify Your Email</h1>
             <p className="text-muted-foreground">
               We sent a 6-digit code to
             </p>

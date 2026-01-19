@@ -292,7 +292,7 @@ export default function SelectPlanPage() {
               <Sparkles className="h-4 w-4" />
               {fromSignup ? "Complete Your Registration" : "Choose Your Plan"}
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">
               Simple, Transparent Pricing
             </h1>
             <p className="text-xl text-muted-foreground">
@@ -361,7 +361,7 @@ export default function SelectPlanPage() {
                     FREE
                   </Badge>
                 </div>
-                <CardTitle className="text-2xl">Free Forever</CardTitle>
+                <CardTitle className="text-2xl font-serif">Free Forever</CardTitle>
                 <CardDescription className="min-h-[40px]">
                   Get started with credits. Perfect for trying out the platform.
                 </CardDescription>
@@ -451,7 +451,7 @@ export default function SelectPlanPage() {
                   )}
 
                   <CardHeader className="pb-4">
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                    <CardTitle className="text-2xl font-serif">{plan.name}</CardTitle>
                     <CardDescription className="min-h-[40px]">{plan.description}</CardDescription>
 
                     <div className="mt-4 space-y-1">

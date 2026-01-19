@@ -6,6 +6,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import FloraIQLogo from '@/components/FloraIQLogo';
 import {
   Check, ArrowRight, Zap, Shield, BarChart, Users,
   Globe, Lock, TrendingUp, Star, Menu, Activity, HelpCircle
@@ -133,8 +134,7 @@ export default function MarketingLanding() {
         </div>
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Menu className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">CannabisCRM</span>
+            <FloraIQLogo size="md" />
           </div>
           <div className="flex items-center gap-4">
             <Link to="/saas/signup">
@@ -149,7 +149,7 @@ export default function MarketingLanding() {
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 text-center">
-        <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent leading-tight">
+        <h1 className="text-5xl md:text-6xl font-serif font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent leading-tight">
           Scale Your Cannabis Operations<br />with Confidence
         </h1>
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
@@ -195,7 +195,7 @@ export default function MarketingLanding() {
       {/* Problem Section */}
       <section className="container mx-auto px-4 py-20 bg-muted/10">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-12">Is your operation stuck in spreadsheets?</h2>
+          <h2 className="text-3xl font-serif font-bold mb-12">Is your operation stuck in spreadsheets?</h2>
           <div className="grid md:grid-cols-3 gap-8 text-left">
             <div className="bg-background p-6 rounded-xl shadow-sm border">
               <div className="bg-red-100 dark:bg-red-900/20 w-10 h-10 rounded-lg flex items-center justify-center mb-4">
@@ -224,7 +224,7 @@ export default function MarketingLanding() {
 
       {/* Features Grid */}
       <section className="container mx-auto px-4 py-20">
-        <h2 className="text-3xl font-bold text-center mb-12">
+        <h2 className="text-3xl font-serif font-bold text-center mb-12">
           Everything You Need to Run Your Operation
         </h2>
         <div className="grid md:grid-cols-3 gap-6">
@@ -241,7 +241,7 @@ export default function MarketingLanding() {
       {/* Pricing Section */}
       <section className="container mx-auto px-4 py-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Simple, Transparent Pricing</h2>
+          <h2 className="text-3xl font-serif font-bold mb-4">Simple, Transparent Pricing</h2>
           <p className="text-muted-foreground">
             Choose the plan that fits your business
           </p>
@@ -257,7 +257,7 @@ export default function MarketingLanding() {
                   MOST POPULAR
                 </div>
               )}
-              <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+              <h3 className="text-2xl font-serif font-bold mb-2">{plan.name}</h3>
               <p className="text-muted-foreground mb-4">{plan.description}</p>
               <div className="mb-6">
                 <span className="text-4xl font-bold">${plan.price}</span>
@@ -288,7 +288,7 @@ export default function MarketingLanding() {
       {/* Social Proof */}
       <section className="bg-muted py-20">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-8">Trusted by Cannabis Operations</h2>
+          <h2 className="text-3xl font-serif font-bold mb-8">Trusted by Cannabis Operations</h2>
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {[1, 2, 3].map((idx) => (
               <Card key={idx} className="p-6">
@@ -311,7 +311,7 @@ export default function MarketingLanding() {
       <section className="container mx-auto px-4 py-20">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
+            <h2 className="text-3xl font-serif font-bold mb-4">Frequently Asked Questions</h2>
             <p className="text-muted-foreground">Everything you need to know about the platform and billing</p>
           </div>
           <Accordion type="single" collapsible className="w-full">
@@ -330,7 +330,7 @@ export default function MarketingLanding() {
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-20">
         <Card className="p-12 text-center bg-gradient-primary text-primary-foreground">
-          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+          <h2 className="text-3xl font-serif font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-8 opacity-90">
             Join thousands of operations running on CannabisCRM
           </p>
@@ -349,8 +349,7 @@ export default function MarketingLanding() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Menu className="h-6 w-6 text-primary" />
-                <span className="text-xl font-bold">CannabisCRM</span>
+                <FloraIQLogo size="md" />
               </div>
               <p className="text-sm text-muted-foreground">
                 Complete platform for wholesale cannabis operations.

@@ -93,7 +93,7 @@ export function ForgotPasswordDialog({ userType, tenantSlug, trigger }: ForgotPa
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Reset Password</DialogTitle>
+          <DialogTitle className="font-serif">Reset Password</DialogTitle>
           <DialogDescription>
             Enter your email address and we'll send you a link to reset your password.
           </DialogDescription>
