@@ -43,8 +43,8 @@ export default function SecurityPage() {
                 <p className="text-sm text-muted-foreground mb-3">
                   All API requests must use HTTPS with TLS 1.2 or higher. We reject all HTTP requests to ensure data is always encrypted during transmission.
                 </p>
-                <CodeBlock 
-                  code="# All requests must use HTTPS\nhttps://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/...\n\n# HTTP requests will be rejected\nhttp://... ❌"
+              <CodeBlock 
+                  code="# All requests must use HTTPS\nhttps://aejugtmhwwknrowfyzie.supabase.co/functions/v1/...\n\n# HTTP requests will be rejected\nhttp://... ❌"
                   language="text"
                 />
               </div>

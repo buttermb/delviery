@@ -1507,7 +1507,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             if (storedAdmin) {
               try {
                 const adminData = JSON.parse(storedAdmin);
-                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
                 const { response } = await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
                   method: "GET",
                   headers: {
