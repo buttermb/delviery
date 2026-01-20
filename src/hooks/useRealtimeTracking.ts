@@ -35,7 +35,7 @@ export const useRealtimeTracking = (orderId: string | null) => {
       try {
         ws = new WebSocket(wsUrl);
         wsRef.current = ws;
-        
+
         logger.debug(`Attempting WebSocket connection (attempt ${reconnectAttemptsRef.current + 1})`);
 
 
@@ -43,7 +43,7 @@ export const useRealtimeTracking = (orderId: string | null) => {
           logger.debug("Real-time tracking connected successfully");
           setConnected(true);
           reconnectAttemptsRef.current = 0;
-          
+
           if (ws && ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ type: "subscribe-order", orderId }));
           }
@@ -69,12 +69,12 @@ export const useRealtimeTracking = (orderId: string | null) => {
           logger.debug(`WebSocket closed: ${event.code} - ${event.reason}`);
           setConnected(false);
           wsRef.current = null;
-          
+
           if (!isClosing && reconnectAttemptsRef.current < maxReconnectAttempts) {
             reconnectAttemptsRef.current++;
             const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
             logger.debug(`Reconnecting in ${delay}ms...`);
-            
+
             reconnectTimeoutRef.current = setTimeout(() => {
               connect();
             }, delay);
@@ -83,11 +83,11 @@ export const useRealtimeTracking = (orderId: string | null) => {
       } catch (error) {
         logger.error("Failed to create WebSocket:", error);
         setConnected(false);
-        
+
         if (!isClosing && reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current++;
           const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
-          
+
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, delay);
@@ -99,17 +99,17 @@ export const useRealtimeTracking = (orderId: string | null) => {
 
     return () => {
       isClosing = true;
-      
+
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
-      
+
       if (ws) {
         if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
           ws.close(1000, "Component unmounting");
         }
       }
-      
+
       wsRef.current = null;
       reconnectAttemptsRef.current = 0;
     };
