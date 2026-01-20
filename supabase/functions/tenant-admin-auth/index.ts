@@ -351,15 +351,35 @@ serve(async (req) => {
         );
       }
 
-      return new Response(
+      // Prepare httpOnly cookie options for refresh token
+      const cookieOptions = [
+        'HttpOnly',
+        'Secure',
+        'SameSite=Strict',
+        'Path=/',
+        `Max-Age=${7 * 24 * 60 * 60}` // 7 days
+      ].join('; ');
+
+      const response = new Response(
         JSON.stringify({
           user: data.user,
           session: data.session,
           access_token: data.session?.access_token,
           refresh_token: data.session?.refresh_token,
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { 
+          headers: { 
+            ...corsHeadersWithOrigin, 
+            'Content-Type': 'application/json',
+            'Set-Cookie': `tenant_access_token=${data.session?.access_token}; ${cookieOptions}`,
+          } 
+        }
       );
+
+      // Add refresh token cookie
+      response.headers.append('Set-Cookie', `tenant_refresh_token=${data.session?.refresh_token}; ${cookieOptions}`);
+
+      return response;
     }
 
     if (action === "logout") {
