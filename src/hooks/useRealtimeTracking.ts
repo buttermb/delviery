@@ -20,7 +20,7 @@ export const useRealtimeTracking = (orderId: string | null) => {
   useEffect(() => {
     if (!orderId) return;
 
-    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || "vltveasdxtfvvqbzxzuf";
+    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || "mtvwmyerntkhrcdnhahp";
     const wsUrl = `wss://${projectId}.supabase.co/functions/v1/realtime-tracking`;
 
     let ws: WebSocket | null = null;
