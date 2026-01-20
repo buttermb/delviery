@@ -37,12 +37,12 @@ export function StorefrontAgeGate({ storeId }: StorefrontAgeGateProps) {
                     .select('*')
                     .eq('id', storeId)
                     .maybeSingle();
-                
+
                 if (error) {
                     console.warn('Age gate settings not available:', error);
                     return null;
                 }
-                
+
                 // Check if the age gate columns exist in the response
                 const storeData = data as Record<string, unknown> | null;
                 if (storeData && 'enable_age_gate' in storeData) {
@@ -51,7 +51,7 @@ export function StorefrontAgeGate({ storeId }: StorefrontAgeGateProps) {
                         age_gate_min_age: (storeData.age_gate_min_age as number) || 21,
                     };
                 }
-                
+
                 return null;
             } catch (err) {
                 console.warn('Failed to fetch age gate settings:', err);
@@ -114,7 +114,7 @@ export function StorefrontAgeGate({ storeId }: StorefrontAgeGateProps) {
                             <div className="mx-auto w-16 h-16 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center mb-2">
                                 <ShieldCheck className="w-8 h-8 text-emerald-500" />
                             </div>
-                            <CardTitle className="text-2xl font-serif font-light tracking-wide">
+                            <CardTitle className="text-2xl font-light tracking-wide">
                                 Age Verification
                             </CardTitle>
                             <CardDescription className="text-zinc-400 text-base">

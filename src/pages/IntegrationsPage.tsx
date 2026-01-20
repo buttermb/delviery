@@ -88,7 +88,7 @@ export default function IntegrationsPage() {
 
           <Card className="bg-[hsl(var(--marketing-bg-subtle))]">
             <CardHeader>
-              <CardTitle className="font-serif">Need a Custom Integration?</CardTitle>
+              <CardTitle>Need a Custom Integration?</CardTitle>
               <CardDescription>
                 Our API makes it easy to build custom integrations with your existing systems
               </CardDescription>

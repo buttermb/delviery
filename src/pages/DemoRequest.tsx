@@ -67,7 +67,7 @@ export default function DemoRequest() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="font-serif">Demo Request Details</CardTitle>
+              <CardTitle>Demo Request Details</CardTitle>
               <CardDescription>Fill out the form below and we'll schedule your demo</CardDescription>
             </CardHeader>
             <CardContent>

@@ -87,7 +87,7 @@ export function LuxuryFeaturesSection({ content, styles }: LuxuryFeaturesSection
           transition={{ duration: 0.8 }}
           className="text-center mb-10 md:mb-16"
         >
-          <h2 className="text-white font-serif italic text-3xl md:text-4xl lg:text-5xl tracking-tight mb-4">
+          <h2 className="text-white text-3xl md:text-4xl lg:text-5xl tracking-tight mb-4">
             {heading}
           </h2>
           <p className="text-white/50 text-lg font-light font-sans tracking-wide">

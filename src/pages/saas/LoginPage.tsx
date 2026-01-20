@@ -226,7 +226,7 @@ export default function LoginPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h1 className="font-serif text-4xl md:text-5xl font-medium text-[#1B4332] mb-3">Welcome back</h1>
+              <h1 className="text-4xl md:text-5xl font-medium text-[#1B4332] mb-3">Welcome back</h1>
               <p className="text-[#2D3748]/80 text-lg mb-8 font-light">
                 Please enter your details to sign in.
               </p>

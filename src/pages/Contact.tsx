@@ -75,7 +75,7 @@ export default function Contact() {
                   <div className="w-12 h-12 rounded-xl bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mb-4">
                     <MessageCircle className="h-6 w-6 text-[hsl(var(--marketing-primary))]" />
                   </div>
-                  <CardTitle className="font-serif">LIVE CHAT</CardTitle>
+                  <CardTitle>LIVE CHAT</CardTitle>
                   <CardDescription>Chat with our team right now</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -90,7 +90,7 @@ export default function Contact() {
                   <div className="w-12 h-12 rounded-xl bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mb-4">
                     <Phone className="h-6 w-6 text-[hsl(var(--marketing-primary))]" />
                   </div>
-                  <CardTitle className="font-serif">PHONE</CardTitle>
+                  <CardTitle>PHONE</CardTitle>
                   <CardDescription>(555) 123-4567</CardDescription>
                   <CardDescription className="mt-2">Mon-Fri 9am-6pm PST</CardDescription>
                 </CardHeader>
@@ -101,7 +101,7 @@ export default function Contact() {
                   <div className="w-12 h-12 rounded-xl bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mb-4">
                     <Mail className="h-6 w-6 text-[hsl(var(--marketing-primary))]" />
                   </div>
-                  <CardTitle className="font-serif">EMAIL</CardTitle>
+                  <CardTitle>EMAIL</CardTitle>
                   <CardDescription>support@floraiq.com</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -116,7 +116,7 @@ export default function Contact() {
                   <div className="w-12 h-12 rounded-xl bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mb-4">
                     <Video className="h-6 w-6 text-[hsl(var(--marketing-primary))]" />
                   </div>
-                  <CardTitle className="font-serif">DEMO</CardTitle>
+                  <CardTitle>DEMO</CardTitle>
                   <CardDescription>See FloraIQ in action</CardDescription>
                 </CardHeader>
                 <CardContent>

@@ -128,7 +128,7 @@ export function ProductQuickViewModal({
                             )}
 
                             {/* Product Name */}
-                            <h2 className="text-white text-2xl md:text-3xl font-serif italic mb-4">
+                            <h2 className="text-white text-2xl md:text-3xl mb-4">
                                 {cleanedName}
                             </h2>
 
@@ -162,7 +162,7 @@ export function ProductQuickViewModal({
                             <div className="mb-6">
                                 <span className="text-white/40 text-xs tracking-wider uppercase">Price</span>
                                 <p
-                                    className="text-3xl font-serif italic"
+                                    className="text-3xl"
                                     style={{ color: accentColor }}
                                 >
                                     ${product.price?.toFixed(2) || '0.00'}

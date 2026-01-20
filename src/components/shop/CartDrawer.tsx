@@ -179,7 +179,7 @@ export function CartDrawer({
                   {/* Subtotal */}
                   <div className="flex items-center justify-between">
                     <span className="text-white/60 text-sm">Subtotal</span>
-                    <span className="text-white text-xl font-light font-serif italic">
+                    <span className="text-white text-xl font-light">
                       {formatCurrency(subtotal)}
                     </span>
                   </div>

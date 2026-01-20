@@ -51,7 +51,7 @@ export default function StatusPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="font-serif">Service Status</CardTitle>
+              <CardTitle>Service Status</CardTitle>
               <CardDescription>Current status of all platform services</CardDescription>
             </CardHeader>
             <CardContent>
