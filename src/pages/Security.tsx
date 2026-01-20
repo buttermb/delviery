@@ -75,7 +75,7 @@ export default function Security() {
         title="Security & Compliance | FloraIQ"
         description="Learn about FloraIQ's enterprise-grade security measures, certifications, and commitment to protecting your business data."
       />
-      
+
       <MarketingNav />
 
       {/* Hero Section */}
@@ -88,7 +88,7 @@ export default function Security() {
               <span className="block text-primary">Safe & Secure</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              We implement industry-leading security measures to protect your business data 
+              We implement industry-leading security measures to protect your business data
               and ensure compliance with global standards.
             </p>
           </div>
@@ -191,7 +191,7 @@ export default function Security() {
                       Security Incident Response
                     </h2>
                     <p className="text-muted-foreground mb-4">
-                      We have a dedicated security team monitoring systems 24/7. In the unlikely event 
+                      We have a dedicated security team monitoring systems 24/7. In the unlikely event
                       of a security incident, we have established protocols to:
                     </p>
                     <ul className="space-y-2 text-muted-foreground">
@@ -228,7 +228,7 @@ export default function Security() {
               Have Security Questions?
             </h2>
             <p className="text-muted-foreground mb-8">
-              Our security team is here to answer any questions about our security measures, 
+              Our security team is here to answer any questions about our security measures,
               compliance, or data protection policies.
             </p>
             <a href="mailto:security@devpanel.com" className="text-primary hover:underline font-medium">

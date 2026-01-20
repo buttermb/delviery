@@ -124,7 +124,7 @@ export default function MarketingHome() {
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-12">
-                <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4 text-[hsl(var(--marketing-text))]">
+                <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
                   See FloraIQ in Action
                 </h2>
                 <p className="text-xl text-[hsl(var(--marketing-text-light))] mb-8">
@@ -193,7 +193,7 @@ export default function MarketingHome() {
         <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg))]">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4 text-[hsl(var(--marketing-text))]">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
                 Simple, Transparent Pricing
               </h2>
               <p className="text-xl text-[hsl(var(--marketing-text-light))]">

@@ -37,6 +37,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import ThemeToggle from '@/components/ThemeToggle';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import { motion, AnimatePresence } from 'framer-motion';
+import FloraIQLogo from '@/components/FloraIQLogo';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -212,9 +213,8 @@ export default function LoginPage() {
 
           {/* Header */}
           <div className="p-6 md:p-8 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-[#1B4332] font-serif font-bold text-xl tracking-tight cursor-pointer" onClick={() => navigate('/')}>
-              <Flower2 className="h-6 w-6" />
-              <span>FloraIQ</span>
+            <div className="cursor-pointer" onClick={() => navigate('/')}>
+              <FloraIQLogo size="md" />
             </div>
             <ThemeToggle className="hover:bg-[#1B4332]/10 text-[#1B4332]" />
           </div>
@@ -414,7 +414,7 @@ export default function LoginPage() {
                 {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-current" />)}
               </div>
 
-              <blockquote className="text-2xl font-serif leading-relaxed mb-8">
+              <blockquote className="text-2xl leading-relaxed mb-8">
                 "FloraIQ transformed our wholesale operations. We've saved 20+ hours a week on inventory management alone."
               </blockquote>
 

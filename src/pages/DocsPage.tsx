@@ -36,11 +36,11 @@ export default function DocsPage() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <SEOHead 
-        title="API Documentation - DevPanel"
-        description="Complete API documentation for DevPanel. RESTful endpoints, authentication, and integration guides."
+      <SEOHead
+        title="API Documentation - FloraIQ"
+        description="Complete API documentation for FloraIQ. RESTful endpoints, authentication, and integration guides."
       />
-      
+
       <MarketingNav />
 
       <section className="container mx-auto px-4 py-20">
@@ -50,7 +50,7 @@ export default function DocsPage() {
               API Documentation
             </h1>
             <p className="text-xl text-muted-foreground">
-              Everything you need to integrate with DevPanel
+              Everything you need to integrate with FloraIQ
             </p>
           </div>
 
@@ -82,7 +82,7 @@ export default function DocsPage() {
                 Comprehensive API Documentation
               </CardTitle>
               <CardDescription>
-                Access over 60 REST API endpoints for complete control of your DevPanel tenant. Build custom integrations, automate workflows, and extend functionality.
+                Access over 60 REST API endpoints for complete control of your FloraIQ tenant. Build custom integrations, automate workflows, and extend functionality.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

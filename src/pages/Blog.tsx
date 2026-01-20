@@ -74,7 +74,7 @@ export default function Blog() {
         title="Blog - Insights & Resources | FloraIQ"
         description="Read the latest insights, best practices, and industry trends for wholesale distribution management. Expert tips to help grow your business."
       />
-      
+
       <MarketingNav />
 
       {/* Hero Section */}
@@ -89,7 +89,7 @@ export default function Blog() {
             <p className="text-xl text-muted-foreground mb-8">
               Expert tips, industry trends, and best practices to help you grow your wholesale business.
             </p>
-            
+
             {/* Search Bar */}
             <div className="relative max-w-xl mx-auto">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />

@@ -15,10 +15,10 @@ interface ComingSoonPageProps {
   description?: string;
 }
 
-export default function ComingSoonPage({ 
+export default function ComingSoonPage({
   pageName = 'This Feature',
   estimatedDate,
-  description 
+  description
 }: ComingSoonPageProps) {
   const navigate = useNavigate();
   const { toast } = useToast();

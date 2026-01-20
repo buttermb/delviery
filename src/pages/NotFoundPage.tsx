@@ -34,15 +34,15 @@ export default function NotFoundPage() {
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Button 
+            <Button
               onClick={() => navigate('/')}
               className="gap-2"
             >
               <Home className="h-4 w-4" />
               Go Home
             </Button>
-            
-            <Button 
+
+            <Button
               variant="outline"
               onClick={() => navigate(-1)}
               className="gap-2"

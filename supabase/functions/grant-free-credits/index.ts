@@ -35,24 +35,42 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Verify this is an internal/cron call
+  // Verify this is an internal/cron call or super-admin
   const authHeader = req.headers.get('Authorization');
-  if (!authHeader?.includes(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '')) {
-    // Allow requests with valid bearer token
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
+  // Allow service role key directly (for cron jobs)
+  if (!authHeader?.includes(supabaseServiceKey)) {
     const tempClient = createClient(supabaseUrl, supabaseServiceKey);
-    
     const token = authHeader?.replace('Bearer ', '');
+
     if (token !== supabaseServiceKey) {
-      // Verify it's a valid admin user
+      // Verify it's a valid user first
       const { data: { user }, error } = await tempClient.auth.getUser(token || '');
       if (error || !user) {
         return new Response(
-          JSON.stringify({ error: 'Unauthorized - only admins can trigger this job' }),
+          JSON.stringify({ error: 'Unauthorized' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+
+      // SECURITY: Verify user is a super-admin (not just any authenticated user)
+      const { data: superAdmin, error: superAdminError } = await tempClient
+        .from('super_admins')
+        .select('id')
+        .eq('email', user.email)
+        .maybeSingle();
+
+      if (superAdminError || !superAdmin) {
+        console.warn(`[GRANT_FREE_CREDITS] Unauthorized attempt by ${user.email}`);
+        return new Response(
+          JSON.stringify({ error: 'Super admin access required for manual trigger' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`[GRANT_FREE_CREDITS] Authorized super-admin: ${user.email}`);
     }
   }
 
@@ -144,7 +162,7 @@ serve(async (req) => {
         // Log the transaction with idempotency key
         const grantDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
         const idempotencyKey = `free_grant:${tenantId}:${grantDate}`;
-        
+
         const { error: txError } = await supabase
           .from('credit_transactions')
           .insert({
@@ -162,7 +180,7 @@ serve(async (req) => {
               grant_date: grantDate,
             },
           });
-        
+
         // If duplicate key error, this grant was already processed
         if (txError?.code === '23505') {
           console.log(`[GRANT_FREE_CREDITS] Skipping ${tenantId} - already granted today`);
@@ -208,11 +226,11 @@ serve(async (req) => {
 
     if (!missingError && tenantsWithoutCredits?.length) {
       console.log(`[GRANT_FREE_CREDITS] Found ${tenantsWithoutCredits.length} tenants without credit records`);
-      
+
       for (const tenant of tenantsWithoutCredits) {
         try {
           const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-          
+
           // Create credit record with initial free credits
           const { error: createError } = await supabase
             .from('tenant_credits')
@@ -232,7 +250,7 @@ serve(async (req) => {
 
           if (!createError) {
             console.log(`[GRANT_FREE_CREDITS] Created credit record for ${tenant.slug}`);
-            
+
             // Log the initial grant transaction with idempotency
             const initKey = `initial_grant:${tenant.id}`;
             await supabase
@@ -246,7 +264,7 @@ serve(async (req) => {
                 reference_id: initKey,
                 description: 'Initial free credits',
               });
-            
+
             results.granted++;
           }
         } catch (err) {
@@ -263,9 +281,9 @@ serve(async (req) => {
         message: 'Credit grant job completed',
         results,
       }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
 
@@ -276,9 +294,9 @@ serve(async (req) => {
         success: false,
         error: (error as Error).message,
       }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }

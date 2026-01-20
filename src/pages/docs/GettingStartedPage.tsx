@@ -9,8 +9,8 @@ export default function GettingStartedPage() {
   return (
     <>
       <SEOHead 
-        title="Getting Started - API Documentation - DevPanel"
-        description="Quick start guide to integrate with the DevPanel API. Learn authentication, setup, and make your first API call."
+        title="Getting Started - API Documentation - FloraIQ"
+        description="Quick start guide to integrate with the FloraIQ API. Learn authentication, setup, and make your first API call."
       />
       
       <DocsLayout>
@@ -18,7 +18,7 @@ export default function GettingStartedPage() {
           <div>
             <h1 className="text-4xl font-bold mb-4 text-foreground">Getting Started</h1>
             <p className="text-lg text-muted-foreground">
-              Get up and running with the DevPanel API in minutes. This guide covers authentication, setup, and your first API call.
+              Get up and running with the FloraIQ API in minutes. This guide covers authentication, setup, and your first API call.
             </p>
           </div>
 
@@ -139,7 +139,7 @@ export default function GettingStartedPage() {
           <Card>
             <CardHeader>
               <CardTitle>Authentication Overview</CardTitle>
-              <CardDescription>DevPanel uses JWT-based authentication</CardDescription>
+              <CardDescription>FloraIQ uses JWT-based authentication</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>

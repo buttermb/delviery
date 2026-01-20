@@ -33,9 +33,9 @@ serve(async (req) => {
       contact_phone,
     } = body;
 
-    console.log(`[ORDER_CREATE] Request validated`, { 
-      traceId, 
-      menuId: menu_id, 
+    console.log(`[ORDER_CREATE] Request validated`, {
+      traceId,
+      menuId: menu_id,
       itemCount: order_items?.length,
       totalAmount: body.total_amount,
       paymentMethod: payment_method
@@ -54,10 +54,10 @@ serve(async (req) => {
       });
 
     if (reserveError) {
-      console.error(`[ORDER_CREATE] Inventory reservation failed`, { 
-        traceId, 
-        menuId: menu_id, 
-        error: reserveError.message 
+      console.error(`[ORDER_CREATE] Inventory reservation failed`, {
+        traceId,
+        menuId: menu_id,
+        error: reserveError.message
       });
       return new Response(
         JSON.stringify({ error: reserveError.message || 'Inventory reservation failed' }),
@@ -69,11 +69,51 @@ serve(async (req) => {
     console.log(`[ORDER_CREATE] Inventory reserved`, { traceId, reservationId: reservation_id });
 
     // 3. PROCESS PAYMENT
-    // Calculate total (should match what was reserved)
-    // Ideally we fetch prices from DB, but for now using client passed total validated by RPC logic if we added it.
-    // Let's assume the client sends the expected total and we trust the RPC to validate stock.
-    // In a real app, we'd re-calculate total from DB prices here.
-    const totalAmount = body.total_amount || 0; // Placeholder
+    // SECURITY: Calculate total from DATABASE prices - NEVER trust client-provided total
+    const productIds = order_items.map((item: { product_id: string }) => item.product_id);
+
+    // Fetch actual prices from disposable_menu_items
+    const { data: menuItems, error: menuItemsError } = await supabaseClient
+      .from('disposable_menu_items')
+      .select('product_id, price')
+      .eq('menu_id', menu_id)
+      .in('product_id', productIds);
+
+    if (menuItemsError || !menuItems || menuItems.length === 0) {
+      console.error(`[ORDER_CREATE] Failed to fetch menu item prices`, { traceId, error: menuItemsError });
+      // ROLLBACK: Cancel Reservation
+      await supabaseClient.rpc('cancel_reservation', {
+        p_reservation_id: reservation_id,
+        p_reason: 'price_lookup_failed'
+      });
+      return new Response(
+        JSON.stringify({ error: 'Failed to retrieve product prices' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Create price lookup map
+    const priceMap = new Map(menuItems.map((item: { product_id: string; price: number }) => [item.product_id, Number(item.price)]));
+
+    // Calculate total from SERVER prices
+    let totalAmount = 0;
+    for (const item of order_items) {
+      const serverPrice = priceMap.get(item.product_id);
+      if (serverPrice === undefined) {
+        console.error(`[ORDER_CREATE] Product not found in menu`, { traceId, productId: item.product_id });
+        await supabaseClient.rpc('cancel_reservation', {
+          p_reservation_id: reservation_id,
+          p_reason: 'product_not_in_menu'
+        });
+        return new Response(
+          JSON.stringify({ error: `Product ${item.product_id} not available in this menu` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      totalAmount += serverPrice * item.quantity;
+    }
+
+    console.log(`[ORDER_CREATE] Server-calculated total: ${totalAmount}`, { traceId });
 
     const paymentResult = await processPayment(totalAmount, payment_method, {
       reservation_id,
@@ -81,10 +121,10 @@ serve(async (req) => {
     });
 
     if (!paymentResult.success) {
-      console.error(`[ORDER_CREATE] Payment failed`, { 
-        traceId, 
+      console.error(`[ORDER_CREATE] Payment failed`, {
+        traceId,
         reservationId: reservation_id,
-        error: paymentResult.error 
+        error: paymentResult.error
       });
       // ROLLBACK: Cancel Reservation
       await supabaseClient.rpc('cancel_reservation', {
@@ -98,9 +138,9 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[ORDER_CREATE] Payment processed`, { 
-      traceId, 
-      transactionId: paymentResult.transaction_id 
+    console.log(`[ORDER_CREATE] Payment processed`, {
+      traceId,
+      transactionId: paymentResult.transaction_id
     });
 
     // 3.5 CREATE OR UPDATE CUSTOMER RECORD
@@ -142,10 +182,10 @@ serve(async (req) => {
       });
 
     if (confirmError) {
-      console.error(`[ORDER_CREATE] Order confirmation failed - ZOMBIE RECOVERY`, { 
-        traceId, 
+      console.error(`[ORDER_CREATE] Order confirmation failed - ZOMBIE RECOVERY`, {
+        traceId,
         reservationId: reservation_id,
-        error: confirmError.message 
+        error: confirmError.message
       });
       // ZOMBIE ORDER RECOVERY (Nuclear Option Scenario A)
       if (paymentResult.transaction_id) {
@@ -156,8 +196,8 @@ serve(async (req) => {
           );
           console.log(`[ORDER_CREATE] Refund processed`, { traceId, transactionId: paymentResult.transaction_id });
         } catch (refundError) {
-          console.error(`[ORDER_CREATE] FATAL: Refund failed for Zombie Order! Manual intervention required.`, { 
-            traceId, 
+          console.error(`[ORDER_CREATE] FATAL: Refund failed for Zombie Order! Manual intervention required.`, {
+            traceId,
             transactionId: paymentResult.transaction_id,
             error: refundError
           });
@@ -184,8 +224,8 @@ serve(async (req) => {
     // 5. REALTIME BROADCAST
     // (Handled by DB triggers we created earlier, but we can add explicit broadcast if needed)
 
-    console.log(`[ORDER_CREATE] Order confirmed successfully`, { 
-      traceId, 
+    console.log(`[ORDER_CREATE] Order confirmed successfully`, {
+      traceId,
       orderId: order.order_id,
       menuId: menu_id,
       totalAmount

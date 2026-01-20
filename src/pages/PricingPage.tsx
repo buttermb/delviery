@@ -174,7 +174,7 @@ export default function PricingPage() {
     <ForceLightMode>
       <div className="min-h-dvh bg-[hsl(var(--marketing-bg))]">
         <SEOHead
-          title="Pricing - DevPanel | Simple, Transparent Pricing"
+          title="Pricing - FloraIQ | Simple, Transparent Pricing"
           description="Simple, transparent pricing for wholesale distributors. Plans from $79/month. Start free, upgrade as you grow. 14-day free trial."
         />
 

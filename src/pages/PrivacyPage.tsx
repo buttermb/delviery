@@ -8,6 +8,7 @@ export default function PrivacyPage() {
       title="Privacy Policy"
       description="How we protect and handle your data"
       backButton
+      showLogo
     >
       <div className="space-y-6">
         {/* Last Updated */}
@@ -138,8 +139,8 @@ export default function PrivacyPage() {
           <CardContent className="pt-6 space-y-4">
             <h3 className="font-semibold text-lg">Data Retention</h3>
             <p className="text-sm">
-              We retain your data for as long as your account is active or as needed to provide services. 
-              After account deletion, we keep data for 90 days for recovery, then permanently delete it. 
+              We retain your data for as long as your account is active or as needed to provide services.
+              After account deletion, we keep data for 90 days for recovery, then permanently delete it.
               Some data may be retained longer for legal or compliance purposes.
             </p>
           </CardContent>
@@ -150,8 +151,8 @@ export default function PrivacyPage() {
           <CardContent className="pt-6 space-y-4">
             <h3 className="font-semibold text-lg">Children's Privacy</h3>
             <p className="text-sm">
-              Our services are not intended for anyone under 21 years of age. We do not knowingly collect 
-              personal information from minors. If you believe we have collected data from a minor, 
+              Our services are not intended for anyone under 21 years of age. We do not knowingly collect
+              personal information from minors. If you believe we have collected data from a minor,
               please contact us immediately.
             </p>
           </CardContent>
@@ -170,7 +171,7 @@ export default function PrivacyPage() {
               </div>
             </div>
             <div className="space-y-2 text-sm">
-              <p>Email: privacy@bigmike.com</p>
+              <p>Email: privacy@floraiq.com</p>
               <p>Phone: (555) 123-4567</p>
               <p>Address: 123 Main Street, New York, NY 10001</p>
             </div>
@@ -181,8 +182,8 @@ export default function PrivacyPage() {
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">
-              We may update this privacy policy from time to time. We'll notify you of significant changes 
-              via email or through the platform. Continued use of our services after changes indicates 
+              We may update this privacy policy from time to time. We'll notify you of significant changes
+              via email or through the platform. Continued use of our services after changes indicates
               acceptance of the updated policy.
             </p>
           </CardContent>

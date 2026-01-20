@@ -95,7 +95,7 @@ function mapInvoiceToPdfData(invoice: ExtendedInvoice, tenant: ExtendedTenant | 
     customerName: tenant?.name || 'Customer',
     customerAddress: tenant?.address || '',
     customerEmail: tenant?.contact_email || '',
-    companyName: 'BigMike Wholesale',
+    companyName: 'FloraIQ',
     companyAddress: '123 Business Ave, Suite 100',
     lineItems: Array.isArray(invoice.line_items)
       ? (invoice.line_items as any[]).map(item => ({

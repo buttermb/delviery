@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  MessageSquare, 
-  Phone, 
-  Mail, 
+import {
+  MessageSquare,
+  Phone,
+  Mail,
   Clock,
   Search,
   HelpCircle
@@ -38,25 +38,26 @@ export default function SupportPage() {
       question: 'What are your support hours?',
       answer: 'Live chat is available 24/7. Phone support is available Monday-Friday 9am-6pm EST. Email support responds within 24 hours.'
     },
-      {
-        question: 'How do I track my order?',
-        answer: 'After placing your order, you will receive a tracking link via email and SMS. You can also track on our Track Order page using your order number.'
-      },
+    {
+      question: 'How do I track my order?',
+      answer: 'After placing your order, you will receive a tracking link via email and SMS. You can also track on our Track Order page using your order number.'
+    },
     {
       question: 'What payment methods do you accept?',
       answer: 'We accept all major credit cards, debit cards, and digital payment methods. Payment terms can be customized per customer.'
     },
-      {
-        question: 'How do I reset my password?',
-        answer: 'Go to the login page and click "Forgot Password". Enter your email and you will receive a reset link within a few minutes.'
-      }
+    {
+      question: 'How do I reset my password?',
+      answer: 'Go to the login page and click "Forgot Password". Enter your email and you will receive a reset link within a few minutes.'
+    }
   ];
 
   return (
     <ModernPage
       title="Support"
-      description="Get help with using BigMike Wholesale"
+      description="Get help with using FloraIQ"
       backButton
+      showLogo
     >
       <div className="space-y-6">
         {/* Quick Actions */}
@@ -89,9 +90,9 @@ export default function SupportPage() {
                 <Mail className="h-6 w-6 text-green-500" />
               </div>
               <h3 className="font-semibold">Email Support</h3>
-              <p className="text-sm text-muted-foreground">support@bigmike.com</p>
+              <p className="text-sm text-muted-foreground">support@floraiq.com</p>
               <Button variant="outline" className="w-full" asChild>
-                <a href="mailto:support@bigmike.com">Send Email</a>
+                <a href="mailto:support@floraiq.com">Send Email</a>
               </Button>
             </CardContent>
           </Card>

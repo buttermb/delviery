@@ -55,7 +55,7 @@ export default function Cookie() {
         title="Cookie Policy | FloraIQ"
         description="Learn about how FloraIQ uses cookies and similar technologies to improve your experience on our website."
       />
-      
+
       <MarketingNav />
 
       {/* Hero Section */}
@@ -70,7 +70,7 @@ export default function Cookie() {
               Last updated: March 1, 2024
             </p>
             <p className="text-muted-foreground">
-              This Cookie Policy explains how FloraIQ uses cookies and similar technologies to recognize you 
+              This Cookie Policy explains how FloraIQ uses cookies and similar technologies to recognize you
               when you visit our website.
             </p>
           </div>
@@ -92,11 +92,11 @@ export default function Cookie() {
                       What Are Cookies?
                     </h2>
                     <p className="text-muted-foreground mb-4">
-                      Cookies are small text files that are placed on your computer or mobile device when you visit a website. 
+                      Cookies are small text files that are placed on your computer or mobile device when you visit a website.
                       They are widely used to make websites work more efficiently and provide information to the site owners.
                     </p>
                     <p className="text-muted-foreground">
-                      Cookies can be "persistent" or "session" cookies. Persistent cookies remain on your device after you 
+                      Cookies can be "persistent" or "session" cookies. Persistent cookies remain on your device after you
                       close your browser, while session cookies are deleted when you close your browser.
                     </p>
                   </div>
@@ -163,28 +163,28 @@ export default function Cookie() {
                       How to Manage Cookies
                     </h2>
                     <p className="text-muted-foreground mb-4">
-                      Most web browsers allow you to control cookies through their settings preferences. However, 
+                      Most web browsers allow you to control cookies through their settings preferences. However,
                       if you limit the ability of websites to set cookies, you may worsen your overall user experience.
                     </p>
                     <div className="space-y-3">
                       <div>
                         <p className="font-medium text-foreground mb-2">Browser Settings</p>
                         <p className="text-sm text-muted-foreground">
-                          You can manage cookies in your browser settings. Each browser is different, so check your 
+                          You can manage cookies in your browser settings. Each browser is different, so check your
                           browser's "Help" menu to learn how to change your cookie preferences.
                         </p>
                       </div>
                       <div>
                         <p className="font-medium text-foreground mb-2">Cookie Preferences</p>
                         <p className="text-sm text-muted-foreground">
-                          When you first visit our website, you'll see a cookie consent banner where you can choose 
+                          When you first visit our website, you'll see a cookie consent banner where you can choose
                           which types of cookies to accept or reject.
                         </p>
                       </div>
                       <div>
                         <p className="font-medium text-foreground mb-2">Do Not Track</p>
                         <p className="text-sm text-muted-foreground">
-                          Some browsers have a "Do Not Track" feature that lets you tell websites that you do not want 
+                          Some browsers have a "Do Not Track" feature that lets you tell websites that you do not want
                           to have your online activities tracked. We respect Do Not Track signals.
                         </p>
                       </div>
@@ -207,7 +207,7 @@ export default function Cookie() {
             <Card>
               <CardContent className="p-8">
                 <p className="text-muted-foreground mb-4">
-                  In addition to our own cookies, we may also use various third-party cookies to report usage 
+                  In addition to our own cookies, we may also use various third-party cookies to report usage
                   statistics, deliver advertisements, and provide enhanced functionality.
                 </p>
                 <p className="text-muted-foreground mb-4">
@@ -243,7 +243,7 @@ export default function Cookie() {
                   Changes to This Policy
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  We may update this Cookie Policy from time to time to reflect changes in our practices or 
+                  We may update this Cookie Policy from time to time to reflect changes in our practices or
                   for other operational, legal, or regulatory reasons. Please check this page periodically for updates.
                 </p>
                 <p className="text-sm text-muted-foreground">

@@ -44,6 +44,8 @@ export default function HelpPage() {
     <ModernPage
       title="Help & Resources"
       description="Video tutorials, documentation, and support resources"
+      backButton
+      showLogo
     >
       <div className="space-y-6">
         {/* Quick Help Section */}

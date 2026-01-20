@@ -10,8 +10,8 @@ export default function AuthenticationPage() {
   return (
     <>
       <SEOHead 
-        title="Authentication - API Documentation - DevPanel"
-        description="Learn how to authenticate with the DevPanel API using JWT tokens and manage user sessions."
+        title="Authentication - API Documentation - FloraIQ"
+        description="Learn how to authenticate with the FloraIQ API using JWT tokens and manage user sessions."
       />
       
       <DocsLayout>
@@ -19,7 +19,7 @@ export default function AuthenticationPage() {
           <div>
             <h1 className="text-4xl font-bold mb-4 text-foreground">Authentication</h1>
             <p className="text-lg text-muted-foreground">
-              DevPanel uses JWT (JSON Web Token) authentication to secure API access. Learn how to authenticate and manage sessions.
+              FloraIQ uses JWT (JSON Web Token) authentication to secure API access. Learn how to authenticate and manage sessions.
             </p>
           </div>
 
@@ -30,7 +30,7 @@ export default function AuthenticationPage() {
                 Three-Tier Authentication System
               </CardTitle>
               <CardDescription>
-                DevPanel implements a hierarchical authentication system with three distinct access levels
+                FloraIQ implements a hierarchical authentication system with three distinct access levels
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">

@@ -68,7 +68,7 @@ export default function Careers() {
         title="Careers - Join Our Team | FloraIQ"
         description="Join FloraIQ and help revolutionize wholesale distribution management. Explore open positions and build your career with us."
       />
-      
+
       <MarketingNav />
 
       {/* Hero Section */}
@@ -81,7 +81,7 @@ export default function Careers() {
               <span className="block text-primary">Wholesale Distribution</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Join a team that's transforming how distributors manage their businesses. 
+              Join a team that's transforming how distributors manage their businesses.
               We're looking for talented people who want to make an impact.
             </p>
           </div>

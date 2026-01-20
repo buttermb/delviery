@@ -591,6 +591,7 @@ const App = () => {
                                       <Route path="/blog" element={<Blog />} />
                                       <Route path="/security" element={<Security />} />
                                       <Route path="/cookie" element={<Cookie />} />
+                                      <Route path="/cookies" element={<Cookie />} />
                                       <Route path="/login" element={<LoginDirectory />} />
 
                                       {/* Public Marketplace (B2B) */}

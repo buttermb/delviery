@@ -36,6 +36,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import FloraIQLogo from '@/components/FloraIQLogo';
 
 const menuItems = [
   {
@@ -142,8 +143,8 @@ export function SaasAdminSidebar() {
   };
 
   return (
-    <Sidebar 
-      collapsible="icon" 
+    <Sidebar
+      collapsible="icon"
       className="border-r border-white/10 bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl hidden lg:flex"
     >
       <SidebarContent>
@@ -151,14 +152,12 @@ export function SaasAdminSidebar() {
           <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
             {!collapsed ? (
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[hsl(var(--super-admin-primary))] to-[hsl(var(--super-admin-secondary))] flex items-center justify-center">
-                  <Shield className="h-4 w-4 text-white" />
-                </div>
-                <span className="font-semibold text-[hsl(var(--super-admin-text))]">Platform Admin</span>
+                <FloraIQLogo size="md" className="text-[hsl(var(--super-admin-text))]" />
+                <span className="text-xs text-[hsl(var(--super-admin-text))]/70 border-l border-[hsl(var(--super-admin-text))]/20 pl-2">Admin</span>
               </div>
             ) : (
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[hsl(var(--super-admin-primary))] to-[hsl(var(--super-admin-secondary))] flex items-center justify-center mx-auto">
-                <Shield className="h-4 w-4 text-white" />
+              <div className="mx-auto">
+                <FloraIQLogo size="md" iconOnly className="text-[hsl(var(--super-admin-text))]" />
               </div>
             )}
           </div>
@@ -178,8 +177,8 @@ export function SaasAdminSidebar() {
                         to={item.url}
                         end={item.url === '/super-admin/dashboard'}
                         className={`
-                          ${active 
-                            ? 'bg-[hsl(var(--super-admin-primary))]/20 text-[hsl(var(--super-admin-primary))] border-l-2 border-[hsl(var(--super-admin-primary))]' 
+                          ${active
+                            ? 'bg-[hsl(var(--super-admin-primary))]/20 text-[hsl(var(--super-admin-primary))] border-l-2 border-[hsl(var(--super-admin-primary))]'
                             : 'hover:bg-white/5 text-[hsl(var(--super-admin-text))]/80'
                           }
                           transition-colors

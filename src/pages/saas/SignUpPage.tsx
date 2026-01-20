@@ -47,6 +47,7 @@ import { usePrefetchDashboard } from '@/hooks/usePrefetchDashboard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
+import FloraIQLogo from '@/components/FloraIQLogo';
 
 
 
@@ -589,7 +590,10 @@ export default function SignUpPage() {
         <div className="max-w-6xl mx-auto relative z-10 pt-8">
           {/* Header */}
           <div className="text-center mb-10">
-            <h1 className="text-3xl sm:text-4xl font-serif font-bold mb-3 text-slate-900 dark:text-white">
+            <div className="flex justify-center mb-6">
+              <FloraIQLogo size="xl" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-slate-900 dark:text-white">
               Get Started Free Today
             </h1>
             <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">
@@ -613,7 +617,7 @@ export default function SignUpPage() {
                   {showPhoneVerification ? (
                     <div className="space-y-6">
                       <div>
-                        <h2 className="text-2xl font-serif font-semibold mb-1">Verify Your Phone</h2>
+                        <h2 className="text-2xl font-semibold mb-1">Verify Your Phone</h2>
                         <p className="text-sm text-muted-foreground">
                           For your security, please verify your phone number
                         </p>
@@ -673,7 +677,7 @@ export default function SignUpPage() {
                         )}
 
                         <div>
-                          <h2 className="text-2xl font-serif font-semibold mb-1">
+                          <h2 className="text-2xl font-semibold mb-1">
                             {selectedPlan === 'free'
                               ? 'Create Your Free Account'
                               : `Start Your ${planConfig.name} Trial`}

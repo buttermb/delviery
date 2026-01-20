@@ -25,23 +25,74 @@ Deno.serve(async (req) => {
     const rawBody = await req.json();
     const { rewardId, customerId }: RedeemLoyaltyRewardInput = validateRedeemLoyaltyReward(rawBody);
 
-    // Get reward details
+    // SECURITY: Get authenticated user's tenant
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Get user's tenant
+    const { data: tenantUser, error: tenantUserError } = await supabaseClient
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (tenantUserError || !tenantUser) {
+      return new Response(
+        JSON.stringify({ error: 'User not associated with a tenant' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userTenantId = tenantUser.tenant_id;
+
+    // SECURITY: Verify reward belongs to user's tenant
     const { data: reward, error: rewardError } = await supabaseClient
       .from('loyalty_rewards')
       .select('*')
       .eq('id', rewardId)
+      .eq('tenant_id', userTenantId) // Enforce tenant isolation
       .single();
 
-    if (rewardError) throw rewardError;
+    if (rewardError || !reward) {
+      return new Response(
+        JSON.stringify({ error: 'Reward not found or not available' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    // Get customer points balance
+    // SECURITY: Verify customer belongs to same tenant
+    const { data: customer, error: customerError } = await supabaseClient
+      .from('customers')
+      .select('id')
+      .eq('id', customerId)
+      .eq('tenant_id', userTenantId) // Enforce tenant isolation
+      .single();
+
+    if (customerError || !customer) {
+      return new Response(
+        JSON.stringify({ error: 'Customer not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Get customer points balance (also enforce tenant)
     const { data: points, error: pointsError } = await supabaseClient
       .from('loyalty_points')
       .select('balance, lifetime_redeemed')
       .eq('client_id', customerId)
       .single();
 
-    if (pointsError) throw pointsError;
+    if (pointsError || !points) {
+      return new Response(
+        JSON.stringify({ error: 'Points balance not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Check if customer has enough points
     if (points.balance < reward.points_required) {

@@ -53,9 +53,9 @@ export function PostDetailPage() {
     );
   }
 
-  const authorName = post.author?.username || 
-    post.author?.customer_user?.first_name || 
-    post.author?.customer_user?.email || 
+  const authorName = post.author?.username ||
+    post.author?.customer_user?.first_name ||
+    post.author?.customer_user?.email ||
     'Anonymous';
 
   const isAuthor = profile?.id === post.author_id;
@@ -77,7 +77,7 @@ export function PostDetailPage() {
 
   const handleDeletePost = async () => {
     if (!postId || !confirm('Are you sure you want to delete this post?')) return;
-    
+
     try {
       await deletePostMutation.mutateAsync(postId);
       navigate('/community');

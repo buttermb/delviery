@@ -76,8 +76,8 @@ export function SearchPage() {
               ))}
             </div>
           ) : (
-            <EmptyState 
-              type="search" 
+            <EmptyState
+              type="search"
               message={`No posts found for "${query}". Try different keywords.`}
             />
           )}

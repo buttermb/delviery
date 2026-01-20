@@ -12,6 +12,7 @@ import { ForceLightMode } from "@/components/marketing/ForceLightMode";
 import { SUBSCRIPTION_PLANS } from "@/utils/subscriptionPlans";
 import { handleError } from '@/utils/errorHandling/handlers';
 import { cn } from "@/lib/utils";
+import FloraIQLogo from '@/components/FloraIQLogo';
 import { FREE_TIER_MONTHLY_CREDITS } from "@/lib/credits";
 import { PLAN_CONFIG, type PlanKey } from "@/config/planPricing";
 
@@ -288,11 +289,14 @@ export default function SelectPlanPage() {
         <div className="w-full max-w-6xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
+            <div className="flex justify-center mb-6">
+              <FloraIQLogo size="xl" />
+            </div>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
               <Sparkles className="h-4 w-4" />
               {fromSignup ? "Complete Your Registration" : "Choose Your Plan"}
             </div>
-            <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Simple, Transparent Pricing
             </h1>
             <p className="text-xl text-muted-foreground">
@@ -361,7 +365,7 @@ export default function SelectPlanPage() {
                     FREE
                   </Badge>
                 </div>
-                <CardTitle className="text-2xl font-serif">Free Forever</CardTitle>
+                <CardTitle className="text-2xl">Free Forever</CardTitle>
                 <CardDescription className="min-h-[40px]">
                   Get started with credits. Perfect for trying out the platform.
                 </CardDescription>
@@ -451,7 +455,7 @@ export default function SelectPlanPage() {
                   )}
 
                   <CardHeader className="pb-4">
-                    <CardTitle className="text-2xl font-serif">{plan.name}</CardTitle>
+                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
                     <CardDescription className="min-h-[40px]">{plan.description}</CardDescription>
 
                     <div className="mt-4 space-y-1">

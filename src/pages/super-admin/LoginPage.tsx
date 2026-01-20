@@ -98,7 +98,7 @@ export default function SuperAdminLoginPage() {
                 <Shield className="h-8 w-8 text-white" />
               </div>
             </div>
-            <h1 className="text-3xl font-serif font-bold text-[hsl(var(--super-admin-text))] mb-2">
+            <h1 className="text-3xl font-bold text-[hsl(var(--super-admin-text))] mb-2">
               Platform Admin
             </h1>
             <p className="text-[hsl(var(--super-admin-text))]/70 text-sm">

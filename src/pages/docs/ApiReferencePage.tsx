@@ -320,8 +320,8 @@ export default function ApiReferencePage() {
   return (
     <>
       <SEOHead 
-        title="API Reference - DevPanel Documentation"
-        description="Complete API reference for DevPanel. Explore all endpoints, parameters, and code examples."
+        title="API Reference - FloraIQ Documentation"
+        description="Complete API reference for FloraIQ. Explore all endpoints, parameters, and code examples."
       />
       
       <DocsLayout>
@@ -329,7 +329,7 @@ export default function ApiReferencePage() {
           <div>
             <h1 className="text-4xl font-bold mb-4 text-foreground">API Reference</h1>
             <p className="text-lg text-muted-foreground">
-              Complete reference for all DevPanel API endpoints. Includes request parameters, response formats, and code examples.
+              Complete reference for all FloraIQ API endpoints. Includes request parameters, response formats, and code examples.
             </p>
           </div>
 

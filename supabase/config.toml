@@ -303,9 +303,6 @@ verify_jwt = true
 [functions.process-product-image]
 verify_jwt = true
 
-[functions.update-all-products]
-verify_jwt = true
-
 # Tenant & Team Management
 [functions.tenant-invite]
 verify_jwt = true

@@ -1,66 +1,66 @@
-import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface FloraIQLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
   disableAnimation?: boolean;
+  iconOnly?: boolean;
 }
 
 const sizeMap = {
-  sm: { container: 'text-lg', flora: 'text-lg', iq: 'text-xl' },
-  md: { container: 'text-xl', flora: 'text-xl', iq: 'text-2xl' },
-  lg: { container: 'text-2xl', flora: 'text-2xl', iq: 'text-3xl' },
-  xl: { container: 'text-4xl', flora: 'text-4xl', iq: 'text-5xl' },
+  sm: { container: 'text-xl', icon: 'w-5 h-5', gap: 'gap-1.5' },
+  md: { container: 'text-2xl', icon: 'w-7 h-7', gap: 'gap-2' },
+  lg: { container: 'text-3xl', icon: 'w-9 h-9', gap: 'gap-2.5' },
+  xl: { container: 'text-4xl', icon: 'w-12 h-12', gap: 'gap-3' },
 };
 
 const FloraIQLogo = ({
   size = 'md',
   className = '',
-  disableAnimation = false
+  iconOnly = false,
 }: FloraIQLogoProps) => {
   const sizes = sizeMap[size];
 
   return (
-    <div className={cn('flex items-center gap-1 font-serif font-bold tracking-tight', sizes.container, className)}>
-      {/* Flora - Cannabis green */}
-      <span className="bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent font-black">
-        Flora
-      </span>
-
-      {/* IQ - Animated tech purple/blue with pulse glow */}
-      {disableAnimation ? (
-        <span className="bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-400 bg-clip-text text-transparent font-black">
-          IQ
-        </span>
-      ) : (
-        <motion.span
-          className={cn(
-            "bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-400 bg-clip-text text-transparent font-black relative",
-            sizes.iq
-          )}
-          animate={{
-            textShadow: [
-              "0 0 8px rgba(139, 92, 246, 0.5), 0 0 16px rgba(59, 130, 246, 0.3)",
-              "0 0 16px rgba(139, 92, 246, 0.8), 0 0 32px rgba(59, 130, 246, 0.5)",
-              "0 0 8px rgba(139, 92, 246, 0.5), 0 0 16px rgba(59, 130, 246, 0.3)",
-            ],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          whileHover={{
-            scale: 1.05,
-            transition: { duration: 0.2 }
-          }}
-        >
-          IQ
-        </motion.span>
-      )}
+    <div className={cn('flex items-center font-sans font-bold tracking-tight text-[#0f3a22]', !iconOnly && sizes.gap, sizes.container, className)}>
+      <FlowerIcon className={sizes.icon} />
+      {!iconOnly && <span>FloraIQ</span>}
     </div>
   );
 };
+
+// Custom Flower Icon matching the provided design
+function FlowerIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      {/* Stem */}
+      <path d="M12 21V11" strokeWidth="2.5" />
+
+      {/* Leaves */}
+      <path d="M12 17C9 16.5 8 14 8 14" strokeWidth="2.5" />
+      <path d="M12 17C15 16.5 16 14 16 14" strokeWidth="2.5" />
+
+      {/* Flower Head - 4 petals + center */}
+      {/* Top Petal */}
+      <circle cx="12" cy="7" r="2.5" strokeWidth="2.5" />
+      {/* Bottom Petal */}
+      <circle cx="12" cy="15" r="2.5" strokeWidth="2.5" />
+      {/* Left Petal */}
+      <circle cx="8" cy="11" r="2.5" strokeWidth="2.5" />
+      {/* Right Petal */}
+      <circle cx="16" cy="11" r="2.5" strokeWidth="2.5" />
+      {/* Center Dot */}
+      <circle cx="12" cy="11" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
 
 export default FloraIQLogo;

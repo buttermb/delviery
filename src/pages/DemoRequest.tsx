@@ -45,11 +45,11 @@ export default function DemoRequest() {
 
   return (
     <div className="min-h-dvh bg-[hsl(var(--marketing-bg))]">
-      <SEOHead 
+      <SEOHead
         title="Schedule Your Free Demo - FloraIQ"
         description="See FloraIQ in action with a personalized demo. No commitment required. 30-minute demo with product expert."
       />
-      
+
       <MarketingNav />
 
       <section className="container mx-auto px-4 py-20">
@@ -67,7 +67,7 @@ export default function DemoRequest() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Demo Request Details</CardTitle>
+              <CardTitle className="font-serif">Demo Request Details</CardTitle>
               <CardDescription>Fill out the form below and we'll schedule your demo</CardDescription>
             </CardHeader>
             <CardContent>

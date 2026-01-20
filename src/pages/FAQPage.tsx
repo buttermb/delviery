@@ -35,8 +35,9 @@ export default function FAQPage() {
   return (
     <ModernPage
       title="Frequently Asked Questions"
-      description="Find answers to common questions about BigMike Wholesale"
+      description="Find answers to common questions about FloraIQ"
       backButton
+      showLogo
     >
       <div className="space-y-6">
         {/* Stats */}

@@ -9,8 +9,8 @@ export default function SecurityPage() {
   return (
     <>
       <SEOHead 
-        title="Security - API Documentation - DevPanel"
-        description="Learn about DevPanel's security features, best practices, and compliance standards."
+        title="Security - API Documentation - FloraIQ"
+        description="Learn about FloraIQ's security features, best practices, and compliance standards."
       />
       
       <DocsLayout>
@@ -18,7 +18,7 @@ export default function SecurityPage() {
           <div>
             <h1 className="text-4xl font-bold mb-4 text-foreground">Security</h1>
             <p className="text-lg text-muted-foreground">
-              DevPanel is built with security at its core. Learn about our security measures, compliance standards, and best practices.
+              FloraIQ is built with security at its core. Learn about our security measures, compliance standards, and best practices.
             </p>
           </div>
 
@@ -67,7 +67,7 @@ export default function SecurityPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                DevPanel implements Row Level Security policies to ensure users can only access data they're authorized to see:
+                FloraIQ implements Row Level Security policies to ensure users can only access data they're authorized to see:
               </p>
               <ul className="space-y-2 text-sm">
                 <li className="flex gap-2">

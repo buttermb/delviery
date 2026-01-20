@@ -16,8 +16,9 @@ const corsHeaders = {
 };
 
 interface CheckoutItem {
+    product_id: string;  // REQUIRED: Product ID for DB lookup
     name: string;
-    price: number;
+    price?: number;      // IGNORED: Will be fetched from DB
     quantity: number;
     image_url?: string;
 }
@@ -28,8 +29,8 @@ interface CheckoutRequest {
     items: CheckoutItem[];
     customer_email: string;
     customer_name: string;
-    subtotal: number;
-    delivery_fee: number;
+    subtotal?: number;    // IGNORED: Will be recalculated
+    delivery_fee?: number; // IGNORED: Will be fetched from store settings
     success_url: string;
     cancel_url: string;
 }
@@ -127,28 +128,82 @@ serve(async (req) => {
             apiVersion: "2023-10-16",
         });
 
-        // Build line items for Stripe
-        const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((item) => ({
-            price_data: {
-                currency: "usd",
-                product_data: {
-                    name: item.name,
-                    images: item.image_url ? [item.image_url] : [],
+        // SECURITY: Fetch actual prices from database - NEVER trust client prices
+        const productIds = items.map(item => item.product_id).filter(Boolean);
+        if (productIds.length !== items.length) {
+            return new Response(
+                JSON.stringify({ error: "All items must have a product_id" }),
+                { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
+
+        // Get products with prices from database
+        const { data: products, error: productsError } = await supabaseClient
+            .from("products")
+            .select("id, name, price, image_url")
+            .in("id", productIds)
+            .eq("tenant_id", store.tenant_id);
+
+        if (productsError || !products || products.length === 0) {
+            return new Response(
+                JSON.stringify({ error: "Products not found" }),
+                { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
+
+        // Create a price lookup map
+        const productPriceMap = new Map(products.map(p => [p.id, p]));
+
+        // Build line items with SERVER-SIDE prices
+        let calculatedSubtotal = 0;
+        const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+
+        for (const item of items) {
+            const product = productPriceMap.get(item.product_id);
+            if (!product) {
+                return new Response(
+                    JSON.stringify({ error: `Product ${item.product_id} not found or not available in this store` }),
+                    { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                );
+            }
+
+            // Use DATABASE price, not client price
+            const serverPrice = Number(product.price);
+            calculatedSubtotal += serverPrice * item.quantity;
+
+            line_items.push({
+                price_data: {
+                    currency: "usd",
+                    product_data: {
+                        name: product.name,
+                        images: product.image_url ? [product.image_url] : [],
+                    },
+                    unit_amount: Math.round(serverPrice * 100), // Convert to cents
                 },
-                unit_amount: Math.round(item.price * 100), // Convert to cents
-            },
-            quantity: item.quantity,
-        }));
+                quantity: item.quantity,
+            });
+        }
+
+        // Get delivery fee from store settings (don't trust client)
+        const { data: storeSettings } = await supabaseClient
+            .from("marketplace_stores")
+            .select("default_delivery_fee, free_delivery_threshold")
+            .eq("id", store_id)
+            .single();
+
+        const storeDeliveryFee = storeSettings?.default_delivery_fee || 0;
+        const freeThreshold = storeSettings?.free_delivery_threshold || 0;
+        const actualDeliveryFee = calculatedSubtotal >= freeThreshold ? 0 : storeDeliveryFee;
 
         // Add delivery fee as a line item if applicable
-        if (delivery_fee > 0) {
+        if (actualDeliveryFee > 0) {
             line_items.push({
                 price_data: {
                     currency: "usd",
                     product_data: {
                         name: "Delivery Fee",
                     },
-                    unit_amount: Math.round(delivery_fee * 100),
+                    unit_amount: Math.round(actualDeliveryFee * 100),
                 },
                 quantity: 1,
             });

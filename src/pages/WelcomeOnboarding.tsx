@@ -180,7 +180,7 @@ export default function WelcomeOnboarding() {
   return (
     <div className="min-h-dvh bg-white">
       <SEOHead
-        title="Welcome to DevPanel"
+        title="Welcome to FloraIQ"
         description="Your account is ready. Let's get you set up."
       />
 
@@ -191,7 +191,7 @@ export default function WelcomeOnboarding() {
           <div className="mb-8 sm:mb-12">
             <div className="text-4xl sm:text-6xl mb-4">🎉</div>
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))] px-2">
-              Welcome to DevPanel, {name || "there"}!
+              Welcome to FloraIQ, {name || "there"}!
             </h1>
             <p className="text-base sm:text-xl text-[hsl(var(--marketing-text-light))] px-2">
               Your account is ready. Let's get you set up.

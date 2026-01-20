@@ -1,8 +1,9 @@
 import { ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import FloraIQLogo from '@/components/FloraIQLogo';
 
 interface ModernPageProps {
   title: string;
@@ -10,6 +11,7 @@ interface ModernPageProps {
   children: ReactNode;
   backButton?: boolean;
   backButtonText?: string;
+  showLogo?: boolean;
   className?: string;
 }
 
@@ -18,19 +20,29 @@ interface ModernPageProps {
  * Provides consistent layout for modern pages with optional back button
  * Works for both public pages and admin pages
  */
-export function ModernPage({ 
-  title, 
-  description, 
-  children, 
+export function ModernPage({
+  title,
+  description,
+  children,
   backButton = false,
   backButtonText = "Back",
+  showLogo = false,
   className = ""
 }: ModernPageProps) {
   const navigate = useNavigate();
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
+      {/* Logo Header (for public pages) */}
+      {showLogo && (
+        <div className="flex items-center justify-between py-2">
+          <Link to="/" className="hover:opacity-80 transition-opacity">
+            <FloraIQLogo size="md" />
+          </Link>
+        </div>
+      )}
+
+      {/* Page Header */}
       <div className="flex items-center gap-4">
         {backButton && (
           <Button
@@ -60,12 +72,12 @@ export function ModernPage({
  * ModernCard Component
  * Wrapper for consistent card styling in modern pages
  */
-export function ModernCard({ 
-  title, 
-  icon: Icon, 
+export function ModernCard({
+  title,
+  icon: Icon,
   children,
   className = ""
-}: { 
+}: {
   title?: string;
   icon?: React.ComponentType<{ className?: string }>;
   children: ReactNode;

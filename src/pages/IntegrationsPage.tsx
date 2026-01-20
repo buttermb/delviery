@@ -38,8 +38,8 @@ export default function IntegrationsPage() {
   return (
     <div className="min-h-dvh bg-[hsl(var(--marketing-bg))]">
       <SEOHead
-        title="Integrations - DevPanel"
-        description="Connect DevPanel with your favorite tools and platforms. REST API, Webhooks, and more."
+        title="Integrations - FloraIQ"
+        description="Connect FloraIQ with your favorite tools and platforms. REST API, Webhooks, and more."
       />
 
       <MarketingNav />
@@ -51,7 +51,7 @@ export default function IntegrationsPage() {
               Integrations
             </h1>
             <p className="text-xl text-[hsl(var(--marketing-text-light))]">
-              Connect DevPanel with the tools you already use
+              Connect FloraIQ with the tools you already use
             </p>
           </div>
 
@@ -88,7 +88,7 @@ export default function IntegrationsPage() {
 
           <Card className="bg-[hsl(var(--marketing-bg-subtle))]">
             <CardHeader>
-              <CardTitle>Need a Custom Integration?</CardTitle>
+              <CardTitle className="font-serif">Need a Custom Integration?</CardTitle>
               <CardDescription>
                 Our API makes it easy to build custom integrations with your existing systems
               </CardDescription>

@@ -75,11 +75,25 @@ serve(async (req) => {
 
       console.log("Updating order with data:", updateData);
 
-      // Update order status
-      const { error: updateError } = await supabase
+      // SECURITY: Get user's tenant
+      const { data: tenantUser } = await supabase
+        .from("tenant_users")
+        .select("tenant_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      // Update order status - ONLY for orders in user's tenant
+      const query = supabase
         .from("orders")
         .update(updateData)
         .eq("id", orderId);
+
+      // If user belongs to a tenant, enforce tenant isolation
+      if (tenantUser?.tenant_id) {
+        query.eq("tenant_id", tenantUser.tenant_id);
+      }
+
+      const { error: updateError } = await query;
 
       if (updateError) {
         console.error("Update error details:", JSON.stringify(updateError));

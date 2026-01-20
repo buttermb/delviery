@@ -15,11 +15,11 @@ export default function StatusPage() {
 
   return (
     <div className="min-h-dvh bg-[hsl(var(--marketing-bg))]">
-      <SEOHead 
-        title="System Status - DevPanel"
-        description="Current status and uptime for all DevPanel services"
+      <SEOHead
+        title="System Status - FloraIQ"
+        description="Current status and uptime for all FloraIQ services"
       />
-      
+
       <MarketingNav />
 
       <section className="container mx-auto px-4 py-20">
@@ -29,7 +29,7 @@ export default function StatusPage() {
               System Status
             </h1>
             <p className="text-xl text-[hsl(var(--marketing-text-light))]">
-              Real-time status of DevPanel services
+              Real-time status of FloraIQ services
             </p>
           </div>
 
@@ -51,7 +51,7 @@ export default function StatusPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Service Status</CardTitle>
+              <CardTitle className="font-serif">Service Status</CardTitle>
               <CardDescription>Current status of all platform services</CardDescription>
             </CardHeader>
             <CardContent>

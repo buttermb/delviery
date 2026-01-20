@@ -6,8 +6,9 @@ export default function TermsPage() {
   return (
     <ModernPage
       title="Terms of Service"
-      description="Agreement for using BigMike Wholesale"
+      description="Agreement for using FloraIQ"
       backButton
+      showLogo
     >
       <div className="space-y-6">
         {/* Last Updated */}
@@ -33,7 +34,7 @@ export default function TermsPage() {
               </div>
             </div>
             <p className="text-sm">
-              By accessing or using BigMike Wholesale ("the Service"), you agree to be bound by these 
+              By accessing or using FloraIQ ("the Service"), you agree to be bound by these
               Terms of Service. If you do not agree to these terms, do not use the Service.
             </p>
           </CardContent>
@@ -149,8 +150,8 @@ export default function TermsPage() {
           <CardContent className="pt-6 space-y-4">
             <h3 className="font-semibold text-lg">Intellectual Property</h3>
             <p className="text-sm">
-              The Service, including all software, design, content, and trademarks, is owned by BigMike 
-              Wholesale and protected by copyright and trademark laws. You receive a limited, 
+              The Service, including all software, design, content, and trademarks, is owned by FloraIQ
+              Wholesale and protected by copyright and trademark laws. You receive a limited,
               non-exclusive, non-transferable license to use the Service. You retain ownership of your data.
             </p>
           </CardContent>
@@ -161,7 +162,7 @@ export default function TermsPage() {
           <CardContent className="pt-6 space-y-4">
             <h3 className="font-semibold text-lg">Disclaimer of Warranties</h3>
             <p className="text-sm">
-              THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. WE DO NOT GUARANTEE 
+              THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. WE DO NOT GUARANTEE
               UNINTERRUPTED, ERROR-FREE, OR SECURE OPERATION. USE AT YOUR OWN RISK.
             </p>
           </CardContent>
@@ -172,8 +173,8 @@ export default function TermsPage() {
           <CardContent className="pt-6 space-y-4">
             <h3 className="font-semibold text-lg">Limitation of Liability</h3>
             <p className="text-sm">
-              TO THE MAXIMUM EXTENT PERMITTED BY LAW, WE SHALL NOT BE LIABLE FOR ANY INDIRECT, 
-              INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOST PROFITS, 
+              TO THE MAXIMUM EXTENT PERMITTED BY LAW, WE SHALL NOT BE LIABLE FOR ANY INDIRECT,
+              INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOST PROFITS,
               DATA LOSS, OR BUSINESS INTERRUPTION, EVEN IF ADVISED OF THE POSSIBILITY.
             </p>
             <p className="text-sm">
@@ -188,7 +189,7 @@ export default function TermsPage() {
             <h3 className="font-semibold text-lg">Contact Us</h3>
             <div className="space-y-2 text-sm">
               <p>For questions about these terms:</p>
-              <p>Email: legal@bigmike.com</p>
+              <p>Email: legal@floraiq.com</p>
               <p>Phone: (555) 123-4567</p>
               <p>Address: 123 Main Street, New York, NY 10001</p>
             </div>

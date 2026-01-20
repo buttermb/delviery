@@ -11,19 +11,19 @@ export default function Press() {
   const pressReleases = [
     {
       date: "March 15, 2024",
-      title: "DevPanel Raises $5M Series A to Transform Wholesale Distribution",
+      title: "FloraIQ Raises $5M Series A to Transform Wholesale Distribution",
       category: "Funding",
       excerpt: "Leading B2B software platform secures funding to accelerate growth and product development."
     },
     {
       date: "February 10, 2024",
-      title: "DevPanel Surpasses 400 Active Distributors Milestone",
+      title: "FloraIQ Surpasses 400 Active Distributors Milestone",
       category: "Company News",
       excerpt: "Platform reaches significant growth milestone, processing over $1.4M in orders monthly."
     },
     {
       date: "January 5, 2024",
-      title: "DevPanel Launches AI-Powered Analytics Dashboard",
+      title: "FloraIQ Launches AI-Powered Analytics Dashboard",
       category: "Product Launch",
       excerpt: "New analytics features help distributors make data-driven decisions and optimize operations."
     }
@@ -50,10 +50,10 @@ export default function Press() {
   return (
     <div className="min-h-dvh bg-background">
       <SEOHead
-        title="Press & Media - Latest News | DevPanel"
-        description="Latest press releases, media coverage, and resources about DevPanel. Download our media kit and stay updated with company news."
+        title="Press & Media - Latest News | FloraIQ"
+        description="Latest press releases, media coverage, and resources about FloraIQ. Download our media kit and stay updated with company news."
       />
-      
+
       <MarketingNav />
 
       {/* Hero Section */}
@@ -62,7 +62,7 @@ export default function Press() {
           <div className="max-w-3xl mx-auto text-center">
             <Badge className="mb-4">Press & Media</Badge>
             <h1 className="text-5xl md:text-6xl font-bold mb-6 text-foreground">
-              DevPanel in the News
+              FloraIQ in the News
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
               Stay updated with our latest announcements, product launches, and company milestones.
@@ -152,7 +152,7 @@ export default function Press() {
                   Press Inquiries
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  For media inquiries, interview requests, or more information about DevPanel, 
+                  For media inquiries, interview requests, or more information about FloraIQ,
                   please reach out to our press team.
                 </p>
                 <Link to="/contact">

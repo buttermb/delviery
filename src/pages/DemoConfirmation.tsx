@@ -91,8 +91,8 @@ export default function DemoConfirmation() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="flex-1"
                   onClick={() => {
                     // Generate .ics calendar file
@@ -100,11 +100,11 @@ export default function DemoConfirmation() {
                     const start = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Tomorrow
                     start.setHours(10, 0, 0, 0);
                     const end = new Date(start.getTime() + 30 * 60 * 1000); // 30 min
-                    
+
                     const formatDate = (d: Date) => {
                       return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
                     };
-                    
+
                     const icsContent = [
                       'BEGIN:VCALENDAR',
                       'VERSION:2.0',
@@ -121,7 +121,7 @@ export default function DemoConfirmation() {
                       'END:VEVENT',
                       'END:VCALENDAR'
                     ].join('\r\n');
-                    
+
                     const blob = new Blob([icsContent], { type: 'text/calendar' });
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');

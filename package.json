@@ -19,7 +19,8 @@
     "generate-sitemap": "tsx src/lib/generate-sitemap.ts",
     "encrypt-data": "tsx scripts/encryptAllData.ts",
     "test-encryption": "tsx scripts/testEncryption.ts",
-    "verify-encryption": "tsx scripts/verifyEncryptionSetup.ts"
+    "verify-encryption": "tsx scripts/verifyEncryptionSetup.ts",
+    "verify": "npm run lint && npx tsc --noEmit && npm run test -- --run"
   },
   "dependencies": {
     "@aikidosec/firewall": "^1.7.18",

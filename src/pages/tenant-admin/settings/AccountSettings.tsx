@@ -233,7 +233,7 @@ export default function AccountSettings() {
               <div className="min-w-0">
                 <p className="font-semibold truncate">{tenant?.business_name}</p>
                 <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                  {tenant?.slug}.bigmikewholesale.com
+                  {tenant?.slug}.floraiq.com
                 </p>
               </div>
             </div>
