@@ -168,7 +168,7 @@ async function createProduct(req: Request, params: Record<string, string>): Prom
     // Validate input
     const validation = CreateProductSchema.safeParse(body);
     if (!validation.success) {
-      return errorResponse(`Validation error: ${validation.error.message}`);
+      return errorResponse(`Validation error: ${(validation as { success: false; error: { message: string } }).error.message}`);
     }
 
     const input = validation.data;
@@ -224,7 +224,7 @@ async function updateProduct(req: Request, params: Record<string, string>): Prom
     // Validate input
     const validation = UpdateProductSchema.safeParse(body);
     if (!validation.success) {
-      return errorResponse(`Validation error: ${validation.error.message}`);
+      return errorResponse(`Validation error: ${(validation as { success: false; error: { message: string } }).error.message}`);
     }
 
     const input = validation.data;
@@ -270,7 +270,7 @@ async function adjustStock(req: Request, params: Record<string, string>): Promis
     // Validate input
     const validation = StockAdjustmentSchema.safeParse(body);
     if (!validation.success) {
-      return errorResponse(`Validation error: ${validation.error.message}`);
+      return errorResponse(`Validation error: ${(validation as { success: false; error: { message: string } }).error.message}`);
     }
 
     const input = validation.data;

@@ -1,11 +1,11 @@
 /**
  * LongPressMenu Component
- * Shows a context menu on long-press gesture (500ms)
+ * Shows a dropdown menu on long-press gesture (500ms)
  * Commonly used for edit/delete actions on mobile
  */
 
 import React, { useState, useRef, useCallback, ReactNode } from 'react';
-import * as ContextMenu from '@radix-ui/react-context-menu';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { cn } from '@/lib/utils';
 import { triggerHaptic } from '@/lib/utils/mobile';
 
@@ -95,8 +95,8 @@ export function LongPressMenu({
     );
 
     return (
-        <ContextMenu.Root open={isOpen} onOpenChange={setIsOpen}>
-            <ContextMenu.Trigger asChild disabled={disabled}>
+        <DropdownMenu.Root open={isOpen} onOpenChange={setIsOpen}>
+            <DropdownMenu.Trigger asChild disabled={disabled}>
                 <div
                     className={cn('touch-none', className)}
                     onTouchStart={handleTouchStart}
@@ -106,17 +106,17 @@ export function LongPressMenu({
                 >
                     {children}
                 </div>
-            </ContextMenu.Trigger>
+            </DropdownMenu.Trigger>
 
-            <ContextMenu.Portal>
-                <ContextMenu.Content
+            <DropdownMenu.Portal>
+                <DropdownMenu.Content
                     className={cn(
                         'min-w-[180px] bg-popover rounded-lg shadow-lg border border-border p-1',
                         'animate-in fade-in-0 zoom-in-95 z-50'
                     )}
                 >
                     {items.map((item, index) => (
-                        <ContextMenu.Item
+                        <DropdownMenu.Item
                             key={index}
                             disabled={item.disabled}
                             onSelect={() => {
@@ -133,11 +133,11 @@ export function LongPressMenu({
                         >
                             {item.icon && <span className="w-4 h-4">{item.icon}</span>}
                             {item.label}
-                        </ContextMenu.Item>
+                        </DropdownMenu.Item>
                     ))}
-                </ContextMenu.Content>
-            </ContextMenu.Portal>
-        </ContextMenu.Root>
+                </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+        </DropdownMenu.Root>
     );
 }
 
