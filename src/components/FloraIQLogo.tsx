@@ -30,6 +30,8 @@ const FloraIQLogo = ({
 };
 
 // Custom Flower Icon matching the provided design
+// Custom Unique "Tech-Bloom" Icon
+// Combines organic flower shape with geometric precision (Flora + IQ)
 function FlowerIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -41,24 +43,24 @@ function FlowerIcon({ className }: { className?: string }) {
       strokeLinejoin="round"
       className={className}
     >
-      {/* Stem */}
-      <path d="M12 21V11" strokeWidth="2.5" />
+      {/* Stem/Tail - Curves to right like a 'Q' tail */}
+      <path d="M12 16 C12 16 12 21 16.5 21" strokeWidth="2.5" />
 
-      {/* Leaves */}
-      <path d="M12 17C9 16.5 8 14 8 14" strokeWidth="2.5" />
-      <path d="M12 17C15 16.5 16 14 16 14" strokeWidth="2.5" />
+      {/* Geometric Leaf - Left side balance */}
+      <path d="M12 18 L9.5 16.5" strokeWidth="2.5" />
 
-      {/* Flower Head - 4 petals + center */}
-      {/* Top Petal */}
-      <circle cx="12" cy="7" r="2.5" strokeWidth="2.5" />
-      {/* Bottom Petal */}
-      <circle cx="12" cy="15" r="2.5" strokeWidth="2.5" />
-      {/* Left Petal */}
-      <circle cx="8" cy="11" r="2.5" strokeWidth="2.5" />
-      {/* Right Petal */}
-      <circle cx="16" cy="11" r="2.5" strokeWidth="2.5" />
-      {/* Center Dot */}
-      <circle cx="12" cy="11" r="1" fill="currentColor" stroke="none" />
+      {/* Center Node (Neural/Tech Core) */}
+      <circle cx="12" cy="11" r="1.5" fill="currentColor" stroke="none" />
+
+      {/* 4 Elliptical Petals (Propeller/Data-Array) */}
+      {/* Top */}
+      <ellipse cx="12" cy="6" rx="2" ry="3.5" strokeWidth="2" />
+      {/* Bottom */}
+      <ellipse cx="12" cy="16" rx="2" ry="3.5" strokeWidth="2" />
+      {/* Left */}
+      <ellipse cx="7" cy="11" rx="3.5" ry="2" strokeWidth="2" />
+      {/* Right */}
+      <ellipse cx="17" cy="11" rx="3.5" ry="2" strokeWidth="2" />
     </svg>
   );
 }
