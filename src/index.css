@@ -2294,3 +2294,33 @@ body.keyboard-open [data-radix-dialog-content] {
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
   }
 }
+@layer utilities {
+  .glass-panel {
+    @apply bg-background/80 backdrop-blur-md border-r border-border/50;
+  }
+  
+  .glass-card {
+    @apply bg-card/70 backdrop-blur-sm border border-border/40 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/20 hover:bg-card/90;
+  }
+  
+  .glass-floating {
+    @apply bg-background/60 backdrop-blur-xl border-b border-border/30 shadow-sm sticky top-0 z-40 supports-[backdrop-filter]:bg-background/60;
+  }
+  
+  .premium-gradient-mesh {
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(var(--marketing-primary) / 0.03) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(var(--marketing-accent) / 0.03) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(var(--marketing-primary) / 0.03) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(var(--marketing-accent) / 0.03) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  .text-brand-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+  }
+
+  .nav-item-active {
+    @apply bg-primary/10 text-primary border-l-2 border-primary;
+  }
+}

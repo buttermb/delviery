@@ -147,7 +147,7 @@ export function RealtimeSalesWidget() {
 
     if (isLoading) {
         return (
-            <Card>
+            <Card className="glass-card">
                 <CardHeader>
                     <CardTitle>Today's Performance</CardTitle>
                 </CardHeader>
@@ -161,15 +161,15 @@ export function RealtimeSalesWidget() {
     if (!salesMetrics) return null;
 
     return (
-        <Card>
+        <Card className="glass-card">
             <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
                         Today's Performance
                         <Badge variant="outline" className="text-xs">Live</Badge>
                     </CardTitle>
-                    <LastUpdated 
-                        date={lastUpdatedAt} 
+                    <LastUpdated
+                        date={lastUpdatedAt}
                         onRefresh={() => refetch()}
                         isLoading={isFetching}
                     />

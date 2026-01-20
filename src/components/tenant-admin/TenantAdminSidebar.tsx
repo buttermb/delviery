@@ -348,7 +348,7 @@ export function TenantAdminSidebar() {
 
   return (
     <>
-      <Sidebar data-tutorial="navigation-sidebar">
+      <Sidebar data-tutorial="navigation-sidebar" className="glass-panel border-r-0">
         <SidebarHeader className="p-3 sm:p-4 border-b">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0">

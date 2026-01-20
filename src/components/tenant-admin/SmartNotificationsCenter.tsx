@@ -241,7 +241,7 @@ export function SmartNotificationsCenter() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-96 p-0" align="end">
+      <PopoverContent className="glass-card w-96 p-0 border-white/10" align="end">
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-2">
             <h3 className="font-semibold">Notifications</h3>

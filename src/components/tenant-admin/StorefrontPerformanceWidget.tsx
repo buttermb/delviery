@@ -93,7 +93,7 @@ export function StorefrontPerformanceWidget() {
 
     if (isLoading) {
         return (
-            <Card>
+            <Card className="glass-card">
                 <CardHeader>
                     <CardTitle>Storefront Performance</CardTitle>
                 </CardHeader>
@@ -107,7 +107,7 @@ export function StorefrontPerformanceWidget() {
 
     if (!performance || performance.totalStores === 0) {
         return (
-            <Card>
+            <Card className="glass-card">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Store className="h-5 w-5" />
@@ -131,7 +131,7 @@ export function StorefrontPerformanceWidget() {
     }
 
     return (
-        <Card>
+        <Card className="glass-card">
             <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">

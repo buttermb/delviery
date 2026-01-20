@@ -193,7 +193,7 @@ export function QuickActionsHub() {
 
 
     return (
-        <Card>
+        <Card className="glass-card">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     Quick Actions
@@ -208,7 +208,7 @@ export function QuickActionsHub() {
                             <Button
                                 key={action.id}
                                 variant="outline"
-                                className="h-auto flex-col gap-2 p-4 relative hover:bg-primary/5 hover:border-primary/50 transition-all"
+                                className="h-auto flex-col gap-2 p-4 relative bg-background/50 hover:bg-primary/10 border-white/10 hover:border-primary/50 transition-all backdrop-blur-sm"
                                 onClick={action.action}
                                 title={action.description}
                             >

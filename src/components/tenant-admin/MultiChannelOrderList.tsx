@@ -265,7 +265,7 @@ export function MultiChannelOrderList() {
     };
 
     return (
-        <Card>
+        <Card className="glass-card">
             <CardHeader className="pb-3">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                     <CardTitle>Recent Orders</CardTitle>

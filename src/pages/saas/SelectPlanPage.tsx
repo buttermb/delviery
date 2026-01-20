@@ -43,37 +43,48 @@ export default function SelectPlanPage() {
   const tenantId = searchParams.get("tenant_id");
   const preselectedPlan = searchParams.get("plan") as PlanKey | null;
 
-  // Load plans from database
+  // Load plans from configuration (Static source of truth)
   useEffect(() => {
-    const loadPlans = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('subscription_plans')
-          .select('id, name, price_monthly, description, features')
-          .order('price_monthly', { ascending: true });
-
-        if (error) throw error;
-
-        const formattedPlans: Plan[] = ((data || []) as any[]).map((plan) => ({
-          id: plan.id,
-          name: plan.name,
-          priceMonthly: plan.price_monthly || 0,
-          priceYearly: Math.round((plan.price_monthly || 0) * 10), // ~17% discount for yearly
-          description: plan.description || '',
-          features: Array.isArray(plan.features) ? plan.features as string[] : [],
-          popular: plan.name.toLowerCase() === SUBSCRIPTION_PLANS.PROFESSIONAL,
-        }));
-
-        setPlans(formattedPlans);
-      } catch (error) {
-        logger.error('[SELECT_PLAN] Failed to load plans', error);
-        toast.error("Failed to load subscription plans");
-      } finally {
-        setLoadingPlans(false);
-      }
+    const PLAN_FEATURES_LIST: Record<string, string[]> = {
+      starter: [
+        "Unlimited Products",
+        "3 Staff Members",
+        "Basic Reporting",
+        "Standard Support",
+        "Mobile App Access"
+      ],
+      professional: [
+        "Everything in Starter",
+        "10 Staff Members",
+        "Advanced Analytics",
+        "API Access",
+        "Priority Email Support",
+        "Custom Branding"
+      ],
+      enterprise: [
+        "Everything in Professional",
+        "Unlimited Staff",
+        "Dedicated Account Manager",
+        "White-Label Options",
+        "Custom Integrations",
+        "SLA Guarantees"
+      ]
     };
 
-    loadPlans();
+    const plansList: Plan[] = (Object.entries(PLAN_CONFIG) as [PlanKey, typeof PLAN_CONFIG[PlanKey]][])
+      .filter(([key]) => key !== 'free')
+      .map(([key, config]) => ({
+        id: key,
+        name: config.name,
+        priceMonthly: config.priceMonthly,
+        priceYearly: config.priceYearly,
+        description: config.description,
+        features: PLAN_FEATURES_LIST[key] || [],
+        popular: key === 'professional',
+      }));
+
+    setPlans(plansList);
+    setLoadingPlans(false);
   }, []);
 
   // Check authentication status on mount
@@ -328,7 +339,7 @@ export default function SelectPlanPage() {
                 )}
               >
                 Yearly
-                <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
                   Save 17%
                 </Badge>
               </button>
@@ -358,10 +369,10 @@ export default function SelectPlanPage() {
             <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.01] border-dashed">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 rounded-lg bg-emerald-500/10">
-                    <Coins className="h-5 w-5 text-emerald-500" />
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Coins className="h-5 w-5 text-primary" />
                   </div>
-                  <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600">
+                  <Badge variant="secondary" className="bg-primary/10 text-primary">
                     FREE
                   </Badge>
                 </div>
@@ -375,7 +386,7 @@ export default function SelectPlanPage() {
                     <span className="text-4xl font-bold">$0</span>
                     <span className="text-muted-foreground">/month</span>
                   </div>
-                  <p className="text-sm text-emerald-600 font-medium">
+                  <p className="text-sm text-primary font-medium">
                     {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} credits/month
                   </p>
                 </div>
@@ -391,14 +402,14 @@ export default function SelectPlanPage() {
                     "No credit card required",
                   ].map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                       <span className="text-sm">{feature}</span>
                     </li>
                   ))}
                 </ul>
 
                 {/* Credit usage hint */}
-                <div className="mt-4 p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+                <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
                   <p className="text-xs text-muted-foreground">
                     💡 <span className="font-medium">Tip:</span> {FREE_TIER_MONTHLY_CREDITS} credits ≈ 1 day of active use.
                     Upgrade for unlimited!
@@ -473,7 +484,7 @@ export default function SelectPlanPage() {
                           <p className="text-sm text-muted-foreground">
                             ${effectiveMonthly}/mo billed annually
                           </p>
-                          <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                          <p className="text-sm font-medium text-primary">
                             Save ${savings.amount}/year ({savings.percent}% off)
                           </p>
                         </div>
@@ -532,15 +543,15 @@ export default function SelectPlanPage() {
           {/* Trust Indicators */}
           <div className="flex flex-wrap justify-center gap-6 mb-8">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Shield className="h-4 w-4 text-green-500" />
+              <Shield className="h-4 w-4 text-primary" />
               <span>Bank-level security</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4 text-blue-500" />
+              <Clock className="h-4 w-4 text-primary" />
               <span>Cancel anytime</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Zap className="h-4 w-4 text-amber-500" />
+              <Zap className="h-4 w-4 text-primary" />
               <span>Setup in 2 minutes</span>
             </div>
           </div>

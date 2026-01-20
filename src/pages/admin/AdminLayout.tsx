@@ -134,7 +134,7 @@ const AdminLayout = () => {
 
         {/* Unified Layout with Sidebar (Optimized or Classic) */}
         <SidebarProvider>
-          <div className="min-h-dvh flex w-full">
+          <div className="min-h-dvh flex w-full premium-gradient-mesh">
             <SidebarErrorBoundary>
               {isOptimized ? (
                 <OptimizedSidebar userTier="PROFESSIONAL" />
@@ -144,7 +144,7 @@ const AdminLayout = () => {
             </SidebarErrorBoundary>
             <div className="flex-1 flex flex-col min-w-0">
               <AccountSwitcher />
-              <header className="h-14 sm:h-14 border-b border-border flex items-center px-2 sm:px-3 md:px-4 lg:px-6 gap-2 sm:gap-3 md:gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0 pt-safe shadow-sm safe-area-top">
+              <header className="glass-floating h-14 sm:h-14 flex items-center px-2 sm:px-3 md:px-4 lg:px-6 gap-2 sm:gap-3 md:gap-4 flex-shrink-0 pt-safe safe-area-top transition-all duration-200">
                 {/* Sidebar trigger - 48px minimum touch target */}
                 <SidebarTrigger className="h-12 w-12 min-h-[48px] min-w-[48px] touch-manipulation active:scale-95 transition-transform z-50 -ml-1 sm:ml-0 flex items-center justify-center" />
 
@@ -255,7 +255,7 @@ const AdminLayout = () => {
                 </div>
               </header>
               <main
-                className="flex-1 overflow-y-auto overflow-x-hidden bg-muted/30 pb-24 lg:pb-6 safe-area-bottom p-3 sm:p-4 md:p-6"
+                className="flex-1 overflow-y-auto overflow-x-hidden pb-24 lg:pb-6 safe-area-bottom p-3 sm:p-4 md:p-6"
                 style={{
                   WebkitOverflowScrolling: 'touch',
                   minHeight: 0,

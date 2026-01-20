@@ -93,7 +93,7 @@ export function InventoryForecastWidget() {
             // 3. Calculate daily velocity per product from REAL sales data
             const velocityMap = new Map<string, number>();
             const salesItems = (salesData || []) as SalesDataItem[];
-            
+
             salesItems.forEach(item => {
                 const productName = item.product_name?.toLowerCase().trim();
                 if (productName) {
@@ -111,7 +111,7 @@ export function InventoryForecastWidget() {
             const forecasts: ForecastItem[] = (products as ProductWithStock[]).map(item => {
                 const currentStock = item.available_quantity ?? item.stock_quantity ?? 0;
                 const reorderPoint = item.low_stock_alert ?? DEFAULT_LOW_STOCK_THRESHOLD;
-                
+
                 // Look up velocity by product name (case-insensitive)
                 const productNameKey = item.name?.toLowerCase().trim() || '';
                 const dailyVelocity = velocityMap.get(productNameKey) || 0;
@@ -173,7 +173,7 @@ export function InventoryForecastWidget() {
 
     if (isLoading) {
         return (
-            <Card>
+            <Card className="glass-card">
                 <CardHeader>
                     <CardTitle>Inventory Forecast</CardTitle>
                 </CardHeader>
@@ -189,7 +189,7 @@ export function InventoryForecastWidget() {
     }
 
     return (
-        <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-900/10 dark:border-orange-800">
+        <Card className="glass-card border-orange-200/50 bg-orange-50/30 dark:bg-orange-900/10 dark:border-orange-800/50">
             <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-200">

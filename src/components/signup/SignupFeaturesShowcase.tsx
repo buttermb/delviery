@@ -14,6 +14,7 @@ import { PLAN_CONFIG, type PlanKey } from '@/config/planPricing';
 
 interface SignupFeaturesShowcaseProps {
   plan?: 'free' | 'starter' | 'professional' | 'enterprise';
+  variant?: 'default' | 'branding';
 }
 
 // Features for FREE tier - emphasize the generous free offering
@@ -94,79 +95,89 @@ const paidFeatures = [
   },
 ];
 
-export function SignupFeaturesShowcase({ plan = 'free' }: SignupFeaturesShowcaseProps) {
+export function SignupFeaturesShowcase({ plan = 'free', variant = 'default' }: SignupFeaturesShowcaseProps) {
   const isFreePlan = plan === 'free';
   const features = isFreePlan ? freeFeatures : paidFeatures;
   const planConfig = PLAN_CONFIG[plan as PlanKey] || PLAN_CONFIG.starter;
 
+  const isBranding = variant === 'branding';
+
+  // Dynamic Styles
+  const cardClasses = isBranding
+    ? 'bg-white/10 backdrop-blur-xl border-white/10 text-white shadow-2xl'
+    : isFreePlan ? 'bg-background/95 border-border' : 'bg-primary/5 border-primary/20';
+
+  const textPrimary = isBranding ? 'text-white' : 'text-foreground';
+  const textMuted = isBranding ? 'text-white/70' : 'text-muted-foreground';
+  const pillClasses = isBranding ? 'bg-white/20 text-white border border-white/20' : 'bg-primary/10 text-primary';
+  const iconColor = isBranding ? 'text-accent' : 'text-primary';
+  const checkIconColor = isBranding ? 'text-accent' : 'text-primary';
+
   return (
     <div className="space-y-6">
       {/* Pricing Card - Dynamic based on plan */}
-      <Card className={`relative overflow-hidden border shadow-md ${isFreePlan
-        ? 'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800'
-        : 'bg-blue-50/50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800'
-        }`}>
+      <Card className={`relative overflow-hidden border shadow-sm transition-all duration-200 ${cardClasses}`}>
         <CardContent className="pt-6 relative z-10">
-          <div className="text-center mb-4">
+          <div className="text-center mb-6">
             {isFreePlan ? (
               <>
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 text-sm font-medium mb-3">
-                  <Sparkles className="h-4 w-4" />
-                  FREE Forever
+                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide mb-4 ${pillClasses}`}>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Free Forever
                 </div>
                 <div className="space-y-1">
-                  <div className="flex items-baseline justify-center gap-2">
-                    <span className="text-5xl font-bold text-emerald-600 dark:text-emerald-400">$0</span>
-                    <span className="text-muted-foreground">/month</span>
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className={`text-4xl font-bold ${textPrimary}`}>$0</span>
+                    <span className={`${textMuted} text-sm font-medium`}>/mo</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">No credit card ever</p>
+                  <p className={`text-xs ${textMuted}`}>No credit card required</p>
                 </div>
               </>
             ) : (
               <>
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 text-sm font-medium mb-3">
-                  <Sparkles className="h-4 w-4" />
+                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide mb-4 ${pillClasses}`}>
+                  <Sparkles className="h-3.5 w-3.5" />
                   14-Day Free Trial
                 </div>
                 <div className="space-y-1">
-                  <div className="flex items-baseline justify-center gap-2">
-                    <span className="text-5xl font-bold text-blue-600 dark:text-blue-400">${planConfig.priceMonthly}</span>
-                    <span className="text-muted-foreground">/month</span>
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className={`text-4xl font-bold ${textPrimary}`}>${planConfig.priceMonthly}</span>
+                    <span className={`${textMuted} text-sm font-medium`}>/mo</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">After trial ends</p>
+                  <p className={`text-xs ${textMuted}`}>After trial period</p>
                 </div>
               </>
             )}
           </div>
-          <div className="space-y-2 text-sm">
+          <div className="space-y-3 text-sm">
             {isFreePlan ? (
               <>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                  <span>500 credits every month</span>
+                <div className={`flex items-center gap-3 ${textMuted}`}>
+                  <CheckCircle2 className={`h-4 w-4 ${checkIconColor} shrink-0`} />
+                  <span>500 free credits / month</span>
                 </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                <div className={`flex items-center gap-3 ${textMuted}`}>
+                  <CheckCircle2 className={`h-4 w-4 ${checkIconColor} shrink-0`} />
                   <span>All core features included</span>
                 </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                  <span>Upgrade anytime for more</span>
+                <div className={`flex items-center gap-3 ${textMuted}`}>
+                  <CheckCircle2 className={`h-4 w-4 ${checkIconColor} shrink-0`} />
+                  <span>No credit card required</span>
                 </div>
               </>
             ) : (
               <>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                  <span>No credit card required</span>
+                <div className={`flex items-center gap-3 ${textMuted}`}>
+                  <CheckCircle2 className={`h-4 w-4 ${checkIconColor} shrink-0`} />
+                  <span>Full feature access</span>
                 </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                <div className={`flex items-center gap-3 ${textMuted}`}>
+                  <CheckCircle2 className={`h-4 w-4 ${checkIconColor} shrink-0`} />
+                  <span>Priority support</span>
+                </div>
+                <div className={`flex items-center gap-3 ${textMuted}`}>
+                  <CheckCircle2 className={`h-4 w-4 ${checkIconColor} shrink-0`} />
                   <span>Cancel anytime</span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                  <span>Full access during trial</span>
                 </div>
               </>
             )}
@@ -176,44 +187,44 @@ export function SignupFeaturesShowcase({ plan = 'free' }: SignupFeaturesShowcase
 
       {/* Features Grid */}
       <div>
-        <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-white">What's Included</h3>
+        <h3 className={`text-lg font-semibold mb-4 ${textPrimary}`}>What's Included</h3>
         <div className="grid grid-cols-1 gap-3">
           {features.map((feature, index) => (
-            <Card
+            <div
               key={index}
-              className="hover:shadow-md transition-all duration-200 border border-slate-200 dark:border-slate-800 bg-white dark:bg-zinc-900"
+              className={`flex items-start gap-4 p-3 rounded-lg border border-transparent transition-all ${isBranding
+                  ? 'bg-white/5 hover:bg-white/10'
+                  : 'bg-background/50 hover:bg-background hover:border-primary/20'
+                }`}
             >
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-lg ${feature.bgColor.replace('bg-gradient-to-br', 'bg').replace('to-', 'bg-').split(' ')[0]} bg-opacity-10 flex items-center justify-center flex-shrink-0`}>
-                    <feature.icon className={`h-5 w-5 ${feature.bgColor.includes('emerald') ? 'text-emerald-600' : feature.bgColor.includes('blue') ? 'text-blue-600' : feature.bgColor.includes('purple') ? 'text-purple-600' : feature.bgColor.includes('orange') ? 'text-orange-600' : 'text-slate-600'}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-sm mb-1 text-slate-900 dark:text-white">{feature.title}</h4>
-                    <p className="text-xs text-muted-foreground">{feature.description}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              <div className={`p-2 rounded-md ${isBranding ? 'bg-white/10 text-accent' : 'bg-primary/10 text-primary'}`}>
+                <feature.icon className="h-4 w-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className={`font-medium text-sm ${textPrimary}`}>{feature.title}</h4>
+                <p className={`text-xs mt-0.5 ${textMuted}`}>{feature.description}</p>
+              </div>
+            </div>
           ))}
         </div>
       </div>
 
       {/* Trust Indicators */}
-      <Card className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
+      {/* Trust Indicators */}
+      <Card className={`border shadow-sm ${isBranding ? 'bg-white/5 border-white/5' : 'bg-background/50 border-border'}`}>
         <CardContent className="pt-6">
           <div className="space-y-3 text-sm">
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-slate-400" />
-              <span className="text-muted-foreground font-medium">SOC 2 Type II Certified</span>
+            <div className={`flex items-center gap-2 ${textMuted}`}>
+              <Shield className={`h-5 w-5 ${iconColor}`} />
+              <span className="font-medium">SOC 2 Type II Certified</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-slate-400" />
-              <span className="text-muted-foreground font-medium">GDPR & CCPA Compliant</span>
+            <div className={`flex items-center gap-2 ${textMuted}`}>
+              <Shield className={`h-5 w-5 ${iconColor}`} />
+              <span className="font-medium">GDPR & CCPA Compliant</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-slate-400" />
-              <span className="text-muted-foreground font-medium">99.9% Uptime SLA</span>
+            <div className={`flex items-center gap-2 ${textMuted}`}>
+              <Shield className={`h-5 w-5 ${iconColor}`} />
+              <span className="font-medium">99.9% Uptime SLA</span>
             </div>
           </div>
         </CardContent>

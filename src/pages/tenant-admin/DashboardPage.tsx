@@ -827,7 +827,7 @@ export default function TenantAdminDashboardPage() {
 
         {/* Demo Data Generation Banner */}
         {isEmptyAccount && (
-          <Card className="bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
+          <Card className="bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800 glass-card">
             <CardContent className="flex flex-col sm:flex-row items-center justify-between p-6 gap-4">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
@@ -920,7 +920,7 @@ export default function TenantAdminDashboardPage() {
 
         {/* Onboarding Progress Widget */}
         {onboardingProgress < 100 && (
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 shadow-sm">
+          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 shadow-sm glass-card">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-[hsl(var(--tenant-text))] flex items-center gap-2">
@@ -983,7 +983,7 @@ export default function TenantAdminDashboardPage() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-          <Card>
+          <Card className="glass-card">
             <CardHeader className="p-3 sm:p-4 md:p-6">
               <CardTitle className="text-sm sm:text-base md:text-lg flex items-center gap-1"><Zap className="h-4 w-4" /> Quick Actions</CardTitle>
             </CardHeader>
@@ -1122,7 +1122,7 @@ export default function TenantAdminDashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <Card data-tutorial="quick-actions">
+        <Card className="glass-card" data-tutorial="quick-actions">
           <CardHeader className="p-3 sm:p-4 md:p-6">
             <CardTitle className="text-sm sm:text-base md:text-lg">🚀 Quick Actions</CardTitle>
           </CardHeader>
@@ -1163,7 +1163,7 @@ export default function TenantAdminDashboardPage() {
         </Card>
 
         {/* Recent Activity Feed */}
-        <Card data-tutorial="activity-feed">
+        <Card className="glass-card" data-tutorial="activity-feed">
           <CardHeader className="p-3 sm:p-4 md:p-6">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm sm:text-base md:text-lg">📋 Recent Activity</CardTitle>

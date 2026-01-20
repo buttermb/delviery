@@ -1,13 +1,9 @@
 import { logger } from '@/lib/logger';
+
 /**
  * SAAS Login Page
- * Professional Redesign
- * 
- * Features:
- * - Split-screen layout (40% Form / 60% Branding)
- * - Premium typography (Playfair Display + Inter)
- * - Sophisticated color palette (Forest Green / Cream)
- * - Enhanced micro-interactions (Framer Motion)
+ * Professional Layout
+ * Split-screen layout (40% form / 60% branding)
  */
 
 import { useState, useEffect } from 'react';
@@ -310,19 +306,19 @@ export default function LoginPage() {
                   <div className="flex items-center justify-between pt-1">
                     <label className="flex items-center gap-2 cursor-pointer group">
                       <div className="w-4 h-4 rounded border border-slate-300 group-hover:border-[#1B4332] transition-colors" />
-                      <span className="text-sm text-slate-600 group-hover:text-[#1B4332]">Remember me</span>
+                      <span className="text-sm text-foreground/80 group-hover:text-primary">Remember me</span>
                     </label>
-                    <a href="#" className="text-sm font-medium text-[#1B4332] hover:underline">Forgot password?</a>
+                    <a href="#" className="text-sm font-medium text-primary hover:underline">Forgot password?</a>
                   </div>
 
                   <Button
                     type="submit"
-                    className="w-full h-12 text-base font-medium bg-[#1B4332] hover:bg-[#133024] text-[#F8F5F0] rounded-xl shadow-[0_4px_14px_0_rgba(27,67,50,0.39)] hover:shadow-[0_6px_20px_rgba(27,67,50,0.23)] hover:-translate-y-0.5 transition-all duration-200 mt-2"
+                    className="w-full h-12 text-base font-medium bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 mt-2"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
                       <span className="flex items-center gap-2">
-                        <div className="h-4 w-4 border-2 border-[#F8F5F0]/30 border-t-[#F8F5F0] rounded-full animate-spin" />
+                        <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                         Signing in...
                       </span>
                     ) : (
@@ -338,12 +334,12 @@ export default function LoginPage() {
                   <span className="w-full border-t border-slate-200" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase tracking-widest">
-                  <span className="bg-[#F8F5F0] px-3 text-slate-400">Or continue with</span>
+                  <span className="bg-background px-3 text-muted-foreground">Or continue with</span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="h-11 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl shadow-sm hover:shadow">
+                <Button variant="outline" className="h-11 bg-card border-slate-200 text-foreground hover:bg-accent rounded-xl shadow-sm hover:shadow">
                   <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -354,17 +350,17 @@ export default function LoginPage() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="h-11 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl shadow-sm hover:shadow"
+                  className="h-11 bg-card border-slate-200 text-foreground hover:bg-accent rounded-xl shadow-sm hover:shadow"
                   onClick={() => setIsSendingMagicLink(true)} // Example hook for now
                 >
-                  <Wand2 className="h-4 w-4 mr-2 text-indigo-500" />
+                  <Wand2 className="h-4 w-4 mr-2 text-primary" />
                   Magic Link
                 </Button>
               </div>
 
-              <p className="mt-8 text-center text-[#2D3748] text-sm">
+              <p className="mt-8 text-center text-muted-foreground text-sm">
                 Don't have an account?{' '}
-                <a href="/signup" className="text-[#1B4332] font-semibold hover:underline decoration-2 underline-offset-2">
+                <a href="/signup" className="text-primary font-semibold hover:underline decoration-2 underline-offset-2">
                   Sign up for free
                 </a>
               </p>
@@ -377,24 +373,24 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* RIGHT SIDE - BRANDING */}
-        <div className="hidden lg:flex w-[60%] bg-[#1B4332] relative overflow-hidden items-center justify-center p-12">
+        {/* RIGHT SIDE - BRANDING (Using Site Colors) */}
+        <div className="hidden lg:flex w-[60%] bg-primary relative overflow-hidden items-center justify-center p-12">
           {/* Background Image / Gradient */}
           <div className="absolute inset-0 z-0">
             {/* Abstract Floral Patterns (CSS) */}
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1628126235206-5260b9ea6441?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center opacity-40 mix-blend-overlay filter blur-[1px]"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-[#1B4332]/90 to-[#0e231b]/95"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/90 to-primary-dark/95"></div>
 
             {/* Animated Orbs */}
             <motion.div
               animate={{ y: [0, -20, 0], opacity: [0.3, 0.5, 0.3] }}
               transition={{ duration: 8, repeat: Infinity }}
-              className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/20 rounded-full blur-[100px]"
+              className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[100px]"
             />
             <motion.div
               animate={{ y: [0, 30, 0], opacity: [0.2, 0.4, 0.2] }}
               transition={{ duration: 10, repeat: Infinity, delay: 1 }}
-              className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] bg-green-400/10 rounded-full blur-[120px]"
+              className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[120px]"
             />
           </div>
 
@@ -414,24 +410,24 @@ export default function LoginPage() {
                 {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-current" />)}
               </div>
 
-              <blockquote className="text-2xl leading-relaxed mb-8">
+              <blockquote className="text-2xl leading-relaxed mb-8 font-light">
                 "FloraIQ transformed our wholesale operations. We've saved 20+ hours a week on inventory management alone."
               </blockquote>
 
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-300 to-green-500 flex items-center justify-center text-[#1B4332] font-bold text-lg">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent/50 to-accent flex items-center justify-center text-primary-foreground font-bold text-lg">
                   EM
                 </div>
                 <div>
                   <div className="font-bold text-lg">Elena Martinez</div>
-                  <div className="text-emerald-100/80 text-sm">Operations Director, GreenLeaf Distro</div>
+                  <div className="text-white/80 text-sm">Operations Director, GreenLeaf Distro</div>
                 </div>
               </div>
 
               {/* Trust Badge */}
-              <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between text-sm text-emerald-100/70">
+              <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between text-sm text-white/70">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-300" />
+                  <ShieldCheck className="w-4 h-4 text-accent" />
                   <span>SOC2 Compliant Security</span>
                 </div>
                 <div>Trusted by 500+ Distributors</div>

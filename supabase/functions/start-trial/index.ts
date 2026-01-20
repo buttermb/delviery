@@ -40,19 +40,53 @@ serve(async (req) => {
       );
     }
 
-    // Get plan details
-    const { data: plan } = await supabaseClient
-      .from("subscription_plans")
-      .select("*")
-      .eq("id", plan_id)
-      .maybeSingle();
+    // Plan configuration (Single source of truth - matches frontend PLAN_CONFIG)
+    const PLAN_CONFIG: Record<string, {
+      name: string;
+      priceMonthly: number;
+      priceYearly: number;
+      stripePriceId: string | null;
+      stripePriceIdYearly: string | null;
+    }> = {
+      starter: {
+        name: 'Starter',
+        priceMonthly: 79,
+        priceYearly: 790,
+        stripePriceId: 'price_1Sb3ioFWN1Z6rLwAPfzp99zP',
+        stripePriceIdYearly: 'price_1Sb3ioFWN1Z6rLwAPfzp99zP', // Use same for now, update when yearly price exists
+      },
+      professional: {
+        name: 'Professional',
+        priceMonthly: 150,
+        priceYearly: 1500,
+        stripePriceId: 'price_1Sb3ioFWN1Z6rLwAbjlE24yI',
+        stripePriceIdYearly: 'price_1Sb3ioFWN1Z6rLwAbjlE24yI',
+      },
+      enterprise: {
+        name: 'Enterprise',
+        priceMonthly: 499,
+        priceYearly: 4990,
+        stripePriceId: 'price_1Sb3ipFWN1Z6rLwAKn1v6P5E',
+        stripePriceIdYearly: 'price_1Sb3ipFWN1Z6rLwAKn1v6P5E',
+      },
+    };
+
+    // Get plan details from config
+    const plan = PLAN_CONFIG[plan_id];
+
+    if (!plan) {
+      return new Response(
+        JSON.stringify({ error: `Unknown plan: ${plan_id}` }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Get the appropriate Stripe price ID based on billing cycle
     const stripePriceId = billing_cycle === 'yearly'
-      ? plan?.stripe_price_id_yearly
-      : plan?.stripe_price_id;
+      ? plan.stripePriceIdYearly
+      : plan.stripePriceId;
 
-    if (!plan || !stripePriceId) {
+    if (!stripePriceId) {
       return new Response(
         JSON.stringify({ error: `Plan not found or missing Stripe Price ID for ${billing_cycle} billing` }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -112,14 +146,14 @@ serve(async (req) => {
       cancel_url: cancelUrl,
       metadata: {
         tenant_id: tenant.id,
-        plan_id: plan.id,
+        plan_id: plan_id,
         billing_cycle: billing_cycle,
         skip_trial: skip_trial.toString(),
       },
       subscription_data: {
         metadata: {
           tenant_id: tenant.id,
-          plan_id: plan.id,
+          plan_id: plan_id,
           billing_cycle: billing_cycle,
         },
       },
@@ -151,7 +185,7 @@ serve(async (req) => {
       tenant_id: tenant.id,
       event_type: skip_trial ? "purchase_checkout_initiated" : "trial_checkout_initiated",
       event_data: {
-        plan_id: plan.id,
+        plan_id: plan_id,
         plan_name: plan.name,
         billing_cycle: billing_cycle,
         skip_trial: skip_trial,

@@ -190,10 +190,10 @@ export default function WelcomeOnboarding() {
         <div className="max-w-4xl mx-auto text-center">
           <div className="mb-8 sm:mb-12">
             <div className="text-4xl sm:text-6xl mb-4">🎉</div>
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))] px-2">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-4 text-foreground px-2">
               Welcome to FloraIQ, {name || "there"}!
             </h1>
-            <p className="text-base sm:text-xl text-[hsl(var(--marketing-text-light))] px-2">
+            <p className="text-base sm:text-xl text-muted-foreground px-2">
               Your account is ready. Let's get you set up.
             </p>
           </div>
@@ -201,7 +201,7 @@ export default function WelcomeOnboarding() {
           {/* Progress Tracking */}
           <div className="mb-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-[hsl(var(--marketing-text))]">
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">
                 Setup Progress
               </h2>
               <Badge variant="outline" className="text-base sm:text-lg px-3 sm:px-4 py-1.5 sm:py-1 min-h-[44px] sm:min-h-auto flex items-center">
@@ -217,18 +217,18 @@ export default function WelcomeOnboarding() {
                 return (
                   <Card
                     key={step.id}
-                    className={`hover:shadow-lg transition-shadow ${step.completed ? "border-green-300 bg-green-50/50" : ""
+                    className={`hover:shadow-lg transition-shadow ${step.completed ? "border-primary/20 bg-primary/5" : ""
                       } ${isSkipped ? "opacity-60" : ""}`}
                   >
                     <CardHeader>
                       <div className="flex items-center justify-between mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center">
-                          <StepIcon className="h-6 w-6 text-[hsl(var(--marketing-primary))]" />
+                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                          <StepIcon className="h-6 w-6 text-primary" />
                         </div>
                         {step.completed ? (
-                          <CheckCircle2 className="h-6 w-6 text-green-600" />
+                          <CheckCircle2 className="h-6 w-6 text-primary" />
                         ) : (
-                          <Circle className="h-6 w-6 text-gray-400" />
+                          <Circle className="h-6 w-6 text-muted-foreground" />
                         )}
                       </div>
                       <CardTitle className="text-xl">{step.title}</CardTitle>
@@ -294,8 +294,8 @@ export default function WelcomeOnboarding() {
             </Button>
           </div>
 
-          <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-[hsl(var(--marketing-border))]">
-            <p className="text-sm text-[hsl(var(--marketing-text-light))] mb-4">Need help?</p>
+          <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-border">
+            <p className="text-sm text-muted-foreground mb-4">Need help?</p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <Button
                 variant="ghost"

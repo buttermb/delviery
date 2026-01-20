@@ -72,7 +72,7 @@ export function RevenueForecastWidget() {
 
     if (isLoading) {
         return (
-            <Card>
+            <Card className="glass-card">
                 <CardHeader>
                     <CardTitle>Revenue Forecast</CardTitle>
                 </CardHeader>
@@ -88,7 +88,7 @@ export function RevenueForecastWidget() {
     const isPositive = forecast.growthRate >= 0;
 
     return (
-        <Card className="bg-gradient-to-br from-white to-blue-50 dark:from-card dark:to-blue-950/20 border-blue-100 dark:border-blue-900">
+        <Card className="glass-card bg-gradient-to-br from-blue-50/40 to-blue-100/40 dark:from-blue-900/10 dark:to-blue-950/20 border-blue-100/50 dark:border-blue-900/50">
             <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">

@@ -66,71 +66,88 @@ export default function SelectPlanPage() {
   useEffect(() => {
     const checkPaymentStatus = async () => {
       if (!tenant?.id) return;
-      
+
       const { data: freshTenant } = await supabase
         .from('tenants')
         .select('payment_method_added, subscription_status, slug')
         .eq('id', tenant.id)
         .maybeSingle();
-      
+
       if ((freshTenant as any)?.payment_method_added && (freshTenant as any)?.subscription_status === 'active') {
         logger.info('[SELECT_PLAN] Already has active subscription, redirecting to dashboard');
         navigate(`/${(freshTenant as any).slug || tenant.slug}/admin/dashboard`, { replace: true });
       }
     };
-    
+
     checkPaymentStatus();
   }, [tenant?.id, tenant?.slug, navigate]);
 
-  // Load plans from database
+  // Load plans from configuration (Static source of truth)
   useEffect(() => {
-    let isCancelled = false;
-    const timeoutId = setTimeout(() => {
-      if (!isCancelled && loadingPlans) {
-        setLoadingPlans(false);
-      }
-    }, 8000);
-
-    const loadPlans = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('subscription_plans')
-          .select('id, name, price_monthly, description, features')
-          .order('price_monthly', { ascending: true });
-
-        if (error) throw error;
-
-        if (isCancelled) return;
-
-        const formattedPlans: Plan[] = ((data || []) as any[]).map((plan) => ({
-          id: plan.id,
-          name: plan.name,
-          priceMonthly: plan.price_monthly || 0,
-          priceYearly: Math.round((plan.price_monthly || 0) * 10), // ~17% discount
-          description: plan.description || '',
-          features: Array.isArray(plan.features) ? plan.features as string[] : [],
-          popular: plan.name.toLowerCase() === 'professional',
-        }));
-
-        setPlans(formattedPlans);
-      } catch (error) {
-        logger.error('[SELECT_PLAN] Failed to load plans', error);
-        if (!isCancelled) {
-          toast.error("Failed to load subscription plans");
-        }
-      } finally {
-        if (!isCancelled) {
-          setLoadingPlans(false);
-        }
-      }
+    const PLAN_CONFIG: Record<string, {
+      name: string;
+      priceMonthly: number;
+      priceYearly: number;
+      description: string;
+    }> = {
+      starter: {
+        name: 'Starter',
+        priceMonthly: 79,
+        priceYearly: 790,
+        description: 'Unlimited usage for small businesses',
+      },
+      professional: {
+        name: 'Professional',
+        priceMonthly: 150,
+        priceYearly: 1500,
+        description: 'Ideal for growing businesses',
+      },
+      enterprise: {
+        name: 'Enterprise',
+        priceMonthly: 499,
+        priceYearly: 4990,
+        description: 'Complete solution for large operations',
+      },
     };
 
-    loadPlans();
-
-    return () => {
-      isCancelled = true;
-      clearTimeout(timeoutId);
+    const PLAN_FEATURES_LIST: Record<string, string[]> = {
+      starter: [
+        "Unlimited Products",
+        "3 Staff Members",
+        "Basic Reporting",
+        "Standard Support",
+        "Mobile App Access"
+      ],
+      professional: [
+        "Everything in Starter",
+        "10 Staff Members",
+        "Advanced Analytics",
+        "API Access",
+        "Priority Email Support",
+        "Custom Branding"
+      ],
+      enterprise: [
+        "Everything in Professional",
+        "Unlimited Staff",
+        "Dedicated Account Manager",
+        "White-Label Options",
+        "Custom Integrations",
+        "SLA Guarantees"
+      ]
     };
+
+    const plansList: Plan[] = Object.entries(PLAN_CONFIG).map(([key, config]) => ({
+      id: key,
+      name: config.name,
+      priceMonthly: config.priceMonthly,
+      priceYearly: config.priceYearly,
+      description: config.description,
+      features: PLAN_FEATURES_LIST[key] || [],
+      popular: key === 'professional',
+    }));
+
+    setPlans(plansList);
+    setLoadingPlans(false);
   }, []);
 
   // Calculate savings
@@ -381,7 +398,7 @@ export default function SelectPlanPage() {
             {isTrial ? 'Add Payment Method' : 'Choose Your Plan'}
           </h1>
           <p className="text-xl text-muted-foreground">
-            {isTrial 
+            {isTrial
               ? (skipTrial ? "Get started immediately with full access" : "Start your 14-day free trial today")
               : "Upgrade or change your subscription"
             }
@@ -587,7 +604,7 @@ export default function SelectPlanPage() {
                         </p>
                       </div>
                     )}
-                    
+
                     {!billingCycle && (
                       <p className="text-sm font-medium text-primary">
                         <ArrowRight className="h-3 w-3 inline mr-1" />
