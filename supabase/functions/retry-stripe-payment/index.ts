@@ -75,7 +75,7 @@ serve(async (req) => {
       );
     }
 
-    const tenant = tenantUser.tenants as { id: string; stripe_customer_id: string | null; name: string };
+    const tenant = tenantUser.tenants as unknown as { id: string; stripe_customer_id: string | null; name: string };
 
     if (!tenant.stripe_customer_id) {
       return new Response(

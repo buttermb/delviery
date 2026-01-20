@@ -350,14 +350,14 @@ serve(async (req) => {
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 8); // 8 hours (was 7 days - security fix)
 
-      const clientIp = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
-      const userAgent = req.headers.get("user-agent") || "unknown";
+      const sessionClientIp = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+      const sessionUserAgent = req.headers.get("user-agent") || "unknown";
 
       await supabase.from("super_admin_sessions").insert({
         super_admin_id: superAdmin.id,
         token,
-        ip_address: clientIp,
-        user_agent: userAgent,
+        ip_address: sessionClientIp,
+        user_agent: sessionUserAgent,
         expires_at: expiresAt.toISOString(),
       });
 

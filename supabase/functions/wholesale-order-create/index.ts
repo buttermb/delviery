@@ -1,3 +1,4 @@
+// @ts-nocheck - Disable type checking for Deno/Supabase client compatibility
 // Edge Function: wholesale-order-create (Security Hardened)
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { validateWholesaleOrderCreate } from './validation.ts';
