@@ -21,7 +21,10 @@ serve(async (req) => {
     /^https:\/\/[a-f0-9-]+\.lovableproject\.com$/,
     /^https:\/\/[a-f0-9-]+\.lovable\.app$/,
     'https://lovable.app',
+    'https://lovable.app',
     'https://lovable.dev',
+    // Vercel domains
+    /^https:\/\/.*\.vercel\.app$/,
   ];
 
   const isOriginAllowed = (checkOrigin: string | null): boolean => {
@@ -378,12 +381,12 @@ serve(async (req) => {
           access_token: data.session?.access_token,
           refresh_token: data.session?.refresh_token,
         }),
-        { 
-          headers: { 
-            ...corsHeadersWithOrigin, 
+        {
+          headers: {
+            ...corsHeadersWithOrigin,
             'Content-Type': 'application/json',
             'Set-Cookie': `tenant_access_token=${data.session?.access_token}; ${cookieOptions}`,
-          } 
+          }
         }
       );
 
