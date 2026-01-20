@@ -152,7 +152,7 @@ export default function AuthenticationPage() {
                 Include the JWT token in the Authorization header using the Bearer scheme:
               </p>
               <CodeBlock 
-                code={`curl -X POST https://aejugtmhwwknrowfyzie.supabase.co/functions/v1/admin-api-operations \\
+                code={`curl -X POST https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-api-operations \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \\
   -d '{"action": "list", "resource": "products"}'`}
