@@ -38,7 +38,7 @@ export function UsageDashboardWidget() {
     const current = getCurrent(resource);
     const limit = getLimit(resource);
     const percentage = limit === Infinity ? 0 : (current / limit) * 100;
-    
+
     let status: 'healthy' | 'warning' | 'critical' = 'healthy';
     if (percentage >= 95) status = 'critical';
     else if (percentage >= 80) status = 'warning';
@@ -57,7 +57,7 @@ export function UsageDashboardWidget() {
   const hasWarnings = resourcesData.some((r) => r.status !== 'healthy' && !r.isUnlimited);
 
   return (
-    <Card>
+    <Card className="glass-card">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -98,25 +98,24 @@ export function UsageDashboardWidget() {
                 {item.current} / {item.isUnlimited ? '∞' : item.limit}
               </span>
             </div>
-            
+
             {!item.isUnlimited && (
               <>
-                <Progress 
-                  value={item.percentage} 
-                  className={`h-2 ${
-                    item.status === 'critical' 
-                      ? 'bg-red-100 [&>div]:bg-red-500' 
+                <Progress
+                  value={item.percentage}
+                  className={`h-2 ${item.status === 'critical'
+                      ? 'bg-red-100 [&>div]:bg-red-500'
                       : item.status === 'warning'
-                      ? 'bg-yellow-100 [&>div]:bg-yellow-500'
-                      : ''
-                  }`}
+                        ? 'bg-yellow-100 [&>div]:bg-yellow-500'
+                        : ''
+                    }`}
                 />
                 <div className="text-xs text-muted-foreground text-right">
                   {Math.round(item.percentage)}% used
                 </div>
               </>
             )}
-            
+
             {item.isUnlimited && (
               <div className="text-xs text-green-600 dark:text-green-400">
                 Unlimited

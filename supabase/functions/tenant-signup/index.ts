@@ -13,15 +13,6 @@ function generateSlug(businessName: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
-// Generate slug from business name
-function generateSlug(businessName: string): string {
-  return businessName
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
 // Request validation schema
 const TenantSignupSchema = z.object({
   email: z.string().email().min(1).max(255),
@@ -128,7 +119,7 @@ serve(async (req) => {
       if (turnstileSecret) {
         console.warn('[SIGNUP] CAPTCHA required but not provided', { email: email.toLowerCase(), clientIP });
         return new Response(
-          JSON.stringify({ 
+          JSON.stringify({
             error: 'Security verification required',
             message: 'Please complete the security verification to continue.'
           }),
