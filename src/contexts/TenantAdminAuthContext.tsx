@@ -144,7 +144,21 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unknown');
 
-  // Monitor connection status
+  // Define clearAuthState first so it can be used by other functions
+  // Helper function to clear auth state
+  const clearAuthState = useCallback(() => {
+    setAdmin(null);
+    setTenant(null);
+    setToken(null);
+    setAccessToken(null);
+    setRefreshToken(null);
+    setIsAuthenticated(false);
+    safeStorage.removeItem(ADMIN_KEY);
+    safeStorage.removeItem(TENANT_KEY);
+    safeStorage.removeItem('lastTenantSlug'); // Clear tenant slug cache
+    safeStorage.removeItem(ACCESS_TOKEN_KEY);
+    safeStorage.removeItem(REFRESH_TOKEN_KEY);
+  }, []);
   useEffect(() => {
     const unsubscribe = onConnectionStatusChange((status) => {
       setConnectionStatus(status);
@@ -720,20 +734,49 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     return () => clearInterval(interval);
   }, [isAuthenticated, token]);
 
-  // Helper function to clear auth state
-  const clearAuthState = () => {
-    setAdmin(null);
-    setTenant(null);
-    setToken(null);
-    setAccessToken(null);
-    setRefreshToken(null);
-    setIsAuthenticated(false);
-    safeStorage.removeItem(ADMIN_KEY);
-    safeStorage.removeItem(TENANT_KEY);
-    safeStorage.removeItem('lastTenantSlug'); // Clear tenant slug cache
-    // Note: We don't remove ACCESS_TOKEN_KEY/REFRESH_TOKEN_KEY here
-    // as they may not exist if using cookies
+  const refreshAuthToken = async () => {
+    try {
+      const currentRefreshToken = refreshToken || safeStorage.getItem(REFRESH_TOKEN_KEY);
+
+      if (!currentRefreshToken || currentRefreshToken === 'undefined') {
+        logger.warn('[AUTH] Cannot refresh token - no refresh token available');
+        clearAuthState();
+        return;
+      }
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+      const { response } = await resilientFetch(
+        `${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh_token: currentRefreshToken }),
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setAccessToken(data.access_token);
+        setToken(data.access_token);
+        setRefreshToken(data.refresh_token);
+
+        safeStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
+        safeStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        logger.error('[AUTH] Token refresh failed', { status: response.status, error: errorData });
+
+        if (response.status === 401) {
+          clearAuthState();
+          // Optionally redirect to login if critical
+        }
+      }
+    } catch (error) {
+      logger.error('[AUTH] Token refresh exception', error);
+    }
   };
+
+  // Helper function to clear auth state
 
   const verifyToken = async (tokenToVerify: string, retryCount = 0): Promise<boolean> => {
     const maxRetries = 1; // Fail-fast: only 1 retry

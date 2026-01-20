@@ -345,8 +345,19 @@ serve(async (req) => {
 
       if (error) {
         console.error('Token refresh error:', error);
+        console.log('Refresh request details:', {
+          hasRefreshToken: !!refresh_token,
+          tokenLength: refresh_token?.length,
+          errorMsg: error.message,
+          errorCode: error.status
+        });
+
         return new Response(
-          JSON.stringify({ error: 'Failed to refresh token' }),
+          JSON.stringify({
+            error: 'Failed to refresh token',
+            reason: error.message?.includes('Invalid Refresh Token') ? 'invalid_refresh_token' : 'refresh_failed',
+            details: error.message
+          }),
           { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }

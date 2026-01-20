@@ -100,6 +100,8 @@ export default function LoginPage() {
     safeStorage.removeItem('lastTenantSlug');
     safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_USER);
     safeStorage.removeItem(STORAGE_KEYS.TENANT_DATA);
+    safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
+    safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_REFRESH_TOKEN);
 
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
