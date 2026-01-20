@@ -216,8 +216,8 @@ export const THEME_PRESETS: ThemePreset[] = [
             border: '#262626',
         },
         typography: {
-            fontFamily: 'Cormorant Garamond, Georgia, serif',
-            headingFamily: 'Playfair Display, Georgia, serif',
+            fontFamily: 'Inter, system-ui, sans-serif',
+            headingFamily: 'Inter, sans-serif',
             headingWeight: '500',
             bodySize: '17px',
             headingSize: {
