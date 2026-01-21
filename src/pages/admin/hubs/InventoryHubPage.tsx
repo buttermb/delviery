@@ -6,6 +6,10 @@
  * - Adjustments: Inventory adjustments
  * - Monitoring: Alerts and quick receiving
  * - Transfers: Inventory transfers
+ *
+ * Quick Links section provides access to:
+ * - Products, Categories, Stock Levels, Low Stock Alerts
+ * - Bulk Import, Price Management, Marketplace Sync (if enabled)
  */
 
 import { useSearchParams } from 'react-router-dom';
@@ -21,12 +25,21 @@ import {
     Barcode,
     Menu,
     Globe,
+    Tag,
+    TrendingDown,
+    Upload,
+    DollarSign,
+    RefreshCcw,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { lazy, Suspense, Fragment } from 'react';
+import { lazy, Suspense, Fragment, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { QuickActions } from '@/components/admin/ui/QuickActions';
+import { AlertBadge } from '@/components/admin/ui/AlertBadge';
+import { HubLinkCard, HubLinkGrid } from '@/components/admin/ui/HubLinkCard';
+import { useInventoryHubCounts } from '@/hooks/useInventoryHubCounts';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 
 // Lazy load tab content for performance
 const ProductManagement = lazy(() => import('@/pages/admin/ProductManagement'));
@@ -68,10 +81,18 @@ export default function InventoryHubPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'products';
     const { navigateToAdmin } = useTenantNavigation();
+    const { counts, isLoading: countsLoading } = useInventoryHubCounts();
+    const { canAccess } = useFeatureAccess();
 
-    const handleTabChange = (tab: string) => {
+    // Check if marketplace feature is enabled
+    const marketplaceEnabled = canAccess('marketplace');
+
+    const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab });
-    };
+    }, [setSearchParams]);
+
+    // Calculate total alerts (low stock + out of stock)
+    const totalAlerts = counts.lowStockCount + counts.outOfStockCount;
 
     return (
         <div className="min-h-dvh bg-background">
@@ -84,36 +105,115 @@ export default function InventoryHubPage() {
                         currentTab={tabs.find(t => t.id === activeTab)?.label}
                     />
                     <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <h1 className="text-2xl font-bold">Inventory</h1>
-                            <p className="text-muted-foreground text-sm">
-                                Manage products, stock levels, and alerts
-                            </p>
+                        <div className="flex items-center gap-3">
+                            <div>
+                                <h1 className="text-2xl font-bold">Inventory</h1>
+                                <p className="text-muted-foreground text-sm">
+                                    Manage products, stock levels, and alerts
+                                </p>
+                            </div>
+                            {activeTab === 'monitoring' && totalAlerts > 0 && (
+                                <AlertBadge level={counts.outOfStockCount > 0 ? 'critical' : 'warning'} count={totalAlerts} pulse />
+                            )}
                         </div>
-                        {activeTab === 'products' && (
-                            <Button onClick={() => navigateToAdmin('inventory-hub?tab=products&new=true')}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add Product
-                            </Button>
-                        )}
+                        <QuickActions actions={[
+                            ...(activeTab === 'products' ? [{
+                                id: 'new-product',
+                                label: 'Add Product',
+                                icon: Plus,
+                                onClick: () => navigateToAdmin('inventory-hub?tab=products&new=true'),
+                            }] : []),
+                        ]} />
                     </div>
-                    <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 overflow-x-auto w-full max-w-full gap-0.5">
-                        {tabs.map((tab, index) => {
-                            const prevTab = index > 0 ? tabs[index - 1] : null;
-                            const showSeparator = prevTab && prevTab.group !== tab.group;
-                            return (
-                                <Fragment key={tab.id}>
-                                    {showSeparator && (
-                                        <div className="w-px h-6 bg-border mx-1" />
-                                    )}
-                                    <TabsTrigger value={tab.id} className="flex items-center gap-2 whitespace-nowrap">
-                                        <tab.icon className="h-4 w-4" />
-                                        <span className="hidden sm:inline">{tab.label}</span>
-                                    </TabsTrigger>
-                                </Fragment>
-                            );
-                        })}
-                    </TabsList>
+                    <div className="overflow-x-auto">
+                        <TabsList className="inline-flex min-w-max gap-0.5">
+                            {tabs.map((tab, index) => {
+                                const prevTab = index > 0 ? tabs[index - 1] : null;
+                                const showSeparator = prevTab && prevTab.group !== tab.group;
+                                return (
+                                    <Fragment key={tab.id}>
+                                        {showSeparator && (
+                                            <div className="w-px h-6 bg-border mx-1" />
+                                        )}
+                                        <TabsTrigger value={tab.id} className="flex items-center gap-2">
+                                            <tab.icon className="h-4 w-4" />
+                                            <span className="hidden sm:inline">{tab.label}</span>
+                                        </TabsTrigger>
+                                    </Fragment>
+                                );
+                            })}
+                        </TabsList>
+                    </div>
+
+                    {/* Quick Links Section */}
+                    <div className="mt-4 pt-4 border-t">
+                        <h2 className="text-sm font-medium text-muted-foreground mb-3">Quick Links</h2>
+                        <HubLinkGrid>
+                            <HubLinkCard
+                                title="Products"
+                                description="View and manage all products"
+                                icon={Package}
+                                href="inventory-hub?tab=products"
+                                count={counts.totalProducts}
+                                countLabel="total"
+                                status="info"
+                                isLoading={countsLoading}
+                            />
+                            <HubLinkCard
+                                title="Categories"
+                                description="Organize products with categories"
+                                icon={Tag}
+                                href="catalog/categories"
+                                count={counts.categoryCount}
+                                countLabel="categories"
+                                status="info"
+                                isLoading={countsLoading}
+                            />
+                            <HubLinkCard
+                                title="Stock Levels"
+                                description="Monitor inventory quantities"
+                                icon={BarChart3}
+                                href="inventory-hub?tab=stock"
+                                count={counts.activeProducts}
+                                countLabel="in stock"
+                                status="active"
+                                isLoading={countsLoading}
+                            />
+                            <HubLinkCard
+                                title="Low Stock Alerts"
+                                description="Products below reorder level"
+                                icon={TrendingDown}
+                                href="inventory-hub?tab=monitoring"
+                                count={counts.lowStockCount}
+                                countLabel="low"
+                                status={counts.lowStockCount > 0 ? 'warning' : 'info'}
+                                isLoading={countsLoading}
+                            />
+                            <HubLinkCard
+                                title="Bulk Import"
+                                description="Import products from CSV or spreadsheet"
+                                icon={Upload}
+                                href="menu-migration"
+                                status="info"
+                            />
+                            <HubLinkCard
+                                title="Price Management"
+                                description="Bulk edit product pricing"
+                                icon={DollarSign}
+                                href="inventory-hub?tab=products"
+                                status="info"
+                            />
+                            {marketplaceEnabled && (
+                                <HubLinkCard
+                                    title="Marketplace Sync"
+                                    description="Sync inventory with marketplace listings"
+                                    icon={RefreshCcw}
+                                    href="marketplace/listings"
+                                    status="active"
+                                />
+                            )}
+                        </HubLinkGrid>
+                    </div>
                 </div>
 
                 {/* Products Tab */}
