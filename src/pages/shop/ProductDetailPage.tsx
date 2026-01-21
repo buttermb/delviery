@@ -178,7 +178,7 @@ export default function ProductDetailPage() {
   const { storeSlug, productId, productSlug } = useParams();
   const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
-  
+
   // Determine if using slug-based or UUID-based URL
   const isSlugBased = !!productSlug && !productId;
   const identifier = productSlug || productId;
@@ -218,9 +218,9 @@ export default function ProductDetailPage() {
         if (isSlugBased) {
           // Slug-based lookup using the new RPC
           const { data, error } = await supabase
-            .rpc('get_product_by_slug', { 
-              p_store_id: store.id, 
-              p_slug: identifier 
+            .rpc('get_product_by_slug', {
+              p_store_id: store.id,
+              p_slug: identifier
             });
 
           if (error) {
@@ -353,14 +353,14 @@ export default function ProductDetailPage() {
       if (product.product_id) {
         addToRecentlyViewed(product.product_id);
       }
-      
+
       // SEO: Add canonical URL with slug if available
       const productWithSlug = product as ProductDetails & { slug?: string };
-      const canonicalPath = productWithSlug.slug 
+      const canonicalPath = productWithSlug.slug
         ? `/shop/${storeSlug}/product/${productWithSlug.slug}`
         : `/shop/${storeSlug}/products/${product.product_id}`;
       const canonicalUrl = `${window.location.origin}${canonicalPath}`;
-      
+
       let canonicalLink = document.querySelector('link[rel="canonical"]');
       if (!canonicalLink) {
         canonicalLink = document.createElement('link');
@@ -618,7 +618,6 @@ export default function ProductDetailPage() {
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
           <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/10 blur-[150px] animate-pulse" />
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-900/10 blur-[150px] animate-pulse" style={{ animationDelay: '2s' }} />
-          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02]" />
         </div>
       )}
 
