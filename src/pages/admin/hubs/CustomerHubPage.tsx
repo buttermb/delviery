@@ -5,6 +5,10 @@
  * - Wholesale: Wholesale clients
  * - CRM: Customer relationships
  * - Insights: Customer analytics
+ *
+ * Quick Links section provides access to:
+ * - Customer List, Add Customer, License Verification
+ * - Customer Groups, Communication History
  */
 
 import { useSearchParams } from 'react-router-dom';
@@ -18,10 +22,20 @@ import {
     PieChart,
     Headphones,
     Star,
+    UserPlus,
+    ShieldCheck,
+    UsersRound,
+    MessageSquare,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback, Fragment } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { HubLinkCard, HubLinkGrid } from '@/components/admin/ui/HubLinkCard';
+import { AlertBadge } from '@/components/admin/ui/AlertBadge';
+import { QuickActions } from '@/components/admin/ui/QuickActions';
+import { useCustomerHubCounts } from '@/hooks/useCustomerHubCounts';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 
 // Lazy load tab content for performance
 const CustomerManagement = lazy(() => import('@/pages/admin/CustomerManagement'));
@@ -61,6 +75,13 @@ type TabId = typeof tabs[number]['id'];
 export default function CustomerHubPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'contacts';
+    const { navigateToAdmin } = useTenantNavigation();
+    const { counts, isLoading: countsLoading } = useCustomerHubCounts();
+    const { canAccess } = useFeatureAccess();
+
+    // Check feature access for tier-gated features
+    const hasCrmAccess = canAccess('customer-crm');
+    const hasInsightsAccess = canAccess('customer-insights');
 
     const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab });
@@ -77,12 +98,25 @@ export default function CustomerHubPage() {
                         currentTab={tabs.find(t => t.id === activeTab)?.label}
                     />
                     <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <h1 className="text-2xl font-bold">Customers</h1>
-                            <p className="text-muted-foreground text-sm">
-                                Manage contacts, clients, and relationships
-                            </p>
+                        <div className="flex items-center gap-3">
+                            <div>
+                                <h1 className="text-2xl font-bold">Customers</h1>
+                                <p className="text-muted-foreground text-sm">
+                                    Manage contacts, clients, and relationships
+                                </p>
+                            </div>
+                            {counts.pendingVerification > 0 && (
+                                <AlertBadge level="warning" count={counts.pendingVerification} pulse />
+                            )}
                         </div>
+                        <QuickActions actions={[
+                            ...(activeTab === 'contacts' ? [{
+                                id: 'new-customer',
+                                label: 'Add Customer',
+                                icon: UserPlus,
+                                onClick: () => navigateToAdmin('customer-hub?tab=contacts&new=true'),
+                            }] : []),
+                        ]} />
                     </div>
                     <div className="overflow-x-auto">
                         <TabsList className="inline-flex min-w-max gap-0.5">
@@ -102,6 +136,60 @@ export default function CustomerHubPage() {
                                 );
                             })}
                         </TabsList>
+                    </div>
+
+                    {/* Quick Links Section */}
+                    <div className="mt-4 pt-4 border-t">
+                        <h2 className="text-sm font-medium text-muted-foreground mb-3">Quick Links</h2>
+                        <HubLinkGrid>
+                            <HubLinkCard
+                                title="Customer List"
+                                description="View and manage all customers"
+                                icon={Users}
+                                href="customer-hub?tab=contacts"
+                                count={counts.totalCustomers}
+                                countLabel="total"
+                                status="info"
+                                isLoading={countsLoading}
+                            />
+                            <HubLinkCard
+                                title="Add Customer"
+                                description="Create a new customer record"
+                                icon={UserPlus}
+                                href="customer-hub?tab=contacts&new=true"
+                                status="active"
+                            />
+                            <HubLinkCard
+                                title="License Verification"
+                                description="Review pending license verifications"
+                                icon={ShieldCheck}
+                                href="customer-hub?tab=wholesale"
+                                count={counts.pendingVerification}
+                                countLabel="pending"
+                                status={counts.pendingVerification > 0 ? 'warning' : 'info'}
+                                isLoading={countsLoading}
+                            />
+                            <HubLinkCard
+                                title="Customer Groups"
+                                description={hasCrmAccess ? 'Organize customers into groups' : 'Upgrade to Professional for groups'}
+                                icon={UsersRound}
+                                href={hasCrmAccess ? 'customer-hub?tab=crm' : 'billing'}
+                                count={hasCrmAccess ? counts.activeGroups : undefined}
+                                countLabel="groups"
+                                status={hasCrmAccess ? 'info' : 'pending'}
+                                isLoading={countsLoading}
+                            />
+                            <HubLinkCard
+                                title="Communication History"
+                                description={hasInsightsAccess ? 'View customer interactions' : 'Upgrade to Professional for history'}
+                                icon={MessageSquare}
+                                href={hasInsightsAccess ? 'customer-hub?tab=insights' : 'billing'}
+                                count={hasInsightsAccess ? counts.recentMessages : undefined}
+                                countLabel="recent"
+                                status={hasInsightsAccess ? 'info' : 'pending'}
+                                isLoading={countsLoading}
+                            />
+                        </HubLinkGrid>
                     </div>
                 </div>
 
