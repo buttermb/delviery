@@ -19,10 +19,12 @@ import {
     History,
     Workflow,
     FileText,
+    Download,
 } from 'lucide-react';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { lazy, Suspense, useMemo } from 'react';
+import { lazy, Suspense, useMemo, Fragment } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 import { QuickActions } from '@/components/admin/ui/QuickActions';
 import { AlertBadge } from '@/components/admin/ui/AlertBadge';
 import { useAdminBadgeCounts } from '@/hooks/useAdminBadgeCounts';
@@ -88,8 +90,12 @@ export default function OrdersHubPage() {
         actions.push({
             id: 'export',
             label: 'Export',
-            icon: FileText,
-            onClick: () => console.log('Export orders'),
+            icon: Download,
+            onClick: () => {
+                toast.info('Export feature coming soon', {
+                    description: 'Order export will be available in the next update.',
+                });
+            },
             variant: 'outline' as const,
         });
         return actions;
@@ -125,15 +131,15 @@ export default function OrdersHubPage() {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
                                 const showSeparator = prevTab && prevTab.group !== tab.group;
                                 return (
-                                    <>
+                                    <Fragment key={tab.id}>
                                         {showSeparator && (
-                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                            <div className="w-px h-6 bg-border mx-1" />
                                         )}
-                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                        <TabsTrigger value={tab.id} className="flex items-center gap-2">
                                             <tab.icon className="h-4 w-4" />
                                             <span className="hidden sm:inline">{tab.label}</span>
                                         </TabsTrigger>
-                                    </>
+                                    </Fragment>
                                 );
                             })}
                         </TabsList>

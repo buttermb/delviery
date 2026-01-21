@@ -20,7 +20,7 @@ import {
     Wallet,
     Building2,
 } from 'lucide-react';
-import { lazy, Suspense, useCallback, useMemo } from 'react';
+import { lazy, Suspense, Fragment, useCallback, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
@@ -88,15 +88,15 @@ export default function FinanceHubPage() {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
                                 const showSeparator = prevTab && prevTab.group !== tab.group;
                                 return (
-                                    <>
+                                    <Fragment key={tab.id}>
                                         {showSeparator && (
-                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                            <div className="w-px h-6 bg-border mx-1" />
                                         )}
-                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                        <TabsTrigger value={tab.id} className="flex items-center gap-2">
                                             <tab.icon className="h-4 w-4" />
                                             <span className="hidden sm:inline">{tab.label}</span>
                                         </TabsTrigger>
-                                    </>
+                                    </Fragment>
                                 );
                             })}
                         </TabsList>

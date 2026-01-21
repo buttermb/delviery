@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, Fragment } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
@@ -102,15 +102,15 @@ export default function InventoryHubPage() {
                             const prevTab = index > 0 ? tabs[index - 1] : null;
                             const showSeparator = prevTab && prevTab.group !== tab.group;
                             return (
-                                <>
+                                <Fragment key={tab.id}>
                                     {showSeparator && (
-                                        <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                        <div className="w-px h-6 bg-border mx-1" />
                                     )}
-                                    <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2 whitespace-nowrap">
+                                    <TabsTrigger value={tab.id} className="flex items-center gap-2 whitespace-nowrap">
                                         <tab.icon className="h-4 w-4" />
                                         <span className="hidden sm:inline">{tab.label}</span>
                                     </TabsTrigger>
-                                </>
+                                </Fragment>
                             );
                         })}
                     </TabsList>
