@@ -1,5 +1,4 @@
-import { logger } from '@/lib/logger';
-import { Outlet, useLocation, Link, useNavigate, useParams } from "react-router-dom";
+import { Outlet, useLocation, useParams } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminErrorBoundary } from "@/components/admin/AdminErrorBoundary";
 import { AdaptiveSidebar } from "@/components/admin/sidebar/AdaptiveSidebar";
@@ -8,20 +7,18 @@ import { useSidebarMode } from "@/hooks/useSidebarMode";
 import { SidebarErrorBoundary } from "@/components/admin/sidebar/SidebarErrorBoundary";
 import { MobileBottomNav } from "@/components/admin/MobileBottomNav";
 import { AccountSwitcher } from "@/components/admin/AccountSwitcher";
-import { ChevronRight, Search, Keyboard } from "lucide-react";
+import { AdminBreadcrumbs, MobileBreadcrumbTitle } from "@/components/admin/AdminBreadcrumbs";
+import { Search, Keyboard } from "lucide-react";
 import InstallPWA from "@/components/InstallPWA";
 import { Suspense } from "react";
 import { LoadingFallback } from "@/components/LoadingFallback";
 
 import { AdminNotificationCenter } from "@/components/admin/AdminNotificationCenter";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
-import ThemeToggle from "@/components/ThemeToggle";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { AdminKeyboardShortcutsDialog } from "@/components/admin/AdminKeyboardShortcutsDialog";
 import { useCommandPaletteStore } from "@/components/tenant-admin/CommandPalette";
 import { TenantAdminCommandPalette } from "@/components/tenant-admin/CommandPalette";
-import { MobileNav } from "@/components/admin/MobileNav";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -49,7 +46,6 @@ import { ForceLightMode } from '@/components/marketing/ForceLightMode';
  */
 const AdminLayout = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { setOpen } = useCommandPaletteStore();
   const {
     credits,
@@ -77,34 +73,6 @@ const AdminLayout = () => {
     }
   }, [tenantSlug, location.pathname]);
 
-  const getBreadcrumbs = () => {
-    // ... existing ...
-    const paths = location.pathname.split('/').filter(Boolean);
-
-    // Skip tenant slug in breadcrumbs
-    const startIndex = tenantSlug && paths[0] === tenantSlug ? 1 : 0;
-    const relevantPaths = paths.slice(startIndex);
-
-    // Skip 'admin' from breadcrumbs as it's implied
-    const filteredPaths = relevantPaths.filter(path => path !== 'admin');
-
-    const breadcrumbs = filteredPaths.map((path, index) => {
-      const pathSlice = filteredPaths.slice(0, index + 1);
-      const url = tenantSlug
-        ? `/${tenantSlug}/admin/${pathSlice.join('/')}`
-        : `/admin/${pathSlice.join('/')}`;
-
-      const label = path
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-      return { label, url };
-    });
-
-    return breadcrumbs;
-  };
-
-  const breadcrumbs = getBreadcrumbs();
 
   return (
     <ForceLightMode>
@@ -149,31 +117,13 @@ const AdminLayout = () => {
                 <SidebarTrigger className="h-12 w-12 min-h-[48px] min-w-[48px] touch-manipulation active:scale-95 transition-transform z-50 -ml-1 sm:ml-0 flex items-center justify-center" />
 
                 {/* Breadcrumbs - hidden on mobile */}
-                <nav className="hidden md:flex items-center gap-1.5 text-sm overflow-x-auto scrollbar-hide mr-4">
-                  {breadcrumbs.map((crumb, index) => (
-                    <div key={crumb.url} className="flex items-center gap-1.5 flex-shrink-0">
-                      {index > 0 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />}
-                      {index === breadcrumbs.length - 1 ? (
-                        <span className="font-semibold text-foreground whitespace-nowrap">{crumb.label}</span>
-                      ) : (
-                        <Link
-                          to={crumb.url}
-                          className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap font-medium"
-                        >
-                          {crumb.label}
-                        </Link>
-                      )}
-                    </div>
-                  ))}
-                </nav>
+                <div className="hidden md:block overflow-x-auto scrollbar-hide mr-4">
+                  <AdminBreadcrumbs />
+                </div>
 
                 {/* Mobile page title - show current page on mobile */}
                 <div className="md:hidden flex-1 min-w-0">
-                  {breadcrumbs.length > 0 && (
-                    <span className="font-semibold text-sm truncate block">
-                      {breadcrumbs[breadcrumbs.length - 1]?.label || 'Dashboard'}
-                    </span>
-                  )}
+                  <MobileBreadcrumbTitle className="text-sm" />
                 </div>
 
                 {/* Search Trigger Bar (Desktop) */}
