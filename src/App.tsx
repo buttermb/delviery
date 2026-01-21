@@ -37,6 +37,7 @@ import { LoadingFallback } from "./components/LoadingFallback";
 import { SkeletonAdminLayout } from "./components/loading/SkeletonAdminLayout";
 import { SkeletonDashboard } from "./components/loading/SkeletonDashboard";
 import { SmartRootRedirect } from "./components/SmartRootRedirect";
+import { LegacyRedirect } from "./components/routing/LegacyRedirect";
 import { setupGlobalErrorHandlers, handleMutationError } from "./utils/reactErrorHandler";
 import { FeatureProtectedRoute } from "./components/tenant-admin/FeatureProtectedRoute";
 import { SubscriptionGuard } from "./components/tenant-admin/SubscriptionGuard";
@@ -804,31 +805,32 @@ const App = () => {
                                         <Route path="wholesale-clients" element={<Navigate to="../customer-hub?tab=contacts" replace />} />
                                         <Route path="products" element={<Navigate to="../inventory-hub?tab=products" replace />} />
                                         <Route path="clients" element={<Navigate to="../customer-hub?tab=contacts" replace />} />
-                                        <Route path="customers" element={<Navigate to="../customer-hub?tab=contacts" replace />} />
+                                        <Route path="customers" element={<LegacyRedirect from="/customers" to="customer-hub" />} />
                                         <Route path="inventory/dispatch" element={<Navigate to="../dispatch-inventory" replace />} />
                                         <Route path="admin-notifications" element={<Navigate to="notifications" replace />} />
                                         <Route path="reports-new" element={<Navigate to="reports" replace />} />
                                         <Route path="route-optimization" element={<Navigate to="route-optimizer" replace />} />
                                         <Route path="risk-factors" element={<Navigate to="risk-management" replace />} />
                                         <Route path="inventory/barcodes" element={<Navigate to="../generate-barcodes" replace />} />
-                                        {/* Folder redirects for breadcrumbs */}
-                                        <Route path="inventory" element={<Navigate to="inventory-hub" replace />} />
+                                        {/* Legacy route redirects with deprecation logging */}
+                                        <Route path="inventory" element={<LegacyRedirect from="/inventory" to="inventory-hub" />} />
+                                        <Route path="analytics" element={<LegacyRedirect from="/analytics" to="analytics-hub" />} />
                                         <Route path="crm" element={<Navigate to="customer-hub?tab=crm" replace />} />
                                         <Route path="sales" element={<Navigate to="sales-dashboard" replace />} />
                                         <Route path="marketplace" element={<Navigate to="marketplace/listings" replace />} />
                                         <Route path="catalog" element={<Navigate to="inventory-hub?tab=products" replace />} />
-                                        {/* Legacy hub redirects - redirect old paths to new paths */}
-                                        <Route path="orders-hub" element={<Navigate to="orders" replace />} />
+                                        {/* Orders Hub - canonical route */}
+                                        <Route path="orders-hub" element={<FeatureProtectedRoute featureId="basic-orders"><OrdersHubPage /></FeatureProtectedRoute>} />
                                         <Route path="pos-hub" element={<Navigate to="pos-system" replace />} />
 
                                         <Route path="analytics-hub" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsHubPage /></FeatureProtectedRoute>} />
                                         <Route path="analytics/comprehensive" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="disposable-menus" element={<FeatureProtectedRoute featureId="disposable-menus"><DisposableMenus /></FeatureProtectedRoute>} />
                                         <Route path="menu-migration" element={<FeatureProtectedRoute featureId="menu-migration"><MenuMigration /></FeatureProtectedRoute>} />
-                                        <Route path="orders" element={<FeatureProtectedRoute featureId="basic-orders"><OrdersHubPage /></FeatureProtectedRoute>} />
+                                        <Route path="orders" element={<LegacyRedirect from="/orders" to="orders-hub" />} />
 
                                         {/* Orders Hub Redirects */}
-                                        <Route path="disposable-menu-orders" element={<Navigate to="orders?tab=menu" replace />} />
+                                        <Route path="disposable-menu-orders" element={<Navigate to="orders-hub?tab=menu" replace />} />
                                         <Route path="disposable-menu-analytics" element={<FeatureProtectedRoute featureId="disposable-menu-analytics"><DisposableMenuAnalytics /></FeatureProtectedRoute>} />
                                         <Route path="menu-analytics" element={<FeatureProtectedRoute featureId="menu-analytics"><MenuAnalytics /></FeatureProtectedRoute>} />
 
@@ -843,7 +845,7 @@ const App = () => {
                                         <Route path="big-plug-clients/:id" element={<FeatureProtectedRoute featureId="customers"><ClientDetail /></FeatureProtectedRoute>} />
                                         <Route path="generate-barcodes" element={<FeatureProtectedRoute featureId="generate-barcodes"><GenerateBarcodes /></FeatureProtectedRoute>} />
 
-                                        <Route path="wholesale-orders" element={<Navigate to="orders?tab=wholesale" replace />} />
+                                        <Route path="wholesale-orders" element={<Navigate to="orders-hub?tab=wholesale" replace />} />
                                         <Route path="wholesale-orders/new" element={<FeatureProtectedRoute featureId="wholesale-orders"><NewWholesaleOrder /></FeatureProtectedRoute>} />
                                         <Route path="wholesale-orders/new-po" element={<FeatureProtectedRoute featureId="wholesale-orders"><NewPurchaseOrder /></FeatureProtectedRoute>} />
 
@@ -856,7 +858,7 @@ const App = () => {
                                         {/* Credit Purchase Routes */}
                                         <Route path="credits/success" element={<CreditPurchaseSuccessPage />} />
                                         <Route path="credits/cancelled" element={<CreditPurchaseCancelledPage />} />
-                                        <Route path="settings" element={<FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute>} />
+                                        <Route path="settings" element={<LegacyRedirect from="/settings" to="settings-hub" />} />
 
                                         {/* Marketplace Routes (B2B) */}
                                         <Route path="marketplace/dashboard" element={<FeatureProtectedRoute featureId="marketplace"><MarketplaceDashboard /></FeatureProtectedRoute>} />
@@ -919,7 +921,7 @@ const App = () => {
                                         <Route path="marketplace/sync" element={<FeatureProtectedRoute featureId="marketplace-product-sync"><ProductSyncPage /></FeatureProtectedRoute>} />
 
 
-                                        <Route path="live-orders" element={<Navigate to="orders?tab=live" replace />} />
+                                        <Route path="live-orders" element={<Navigate to="orders-hub?tab=live" replace />} />
                                         <Route path="staff-management" element={<FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute>} />
                                         <Route path="team-members" element={<FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute>} />
                                         <Route path="advanced-inventory" element={<Navigate to="inventory-hub?tab=adjustments" replace />} />
@@ -968,7 +970,7 @@ const App = () => {
                                         <Route path="crm/invoices" element={<FeatureProtectedRoute featureId="customer-crm"><InvoicesPage /></FeatureProtectedRoute>} />
                                         <Route path="crm/invoices/new" element={<FeatureProtectedRoute featureId="customer-crm"><CreateInvoicePage /></FeatureProtectedRoute>} />
                                         <Route path="crm/invoices/:invoiceId" element={<FeatureProtectedRoute featureId="customer-crm"><InvoiceDetailPage /></FeatureProtectedRoute>} />
-                                        <Route path="crm/pre-orders" element={<Navigate to="orders?tab=preorders" replace />} />
+                                        <Route path="crm/pre-orders" element={<Navigate to="orders-hub?tab=preorders" replace />} />
                                         <Route path="crm/pre-orders/new" element={<FeatureProtectedRoute featureId="customer-crm"><CreatePreOrderPage /></FeatureProtectedRoute>} />
                                         <Route path="crm/pre-orders/:preOrderId" element={<FeatureProtectedRoute featureId="customer-crm"><PreOrderDetailPage /></FeatureProtectedRoute>} />
                                         <Route path="crm/settings" element={<FeatureProtectedRoute featureId="customer-crm"><CRMSettingsPage /></FeatureProtectedRoute>} />
