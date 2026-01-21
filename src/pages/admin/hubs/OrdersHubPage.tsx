@@ -6,6 +6,10 @@
  * - Storefront: Online store orders
  * - Pre-Orders: Advance orders
  * - Live: Real-time order tracking
+ *
+ * Quick Links section provides access to:
+ * - Order List, Create Order, Order Templates
+ * - Delivery Routes, Driver Management (cross-hub links)
  */
 
 import { useSearchParams } from 'react-router-dom';
@@ -18,17 +22,22 @@ import {
     Plus,
     History,
     Workflow,
-    FileText,
     Download,
+    List,
+    FileStack,
+    Route,
+    Users,
 } from 'lucide-react';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { lazy, Suspense, useMemo, Fragment } from 'react';
+import { lazy, Suspense, useMemo, Fragment, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { QuickActions } from '@/components/admin/ui/QuickActions';
 import { AlertBadge } from '@/components/admin/ui/AlertBadge';
 import { useAdminBadgeCounts } from '@/hooks/useAdminBadgeCounts';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { HubLinkCard, HubLinkGrid } from '@/components/admin/ui/HubLinkCard';
+import { useOrdersHubCounts } from '@/hooks/useOrdersHubCounts';
 
 // Lazy load tab content for performance
 const WholesaleOrdersPage = lazy(() => import('@/pages/admin/WholesaleOrdersPage'));
@@ -64,10 +73,11 @@ export default function OrdersHubPage() {
     const activeTab = (searchParams.get('tab') as TabId) || 'live';
     const { navigateToAdmin } = useTenantNavigation();
     const { totalPending } = useAdminBadgeCounts();
+    const { counts, isLoading: countsLoading } = useOrdersHubCounts();
 
-    const handleTabChange = (tab: string) => {
+    const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab });
-    };
+    }, [setSearchParams]);
 
     const quickActions = useMemo(() => {
         const actions = [];
@@ -143,6 +153,60 @@ export default function OrdersHubPage() {
                                 );
                             })}
                         </TabsList>
+                    </div>
+
+                    {/* Quick Links Section */}
+                    <div className="mt-4 pt-4 border-t">
+                        <h2 className="text-sm font-medium text-muted-foreground mb-3">Quick Links</h2>
+                        <HubLinkGrid>
+                            <HubLinkCard
+                                title="Order List"
+                                description="View all orders across channels"
+                                icon={List}
+                                href="orders-hub?tab=history"
+                                count={counts.totalOrders}
+                                countLabel="total"
+                                status="info"
+                                isLoading={countsLoading}
+                            />
+                            <HubLinkCard
+                                title="Create Order"
+                                description="Start a new wholesale or pre-order"
+                                icon={Plus}
+                                href="wholesale-orders/new"
+                                status="active"
+                            />
+                            <HubLinkCard
+                                title="Order Templates"
+                                description="Saved order templates for quick reuse"
+                                icon={FileStack}
+                                href="orders-hub?tab=pipeline"
+                                count={counts.templates}
+                                countLabel="saved"
+                                status="info"
+                                isLoading={countsLoading}
+                            />
+                            <HubLinkCard
+                                title="Delivery Routes"
+                                description="Plan and optimize delivery routes"
+                                icon={Route}
+                                href="fulfillment-hub?tab=routes"
+                                count={counts.activeRoutes}
+                                countLabel="active"
+                                status={counts.activeRoutes > 0 ? 'active' : 'info'}
+                                isLoading={countsLoading}
+                            />
+                            <HubLinkCard
+                                title="Driver Management"
+                                description="Manage couriers and drivers"
+                                icon={Users}
+                                href="fulfillment-hub?tab=couriers"
+                                count={counts.activeCouriers}
+                                countLabel="online"
+                                status={counts.activeCouriers > 0 ? 'active' : 'pending'}
+                                isLoading={countsLoading}
+                            />
+                        </HubLinkGrid>
                     </div>
                 </div>
 

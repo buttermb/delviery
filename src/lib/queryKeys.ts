@@ -25,10 +25,11 @@ export const queryKeys = {
   orders: {
     all: ['orders'] as const,
     lists: () => [...queryKeys.orders.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.orders.lists(), filters] as const,
     details: () => [...queryKeys.orders.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.orders.details(), id] as const,
+    hubCounts: (tenantId: string) => [...queryKeys.orders.all, 'hub-counts', tenantId] as const,
   },
 
   // Wholesale Orders
