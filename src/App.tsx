@@ -10,6 +10,7 @@
  */
 
 import { logger } from "@/lib/logger";
+import { Analytics } from "@vercel/analytics/react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -536,6 +537,7 @@ const App = () => {
 
   return (
     <ErrorBoundary>
+      <Analytics />
       <QueryClientProvider client={queryClient}>
         <FeatureFlagsProvider>
           <ThemeProvider>
