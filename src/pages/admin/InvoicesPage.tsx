@@ -34,10 +34,15 @@ import {
     CheckCircle,
     AlertCircle,
     Clock,
-    DollarSign
+    DollarSign,
+    Send,
+    Copy,
+    Ban,
+    Printer,
+    TrendingUp
 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
-import { format, differenceInDays } from "date-fns";
+import { format, differenceInDays, startOfMonth, isAfter } from "date-fns";
 import { toast } from "sonner";
 import { CRMInvoice, CRMSettings } from "@/types/crm";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
@@ -420,9 +425,12 @@ export function InvoicesPage() {
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
-    const { useInvoicesQuery, useMarkInvoicePaid } = useInvoices();
+    const { useInvoicesQuery, useMarkInvoicePaid, useMarkInvoiceSent, useVoidInvoice, useDuplicateInvoice } = useInvoices();
     const { data: invoices, isLoading } = useInvoicesQuery();
     const markAsPaid = useMarkInvoicePaid();
+    const markAsSent = useMarkInvoiceSent();
+    const voidInvoice = useVoidInvoice();
+    const duplicateInvoice = useDuplicateInvoice();
     const { data: crmSettings } = useCRMSettings();
 
     const filteredInvoices = invoices?.filter((invoice) => {
@@ -463,6 +471,77 @@ export function InvoicesPage() {
             },
         });
     };
+
+    const handleMarkAsSent = (id: string) => {
+        markAsSent.mutate(id, {
+            onSuccess: () => {
+                toast.success("Invoice marked as sent");
+            },
+            onError: (error: unknown) => {
+                const message = error instanceof Error ? error.message : "Failed to update invoice";
+                toast.error("Update failed", { description: message });
+                logger.error('Failed to mark invoice as sent', error, { component: 'InvoicesPage', invoiceId: id });
+            },
+        });
+    };
+
+    const handleVoidInvoice = (id: string) => {
+        voidInvoice.mutate(id, {
+            onSuccess: () => {
+                toast.success("Invoice voided");
+            },
+            onError: (error: unknown) => {
+                const message = error instanceof Error ? error.message : "Failed to void invoice";
+                toast.error("Void failed", { description: message });
+                logger.error('Failed to void invoice', error, { component: 'InvoicesPage', invoiceId: id });
+            },
+        });
+    };
+
+    const handleDuplicateInvoice = (id: string) => {
+        duplicateInvoice.mutate(id, {
+            onSuccess: (newInvoice) => {
+                toast.success("Invoice duplicated");
+                navigate(`/${tenantSlug}/admin/crm/invoices/${newInvoice.id}`);
+            },
+            onError: (error: unknown) => {
+                const message = error instanceof Error ? error.message : "Failed to duplicate invoice";
+                toast.error("Duplicate failed", { description: message });
+                logger.error('Failed to duplicate invoice', error, { component: 'InvoicesPage', invoiceId: id });
+            },
+        });
+    };
+
+    const handlePrintInvoice = useCallback(async (invoice: CRMInvoice) => {
+        if (isGeneratingPDF) return;
+
+        setIsGeneratingPDF(true);
+        try {
+            const doc = new jsPDF({
+                orientation: "portrait",
+                unit: "mm",
+                format: "a4",
+            });
+
+            // Generate PDF content (reuse the same generation logic)
+            await generateEnhancedInvoicePDF({ invoice, settings: crmSettings });
+
+            // For print, we generate and open in a new window
+            const pdfBlob = doc.output('blob');
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            const printWindow = window.open(pdfUrl);
+            if (printWindow) {
+                printWindow.onload = () => {
+                    printWindow.print();
+                };
+            }
+        } catch (error) {
+            logger.error("PDF print failed:", error instanceof Error ? error : new Error(String(error)), { component: 'InvoicesPage' });
+            toast.error("Failed to print invoice");
+        } finally {
+            setIsGeneratingPDF(false);
+        }
+    }, [crmSettings, isGeneratingPDF]);
 
     const handleDownloadPDF = useCallback(async (invoice: CRMInvoice) => {
         if (isGeneratingPDF) return;
@@ -527,6 +606,31 @@ export function InvoicesPage() {
         ?.filter((i) => i.status === "overdue")
         .reduce((sum, i) => sum + i.total, 0) || 0;
 
+    // Calculate paid this month
+    const monthStart = startOfMonth(new Date());
+    const paidThisMonth = invoices
+        ?.filter((i) => i.status === "paid" && i.paid_at && isAfter(new Date(i.paid_at), monthStart))
+        .reduce((sum, i) => sum + i.total, 0) || 0;
+
+    const paidThisMonthCount = invoices
+        ?.filter((i) => i.status === "paid" && i.paid_at && isAfter(new Date(i.paid_at), monthStart))
+        .length || 0;
+
+    // Calculate average payment time (days from invoice date to paid date)
+    const paidInvoicesWithDates = invoices?.filter(
+        (i) => i.status === "paid" && i.paid_at && i.invoice_date
+    ) || [];
+
+    const avgPaymentTime = paidInvoicesWithDates.length > 0
+        ? Math.round(
+            paidInvoicesWithDates.reduce((sum, i) => {
+                const invoiceDate = new Date(i.invoice_date);
+                const paidDate = new Date(i.paid_at!);
+                return sum + differenceInDays(paidDate, invoiceDate);
+            }, 0) / paidInvoicesWithDates.length
+        )
+        : 0;
+
     return (
         <div className="space-y-6 p-6 pb-16">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -542,7 +646,7 @@ export function InvoicesPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -557,25 +661,37 @@ export function InvoicesPage() {
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Paid This Month</CardTitle>
+                        <TrendingUp className="h-4 w-4 text-green-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-green-600">{formatCurrency(paidThisMonth)}</div>
+                        <p className="text-xs text-muted-foreground">
+                            {paidThisMonthCount} invoices paid
+                        </p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Outstanding</CardTitle>
                         <Clock className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{formatCurrency(outstandingAmount)}</div>
                         <p className="text-xs text-muted-foreground">
-                            {invoices?.filter(i => i.status === 'sent').length || 0} sent invoices
+                            {invoices?.filter(i => i.status === 'sent').length || 0} sent, {invoices?.filter(i => i.status === 'overdue').length || 0} overdue
                         </p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Overdue</CardTitle>
-                        <AlertCircle className="h-4 w-4 text-red-500" />
+                        <CardTitle className="text-sm font-medium">Avg. Payment Time</CardTitle>
+                        <Clock className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-red-600">{formatCurrency(overdueAmount)}</div>
+                        <div className="text-2xl font-bold">{avgPaymentTime} days</div>
                         <p className="text-xs text-muted-foreground">
-                            {invoices?.filter(i => i.status === 'overdue').length || 0} overdue invoices
+                            Based on {paidInvoicesWithDates.length} paid invoices
                         </p>
                     </CardContent>
                 </Card>
@@ -710,20 +826,54 @@ export function InvoicesPage() {
                                                         Copy Link
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
+                                                    {invoice.status === "draft" && (
+                                                        <DropdownMenuItem className="py-3" onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleMarkAsSent(invoice.id);
+                                                        }}>
+                                                            <Send className="mr-2 h-4 w-4" />
+                                                            Mark as Sent
+                                                        </DropdownMenuItem>
+                                                    )}
                                                     {invoice.status !== "paid" && invoice.status !== "cancelled" && (
                                                         <DropdownMenuItem className="py-3" onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleMarkAsPaid(invoice.id);
                                                         }}>
+                                                            <CheckCircle className="mr-2 h-4 w-4" />
                                                             Mark as Paid
                                                         </DropdownMenuItem>
                                                     )}
+                                                    <DropdownMenuSeparator />
                                                     <DropdownMenuItem className="py-3" onClick={(e) => {
                                                         e.stopPropagation();
                                                         handleDownloadPDF(invoice);
                                                     }}>
+                                                        <FileText className="mr-2 h-4 w-4" />
                                                         Download PDF
                                                     </DropdownMenuItem>
+                                                    <DropdownMenuItem className="py-3" onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDuplicateInvoice(invoice.id);
+                                                    }}>
+                                                        <Copy className="mr-2 h-4 w-4" />
+                                                        Duplicate
+                                                    </DropdownMenuItem>
+                                                    {invoice.status !== "paid" && invoice.status !== "cancelled" && (
+                                                        <>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem
+                                                                className="py-3 text-destructive focus:text-destructive"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleVoidInvoice(invoice.id);
+                                                                }}
+                                                            >
+                                                                <Ban className="mr-2 h-4 w-4" />
+                                                                Void Invoice
+                                                            </DropdownMenuItem>
+                                                        </>
+                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </div>
@@ -819,7 +969,6 @@ export function InvoicesPage() {
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={(e) => {
                                                         e.stopPropagation();
-                                                        // Copy link logic
                                                         const link = `${window.location.origin}/portal/invoice/${invoice.public_token}`;
                                                         navigator.clipboard.writeText(link);
                                                         toast.success("Invoice link copied to clipboard");
@@ -827,20 +976,54 @@ export function InvoicesPage() {
                                                         Copy Link
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
+                                                    {invoice.status === "draft" && (
+                                                        <DropdownMenuItem onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleMarkAsSent(invoice.id);
+                                                        }}>
+                                                            <Send className="mr-2 h-4 w-4" />
+                                                            Mark as Sent
+                                                        </DropdownMenuItem>
+                                                    )}
                                                     {invoice.status !== "paid" && invoice.status !== "cancelled" && (
                                                         <DropdownMenuItem onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleMarkAsPaid(invoice.id);
                                                         }}>
+                                                            <CheckCircle className="mr-2 h-4 w-4" />
                                                             Mark as Paid
                                                         </DropdownMenuItem>
                                                     )}
+                                                    <DropdownMenuSeparator />
                                                     <DropdownMenuItem onClick={(e) => {
                                                         e.stopPropagation();
                                                         handleDownloadPDF(invoice);
                                                     }}>
+                                                        <FileText className="mr-2 h-4 w-4" />
                                                         Download PDF
                                                     </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDuplicateInvoice(invoice.id);
+                                                    }}>
+                                                        <Copy className="mr-2 h-4 w-4" />
+                                                        Duplicate
+                                                    </DropdownMenuItem>
+                                                    {invoice.status !== "paid" && invoice.status !== "cancelled" && (
+                                                        <>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem
+                                                                className="text-destructive focus:text-destructive"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleVoidInvoice(invoice.id);
+                                                                }}
+                                                            >
+                                                                <Ban className="mr-2 h-4 w-4" />
+                                                                Void Invoice
+                                                            </DropdownMenuItem>
+                                                        </>
+                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
