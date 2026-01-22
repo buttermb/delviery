@@ -283,13 +283,15 @@ export function getAutoTopUpOptions(): Array<{
 }
 
 /**
- * Get available threshold options
+ * Get available threshold options (100-5000 as per requirements)
  */
 export function getThresholdOptions(): Array<{
   value: number;
   label: string;
 }> {
   return [
+    { value: 5000, label: '5,000 credits' },
+    { value: 2500, label: '2,500 credits' },
     { value: 1000, label: '1,000 credits' },
     { value: 500, label: '500 credits' },
     { value: 250, label: '250 credits' },
