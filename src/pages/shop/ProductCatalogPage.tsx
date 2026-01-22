@@ -336,6 +336,20 @@ export default function ProductCatalogPage() {
     return Array.from(cats).sort();
   }, [products]);
 
+  // Get unique strain types from products
+  const strainTypes = useMemo(() => {
+    const types = new Set<string>();
+    products.forEach((p) => {
+      if (p.strain_type) types.add(p.strain_type);
+    });
+    return Array.from(types).sort();
+  }, [products]);
+
+  // Calculate max price from products
+  const maxPrice = useMemo(() => {
+    return Math.max(...products.map((p) => p.display_price), 1000);
+  }, [products]);
+
   // Clear all filters
   const clearFilters = () => {
     setSearchQuery('');
@@ -348,6 +362,7 @@ export default function ProductCatalogPage() {
 
   const hasActiveFilters = searchQuery || selectedCategory || inStockOnly;
 
+  // Early return AFTER all hooks have been called
   if (!store) return null;
 
   // Filter state for FilterDrawer
@@ -363,20 +378,6 @@ export default function ProductCatalogPage() {
     setPriceRange(newFilters.priceRange);
     setSortBy(newFilters.sortBy);
   };
-
-  // Get unique strain types from products
-  const strainTypes = useMemo(() => {
-    const types = new Set<string>();
-    products.forEach((p) => {
-      if (p.strain_type) types.add(p.strain_type);
-    });
-    return Array.from(types).sort();
-  }, [products]);
-
-  // Calculate max price from products
-  const maxPrice = useMemo(() => {
-    return Math.max(...products.map((p) => p.display_price), 1000);
-  }, [products]);
 
   return (
     <div className="container mx-auto px-4 py-8">

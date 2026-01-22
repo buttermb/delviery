@@ -50,6 +50,7 @@ export default function LoginPage() {
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unknown');
   const [retryCount, setRetryCount] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
   const [searchParams] = useSearchParams();
   const signupSuccess = searchParams.get('signup') === 'success';
 
@@ -277,32 +278,29 @@ export default function LoginPage() {
                   <FormField
                     control={form.control}
                     name="password"
-                    render={({ field }) => {
-                      const [showPassword, setShowPassword] = useState(false);
-                      return (
-                        <FormItem className="space-y-1">
-                          <FormLabel className="text-[#2D3748] font-medium text-sm ml-1">Password</FormLabel>
-                          <FormControl>
-                            <div className="relative group">
-                              <Input
-                                {...field}
-                                type={showPassword ? "text" : "password"}
-                                className="h-12 bg-white border-slate-200 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]/20 rounded-xl pl-4 pr-10 transition-all duration-200 shadow-sm group-hover:shadow-md"
-                                placeholder="••••••••"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-3.5 text-slate-400 hover:text-[#1B4332] transition-colors"
-                              >
-                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                              </button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-[#2D3748] font-medium text-sm ml-1">Password</FormLabel>
+                        <FormControl>
+                          <div className="relative group">
+                            <Input
+                              {...field}
+                              type={showPassword ? "text" : "password"}
+                              className="h-12 bg-white border-slate-200 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]/20 rounded-xl pl-4 pr-10 transition-all duration-200 shadow-sm group-hover:shadow-md"
+                              placeholder="••••••••"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-3.5 text-slate-400 hover:text-[#1B4332] transition-colors"
+                            >
+                              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
 
                   <div className="flex items-center justify-between pt-1">
