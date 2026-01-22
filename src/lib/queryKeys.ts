@@ -126,14 +126,16 @@ export const queryKeys = {
   // Analytics
   analytics: {
     all: ['analytics'] as const,
-    revenue: (filters?: Record<string, unknown>) => 
+    revenue: (filters?: Record<string, unknown>) =>
       [...queryKeys.analytics.all, 'revenue', filters] as const,
-    orders: (filters?: Record<string, unknown>) => 
+    orders: (filters?: Record<string, unknown>) =>
       [...queryKeys.analytics.all, 'orders', filters] as const,
-    customers: (filters?: Record<string, unknown>) => 
+    customers: (filters?: Record<string, unknown>) =>
       [...queryKeys.analytics.all, 'customers', filters] as const,
-    products: (filters?: Record<string, unknown>) => 
+    products: (filters?: Record<string, unknown>) =>
       [...queryKeys.analytics.all, 'products', filters] as const,
+    trafficSources: (filters?: Record<string, unknown>) =>
+      [...queryKeys.analytics.all, 'traffic-sources', filters] as const,
   },
 
   // Super Admin
