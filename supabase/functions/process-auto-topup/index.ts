@@ -1,26 +1,32 @@
 // @ts-nocheck
 /**
  * Process Auto Top-Up
- * 
+ *
  * Automatically charges the user's payment method and adds credits
  * when their balance falls below the configured threshold.
- * 
+ *
  * Can be triggered:
  * 1. Real-time after credit consumption
  * 2. Via scheduled check
- * 
+ *
+ * Rate limiting: Max 3 top-ups per hour to prevent runaway charges.
+ *
  * To deploy:
  * supabase functions deploy process-auto-topup
  */
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 
-// Credit package pricing (must match creditCosts.ts)
+// Credit package pricing (must match creditCosts.ts CREDIT_PACKAGES)
 const CREDIT_PACKAGES = [
-  { credits: 2500, priceCents: 1500 },
-  { credits: 7500, priceCents: 4000 },
-  { credits: 20000, priceCents: 9900 },
+  { credits: 500, priceCents: 1999 },    // Quick Boost
+  { credits: 1500, priceCents: 4999 },   // Starter Pack
+  { credits: 5000, priceCents: 12999 },  // Growth Pack
+  { credits: 15000, priceCents: 29999 }, // Power Pack
 ];
+
+// Rate limiting: max top-ups per hour
+const MAX_TOPUPS_PER_HOUR = 3;
 
 interface RequestBody {
   tenant_id: string;
@@ -37,6 +43,54 @@ interface AutoTopUpConfig {
   topups_this_month: number;
   payment_method_id: string | null;
   stripe_customer_id: string | null;
+  last_topup_at: string | null;
+}
+
+/**
+ * Check if the tenant has exceeded the hourly rate limit for top-ups.
+ * Returns the count of top-ups in the last hour.
+ */
+async function getTopUpsInLastHour(
+  supabase: ReturnType<typeof createClient>,
+  tenantId: string
+): Promise<number> {
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+
+  const { count, error } = await supabase
+    .from('credit_transactions')
+    .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId)
+    .eq('transaction_type', 'purchase')
+    .gte('created_at', oneHourAgo)
+    .contains('metadata', { auto_topup: true });
+
+  if (error) {
+    console.error('[AUTO_TOPUP] Error checking hourly rate limit:', error);
+    return 0;
+  }
+
+  return count || 0;
+}
+
+/**
+ * Send a failure notification to the tenant.
+ */
+async function sendFailureNotification(
+  supabase: ReturnType<typeof createClient>,
+  tenantId: string,
+  errorMessage: string
+): Promise<void> {
+  await supabase.from('notifications').insert({
+    tenant_id: tenantId,
+    type: 'system',
+    title: '⚠️ Auto Top-Up Failed',
+    message: `Auto top-up could not be processed: ${errorMessage}. Please check your payment method.`,
+    metadata: {
+      auto_topup: true,
+      error: true,
+      error_message: errorMessage,
+    },
+  });
 }
 
 serve(async (req) => {
@@ -102,6 +156,21 @@ serve(async (req) => {
       );
     }
 
+    // Check hourly rate limit (max 3 top-ups per hour)
+    const topUpsInLastHour = await getTopUpsInLastHour(supabase, tenant_id);
+    if (topUpsInLastHour >= MAX_TOPUPS_PER_HOUR) {
+      console.log(`[AUTO_TOPUP] Hourly rate limit reached for tenant ${tenant_id}: ${topUpsInLastHour} top-ups in last hour`);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Hourly rate limit reached',
+          topups_this_hour: topUpsInLastHour,
+          max_per_hour: MAX_TOPUPS_PER_HOUR,
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Get current balance
     const { data: credits, error: creditsError } = await supabase
       .from('tenant_credits')
@@ -161,18 +230,35 @@ serve(async (req) => {
       if (!stripeResponse.ok) {
         const stripeError = await stripeResponse.json();
         console.error('[AUTO_TOPUP] Stripe error:', stripeError);
-        
+
+        const errorMessage = stripeError.error?.message || 'Payment failed';
+
         // If payment fails, disable auto top-up to prevent repeated failures
         await supabase
           .from('credit_auto_topup')
           .update({ enabled: false })
           .eq('tenant_id', tenant_id);
 
+        // Send failure notification
+        await sendFailureNotification(supabase, tenant_id, errorMessage);
+
+        // Track analytics for failure
+        await supabase.from('credit_analytics').insert({
+          tenant_id,
+          event_type: 'auto_topup_failed',
+          credits_at_event: credits.balance,
+          metadata: {
+            error: errorMessage,
+            stripe_error_code: stripeError.error?.code,
+            auto_topup_disabled: true,
+          },
+        });
+
         return new Response(
-          JSON.stringify({ 
-            success: false, 
+          JSON.stringify({
+            success: false,
             error: 'Payment failed - auto top-up disabled',
-            stripe_error: stripeError.error?.message,
+            stripe_error: errorMessage,
           }),
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
