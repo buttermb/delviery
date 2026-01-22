@@ -258,7 +258,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         // PRIORITY 1: Check for active Supabase session first
         const { data: { session } } = await supabase.auth.getSession();
 
-        console.log('[AUTH_DEBUG] Session check:', {
+        logger.debug('[AUTH_DEBUG] Session check', {
           hasSession: !!session,
           userId: session?.user?.id,
           email: session?.user?.email,
@@ -282,7 +282,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               .eq('status', 'active')
               .maybeSingle();
 
-            console.log('[AUTH_DEBUG] Tenant user lookup:', {
+            logger.debug('[AUTH_DEBUG] Tenant user lookup', {
               found: !!adminData,
               role: adminData?.role,
               tenantId: adminData?.tenant_id,
@@ -296,7 +296,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                 .eq('id', adminData.tenant_id)
                 .maybeSingle();
 
-              console.log('[AUTH_DEBUG] Tenant lookup:', {
+              logger.debug('[AUTH_DEBUG] Tenant lookup', {
                 found: !!tenantData,
                 tenantSlug: tenantData?.slug,
                 tenantName: tenantData?.business_name,

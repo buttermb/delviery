@@ -59,8 +59,8 @@ export default function AuthConfirmPage() {
             logger.warn('[AuthConfirm] Verification failed', logData);
         }
 
-        // Also log to console for debugging
-        console.log('[AuthConfirm]', log.success ? 'SUCCESS' : 'FAILURE', logData);
+        // Also log using logger for debugging
+        logger.debug('[AuthConfirm]', { success: log.success, ...logData });
     }, []);
 
     // Resend confirmation email

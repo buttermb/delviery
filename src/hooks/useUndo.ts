@@ -4,6 +4,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 export interface UndoableAction<T = unknown> {
     id: string;
@@ -117,7 +118,7 @@ export function useUndo<T = unknown>({
             await pendingAction.undo();
             onUndo?.(pendingAction);
         } catch (error) {
-            console.error('Undo failed:', error);
+            logger.error('Undo failed', error);
             throw error;
         } finally {
             setPendingAction(null);
@@ -145,7 +146,7 @@ export function useUndo<T = unknown>({
         try {
             await action.execute();
         } catch (error) {
-            console.error('Action execution failed:', error);
+            logger.error('Action execution failed', error);
             throw error;
         }
 

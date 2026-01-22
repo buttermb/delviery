@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowRight } from "lucide-react";
+import { logger } from '@/lib/logger';
 
 interface ConversionRateChartProps {
     storeId?: string;
@@ -30,7 +31,7 @@ export function ConversionRateChart({ storeId, className }: ConversionRateChartP
                 .eq('store_id', storeId);
 
             if (ordersError) {
-                console.warn('Error fetching orders for conversion:', ordersError);
+                logger.warn('Error fetching orders for conversion', ordersError);
                 return { funnel: [], overallRate: 0 };
             }
 

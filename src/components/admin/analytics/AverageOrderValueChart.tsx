@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { logger } from '@/lib/logger';
 
 interface AverageOrderValueChartProps {
     storeId?: string;
@@ -37,7 +38,7 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
                 .order('created_at', { ascending: true });
 
             if (ordersError || !orders?.length) {
-                console.warn('No orders found for AOV analysis:', ordersError);
+                logger.warn('No orders found for AOV analysis', ordersError);
                 return { data: [], currentAOV: 0, trend: 0 };
             }
 

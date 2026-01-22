@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 import { Download, Database, FileSpreadsheet } from 'lucide-react';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { CreditCostBadge, CreditCostIndicator, useCreditConfirm, CreditConfirmDialog } from '@/components/credits';
@@ -98,7 +99,7 @@ export default function DataExport() {
       });
 
       if (invokeError) {
-        console.error("Failed to trigger export function", invokeError);
+        logger.error("Failed to trigger export function", invokeError);
         toast({
           title: "Warning",
           description: "Export job created but processing might be delayed.",
@@ -107,7 +108,7 @@ export default function DataExport() {
       } else if (invokeData && typeof invokeData === 'object' && 'error' in invokeData && invokeData.error) {
         // Check for error in response body (edge functions can return 200 with error)
         const errorMessage = typeof invokeData.error === 'string' ? invokeData.error : 'Export processing failed';
-        console.error("Export function returned error in response", { error: errorMessage });
+        logger.error("Export function returned error in response", { error: errorMessage });
         toast({
           title: "Export Failed",
           description: errorMessage,

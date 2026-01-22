@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AlertTriangle, Ban, Package, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 interface CartItem {
   productId: string;
@@ -49,7 +50,7 @@ export function useCartStockCheck(cartItems: CartItem[]) {
         .in('id', productIds);
 
       if (error) {
-        console.error('Error checking cart stock:', error);
+        logger.error('Error checking cart stock', error);
         return { hasInsufficientStock: false, insufficientItems: [] };
       }
 

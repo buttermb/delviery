@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Package, TrendingUp, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { logger } from '@/lib/logger';
 
 export function FreeVsTrialExplainer() {
     const [orderVolume, setOrderVolume] = useState<string | null>(null);
@@ -20,7 +21,7 @@ export function FreeVsTrialExplainer() {
             if (error) throw error;
             setRecommendation(data.recommendation);
         } catch (error) {
-            console.error('AI Recommendation failed:', error);
+            logger.error('AI Recommendation failed', error);
             // Fallback
             if (volume === 'light') setRecommendation("We recommend starting with the FREE TIER. It's perfect for 1-5 orders/day and requires no credit card.");
             else if (volume === 'medium') setRecommendation("The STARTER plan is your best bet. You'll need unlimited orders for your volume. Start with the 14-day trial.");

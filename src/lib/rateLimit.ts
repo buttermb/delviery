@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 // Rate limits by subscription tier (per 24 hours)
 export const RATE_LIMITS = {
@@ -67,7 +68,7 @@ export async function checkRateLimit(
   });
 
   if (error) {
-    console.error('[RATE_LIMIT] Check failed:', error);
+    logger.error('[RATE_LIMIT] Check failed', error);
     // Fail open - allow action if check fails
     return { allowed: true, used: 0, limit, remaining: limit };
   }
@@ -109,7 +110,7 @@ export async function logActionWithLimit(
   });
 
   if (error) {
-    console.error('[RATE_LIMIT] Log failed:', error);
+    logger.error('[RATE_LIMIT] Log failed', error);
     return { success: false, error: error.message };
   }
 

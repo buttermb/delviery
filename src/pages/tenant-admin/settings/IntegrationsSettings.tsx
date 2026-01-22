@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { logger } from '@/lib/logger';
 import {
   SettingsSection,
   SettingsCard,
@@ -116,7 +117,7 @@ export default function IntegrationsSettings() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Failed to fetch webhooks:', error);
+        logger.error('Failed to fetch webhooks', error);
         return [];
       }
 

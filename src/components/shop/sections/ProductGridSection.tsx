@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +7,7 @@ import { useInventoryBatch } from "@/hooks/useInventoryBatch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useShopCart } from "@/hooks/useShopCart";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
 import { StorefrontProductCard, type MarketplaceProduct } from "@/components/shop/StorefrontProductCard";
 
 export interface ProductGridSectionProps {
@@ -85,7 +85,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
 
                     if (error) {
                         // RPC might not exist, fallback to direct query
-                        console.warn('RPC get_marketplace_products failed, using fallback:', error.message);
+                        logger.warn('RPC get_marketplace_products failed, using fallback', { message: error.message });
                         const { data: fallbackData, error: fallbackError } = await supabase
                             .from('marketplace_product_settings')
                             .select(`
@@ -122,7 +122,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                         vendor_name: ''
                     }));
                 } catch (err) {
-                    console.error('Error fetching marketplace products:', err);
+                    logger.error('Error fetching marketplace products', err);
                     return [];
                 }
             } else {

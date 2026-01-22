@@ -124,7 +124,7 @@ export default function MessagesPage() {
             const decrypted = await decryptMessage(msg.message_text);
             return { ...msg, message_text: decrypted };
           } catch (e) {
-            console.warn('Failed to decrypt message', msg.id);
+            logger.warn('Failed to decrypt message', { messageId: msg.id });
             return msg;
           }
         }

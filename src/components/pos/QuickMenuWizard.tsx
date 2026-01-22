@@ -152,7 +152,7 @@ export function QuickMenuWizard({ open, onOpenChange, cartItems, tenantId }: Qui
                                         title: name,
                                         text: 'Check out this menu!',
                                         url: generatedUrl
-                                    }).catch(console.error);
+                                    }).catch(err => logger.error('Share failed', err));
                                 } else {
                                     copyToClipboard();
                                 }

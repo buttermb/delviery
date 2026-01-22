@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logger } from '@/lib/logger';
 
 export interface BadgeCounts {
   pendingOrders: number;
@@ -78,7 +79,7 @@ export function useAdminBadgeCounts() {
         overduePayments: 0,
       });
     } catch (error) {
-      console.error('Error fetching badge counts:', error);
+      logger.error('Error fetching badge counts', error);
     } finally {
       setIsLoading(false);
     }

@@ -228,5 +228,5 @@ async function generateSitemap() {
 }
 
 // Run the script
-generateSitemap().catch(console.error);
+generateSitemap().catch((err) => logger.error('Sitemap generation failed', err));
 

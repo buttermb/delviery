@@ -444,7 +444,6 @@ setupGlobalErrorHandlers();
 const MobileTestPage = lazy(() => import("@/pages/mobile/MobileTestPage"));
 
 const App = () => {
-  console.log("App Component MOUNTED");
   // Enable automatic version checking and cache busting
   useVersionCheck();
 

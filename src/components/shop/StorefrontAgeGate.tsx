@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck } from 'lucide-react';
 import { useParams } from 'react-router-dom';
+import { logger } from '@/lib/logger';
 
 interface StorefrontAgeGateProps {
     storeId?: string;
@@ -39,7 +40,7 @@ export function StorefrontAgeGate({ storeId }: StorefrontAgeGateProps) {
                     .maybeSingle();
 
                 if (error) {
-                    console.warn('Age gate settings not available:', error);
+                    logger.warn('Age gate settings not available', error);
                     return null;
                 }
 
@@ -54,7 +55,7 @@ export function StorefrontAgeGate({ storeId }: StorefrontAgeGateProps) {
 
                 return null;
             } catch (err) {
-                console.warn('Failed to fetch age gate settings:', err);
+                logger.warn('Failed to fetch age gate settings', err);
                 return null;
             }
         },

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logger } from '@/lib/logger';
 import {
   SettingsSection,
   SettingsCard,
@@ -116,7 +117,7 @@ export default function SecuritySettings() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Failed to fetch sessions:', error);
+        logger.error('Failed to fetch sessions', error);
         return [];
       }
 

@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import {
   DndContext,
   closestCenter,
@@ -145,7 +146,7 @@ export function ColumnReorder({
           onColumnsChange(mergedColumns);
         }
       } catch (e) {
-        console.error('Failed to load column config:', e);
+        logger.error('Failed to load column config', e);
       }
     }
   }, [storageKey]);
@@ -279,7 +280,7 @@ export function useColumnConfig(
         });
       }
     } catch (e) {
-      console.error('Failed to load column config:', e);
+      logger.error('Failed to load column config', e);
     }
     return defaultColumns;
   });

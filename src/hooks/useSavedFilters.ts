@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 
 export interface SavedFilter<T> {
   id: string;
@@ -32,7 +33,7 @@ export function useSavedFilters<T>({ storageKey, defaultFilters }: UseSavedFilte
         }
       }
     } catch (error) {
-      console.error('Failed to load saved filters:', error);
+      logger.error('Failed to load saved filters', error);
     }
     setIsLoaded(true);
   }, [storageKey]);
@@ -43,7 +44,7 @@ export function useSavedFilters<T>({ storageKey, defaultFilters }: UseSavedFilte
       try {
         localStorage.setItem(storageKey, JSON.stringify(savedFilters));
       } catch (error) {
-        console.error('Failed to save filters:', error);
+        logger.error('Failed to save filters', error);
       }
     }
   }, [savedFilters, storageKey, isLoaded]);

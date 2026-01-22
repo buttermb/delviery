@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ShopCartItem } from '@/hooks/useShopCart';
 import { useMemo } from 'react';
+import { logger } from '@/lib/logger';
 
 export interface Deal {
     id: string;
@@ -41,13 +42,13 @@ export function useDeals(storeId: string | undefined, cartItems: ShopCartItem[],
                     .eq('is_active', true);
 
                 if (error) {
-                    console.warn('Deals not available:', error);
+                    logger.warn('Deals not available', error);
                     return [];
                 }
 
                 return (data || []) as unknown as Deal[];
             } catch (err) {
-                console.warn('Failed to fetch deals:', err);
+                logger.warn('Failed to fetch deals', err);
                 return [];
             }
         },
@@ -74,7 +75,7 @@ export function useDeals(storeId: string | undefined, cartItems: ShopCartItem[],
                     dealUsage: {} as Record<string, number>
                 };
             } catch (err) {
-                console.warn('Failed to fetch customer data:', err);
+                logger.warn('Failed to fetch customer data', err);
                 return { orderCount: 0, dealUsage: {} };
             }
         },

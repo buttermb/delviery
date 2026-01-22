@@ -3,6 +3,8 @@
  * Used for encrypting sensitive message updates
  */
 
+import { logger } from '@/lib/logger';
+
 // In a real app, this key should be rotated and managed securely.
 // For this MVP improvement, we'll derive a key from a constant.
 const ENCRYPTION_KEY_MATERIAL = 'delviery-marketplace-secure-key-v1';
@@ -55,7 +57,7 @@ export async function encryptMessage(text: string): Promise<string> {
         // Convert to Base64 for string storage
         return btoa(String.fromCharCode(...combined));
     } catch (error) {
-        console.error('Encryption failed:', error);
+        logger.error('Encryption failed', error);
         throw new Error('Failed to encrypt message');
     }
 }
@@ -80,7 +82,7 @@ export async function decryptMessage(encryptedText: string): Promise<string> {
         const decoder = new TextDecoder();
         return decoder.decode(decrypted);
     } catch (error) {
-        console.error('Decryption failed:', error);
+        logger.error('Decryption failed', error);
         // Return original text if decryption fails (fallback for unencrypted legacy data)
         return encryptedText;
     }

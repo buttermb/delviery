@@ -1,8 +1,8 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { logger } from "@/lib/logger";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +33,7 @@ export default function StoreSettings() {
                 .maybeSingle();
 
             if (error) {
-                console.error("Error fetching profile", error);
+                logger.error("Error fetching profile", error);
                 return null;
             }
             return data as MarketplaceProfile | null;

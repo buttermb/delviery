@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AlertTriangle, TrendingDown, CheckCircle, PackagePlus, X, RefreshCw } from 'lucide-react';
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 
 interface StockAlert {
@@ -116,7 +117,7 @@ export default function StockAlerts() {
     },
     onError: (error) => {
       toast.error('Failed to update stock');
-      console.error('Restock error:', error);
+      logger.error('Restock error', error);
     }
   });
 
