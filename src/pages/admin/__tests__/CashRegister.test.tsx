@@ -261,3 +261,137 @@ describe('Transaction Result Parsing', () => {
     expect(result.error).toContain('Insufficient stock');
   });
 });
+
+describe('Atomic Transaction Error Handling', () => {
+  it('should parse INSUFFICIENT_STOCK error with insufficient_items array', () => {
+    const result = {
+      success: false,
+      error: 'Insufficient stock for one or more items',
+      error_code: 'INSUFFICIENT_STOCK' as const,
+      insufficient_items: [
+        {
+          product_id: 'product-1',
+          product_name: 'Test Product 1',
+          requested: 10,
+          available: 5,
+        },
+        {
+          product_id: 'product-2',
+          product_name: 'Test Product 2',
+          requested: 20,
+          available: 3,
+        },
+      ],
+    };
+
+    expect(result.success).toBe(false);
+    expect(result.error_code).toBe('INSUFFICIENT_STOCK');
+    expect(result.insufficient_items).toHaveLength(2);
+    expect(result.insufficient_items[0].product_name).toBe('Test Product 1');
+    expect(result.insufficient_items[0].requested).toBe(10);
+    expect(result.insufficient_items[0].available).toBe(5);
+  });
+
+  it('should parse EMPTY_CART error', () => {
+    const result = {
+      success: false,
+      error: 'Transaction must have at least one item',
+      error_code: 'EMPTY_CART' as const,
+    };
+
+    expect(result.success).toBe(false);
+    expect(result.error_code).toBe('EMPTY_CART');
+    expect(result.error).toContain('at least one item');
+  });
+
+  it('should parse NEGATIVE_TOTAL error', () => {
+    const result = {
+      success: false,
+      error: 'Transaction total cannot be negative',
+      error_code: 'NEGATIVE_TOTAL' as const,
+    };
+
+    expect(result.success).toBe(false);
+    expect(result.error_code).toBe('NEGATIVE_TOTAL');
+  });
+
+  it('should parse PRODUCT_NOT_FOUND error', () => {
+    const result = {
+      success: false,
+      error: 'Product 550e8400-e29b-41d4-a716-446655440000 not found',
+      error_code: 'PRODUCT_NOT_FOUND' as const,
+    };
+
+    expect(result.success).toBe(false);
+    expect(result.error_code).toBe('PRODUCT_NOT_FOUND');
+  });
+
+  it('should parse INVALID_QUANTITY error', () => {
+    const result = {
+      success: false,
+      error: 'Invalid quantity for product 550e8400-e29b-41d4-a716-446655440000',
+      error_code: 'INVALID_QUANTITY' as const,
+    };
+
+    expect(result.success).toBe(false);
+    expect(result.error_code).toBe('INVALID_QUANTITY');
+  });
+
+  it('should parse TRANSACTION_FAILED error from exception handler', () => {
+    const result = {
+      success: false,
+      error: 'Some unexpected database error',
+      error_code: 'TRANSACTION_FAILED' as const,
+    };
+
+    expect(result.success).toBe(false);
+    expect(result.error_code).toBe('TRANSACTION_FAILED');
+  });
+
+  it('should format insufficient stock error message for user display', () => {
+    const insufficientItems = [
+      {
+        product_id: 'product-1',
+        product_name: 'Test Product 1',
+        requested: 10,
+        available: 5,
+      },
+      {
+        product_id: 'product-2',
+        product_name: 'Test Product 2',
+        requested: 20,
+        available: 3,
+      },
+    ];
+
+    const stockDetails = insufficientItems
+      .map(
+        (item) =>
+          `${item.product_name}: need ${item.requested}, have ${item.available}`
+      )
+      .join('\n');
+
+    expect(stockDetails).toContain('Test Product 1: need 10, have 5');
+    expect(stockDetails).toContain('Test Product 2: need 20, have 3');
+  });
+
+  it('should include all fields in successful atomic transaction response', () => {
+    const result = {
+      success: true,
+      transaction_id: '550e8400-e29b-41d4-a716-446655440000',
+      transaction_number: 'POS-20260122-1234',
+      total: 150.0,
+      items_count: 3,
+      payment_method: 'cash',
+      created_at: '2026-01-22T10:00:00Z',
+    };
+
+    expect(result.success).toBe(true);
+    expect(result.transaction_id).toBeDefined();
+    expect(result.transaction_number).toMatch(/^POS-\d{8}-\d{4}$/);
+    expect(result.total).toBe(150.0);
+    expect(result.items_count).toBe(3);
+    expect(result.payment_method).toBe('cash');
+    expect(result.created_at).toBeDefined();
+  });
+});

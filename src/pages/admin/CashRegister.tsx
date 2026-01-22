@@ -38,12 +38,24 @@ interface CartItem extends Product {
   subtotal: number;
 }
 
+interface InsufficientStockItem {
+  product_id: string;
+  product_name: string;
+  requested: number;
+  available: number;
+}
+
 interface POSTransactionResult {
   success: boolean;
   transaction_id?: string;
   transaction_number?: string;
   total?: number;
+  items_count?: number;
+  payment_method?: string;
+  created_at?: string;
   error?: string;
+  error_code?: 'NEGATIVE_TOTAL' | 'EMPTY_CART' | 'INVALID_QUANTITY' | 'PRODUCT_NOT_FOUND' | 'INSUFFICIENT_STOCK' | 'TRANSACTION_FAILED';
+  insufficient_items?: InsufficientStockItem[];
 }
 
 function CashRegisterContent() {
@@ -201,6 +213,13 @@ function CashRegisterContent() {
       const result = rpcResult as POSTransactionResult;
 
       if (!result.success) {
+        // Handle specific error codes with user-friendly messages
+        if (result.error_code === 'INSUFFICIENT_STOCK' && result.insufficient_items) {
+          const stockDetails = result.insufficient_items.map((item: InsufficientStockItem) =>
+            `${item.product_name}: need ${item.requested}, have ${item.available}`
+          ).join('\n');
+          throw new Error(`Insufficient stock:\n${stockDetails}`);
+        }
         throw new Error(result.error || 'Transaction failed');
       }
 
