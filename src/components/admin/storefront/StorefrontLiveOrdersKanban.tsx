@@ -12,7 +12,6 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import {
     Clock,
     Package,
-    CheckCircle,
     Truck,
     User,
     Phone,
@@ -20,6 +19,7 @@ import {
     Bell,
     MessageSquare,
     Loader2,
+    Store,
 } from 'lucide-react';
 
 // Types
@@ -32,8 +32,11 @@ interface StorefrontOrder {
     customer_phone: string | null;
     customer_email?: string | null;
     total: number;
-    items: any[];
+    total_amount?: number;
+    items: unknown[];
     delivery_notes?: string | null;
+    delivery_address?: unknown;
+    shipping_method?: string | null;
     notification_sent?: boolean;
 }
 
@@ -129,9 +132,21 @@ function KanbanCard({
     onViewDetails: StorefrontKanbanProps['onViewDetails'];
     onNotifyCustomer?: StorefrontKanbanProps['onNotifyCustomer'];
 }) {
-    const itemCount = order.items?.length || 0;
+    const items = Array.isArray(order.items) ? order.items : [];
+    const itemCount = items.length;
     const [isSendingNotification, setIsSendingNotification] = useState(false);
     const [notificationSent, setNotificationSent] = useState(order.notification_sent || false);
+
+    // Determine fulfillment type
+    const fulfillmentType = (() => {
+        if (order.shipping_method) {
+            const method = order.shipping_method.toLowerCase();
+            if (method.includes('pickup') || method.includes('collect')) return 'pickup' as const;
+            return 'delivery' as const;
+        }
+        if (!order.delivery_address) return 'pickup' as const;
+        return 'delivery' as const;
+    })();
 
     const isReadyColumn = column.id === 'ready';
     const canNotify = isReadyColumn && (order.customer_phone || order.customer_email) && !notificationSent;
@@ -170,9 +185,26 @@ function KanbanCard({
                         <p className="font-semibold text-sm">#{order.order_number}</p>
                         <TimeSince createdAt={order.created_at} />
                     </div>
-                    <Badge variant="secondary" className="text-xs">
-                        {formatCurrency(order.total)}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1">
+                        <Badge variant="secondary" className="text-xs">
+                            {formatCurrency(order.total || order.total_amount || 0)}
+                        </Badge>
+                        <Badge
+                            variant="outline"
+                            className={cn(
+                                'text-[10px] px-1.5 py-0',
+                                fulfillmentType === 'delivery'
+                                    ? 'border-blue-300 text-blue-700 bg-blue-50'
+                                    : 'border-orange-300 text-orange-700 bg-orange-50'
+                            )}
+                        >
+                            {fulfillmentType === 'delivery' ? (
+                                <><Truck className="h-2.5 w-2.5 mr-0.5" /> Delivery</>
+                            ) : (
+                                <><Store className="h-2.5 w-2.5 mr-0.5" /> Pickup</>
+                            )}
+                        </Badge>
+                    </div>
                 </div>
 
                 {/* Customer */}
@@ -341,4 +373,3 @@ export function StorefrontLiveOrdersKanban({
     );
 }
 
-export default StorefrontLiveOrdersKanban;
