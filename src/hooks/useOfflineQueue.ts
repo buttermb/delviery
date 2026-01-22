@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import {
     initOfflineQueue,
     getOnlineStatus,
@@ -83,7 +84,7 @@ export function useOfflineQueue(): UseOfflineQueueReturn {
                     setStats(queueStats);
                 }
             } catch (error) {
-                console.error('Failed to initialize offline queue:', error);
+                logger.error('Failed to initialize offline queue', error);
                 if (mounted) {
                     setIsInitialized(true); // Still mark as initialized
                 }

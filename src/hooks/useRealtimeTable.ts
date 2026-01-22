@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { logger } from '@/lib/logger';
 
 type TableName = string;
 
@@ -181,7 +182,7 @@ export function usePolledData<T>(
           dataRef.current = newData;
         }
       } catch (error) {
-        console.error('[Polling] Error:', error);
+        logger.error('[Polling] Error', error);
       }
     };
 

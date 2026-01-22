@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 // Default flags as fallback when database is unavailable
 const defaultFlags: Record<string, boolean> = {
@@ -36,7 +37,7 @@ export async function isFeatureEnabled(flagKey: string, tenantId?: string): Prom
     const { data, error } = await query.maybeSingle();
 
     if (error) {
-      console.warn(`Feature flag query failed for ${flagKey}:`, error.message);
+      logger.warn(`Feature flag query failed for ${flagKey}`, { message: error.message });
       return defaultFlags[flagKey] ?? false;
     }
 
@@ -47,7 +48,7 @@ export async function isFeatureEnabled(flagKey: string, tenantId?: string): Prom
 
     return defaultFlags[flagKey] ?? false;
   } catch (error) {
-    console.warn(`Feature flag error for ${flagKey}:`, error);
+    logger.warn(`Feature flag error for ${flagKey}`, error);
     return defaultFlags[flagKey] ?? false;
   }
 }
@@ -63,7 +64,7 @@ export async function getFeatureFlags(tenantId?: string): Promise<Array<{ flag_k
     const { data, error } = await query;
 
     if (error) {
-      console.warn('Failed to fetch feature flags:', error.message);
+      logger.warn('Failed to fetch feature flags', { message: error.message });
       return Object.entries(defaultFlags).map(([key, enabled]) => ({
         flag_key: key,
         enabled,
@@ -77,7 +78,7 @@ export async function getFeatureFlags(tenantId?: string): Promise<Array<{ flag_k
       rollout_percentage: f.enabled ? 100 : 0,
     }));
   } catch (error) {
-    console.warn('Feature flags error:', error);
+    logger.warn('Feature flags error', error);
     return Object.entries(defaultFlags).map(([key, enabled]) => ({
       flag_key: key,
       enabled,

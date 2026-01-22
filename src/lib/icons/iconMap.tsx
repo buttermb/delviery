@@ -117,7 +117,7 @@ export function getIcon(
   const IconComponent = iconComponents[iconName];
   
   if (!IconComponent) {
-    console.warn(`Icon "${iconName}" not found in iconMap`);
+    // Silently return null for missing icons to avoid log noise in production
     return null;
   }
   

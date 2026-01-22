@@ -64,7 +64,7 @@ export function PackageScanner({
       // Cleanup on unmount
       if (scannerRef.current) {
         if (scannerRef.current.isScanning) {
-          scannerRef.current.stop().catch(err => console.warn('Scanner stop error', err));
+          scannerRef.current.stop().catch(err => logger.warn('Scanner stop error', err));
         }
         scannerRef.current.clear();
         scannerRef.current = null;

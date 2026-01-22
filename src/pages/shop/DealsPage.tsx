@@ -8,6 +8,7 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
+import { logger } from '@/lib/logger';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -53,7 +54,7 @@ export default function DealsPage() {
                 .eq('is_active', true);
 
             if (error) {
-                console.warn('Deals not available:', error);
+                logger.warn('Deals not available', error);
                 return [];
             }
             

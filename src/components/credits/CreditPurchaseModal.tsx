@@ -7,6 +7,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 interface CreditPurchaseModalProps {
   open: boolean;
@@ -45,7 +46,7 @@ export function CreditPurchaseModal({ open, onOpenChange }: CreditPurchaseModalP
       });
 
       if (error) {
-        console.error('Purchase error:', error);
+        logger.error('Purchase error', error);
         toast.error('Failed to start purchase', { description: error.message });
         return;
       }
@@ -59,7 +60,7 @@ export function CreditPurchaseModal({ open, onOpenChange }: CreditPurchaseModalP
         toast.error('No checkout URL returned');
       }
     } catch (err) {
-      console.error('Purchase error:', err);
+      logger.error('Purchase error', err);
       toast.error('Purchase failed', { description: 'Please try again' });
     } finally {
       setLoadingId(null);

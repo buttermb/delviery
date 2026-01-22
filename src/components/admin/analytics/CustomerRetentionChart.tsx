@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from "@/components/ui/skeleton";
+import { logger } from '@/lib/logger';
 
 interface CustomerRetentionChartProps {
     storeId?: string;
@@ -28,7 +29,7 @@ export function CustomerRetentionChart({ storeId, className }: CustomerRetention
                 .eq('store_id', storeId);
 
             if (error || !orders) {
-                console.warn('Failed to fetch orders for analytics:', error);
+                logger.warn('Failed to fetch orders for analytics', error);
                 return null;
             }
 

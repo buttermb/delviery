@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 
 export interface WishlistItem {
   productId: string;
@@ -31,7 +32,7 @@ export function useWishlist({ storeId }: UseWishlistOptions = {}) {
         setItems(JSON.parse(saved));
       }
     } catch (error) {
-      console.warn('Failed to load wishlist:', error);
+      logger.warn('Failed to load wishlist', error);
     }
     setIsLoaded(true);
   }, [storageKey]);
@@ -42,7 +43,7 @@ export function useWishlist({ storeId }: UseWishlistOptions = {}) {
       try {
         localStorage.setItem(storageKey, JSON.stringify(items));
       } catch (error) {
-        console.warn('Failed to save wishlist:', error);
+        logger.warn('Failed to save wishlist', error);
       }
     }
   }, [items, storageKey, isLoaded]);

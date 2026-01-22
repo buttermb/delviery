@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useShop } from './ShopLayout';
@@ -8,6 +7,7 @@ import { HeroSection } from '@/components/shop/sections/HeroSection';
 import { FeaturesSection } from '@/components/shop/sections/FeaturesSection';
 import { ProductGridSection } from '@/components/shop/sections/ProductGridSection';
 import { LuxuryHeroSection } from '@/components/shop/sections/LuxuryHeroSection';
+import { logger } from '@/lib/logger';
 import { LuxuryProductGridSection } from '@/components/shop/sections/LuxuryProductGridSection';
 import { LuxuryFeaturesSection } from '@/components/shop/sections/LuxuryFeaturesSection';
 
@@ -95,7 +95,7 @@ export default function StorefrontPage() {
       {sections.map((section: any) => {
         const Component = SECTION_COMPONENTS[section.type];
         if (!Component) {
-          console.warn(`Unknown section type: ${section.type}`);
+          logger.warn(`Unknown section type: ${section.type}`);
           return null;
         }
 
@@ -110,7 +110,7 @@ export default function StorefrontPage() {
             />
           );
         } catch (error) {
-          console.error(`Error rendering section ${section.id}:`, error);
+          logger.error(`Error rendering section ${section.id}`, error);
           // Return null to gracefully skip broken sections
           return null;
         }

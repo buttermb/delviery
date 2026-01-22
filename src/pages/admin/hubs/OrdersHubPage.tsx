@@ -89,7 +89,9 @@ export default function OrdersHubPage() {
             id: 'export',
             label: 'Export',
             icon: FileText,
-            onClick: () => console.log('Export orders'),
+            onClick: () => {
+                // TODO: Implement export functionality
+            },
             variant: 'outline' as const,
         });
         return actions;

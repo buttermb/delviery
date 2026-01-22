@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { logger } from '@/lib/logger';
 
 interface SubmitGuardOptions {
   /** Minimum time between submissions in ms */
@@ -53,13 +54,13 @@ export function useSubmitGuard<T = void>(
 
       // Already submitting - ignore
       if (isSubmitting) {
-        console.warn('[SubmitGuard] Submission blocked - already in progress');
+        logger.debug('[SubmitGuard] Submission blocked - already in progress');
         return null;
       }
 
       // Too soon after last submission - debounce
       if (now - lastSubmitRef.current < debounceMs) {
-        console.warn('[SubmitGuard] Submission blocked - debounce');
+        logger.debug('[SubmitGuard] Submission blocked - debounce');
         return null;
       }
 

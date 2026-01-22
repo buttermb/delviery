@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { logger } from '@/lib/logger';
 
 interface UsePullToRefreshOptions {
     onRefresh: () => Promise<void>;
@@ -101,7 +102,7 @@ export function usePullToRefresh({
             try {
                 await onRefresh();
             } catch (error) {
-                console.error('Refresh failed:', error);
+                logger.error('Refresh failed', error);
             } finally {
                 setIsRefreshing(false);
             }

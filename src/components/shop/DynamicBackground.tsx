@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useRef, useId, useState } from 'react';
+import { logger } from '@/lib/logger';
 import {
   AestheticFluidBg,
   AmbientLightBg,
@@ -120,7 +121,7 @@ export function DynamicBackground({
 
         bgInstanceRef.current.start();
       } catch (error) {
-        console.warn('DynamicBackground: Failed to initialize WebGL background', error);
+        logger.warn('DynamicBackground: Failed to initialize WebGL background', error);
         setUseFallback(true);
       }
     }, 100);

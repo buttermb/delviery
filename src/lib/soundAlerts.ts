@@ -4,6 +4,7 @@
  */
 
 import { Capacitor } from '@capacitor/core';
+import { logger } from '@/lib/logger';
 
 // Sound file paths (relative to public directory)
 const SOUND_FILES = {
@@ -38,7 +39,7 @@ export function initAudio(): void {
     try {
         audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     } catch (error) {
-        console.warn('Web Audio API not supported:', error);
+        logger.warn('Web Audio API not supported', error);
     }
 }
 
@@ -61,7 +62,7 @@ export async function preloadSounds(sounds: SoundType[] = Object.keys(SOUND_FILE
             const audioBuffer = await audioContext!.decodeAudioData(arrayBuffer);
             audioCache.set(url, audioBuffer);
         } catch (error) {
-            console.warn(`Failed to preload sound ${soundType}:`, error);
+            logger.warn(`Failed to preload sound ${soundType}`, error);
         }
     });
 
@@ -111,7 +112,7 @@ export async function playSound(
                 buffer = await audioContext.decodeAudioData(arrayBuffer);
                 audioCache.set(url, buffer);
             } catch (error) {
-                console.warn(`Failed to load sound ${type}:`, error);
+                logger.warn(`Failed to load sound ${type}`, error);
                 fallbackPlay(type, volume);
                 return;
             }
@@ -131,7 +132,7 @@ export async function playSound(
             source.start(0);
             return;
         } catch (error) {
-            console.warn('Web Audio playback failed:', error);
+            logger.warn('Web Audio playback failed', error);
         }
     }
 
@@ -147,10 +148,10 @@ function fallbackPlay(type: SoundType, volume: number): void {
         const audio = new Audio(SOUND_FILES[type]);
         audio.volume = volume;
         audio.play().catch((error) => {
-            console.warn('Audio playback failed:', error);
+            logger.warn('Audio playback failed', error);
         });
     } catch (error) {
-        console.warn('Failed to create audio element:', error);
+        logger.warn('Failed to create audio element', error);
     }
 }
 

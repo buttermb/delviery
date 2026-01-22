@@ -4,6 +4,7 @@
  */
 import { useState, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { logger } from '@/lib/logger';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -115,7 +116,7 @@ export function OrderKanban({ onViewDetails }: OrderKanbanProps) {
           });
         } catch (invError) {
           // Log but don't block the status update
-          console.warn('Failed to release inventory:', invError);
+          logger.warn('Failed to release inventory', invError);
         }
       }
 

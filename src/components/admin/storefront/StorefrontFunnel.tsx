@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { logger } from '@/lib/logger';
 import { ArrowDown, Eye, Package, ShoppingCart, CreditCard, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -38,7 +39,7 @@ export function StorefrontFunnel({ storeId, primaryColor = '#6366f1' }: Storefro
           if (error.code === 'PGRST202' || error.message?.includes('does not exist')) {
             return null;
           }
-          console.warn('Funnel query error:', error);
+          logger.warn('Funnel query error', error);
           return null;
         }
         return data?.[0] as FunnelData | null;

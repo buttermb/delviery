@@ -6,6 +6,7 @@ import { MarketplaceStore } from '@/types/marketplace-extended';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -254,7 +255,7 @@ export default function StorefrontBuilder() {
                 if (error) throw error;
                 return data as MarketplaceStore;
             } catch (e) {
-                console.warn("Using mock data as DB fetch failed:", e);
+                logger.warn("Using mock data as DB fetch failed", e);
                 return {
                     id: 'mock-id',
                     tenant_id: tenant?.id || '',
@@ -330,7 +331,7 @@ export default function StorefrontBuilder() {
                 description: "Could not save changes. Is the database migration applied?",
                 variant: "destructive"
             });
-            console.error(err);
+            logger.error('Failed to save storefront', err);
         }
     });
 

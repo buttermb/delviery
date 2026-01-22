@@ -181,7 +181,7 @@ export default function LoginPage() {
         sessionStorage.setItem('floraiq_user_id', authData.user.id);
         safeStorage.setItem('floraiq_user_id', authData.user.id);
         // Best effort encryption init
-        clientEncryption.initialize(data.password, authData.user.id).catch(console.error);
+        clientEncryption.initialize(data.password, authData.user.id).catch(err => logger.error('Encryption init failed', err));
       }
 
       authFlowLogger.completeFlow(flowId, { tenantId: authResponse.tenant?.id });

@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -57,7 +58,7 @@ export function CartUpsellsSection({
                     .rpc('get_marketplace_products', { p_store_id: storeId });
 
                 if (error) {
-                    console.warn('Failed to fetch upsell products:', error);
+                    logger.warn('Failed to fetch upsell products', error);
                     return [];
                 }
 
@@ -85,7 +86,7 @@ export function CartUpsellsSection({
                     }))
                     .slice(0, maxItems);
             } catch (err) {
-                console.warn('Failed to fetch upsell products:', err);
+                logger.warn('Failed to fetch upsell products', err);
                 return [];
             }
         },

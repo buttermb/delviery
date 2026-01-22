@@ -4,6 +4,7 @@
  */
 import { useState } from 'react';
 import { MessageSquare, Send, X, Loader2 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -121,7 +122,7 @@ export function QuickMessageButton({
       setMessage('');
       setSelectedTemplate('');
     } catch (error) {
-      console.error('Failed to send message:', error);
+      logger.error('Failed to send message', error);
       toast.error('Failed to send message');
     } finally {
       setIsSending(false);

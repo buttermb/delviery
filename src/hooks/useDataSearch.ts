@@ -6,6 +6,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logger } from '@/lib/logger';
 
 export interface SearchResult {
   id: string;
@@ -111,7 +112,7 @@ export function useDataSearch(): UseDataSearchReturn {
 
         setResults(searchResults);
       } catch (error) {
-        console.error('Search error:', error);
+        logger.error('Search error', error);
         setResults([]);
       } finally {
         setIsSearching(false);

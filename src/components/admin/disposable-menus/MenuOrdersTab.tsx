@@ -8,6 +8,7 @@ import { OrderRowContextMenu, useOrderContextActions } from '@/components/admin/
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate, useParams } from 'react-router-dom';
+import { logger } from '@/lib/logger';
 
 interface Order {
   id: string;
@@ -50,7 +51,7 @@ export const MenuOrdersTab = ({ orders, isLoading, onOrderUpdate }: MenuOrdersTa
           p_order_type: 'menu'
         });
       } catch (invError) {
-        console.warn('Failed to release inventory:', invError);
+        logger.warn('Failed to release inventory', invError);
       }
     }
 

@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 export interface OrderItemWithPrice {
   product_id: string;
@@ -25,7 +26,7 @@ export const captureOrderPrices = async (
     .in("id", productIds);
 
   if (error) {
-    console.error("Failed to fetch product prices:", error);
+    logger.error("Failed to fetch product prices", error);
     // Return items with unit_price as fallback
     return items.map(item => ({
       ...item,
@@ -58,7 +59,7 @@ export const captureWholesalePrices = async (
     .in("id", productIds);
 
   if (error) {
-    console.error("Failed to fetch wholesale prices:", error);
+    logger.error("Failed to fetch wholesale prices", error);
     return items.map(item => ({
       ...item,
       price_at_order_time: item.unit_price,

@@ -4,6 +4,7 @@
  */
 import { useState } from 'react';
 import { Check, ChevronDown, Loader2 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -94,7 +95,7 @@ export function StatusDropdown({
       await onStatusChange(newStatus);
       setOpen(false);
     } catch (error) {
-      console.error('Failed to update status:', error);
+      logger.error('Failed to update status', error);
       toast.error('Failed to update status');
     } finally {
       setIsUpdating(false);

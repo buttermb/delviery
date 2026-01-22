@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { logger } from '@/lib/logger';
 import { Textarea } from '@/components/ui/textarea';
 import { StarRating } from './StarRating';
 import { Check, X, ThumbsUp, ShieldCheck } from 'lucide-react';
@@ -65,7 +66,7 @@ export function ReviewCard({
             setResponseText('');
             setIsResponding(false);
         } catch (error) {
-            console.error('Failed to submit response:', error);
+            logger.error('Failed to submit response', error);
         } finally {
             setIsSubmitting(false);
         }

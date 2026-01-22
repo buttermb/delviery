@@ -90,7 +90,7 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
           .then(() => {
             queryClient.invalidateQueries({ queryKey: ['tenant', tenant.id] });
           })
-          .catch(console.error);
+          .catch((err) => logger.error('Failed to update tenant activity', err));
       }, 60000); // Every minute
 
       return () => clearInterval(interval);

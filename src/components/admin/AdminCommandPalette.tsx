@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import {
     CommandDialog,
     CommandEmpty,
@@ -76,7 +77,7 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
                 setRecentSearches(JSON.parse(saved));
             }
         } catch (e) {
-            console.error('Failed to load recent searches:', e);
+            logger.error('Failed to load recent searches', e);
         }
     }, []);
 

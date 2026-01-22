@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 export interface EmailVerificationResult {
   email: string;
@@ -51,7 +52,7 @@ export function useEmailVerification(options: UseEmailVerificationOptions = {}) 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Verification failed';
       setError(errorMessage);
-      console.error('Email verification error:', err);
+      logger.error('Email verification error', err);
       return null;
     } finally {
       setIsVerifying(false);

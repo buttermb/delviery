@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logger } from '@/lib/logger';
 import {
   SettingsSection,
   SettingsCard,
@@ -107,11 +108,11 @@ export default function AccountSettings() {
 
       setAvatarUrl(publicUrl);
       toast({ title: 'Avatar updated', description: 'Your profile picture has been changed.' });
-    } catch (error: any) {
-      console.error('Avatar upload failed:', error);
+    } catch (error: unknown) {
+      logger.error('Avatar upload failed', error);
       toast({
         title: 'Upload failed',
-        description: error.message || 'Failed to upload avatar',
+        description: error instanceof Error ? error.message : 'Failed to upload avatar',
         variant: 'destructive'
       });
     }

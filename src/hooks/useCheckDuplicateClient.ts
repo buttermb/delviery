@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logger } from '@/lib/logger';
 
 export interface DuplicateCheckResult {
   isDuplicate: boolean;
@@ -55,7 +56,7 @@ export function useCheckDuplicateClient() {
       .or(conditions.join(','));
 
     if (error) {
-      console.error('Error checking for duplicate client:', error);
+      logger.error('Error checking for duplicate client', error);
       return { isDuplicate: false };
     }
 

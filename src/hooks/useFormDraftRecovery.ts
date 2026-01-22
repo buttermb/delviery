@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { logger } from '@/lib/logger';
 
 interface FormDraftRecoveryOptions {
   /** Unique key to identify this form's draft */
@@ -79,7 +80,7 @@ export function useFormDraftRecovery<T extends Record<string, any>>(
         setSavedAt(new Date(draft.savedAt));
       }
     } catch (error) {
-      console.error('Error loading form draft:', error);
+      logger.error('Error loading form draft', error);
       localStorage.removeItem(storageKey);
     }
   }, [storageKey]);
@@ -100,7 +101,7 @@ export function useFormDraftRecovery<T extends Record<string, any>>(
       // Brief indicator that auto-save happened
       setTimeout(() => setIsAutoSaving(false), 1000);
     } catch (error) {
-      console.error('Error saving form draft:', error);
+      logger.error('Error saving form draft', error);
     }
   }, [storageKey, expirationTime]);
 

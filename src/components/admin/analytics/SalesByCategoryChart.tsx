@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from "@/components/ui/skeleton";
+import { logger } from '@/lib/logger';
 
 interface SalesByCategoryChartProps {
     storeId?: string;
@@ -40,7 +41,7 @@ export function SalesByCategoryChart({ storeId, className }: SalesByCategoryChar
                 .eq('store_id', storeId);
 
             if (ordersError || !orders?.length) {
-                console.warn('No orders found for category analysis:', ordersError);
+                logger.warn('No orders found for category analysis', ordersError);
                 return [];
             }
 
