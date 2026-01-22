@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { logger } from "@/lib/logger";
 import jsPDF from "jspdf";
 import { useInvoices } from "@/hooks/crm/useInvoices";
+import { useCRMSettings } from "@/hooks/crm/useCRMSettings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,7 +30,6 @@ import {
     MoreHorizontal,
     FileText,
     Filter,
-    Download,
     ExternalLink,
     CheckCircle,
     AlertCircle,
@@ -37,23 +37,393 @@ import {
     DollarSign
 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { toast } from "sonner";
-import { CRMInvoice } from "@/types/crm";
+import { CRMInvoice, CRMSettings } from "@/types/crm";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
 
-export default function InvoicesPage() {
+/**
+ * Format payment terms based on number of days
+ */
+function formatPaymentTerms(days: number | null | undefined): string {
+    if (!days || days <= 0) return "Due on Receipt";
+    if (days === 15) return "Net 15";
+    if (days === 30) return "Net 30";
+    if (days === 45) return "Net 45";
+    if (days === 60) return "Net 60";
+    if (days === 90) return "Net 90";
+    return `Net ${days}`;
+}
+
+/**
+ * Calculate days until due or days overdue
+ */
+function calculateDueDateInfo(dueDate: string): { daysRemaining: number; isOverdue: boolean } {
+    const now = new Date();
+    const due = new Date(dueDate);
+    const daysRemaining = differenceInDays(due, now);
+    return {
+        daysRemaining,
+        isOverdue: daysRemaining < 0,
+    };
+}
+
+interface GenerateInvoicePDFOptions {
+    invoice: CRMInvoice;
+    settings: CRMSettings | null | undefined;
+}
+
+/**
+ * Generate a professional invoice PDF with tenant branding, line items, and payment terms
+ */
+async function generateEnhancedInvoicePDF({ invoice, settings }: GenerateInvoicePDFOptions): Promise<void> {
+    const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    const contentWidth = pageWidth - margin * 2;
+    let yPosition = margin;
+
+    // Brand color (defaults to a professional blue if not set)
+    const brandColor = { r: 16, g: 185, b: 129 }; // Default green (#10b981)
+
+    // Helper to add logo from URL
+    const addLogo = async (logoUrl: string, x: number, y: number, maxWidth: number, maxHeight: number): Promise<number> => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.onload = () => {
+                try {
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    if (!ctx) {
+                        resolve(0);
+                        return;
+                    }
+
+                    // Calculate dimensions maintaining aspect ratio
+                    let width = img.width;
+                    let height = img.height;
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width = width * ratio;
+                    height = height * ratio;
+
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+
+                    const dataUrl = canvas.toDataURL("image/png");
+                    doc.addImage(dataUrl, "PNG", x, y, width, height);
+                    resolve(height);
+                } catch {
+                    resolve(0);
+                }
+            };
+            img.onerror = () => resolve(0);
+            img.src = logoUrl;
+        });
+    };
+
+    // Add logo if available
+    if (settings?.logo_url) {
+        const logoHeight = await addLogo(settings.logo_url, margin, yPosition, 40, 20);
+        if (logoHeight > 0) {
+            yPosition += logoHeight + 5;
+        }
+    }
+
+    // Header with brand color
+    doc.setFillColor(brandColor.r, brandColor.g, brandColor.b);
+    doc.rect(0, 0, pageWidth, 8, "F");
+
+    // Invoice Title
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(50, 50, 50);
+    doc.text("INVOICE", pageWidth - margin, yPosition, { align: "right" });
+    yPosition += 12;
+
+    // Company Information (right side)
+    const companyName = settings?.company_name || "Your Company";
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(companyName, pageWidth - margin, yPosition, { align: "right" });
+    yPosition += 6;
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 100);
+
+    if (settings?.company_address) {
+        const addressLines = doc.splitTextToSize(settings.company_address, 70);
+        doc.text(addressLines, pageWidth - margin, yPosition, { align: "right" });
+        yPosition += addressLines.length * 4;
+    }
+
+    if (settings?.company_email) {
+        doc.text(settings.company_email, pageWidth - margin, yPosition, { align: "right" });
+        yPosition += 4;
+    }
+
+    if (settings?.company_phone) {
+        doc.text(settings.company_phone, pageWidth - margin, yPosition, { align: "right" });
+        yPosition += 4;
+    }
+
+    yPosition = Math.max(yPosition, 60); // Ensure minimum spacing
+
+    // Invoice Details Box
+    doc.setFillColor(248, 249, 250);
+    doc.roundedRect(margin, yPosition, contentWidth / 2 - 5, 35, 2, 2, "F");
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(50, 50, 50);
+    doc.text("Invoice Details", margin + 5, yPosition + 8);
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Invoice #: ${invoice.invoice_number}`, margin + 5, yPosition + 16);
+    doc.text(`Issue Date: ${format(new Date(invoice.invoice_date), "MMM d, yyyy")}`, margin + 5, yPosition + 22);
+    doc.text(`Due Date: ${format(new Date(invoice.due_date), "MMM d, yyyy")}`, margin + 5, yPosition + 28);
+
+    // Payment Terms
+    const paymentTerms = formatPaymentTerms(settings?.default_payment_terms);
+    doc.text(`Terms: ${paymentTerms}`, margin + 5, yPosition + 34);
+
+    // Bill To Box
+    const billToX = margin + contentWidth / 2 + 5;
+    doc.setFillColor(248, 249, 250);
+    doc.roundedRect(billToX, yPosition, contentWidth / 2 - 5, 35, 2, 2, "F");
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text("Bill To", billToX + 5, yPosition + 8);
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    const clientName = invoice.client?.name || "Unknown Client";
+    doc.text(clientName, billToX + 5, yPosition + 16);
+
+    if (invoice.client?.email) {
+        doc.text(invoice.client.email, billToX + 5, yPosition + 22);
+    }
+    if (invoice.client?.phone) {
+        doc.text(invoice.client.phone, billToX + 5, yPosition + 28);
+    }
+
+    yPosition += 45;
+
+    // Status Badge
+    const statusColors: Record<string, { r: number; g: number; b: number }> = {
+        paid: { r: 34, g: 197, b: 94 },
+        sent: { r: 59, g: 130, b: 246 },
+        draft: { r: 156, g: 163, b: 175 },
+        overdue: { r: 239, g: 68, b: 68 },
+        cancelled: { r: 107, g: 114, b: 128 },
+    };
+    const statusColor = statusColors[invoice.status] || statusColors.draft;
+
+    doc.setFillColor(statusColor.r, statusColor.g, statusColor.b);
+    const statusText = invoice.status.toUpperCase();
+    const statusWidth = doc.getTextWidth(statusText) + 8;
+    doc.roundedRect(margin, yPosition, statusWidth, 7, 1, 1, "F");
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text(statusText, margin + 4, yPosition + 5);
+
+    yPosition += 15;
+
+    // Line Items Table
+    const colWidths = {
+        item: contentWidth * 0.4,
+        qty: contentWidth * 0.15,
+        price: contentWidth * 0.2,
+        total: contentWidth * 0.25,
+    };
+
+    // Table Header
+    doc.setFillColor(brandColor.r, brandColor.g, brandColor.b);
+    doc.rect(margin, yPosition, contentWidth, 8, "F");
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text("Item", margin + 3, yPosition + 5.5);
+    doc.text("Qty", margin + colWidths.item + 3, yPosition + 5.5);
+    doc.text("Unit Price", margin + colWidths.item + colWidths.qty + 3, yPosition + 5.5);
+    doc.text("Total", margin + colWidths.item + colWidths.qty + colWidths.price + 3, yPosition + 5.5);
+
+    yPosition += 10;
+
+    // Table Rows
+    doc.setTextColor(50, 50, 50);
+    doc.setFont("helvetica", "normal");
+
+    const lineItems = invoice.line_items || [];
+    let rowIndex = 0;
+
+    for (const item of lineItems) {
+        // Check if we need a new page
+        if (yPosition > 250) {
+            doc.addPage();
+            yPosition = margin;
+
+            // Re-add header on new page
+            doc.setFillColor(brandColor.r, brandColor.g, brandColor.b);
+            doc.rect(margin, yPosition, contentWidth, 8, "F");
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(255, 255, 255);
+            doc.text("Item", margin + 3, yPosition + 5.5);
+            doc.text("Qty", margin + colWidths.item + 3, yPosition + 5.5);
+            doc.text("Unit Price", margin + colWidths.item + colWidths.qty + 3, yPosition + 5.5);
+            doc.text("Total", margin + colWidths.item + colWidths.qty + colWidths.price + 3, yPosition + 5.5);
+            yPosition += 10;
+            doc.setTextColor(50, 50, 50);
+            doc.setFont("helvetica", "normal");
+        }
+
+        // Alternating row background
+        if (rowIndex % 2 === 0) {
+            doc.setFillColor(248, 249, 250);
+            doc.rect(margin, yPosition - 3, contentWidth, 8, "F");
+        }
+
+        const itemName = item.product_name || item.description || "Item";
+        const itemLines = doc.splitTextToSize(itemName, colWidths.item - 6);
+        doc.text(itemLines, margin + 3, yPosition + 2);
+
+        doc.text(String(item.quantity), margin + colWidths.item + 3, yPosition + 2);
+        doc.text(formatCurrency(item.unit_price), margin + colWidths.item + colWidths.qty + 3, yPosition + 2);
+        doc.text(formatCurrency(item.line_total), margin + colWidths.item + colWidths.qty + colWidths.price + 3, yPosition + 2);
+
+        yPosition += Math.max(itemLines.length * 5, 8);
+        rowIndex++;
+    }
+
+    // If no line items, show a message
+    if (lineItems.length === 0) {
+        doc.setFontSize(9);
+        doc.setTextColor(150, 150, 150);
+        doc.text("No line items", margin + 3, yPosition + 2);
+        yPosition += 8;
+    }
+
+    yPosition += 5;
+
+    // Totals Section
+    const totalsX = margin + colWidths.item + colWidths.qty;
+
+    // Subtotal
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Subtotal:", totalsX, yPosition);
+    doc.text(formatCurrency(invoice.subtotal), pageWidth - margin, yPosition, { align: "right" });
+    yPosition += 6;
+
+    // Tax
+    if (invoice.tax_amount > 0 || invoice.tax > 0) {
+        const taxAmount = invoice.tax_amount || invoice.tax;
+        const taxRate = invoice.tax_rate ? ` (${invoice.tax_rate}%)` : "";
+        doc.text(`Tax${taxRate}:`, totalsX, yPosition);
+        doc.text(formatCurrency(taxAmount), pageWidth - margin, yPosition, { align: "right" });
+        yPosition += 6;
+    }
+
+    // Divider line
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(totalsX, yPosition, pageWidth - margin, yPosition);
+    yPosition += 6;
+
+    // Total
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(50, 50, 50);
+    doc.text("Total:", totalsX, yPosition);
+    doc.setTextColor(brandColor.r, brandColor.g, brandColor.b);
+    doc.text(formatCurrency(invoice.total), pageWidth - margin, yPosition, { align: "right" });
+    yPosition += 15;
+
+    // Due Date Info
+    const dueDateInfo = calculateDueDateInfo(invoice.due_date);
+    if (invoice.status !== "paid" && invoice.status !== "cancelled") {
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+
+        if (dueDateInfo.isOverdue) {
+            doc.setTextColor(239, 68, 68);
+            doc.text(`OVERDUE by ${Math.abs(dueDateInfo.daysRemaining)} days`, margin, yPosition);
+        } else if (dueDateInfo.daysRemaining <= 7) {
+            doc.setTextColor(245, 158, 11);
+            doc.text(`Due in ${dueDateInfo.daysRemaining} days`, margin, yPosition);
+        }
+        yPosition += 8;
+    }
+
+    // Notes
+    if (invoice.notes) {
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(50, 50, 50);
+        doc.text("Notes:", margin, yPosition);
+        yPosition += 5;
+
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100, 100, 100);
+        const noteLines = doc.splitTextToSize(invoice.notes, contentWidth);
+        doc.text(noteLines, margin, yPosition);
+        yPosition += noteLines.length * 4 + 5;
+    }
+
+    // Footer
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        const pageHeight = doc.internal.pageSize.getHeight();
+
+        // Footer line
+        doc.setDrawColor(brandColor.r, brandColor.g, brandColor.b);
+        doc.setLineWidth(0.5);
+        doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
+
+        // Thank you message
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "italic");
+        doc.setTextColor(100, 100, 100);
+        doc.text("Thank you for your business!", pageWidth / 2, pageHeight - 10, { align: "center" });
+
+        // Page number
+        doc.setFontSize(8);
+        doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
+    }
+
+    // Save the PDF
+    doc.save(`Invoice_${invoice.invoice_number}.pdf`);
+}
+
+export function InvoicesPage() {
     const navigate = useNavigate();
     const { tenantSlug } = useParams<{ tenantSlug: string }>();
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
+    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
     const { useInvoicesQuery, useMarkInvoicePaid } = useInvoices();
     const { data: invoices, isLoading } = useInvoicesQuery();
     const markAsPaid = useMarkInvoicePaid();
+    const { data: crmSettings } = useCRMSettings();
 
     const filteredInvoices = invoices?.filter((invoice) => {
         const matchesSearch =
@@ -94,39 +464,23 @@ export default function InvoicesPage() {
         });
     };
 
-    const handleDownloadPDF = (invoice: CRMInvoice) => {
+    const handleDownloadPDF = useCallback(async (invoice: CRMInvoice) => {
+        if (isGeneratingPDF) return;
+
+        setIsGeneratingPDF(true);
         try {
-            const doc = new jsPDF();
-
-            // Header
-            doc.setFontSize(20);
-            doc.text("INVOICE", 105, 20, { align: "center" });
-
-            // Invoice Details
-            doc.setFontSize(12);
-            doc.text(`Invoice #: ${invoice.invoice_number}`, 20, 40);
-            doc.text(`Date: ${format(new Date(invoice.invoice_date), "MMM d, yyyy")}`, 20, 50);
-            doc.text(`Due Date: ${format(new Date(invoice.due_date), "MMM d, yyyy")}`, 20, 60);
-            doc.text(`Status: ${invoice.status.toUpperCase()}`, 20, 70);
-
-            // Client Details
-            doc.text(`Client: ${invoice.client?.name || "Unknown"}`, 20, 90);
-
-            // Amount
-            doc.setFontSize(16);
-            doc.text(`Total Amount: ${formatCurrency(invoice.total)}`, 20, 110);
-
-            // Footer
-            doc.setFontSize(10);
-            doc.text("Thank you for your business!", 105, 280, { align: "center" });
-
-            doc.save(`Invoice_${invoice.invoice_number}.pdf`);
+            await generateEnhancedInvoicePDF({
+                invoice,
+                settings: crmSettings,
+            });
             toast.success("PDF downloaded successfully");
         } catch (error) {
             logger.error("PDF generation failed:", error instanceof Error ? error : new Error(String(error)), { component: 'InvoicesPage' });
             toast.error("Failed to generate PDF");
+        } finally {
+            setIsGeneratingPDF(false);
         }
-    };
+    }, [crmSettings, isGeneratingPDF]);
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -513,25 +867,5 @@ export default function InvoicesPage() {
                 )}
             </Card>
         </div>
-    );
-}
-
-function DollarSignIcon(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <line x1="12" x2="12" y1="2" y2="22" />
-            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-        </svg>
     );
 }
