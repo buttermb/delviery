@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle,
-  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Phone, Mail, Calendar
+  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Phone, Mail, Calendar, Lock
 } from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
@@ -56,7 +56,22 @@ interface Customer {
   last_purchase_at: string | null;
   status: string;
   medical_card_expiration: string | null;
+  /** Indicates data is encrypted but cannot be decrypted with current key */
+  _encryptedIndicator?: boolean;
 }
+
+/**
+ * Detects if a value looks like encrypted ciphertext (Base64 encoded)
+ * Used to show encrypted indicator when decryption key mismatch occurs
+ */
+const looksLikeEncryptedData = (value: string | null): boolean => {
+  if (!value) return false;
+  // CryptoJS AES encrypted strings are Base64 and typically start with "U2FsdGVk" (Salted__)
+  // or are long Base64 strings without spaces/normal text patterns
+  const base64Pattern = /^[A-Za-z0-9+/=]{20,}$/;
+  const saltedPrefix = value.startsWith('U2FsdGVk');
+  return saltedPrefix || (base64Pattern.test(value) && value.length > 40);
+};
 
 export default function CustomerManagement() {
   const navigate = useNavigate();
@@ -111,9 +126,9 @@ export default function CustomerManagement() {
       let decryptedCustomers = data || [];
       if (encryptionIsReady && data && data.length > 0 && (data[0].phone_encrypted || data[0].email_encrypted)) {
         try {
-          decryptedCustomers = data.map((customer: any) => {
+          decryptedCustomers = data.map((customer: Record<string, unknown>) => {
             try {
-              const decrypted = decryptObject(customer);
+              const decrypted = decryptObject(customer as Record<string, string>);
               // Map decrypted fields to Customer interface
               const nameParts = typeof decrypted.name === 'string' ? decrypted.name.split(' ') : ['', ''];
               return {
@@ -124,15 +139,43 @@ export default function CustomerManagement() {
                 phone: decrypted.phone || customer.phone || null,
               };
             } catch (decryptError) {
-              // Fall back to plaintext if decryption fails
-              logger.warn('Failed to decrypt customer, using plaintext', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'CustomerManagement' });
-              return customer;
+              // Decryption failed - check if data looks encrypted (key mismatch)
+              logger.warn('Failed to decrypt customer, checking for encryption key mismatch', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'CustomerManagement' });
+
+              const emailValue = customer.email as string | null;
+              const phoneValue = customer.phone as string | null;
+              const hasEncryptedData = looksLikeEncryptedData(emailValue) || looksLikeEncryptedData(phoneValue);
+
+              return {
+                ...customer,
+                // If data looks encrypted, show placeholder instead of ciphertext
+                email: hasEncryptedData && looksLikeEncryptedData(emailValue) ? null : emailValue,
+                phone: hasEncryptedData && looksLikeEncryptedData(phoneValue) ? null : phoneValue,
+                _encryptedIndicator: hasEncryptedData,
+              };
             }
           });
         } catch (error) {
           logger.warn('Failed to decrypt customers, using plaintext', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerManagement' });
           decryptedCustomers = data || [];
         }
+      } else if (data && data.length > 0) {
+        // Encryption not ready but data may have encrypted fields - check for ciphertext
+        decryptedCustomers = data.map((customer: Record<string, unknown>) => {
+          const emailValue = customer.email as string | null;
+          const phoneValue = customer.phone as string | null;
+          const hasEncryptedData = looksLikeEncryptedData(emailValue) || looksLikeEncryptedData(phoneValue);
+
+          if (hasEncryptedData) {
+            return {
+              ...customer,
+              email: looksLikeEncryptedData(emailValue) ? null : emailValue,
+              phone: looksLikeEncryptedData(phoneValue) ? null : phoneValue,
+              _encryptedIndicator: true,
+            };
+          }
+          return customer;
+        });
       }
 
       setCustomers(decryptedCustomers);
@@ -521,9 +564,18 @@ export default function CustomerManagement() {
                             {customer.first_name} {customer.last_name}
                           </div>
                           <div className="text-sm text-muted-foreground flex items-center gap-1">
-                            {customer.email || customer.phone}
-                            {customer.email && (
-                              <CopyButton text={customer.email} label="Email" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            {customer._encryptedIndicator ? (
+                              <span className="flex items-center gap-1 text-amber-600" title="Contact info encrypted - sign in to view">
+                                <Lock className="w-3 h-3" />
+                                <span className="italic">Encrypted</span>
+                              </span>
+                            ) : (
+                              <>
+                                {customer.email || customer.phone || 'No contact'}
+                                {customer.email && (
+                                  <CopyButton text={customer.email} label="Email" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                )}
+                              </>
                             )}
                           </div>
                         </div>
@@ -649,7 +701,16 @@ export default function CustomerManagement() {
                         <h3 className="font-semibold text-base truncate">
                           {customer.first_name} {customer.last_name}
                         </h3>
-                        <p className="text-sm text-muted-foreground truncate">{customer.email || customer.phone}</p>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {customer._encryptedIndicator ? (
+                            <span className="flex items-center gap-1 text-amber-600">
+                              <Lock className="w-3 h-3" />
+                              <span className="italic">Encrypted</span>
+                            </span>
+                          ) : (
+                            customer.email || customer.phone || 'No contact'
+                          )}
+                        </p>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
                             {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
@@ -707,7 +768,16 @@ export default function CustomerManagement() {
                   </div>
                   <div className="text-left">
                     <div>{selectedCustomerForDrawer.first_name} {selectedCustomerForDrawer.last_name}</div>
-                    <div className="text-sm font-normal text-muted-foreground">{selectedCustomerForDrawer.email || selectedCustomerForDrawer.phone}</div>
+                    <div className="text-sm font-normal text-muted-foreground">
+                      {selectedCustomerForDrawer._encryptedIndicator ? (
+                        <span className="flex items-center gap-1 text-amber-600">
+                          <Lock className="w-3 h-3" />
+                          <span className="italic">Contact encrypted</span>
+                        </span>
+                      ) : (
+                        selectedCustomerForDrawer.email || selectedCustomerForDrawer.phone || 'No contact'
+                      )}
+                    </div>
                   </div>
                 </DrawerTitle>
                 <DrawerDescription>
@@ -730,18 +800,29 @@ export default function CustomerManagement() {
                 </div>
 
                 <div className="space-y-2">
-                  <Button className="w-full justify-start" variant="outline" onClick={() => {
-                    if (selectedCustomerForDrawer.phone) window.location.href = `tel:${selectedCustomerForDrawer.phone}`;
-                  }}>
-                    <Phone className="w-4 h-4 mr-2" />
-                    Call {selectedCustomerForDrawer.phone || 'No Phone'}
-                  </Button>
-                  <Button className="w-full justify-start" variant="outline" onClick={() => {
-                    if (selectedCustomerForDrawer.email) window.location.href = `mailto:${selectedCustomerForDrawer.email}`;
-                  }}>
-                    <Mail className="w-4 h-4 mr-2" />
-                    Email {selectedCustomerForDrawer.email || 'No Email'}
-                  </Button>
+                  {selectedCustomerForDrawer._encryptedIndicator ? (
+                    <div className="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                      <p className="text-sm text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                        <Lock className="w-4 h-4" />
+                        Contact information is encrypted. Sign in with your encryption key to view.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <Button className="w-full justify-start" variant="outline" onClick={() => {
+                        if (selectedCustomerForDrawer.phone) window.location.href = `tel:${selectedCustomerForDrawer.phone}`;
+                      }} disabled={!selectedCustomerForDrawer.phone}>
+                        <Phone className="w-4 h-4 mr-2" />
+                        Call {selectedCustomerForDrawer.phone || 'No Phone'}
+                      </Button>
+                      <Button className="w-full justify-start" variant="outline" onClick={() => {
+                        if (selectedCustomerForDrawer.email) window.location.href = `mailto:${selectedCustomerForDrawer.email}`;
+                      }} disabled={!selectedCustomerForDrawer.email}>
+                        <Mail className="w-4 h-4 mr-2" />
+                        Email {selectedCustomerForDrawer.email || 'No Email'}
+                      </Button>
+                    </>
+                  )}
                 </div>
 
                 <div className="pt-4 border-t">
