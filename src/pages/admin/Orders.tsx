@@ -45,8 +45,9 @@ interface Order {
   user?: {
     full_name: string | null;
     email: string | null;
+    phone: string | null;
   };
-  order_items?: any[];
+  order_items?: unknown[];
 }
 
 export default function Orders() {
@@ -129,13 +130,22 @@ export default function Orders() {
       if (userIds.length > 0) {
         const { data: profilesData } = await supabase
           .from('profiles')
-          .select('user_id, full_name')
+          .select('user_id, full_name, first_name, last_name, phone')
           .in('user_id', userIds);
 
-        profilesMap = (profilesData || []).reduce((acc, profile: any) => {
-          acc[profile.user_id] = { user_id: profile.user_id, full_name: profile.full_name || null, email: null };
+        profilesMap = (profilesData || []).reduce((acc, profile: { user_id: string; full_name: string | null; first_name: string | null; last_name: string | null; phone: string | null }) => {
+          // Build display name with fallbacks
+          const displayName = profile.full_name
+            || [profile.first_name, profile.last_name].filter(Boolean).join(' ')
+            || null;
+          acc[profile.user_id] = {
+            user_id: profile.user_id,
+            full_name: displayName,
+            email: null,
+            phone: profile.phone || null
+          };
           return acc;
-        }, {} as Record<string, { user_id: string; full_name: string | null; email: string | null }>);
+        }, {} as Record<string, { user_id: string; full_name: string | null; email: string | null; phone: string | null }>);
       }
 
       return (ordersData || []).map(order => ({
@@ -221,26 +231,43 @@ export default function Orders() {
   };
 
   const handleBulkStatusChange = async (status: string) => {
+    if (!tenant?.id) {
+      toast.error("No tenant context available");
+      return;
+    }
+
+    // Optimistic update: capture previous state for rollback
+    const previousOrders = orders;
+
+    // Optimistically update the UI
+    queryClient.setQueryData(['orders', tenant.id, statusFilter], (old: Order[] = []) =>
+      old.map(o => selectedOrders.includes(o.id) ? { ...o, status } : o)
+    );
+
     try {
       const { error } = await supabase
         .from('orders')
-        .update({ 
+        .update({
           status,
           ...(status === 'delivered' && { delivered_at: new Date().toISOString() }),
           ...(status === 'cancelled' && { cancelled_at: new Date().toISOString() }),
           updated_at: new Date().toISOString()
         })
-        .in('id', selectedOrders);
+        .in('id', selectedOrders)
+        .eq('tenant_id', tenant.id); // CRITICAL: Tenant isolation
 
       if (error) throw error;
 
       toast.success(`Updated ${selectedOrders.length} orders to ${status}`);
+      // Invalidate related queries for consistency
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
-      refetch();
       setSelectedOrders([]);
     } catch (error) {
+      // Rollback on error
+      queryClient.setQueryData(['orders', tenant.id, statusFilter], previousOrders);
+      logger.error('Error updating orders in bulk', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
       toast.error("Failed to update orders");
     }
   };
@@ -322,11 +349,19 @@ export default function Orders() {
       header: "Customer",
       cell: (order) => (
         <div className="flex flex-col">
-          <span className="font-medium">{order.user?.full_name || 'Unknown Customer'}</span>
+          <span className="font-medium">
+            {order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown Customer'}
+          </span>
           {order.user?.email && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               {order.user.email}
               <CopyButton text={order.user.email} label="Email" showLabel={false} className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          )}
+          {!order.user?.email && order.user?.phone && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              {order.user.phone}
+              <CopyButton text={order.user.phone} label="Phone" showLabel={false} className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           )}
         </div>
@@ -550,7 +585,7 @@ export default function Orders() {
                         </span>
                       </div>
                       <p className="text-sm font-medium">
-                        {order.user?.full_name || 'Unknown Customer'}
+                        {order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown Customer'}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {formatSmartDate(order.created_at)} • {order.delivery_method}
