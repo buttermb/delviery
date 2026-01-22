@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -110,6 +110,9 @@ function ThemePreviewCard({
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                             {theme.tagline}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/70 mt-1">
+                            {theme.typography.fonts.heading} / {theme.typography.fonts.body}
                         </p>
                     </div>
                     {theme.darkMode && (
@@ -228,4 +231,3 @@ export function ThemePresetStrip({
     );
 }
 
-export default ThemePresetSelector;
