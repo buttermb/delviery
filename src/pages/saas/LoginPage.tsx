@@ -96,12 +96,20 @@ export default function LoginPage() {
     data.email = data.email.toLowerCase().trim();
     const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { email: data.email });
 
-    // Clear stale data
+    // Clear stale data from localStorage
     safeStorage.removeItem('lastTenantSlug');
     safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_USER);
     safeStorage.removeItem(STORAGE_KEYS.TENANT_DATA);
     safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
     safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_REFRESH_TOKEN);
+
+    // Clear stale cookies to prevent 401 errors during token refresh
+    document.cookie.split(';').forEach((c) => {
+      const cookieName = c.split('=')[0].trim();
+      if (cookieName.startsWith('sb-') || cookieName.startsWith('tenant_')) {
+        document.cookie = `${cookieName}=;expires=${new Date(0).toUTCString()};path=/`;
+      }
+    });
 
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
