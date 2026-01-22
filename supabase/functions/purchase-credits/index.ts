@@ -9,7 +9,7 @@ import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
 
 const RequestSchema = z.object({
   tenant_id: z.string().uuid(),
-  package_slug: z.enum(['starter-pack', 'growth-pack', 'power-pack']),
+  package_slug: z.enum(['starter-pack', 'growth-pack', 'power-pack', 'enterprise-pack']),
   success_url: z.string().url(),
   cancel_url: z.string().url(),
 });
