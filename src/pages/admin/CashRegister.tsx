@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2 } from 'lucide-react';
+import { ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,10 @@ import { queryKeys } from '@/lib/queryKeys';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useCreditGatedAction } from '@/hooks/useCredits';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AdminErrorBoundary } from '@/components/admin/AdminErrorBoundary';
+import { useOfflineQueue } from '@/hooks/useOfflineQueue';
+import { queueAction } from '@/lib/offlineQueue';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface Product {
   id: string;
@@ -34,18 +38,28 @@ interface CartItem extends Product {
   subtotal: number;
 }
 
-export default function CashRegister() {
-  const { tenant } = useTenantAdminAuth();
+interface POSTransactionResult {
+  success: boolean;
+  transaction_id?: string;
+  transaction_number?: string;
+  total?: number;
+  error?: string;
+}
+
+function CashRegisterContent() {
+  const { tenant, tenantSlug } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { triggerSuccess, triggerLight, triggerError } = useHapticFeedback();
   const { execute: executeCreditAction } = useCreditGatedAction();
+  const { isOnline, pendingCount } = useOfflineQueue();
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
 
   // Load products
   const { data: products = [] } = useQuery({
@@ -89,10 +103,58 @@ export default function CashRegister() {
     enabled: !!tenantId,
   });
 
-  // Process payment mutation
+  // Queue transaction for offline processing
+  const queueOfflineTransaction = useCallback(async (items: CartItem[], total: number) => {
+    if (!tenantId) return;
+
+    const payload = {
+      p_tenant_id: tenantId,
+      p_items: items.map(item => ({
+        product_id: item.id,
+        product_name: item.name,
+        quantity: item.quantity,
+        unit_price: item.price,
+        price_at_order_time: item.price,
+        total_price: item.subtotal,
+        stock_quantity: item.stock_quantity
+      })),
+      p_payment_method: paymentMethod,
+      p_subtotal: total,
+      p_tax_amount: 0,
+      p_discount_amount: 0,
+      p_customer_id: null,
+      p_shift_id: null
+    };
+
+    await queueAction(
+      'generic',
+      `/api/pos/transaction`, // This would be the edge function endpoint
+      'POST',
+      payload,
+      3
+    );
+
+    toast({
+      title: 'Transaction queued',
+      description: 'Will be processed when connection is restored.'
+    });
+    setCart([]);
+    setPaymentMethod('cash');
+  }, [tenantId, paymentMethod, toast]);
+
+  // Process payment mutation - uses atomic RPC only
   const processPayment = useMutation({
-    mutationFn: async () => {
-      if (!tenantId || cart.length === 0) throw new Error('Invalid transaction');
+    mutationFn: async (): Promise<POSTransactionResult> => {
+      if (!tenantId || cart.length === 0) {
+        throw new Error('Invalid transaction: No items in cart');
+      }
+
+      // Check online status - queue if offline
+      if (!isOnline) {
+        const total = cart.reduce((sum, item) => sum + item.subtotal, 0);
+        await queueOfflineTransaction(cart, total);
+        return { success: true, transaction_number: 'QUEUED' };
+      }
 
       const total = cart.reduce((sum, item) => sum + item.subtotal, 0);
 
@@ -102,14 +164,14 @@ export default function CashRegister() {
         product_name: item.name,
         quantity: item.quantity,
         unit_price: item.price,
-        price_at_order_time: item.price, // Capture price at time of sale
+        price_at_order_time: item.price,
         total_price: item.subtotal,
         stock_quantity: item.stock_quantity
       }));
 
-      // Try atomic RPC first (prevents race conditions on inventory)
-      // @ts-ignore - RPC function not in auto-generated types
-      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic' as any, {
+      // Use atomic RPC - prevents race conditions on inventory
+      // @ts-expect-error RPC function not in auto-generated types
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic', {
         p_tenant_id: tenantId,
         p_items: items,
         p_payment_method: paymentMethod,
@@ -121,45 +183,41 @@ export default function CashRegister() {
       });
 
       if (rpcError) {
-        // If RPC doesn't exist, fall back to legacy method
-        if (rpcError.code === 'PGRST202' || rpcError.message?.includes('function') || rpcError.message?.includes('does not exist')) {
-          // Create POS transaction (legacy method)
-          const { error: txError } = await supabase
-            .from('pos_transactions' as any)
-            .insert({
-              tenant_id: tenantId,
-              total_amount: total,
-              subtotal: total,
-              payment_method: paymentMethod,
-              payment_status: 'completed',
-              items
-            });
+        logger.error('POS transaction RPC failed', rpcError, { component: 'CashRegister' });
 
-          if (txError) throw txError;
-
-          // Update inventory (has race condition risk)
-          for (const item of cart) {
-            const { error: invError } = await supabase
-              .from('products')
-              .update({ stock_quantity: item.stock_quantity - item.quantity })
-              .eq('id', item.id);
-
-            if (invError) throw invError;
-          }
-          return;
+        // Check for specific error types
+        if (rpcError.code === 'PGRST202' || rpcError.message?.includes('does not exist')) {
+          throw new Error('POS system not configured. Please contact support.');
         }
-        throw rpcError;
+
+        // Extract meaningful error message
+        const errorMessage = rpcError.message?.includes('Insufficient stock')
+          ? rpcError.message
+          : rpcError.message || 'Transaction failed. Please try again.';
+
+        throw new Error(errorMessage);
       }
 
-      // RPC succeeded
-      const result = rpcResult as { success: boolean; transaction_number: string };
+      const result = rpcResult as POSTransactionResult;
+
       if (!result.success) {
-        throw new Error('Transaction failed');
+        throw new Error(result.error || 'Transaction failed');
       }
+
+      return result;
     },
-    onSuccess: () => {
-      triggerSuccess(); // Haptic feedback on successful payment
-      toast({ title: 'Payment processed successfully!' });
+    onSuccess: (result) => {
+      triggerSuccess();
+
+      if (result.transaction_number === 'QUEUED') {
+        // Already handled in queueOfflineTransaction
+        return;
+      }
+
+      toast({
+        title: 'Payment processed successfully!',
+        description: `Transaction ${result.transaction_number}`
+      });
       setCart([]);
       setPaymentMethod('cash');
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.transactions(tenantId) });
@@ -167,7 +225,7 @@ export default function CashRegister() {
       queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
     },
     onError: (error: unknown) => {
-      triggerError(); // Haptic feedback on payment failure
+      triggerError();
       logger.error('Payment processing failed', error, { component: 'CashRegister' });
       toast({
         title: 'Payment failed',
@@ -177,27 +235,39 @@ export default function CashRegister() {
     }
   });
 
-  const addToCart = (product: Product) => {
-    const existingItem = cart.find(item => item.id === product.id);
+  const addToCart = useCallback((product: Product) => {
+    setIsAddingToCart(product.id);
 
-    if (existingItem) {
-      if (existingItem.quantity >= product.stock_quantity) {
-        triggerError();
-        toast({ title: 'Not enough stock', variant: 'destructive' });
-        return;
+    try {
+      const existingItem = cart.find(item => item.id === product.id);
+
+      if (existingItem) {
+        if (existingItem.quantity >= product.stock_quantity) {
+          triggerError();
+          toast({ title: 'Not enough stock', variant: 'destructive' });
+          return;
+        }
+        triggerLight();
+        setCart(cart.map(item =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1, subtotal: (item.quantity + 1) * item.price }
+            : item
+        ));
+      } else {
+        if (product.stock_quantity <= 0) {
+          triggerError();
+          toast({ title: 'Product out of stock', variant: 'destructive' });
+          return;
+        }
+        triggerLight();
+        setCart([...cart, { ...product, quantity: 1, subtotal: product.price }]);
       }
-      triggerLight();
-      setCart(cart.map(item =>
-        item.id === product.id
-          ? { ...item, quantity: item.quantity + 1, subtotal: (item.quantity + 1) * item.price }
-          : item
-      ));
-    } else {
-      triggerLight();
-      setCart([...cart, { ...product, quantity: 1, subtotal: product.price }]);
+      setProductDialogOpen(false);
+    } finally {
+      // Small delay for visual feedback
+      setTimeout(() => setIsAddingToCart(null), 150);
     }
-    setProductDialogOpen(false);
-  };
+  }, [cart, triggerError, triggerLight, toast]);
 
   const updateQuantity = (productId: string, change: number) => {
     setCart(cart.map(item => {
@@ -277,11 +347,24 @@ export default function CashRegister() {
 
   return (
     <div className="p-6 space-y-6">
+      {/* Offline Alert */}
+      {!isOnline && (
+        <Alert variant="destructive">
+          <WifiOff className="h-4 w-4" />
+          <AlertTitle>You are offline</AlertTitle>
+          <AlertDescription>
+            Transactions will be queued and processed when connection is restored.
+            {pendingCount > 0 && ` (${pendingCount} pending)`}
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <CreditCard className="h-8 w-8 text-primary" />
             Cash Register
+            {!isOnline && <WifiOff className="h-5 w-5 text-destructive" />}
           </h1>
           <p className="text-muted-foreground">Point of sale transaction management</p>
         </div>
@@ -307,11 +390,17 @@ export default function CashRegister() {
                   variant="outline"
                   size="sm"
                   onClick={() => addToCart(product)}
-                  disabled={product.stock_quantity <= 0}
+                  disabled={product.stock_quantity <= 0 || isAddingToCart === product.id}
                   className="h-auto py-2 px-3 flex flex-col items-start gap-0.5 min-w-[100px] hover:border-primary hover:bg-primary/5"
                 >
-                  <span className="font-medium text-xs truncate max-w-[80px]">{product.name}</span>
-                  <span className="text-xs text-muted-foreground">${product.price}</span>
+                  {isAddingToCart === product.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <span className="font-medium text-xs truncate max-w-[80px]">{product.name}</span>
+                      <span className="text-xs text-muted-foreground">${product.price}</span>
+                    </>
+                  )}
                 </Button>
               ))}
               <Button
@@ -413,7 +502,9 @@ export default function CashRegister() {
             <div className="flex gap-2">
               <Button
                 className="flex-1"
+                variant="outline"
                 onClick={() => setProductDialogOpen(true)}
+                disabled={processPayment.isPending}
               >
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 Add Item
@@ -428,8 +519,17 @@ export default function CashRegister() {
                 }}
                 disabled={cart.length === 0 || processPayment.isPending}
               >
-                <DollarSign className="h-4 w-4 mr-2" />
-                {processPayment.isPending ? 'Processing...' : 'Process Payment'}
+                {processPayment.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    {!isOnline ? 'Queue Payment' : 'Process Payment'}
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>
@@ -536,5 +636,14 @@ export default function CashRegister() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+// Export with error boundary wrapper for crash recovery
+export function CashRegister() {
+  return (
+    <AdminErrorBoundary>
+      <CashRegisterContent />
+    </AdminErrorBoundary>
   );
 }

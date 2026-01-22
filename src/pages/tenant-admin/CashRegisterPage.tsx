@@ -1,5 +1,5 @@
-import CashRegister from "@/pages/admin/CashRegister";
+import { CashRegister } from "@/pages/admin/CashRegister";
 
-export default function CashRegisterPage() {
+export function CashRegisterPage() {
   return <CashRegister />;
 }
