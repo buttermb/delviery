@@ -289,11 +289,16 @@ export default function WholesaleOrdersPage() {
 
   const handleStatusUpdate = async (orderId: string, newStatus: string, retryCount = 0) => {
     const MAX_RETRIES = 2;
+    if (!tenant?.id) {
+      toast.error("Tenant context required");
+      return;
+    }
+
     try {
       if (viewMode === 'selling') {
         // Use flow manager for wholesale orders (includes editability checks)
         const result = await wholesaleOrderFlowManager.transitionOrderStatus(
-          orderId, 
+          orderId,
           newStatus as WholesaleOrderStatus
         );
         if (!result.success) {
@@ -301,10 +306,11 @@ export default function WholesaleOrdersPage() {
           return;
         }
       } else {
-        // Direct update for purchase orders
+        // Direct update for purchase orders - include tenant isolation
         const { error } = await supabase
           .from('purchase_orders')
           .update({ status: newStatus, updated_at: new Date().toISOString() })
+          .eq('account_id', tenant.id)
           .eq('id', orderId);
         if (error) throw error;
       }
@@ -332,6 +338,11 @@ export default function WholesaleOrdersPage() {
   };
 
   const handleBulkStatusChange = async (status: string) => {
+    if (!tenant?.id) {
+      toast.error("Tenant context required");
+      return;
+    }
+
     try {
       let successCount = 0;
       let failCount = 0;
@@ -351,10 +362,11 @@ export default function WholesaleOrdersPage() {
           }
         }
       } else {
-        // Direct update for purchase orders
+        // Direct update for purchase orders - include tenant isolation
         const { error } = await supabase
           .from('purchase_orders')
           .update({ status, updated_at: new Date().toISOString() })
+          .eq('account_id', tenant.id)
           .in('id', selectedOrders);
 
         if (error) throw error;

@@ -409,23 +409,56 @@ export default function NewWholesaleOrder() {
   // Get selected runner
   const selectedRunner = couriers.find((r: any) => r.id === orderData.runnerId);
 
+  // Minimum order quantity constant (in lbs per product)
+  const MINIMUM_ORDER_QUANTITY_LBS = 1;
+
+  // Check if order exceeds credit limit
+  const orderExceedsCreditLimit = useMemo(() => {
+    if (!orderData.client) return false;
+    if (orderData.paymentTerms === 'cash') return false;
+    return creditImpact?.overLimit ?? false;
+  }, [orderData.client, orderData.paymentTerms, creditImpact]);
+
+  // Get validation errors for review step
+  const validationErrors = useMemo(() => {
+    const errors: string[] = [];
+
+    // Credit limit check
+    if (orderExceedsCreditLimit) {
+      errors.push(`Order total ($${totals.subtotal.toLocaleString()}) exceeds available credit ($${((orderData.client?.credit_limit ?? 0) - (orderData.client?.outstanding_balance ?? 0)).toLocaleString()})`);
+    }
+
+    // Minimum order quantity check per product
+    for (const product of orderData.products) {
+      if (product.qty < MINIMUM_ORDER_QUANTITY_LBS) {
+        errors.push(`"${product.name}" quantity (${product.qty} lbs) is below minimum order of ${MINIMUM_ORDER_QUANTITY_LBS} lb`);
+      }
+    }
+
+    return errors;
+  }, [orderExceedsCreditLimit, orderData.products, orderData.client, totals.subtotal]);
+
   // Validation for next button
   const canProceed = useMemo(() => {
     switch (currentStep) {
       case 'client':
         return !!orderData.client;
       case 'products':
-        return orderData.products.length > 0;
+        // Require at least one product with valid quantity
+        return orderData.products.length > 0 &&
+          orderData.products.every(p => p.qty >= MINIMUM_ORDER_QUANTITY_LBS);
       case 'payment':
+        // Allow proceeding even with credit issues - they'll be shown on review
         return true;
       case 'delivery':
         return true;
       case 'review':
-        return true;
+        // Block submission if there are validation errors
+        return validationErrors.length === 0;
       default:
         return false;
     }
-  }, [currentStep, orderData]);
+  }, [currentStep, orderData, validationErrors]);
 
   return (
     <div className="min-h-dvh bg-background">
@@ -1055,6 +1088,42 @@ export default function NewWholesaleOrder() {
                     <p className="text-sm">{orderData.notes}</p>
                   </Card>
                 )}
+
+                {/* Validation Errors */}
+                {validationErrors.length > 0 && (
+                  <Card className="p-4 md:col-span-2 bg-destructive/10 border-destructive/30">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-destructive mb-2">Cannot Submit Order</h3>
+                        <ul className="space-y-1 text-sm text-destructive">
+                          {validationErrors.map((error, idx) => (
+                            <li key={idx}>• {error}</li>
+                          ))}
+                        </ul>
+                        <div className="mt-3 flex gap-2 flex-wrap">
+                          {orderExceedsCreditLimit && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-destructive/50 text-destructive hover:bg-destructive/10"
+                              onClick={() => setOrderData((prev) => ({ ...prev, paymentTerms: 'cash' }))}
+                            >
+                              Switch to Cash Payment
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setCurrentStep('products')}
+                          >
+                            Edit Products
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                )}
               </div>
             </div>
           )}
@@ -1082,12 +1151,17 @@ export default function NewWholesaleOrder() {
               <Button
                 className="bg-emerald-600 hover:bg-emerald-700 gap-2"
                 onClick={() => handleSubmit()}
-                disabled={isSubmitting}
+                disabled={isSubmitting || validationErrors.length > 0}
               >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Creating...
+                  </>
+                ) : validationErrors.length > 0 ? (
+                  <>
+                    <AlertCircle className="h-4 w-4" />
+                    Fix Errors to Submit
                   </>
                 ) : (
                   <>
