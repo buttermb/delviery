@@ -21,6 +21,8 @@ import {
   LOW_CREDIT_WARNING_THRESHOLD,
   CRITICAL_CREDIT_THRESHOLD,
   FREE_TIER_MONTHLY_CREDITS,
+  LOW_BALANCE_WARNING_LEVELS,
+  CREDIT_WARNING_THRESHOLDS,
   type CreditBalance,
   type ConsumeCreditsResult,
 } from '@/lib/credits';
@@ -69,10 +71,42 @@ const RATE_LIMIT = {
   windowMs: 60 * 1000, // 1 minute
 };
 
+/**
+ * Get warning message based on threshold level
+ */
+function getWarningMessage(threshold: number, balance: number): { title: string; description: string } | null {
+  switch (threshold) {
+    case 2000:
+      return {
+        title: 'Credits Running Low',
+        description: `You have ${balance.toLocaleString()} credits remaining. Consider purchasing more to avoid interruptions.`,
+      };
+    case 1000:
+      return {
+        title: 'Credit Balance Warning',
+        description: `Only ${balance.toLocaleString()} credits left. Some features may become unavailable soon.`,
+      };
+    case 500:
+      return {
+        title: 'Low Credit Balance',
+        description: `${balance.toLocaleString()} credits remaining. Purchase credits now to continue using premium features.`,
+      };
+    case 100:
+      return {
+        title: 'Critical Credit Balance',
+        description: `Only ${balance.toLocaleString()} credits left! Actions will be blocked when credits run out.`,
+      };
+    default:
+      return null;
+  }
+}
+
 export function useCredits(): UseCreditsReturn {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [showWarning, setShowWarning] = useState(false);
+  // Track which warning thresholds have been shown to avoid duplicates
+  const [shownWarningThresholds, setShownWarningThresholds] = useState<Set<number>>(new Set());
   // RACE CONDITION FIX: Track in-flight actions to prevent double-execution
   const [inFlightActions, setInFlightActions] = useState<Set<string>>(new Set());
   // CLIENT-SIDE RATE LIMITING: Track recent operations with timestamps
@@ -152,6 +186,42 @@ export function useCredits(): UseCreditsReturn {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLowCredits, showWarning, tenantId]);
+
+  // Show progressive low balance warnings at 2000, 1000, 500, 100 credits
+  useEffect(() => {
+    if (!tenantId || !isFreeTier || isLoading) return;
+
+    // Check each warning level threshold
+    for (const threshold of LOW_BALANCE_WARNING_LEVELS) {
+      // Skip if we've already shown this warning
+      if (shownWarningThresholds.has(threshold)) continue;
+
+      // Show warning if balance just dropped to or below this threshold
+      if (balance <= threshold) {
+        setShownWarningThresholds(prev => new Set(prev).add(threshold));
+        trackCreditEvent(tenantId, `low_balance_warning_${threshold}`, balance);
+
+        // Show appropriate toast based on threshold severity
+        const warningMessage = getWarningMessage(threshold, balance);
+        if (warningMessage) {
+          toast.warning(warningMessage.title, {
+            description: warningMessage.description,
+            duration: threshold <= 500 ? 8000 : 5000, // Longer duration for critical warnings
+            action: threshold <= 500 ? {
+              label: 'Buy Credits',
+              onClick: () => {
+                // This will be handled by the CreditContext opening the modal
+                logger.info('Low balance warning: Buy Credits clicked', { threshold, balance });
+              },
+            } : undefined,
+          });
+        }
+
+        // Only show one warning per balance check
+        break;
+      }
+    }
+  }, [balance, tenantId, isFreeTier, isLoading, shownWarningThresholds]);
 
   // Check if can perform action
   const canPerformAction = useCallback(async (actionKey: string): Promise<boolean> => {
