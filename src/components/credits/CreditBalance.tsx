@@ -65,10 +65,12 @@ export function CreditBalance({
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Color logic
+  // Color logic based on warning thresholds: 2000, 1000, 500, 100
   const getColorClass = (amount: number) => {
-    if (amount > 5000) return "text-emerald-600 bg-emerald-50 border-emerald-200";
-    if (amount > 1000) return "text-amber-600 bg-amber-50 border-amber-200";
+    if (amount > 2000) return "text-emerald-600 bg-emerald-50 border-emerald-200";
+    if (amount > 1000) return "text-yellow-600 bg-yellow-50 border-yellow-200";
+    if (amount > 500) return "text-amber-600 bg-amber-50 border-amber-200";
+    if (amount > 100) return "text-orange-600 bg-orange-50 border-orange-200";
     return "text-red-600 bg-red-50 border-red-200 animate-pulse";
   };
 

@@ -1441,19 +1441,27 @@ export function getPricePerCredit(priceCents: number, credits: number): number {
  * Maintains "free" illusion while driving upgrades
  */
 export const FREE_TIER_MONTHLY_CREDITS = 500;
-export const LOW_CREDIT_WARNING_THRESHOLD = 50;
-export const CRITICAL_CREDIT_THRESHOLD = 15;
+export const LOW_CREDIT_WARNING_THRESHOLD = 2000;
+export const CRITICAL_CREDIT_THRESHOLD = 100;
 
 /**
  * Progressive warning thresholds (for upgrade triggers)
- * Scaled for 500 credit allocation - triggers faster
+ * Triggers at 2000, 1000, 500, 100 credits
  */
 export const CREDIT_WARNING_THRESHOLDS = {
-  YELLOW_BADGE: 100, // Show yellow indicator (20% remaining)
-  WARNING_MODAL: 50, // Show warning modal (10% remaining)
-  BANNER_WARNING: 25, // Show banner at top of dashboard (5% remaining)
+  FIRST_WARNING: 2000, // First warning - "Credits running low"
+  SECOND_WARNING: 1000, // Second warning - "Consider buying credits"
+  YELLOW_BADGE: 500, // Show yellow indicator
+  WARNING_MODAL: 100, // Show warning modal - critical level
+  BANNER_WARNING: 50, // Show banner at top of dashboard
   BLOCKED: 0, // Block credit-consuming actions
 } as const;
+
+/**
+ * Low balance warning levels for toast notifications
+ * Triggers at specific thresholds: 2000, 1000, 500, 100
+ */
+export const LOW_BALANCE_WARNING_LEVELS = [2000, 1000, 500, 100] as const;
 
 /**
  * Behavioral trigger thresholds
