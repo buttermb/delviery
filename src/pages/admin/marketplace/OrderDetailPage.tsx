@@ -97,10 +97,13 @@ export default function OrderDetailPage() {
                 updateData.delivered_at = new Date().toISOString();
             }
 
+            if (!tenant?.id) throw new Error('Tenant context required');
+
             const { error } = await supabase
                 .from('marketplace_orders')
                 .update(updateData)
-                .eq('id', orderId);
+                .eq('id', orderId)
+                .eq('seller_tenant_id', tenant.id);
 
             if (error) throw error;
         },
@@ -127,10 +130,13 @@ export default function OrderDetailPage() {
     // Update seller notes
     const updateNotesMutation = useMutation({
         mutationFn: async (notes: string) => {
+            if (!tenant?.id) throw new Error('Tenant context required');
+
             const { error } = await supabase
                 .from('marketplace_orders')
                 .update({ seller_notes: notes })
-                .eq('id', orderId);
+                .eq('id', orderId)
+                .eq('seller_tenant_id', tenant.id);
 
             if (error) throw error;
         },
@@ -191,13 +197,16 @@ export default function OrderDetailPage() {
     // Mark as paid
     const markPaidMutation = useMutation({
         mutationFn: async () => {
+            if (!tenant?.id) throw new Error('Tenant context required');
+
             const { error } = await supabase
                 .from('marketplace_orders')
                 .update({
                     payment_status: 'paid',
                     paid_at: new Date().toISOString(),
                 })
-                .eq('id', orderId);
+                .eq('id', orderId)
+                .eq('seller_tenant_id', tenant.id);
 
             if (error) throw error;
         },

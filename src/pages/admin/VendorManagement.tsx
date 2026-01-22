@@ -76,10 +76,13 @@ export default function VendorManagement() {
 
     try {
       if (editingVendor) {
+        if (!tenant?.id) throw new Error('Tenant context required');
+
         const { error } = await supabase
           .from('vendors')
           .update(formData)
-          .eq('id', editingVendor.id);
+          .eq('id', editingVendor.id)
+          .eq('tenant_id', tenant.id);
 
         if (error) throw error;
 

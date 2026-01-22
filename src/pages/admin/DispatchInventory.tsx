@@ -377,7 +377,8 @@ export default function DispatchInventory() {
             fronted_quantity: (currentProduct.fronted_quantity || 0) + product.quantity,
             available_quantity: Math.max(0, (currentProduct.available_quantity || 0) - product.quantity)
           })
-          .eq('id', product.product_id);
+          .eq('id', product.product_id)
+          .eq('tenant_id', tenant.id);
       }
     });
 
@@ -397,7 +398,8 @@ export default function DispatchInventory() {
       await supabase
         .from('wholesale_clients')
         .update({ outstanding_balance: newOutstandingBalance })
-        .eq('id', selectedClient.id);
+        .eq('id', selectedClient.id)
+        .eq('tenant_id', tenant.id);
     }
 
     toast({

@@ -182,6 +182,7 @@ export default function RecordFrontedReturn() {
                     .from('wholesale_clients')
                     .select('outstanding_balance')
                     .eq('id', front.client_id)
+                    .eq('tenant_id', tenant.id)
                     .maybeSingle();
 
                   if (client) {
@@ -189,7 +190,8 @@ export default function RecordFrontedReturn() {
                     await supabase
                       .from('wholesale_clients')
                       .update({ outstanding_balance: newBalance })
-                      .eq('id', front.client_id);
+                      .eq('id', front.client_id)
+                      .eq('tenant_id', tenant.id);
                   }
                 }
               }

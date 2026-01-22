@@ -162,11 +162,17 @@ export default function WholesaleClients() {
   };
 
   const handleUpdateClient = async (clientId: string, updates: Record<string, any>) => {
+    if (!tenant?.id) {
+      toast.error("Tenant context required");
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('wholesale_clients')
         .update(updates)
-        .eq('id', clientId);
+        .eq('id', clientId)
+        .eq('tenant_id', tenant.id);
 
       if (error) throw error;
 

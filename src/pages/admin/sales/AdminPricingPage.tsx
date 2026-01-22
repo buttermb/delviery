@@ -51,11 +51,14 @@ export default function AdminPricingPage() {
   // Update pricing mutation
   const updatePricing = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Product> }) => {
+      if (!tenantId) throw new Error('Tenant context required');
+
       const { error } = await supabase
         .from('products')
         .update(updates)
-        .eq('id', id);
-      
+        .eq('id', id)
+        .eq('tenant_id', tenantId);
+
       if (error) throw error;
     },
     onSuccess: () => {

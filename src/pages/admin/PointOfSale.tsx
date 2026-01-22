@@ -381,7 +381,7 @@ export default function PointOfSale() {
       );
 
       // Link pending order
-      if (activeOrderId) {
+      if (activeOrderId && tenantId) {
         // @ts-ignore - disposable_menu_orders table not in auto-generated types
         await supabase
           .from('disposable_menu_orders' as any)
@@ -390,7 +390,8 @@ export default function PointOfSale() {
             pos_transaction_id: transactionId,
             completed_at: new Date().toISOString()
           })
-          .eq('id', activeOrderId);
+          .eq('id', activeOrderId)
+          .eq('tenant_id', tenantId);
       }
 
       if (limitsApply) {

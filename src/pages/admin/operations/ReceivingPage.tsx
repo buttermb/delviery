@@ -145,6 +145,8 @@ export default function ReceivingPage() {
   // Update receiving status
   const updateReceiptStatus = useMutation({
     mutationFn: async ({ id, status, qcData }: { id: string; status: string; qcData?: any }) => {
+      if (!tenantId) throw new Error('Tenant context required');
+
       const updates: any = { status };
       if (qcData) {
         updates.qc_status = qcData.qc_status;
@@ -156,7 +158,8 @@ export default function ReceivingPage() {
       const { error } = await supabase
         .from('receiving_records')
         .update(updates)
-        .eq('id', id);
+        .eq('id', id)
+        .eq('tenant_id', tenantId);
 
       if (error) throw error;
     },
