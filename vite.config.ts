@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 /**
  * Vite Build Configuration
  * New York Minute NYC E-Commerce Platform
@@ -229,5 +230,10 @@ export default defineConfig(({ mode }) => ({
     },
     chunkSizeWarningLimit: 600,
     cssCodeSplit: true,
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
   },
 }));
