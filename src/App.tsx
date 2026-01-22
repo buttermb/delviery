@@ -298,7 +298,7 @@ const EncryptedStorePage = lazy(() => import("./pages/shop/EncryptedStorePage"))
 const RevenueReportsPage = lazy(() => import("./pages/tenant-admin/RevenueReportsPage"));
 const RouteOptimizationPage = lazy(() => import("./pages/tenant-admin/RouteOptimizationPage"));
 const DeliveryAnalyticsPage = lazy(() => import("./pages/tenant-admin/DeliveryAnalyticsPage"));
-const CashRegisterPage = lazy(() => import("./pages/tenant-admin/CashRegisterPage"));
+const CashRegisterPage = lazy(() => import("./pages/tenant-admin/CashRegisterPage").then(m => ({ default: m.CashRegisterPage })));
 const POSAnalyticsPage = lazy(() => import("./pages/tenant-admin/POSAnalyticsPage"));
 const POSShiftsPage = lazy(() => import("./pages/tenant-admin/POSShiftsPage"));
 const ZReportPage = lazy(() => import("./pages/tenant-admin/ZReportPage"));
