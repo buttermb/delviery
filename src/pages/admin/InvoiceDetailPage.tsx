@@ -7,14 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
     ArrowLeft,
-    Download,
     ExternalLink,
     CheckCircle,
     Send,
     Printer,
-    Edit,
-    Trash2
+    Trash2,
+    Copy,
+    Ban
 } from "lucide-react";
+import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/utils/formatters";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -44,10 +45,13 @@ export default function InvoiceDetailPage() {
     const { invoiceId } = useParams<{ invoiceId: string }>();
     const { navigateToAdmin } = useTenantNavigation();
     const { tenant } = useTenant();
-    const { useInvoiceQuery, useMarkInvoicePaid, useDeleteInvoice } = useInvoices();
+    const { useInvoiceQuery, useMarkInvoicePaid, useMarkInvoiceSent, useVoidInvoice, useDuplicateInvoice, useDeleteInvoice } = useInvoices();
 
     const { data: invoice, isLoading } = useInvoiceQuery(invoiceId || '');
     const markAsPaid = useMarkInvoicePaid();
+    const markAsSent = useMarkInvoiceSent();
+    const voidInvoiceMutation = useVoidInvoice();
+    const duplicateInvoice = useDuplicateInvoice();
     const deleteInvoice = useDeleteInvoice();
 
     if (isLoading) {
@@ -62,6 +66,51 @@ export default function InvoiceDetailPage() {
         markAsPaid.mutate(invoice.id, {
             onSuccess: () => {
                 toast.success("Invoice marked as paid");
+            },
+            onError: (error: unknown) => {
+                const message = error instanceof Error ? error.message : "Failed to update invoice";
+                toast.error("Update failed", { description: message });
+                logger.error('Failed to mark invoice as paid', error, { component: 'InvoiceDetailPage', invoiceId: invoice.id });
+            },
+        });
+    };
+
+    const handleMarkAsSent = () => {
+        markAsSent.mutate(invoice.id, {
+            onSuccess: () => {
+                toast.success("Invoice marked as sent");
+            },
+            onError: (error: unknown) => {
+                const message = error instanceof Error ? error.message : "Failed to update invoice";
+                toast.error("Update failed", { description: message });
+                logger.error('Failed to mark invoice as sent', error, { component: 'InvoiceDetailPage', invoiceId: invoice.id });
+            },
+        });
+    };
+
+    const handleVoidInvoice = () => {
+        voidInvoiceMutation.mutate(invoice.id, {
+            onSuccess: () => {
+                toast.success("Invoice voided");
+            },
+            onError: (error: unknown) => {
+                const message = error instanceof Error ? error.message : "Failed to void invoice";
+                toast.error("Void failed", { description: message });
+                logger.error('Failed to void invoice', error, { component: 'InvoiceDetailPage', invoiceId: invoice.id });
+            },
+        });
+    };
+
+    const handleDuplicateInvoice = () => {
+        duplicateInvoice.mutate(invoice.id, {
+            onSuccess: (newInvoice) => {
+                toast.success("Invoice duplicated");
+                navigateToAdmin(`crm/invoices/${newInvoice.id}`);
+            },
+            onError: (error: unknown) => {
+                const message = error instanceof Error ? error.message : "Failed to duplicate invoice";
+                toast.error("Duplicate failed", { description: message });
+                logger.error('Failed to duplicate invoice', error, { component: 'InvoiceDetailPage', invoiceId: invoice.id });
             },
         });
     };
@@ -129,12 +178,64 @@ export default function InvoiceDetailPage() {
                             <Printer className="mr-2 h-4 w-4" />
                             Print
                         </Button>
+                        <Button
+                            variant="outline"
+                            onClick={handleDuplicateInvoice}
+                            disabled={duplicateInvoice.isPending}
+                        >
+                            <Copy className="mr-2 h-4 w-4" />
+                            Duplicate
+                        </Button>
 
-                        {invoice.status !== "paid" && (
-                            <Button onClick={handleMarkAsPaid} className="bg-green-600 hover:bg-green-700">
+                        {invoice.status === "draft" && (
+                            <Button
+                                variant="outline"
+                                onClick={handleMarkAsSent}
+                                disabled={markAsSent.isPending}
+                                className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                            >
+                                <Send className="mr-2 h-4 w-4" />
+                                Mark as Sent
+                            </Button>
+                        )}
+
+                        {invoice.status !== "paid" && invoice.status !== "cancelled" && (
+                            <Button
+                                onClick={handleMarkAsPaid}
+                                disabled={markAsPaid.isPending}
+                                className="bg-green-600 hover:bg-green-700"
+                            >
                                 <CheckCircle className="mr-2 h-4 w-4" />
                                 Mark Paid
                             </Button>
+                        )}
+
+                        {invoice.status !== "paid" && invoice.status !== "cancelled" && (
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="outline" className="border-orange-500 text-orange-600 hover:bg-orange-50">
+                                        <Ban className="mr-2 h-4 w-4" />
+                                        Void
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Void Invoice?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This will mark the invoice as cancelled. This action cannot be undone.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction
+                                            onClick={handleVoidInvoice}
+                                            className="bg-orange-600 text-white hover:bg-orange-700"
+                                        >
+                                            Void Invoice
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                         )}
 
                         <AlertDialog>
