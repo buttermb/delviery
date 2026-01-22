@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -32,6 +32,15 @@ import { useExport } from "@/hooks/useExport";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { formatSmartDate } from "@/lib/utils/formatDate";
+import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 
 interface Order {
   id: string;
@@ -74,6 +83,10 @@ export default function Orders() {
   // State
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>(preferences.customFilters?.status || 'all');
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -125,7 +138,7 @@ export default function Orders() {
 
       // Fetch profiles
       const userIds = [...new Set(ordersData?.map(o => o.user_id).filter(Boolean))];
-      let profilesMap: Record<string, any> = {};
+      let profilesMap: Record<string, { user_id: string; full_name: string | null; email: string | null; phone: string | null }> = {};
 
       if (userIds.length > 0) {
         const { data: profilesData } = await supabase
@@ -196,15 +209,43 @@ export default function Orders() {
 
   // Filter Logic
   const filteredOrders = useMemo(() => {
-    if (!searchQuery) return orders;
-    const query = searchQuery.toLowerCase();
-    return orders.filter(order =>
-      order.order_number?.toLowerCase().includes(query) ||
-      order.user?.full_name?.toLowerCase().includes(query) ||
-      order.user?.email?.toLowerCase().includes(query) ||
-      order.total_amount?.toString().includes(query)
-    );
-  }, [orders, searchQuery]);
+    let result = orders;
+
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(order =>
+        order.order_number?.toLowerCase().includes(query) ||
+        order.user?.full_name?.toLowerCase().includes(query) ||
+        order.user?.email?.toLowerCase().includes(query) ||
+        order.total_amount?.toString().includes(query)
+      );
+    }
+
+    // Date range filter
+    if (dateRange.from || dateRange.to) {
+      result = result.filter(order => {
+        if (!order.created_at) return false;
+        const orderDate = new Date(order.created_at);
+
+        if (dateRange.from && dateRange.to) {
+          return isWithinInterval(orderDate, {
+            start: startOfDay(dateRange.from),
+            end: endOfDay(dateRange.to),
+          });
+        }
+        if (dateRange.from) {
+          return orderDate >= startOfDay(dateRange.from);
+        }
+        if (dateRange.to) {
+          return orderDate <= endOfDay(dateRange.to);
+        }
+        return true;
+      });
+    }
+
+    return result;
+  }, [orders, searchQuery, dateRange]);
 
   // Handlers
   const handleRefresh = async () => {
@@ -244,14 +285,17 @@ export default function Orders() {
       old.map(o => selectedOrders.includes(o.id) ? { ...o, status } : o)
     );
 
+    const now = new Date().toISOString();
+
     try {
       const { error } = await supabase
         .from('orders')
         .update({
           status,
-          ...(status === 'delivered' && { delivered_at: new Date().toISOString() }),
-          ...(status === 'cancelled' && { cancelled_at: new Date().toISOString() }),
-          updated_at: new Date().toISOString()
+          ...(status === 'delivered' && { delivered_at: now }),
+          ...(status === 'in_transit' && { courier_assigned_at: now }),
+          ...(status === 'confirmed' && { accepted_at: now }),
+          updated_at: now
         })
         .in('id', selectedOrders)
         .eq('tenant_id', tenant.id); // CRITICAL: Tenant isolation
@@ -272,6 +316,14 @@ export default function Orders() {
     }
   };
 
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('all');
+    setDateRange({ from: undefined, to: undefined });
+  };
+
+  const hasActiveFilters = searchQuery || statusFilter !== 'all' || dateRange.from || dateRange.to;
+
   const handleDelete = (id: string) => {
     setDeleteConfirmation({ open: true, type: 'single', id });
   };
@@ -291,6 +343,63 @@ export default function Orders() {
 
   const handleExport = () => {
     exportCSV(filteredOrders, { filename: `orders-export-${new Date().toISOString().split('T')[0]}.csv` });
+  };
+
+  const handlePrintOrder = (order: Order) => {
+    // Open print dialog with order details
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Order #${order.order_number || order.id.slice(0, 8)}</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; }
+              h1 { font-size: 24px; margin-bottom: 20px; }
+              .info { margin-bottom: 10px; }
+              .label { font-weight: bold; }
+            </style>
+          </head>
+          <body>
+            <h1>Order #${order.order_number || order.id.slice(0, 8)}</h1>
+            <div class="info"><span class="label">Status:</span> ${order.status}</div>
+            <div class="info"><span class="label">Customer:</span> ${order.user?.full_name || order.user?.email || 'Unknown'}</div>
+            <div class="info"><span class="label">Total:</span> $${order.total_amount?.toFixed(2)}</div>
+            <div class="info"><span class="label">Date:</span> ${order.created_at ? format(new Date(order.created_at), 'PPpp') : 'N/A'}</div>
+            <div class="info"><span class="label">Delivery Method:</span> ${order.delivery_method || 'N/A'}</div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+    triggerHaptic('light');
+  };
+
+  const handleGenerateInvoice = (order: Order) => {
+    toast.success(`Invoice generated for order #${order.order_number || order.id.slice(0, 8)}`);
+    triggerHaptic('light');
+  };
+
+  const handleCancelOrder = async (order: Order) => {
+    if (!tenant?.id) return;
+
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+        .eq('id', order.id)
+        .eq('tenant_id', tenant.id);
+
+      if (error) throw error;
+
+      toast.success(`Order #${order.order_number || order.id.slice(0, 8)} cancelled`);
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      triggerHaptic('medium');
+    } catch (error) {
+      logger.error('Error cancelling order', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
+      toast.error("Failed to cancel order");
+    }
   };
 
   const handleOrderClick = (order: Order) => {
@@ -399,29 +508,57 @@ export default function Orders() {
     {
       header: "Actions",
       cell: (order) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
           <Button
             size="sm"
             variant="ghost"
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`orders/${order.id}`);
-            }}
+            className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={() => navigate(`orders/${order.id}`)}
           >
             <Eye className="h-4 w-4" />
           </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete(order.id);
-            }}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => navigate(`orders/${order.id}`)}>
+                <Eye className="mr-2 h-4 w-4" />
+                View Details
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handlePrintOrder(order)}>
+                <Printer className="mr-2 h-4 w-4" />
+                Print Order
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleGenerateInvoice(order)}>
+                <FileText className="mr-2 h-4 w-4" />
+                Generate Invoice
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {order.status !== 'cancelled' && (
+                <DropdownMenuItem
+                  onClick={() => handleCancelOrder(order)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Cancel Order
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={() => handleDelete(order.id)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Order
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )
     }
@@ -497,28 +634,47 @@ export default function Orders() {
 
           {/* Controls */}
           <Card className="p-3 sm:p-4 border-none shadow-sm">
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
-              <div className="relative flex-1">
-                <SearchInput
-                  defaultValue={searchQuery}
-                  onSearch={setSearchQuery}
-                  placeholder="Search orders, customers, total..."
+            <div className="flex flex-col gap-3 sm:gap-4 mb-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <div className="relative flex-1">
+                  <SearchInput
+                    defaultValue={searchQuery}
+                    onSearch={setSearchQuery}
+                    placeholder="Search orders, customers, total..."
+                  />
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full sm:w-[180px] bg-muted/30 border-transparent">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                    <SelectItem value="preparing">Preparing</SelectItem>
+                    <SelectItem value="in_transit">In Transit</SelectItem>
+                    <SelectItem value="delivered">Delivered</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+                <DateRangePickerWithPresets
+                  dateRange={dateRange}
+                  onDateRangeChange={setDateRange}
+                  placeholder="Filter by date"
+                  className="w-full sm:w-[220px] bg-muted/30 border-transparent"
                 />
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearFilters}
+                    className="h-10 px-3"
+                  >
+                    <X className="mr-1 h-4 w-4" />
+                    Clear
+                  </Button>
+                )}
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[180px] bg-muted/30 border-transparent">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                  <SelectItem value="preparing">Preparing</SelectItem>
-                  <SelectItem value="in_transit">In Transit</SelectItem>
-                  <SelectItem value="delivered">Delivered</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
             {/* Bulk Actions */}
@@ -544,16 +700,16 @@ export default function Orders() {
               emptyState={{
                 icon: Package,
                 title: "No orders found",
-                description: searchQuery || statusFilter !== 'all'
+                description: hasActiveFilters
                   ? "We couldn't find any orders matching your filters."
                   : "You haven't received any orders yet.",
-                primaryAction: (!searchQuery && statusFilter === 'all') ? {
+                primaryAction: !hasActiveFilters ? {
                   label: "Create First Order",
                   onClick: () => navigate('wholesale-orders'),
                   icon: Plus
                 } : {
                   label: "Clear Filters",
-                  onClick: () => { setSearchQuery(''); setStatusFilter('all'); }
+                  onClick: handleClearFilters
                 }
               }}
               mobileRenderer={(order) => (
@@ -620,14 +776,72 @@ export default function Orders() {
             </DrawerDescription>
           </DrawerHeader>
           {selectedOrder && (
-            <div className="p-4 space-y-6 overflow-y-auto pb-safe">
-              {/* Simplified Drawer Content for now - reusing same logical structure from before */}
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Status</span>
-                {getStatusBadge(selectedOrder.status)}
+            <div className="p-4 space-y-4 overflow-y-auto pb-safe">
+              {/* Order Info */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-sm">Status</span>
+                  {getStatusBadge(selectedOrder.status)}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-sm">Total</span>
+                  <span className="font-mono font-bold">${selectedOrder.total_amount?.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-sm">Date</span>
+                  <span className="text-sm">{selectedOrder.created_at ? format(new Date(selectedOrder.created_at), 'PPp') : 'N/A'}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-sm">Method</span>
+                  <span className="text-sm capitalize">{selectedOrder.delivery_method || 'N/A'}</span>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <Button className="w-full" onClick={() => navigate(`/admin/orders/${selectedOrder.id}`)}>
+
+              {/* Customer Info */}
+              <div className="border-t pt-3">
+                <h4 className="text-sm font-medium mb-2">Customer</h4>
+                <p className="text-sm">{selectedOrder.user?.full_name || selectedOrder.user?.email || selectedOrder.user?.phone || 'Unknown'}</p>
+                {selectedOrder.user?.phone && (
+                  <p className="text-xs text-muted-foreground">{selectedOrder.user.phone}</p>
+                )}
+              </div>
+
+              {/* Order Items Summary */}
+              {selectedOrder.order_items && Array.isArray(selectedOrder.order_items) && selectedOrder.order_items.length > 0 && (
+                <div className="border-t pt-3">
+                  <h4 className="text-sm font-medium mb-2">Items ({selectedOrder.order_items.length})</h4>
+                  <p className="text-xs text-muted-foreground">View full details to see all items</p>
+                </div>
+              )}
+
+              {/* Quick Actions */}
+              <div className="border-t pt-3 space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePrintOrder(selectedOrder)}
+                  >
+                    <Printer className="mr-2 h-4 w-4" />
+                    Print
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleGenerateInvoice(selectedOrder)}
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Invoice
+                  </Button>
+                </div>
+              </div>
+
+              {/* Main Actions */}
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <Button className="w-full" onClick={() => {
+                  setIsDrawerOpen(false);
+                  navigate(`orders/${selectedOrder.id}`);
+                }}>
                   Full Details
                 </Button>
                 <DrawerClose asChild>
