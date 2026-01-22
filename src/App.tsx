@@ -286,8 +286,8 @@ const ProductSyncPage = lazy(() => import("./pages/admin/marketplace/ProductSync
 // Customer-Facing Shop Pages
 const ShopLayout = lazy(() => import("./pages/shop/ShopLayout"));
 const ShopStorefrontPage = lazy(() => import("./pages/shop/StorefrontPage"));
-const ShopProductCatalogPage = lazy(() => import("./pages/shop/ProductCatalogPage"));
-const ShopProductDetailPage = lazy(() => import("./pages/shop/ProductDetailPage"));
+const ShopProductCatalogPage = lazy(() => import("./pages/shop/ProductCatalogPage").then(m => ({ default: m.ProductCatalogPage })));
+const ShopProductDetailPage = lazy(() => import("./pages/shop/ProductDetailPage").then(m => ({ default: m.ProductDetailPage })));
 const ShopCartPage = lazy(() => import("./pages/shop/CartPage"));
 const ShopCheckoutPage = lazy(() => import("./pages/shop/CheckoutPage"));
 const ShopOrderConfirmationPage = lazy(() => import("./pages/shop/OrderConfirmationPage"));

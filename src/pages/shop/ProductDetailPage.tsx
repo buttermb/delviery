@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
+import { sanitizeHtml } from '@/lib/utils/sanitize';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart,
@@ -117,9 +118,10 @@ interface ProductDetails {
   image_url: string | null;
   images: string[];
   in_stock: boolean;
+  stock_quantity: number;
   is_featured: boolean;
   marketplace_category_name: string | null;
-  variants: any[];
+  variants: string[];
   tags: string[];
   brand: string | null;
   sku: string | null;
@@ -147,6 +149,7 @@ function transformProduct(rpc: RpcProduct): ProductDetails {
     image_url: rpc.image_url,
     images: rpc.images || [],
     in_stock: rpc.stock_quantity > 0,
+    stock_quantity: rpc.stock_quantity,
     is_featured: rpc.is_featured,
     marketplace_category_name: rpc.category,
     variants: [],
@@ -174,7 +177,7 @@ interface ProductReview {
   created_at: string;
 }
 
-export default function ProductDetailPage() {
+export function ProductDetailPage() {
   const { storeSlug, productId, productSlug } = useParams();
   const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
@@ -696,7 +699,7 @@ export default function ProductDetailPage() {
                       Sold Out
                     </Badge>
                   )}
-                  {product.in_stock && (product as any).stock_quantity < 10 && (
+                  {product.in_stock && product.stock_quantity < 10 && (
                     <Badge className="bg-amber-500/90 text-black backdrop-blur border-none px-3 py-1 text-xs uppercase tracking-widest">
                       Low Stock
                     </Badge>
@@ -767,7 +770,7 @@ export default function ProductDetailPage() {
                   )}
 
                   {/* Price */}
-                  <div className="flex items-baseline gap-4 mb-8">
+                  <div className="flex items-baseline gap-4 mb-6">
                     <span className="text-3xl font-medium text-emerald-400">
                       {formatCurrency(product.display_price)}
                     </span>
@@ -778,6 +781,39 @@ export default function ProductDetailPage() {
                     )}
                   </div>
 
+                  {/* THC/CBD Content */}
+                  {(product.thc_content !== null || product.cbd_content !== null) && (
+                    <div className="flex items-center gap-4 mb-6">
+                      {product.thc_content !== null && (
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isLuxuryTheme ? 'bg-white/5 border border-white/10' : 'bg-muted'}`}>
+                          <span className={`text-xs uppercase tracking-wider font-medium ${isLuxuryTheme ? 'text-white/50' : 'text-muted-foreground'}`}>THC</span>
+                          <span className={`text-sm font-bold ${isLuxuryTheme ? 'text-emerald-400' : 'text-foreground'}`}>{product.thc_content}%</span>
+                        </div>
+                      )}
+                      {product.cbd_content !== null && (
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isLuxuryTheme ? 'bg-white/5 border border-white/10' : 'bg-muted'}`}>
+                          <span className={`text-xs uppercase tracking-wider font-medium ${isLuxuryTheme ? 'text-white/50' : 'text-muted-foreground'}`}>CBD</span>
+                          <span className={`text-sm font-bold ${isLuxuryTheme ? 'text-blue-400' : 'text-foreground'}`}>{product.cbd_content}%</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Stock Status */}
+                  <div className="mb-6">
+                    {product.in_stock ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                        <span className={`text-sm ${isLuxuryTheme ? 'text-emerald-400' : 'text-green-600'}`}>In Stock</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-red-500" />
+                        <span className={`text-sm ${isLuxuryTheme ? 'text-red-400' : 'text-red-600'}`}>Out of Stock</span>
+                      </div>
+                    )}
+                  </div>
+
                   <Separator className={isLuxuryTheme ? "bg-white/10 mb-8" : "mb-8"} />
 
                   {/* Variants */}
@@ -785,8 +821,8 @@ export default function ProductDetailPage() {
                     <div className="mb-8 space-y-4">
                       <span className={`text-sm uppercase tracking-widest font-medium ${isLuxuryTheme ? 'text-white/50' : 'text-muted-foreground'}`}>Select Option</span>
                       <div className="flex flex-wrap gap-3">
-                        {product.variants.map((variant: any) => {
-                          const variantName = variant.name || variant;
+                        {product.variants.map((variant) => {
+                          const variantName = variant;
                           return (
                             <button
                               key={variantName}
@@ -932,7 +968,7 @@ export default function ProductDetailPage() {
                 <TabsContent value="description" className="mt-0">
                   <div className={`prose max-w-none ${isLuxuryTheme ? 'prose-invert prose-p:text-white/70 prose-headings:text-white' : ''}`}>
                     {product.description ? (
-                      <div dangerouslySetInnerHTML={{ __html: product.description }} />
+                      <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description) }} />
                     ) : (
                       <p className="text-white/50">No description available for this product.</p>
                     )}

@@ -5,8 +5,8 @@
 
 export { default as ShopLayout } from './ShopLayout';
 export { default as StorefrontPage } from './StorefrontPage';
-export { default as ProductCatalogPage } from './ProductCatalogPage';
-export { default as ProductDetailPage } from './ProductDetailPage';
+export { ProductCatalogPage } from './ProductCatalogPage';
+export { ProductDetailPage } from './ProductDetailPage';
 export { default as CartPage } from './CartPage';
 export { default as CheckoutPage } from './CheckoutPage';
 export { default as OrderConfirmationPage } from './OrderConfirmationPage';
