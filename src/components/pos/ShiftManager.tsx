@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -9,8 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { DollarSign, Clock, Users, TrendingUp } from 'lucide-react';
+import { DollarSign, Clock, TrendingUp, FileText, AlertTriangle, Receipt } from 'lucide-react';
 import { useRealtimeShifts, useRealtimeTransactions, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
+import { queryKeys } from '@/lib/queryKeys';
+import { ZReport } from './ZReport';
 
 interface Shift {
   id: string;
@@ -21,11 +23,29 @@ interface Shift {
   ended_at: string | null;
   opening_cash: number;
   closing_cash: number | null;
+  expected_cash: number | null;
+  cash_difference: number | null;
   total_sales: number;
   total_transactions: number;
   cash_sales: number;
   card_sales: number;
+  other_sales: number;
+  refunds_amount: number | null;
   status: 'open' | 'closed';
+}
+
+interface Transaction {
+  id: string;
+  transaction_number: string;
+  total_amount: number;
+  subtotal: number;
+  tax_amount: number | null;
+  discount_amount: number | null;
+  payment_method: string;
+  payment_status: string;
+  customer_name: string | null;
+  created_at: string;
+  items: unknown;
 }
 
 export function ShiftManager() {
@@ -36,17 +56,38 @@ export function ShiftManager() {
 
   const [isStartShiftOpen, setIsStartShiftOpen] = useState(false);
   const [isCloseShiftOpen, setIsCloseShiftOpen] = useState(false);
+  const [isZReportOpen, setIsZReportOpen] = useState(false);
+  const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
   const [openingCash, setOpeningCash] = useState('0.00');
   const [closingCash, setClosingCash] = useState('0.00');
   const [cashierName, setCashierName] = useState('');
   const [terminalId, setTerminalId] = useState('Terminal-1');
+
+  // Validation helpers
+  const openingCashValue = parseFloat(openingCash) || 0;
+  const closingCashValue = parseFloat(closingCash) || 0;
+  const isOpeningCashValid = openingCashValue >= 0 && !isNaN(openingCashValue);
+  const isClosingCashValid = closingCashValue >= 0 && !isNaN(closingCashValue);
+
+  const handleOpeningCashChange = (value: string) => {
+    // Allow empty string for typing, but validate on blur/submit
+    if (value === '' || /^-?\d*\.?\d{0,2}$/.test(value)) {
+      setOpeningCash(value);
+    }
+  };
+
+  const handleClosingCashChange = (value: string) => {
+    if (value === '' || /^-?\d*\.?\d{0,2}$/.test(value)) {
+      setClosingCash(value);
+    }
+  };
 
   // Enable real-time updates for shifts and transactions
   useRealtimeShifts(tenantId);
 
   // Get active shift
   const { data: activeShift, isLoading } = useQuery({
-    queryKey: ['active-shift', tenantId],
+    queryKey: queryKeys.pos.shifts.active(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 
@@ -70,9 +111,29 @@ export function ShiftManager() {
   useRealtimeTransactions(tenantId, activeShift?.id);
   useRealtimeCashDrawer(activeShift?.id);
 
+  // Get transactions for the active shift
+  const { data: shiftTransactions } = useQuery({
+    queryKey: queryKeys.pos.shifts.transactions(activeShift?.id),
+    queryFn: async () => {
+      if (!activeShift?.id) return [];
+
+      const { data, error } = await supabase
+        .from('pos_transactions')
+        .select('*')
+        .eq('shift_id', activeShift.id)
+        .eq('tenant_id', tenantId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as Transaction[];
+    },
+    enabled: !!activeShift?.id && !!tenantId,
+    refetchInterval: 30000,
+  });
+
   // Get recent closed shifts
   const { data: recentShifts } = useQuery({
-    queryKey: ['recent-shifts', tenantId],
+    queryKey: queryKeys.pos.shifts.recent(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -90,10 +151,38 @@ export function ShiftManager() {
     enabled: !!tenantId,
   });
 
+  // Calculate shift summary from transactions
+  const shiftSummary = useMemo(() => {
+    if (!shiftTransactions || shiftTransactions.length === 0) {
+      return {
+        transactionCount: 0,
+        cashTransactions: 0,
+        cardTransactions: 0,
+        avgTransactionValue: 0,
+      };
+    }
+
+    const cashTxns = shiftTransactions.filter(t => t.payment_method === 'cash');
+    const cardTxns = shiftTransactions.filter(t => t.payment_method === 'card');
+    const totalValue = shiftTransactions.reduce((sum, t) => sum + t.total_amount, 0);
+
+    return {
+      transactionCount: shiftTransactions.length,
+      cashTransactions: cashTxns.length,
+      cardTransactions: cardTxns.length,
+      avgTransactionValue: shiftTransactions.length > 0 ? totalValue / shiftTransactions.length : 0,
+    };
+  }, [shiftTransactions]);
+
   // Start shift mutation
   const startShiftMutation = useMutation({
     mutationFn: async () => {
       if (!tenantId) throw new Error('Tenant ID required');
+
+      const openingAmount = parseFloat(openingCash) || 0;
+      if (openingAmount < 0) {
+        throw new Error('Opening cash amount must be greater than or equal to 0');
+      }
 
       // Generate shift number: SHIFT-YYYYMMDD-HHMMSS
       const now = new Date();
@@ -118,7 +207,7 @@ export function ShiftManager() {
           terminal_id: terminalId,
           cashier_id: (await supabase.auth.getUser()).data.user?.id || '',
           cashier_name: cashierName,
-          opening_cash: parseFloat(openingCash),
+          opening_cash: openingAmount,
           status: 'open',
           shift_number: shiftNumber,
         }] as PosShiftInsert[])
@@ -129,7 +218,8 @@ export function ShiftManager() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['active-shift', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.active(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.recent(tenantId) });
       toast({ title: 'Shift started', description: 'Your POS shift has been opened.' });
       setIsStartShiftOpen(false);
       setCashierName('');
@@ -145,7 +235,11 @@ export function ShiftManager() {
     mutationFn: async () => {
       if (!tenantId || !activeShift) throw new Error('No active shift');
 
-      const closingAmount = parseFloat(closingCash);
+      const closingAmount = parseFloat(closingCash) || 0;
+      if (closingAmount < 0) {
+        throw new Error('Closing cash amount must be greater than or equal to 0');
+      }
+
       const expectedCash = activeShift.opening_cash + activeShift.cash_sales;
       const difference = closingAmount - expectedCash;
 
@@ -159,6 +253,7 @@ export function ShiftManager() {
           cash_difference: difference,
         })
         .eq('id', activeShift.id)
+        .eq('tenant_id', tenantId)
         .select()
         .maybeSingle();
 
@@ -166,8 +261,9 @@ export function ShiftManager() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['active-shift', tenantId] });
-      queryClient.invalidateQueries({ queryKey: ['recent-shifts', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.active(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.recent(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.transactions(activeShift?.id) });
       toast({ title: 'Shift closed', description: 'Your POS shift has been closed successfully.' });
       setIsCloseShiftOpen(false);
       setClosingCash('0.00');
@@ -176,6 +272,12 @@ export function ShiftManager() {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     },
   });
+
+  // Handler to view Z-Report for a shift
+  const handleViewZReport = (shiftId: string) => {
+    setSelectedShiftId(shiftId);
+    setIsZReportOpen(true);
+  };
 
   if (isLoading) {
     return <div className="text-center py-8">Loading shift information...</div>;
@@ -260,6 +362,68 @@ export function ShiftManager() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Expected Cash Calculation */}
+            <div className="mt-4 pt-4 border-t">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Expected Cash</p>
+                  <p className="font-semibold text-lg">
+                    ${(activeShift.opening_cash + activeShift.cash_sales).toFixed(2)}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Avg Transaction</p>
+                  <p className="font-semibold text-lg">
+                    ${shiftSummary.avgTransactionValue.toFixed(2)}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Cash Txns</p>
+                  <p className="font-semibold text-lg">{shiftSummary.cashTransactions}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Card Txns</p>
+                  <p className="font-semibold text-lg">{shiftSummary.cardTransactions}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Transactions Summary */}
+            {shiftTransactions && shiftTransactions.length > 0 && (
+              <div className="mt-4 pt-4 border-t">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold flex items-center gap-2">
+                    <Receipt className="h-4 w-4" />
+                    Recent Transactions
+                  </h4>
+                  <span className="text-sm text-muted-foreground">
+                    {shiftTransactions.length} total
+                  </span>
+                </div>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {shiftTransactions.slice(0, 5).map((transaction) => (
+                    <div
+                      key={transaction.id}
+                      className="flex items-center justify-between p-2 bg-muted rounded-md text-sm"
+                    >
+                      <div>
+                        <span className="font-medium">{transaction.transaction_number}</span>
+                        <span className="text-muted-foreground ml-2">
+                          {new Date(transaction.created_at).toLocaleTimeString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs">
+                          {transaction.payment_method}
+                        </Badge>
+                        <span className="font-semibold">${transaction.total_amount.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -282,23 +446,46 @@ export function ShiftManager() {
         <Card>
           <CardHeader>
             <CardTitle>Recent Closed Shifts</CardTitle>
+            <CardDescription>View shift summaries and end-of-day reports</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentShifts.map((shift) => (
-                <div key={shift.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <p className="font-semibold">{shift.shift_number}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {shift.cashier_name} • {new Date(shift.ended_at!).toLocaleDateString()}
-                    </p>
+              {recentShifts.map((shift) => {
+                const variance = shift.cash_difference ?? 0;
+                const hasVariance = Math.abs(variance) > 0.01;
+                return (
+                  <div key={shift.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold">{shift.shift_number}</p>
+                        {hasVariance && (
+                          <Badge
+                            variant={variance >= 0 ? 'default' : 'destructive'}
+                            className="text-xs"
+                          >
+                            {variance >= 0 ? '+' : ''}${variance.toFixed(2)} variance
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {shift.cashier_name} • {new Date(shift.ended_at!).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right mr-4">
+                      <p className="font-semibold">${shift.total_sales.toFixed(2)}</p>
+                      <p className="text-sm text-muted-foreground">{shift.total_transactions} transactions</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewZReport(shift.id)}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      Z-Report
+                    </Button>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold">${shift.total_sales.toFixed(2)}</p>
-                    <p className="text-sm text-muted-foreground">{shift.total_transactions} transactions</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
@@ -336,19 +523,31 @@ export function ShiftManager() {
                 id="opening-cash"
                 type="number"
                 step="0.01"
+                min="0"
                 value={openingCash}
-                onChange={(e) => setOpeningCash(e.target.value)}
+                onChange={(e) => handleOpeningCashChange(e.target.value)}
                 placeholder="0.00"
+                className={!isOpeningCashValid && openingCash !== '' ? 'border-red-500' : ''}
               />
+              {!isOpeningCashValid && openingCash !== '' && (
+                <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  Cash amount must be 0 or greater
+                </p>
+              )}
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsStartShiftOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsStartShiftOpen(false)}
+              disabled={startShiftMutation.isPending}
+            >
               Cancel
             </Button>
             <Button
               onClick={() => startShiftMutation.mutate()}
-              disabled={!cashierName || startShiftMutation.isPending}
+              disabled={!cashierName || !isOpeningCashValid || startShiftMutation.isPending}
             >
               {startShiftMutation.isPending ? 'Starting...' : 'Start Shift'}
             </Button>
@@ -377,45 +576,89 @@ export function ShiftManager() {
                   <p className="font-semibold">${activeShift.total_sales.toFixed(2)}</p>
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg text-sm">
+                <div>
+                  <p className="text-muted-foreground">Opening Cash</p>
+                  <p className="font-medium">${activeShift.opening_cash.toFixed(2)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">+ Cash Sales</p>
+                  <p className="font-medium">${activeShift.cash_sales.toFixed(2)}</p>
+                </div>
+              </div>
               <div>
                 <Label htmlFor="closing-cash">Actual Cash Count</Label>
                 <Input
                   id="closing-cash"
                   type="number"
                   step="0.01"
+                  min="0"
                   value={closingCash}
-                  onChange={(e) => setClosingCash(e.target.value)}
+                  onChange={(e) => handleClosingCashChange(e.target.value)}
                   placeholder="0.00"
+                  className={!isClosingCashValid && closingCash !== '' ? 'border-red-500' : ''}
                 />
-                {closingCash && (
-                  <p className="text-sm mt-2">
-                    Difference:{' '}
-                    <span
-                      className={
-                        parseFloat(closingCash) - (activeShift.opening_cash + activeShift.cash_sales) >= 0
-                          ? 'text-green-600'
-                          : 'text-red-600'
-                      }
-                    >
-                      ${(parseFloat(closingCash) - (activeShift.opening_cash + activeShift.cash_sales)).toFixed(2)}
-                    </span>
+                {!isClosingCashValid && closingCash !== '' && (
+                  <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    Cash amount must be 0 or greater
                   </p>
+                )}
+                {isClosingCashValid && closingCash && (
+                  <div className="mt-2 p-3 rounded-lg bg-muted">
+                    <p className="text-sm font-medium">
+                      Variance:{' '}
+                      <span
+                        className={
+                          closingCashValue - (activeShift.opening_cash + activeShift.cash_sales) >= 0
+                            ? 'text-green-600'
+                            : 'text-red-600'
+                        }
+                      >
+                        {closingCashValue - (activeShift.opening_cash + activeShift.cash_sales) >= 0 ? '+' : ''}
+                        ${(closingCashValue - (activeShift.opening_cash + activeShift.cash_sales)).toFixed(2)}
+                      </span>
+                    </p>
+                    {Math.abs(closingCashValue - (activeShift.opening_cash + activeShift.cash_sales)) > 10 && (
+                      <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3" />
+                        Large variance detected. Please verify count.
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCloseShiftOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsCloseShiftOpen(false)}
+              disabled={closeShiftMutation.isPending}
+            >
               Cancel
             </Button>
             <Button
               onClick={() => closeShiftMutation.mutate()}
-              disabled={!closingCash || closeShiftMutation.isPending}
+              disabled={!isClosingCashValid || closingCash === '' || closeShiftMutation.isPending}
               variant="destructive"
             >
               {closeShiftMutation.isPending ? 'Closing...' : 'Close Shift'}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Z-Report Dialog */}
+      <Dialog open={isZReportOpen} onOpenChange={setIsZReportOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>End of Day Report</DialogTitle>
+            <DialogDescription>
+              Complete shift summary and transaction details
+            </DialogDescription>
+          </DialogHeader>
+          {selectedShiftId && <ZReport shiftId={selectedShiftId} />}
         </DialogContent>
       </Dialog>
     </div>

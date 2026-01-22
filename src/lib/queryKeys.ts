@@ -185,10 +185,23 @@ export const queryKeys = {
   // POS / Cash Register
   pos: {
     all: ['pos'] as const,
-    products: (tenantId?: string) => 
+    products: (tenantId?: string) =>
       [...queryKeys.pos.all, 'products', { tenantId }] as const,
-    transactions: (tenantId?: string) => 
+    transactions: (tenantId?: string) =>
       [...queryKeys.pos.all, 'transactions', { tenantId }] as const,
+    shifts: {
+      all: () => [...queryKeys.pos.all, 'shifts'] as const,
+      active: (tenantId?: string) =>
+        [...queryKeys.pos.shifts.all(), 'active', tenantId] as const,
+      recent: (tenantId?: string) =>
+        [...queryKeys.pos.shifts.all(), 'recent', tenantId] as const,
+      detail: (shiftId?: string) =>
+        [...queryKeys.pos.shifts.all(), 'detail', shiftId] as const,
+      transactions: (shiftId?: string) =>
+        [...queryKeys.pos.shifts.all(), 'transactions', shiftId] as const,
+      summary: (tenantId?: string) =>
+        [...queryKeys.pos.shifts.all(), 'summary', tenantId] as const,
+    },
   },
 
   // Batches
