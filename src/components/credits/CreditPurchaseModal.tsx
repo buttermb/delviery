@@ -15,9 +15,10 @@ interface CreditPurchaseModalProps {
 }
 
 const PACKAGES = [
-  { id: 'starter-pack', credits: 1000, price: 10, label: 'Starter Pack', popular: false },
-  { id: 'growth-pack', credits: 5000, price: 45, label: 'Growth Pack', popular: true },
-  { id: 'power-pack', credits: 10000, price: 80, label: 'Power Pack', popular: false },
+  { id: 'starter-pack', credits: 5000, price: 9.99, label: 'Starter Pack', popular: false },
+  { id: 'growth-pack', credits: 15000, price: 24.99, label: 'Growth Pack', popular: true },
+  { id: 'power-pack', credits: 50000, price: 49.99, label: 'Power Pack', popular: false },
+  { id: 'enterprise-pack', credits: 150000, price: 179.99, label: 'Enterprise Pack', popular: false },
 ];
 
 export function CreditPurchaseModal({ open, onOpenChange }: CreditPurchaseModalProps) {
@@ -69,7 +70,7 @@ export function CreditPurchaseModal({ open, onOpenChange }: CreditPurchaseModalP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px]">
+      <DialogContent className="sm:max-w-[900px]">
         <DialogHeader>
           <DialogTitle>Top Up Credits</DialogTitle>
           <DialogDescription>
@@ -77,7 +78,7 @@ export function CreditPurchaseModal({ open, onOpenChange }: CreditPurchaseModalP
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 py-4">
           {PACKAGES.map((pkg) => (
             <Card key={pkg.id} className={`relative ${pkg.popular ? 'border-primary ring-2 ring-primary/20' : ''}`}>
               {pkg.popular && (
