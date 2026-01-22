@@ -20,8 +20,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, AlertCircle } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
+import { validateFile, generateSecureStoragePath, FILE_SIZE_LIMITS, formatFileSize } from "@/lib/fileValidation";
 
 interface DocumentUploadProps {
   open: boolean;
@@ -43,6 +44,7 @@ export function DocumentUpload({
     file: null as File | null,
   });
   const [uploading, setUploading] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const uploadMutation = useMutation({
     mutationFn: async (data: {
@@ -57,19 +59,25 @@ export function DocumentUpload({
       let fileUrl: string | null = null;
 
       try {
-        // Upload file to Supabase Storage
+        // Upload file to Supabase Storage with secure path
         if (data.file) {
-          const fileExt = data.file.name.split(".").pop();
-          const fileName = `${tenant.id}/${Date.now()}.${fileExt}`;
+          const storagePath = generateSecureStoragePath(
+            data.file.name,
+            'compliance',
+            tenant.id
+          );
+
           const { error: uploadError } = await supabase.storage
             .from("compliance-documents")
-            .upload(fileName, data.file);
+            .upload(storagePath, data.file, {
+              contentType: data.file.type,
+            });
 
           if (uploadError) throw uploadError;
 
           const { data: urlData } = supabase.storage
             .from("compliance-documents")
-            .getPublicUrl(fileName);
+            .getPublicUrl(storagePath);
           fileUrl = urlData.publicUrl;
         }
 
@@ -112,11 +120,45 @@ export function DocumentUpload({
     },
   });
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFileError(null);
+
+    if (file) {
+      // Validate the file before accepting it
+      const validation = await validateFile(file, {
+        context: 'complianceDocument',
+        maxSize: FILE_SIZE_LIMITS.document,
+      });
+
+      if (!validation.isValid) {
+        setFileError(validation.error || 'Invalid file');
+        e.target.value = '';
+        toast.error(validation.error || 'Invalid file');
+        return;
+      }
+    }
+
+    setFormData({ ...formData, file });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.name || !formData.file) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+
+    // Double-check file validation before upload
+    const validation = await validateFile(formData.file, {
+      context: 'complianceDocument',
+      maxSize: FILE_SIZE_LIMITS.document,
+    });
+
+    if (!validation.isValid) {
+      setFileError(validation.error || 'Invalid file');
+      toast.error(validation.error || 'Invalid file');
       return;
     }
 
@@ -181,16 +223,19 @@ export function DocumentUpload({
               <Input
                 id="file"
                 type="file"
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    file: e.target.files?.[0] || null,
-                  })
-                }
+                accept="application/pdf,image/jpeg,image/png"
+                onChange={handleFileChange}
                 required
                 className="min-h-[44px] touch-manipulation"
               />
+              {fileError && <AlertCircle className="h-4 w-4 text-destructive" />}
             </div>
+            {fileError && (
+              <p className="text-sm text-destructive">{fileError}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              PDF, JPEG, or PNG. Max {formatFileSize(FILE_SIZE_LIMITS.document)}.
+            </p>
           </div>
 
           <div className="space-y-2">

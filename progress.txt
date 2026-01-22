@@ -1,0 +1,79 @@
+# File Upload Security Review - Progress Report
+
+## Task: Review File Upload Security
+
+### Completed Work
+
+#### 1. Security Audit
+Reviewed all file upload functionality across the codebase:
+- IDVerificationUpload.tsx - ID verification uploads
+- DocumentUpload.tsx - Compliance document uploads
+- COAUpload.tsx - Certificate of Analysis uploads
+- ImagesStep.tsx - Product image uploads
+- PhotoProof.tsx - Delivery photo uploads
+- ProductImportDialog.tsx - CSV/Excel import
+- UploadStep.tsx - Menu migration uploads
+- file-upload.tsx - Generic file upload component
+
+#### 2. Vulnerabilities Identified
+- Missing server-side MIME type verification (magic bytes)
+- Inconsistent file size limits across components
+- Potential path traversal in filenames
+- Double extension attacks possible (e.g., file.php.jpg)
+- No protection against dangerous file types (executables, scripts)
+- CSV formula injection risk in data imports
+- No sanitization of uploaded filenames
+
+#### 3. Security Improvements Implemented
+
+**New File: src/lib/fileValidation.ts**
+- Magic bytes detection for JPEG, PNG, GIF, WebP, PDF, XLSX/XLS
+- Dangerous file extension blocking (exe, php, js, bat, etc.)
+- Filename sanitization (path traversal, null bytes, control characters)
+- Double extension attack prevention
+- Context-aware MIME type validation
+- File size limit enforcement
+- CSV formula injection detection
+- Secure storage path generation
+
+**New File: src/hooks/useSecureFileUpload.ts**
+- Reusable hook for secure file uploads
+- Progress tracking
+- Validation error handling
+- Context-specific rules
+
+**Updated Components:**
+- IDVerificationUpload.tsx - Added validation, secure paths, error states
+- DocumentUpload.tsx - Added validation, secure paths, error states
+- COAUpload.tsx - Added validation, secure paths, error states
+
+#### 4. Testing
+Created comprehensive test suite in src/lib/fileValidation.test.ts:
+- 39 test cases covering all validation functions
+- Filename sanitization tests
+- Extension validation tests
+- MIME type detection tests
+- Context-specific validation tests
+- File size validation tests
+
+### Security Features Added
+1. **Magic Byte Verification** - Detects file type from content, not just extension
+2. **Dangerous Extension Blocking** - Blocks executables, scripts, web shells
+3. **Path Traversal Prevention** - Sanitizes filenames to prevent directory traversal
+4. **Double Extension Protection** - Strips dangerous extensions from double-extension files
+5. **Size Limits** - Enforced per upload context (10MB images, 25MB docs, 50MB spreadsheets)
+6. **CSV Injection Protection** - Detects formula injection attempts in CSV imports
+7. **Secure Path Generation** - Uses timestamps and random strings for storage paths
+
+### Files Changed
+- src/lib/fileValidation.ts (new)
+- src/lib/fileValidation.test.ts (new)
+- src/hooks/useSecureFileUpload.ts (new)
+- src/components/IDVerificationUpload.tsx (modified)
+- src/components/admin/compliance/DocumentUpload.tsx (modified)
+- src/components/admin/quality/COAUpload.tsx (modified)
+
+### Test Results
+All 39 tests passing.
+Build successful.
+Linting passed for new files.
