@@ -221,7 +221,11 @@ export default function ProductManagement() {
 
   // Load products
   const loadProducts = async () => {
-    if (!tenant?.id) return;
+    if (!tenant?.id) {
+      toast.error('Tenant not found. Please refresh.');
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -232,8 +236,9 @@ export default function ProductManagement() {
 
       if (error) throw error;
       setProducts(data || []);
-    } catch (err: any) {
-      logger.error('Error loading products:', err);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      logger.error('Error loading products:', { error: errorMessage });
       toast.error('Failed to load products');
     } finally {
       setLoading(false);
@@ -313,13 +318,90 @@ export default function ProductManagement() {
     return Array.from(uniqueMap.values());
   }, [batchProducts, selectedProducts, products]);
 
+  // Validate product form data
+  const validateProductData = (data: ProductFormData): string | null => {
+    // Price validation (must be >= 0)
+    const costPerUnit = data.cost_per_unit ? parseFloat(data.cost_per_unit) : 0;
+    const wholesalePrice = data.wholesale_price ? parseFloat(data.wholesale_price) : 0;
+    const retailPrice = data.retail_price ? parseFloat(data.retail_price) : 0;
+
+    if (costPerUnit < 0) return 'Cost per unit must be 0 or greater';
+    if (wholesalePrice < 0) return 'Wholesale price must be 0 or greater';
+    if (retailPrice < 0) return 'Retail price must be 0 or greater';
+
+    // Stock quantity validation (must be integer >= 0)
+    const quantity = data.available_quantity ? parseFloat(data.available_quantity) : 0;
+    if (quantity < 0) return 'Stock quantity must be 0 or greater';
+    if (!Number.isInteger(quantity)) return 'Stock quantity must be a whole number';
+
+    // THC/CBD percentage validation (0-100)
+    const thcPercent = data.thc_percent ? parseFloat(data.thc_percent) : null;
+    const cbdPercent = data.cbd_percent ? parseFloat(data.cbd_percent) : null;
+
+    if (thcPercent !== null && (thcPercent < 0 || thcPercent > 100)) {
+      return 'THC percentage must be between 0 and 100';
+    }
+    if (cbdPercent !== null && (cbdPercent < 0 || cbdPercent > 100)) {
+      return 'CBD percentage must be between 0 and 100';
+    }
+
+    return null;
+  };
+
+  // Check SKU uniqueness within tenant
+  const checkSkuUniqueness = async (sku: string, excludeProductId?: string): Promise<boolean> => {
+    if (!sku || !tenant?.id) return true;
+
+    let query = supabase
+      .from('products')
+      .select('id')
+      .eq('tenant_id', tenant.id)
+      .eq('sku', sku);
+
+    if (excludeProductId) {
+      query = query.neq('id', excludeProductId);
+    }
+
+    const { data, error } = await query.maybeSingle();
+
+    if (error) {
+      logger.error('Error checking SKU uniqueness:', { error: error.message });
+      return true; // Allow submission on error, let DB handle constraint
+    }
+
+    return data === null;
+  };
+
   // Handlers
   const handleProductSubmit = async (data: ProductFormData) => {
+    // Validate tenant context first
+    if (!tenant?.id) {
+      toast.error('Tenant not found. Please refresh.');
+      return;
+    }
+
+    // Validate form data
+    const validationError = validateProductData(data);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
     setIsGenerating(true);
     try {
+      // Check SKU uniqueness (if SKU provided)
+      if (data.sku) {
+        const isSkuUnique = await checkSkuUniqueness(data.sku, editingProduct?.id);
+        if (!isSkuUnique) {
+          toast.error('SKU already exists. Please use a unique SKU.');
+          setIsGenerating(false);
+          return;
+        }
+      }
+
       // Ensure all required fields for DB are present
       const productData = {
-        tenant_id: tenant?.id,
+        tenant_id: tenant.id,
         name: data.name,
         sku: data.sku,
         category: data.category,
@@ -332,7 +414,7 @@ export default function ProductManagement() {
         cost_per_unit: data.cost_per_unit ? parseFloat(data.cost_per_unit) : null,
         wholesale_price: data.wholesale_price ? parseFloat(data.wholesale_price) : null,
         retail_price: data.retail_price ? parseFloat(data.retail_price) : null,
-        available_quantity: data.available_quantity ? parseFloat(data.available_quantity) : 0,
+        available_quantity: data.available_quantity ? Math.floor(parseFloat(data.available_quantity)) : 0,
         description: data.description,
         image_url: data.image_url,
         low_stock_alert: data.low_stock_alert ? parseInt(data.low_stock_alert) : 10,
@@ -387,7 +469,11 @@ export default function ProductManagement() {
   }
 
   const confirmDelete = async () => {
-    if (!productToDelete || !tenant?.id) return;
+    if (!productToDelete) return;
+    if (!tenant?.id) {
+      toast.error('Tenant not found. Please refresh.');
+      return;
+    }
     setIsDeleting(true);
     try {
       // Check if product is used in any orders
@@ -453,7 +539,11 @@ export default function ProductManagement() {
   };
 
   const handleCombinedBatchDelete = () => {
-    if (!tenant?.id || combinedBatchProducts.length === 0) return;
+    if (combinedBatchProducts.length === 0) return;
+    if (!tenant?.id) {
+      toast.error('Tenant not found. Please refresh.');
+      return;
+    }
 
     confirmBatchDelete({
       title: 'Delete Products',
@@ -583,11 +673,34 @@ export default function ProductManagement() {
 
   // Inline quick edit handler
   const handleInlineUpdate = async (productId: string, field: keyof Product, value: string) => {
-    if (!tenant?.id) return;
+    if (!tenant?.id) {
+      toast.error('Tenant not found. Please refresh.');
+      return;
+    }
 
     let updateValue: number | string | null = value;
-    if (field === 'wholesale_price' || field === 'retail_price' || field === 'available_quantity') {
-      updateValue = value ? parseFloat(value) : null;
+
+    // Validate and parse numeric fields
+    if (field === 'wholesale_price' || field === 'retail_price') {
+      const numValue = value ? parseFloat(value) : null;
+      if (numValue !== null && numValue < 0) {
+        toast.error('Price must be 0 or greater');
+        return;
+      }
+      updateValue = numValue;
+    } else if (field === 'available_quantity') {
+      const numValue = value ? parseFloat(value) : null;
+      if (numValue !== null) {
+        if (numValue < 0) {
+          toast.error('Quantity must be 0 or greater');
+          return;
+        }
+        if (!Number.isInteger(numValue)) {
+          toast.error('Quantity must be a whole number');
+          return;
+        }
+      }
+      updateValue = numValue !== null ? Math.floor(numValue) : null;
     }
 
     try {
