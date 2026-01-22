@@ -1,9 +1,15 @@
 /**
  * OutOfCreditsModal Component
- * 
+ *
  * Blocking modal when user tries to perform an action without credits.
  * Shows conversion-focused messaging to push toward subscription.
  * Enhanced with urgency messaging and clear value comparison.
+ *
+ * Features:
+ * - Progress bar showing required vs available credits
+ * - Quick purchase buttons for 5K and 15K credit packages
+ * - Auto top-up setup suggestion
+ * - Link to all packages
  */
 
 import { useNavigate } from 'react-router-dom';
@@ -15,9 +21,11 @@ import {
   Calculator,
   Sparkles,
   Clock,
-  TrendingUp,
   X,
   CheckCircle,
+  Zap,
+  Settings,
+  ExternalLink,
 } from 'lucide-react';
 import {
   Dialog,
@@ -29,6 +37,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCredits } from '@/hooks/useCredits';
 import {
@@ -37,11 +46,19 @@ import {
   CREDIT_PACKAGES,
 } from '@/lib/credits';
 
+// Quick purchase packages: 5K and 15K
+const QUICK_PACKAGES = [
+  { id: 'starter-pack', credits: 5000, price: 9.99, label: '5K Credits' },
+  { id: 'growth-pack', credits: 15000, price: 24.99, label: '15K Credits' },
+];
+
 export interface OutOfCreditsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   actionAttempted?: string;
   onBuyCredits?: () => void;
+  onQuickPurchase?: (packageId: string) => void;
+  onSetupAutoTopUp?: () => void;
 }
 
 export function OutOfCreditsModal({
@@ -49,13 +66,20 @@ export function OutOfCreditsModal({
   onOpenChange,
   actionAttempted,
   onBuyCredits,
+  onQuickPurchase,
+  onSetupAutoTopUp,
 }: OutOfCreditsModalProps) {
   const navigate = useNavigate();
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, tenantSlug } = useTenantAdminAuth();
   const { lifetimeSpent, balance } = useCredits();
 
   // Get action info if provided
   const actionInfo = actionAttempted ? getCreditCostInfo(actionAttempted) : null;
+
+  // Calculate progress for the progress bar (how much of required credits we have)
+  const requiredCredits = actionInfo?.credits ?? 100;
+  const progressPercent = Math.min(100, Math.max(0, (balance / requiredCredits) * 100));
+  const creditsNeeded = Math.max(0, requiredCredits - balance);
 
   // Calculate how much they would save with subscription
   const comparison = calculateCreditVsSubscription(
@@ -68,12 +92,31 @@ export function OutOfCreditsModal({
 
   const handleUpgrade = () => {
     onOpenChange(false);
-    navigate(`/${tenant?.slug}/admin/select-plan`);
+    navigate(`/${tenantSlug}/admin/select-plan`);
   };
 
   const handleBuyCredits = () => {
     onOpenChange(false);
     onBuyCredits?.();
+  };
+
+  const handleQuickPurchase = (packageId: string) => {
+    onOpenChange(false);
+    onQuickPurchase?.(packageId);
+  };
+
+  const handleSetupAutoTopUp = () => {
+    onOpenChange(false);
+    if (onSetupAutoTopUp) {
+      onSetupAutoTopUp();
+    } else {
+      navigate(`/${tenantSlug}/admin/billing?tab=auto-top-up`);
+    }
+  };
+
+  const handleViewAllPackages = () => {
+    onOpenChange(false);
+    navigate(`/${tenantSlug}/admin/billing?tab=credits`);
   };
 
   return (
@@ -92,20 +135,43 @@ export function OutOfCreditsModal({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          {/* Blocked Action + Balance */}
+          {/* Credit Progress Visualization */}
+          <div className="p-4 rounded-lg bg-muted/30 border">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium">Credits Required</span>
+              <span className="text-sm text-muted-foreground">
+                {balance.toLocaleString()} / {requiredCredits.toLocaleString()}
+              </span>
+            </div>
+            <Progress
+              value={progressPercent}
+              className="h-3"
+              data-testid="credits-progress"
+            />
+            <div className="flex justify-between items-center mt-2">
+              <span className="text-xs text-red-500 font-medium">
+                Need {creditsNeeded.toLocaleString()} more credits
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {progressPercent.toFixed(0)}% available
+              </span>
+            </div>
+          </div>
+
+          {/* Blocked Action + Balance Cards */}
           <div className="grid grid-cols-2 gap-3">
             {actionInfo && (
               <div className="p-3 rounded-lg bg-muted/50 text-center">
                 <div className="text-xs text-muted-foreground mb-1">Action Cost</div>
                 <div className="text-lg font-bold text-amber-600">
-                  {actionInfo.credits} credits
+                  {actionInfo.credits.toLocaleString()} credits
                 </div>
               </div>
             )}
             <div className={`p-3 rounded-lg bg-red-500/5 border border-red-500/20 text-center ${!actionInfo ? 'col-span-2' : ''}`}>
               <div className="text-xs text-muted-foreground mb-1">Your Balance</div>
               <div className="text-lg font-bold text-red-500">
-                {balance} credits
+                {balance.toLocaleString()} credits
               </div>
             </div>
           </div>
@@ -120,6 +186,61 @@ export function OutOfCreditsModal({
               <span className="text-muted-foreground">
                 {' '}Your customers are waiting. Get back to business instantly.
               </span>
+            </div>
+          </div>
+
+          {/* Quick Purchase Buttons */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Zap className="h-4 w-4 text-primary" />
+              Quick Top-Up
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {QUICK_PACKAGES.map((pkg) => (
+                <Button
+                  key={pkg.id}
+                  variant="outline"
+                  className="h-auto py-3 flex-col gap-1"
+                  onClick={() => handleQuickPurchase(pkg.id)}
+                  data-testid={`quick-purchase-${pkg.id}`}
+                >
+                  <span className="font-bold text-primary">{pkg.label}</span>
+                  <span className="text-xs text-muted-foreground">${pkg.price}</span>
+                </Button>
+              ))}
+            </div>
+            <Button
+              variant="link"
+              size="sm"
+              className="w-full text-muted-foreground"
+              onClick={handleViewAllPackages}
+              data-testid="view-all-packages"
+            >
+              View all packages
+              <ExternalLink className="h-3 w-3 ml-1" />
+            </Button>
+          </div>
+
+          {/* Auto Top-Up Suggestion */}
+          <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
+            <div className="flex items-start gap-3">
+              <Settings className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Never run out again</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Set up auto top-up to automatically purchase credits when your balance is low.
+                </p>
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="h-auto p-0 mt-2 text-blue-500"
+                  onClick={handleSetupAutoTopUp}
+                  data-testid="setup-auto-top-up"
+                >
+                  Set up auto top-up
+                  <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
+              </div>
             </div>
           </div>
 

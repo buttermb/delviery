@@ -84,6 +84,13 @@ export type { CreditBurnRateDisplayProps } from './CreditBurnRateDisplay';
 export { GracePeriodBanner, useGracePeriod } from './GracePeriodBanner';
 export type { GracePeriodBannerProps, UseGracePeriodReturn } from './GracePeriodBanner';
 
+export { CreditAlertBanner } from './CreditAlertBanner';
+export type { CreditAlertBannerProps } from './CreditAlertBanner';
+
+// Re-export hook from hooks directory
+export { useCreditAlert } from '@/hooks/useCreditAlert';
+export type { UseCreditAlertReturn } from '@/hooks/useCreditAlert';
+
 
 
 
