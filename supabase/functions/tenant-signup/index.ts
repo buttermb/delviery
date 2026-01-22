@@ -477,6 +477,10 @@ serve(async (req) => {
                   owner_name,
                   tenant_slug: tenant.slug,
                   dashboard_url: `${siteUrl}/${tenant.slug}/admin/dashboard`,
+                  // Credit info for welcome email
+                  initial_credits: atomicResult.initial_credits || 10000,
+                  plan: tenant.subscription_plan || 'free',
+                  is_free_tier: tenant.is_free_tier !== false,
                 },
               }),
             }).catch((err) => {

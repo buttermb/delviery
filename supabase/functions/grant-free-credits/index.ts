@@ -23,11 +23,26 @@
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 
-// Reduced from 1,000 to 500 for aggressive monetization
-// 500 credits provides ~1 day of active business use
-// Maintains "free" illusion while driving upgrades
-const FREE_CREDITS_AMOUNT = 500;
+// Plan-based credit amounts per specification
+// These are the MONTHLY refresh amounts for existing tenants
+// Initial signup amounts are handled by create_tenant_atomic
+const PLAN_CREDIT_AMOUNTS: Record<string, number> = {
+  free: 10000,       // Free tier monthly refresh
+  starter: 25000,    // Starter plan monthly refresh
+  pro: 100000,       // Pro plan monthly refresh
+  professional: 100000,
+  enterprise: 500000, // Enterprise plan monthly refresh
+};
+
+// Default for unknown plans (backwards compatibility)
+const DEFAULT_CREDITS_AMOUNT = 10000;
 const ROLLOVER_PERCENTAGE = 0; // Set to 0.1 for 10% rollover, 0 for no rollover
+
+// Helper to get plan credit amount
+function getPlanCredits(plan: string | null | undefined): number {
+  if (!plan) return DEFAULT_CREDITS_AMOUNT;
+  return PLAN_CREDIT_AMOUNTS[plan.toLowerCase()] || DEFAULT_CREDITS_AMOUNT;
+}
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -81,7 +96,8 @@ serve(async (req) => {
 
     console.log('[GRANT_FREE_CREDITS] Starting daily credit grant job');
 
-    // Find all free tier tenants whose credits need refreshing
+    // Find all tenants whose credits need refreshing
+    // Note: We now query ALL tenants (not just free tier) to support plan-based amounts
     const { data: eligibleTenants, error: queryError } = await supabase
       .from('tenant_credits')
       .select(`
@@ -93,11 +109,11 @@ serve(async (req) => {
           id,
           slug,
           is_free_tier,
+          subscription_plan,
           subscription_status,
           owner_email
         )
       `)
-      .eq('tenants.is_free_tier', true)
       .lte('next_free_grant_at', new Date().toISOString());
 
     if (queryError) {
@@ -121,26 +137,22 @@ serve(async (req) => {
       const tenant = record.tenants as any;
 
       try {
-        // Skip if tenant is no longer on free tier
-        if (!tenant?.is_free_tier) {
-          console.log(`[GRANT_FREE_CREDITS] Skipping ${tenantId} - no longer free tier`);
-          results.skipped++;
-          continue;
-        }
+        // Get the plan-based credit amount
+        const planCredits = getPlanCredits(tenant?.subscription_plan);
 
         // Calculate new balance with rollover
-        const previousBalance = record.balance;
+        const previousBalance = record.balance || 0;
         const rolloverAmount = Math.floor(previousBalance * ROLLOVER_PERCENTAGE);
-        const newBalance = FREE_CREDITS_AMOUNT + rolloverAmount;
+        const newBalance = planCredits + rolloverAmount;
 
-        // Reset free credits balance, expire old ones, add new ones
+        // Reset credits balance, expire old ones, add new ones
         const { error: updateError } = await supabase
           .from('tenant_credits')
           .update({
             balance: newBalance,
-            free_credits_balance: FREE_CREDITS_AMOUNT,
+            free_credits_balance: tenant?.is_free_tier ? planCredits : 0,
             free_credits_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-            lifetime_earned: (record.lifetime_earned || 0) + FREE_CREDITS_AMOUNT,
+            lifetime_earned: (record.lifetime_earned || 0) + planCredits,
             last_free_grant_at: new Date().toISOString(),
             next_free_grant_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
             // Reset warning flags so they can trigger again
@@ -167,17 +179,18 @@ serve(async (req) => {
           .from('credit_transactions')
           .insert({
             tenant_id: tenantId,
-            amount: FREE_CREDITS_AMOUNT,
+            amount: planCredits,
             balance_after: newBalance,
             transaction_type: 'free_grant',
             action_type: 'monthly_refresh',
             reference_id: idempotencyKey,
-            description: 'Monthly credit refresh',
+            description: `Monthly credit refresh (${tenant?.subscription_plan || 'free'} plan)`,
             metadata: {
               previous_balance: previousBalance,
               expired_credits: previousBalance - rolloverAmount,
               rollover_amount: rolloverAmount,
               grant_date: grantDate,
+              plan: tenant?.subscription_plan || 'free',
             },
           });
 
@@ -188,7 +201,7 @@ serve(async (req) => {
           continue;
         }
 
-        console.log(`[GRANT_FREE_CREDITS] Granted ${FREE_CREDITS_AMOUNT} credits to ${tenant.slug} (rollover: ${rolloverAmount})`);
+        console.log(`[GRANT_FREE_CREDITS] Granted ${planCredits} credits to ${tenant.slug} (plan: ${tenant?.subscription_plan || 'free'}, rollover: ${rolloverAmount})`);
         results.granted++;
 
         // Track analytics event
@@ -200,7 +213,8 @@ serve(async (req) => {
             credits_at_event: newBalance,
             metadata: {
               previous_balance: record.balance,
-              granted_amount: FREE_CREDITS_AMOUNT,
+              granted_amount: planCredits,
+              plan: tenant?.subscription_plan || 'free',
             },
           });
 
@@ -219,8 +233,7 @@ serve(async (req) => {
     // Also check for tenants without a credit record that should have one
     const { data: tenantsWithoutCredits, error: missingError } = await supabase
       .from('tenants')
-      .select('id, slug')
-      .eq('is_free_tier', true)
+      .select('id, slug, subscription_plan, is_free_tier')
       .not('id', 'in', `(${(eligibleTenants || []).map(t => `'${t.tenant_id}'`).join(',') || "''"})`)
       .limit(100);
 
@@ -230,26 +243,28 @@ serve(async (req) => {
       for (const tenant of tenantsWithoutCredits) {
         try {
           const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+          const planCredits = getPlanCredits(tenant.subscription_plan);
 
-          // Create credit record with initial free credits
+          // Create credit record with plan-based credits
           const { error: createError } = await supabase
             .from('tenant_credits')
             .insert({
               tenant_id: tenant.id,
-              balance: FREE_CREDITS_AMOUNT,
-              free_credits_balance: FREE_CREDITS_AMOUNT,
+              balance: planCredits,
+              free_credits_balance: tenant.is_free_tier ? planCredits : 0,
               purchased_credits_balance: 0,
               free_credits_expires_at: expiresAt,
-              lifetime_earned: FREE_CREDITS_AMOUNT,
+              lifetime_earned: planCredits,
               lifetime_spent: 0,
               last_free_grant_at: new Date().toISOString(),
               next_free_grant_at: expiresAt,
               credits_used_today: 0,
               rollover_enabled: false,
+              tier_status: tenant.is_free_tier ? 'free' : 'paid',
             });
 
           if (!createError) {
-            console.log(`[GRANT_FREE_CREDITS] Created credit record for ${tenant.slug}`);
+            console.log(`[GRANT_FREE_CREDITS] Created credit record for ${tenant.slug} (${planCredits} credits, ${tenant.subscription_plan || 'free'} plan)`);
 
             // Log the initial grant transaction with idempotency
             const initKey = `initial_grant:${tenant.id}`;
@@ -257,12 +272,15 @@ serve(async (req) => {
               .from('credit_transactions')
               .insert({
                 tenant_id: tenant.id,
-                amount: FREE_CREDITS_AMOUNT,
-                balance_after: FREE_CREDITS_AMOUNT,
+                amount: planCredits,
+                balance_after: planCredits,
                 transaction_type: 'free_grant',
                 action_type: 'initial_grant',
                 reference_id: initKey,
-                description: 'Initial free credits',
+                description: `Initial credits (${tenant.subscription_plan || 'free'} plan)`,
+                metadata: {
+                  plan: tenant.subscription_plan || 'free',
+                },
               });
 
             results.granted++;
