@@ -3,7 +3,7 @@
  * Browse all products with search and filters
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,7 +30,9 @@ import {
   X,
   SlidersHorizontal,
   RefreshCw,
-  Eye
+  Eye,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
@@ -124,7 +126,7 @@ function transformProduct(rpc: RpcProduct): ProductWithSettings {
   };
 }
 
-export default function ProductCatalogPage() {
+export function ProductCatalogPage() {
   const { storeSlug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const { store } = useShop();
@@ -134,10 +136,15 @@ export default function ProductCatalogPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'name');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
+  const [selectedStrainTypes, setSelectedStrainTypes] = useState<string[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+  const [thcRange, setThcRange] = useState<[number, number]>([0, 100]);
+  const [cbdRange, setCbdRange] = useState<[number, number]>([0, 100]);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [quickViewProductId, setQuickViewProductId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 24;
 
   // Wishlist integration
   const { items: wishlistItems, toggleItem: toggleWishlist, isInWishlist } = useWishlist({ storeId: store?.id });
@@ -286,7 +293,9 @@ export default function ProductCatalogPage() {
         (p) =>
           p.name.toLowerCase().includes(query) ||
           p.description?.toLowerCase().includes(query) ||
-          p.category?.toLowerCase().includes(query)
+          p.category?.toLowerCase().includes(query) ||
+          p.brand?.toLowerCase().includes(query) ||
+          p.strain_type?.toLowerCase().includes(query)
       );
     }
 
@@ -296,6 +305,13 @@ export default function ProductCatalogPage() {
         (p) =>
           p.marketplace_category_name === selectedCategory ||
           p.category === selectedCategory
+      );
+    }
+
+    // Strain type filter
+    if (selectedStrainTypes.length > 0) {
+      result = result.filter(
+        (p) => p.strain_type && selectedStrainTypes.includes(p.strain_type.toLowerCase())
       );
     }
 
@@ -309,6 +325,26 @@ export default function ProductCatalogPage() {
       (p) => p.display_price >= priceRange[0] && p.display_price <= priceRange[1]
     );
 
+    // THC range filter
+    if (thcRange[0] > 0 || thcRange[1] < 100) {
+      result = result.filter(
+        (p) => {
+          if (p.thc_content === null) return thcRange[0] === 0;
+          return p.thc_content >= thcRange[0] && p.thc_content <= thcRange[1];
+        }
+      );
+    }
+
+    // CBD range filter
+    if (cbdRange[0] > 0 || cbdRange[1] < 100) {
+      result = result.filter(
+        (p) => {
+          if (p.cbd_content === null) return cbdRange[0] === 0;
+          return p.cbd_content >= cbdRange[0] && p.cbd_content <= cbdRange[1];
+        }
+      );
+    }
+
     // Sort
     switch (sortBy) {
       case 'price_asc':
@@ -317,6 +353,12 @@ export default function ProductCatalogPage() {
       case 'price_desc':
         result.sort((a, b) => b.display_price - a.display_price);
         break;
+      case 'thc_desc':
+        result.sort((a, b) => (b.thc_content ?? 0) - (a.thc_content ?? 0));
+        break;
+      case 'thc_asc':
+        result.sort((a, b) => (a.thc_content ?? 0) - (b.thc_content ?? 0));
+        break;
       case 'name':
       default:
         result.sort((a, b) => a.name.localeCompare(b.name));
@@ -324,7 +366,19 @@ export default function ProductCatalogPage() {
     }
 
     return result;
-  }, [products, searchQuery, selectedCategory, inStockOnly, priceRange, sortBy]);
+  }, [products, searchQuery, selectedCategory, selectedStrainTypes, inStockOnly, priceRange, thcRange, cbdRange, sortBy]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredProducts, currentPage, ITEMS_PER_PAGE]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, selectedStrainTypes, inStockOnly, priceRange, thcRange, cbdRange, sortBy]);
 
   // Get unique categories from products
   const productCategories = useMemo(() => {
@@ -354,13 +408,17 @@ export default function ProductCatalogPage() {
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedCategory('');
+    setSelectedStrainTypes([]);
     setInStockOnly(false);
     setPriceRange([0, 1000]);
+    setThcRange([0, 100]);
+    setCbdRange([0, 100]);
     setSortBy('name');
+    setCurrentPage(1);
     setSearchParams({});
   };
 
-  const hasActiveFilters = searchQuery || selectedCategory || inStockOnly;
+  const hasActiveFilters = searchQuery || selectedCategory || selectedStrainTypes.length > 0 || inStockOnly || thcRange[0] > 0 || thcRange[1] < 100 || cbdRange[0] > 0 || cbdRange[1] < 100;
 
   // Early return AFTER all hooks have been called
   if (!store) return null;
@@ -368,16 +426,18 @@ export default function ProductCatalogPage() {
   // Filter state for FilterDrawer
   const filterState: FilterState = {
     categories: selectedCategory ? [selectedCategory] : [],
-    strainTypes: [],
+    strainTypes: selectedStrainTypes,
     priceRange,
     sortBy,
   };
 
   const handleFiltersChange = (newFilters: FilterState) => {
     setSelectedCategory(newFilters.categories[0] || '');
+    setSelectedStrainTypes(newFilters.strainTypes);
     setPriceRange(newFilters.priceRange);
     setSortBy(newFilters.sortBy);
   };
+
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -437,6 +497,24 @@ export default function ProductCatalogPage() {
             <SelectItem value="name">Name A-Z</SelectItem>
             <SelectItem value="price_asc">Price: Low to High</SelectItem>
             <SelectItem value="price_desc">Price: High to Low</SelectItem>
+            <SelectItem value="thc_desc">THC%: High to Low</SelectItem>
+            <SelectItem value="thc_asc">THC%: Low to High</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Strain Type Filter */}
+        <Select
+          value={selectedStrainTypes[0] || "all"}
+          onValueChange={(val) => setSelectedStrainTypes(val === "all" ? [] : [val])}
+        >
+          <SelectTrigger className="w-full md:w-[160px]">
+            <SelectValue placeholder="Strain Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Strains</SelectItem>
+            <SelectItem value="indica">Indica</SelectItem>
+            <SelectItem value="sativa">Sativa</SelectItem>
+            <SelectItem value="hybrid">Hybrid</SelectItem>
           </SelectContent>
         </Select>
 
@@ -487,12 +565,39 @@ export default function ProductCatalogPage() {
               />
             </Badge>
           )}
+          {selectedStrainTypes.length > 0 && (
+            <Badge variant="secondary" className="gap-1">
+              {selectedStrainTypes.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ')}
+              <X
+                className="w-3 h-3 cursor-pointer"
+                onClick={() => setSelectedStrainTypes([])}
+              />
+            </Badge>
+          )}
           {inStockOnly && (
             <Badge variant="secondary" className="gap-1">
               In Stock
               <X
                 className="w-3 h-3 cursor-pointer"
                 onClick={() => setInStockOnly(false)}
+              />
+            </Badge>
+          )}
+          {(thcRange[0] > 0 || thcRange[1] < 100) && (
+            <Badge variant="secondary" className="gap-1">
+              THC: {thcRange[0]}%-{thcRange[1]}%
+              <X
+                className="w-3 h-3 cursor-pointer"
+                onClick={() => setThcRange([0, 100])}
+              />
+            </Badge>
+          )}
+          {(cbdRange[0] > 0 || cbdRange[1] < 100) && (
+            <Badge variant="secondary" className="gap-1">
+              CBD: {cbdRange[0]}%-{cbdRange[1]}%
+              <X
+                className="w-3 h-3 cursor-pointer"
+                onClick={() => setCbdRange([0, 100])}
               />
             </Badge>
           )}
@@ -534,7 +639,7 @@ export default function ProductCatalogPage() {
         </div>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredProducts.map((product) => (
+          {paginatedProducts.map((product) => (
             <StorefrontProductCard
               key={product.product_id}
               product={mapToMarketplaceProduct(product)}
@@ -550,14 +655,14 @@ export default function ProductCatalogPage() {
               })}
               isInWishlist={isInWishlist(product.product_id)}
               onQuickView={() => setQuickViewProductId(product.product_id)}
-              index={0} // No staggered delay for grid here to avoid mass re-render complexity
+              index={0}
               accentColor={store.primary_color}
             />
           ))}
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredProducts.map((product) => (
+          {paginatedProducts.map((product) => (
             <ProductListItem
               key={product.product_id}
               product={product}
@@ -565,6 +670,57 @@ export default function ProductCatalogPage() {
               primaryColor={store.primary_color}
             />
           ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-8">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .filter(page => {
+              // Show first, last, current, and adjacent pages
+              if (page === 1 || page === totalPages) return true;
+              if (Math.abs(page - currentPage) <= 1) return true;
+              return false;
+            })
+            .reduce<(number | 'ellipsis')[]>((acc, page, idx, arr) => {
+              if (idx > 0 && page - (arr[idx - 1] as number) > 1) {
+                acc.push('ellipsis');
+              }
+              acc.push(page);
+              return acc;
+            }, [])
+            .map((item, idx) =>
+              item === 'ellipsis' ? (
+                <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">...</span>
+              ) : (
+                <Button
+                  key={item}
+                  variant={currentPage === item ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setCurrentPage(item)}
+                  className="min-w-[36px]"
+                >
+                  {item}
+                </Button>
+              )
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
         </div>
       )}
 
