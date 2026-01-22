@@ -80,7 +80,7 @@ export default function VendorManagement() {
 
         const { error } = await supabase
           .from('vendors')
-          .update(formData)
+          .update(formData as Record<string, unknown>)
           .eq('id', editingVendor.id)
           .eq('tenant_id', tenant.id);
 
@@ -96,7 +96,7 @@ export default function VendorManagement() {
           .insert({
             ...formData,
             tenant_id: tenant.id
-          } as any);
+          } as Record<string, unknown>);
 
         if (error) throw error;
 
