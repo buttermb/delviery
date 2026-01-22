@@ -242,7 +242,7 @@ const PredictiveAnalyticsPage = lazy(() => import("./pages/admin/PredictiveAnaly
 const GlobalSearch = lazy(() => import("./pages/admin/GlobalSearch"));
 const RiskFactorManagement = lazy(() => import("./pages/admin/RiskFactorManagement"));
 const SystemSettings = lazy(() => import("./pages/admin/SystemSettings"));
-const VendorManagement = lazy(() => import("./pages/admin/VendorManagement"));
+const VendorManagement = lazy(() => import("./pages/admin/VendorManagement").then(m => ({ default: m.VendorManagement })));
 const ImagesPage = lazy(() => import("./pages/admin/catalog/ImagesPage"));
 const BatchesPage = lazy(() => import("./pages/admin/catalog/BatchesPage"));
 const CategoriesPage = lazy(() => import("./pages/admin/catalog/CategoriesPage"));
