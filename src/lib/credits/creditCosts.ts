@@ -317,6 +317,13 @@ export const CREDIT_COSTS: Record<string, CreditCost> = {
     category: 'marketplace',
     description: 'View/edit store settings (always free)',
   },
+  storefront_create: {
+    actionKey: 'storefront_create',
+    actionName: 'Create Storefront',
+    credits: 500,
+    category: 'marketplace',
+    description: 'Create a new white-label storefront (one-time setup)',
+  },
 
   // ============================================================================
   // POINT OF SALE (POS)
@@ -1365,7 +1372,7 @@ export const FREE_ACTIONS = [
  * Check if an action is free
  */
 export function isActionFree(actionKey: string): boolean {
-  return FREE_ACTIONS.includes(actionKey as any) || getCreditCost(actionKey) === 0;
+  return FREE_ACTIONS.includes(actionKey as FreeAction) || getCreditCost(actionKey) === 0;
 }
 
 /**

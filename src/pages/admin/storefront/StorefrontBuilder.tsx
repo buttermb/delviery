@@ -10,13 +10,14 @@ import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import {
     Plus, GripVertical, Trash2, Save, ArrowLeft, Layout, Palette, Type,
     Monitor, Smartphone, Tablet, Copy, Eye, EyeOff, Undo2, Redo2,
-    FileText, Image, MessageSquare, HelpCircle, Mail, Sparkles, X, ZoomIn, ZoomOut
+    FileText, Image, MessageSquare, HelpCircle, Mail, Sparkles, X, ZoomIn, ZoomOut,
+    Code, Globe, GlobeLock, AlertCircle, Store
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { HeroSection } from '@/components/shop/sections/HeroSection';
@@ -26,6 +27,7 @@ import { TestimonialsSection } from '@/components/shop/sections/TestimonialsSect
 import { NewsletterSection } from '@/components/shop/sections/NewsletterSection';
 import { GallerySection } from '@/components/shop/sections/GallerySection';
 import { FAQSection } from '@/components/shop/sections/FAQSection';
+import { CustomHTMLSection } from '@/components/shop/sections/CustomHTMLSection';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -35,9 +37,13 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from '@dnd-kit/utilities';
 import { ThemePresetStrip } from '@/components/admin/storefront/ThemePresetSelector';
 import { THEME_PRESETS, applyThemeToConfig, type ThemePreset } from '@/lib/storefrontThemes';
-import { logger } from '@/lib/logger';
+import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Textarea } from '@/components/ui/textarea';
 
-// Define available section types
+// Define available section types (8 total)
 const SECTION_TYPES = {
     hero: { label: 'Hero Section', icon: Layout, component: HeroSection },
     features: { label: 'Features Grid', icon: Sparkles, component: FeaturesSection },
@@ -46,6 +52,7 @@ const SECTION_TYPES = {
     newsletter: { label: 'Newsletter', icon: Mail, component: NewsletterSection },
     gallery: { label: 'Gallery', icon: Image, component: GallerySection },
     faq: { label: 'FAQ', icon: HelpCircle, component: FAQSection },
+    custom_html: { label: 'Custom HTML', icon: Code, component: CustomHTMLSection },
 };
 
 // Templates for quick setup
@@ -75,8 +82,8 @@ const TEMPLATES = {
 interface SectionConfig {
     id: string;
     type: string;
-    content: Record<string, any>;
-    styles: Record<string, any>;
+    content: Record<string, unknown>;
+    styles: Record<string, unknown>;
     visible?: boolean;
 }
 
@@ -164,11 +171,20 @@ function SortableSectionItem({
     );
 }
 
-export default function StorefrontBuilder() {
+export function StorefrontBuilder() {
     const { tenant } = useTenantAdminAuth();
     const { toast } = useToast();
     const queryClient = useQueryClient();
     const [searchParams] = useSearchParams();
+
+    // Credit gated action hook for store creation
+    const {
+        execute: executeCreditAction,
+        showOutOfCreditsModal,
+        closeOutOfCreditsModal,
+        blockedAction,
+        isExecuting: isCreatingWithCredits,
+    } = useCreditGatedAction();
 
     // URL params for menu → storefront conversion
     const fromMenuId = searchParams.get('from_menu');
@@ -189,6 +205,16 @@ export default function StorefrontBuilder() {
     const [devicePreview, setDevicePreview] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
     const [rightPanelOpen, setRightPanelOpen] = useState(true);
     const [previewZoom, setPreviewZoom] = useState(0.85);
+
+    // Store Creation Dialog State
+    const [showCreateDialog, setShowCreateDialog] = useState(false);
+    const [newStoreName, setNewStoreName] = useState('');
+    const [newStoreSlug, setNewStoreSlug] = useState('');
+    const [slugError, setSlugError] = useState<string | null>(null);
+    const [isValidatingSlug, setIsValidatingSlug] = useState(false);
+
+    // Delete Confirmation Dialog State
+    const [sectionToDelete, setSectionToDelete] = useState<string | null>(null);
 
     // Builder State
     const [layoutConfig, setLayoutConfig] = useState<SectionConfig[]>([]);
@@ -245,7 +271,7 @@ export default function StorefrontBuilder() {
         queryKey: ['marketplace-settings', tenant?.id],
         queryFn: async (): Promise<MarketplaceStore> => {
             try {
-                // @ts-ignore - marketplace_stores table may not be in generated types
+                // @ts-expect-error - marketplace_stores table may not be in generated types
                 const { data, error } = await supabase
                     .from('marketplace_stores')
                     .select('*')
@@ -307,14 +333,131 @@ export default function StorefrontBuilder() {
         }
     }, [history, historyIndex]);
 
-    const saveMutation = useMutation({
+    // Slug uniqueness validation
+    const validateSlug = useCallback(async (slug: string): Promise<boolean> => {
+        if (!slug || slug.length < 3) {
+            setSlugError('Slug must be at least 3 characters');
+            return false;
+        }
+
+        // Check for valid slug format (lowercase, alphanumeric, hyphens only)
+        const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+        if (!slugRegex.test(slug)) {
+            setSlugError('Slug can only contain lowercase letters, numbers, and hyphens');
+            return false;
+        }
+
+        setIsValidatingSlug(true);
+        try {
+            // @ts-expect-error - marketplace_stores table may not be in generated types
+            const { data, error } = await supabase
+                .from('marketplace_stores')
+                .select('id')
+                .eq('slug', slug)
+                .maybeSingle();
+
+            if (error) throw error;
+
+            if (data) {
+                setSlugError('This slug is already taken');
+                return false;
+            }
+
+            setSlugError(null);
+            return true;
+        } catch (err) {
+            logger.error('Failed to validate slug', err);
+            setSlugError('Failed to validate slug');
+            return false;
+        } finally {
+            setIsValidatingSlug(false);
+        }
+    }, []);
+
+    // Auto-generate slug from store name
+    const generateSlug = useCallback((name: string): string => {
+        return name
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+    }, []);
+
+    // Create store mutation (deducts 500 credits)
+    const createStoreMutation = useMutation({
+        mutationFn: async (data: { storeName: string; slug: string }) => {
+            // @ts-expect-error - marketplace_stores table may not be in generated types
+            const { data: newStore, error } = await supabase
+                .from('marketplace_stores')
+                .insert({
+                    tenant_id: tenant?.id,
+                    store_name: data.storeName,
+                    slug: data.slug,
+                    layout_config: [],
+                    theme_config: themeConfig,
+                    is_active: true,
+                    is_public: false, // Start as draft
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            return newStore;
+        },
+        onSuccess: (newStore) => {
+            toast({
+                title: "Store created!",
+                description: `Your storefront "${newStore.store_name}" has been created. 500 credits have been deducted.`
+            });
+            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            setShowCreateDialog(false);
+            setNewStoreName('');
+            setNewStoreSlug('');
+        },
+        onError: (err) => {
+            toast({
+                title: "Creation failed",
+                description: "Could not create storefront. Please try again.",
+                variant: "destructive"
+            });
+            logger.error('Failed to create storefront', err);
+        }
+    });
+
+    // Handle store creation with credit deduction
+    const handleCreateStore = async () => {
+        // Validate slug first
+        const isValid = await validateSlug(newStoreSlug);
+        if (!isValid) return;
+
+        // Execute with credit gating (500 credits for storefront_create)
+        await executeCreditAction({
+            actionKey: 'storefront_create',
+            action: async () => {
+                return createStoreMutation.mutateAsync({
+                    storeName: newStoreName,
+                    slug: newStoreSlug,
+                });
+            },
+            onSuccess: () => {
+                logger.info('Storefront created successfully', { slug: newStoreSlug });
+            },
+            onError: (err) => {
+                logger.error('Storefront creation failed', err);
+            },
+        });
+    };
+
+    // Save draft mutation (saves without publishing)
+    const saveDraftMutation = useMutation({
         mutationFn: async () => {
-            // @ts-ignore - marketplace_stores table may not be in generated types
+            // @ts-expect-error - marketplace_stores table may not be in generated types
             const { error } = await supabase
                 .from('marketplace_stores')
                 .update({
-                    layout_config: JSON.parse(JSON.stringify(layoutConfig)) as any,
-                    theme_config: themeConfig as any,
+                    layout_config: JSON.parse(JSON.stringify(layoutConfig)) as unknown,
+                    theme_config: themeConfig as unknown,
                     updated_at: new Date().toISOString()
                 })
                 .eq('tenant_id', tenant?.id);
@@ -322,7 +465,94 @@ export default function StorefrontBuilder() {
             if (error) throw error;
         },
         onSuccess: () => {
-            toast({ title: "Store saved", description: "Your storefront changes have been published." });
+            toast({ title: "Draft saved", description: "Your changes have been saved as a draft." });
+            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+        },
+        onError: (err) => {
+            toast({
+                title: "Save failed",
+                description: "Could not save changes. Please try again.",
+                variant: "destructive"
+            });
+            logger.error('Failed to save draft', err);
+        }
+    });
+
+    // Publish mutation (makes store public)
+    const publishMutation = useMutation({
+        mutationFn: async () => {
+            // @ts-expect-error - marketplace_stores table may not be in generated types
+            const { error } = await supabase
+                .from('marketplace_stores')
+                .update({
+                    layout_config: JSON.parse(JSON.stringify(layoutConfig)) as unknown,
+                    theme_config: themeConfig as unknown,
+                    is_public: true,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('tenant_id', tenant?.id);
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            toast({ title: "Store published!", description: "Your storefront is now live and visible to customers." });
+            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+        },
+        onError: (err) => {
+            toast({
+                title: "Publish failed",
+                description: "Could not publish storefront. Please try again.",
+                variant: "destructive"
+            });
+            logger.error('Failed to publish storefront', err);
+        }
+    });
+
+    // Unpublish mutation (returns store to draft)
+    const unpublishMutation = useMutation({
+        mutationFn: async () => {
+            // @ts-expect-error - marketplace_stores table may not be in generated types
+            const { error } = await supabase
+                .from('marketplace_stores')
+                .update({
+                    is_public: false,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('tenant_id', tenant?.id);
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            toast({ title: "Store unpublished", description: "Your storefront is now in draft mode." });
+            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+        },
+        onError: (err) => {
+            toast({
+                title: "Unpublish failed",
+                description: "Could not unpublish storefront. Please try again.",
+                variant: "destructive"
+            });
+            logger.error('Failed to unpublish storefront', err);
+        }
+    });
+
+    // Deprecated - use saveDraftMutation or publishMutation instead
+    const saveMutation = useMutation({
+        mutationFn: async () => {
+            // @ts-expect-error - marketplace_stores table may not be in generated types
+            const { error } = await supabase
+                .from('marketplace_stores')
+                .update({
+                    layout_config: JSON.parse(JSON.stringify(layoutConfig)) as unknown,
+                    theme_config: themeConfig as unknown,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('tenant_id', tenant?.id);
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            toast({ title: "Store saved", description: "Your storefront changes have been saved." });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
         },
         onError: (err) => {
@@ -349,12 +579,26 @@ export default function StorefrontBuilder() {
         setSelectedSectionId(newSection.id);
     };
 
-    const removeSection = (id: string, e: React.MouseEvent) => {
+    // Request section deletion (shows confirmation dialog)
+    const requestRemoveSection = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        const newConfig = layoutConfig.filter(s => s.id !== id);
+        setSectionToDelete(id);
+    };
+
+    // Confirm and execute section deletion
+    const confirmRemoveSection = () => {
+        if (!sectionToDelete) return;
+        const newConfig = layoutConfig.filter(s => s.id !== sectionToDelete);
         setLayoutConfig(newConfig);
         saveToHistory(newConfig);
-        if (selectedSectionId === id) setSelectedSectionId(null);
+        if (selectedSectionId === sectionToDelete) setSelectedSectionId(null);
+        setSectionToDelete(null);
+        toast({ title: "Section deleted" });
+    };
+
+    // Cancel section deletion
+    const cancelRemoveSection = () => {
+        setSectionToDelete(null);
     };
 
     const duplicateSection = (id: string, e: React.MouseEvent) => {
@@ -386,7 +630,7 @@ export default function StorefrontBuilder() {
         saveToHistory(newConfig);
     };
 
-    const updateSection = (id: string, field: 'content' | 'styles', key: string, value: any) => {
+    const updateSection = (id: string, field: 'content' | 'styles', key: string, value: unknown) => {
         const newConfig = layoutConfig.map(s => {
             if (s.id !== id) return s;
             return {
@@ -508,7 +752,23 @@ export default function StorefrontBuilder() {
                         </Button>
                     </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
+                    {/* Store status indicator */}
+                    {store && (
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted text-xs">
+                            {store.is_public ? (
+                                <>
+                                    <Globe className="w-3 h-3 text-green-500" />
+                                    <span className="text-green-700 dark:text-green-400">Published</span>
+                                </>
+                            ) : (
+                                <>
+                                    <GlobeLock className="w-3 h-3 text-yellow-500" />
+                                    <span className="text-yellow-700 dark:text-yellow-400">Draft</span>
+                                </>
+                            )}
+                        </div>
+                    )}
                     {/* Toggle right panel button when closed */}
                     {selectedSection && !rightPanelOpen && (
                         <Button variant="outline" size="sm" onClick={() => setRightPanelOpen(true)}>
@@ -516,11 +776,45 @@ export default function StorefrontBuilder() {
                             Edit Section
                         </Button>
                     )}
-                    <Button variant="outline">Preview Live</Button>
-                    <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
-                        <Save className="w-4 h-4 mr-2" />
-                        {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
-                    </Button>
+                    {/* Create Store button when no store exists */}
+                    {!store && !isLoading && (
+                        <Button onClick={() => setShowCreateDialog(true)}>
+                            <Store className="w-4 h-4 mr-2" />
+                            Create Store (500 credits)
+                        </Button>
+                    )}
+                    {/* Save Draft button */}
+                    {store && (
+                        <Button
+                            variant="outline"
+                            onClick={() => saveDraftMutation.mutate()}
+                            disabled={saveDraftMutation.isPending}
+                        >
+                            <Save className="w-4 h-4 mr-2" />
+                            {saveDraftMutation.isPending ? 'Saving...' : 'Save Draft'}
+                        </Button>
+                    )}
+                    {/* Publish / Unpublish button */}
+                    {store && (
+                        store.is_public ? (
+                            <Button
+                                variant="outline"
+                                onClick={() => unpublishMutation.mutate()}
+                                disabled={unpublishMutation.isPending}
+                            >
+                                <GlobeLock className="w-4 h-4 mr-2" />
+                                {unpublishMutation.isPending ? 'Unpublishing...' : 'Unpublish'}
+                            </Button>
+                        ) : (
+                            <Button
+                                onClick={() => publishMutation.mutate()}
+                                disabled={publishMutation.isPending}
+                            >
+                                <Globe className="w-4 h-4 mr-2" />
+                                {publishMutation.isPending ? 'Publishing...' : 'Publish'}
+                            </Button>
+                        )
+                    )}
                 </div>
             </div>
 
@@ -576,7 +870,7 @@ export default function StorefrontBuilder() {
                                                             section={section}
                                                             isSelected={selectedSectionId === section.id}
                                                             onSelect={() => handleSelectSection(section.id)}
-                                                            onRemove={(e) => removeSection(section.id, e)}
+                                                            onRemove={(e) => requestRemoveSection(section.id, e)}
                                                             onDuplicate={(e) => duplicateSection(section.id, e)}
                                                             onToggleVisibility={(e) => toggleVisibility(section.id, e)}
                                                             sectionLabel={SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.label || section.type}
@@ -714,7 +1008,7 @@ export default function StorefrontBuilder() {
                         {/* Sections Render */}
                         <div className="min-h-[calc(100%-4rem)] bg-background" style={{ backgroundColor: themeConfig.colors?.background }}>
                             {layoutConfig.filter(s => s.visible !== false).map((section) => {
-                                const Component = SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.component as any;
+                                const Component = SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.component as React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string }>;
                                 if (!Component) return <div key={section.id} className="p-4 text-destructive">Unknown: {section.type}</div>;
 
                                 return (
@@ -819,6 +1113,99 @@ export default function StorefrontBuilder() {
                     </div>
                 )}
             </div>
+
+            {/* Create Store Dialog */}
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Create Your Storefront</DialogTitle>
+                        <DialogDescription>
+                            Create a new white-label storefront. This will deduct 500 credits from your account.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="store-name">Store Name</Label>
+                            <Input
+                                id="store-name"
+                                placeholder="My Awesome Store"
+                                value={newStoreName}
+                                onChange={(e) => {
+                                    setNewStoreName(e.target.value);
+                                    setNewStoreSlug(generateSlug(e.target.value));
+                                    setSlugError(null);
+                                }}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="store-slug">Store URL Slug</Label>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">/shop/</span>
+                                <Input
+                                    id="store-slug"
+                                    placeholder="my-awesome-store"
+                                    value={newStoreSlug}
+                                    onChange={(e) => {
+                                        setNewStoreSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''));
+                                        setSlugError(null);
+                                    }}
+                                    onBlur={() => {
+                                        if (newStoreSlug) {
+                                            validateSlug(newStoreSlug);
+                                        }
+                                    }}
+                                    className="flex-1"
+                                />
+                            </div>
+                            {slugError && (
+                                <p className="text-sm text-destructive flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    {slugError}
+                                </p>
+                            )}
+                            {isValidatingSlug && (
+                                <p className="text-sm text-muted-foreground">Checking availability...</p>
+                            )}
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleCreateStore}
+                            disabled={!newStoreName || !newStoreSlug || isValidatingSlug || isCreatingWithCredits || createStoreMutation.isPending}
+                        >
+                            {isCreatingWithCredits || createStoreMutation.isPending ? 'Creating...' : 'Create Store (500 credits)'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Section Confirmation Dialog */}
+            <AlertDialog open={!!sectionToDelete} onOpenChange={(open) => !open && cancelRemoveSection()}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Section?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete this section? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={cancelRemoveSection}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmRemoveSection} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Out of Credits Modal */}
+            <OutOfCreditsModal
+                isOpen={showOutOfCreditsModal}
+                onClose={closeOutOfCreditsModal}
+                blockedAction={blockedAction ?? undefined}
+            />
         </div>
     );
 }
@@ -853,5 +1240,12 @@ function sectionDefaults(type: string) {
         content: { heading: 'Frequently Asked Questions', subheading: 'Got questions? We\'ve got answers.' },
         styles: { background_color: '#f9fafb', text_color: '#000000', accent_color: '#10b981', border_color: '#e5e7eb' }
     };
+    if (type === 'custom_html') return {
+        content: { html_content: '<p>Add your custom HTML content here</p>', section_title: '' },
+        styles: { background_color: '#ffffff', text_color: '#000000', padding_y: '4rem', max_width: '1200px' }
+    };
     return { content: {}, styles: {} };
 }
+
+// Default export for compatibility
+export default StorefrontBuilder;
