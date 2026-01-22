@@ -27,6 +27,9 @@ interface Product {
   low_stock_alert: number;
   warehouse_location?: string;
   category: string;
+  cost_per_unit?: number | null;
+  wholesale_price?: number | null;
+  price_per_lb?: number | null;
 }
 
 export default function InventoryManagement() {
@@ -86,9 +89,21 @@ export default function InventoryManagement() {
   });
 
   const totalStock = products.reduce((sum, item) => sum + Number(item.available_quantity || 0), 0);
-  // Calculate estimated value at $3000/lb average
-  const avgCostPerLb = 3000;
-  const totalValue = totalStock * avgCostPerLb;
+
+  // Calculate total value from actual product costs (cost_per_unit, wholesale_price, or price_per_lb)
+  const totalValue = products.reduce((sum, item) => {
+    const cost = item.cost_per_unit ?? item.wholesale_price ?? item.price_per_lb ?? 0;
+    const quantity = Number(item.available_quantity || 0);
+    return sum + (quantity * cost);
+  }, 0);
+
+  // Calculate average cost per lb for display (only from products that have costs)
+  const productsWithCosts = products.filter(item =>
+    (item.cost_per_unit ?? item.wholesale_price ?? item.price_per_lb ?? 0) > 0
+  );
+  const avgCostPerLb = productsWithCosts.length > 0 && totalStock > 0
+    ? totalValue / totalStock
+    : 0;
 
   const getStockStatus = (qty: number, reorderPoint: number = 20) => {
     if (qty <= 10) return { status: "critical", color: "destructive", label: "CRITICAL" };
@@ -102,9 +117,21 @@ export default function InventoryManagement() {
       case 'low': return <ArrowUpDown className="h-3 w-3 mr-1" />;
       default: return <CheckCircle className="h-3 w-3 mr-1" />;
     }
-  }
+  };
 
-  const columns: ResponsiveColumn<any>[] = [
+  // Get the unit cost for a product (prioritize cost_per_unit, then wholesale_price, then price_per_lb)
+  const getProductCost = (item: Product): number => {
+    return item.cost_per_unit ?? item.wholesale_price ?? item.price_per_lb ?? 0;
+  };
+
+  // Calculate total value for a single product
+  const getProductTotalValue = (item: Product): number => {
+    const cost = getProductCost(item);
+    const quantity = Number(item.available_quantity || 0);
+    return quantity * cost;
+  };
+
+  const columns: ResponsiveColumn<Product>[] = [
     {
       header: 'Product',
       accessorKey: 'name',
@@ -119,12 +146,18 @@ export default function InventoryManagement() {
     {
       header: 'Cost/lb',
       className: 'text-right',
-      cell: () => <div className="font-mono">{formatCurrency(avgCostPerLb)}</div>
+      cell: (item) => {
+        const cost = getProductCost(item);
+        return <div className="font-mono">{cost > 0 ? formatCurrency(cost) : '—'}</div>;
+      }
     },
     {
       header: 'Total Value',
       className: 'text-right',
-      cell: (item) => <div className="font-mono">{formatCurrency(Number(item.available_quantity || 0) * avgCostPerLb)}</div>
+      cell: (item) => {
+        const value = getProductTotalValue(item);
+        return <div className="font-mono">{value > 0 ? formatCurrency(value) : '—'}</div>;
+      }
     },
     {
       header: 'Status',
@@ -132,7 +165,7 @@ export default function InventoryManagement() {
       cell: (item) => {
         const status = getStockStatus(Number(item.available_quantity || 0), item.low_stock_alert);
         return (
-          <Badge variant={status.color as any} className="inline-flex items-center">
+          <Badge variant={status.color as "destructive" | "warning" | "default"} className="inline-flex items-center">
             {getStatusIcon(status.status)}
             {status.label}
           </Badge>
@@ -158,14 +191,15 @@ export default function InventoryManagement() {
     }
   ];
 
-  const renderMobileCard = (item: any) => {
+  const renderMobileCard = (item: Product) => {
     const status = getStockStatus(Number(item.available_quantity || 0), item.low_stock_alert);
+    const productValue = getProductTotalValue(item);
 
     return (
       <div className="space-y-3">
         <div className="flex items-start justify-between">
           <div className="font-medium text-base">{item.name}</div>
-          <Badge variant={status.color as any} className="flex-shrink-0">
+          <Badge variant={status.color as "destructive" | "warning" | "default"} className="flex-shrink-0">
             {status.label}
           </Badge>
         </div>
@@ -177,7 +211,7 @@ export default function InventoryManagement() {
           </div>
           <div>
             <span className="text-muted-foreground block text-xs">Total Value</span>
-            <span className="font-mono font-medium">{formatCurrency(Number(item.available_quantity || 0) * avgCostPerLb)}</span>
+            <span className="font-mono font-medium">{productValue > 0 ? formatCurrency(productValue) : '—'}</span>
           </div>
         </div>
 
@@ -195,7 +229,7 @@ export default function InventoryManagement() {
         </Button>
       </div>
     );
-  }
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6">
@@ -273,10 +307,10 @@ export default function InventoryManagement() {
           <p className="text-muted-foreground">No inventory data. Add products to get started.</p>
         </Card>
       ) : (
-        Object.entries(groupedInventory).map(([warehouseName, products]) => {
-          // Calculate warehouse totals
-          const warehouseTotal = products.reduce((sum, p) => sum + Number(p.available_quantity || 0), 0);
-          const warehouseValue = warehouseTotal * avgCostPerLb;
+        Object.entries(groupedInventory).map(([warehouseName, warehouseProducts]) => {
+          // Calculate warehouse totals using actual product costs
+          const warehouseTotal = warehouseProducts.reduce((sum, p) => sum + Number(p.available_quantity || 0), 0);
+          const warehouseValue = warehouseProducts.reduce((sum, p) => sum + getProductTotalValue(p), 0);
           const capacity = 500; // Default capacity
 
           return (
@@ -295,7 +329,7 @@ export default function InventoryManagement() {
 
               <ResponsiveTable
                 columns={columns}
-                data={products}
+                data={warehouseProducts}
                 isLoading={false}
                 mobileRenderer={renderMobileCard}
                 keyExtractor={(item) => item.id}
