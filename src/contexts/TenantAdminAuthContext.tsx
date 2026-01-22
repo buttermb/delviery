@@ -87,7 +87,7 @@ interface TenantAdminAuthContextType {
   loading: boolean;
   login: (email: string, password: string, tenantSlug: string) => Promise<void>;
   logout: () => Promise<void>;
-  refreshAuthToken: () => Promise<void>;
+  refreshAuthToken: () => Promise<boolean>;
   refreshTenant: () => Promise<void>; // Refresh tenant data from database
   handleSignupSuccess?: (signupResult: SignupResult) => Promise<void>; // For signup flow
   mfaRequired: boolean;
@@ -734,48 +734,129 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     return () => clearInterval(interval);
   }, [isAuthenticated, token]);
 
-  const refreshAuthToken = async () => {
-    try {
-      const currentRefreshToken = refreshToken || safeStorage.getItem(REFRESH_TOKEN_KEY);
+  // Track if a refresh is already in progress to prevent race conditions
+  const isRefreshingRef = useRef(false);
+  const refreshPromiseRef = useRef<Promise<boolean> | null>(null);
 
-      // Guard against empty, undefined, null, or invalid refresh tokens
-      if (!currentRefreshToken || currentRefreshToken === 'undefined' || currentRefreshToken === 'null' || currentRefreshToken.trim() === '') {
-        logger.warn('[AUTH] Cannot refresh token - no valid refresh token available');
-        clearAuthState();
-        toast.error('Your session has expired. Please log in again.', { duration: 5000 });
-        return;
-      }
+  const refreshAuthToken = async (): Promise<boolean> => {
+    // STEP 1: Get the current refresh token
+    const currentRefreshToken = refreshToken || safeStorage.getItem(REFRESH_TOKEN_KEY);
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
-      const { response } = await resilientFetch(
-        `${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refresh_token: currentRefreshToken }),
+    // STEP 2: Validate refresh token exists and is not empty/invalid
+    if (!currentRefreshToken ||
+        currentRefreshToken === 'undefined' ||
+        currentRefreshToken === 'null' ||
+        currentRefreshToken.trim() === '' ||
+        currentRefreshToken.length < 10) {
+      logger.warn('[AUTH] Cannot refresh token - no valid refresh token available');
+      clearAuthState();
+      toast.error('Your session has expired. Please log in again.', { duration: 5000 });
+      return false;
+    }
+
+    // STEP 3: Check if refresh is already in progress (prevent race conditions)
+    if (isRefreshingRef.current && refreshPromiseRef.current) {
+      logger.debug('[AUTH] Refresh already in progress, waiting for result');
+      return refreshPromiseRef.current;
+    }
+
+    isRefreshingRef.current = true;
+
+    const doRefresh = async (): Promise<boolean> => {
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+
+        // STEP 4: Attempt to refresh the session via edge function
+        const { response } = await resilientFetch(
+          `${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh_token: currentRefreshToken }),
+            credentials: 'include',
+            timeout: 15000,
+            retryConfig: {
+              maxRetries: 2,
+              initialDelay: 500,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+
+          // STEP 5: Update tokens on successful refresh
+          setAccessToken(data.access_token);
+          setToken(data.access_token);
+          setRefreshToken(data.refresh_token);
+
+          safeStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
+          safeStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+
+          // Sync with Supabase client for RLS to work properly
+          try {
+            await supabase.auth.setSession({
+              access_token: data.access_token,
+              refresh_token: data.refresh_token,
+            });
+          } catch (syncError) {
+            logger.warn('[AUTH] Failed to sync session with Supabase client', syncError);
+          }
+
+          // Setup new proactive refresh timer
+          setupRefreshTimer(data.access_token);
+
+          logger.debug('[AUTH] Token refresh successful');
+          return true;
         }
-      );
 
-      if (response.ok) {
-        const data = await response.json();
-        setAccessToken(data.access_token);
-        setToken(data.access_token);
-        setRefreshToken(data.refresh_token);
-
-        safeStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
-        safeStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
-      } else {
+        // Handle specific error cases
         const errorData = await response.json().catch(() => ({}));
         logger.error('[AUTH] Token refresh failed', { status: response.status, error: errorData });
 
         if (response.status === 401) {
+          // Refresh token is invalid/expired - try Supabase native refresh as fallback
+          logger.debug('[AUTH] Edge function refresh failed with 401, trying Supabase native refresh');
+
+          try {
+            const { data: supabaseRefreshData, error: supabaseRefreshError } = await supabase.auth.refreshSession({
+              refresh_token: currentRefreshToken,
+            });
+
+            if (!supabaseRefreshError && supabaseRefreshData.session) {
+              setAccessToken(supabaseRefreshData.session.access_token);
+              setToken(supabaseRefreshData.session.access_token);
+              setRefreshToken(supabaseRefreshData.session.refresh_token);
+
+              safeStorage.setItem(ACCESS_TOKEN_KEY, supabaseRefreshData.session.access_token);
+              safeStorage.setItem(REFRESH_TOKEN_KEY, supabaseRefreshData.session.refresh_token);
+
+              setupRefreshTimer(supabaseRefreshData.session.access_token);
+              logger.debug('[AUTH] Supabase native refresh successful');
+              return true;
+            }
+          } catch (fallbackError) {
+            logger.error('[AUTH] Supabase native refresh also failed', fallbackError);
+          }
+
+          // All refresh attempts failed, clear auth state
           clearAuthState();
-          // Optionally redirect to login if critical
+          toast.error('Your session has expired. Please log in again.', { duration: 5000 });
+          return false;
         }
+
+        return false;
+      } catch (error) {
+        logger.error('[AUTH] Token refresh exception', error);
+        return false;
+      } finally {
+        isRefreshingRef.current = false;
+        refreshPromiseRef.current = null;
       }
-    } catch (error) {
-      logger.error('[AUTH] Token refresh exception', error);
-    }
+    };
+
+    refreshPromiseRef.current = doRefresh();
+    return refreshPromiseRef.current;
   };
 
   // Helper function to clear auth state

@@ -327,61 +327,114 @@ serve(async (req) => {
     }
 
     if (action === 'refresh') {
-      // Validate input with Zod
+      // STEP 1: Get refresh token from request body or cookie (fallback)
+      let refresh_token: string | null = null;
+
+      // Try to get from request body first
       const validationResult = refreshSchema.safeParse(requestBody);
-      if (!validationResult.success) {
-        const zodError = validationResult as { success: false; error: { errors: unknown[] } };
+      if (validationResult.success) {
+        refresh_token = validationResult.data.refresh_token;
+      }
+
+      // Fallback: try to get from httpOnly cookie
+      if (!refresh_token) {
+        const cookieHeader = req.headers.get('Cookie');
+        if (cookieHeader) {
+          const cookies = cookieHeader.split(';').map(c => c.trim());
+          const refreshTokenCookie = cookies.find(c => c.startsWith('tenant_refresh_token='));
+          if (refreshTokenCookie) {
+            refresh_token = refreshTokenCookie.split('=')[1];
+          }
+        }
+      }
+
+      // STEP 2: Validate refresh token is present and not empty/invalid
+      if (!refresh_token ||
+          refresh_token === 'undefined' ||
+          refresh_token === 'null' ||
+          refresh_token.trim() === '' ||
+          refresh_token.length < 10) {
+        console.error('Token refresh error: No valid refresh token provided', {
+          hasToken: !!refresh_token,
+          tokenLength: refresh_token?.length,
+          isUndefinedString: refresh_token === 'undefined',
+          isNullString: refresh_token === 'null',
+        });
+
         return new Response(
           JSON.stringify({
-            error: 'Validation failed',
-            details: zodError.error.errors
+            error: 'Refresh token is required',
+            reason: 'missing_refresh_token',
+            details: 'No valid refresh token was provided in the request body or cookies'
           }),
           { status: 400, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
-      const { refresh_token } = validationResult.data;
+      console.log('Attempting token refresh', {
+        tokenLength: refresh_token.length,
+        tokenPrefix: refresh_token.substring(0, 10) + '...',
+      });
 
+      // STEP 3: Attempt to refresh the session
       const { data, error } = await supabase.auth.refreshSession({
         refresh_token,
       });
 
-      if (error) {
+      if (error || !data.session) {
         console.error('Token refresh error:', error);
         console.log('Refresh request details:', {
           hasRefreshToken: !!refresh_token,
           tokenLength: refresh_token?.length,
-          errorMsg: error.message,
-          errorCode: error.status
+          errorMsg: error?.message,
+          errorCode: error?.status,
+          hasSession: !!data?.session,
         });
 
         return new Response(
           JSON.stringify({
             error: 'Failed to refresh token',
-            reason: error.message?.includes('Invalid Refresh Token') ? 'invalid_refresh_token' : 'refresh_failed',
-            details: error.message
+            reason: error?.message?.includes('Invalid Refresh Token') ? 'invalid_refresh_token' : 'refresh_failed',
+            details: error?.message || 'Session refresh returned no data'
           }),
           { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Prepare httpOnly cookie options for refresh token
+      // STEP 4: Prepare httpOnly cookie options
       const cookieOptions = [
         'HttpOnly',
         'Secure',
-        'SameSite=Strict',
+        'SameSite=Lax', // Changed from Strict to Lax for better cross-site compatibility
         'Path=/',
         `Max-Age=${7 * 24 * 60 * 60}` // 7 days
       ].join('; ');
 
+      // Use longer expiry for refresh token cookie
+      const refreshCookieOptions = [
+        'HttpOnly',
+        'Secure',
+        'SameSite=Lax',
+        'Path=/',
+        `Max-Age=${30 * 24 * 60 * 60}` // 30 days for refresh token
+      ].join('; ');
+
+      console.log('Token refresh successful', {
+        userId: data.user?.id,
+        expiresIn: data.session?.expires_in,
+      });
+
+      // STEP 5: Build response with new tokens and cookies
       const response = new Response(
         JSON.stringify({
           user: data.user,
           session: data.session,
           access_token: data.session?.access_token,
           refresh_token: data.session?.refresh_token,
+          expires_in: data.session?.expires_in,
         }),
         {
+          status: 200,
           headers: {
             ...corsHeadersWithOrigin,
             'Content-Type': 'application/json',
@@ -390,8 +443,8 @@ serve(async (req) => {
         }
       );
 
-      // Add refresh token cookie
-      response.headers.append('Set-Cookie', `tenant_refresh_token=${data.session?.refresh_token}; ${cookieOptions}`);
+      // Add refresh token cookie with longer expiry
+      response.headers.append('Set-Cookie', `tenant_refresh_token=${data.session?.refresh_token}; ${refreshCookieOptions}`);
 
       return response;
     }
