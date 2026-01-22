@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useProcessPayment } from "@/hooks/useWholesaleData";
+import { AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface PaymentDialogProps {
   clientId: string;
@@ -23,12 +25,46 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
 
   const processPayment = useProcessPayment();
 
+  // Validation for payment amount
+  const paymentValidation = useMemo(() => {
+    const numAmount = parseFloat(amount);
+
+    if (!amount || isNaN(numAmount)) {
+      return { valid: false, error: null }; // Empty is not an error, just not valid for submission
+    }
+
+    if (numAmount <= 0) {
+      return { valid: false, error: "Payment amount must be greater than zero" };
+    }
+
+    if (numAmount > outstandingBalance) {
+      return {
+        valid: false,
+        error: `Payment amount ($${numAmount.toLocaleString()}) cannot exceed outstanding balance ($${outstandingBalance.toLocaleString()})`
+      };
+    }
+
+    return { valid: true, error: null };
+  }, [amount, outstandingBalance]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Double-check validation before submission
+    const numAmount = parseFloat(amount);
+    if (numAmount > outstandingBalance) {
+      toast.error("Payment amount cannot exceed outstanding balance");
+      return;
+    }
+
+    if (numAmount <= 0) {
+      toast.error("Payment amount must be greater than zero");
+      return;
+    }
+
     await processPayment.mutateAsync({
       client_id: clientId,
-      amount: parseFloat(amount),
+      amount: numAmount,
       payment_method: paymentMethod,
       reference_number: referenceNumber || null,
       notes: notes || null
@@ -65,13 +101,25 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
               id="amount"
               type="number"
               step="0.01"
-              min="0"
+              min="0.01"
               max={outstandingBalance}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
               required
+              className={paymentValidation.error ? "border-destructive" : ""}
             />
+            {paymentValidation.error && (
+              <div className="flex items-center gap-1.5 mt-1.5 text-destructive text-sm">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{paymentValidation.error}</span>
+              </div>
+            )}
+            {parseFloat(amount) > 0 && parseFloat(amount) <= outstandingBalance && (
+              <div className="text-xs text-muted-foreground mt-1">
+                Remaining balance after payment: ${Math.max(0, outstandingBalance - parseFloat(amount)).toLocaleString()}
+              </div>
+            )}
           </div>
 
           <div>
@@ -117,7 +165,11 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Cancel
             </Button>
-            <Button type="submit" disabled={!amount || processPayment.isPending} className="flex-1">
+            <Button
+              type="submit"
+              disabled={!paymentValidation.valid || processPayment.isPending}
+              className="flex-1"
+            >
               {processPayment.isPending ? "Processing..." : "Process Payment"}
             </Button>
           </div>
