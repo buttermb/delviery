@@ -334,6 +334,7 @@ const CustomDomainPage = lazy(() => import("./pages/tenant-admin/CustomDomainPag
 const PrioritySupportPage = lazy(() => import("./pages/tenant-admin/PrioritySupportPage"));
 const CreditPurchaseSuccessPage = lazy(() => import("./pages/tenant-admin/credits/CreditPurchaseSuccessPage"));
 const CreditPurchaseCancelledPage = lazy(() => import("./pages/tenant-admin/credits/CreditPurchaseCancelledPage"));
+const CreditAnalyticsPage = lazy(() => import("./pages/tenant-admin/credits/CreditAnalyticsPage").then(m => ({ default: m.CreditAnalyticsPage })));
 const CustomerDetails = lazy(() => import("./pages/admin/CustomerDetails"));
 const StockAlertsPage = lazy(() => import("./pages/tenant-admin/StockAlertsPage"));
 const InventoryTransfersPage = lazy(() => import("./pages/tenant-admin/InventoryTransfersPage"));
@@ -854,7 +855,8 @@ const App = () => {
                                         <Route path="reports" element={<FeatureProtectedRoute featureId="reports"><ReportsPage /></FeatureProtectedRoute>} />
                                         {/* Billing redirects to Settings */}
                                         <Route path="billing" element={<Navigate to="../settings?section=billing" replace />} />
-                                        {/* Credit Purchase Routes */}
+                                        {/* Credit Routes */}
+                                        <Route path="credits/analytics" element={<CreditAnalyticsPage />} />
                                         <Route path="credits/success" element={<CreditPurchaseSuccessPage />} />
                                         <Route path="credits/cancelled" element={<CreditPurchaseCancelledPage />} />
                                         <Route path="settings" element={<FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute>} />
