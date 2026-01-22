@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
+import { sanitizeHtml, safeJsonParse } from '@/lib/utils/sanitize';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart,
@@ -322,7 +323,7 @@ export default function ProductDetailPage() {
   // Check wishlist status
   useEffect(() => {
     if (store?.id && product?.product_id) {
-      const wishlist = JSON.parse(localStorage.getItem(`shop_wishlist_${store.id}`) || '[]');
+      const wishlist = safeJsonParse<string[]>(localStorage.getItem(`shop_wishlist_${store.id}`), []);
       setIsWishlisted(wishlist.includes(product.product_id));
     }
   }, [store?.id, product?.product_id]);
@@ -932,7 +933,7 @@ export default function ProductDetailPage() {
                 <TabsContent value="description" className="mt-0">
                   <div className={`prose max-w-none ${isLuxuryTheme ? 'prose-invert prose-p:text-white/70 prose-headings:text-white' : ''}`}>
                     {product.description ? (
-                      <div dangerouslySetInnerHTML={{ __html: product.description }} />
+                      <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description) }} />
                     ) : (
                       <p className="text-white/50">No description available for this product.</p>
                     )}

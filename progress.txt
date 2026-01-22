@@ -1,0 +1,116 @@
+# Security Audit: XSS and Injection Vulnerabilities
+
+## Task: Check XSS and Injection Vulnerabilities
+
+### Completed: 2026-01-21
+
+---
+
+## Summary
+
+Conducted a comprehensive security audit to identify and fix XSS (Cross-Site Scripting) and injection vulnerabilities in the FloraIQ codebase.
+
+---
+
+## Vulnerabilities Found and Fixed
+
+### 1. HIGH SEVERITY - ProductDetailPage.tsx (Line 935)
+**Issue:** Product descriptions were rendered using `dangerouslySetInnerHTML` without sanitization.
+**Risk:** Stored XSS - malicious scripts in product descriptions could execute for all users viewing the product.
+**Fix:** Added DOMPurify sanitization via new `sanitizeHtml()` function.
+
+### 2. HIGH SEVERITY - HeroSection.tsx (Line 173)
+**Issue:** Subheading content rendered with `dangerouslySetInnerHTML` allowing arbitrary HTML.
+**Risk:** XSS through CMS or storefront configuration data.
+**Fix:** Created `sanitizeWithLineBreaks()` function that only allows `<br>` tags.
+
+### 3. MEDIUM SEVERITY - chart.tsx (Line 70)
+**Issue:** CSS variables generated dynamically from chart config without validation.
+**Risk:** CSS injection if config values come from untrusted sources.
+**Fix:** Added `sanitizeColor()` and CSS key sanitization to prevent injection.
+
+### 4. MEDIUM SEVERITY - main.tsx (Multiple locations)
+**Issue:** Error messages rendered via `innerHTML` with inline onclick handlers.
+**Risk:** Potential XSS through error message manipulation, CSP violations.
+**Fix:** Replaced all `innerHTML` with DOM API methods using `textContent` and `addEventListener`.
+
+### 5. MEDIUM SEVERITY - ProductDetailPage.tsx (Line 325)
+**Issue:** `JSON.parse()` on localStorage without error handling.
+**Risk:** Application crash if localStorage is corrupted; potential exploitation after XSS.
+**Fix:** Created `safeJsonParse()` helper with try-catch and default value fallback.
+
+---
+
+## New Files Created
+
+### src/lib/utils/sanitize.ts
+Comprehensive HTML sanitization utilities using DOMPurify:
+- `sanitizeHtml()` - Full HTML sanitization with configurable allowed tags
+- `sanitizeText()` - Strips all HTML, limits length
+- `sanitizeWithLineBreaks()` - Only allows `<br>` tags
+- `sanitizeUrl()` - Validates URLs, blocks javascript:/data:/vbscript:
+- `escapeHtml()` - Escapes HTML entities for display
+- `sanitizeColor()` - Validates CSS color values
+- `safeJsonParse()` - Safe JSON parsing with error handling
+
+### src/lib/utils/sanitize.test.ts
+84 security tests covering:
+- Safe tag allowlisting
+- Dangerous tag removal (script, iframe, object, embed, form)
+- Event handler stripping (onerror, onclick, onload, etc.)
+- JavaScript URL blocking
+- CSS injection prevention
+- Common OWASP XSS attack vectors
+- URL sanitization edge cases
+- Color validation patterns
+
+---
+
+## Files Modified
+
+1. **src/pages/shop/ProductDetailPage.tsx**
+   - Added import for sanitize utilities
+   - Wrapped product.description in `sanitizeHtml()`
+   - Changed localStorage JSON.parse to `safeJsonParse()`
+
+2. **src/components/shop/sections/HeroSection.tsx**
+   - Added import for `sanitizeWithLineBreaks`
+   - Sanitized subheading before rendering
+
+3. **src/components/ui/chart.tsx**
+   - Added import for `sanitizeColor`
+   - Sanitized chart ID, color values, and CSS variable keys
+
+4. **src/main.tsx**
+   - Replaced all `innerHTML` with DOM API methods
+   - Removed inline onclick handlers, replaced with addEventListener
+   - Error messages now use `textContent` to prevent XSS
+
+---
+
+## Security Patterns Validated as Safe
+
+- Supabase queries use parameterized queries (no raw SQL injection risk)
+- RLS policies properly filter by tenant_id/store_id
+- Edge Functions use Zod validation for input
+- No use of `eval()` or `Function()` constructor
+- React Router handles URL parameters safely
+
+---
+
+## Testing
+
+- All 84 new security tests pass
+- TypeScript compilation successful
+- Production build successful
+- Tests cover 19 common OWASP XSS attack vectors
+
+---
+
+## Recommendations for Future Development
+
+1. Consider implementing Content Security Policy (CSP) headers
+2. Add DOMPurify sanitization to any new `dangerouslySetInnerHTML` usage
+3. Always use `safeJsonParse()` when parsing JSON from localStorage/sessionStorage
+4. Avoid inline event handlers in error UIs
+5. Review any new user-controllable data that renders HTML
