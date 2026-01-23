@@ -1,0 +1,46 @@
+## Complete Storefront Order Management - Progress
+
+### Completed
+
+#### 1. Created `useStorefrontOrders` Hook (`src/hooks/useStorefrontOrders.ts`)
+- Customer order history fetching with TanStack Query
+- Order filtering: status (all/active/completed/cancelled), search (order number/item names), date range (7d/30d/90d)
+- Order cancellation mutation for pending/confirmed orders
+- Order statistics (total orders, active, completed, cancelled, total spent)
+- `useStorefrontOrderByToken` for public order tracking
+- Auto-refresh every 30s for active orders
+
+#### 2. Created Order Detail Page (`src/pages/shop/OrderDetailPage.tsx`)
+- Full order detail view at `/shop/:storeSlug/orders/:orderId`
+- Visual status timeline with animated steps (pending → confirmed → preparing → ready → out_for_delivery → delivered)
+- Complete order items list with individual "Buy Again" buttons
+- Order totals breakdown (subtotal, delivery fee, tax, total)
+- Delivery address and customer info sidebar
+- Order cancellation flow with confirmation dialog and reason textarea
+- Reorder functionality (adds all items back to cart)
+- Share/copy tracking URL
+- Links to live order tracking page
+- Responsive layout (2-column on desktop, stacked on mobile)
+- Authentication gate (requires customer login)
+
+#### 3. Enhanced Account Page Order History (`src/pages/shop/AccountPage.tsx`)
+- Integrated `useStorefrontOrders` hook replacing inline query
+- Added order search input with debounced filtering
+- Added status filter dropdown (All/Active/Delivered/Cancelled)
+- Added date range filter dropdown (All Time/7 Days/30 Days/90 Days)
+- Order statistics summary (total orders, total spent, active/delivered counts)
+- "No matching orders" state with "Clear Filters" button when filters applied
+- "View Details" button on each order card linking to OrderDetailPage
+- Conditional "Track" button (only shown when tracking_token exists)
+
+#### 4. Added Route Configuration (`src/App.tsx`)
+- Lazy-loaded `ShopOrderDetailPage` component
+- Route: `/shop/:storeSlug/orders/:orderId` mapped to OrderDetailPage
+
+#### 5. Fixed Pre-existing Build Issue
+- Created missing `src/lib/utils/sanitize.ts` utility (was imported by ProductDetailPage and CustomHTMLSection but file didn't exist)
+- Implements XSS-safe HTML sanitization (strips script tags, event handlers, javascript: URIs)
+
+### Build Status
+- Production build passes successfully (`npm run build`)
+- No TypeScript errors in any new or modified files

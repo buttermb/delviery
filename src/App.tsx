@@ -293,6 +293,7 @@ const ShopCheckoutPage = lazy(() => import("./pages/shop/CheckoutPage"));
 const ShopOrderConfirmationPage = lazy(() => import("./pages/shop/OrderConfirmationPage"));
 const ShopAccountPage = lazy(() => import("./pages/shop/AccountPage"));
 const ShopOrderTrackingPage = lazy(() => import("./pages/shop/OrderTrackingPage"));
+const ShopOrderDetailPage = lazy(() => import("./pages/shop/OrderDetailPage").then(m => ({ default: m.OrderDetailPage })));
 const SinglePageCheckout = lazy(() => import("./components/shop/SinglePageCheckout"));
 const EncryptedStorePage = lazy(() => import("./pages/shop/EncryptedStorePage"));
 const RevenueReportsPage = lazy(() => import("./pages/tenant-admin/RevenueReportsPage"));
@@ -617,6 +618,7 @@ const App = () => {
                                         <Route path="track/:trackingToken" element={<ShopOrderTrackingPage />} />
                                         <Route path="account" element={<ShopAccountPage />} />
                                         <Route path="orders" element={<ShopAccountPage />} />
+                                        <Route path="orders/:orderId" element={<ShopOrderDetailPage />} />
                                         <Route path="wishlist" element={<ShopAccountPage />} />
                                       </Route>
 
