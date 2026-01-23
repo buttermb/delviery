@@ -1,0 +1,27 @@
+## Task: Add Breadcrumb Navigation Between Panels
+
+### What was done:
+1. Created `src/components/admin/Breadcrumbs.tsx` - A dedicated breadcrumb navigation component that:
+   - Shows Home icon linking to Dashboard
+   - Parses URL path segments into readable breadcrumb labels
+   - Uses a comprehensive SEGMENT_LABELS map for human-readable display names (hubs, pages, etc.)
+   - Falls back to Title Case formatting for unknown segments
+   - Highlights current page (non-clickable, bold font)
+   - All intermediate segments are clickable links for navigation
+   - Hides on dashboard (root) since it's unnecessary there
+   - Uses proper aria attributes for accessibility
+
+2. Updated `src/pages/admin/AdminLayout.tsx` to:
+   - Replace inline breadcrumb logic with the new `Breadcrumbs` component
+   - Remove unused imports (Link, useNavigate, ChevronRight)
+   - Simplify mobile title display using a local helper function
+   - Breadcrumbs now show on all admin pages via the shared layout
+
+### Acceptance Criteria Met:
+- [x] Breadcrumbs show on all admin pages (via AdminLayout integration)
+- [x] Links navigate correctly (each intermediate segment links to proper admin route)
+- [x] Current page highlighted (font-medium, text-foreground, non-clickable)
+
+### Files Changed:
+- `src/components/admin/Breadcrumbs.tsx` (new)
+- `src/pages/admin/AdminLayout.tsx` (modified)
