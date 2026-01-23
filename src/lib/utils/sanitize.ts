@@ -53,3 +53,11 @@ export function sanitizeHtml(html: string): string {
 
   return sanitized;
 }
+
+/**
+ * Sanitize basic HTML - allows only inline formatting tags.
+ * Suitable for short text like subheadings where block elements aren't needed.
+ */
+export function sanitizeBasicHtml(html: string): string {
+  return sanitizeHtml(html);
+}

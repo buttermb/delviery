@@ -1,27 +1,45 @@
-## Task: Add Breadcrumb Navigation Between Panels
+## Task: Fix Token Refresh Race Conditions
 
 ### What was done:
-1. Created `src/components/admin/Breadcrumbs.tsx` - A dedicated breadcrumb navigation component that:
-   - Shows Home icon linking to Dashboard
-   - Parses URL path segments into readable breadcrumb labels
-   - Uses a comprehensive SEGMENT_LABELS map for human-readable display names (hubs, pages, etc.)
-   - Falls back to Title Case formatting for unknown segments
-   - Highlights current page (non-clickable, bold font)
-   - All intermediate segments are clickable links for navigation
-   - Hides on dashboard (root) since it's unnecessary there
-   - Uses proper aria attributes for accessibility
 
-2. Updated `src/pages/admin/AdminLayout.tsx` to:
-   - Replace inline breadcrumb logic with the new `Breadcrumbs` component
-   - Remove unused imports (Link, useNavigate, ChevronRight)
-   - Simplify mobile title display using a local helper function
-   - Breadcrumbs now show on all admin pages via the shared layout
+1. Created `src/lib/auth/tokenRefreshManager.ts` - A singleton TokenRefreshManager class that:
+   - Prevents concurrent refresh requests via promise deduplication (same scope returns same promise)
+   - Enforces minimum 5-second interval between refresh attempts to prevent rapid-fire
+   - Supports isolated scopes ('tenant-admin', 'customer') so different auth contexts don't interfere
+   - Provides `isRefreshing(scope)` check for other code to query refresh state
+   - Provides `reset(scope)` and `resetAll()` for cleanup during logout
+   - Properly handles errors in the finally block so state is always cleaned up
 
-### Acceptance Criteria Met:
-- [x] Breadcrumbs show on all admin pages (via AdminLayout integration)
-- [x] Links navigate correctly (each intermediate segment links to proper admin route)
-- [x] Current page highlighted (font-medium, text-foreground, non-clickable)
+2. Updated `src/contexts/TenantAdminAuthContext.tsx`:
+   - Replaced inline `isRefreshingRef`/`refreshPromiseRef` guards with `tokenRefreshManager.refresh('tenant-admin', ...)`
+   - Fixed `verifyToken` which previously did an inline refresh via `resilientFetch` that bypassed the race guard - now delegates to `refreshAuthToken()` which goes through the manager
+   - Added guard in `onAuthStateChange` to skip token updates while a managed refresh is in progress (prevents stale tokens from overwriting newer ones)
+   - Added `tokenRefreshManager.reset('tenant-admin')` to `clearAuthState` for proper cleanup on logout
+
+3. Updated `src/contexts/CustomerAuthContext.tsx`:
+   - Added race condition protection to `refreshToken` using `tokenRefreshManager.refresh('customer', ...)`
+   - Previously had no concurrency protection - overlapping interval checks could trigger multiple verifications
+   - Added `tokenRefreshManager.reset('customer')` to logout cleanup
+
+4. Updated `src/lib/auth/__tests__/tokenRefresh.test.ts`:
+   - Replaced old inline race condition tests with comprehensive tests for the TokenRefreshManager pattern
+   - Added tests for: deduplication, scope isolation, error handling, isRefreshing state, minimum interval enforcement, reset behavior
+   - All 22 tests pass
+
+5. Fixed pre-existing build error in `src/lib/utils/sanitize.ts`:
+   - Added missing `sanitizeBasicHtml` export that was referenced by HeroSection.tsx
+
+### Race Conditions Fixed:
+- [x] Multiple simultaneous `refreshAuthToken` calls now deduplicated via singleton manager
+- [x] `verifyToken` inline refresh no longer bypasses the race guard
+- [x] `onAuthStateChange` no longer overwrites tokens during an active refresh
+- [x] Customer auth concurrent verify calls now protected
+- [x] Minimum interval prevents rapid-fire refresh attempts after errors
+- [x] Logout properly resets refresh state to prevent stale attempts
 
 ### Files Changed:
-- `src/components/admin/Breadcrumbs.tsx` (new)
-- `src/pages/admin/AdminLayout.tsx` (modified)
+- `src/lib/auth/tokenRefreshManager.ts` (new)
+- `src/contexts/TenantAdminAuthContext.tsx` (modified)
+- `src/contexts/CustomerAuthContext.tsx` (modified)
+- `src/lib/auth/__tests__/tokenRefresh.test.ts` (modified)
+- `src/lib/utils/sanitize.ts` (modified - pre-existing build fix)
