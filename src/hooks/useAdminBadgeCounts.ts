@@ -32,50 +32,47 @@ export function useAdminBadgeCounts() {
     
     try {
       const [ordersResult, menuOrdersResult, stockResult, messagesResult, shipmentsResult] = await Promise.all([
-        // Pending wholesale orders
+        // Pending wholesale orders (count only, no data transfer)
         supabase
           .from('wholesale_orders')
-          .select('id')
+          .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .or('status.eq.pending,status.eq.assigned'),
-        
-        // Pending menu orders
+
+        // Pending menu orders (count only)
         supabase
           .from('menu_orders')
-          .select('id')
+          .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .in('status', ['pending', 'confirmed', 'processing', 'preparing']),
-        
-        // Low stock items
+
+        // Low stock items (count only)
         supabase
           .from('products')
-          .select('id')
+          .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .lt('stock_quantity', 10),
-        
-        // Unread messages
+
+        // Unread messages (count only)
         supabase
           .from('conversations')
-          .select('id')
+          .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .eq('status', 'open'),
-        
-        // Pending shipments
+
+        // Pending shipments (count only)
         supabase
           .from('wholesale_deliveries')
-          .select('id')
+          .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .or('status.eq.assigned,status.eq.picked_up'),
       ]);
 
-      const wholesaleCount = ordersResult.data?.length || 0;
-      const menuCount = menuOrdersResult.data?.length || 0;
-
       setCounts({
-        pendingOrders: wholesaleCount + menuCount,
-        lowStockItems: stockResult.data?.length || 0,
-        unreadMessages: messagesResult.data?.length || 0,
-        pendingShipments: shipmentsResult.data?.length || 0,
+        pendingOrders: (ordersResult.count || 0) + (menuOrdersResult.count || 0),
+        lowStockItems: stockResult.count || 0,
+        unreadMessages: messagesResult.count || 0,
+        pendingShipments: shipmentsResult.count || 0,
         overduePayments: 0,
       });
     } catch (error) {

@@ -3,13 +3,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
 
+interface ActivityLogEntry {
+    id: string;
+    action: string;
+    entity_type: string;
+    entity_id: string;
+    details: Record<string, unknown> | null;
+    created_at: string;
+    client: { name: string } | null;
+}
+
 export interface CRMDashboardMetrics {
     totalClients: number;
     activeInvoicesCount: number;
     activeInvoicesValue: number;
     pendingPreOrdersCount: number;
     pendingPreOrdersValue: number;
-    recentActivity: any[];
+    recentActivity: ActivityLogEntry[];
 }
 
 export const useCRMDashboard = () => {
@@ -64,10 +74,10 @@ export const useCRMDashboard = () => {
             const pendingPreOrdersCount = preOrders?.length || 0;
             const pendingPreOrdersValue = preOrders?.reduce((sum, po) => sum + po.total, 0) || 0;
 
-            // 4. Recent Activity
+            // 4. Recent Activity (select only needed columns)
             const { data: activity, error: activityError } = await supabase
                 .from("crm_activity_log")
-                .select("*, client:crm_clients(name)")
+                .select("id, action, entity_type, entity_id, details, created_at, client:crm_clients(name)")
                 .eq("account_id", accountId)
                 .order("created_at", { ascending: false })
                 .limit(10);
@@ -83,9 +93,11 @@ export const useCRMDashboard = () => {
                 activeInvoicesValue,
                 pendingPreOrdersCount,
                 pendingPreOrdersValue,
-                recentActivity: activity || [],
+                recentActivity: (activity || []) as unknown as ActivityLogEntry[],
             } as CRMDashboardMetrics;
         },
         enabled: !!accountId,
+        staleTime: 30_000,
+        gcTime: 300_000,
     });
 };

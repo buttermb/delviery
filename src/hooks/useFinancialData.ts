@@ -37,7 +37,9 @@ export const useFinancialSnapshot = () => {
         margin: 38
       };
     },
-    enabled: !!tenant?.id
+    enabled: !!tenant?.id,
+    staleTime: 60_000,
+    gcTime: 300_000,
   });
 };
 
@@ -90,7 +92,9 @@ export const useCashFlow = () => {
         }
       };
     },
-    enabled: !!tenant?.id
+    enabled: !!tenant?.id,
+    staleTime: 60_000,
+    gcTime: 300_000,
   });
 };
 
@@ -135,7 +139,9 @@ export const useCreditOut = () => {
         future: 0
       };
     },
-    enabled: !!tenant?.id
+    enabled: !!tenant?.id,
+    staleTime: 60_000,
+    gcTime: 300_000,
   });
 };
 
@@ -244,6 +250,8 @@ export const useMonthlyPerformance = () => {
         avg_deal_size: deals > 0 ? Math.round(revenue / deals) : 0
       };
     },
-    enabled: !!tenant?.id
+    enabled: !!tenant?.id,
+    staleTime: 120_000,
+    gcTime: 600_000,
   });
 };

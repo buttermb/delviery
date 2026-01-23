@@ -32,7 +32,7 @@ export function useClients(status?: 'active' | 'archived') {
 
             let query = supabase
                 .from('crm_clients')
-                .select('*')
+                .select('id, account_id, name, email, phone, open_balance, status, created_at, updated_at')
                 .eq('account_id', accountId)
                 .order('created_at', { ascending: false });
 
@@ -49,6 +49,8 @@ export function useClients(status?: 'active' | 'archived') {
             return data as CRMClient[];
         },
         enabled: !!accountId,
+        staleTime: 30_000,
+        gcTime: 300_000,
     });
 }
 
@@ -66,7 +68,7 @@ export function useClient(clientId: string | undefined) {
 
             const { data, error } = await supabase
                 .from('crm_clients')
-                .select('*')
+                .select('id, account_id, name, email, phone, open_balance, status, portal_password_hash, portal_last_login, notified_about_menu_update, created_at, updated_at')
                 .eq('id', clientId)
                 .eq('account_id', accountId)
                 .maybeSingle();
@@ -78,6 +80,8 @@ export function useClient(clientId: string | undefined) {
             return data as CRMClient;
         },
         enabled: !!clientId && !!accountId,
+        staleTime: 30_000,
+        gcTime: 300_000,
     });
 }
 
@@ -271,7 +275,7 @@ export function useSearchClients(searchTerm: string) {
 
             const { data, error } = await supabase
                 .from('crm_clients')
-                .select('*')
+                .select('id, account_id, name, email, phone, open_balance, status, created_at, updated_at')
                 .eq('account_id', accountId)
                 .or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`)
                 .limit(10);

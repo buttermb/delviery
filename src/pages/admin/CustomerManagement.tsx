@@ -106,7 +106,7 @@ export default function CustomerManagement() {
       setLoading(true);
       let query = supabase
         .from("customers")
-        .select("*")
+        .select("id, tenant_id, first_name, last_name, email, phone, customer_type, total_spent, loyalty_points, loyalty_tier, last_purchase_at, status, medical_card_expiration, phone_encrypted, email_encrypted, deleted_at, created_at")
         .eq("tenant_id", tenant.id)
         .is("deleted_at", null); // Exclude soft-deleted customers
 
