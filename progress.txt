@@ -1,0 +1,80 @@
+## Task: Fix Complete Logout Flow - Clean All State
+
+### Status: COMPLETED
+
+### Problem
+The logout flow across all auth contexts (TenantAdmin, Customer, SuperAdmin, Auth, Vendor) had
+inconsistent state cleanup. Key issues:
+1. TanStack Query cache was NEVER cleared on logout - stale data from previous sessions could persist
+2. The existing `clearAllAuthTokens()` utility was never called by any logout function
+3. VendorAuthContext had minimal cleanup (no encryption destroy, no storage clearing)
+4. CustomerAuthContext never called `supabase.auth.signOut()`
+5. Inconsistent session/localStorage clearing across contexts
+6. Cart data, onboarding state, and age verification persisted across user sessions
+
+### Solution
+Created a centralized `performFullLogout()` utility and refactored all auth contexts to use it.
+
+### Changes Made
+
+1. **src/lib/react-query-config.ts**
+   - Added singleton `appQueryClient` export (created once, used by both App.tsx and logout utility)
+   - Kept `createQueryClient` for tests that need isolated instances
+
+2. **src/App.tsx**
+   - Updated to import and use `appQueryClient` instead of creating a new instance via `createQueryClient()`
+
+3. **src/lib/utils/authHelpers.ts**
+   - Added `performFullLogout()` function that comprehensively cleans ALL state:
+     - Destroys encryption session (clears keys from memory + session storage)
+     - Signs out from Supabase (clears Supabase-managed tokens)
+     - Calls `clearAllAuthTokens()` (clears all auth tier tokens/user data)
+     - Clears session-specific storage (cart, checkout, onboarding, age verification)
+     - Clears user ID from both session and local storage
+     - Clears `lastTenantSlug` for session restoration
+     - Cancels all in-flight queries and clears TanStack Query cache
+
+4. **src/contexts/TenantAdminAuthContext.tsx**
+   - Logout function: replaced manual cleanup with `await performFullLogout()` + `clearAuthState()`
+   - BroadcastChannel remote logout handler: same cleanup pattern
+
+5. **src/contexts/CustomerAuthContext.tsx**
+   - Logout function: replaced manual cleanup with `await performFullLogout()` + context state reset
+   - Now properly calls `supabase.auth.signOut()` (via performFullLogout)
+
+6. **src/contexts/SuperAdminAuthContext.tsx**
+   - Logout function: replaced manual cleanup with `await performFullLogout()` + context state reset
+
+7. **src/contexts/AuthContext.tsx**
+   - signOut function: replaced manual cleanup with `await performFullLogout()` + context state reset
+
+8. **src/contexts/VendorAuthContext.tsx**
+   - Logout function: replaced bare `supabase.auth.signOut()` with `await performFullLogout()`
+   - Now has full encryption, storage, and query cache cleanup
+
+9. **src/lib/utils/sanitize.ts** (new - fixes pre-existing build error)
+   - Added missing HTML sanitization utility imported by ProductDetailPage
+
+### What Gets Cleaned on Logout Now
+- All auth tokens (super admin, tenant admin, customer, courier)
+- All user profile data from storage
+- Encryption keys and session
+- Supabase auth session
+- TanStack Query cache (prevents stale data between sessions)
+- Cart and checkout data
+- Onboarding state
+- Age verification state
+- User ID from session/local storage
+- lastTenantSlug
+
+### What Is Preserved (intentional)
+- Theme preference
+- Language setting
+- Sidebar collapsed state
+- Device ID/fingerprint
+- PWA installation state
+- Network quality setting
+- Reduced motion preference
+
+### Build Verification
+- `npm run build` passes successfully

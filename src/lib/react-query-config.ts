@@ -82,6 +82,12 @@ export const createQueryClient = () => {
 };
 
 /**
+ * Singleton query client instance used across the app.
+ * Exported for use in logout utilities that need to clear cache outside React.
+ */
+export const appQueryClient = createQueryClient();
+
+/**
  * Product-specific query configuration
  * Products change less frequently, so longer cache time
  */

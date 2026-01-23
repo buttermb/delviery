@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { FreeTierOnboardingFlow } from "@/components/onboarding/FreeTierOnboardingFlow";
 import { useTenantRouteGuard } from "@/hooks/useTenantRouteGuard";
+import { performFullLogout } from "@/lib/utils/authHelpers";
 
 interface TenantAdmin {
   id: string;
@@ -1385,26 +1386,20 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       if (event.data.type === 'LOGOUT') {
         logger.info('[AUTH] Received remote logout event', { component: 'TenantAdminAuthContext' });
 
-        // Clear only local state, don't trigger API logout (already done by other tab)
+        // Full cleanup (don't call API - already done by the tab that initiated logout)
+        performFullLogout();
+
+        // Clear context-specific React state
         clearAuthState();
-
-        // Destroy encryption session
-        clientEncryption.destroy();
-
-        // Clear user ID from storage
-        sessionStorage.removeItem('floraiq_user_id');
-        safeStorage.removeItem('floraiq_user_id');
 
         toast.info("You have been logged out from another tab.", {
           duration: 5000,
         });
 
-        // Redirect if we have tenant slug, but do not replace history to allow back navigation if desired, or replace to prevent loop? 
-        // Replace is better for logout.
+        // Redirect to login
         if (tenant?.slug) {
           navigate(`/${tenant.slug}/admin/login`, { replace: true });
         } else if (window.location.pathname.includes('/admin')) {
-          // Fallback if tenant slug is missing but we're in admin
           navigate('/');
         }
       }
@@ -1449,18 +1444,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     } catch (error) {
       logger.error("[AUTH] Logout error", error);
     } finally {
-      // Destroy encryption session before logout
-      clientEncryption.destroy();
+      // Perform complete state cleanup (encryption, Supabase, storage, query cache)
+      await performFullLogout();
 
-      // Clear Supabase session
-      await supabase.auth.signOut();
-
-      // Always clear local state
+      // Also clear context-specific React state
       clearAuthState();
-
-      // Clear user ID from storage
-      sessionStorage.removeItem('floraiq_user_id');
-      safeStorage.removeItem('floraiq_user_id');
     }
   };
 

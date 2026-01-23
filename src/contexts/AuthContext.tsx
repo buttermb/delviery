@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
+import { performFullLogout } from "@/lib/utils/authHelpers";
 
 interface AuthContextType {
   user: User | null;
@@ -70,25 +71,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // Debug: Log sign out attempt
       logAuth('Sign out initiated', {
         userId: user?.id,
         userEmail: user?.email,
         source: 'AuthContext'
       });
 
-      // Destroy encryption session before signing out
-      clientEncryption.destroy();
+      // Perform complete state cleanup (encryption, Supabase, storage, query cache)
+      await performFullLogout();
 
-      await supabase.auth.signOut();
+      // Clear context-specific React state
       setUser(null);
       setSession(null);
 
-      // Clear user ID from storage
-      sessionStorage.removeItem('floraiq_user_id');
-      localStorage.removeItem('floraiq_user_id');
-
-      // Debug: Log successful sign out
       logAuth('Sign out completed', { source: 'AuthContext' });
     } catch (error) {
       logAuthError('Sign out failed', {

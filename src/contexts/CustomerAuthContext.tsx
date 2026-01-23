@@ -9,6 +9,7 @@ import { getTokenExpiration } from "@/lib/auth/jwt";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { resilientFetch, ErrorCategory, getErrorMessage, initConnectionMonitoring, onConnectionStatusChange, type ConnectionStatus } from "@/lib/utils/networkResilience";
 import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLogger";
+import { performFullLogout } from "@/lib/utils/authHelpers";
 
 interface Customer {
   id: string;
@@ -356,21 +357,14 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         hadToken: !!token,
       });
     } finally {
-      // Destroy encryption session before logout
-      clientEncryption.destroy();
+      // Perform complete state cleanup (encryption, Supabase, storage, query cache)
+      await performFullLogout();
 
+      // Clear context-specific React state
       setToken(null);
       setCustomer(null);
       setTenant(null);
-      safeStorage.removeItem(TOKEN_KEY);
-      safeStorage.removeItem(CUSTOMER_KEY);
-      safeStorage.removeItem(TENANT_KEY);
 
-      // Clear user ID from storage
-      safeStorage.removeItem('floraiq_user_id');
-      safeStorage.removeItem('floraiq_user_id');
-
-      // Debug: Log logout complete
       logAuth('Customer logout completed', { source: 'CustomerAuthContext' });
     }
   };

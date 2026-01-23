@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
+import { performFullLogout } from "@/lib/utils/authHelpers";
 
 interface VendorProfile {
     id: string;
@@ -99,7 +100,10 @@ export const VendorAuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const logout = async () => {
-        await supabase.auth.signOut();
+        // Perform complete state cleanup (encryption, Supabase, storage, query cache)
+        await performFullLogout();
+
+        // Clear context-specific React state
         setVendor(null);
         setIsAuthenticated(false);
     };

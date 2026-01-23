@@ -15,7 +15,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { createQueryClient } from "@/lib/react-query-config";
+import { appQueryClient } from "@/lib/react-query-config";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AccountProvider } from "./contexts/AccountContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -436,8 +436,8 @@ import FeatureCompliancePage from "./pages/features/CompliancePage";
 import FeatureLogisticsPage from "./pages/features/LogisticsPage";
 import FeatureEcommercePage from "./pages/features/EcommercePage";
 
-// Create optimized QueryClient from centralized config
-const queryClient = createQueryClient();
+// Use the singleton QueryClient from centralized config
+const queryClient = appQueryClient;
 
 // Setup global error handlers
 setupGlobalErrorHandlers();
