@@ -1,0 +1,67 @@
+## Task: Enhance Disposable Menu Generation with Advanced Options
+## Status: COMPLETED
+## Date: 2026-01-23
+
+### What was done:
+
+1. **Enhanced MenuCreationWizard with 5-step flow** (was 4 steps)
+   - Added new "Advanced" step (Step 4) between Products and Settings
+   - Restructured step navigation to dynamically skip steps for forum menus
+   - Improved progress bar to accurately track visible steps
+
+2. **Custom Pricing (Advanced > Pricing tab)**
+   - Bulk discount: Apply a percentage discount to all products
+   - Per-product custom pricing: Override individual product prices
+   - Effective price calculation showing base price, discount, or custom override
+   - Visual indicators for discounted vs custom-priced items
+   - Custom prices are passed through to the create-encrypted-menu edge function
+
+3. **Geofencing (Advanced > Location tab)**
+   - Toggle to enable geographic access restrictions
+   - Latitude/longitude inputs with validation (-90/90, -180/180)
+   - Radius input in miles (0.1-100 range)
+   - Template integration: Pop-Up Event template auto-enables geofencing
+   - Geofence config passed to security_settings on menu creation
+
+4. **Whitelist (Advanced > Whitelist tab)**
+   - Toggle to enable email/phone whitelist access control
+   - Email input with validation and Enter key support
+   - Phone input with validation (10+ digit format)
+   - Chip/badge display for added entries with remove buttons
+   - Duplicate detection prevents re-adding same email/phone
+   - Whitelist data passed to security_settings on creation
+
+5. **Branding (Advanced > Branding tab)**
+   - Show/hide business branding toggle
+   - Header image URL with recommended dimensions
+   - Custom welcome message (500 char limit with counter)
+   - Live preview panel showing header, branding, and message together
+   - Branding config passed as appearance_settings on creation
+
+6. **Form Validation**
+   - Validates custom prices (non-negative numbers)
+   - Validates discount percentage (1-100%)
+   - Validates geofence coordinates (lat/lng ranges, positive radius)
+   - Validates whitelist entries (email format, phone format)
+   - Password validation when password protection enabled
+   - All validations run before advancing past the Advanced step
+
+7. **QR Code Generation**
+   - Already integrated via existing QRCodeDialog component
+   - Accessible from MenuCard after menu creation
+   - Uses qrcode.react for SVG rendering + qrcode lib for data URL generation
+   - Supports download, print, and share functionality
+
+8. **Additional Fix: Created missing sanitize.ts module**
+   - Required by ProductDetailPage.tsx for build to succeed
+   - Implements sanitizeHtml, stripHtml, and sanitizeInput functions
+   - Uses DOM-based allowlist approach for safe tag/attribute filtering
+
+### Files modified:
+- `src/components/admin/disposable-menus/MenuCreationWizard.tsx` - Major rewrite with advanced options
+- `src/lib/utils/sanitize.ts` - New file (was missing, blocking build)
+
+### Build verification:
+- `npm run build` passes successfully
+- `npx tsc --noEmit` reports 0 errors
+- No regressions to existing functionality
