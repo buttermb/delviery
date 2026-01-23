@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { logAuth, logAuthWarn, logAuthError } from '@/lib/debug/logger';
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
@@ -18,49 +18,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
-    // Get initial session synchronously
     let mounted = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (mounted) {
-        // Debug: Log initial session state
-        logAuth('Initial session loaded', {
-          hasSession: !!session,
-          userId: session?.user?.id,
-          userEmail: session?.user?.email,
-          authMethod: session?.user?.app_metadata?.provider,
-          source: 'AuthContext'
-        });
-        logger.debug('Initial session', { hasSession: !!session, component: 'AuthContext' });
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    });
-
-    // Listen for auth changes (sign in, sign out, token refresh)
+    // Set up auth state change listener FIRST to catch INITIAL_SESSION event.
+    // Supabase fires INITIAL_SESSION when it restores a session from its own
+    // localStorage, which happens before getSession() resolves.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        // Debug: Log auth state changes
+      (event, currentSession) => {
         logAuth(`Auth state changed: ${event}`, {
           event,
-          hasSession: !!session,
-          userId: session?.user?.id,
-          userEmail: session?.user?.email,
-          authMethod: session?.user?.app_metadata?.provider,
+          hasSession: !!currentSession,
+          userId: currentSession?.user?.id,
+          userEmail: currentSession?.user?.email,
+          authMethod: currentSession?.user?.app_metadata?.provider,
           source: 'AuthContext'
         });
-        logger.debug('Auth state change', { event, hasSession: !!session, component: 'AuthContext' });
+        logger.debug('Auth state change', { event, hasSession: !!currentSession, component: 'AuthContext' });
 
         if (mounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+
+          // Mark loading complete on INITIAL_SESSION or if we haven't initialized yet
+          if (event === 'INITIAL_SESSION' || !initializedRef.current) {
+            initializedRef.current = true;
+            setLoading(false);
+          }
         }
       }
     );
+
+    // Also call getSession() as a fallback to ensure loading resolves
+    // even if onAuthStateChange doesn't fire (edge case)
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      if (mounted && !initializedRef.current) {
+        logAuth('Initial session loaded via getSession fallback', {
+          hasSession: !!currentSession,
+          userId: currentSession?.user?.id,
+          userEmail: currentSession?.user?.email,
+          authMethod: currentSession?.user?.app_metadata?.provider,
+          source: 'AuthContext'
+        });
+        logger.debug('Initial session (fallback)', { hasSession: !!currentSession, component: 'AuthContext' });
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        initializedRef.current = true;
+        setLoading(false);
+      }
+    });
 
     return () => {
       mounted = false;
