@@ -1,27 +1,74 @@
-## Task: Add Breadcrumb Navigation Between Panels
+## Task: Complete StorefrontGiftCards Implementation
 
 ### What was done:
-1. Created `src/components/admin/Breadcrumbs.tsx` - A dedicated breadcrumb navigation component that:
-   - Shows Home icon linking to Dashboard
-   - Parses URL path segments into readable breadcrumb labels
-   - Uses a comprehensive SEGMENT_LABELS map for human-readable display names (hubs, pages, etc.)
-   - Falls back to Title Case formatting for unknown segments
-   - Highlights current page (non-clickable, bold font)
-   - All intermediate segments are clickable links for navigation
-   - Hides on dashboard (root) since it's unnecessary there
-   - Uses proper aria attributes for accessibility
 
-2. Updated `src/pages/admin/AdminLayout.tsx` to:
-   - Replace inline breadcrumb logic with the new `Breadcrumbs` component
-   - Remove unused imports (Link, useNavigate, ChevronRight)
-   - Simplify mobile title display using a local helper function
-   - Breadcrumbs now show on all admin pages via the shared layout
+1. **Rewrote `src/pages/admin/storefront/StorefrontGiftCards.tsx`** - Complete admin page that:
+   - Uses `useTenantAdminAuth()` for proper tenant context (fixed from incorrect `useTenant()`)
+   - Fetches the `marketplace_stores` record by `tenant_id` to get the correct `store_id`
+   - Shows loading skeleton while store loads
+   - Composes the GiftCardTable, GiftCardBalanceCheck, and StorefrontGiftCardManager components
+   - Supports viewing transaction history for individual cards (ledger view)
+   - Responsive grid layout with table on left (3/4) and balance check on right (1/4)
+
+2. **Created `src/components/admin/storefront/GiftCardTable.tsx`** - Full data table with:
+   - Query for all gift cards from `marketplace_gift_cards` table filtered by `store_id`
+   - Search by code, email, or recipient name
+   - Status filter (All, Active, Disabled, Depleted)
+   - Checkbox-based bulk selection with select-all
+   - Bulk actions: Deactivate and Activate cards (with confirmation dialog)
+   - Columns: Code (with copy button), Recipient, Balance, Status, Created, Expires, Actions
+   - Pagination via `usePagination` hook with `StandardPagination` component
+   - Summary stats in card description (total cards, active, depleted, outstanding balance)
+   - Empty state with contextual messaging
+   - View transaction history button per card row
+
+3. **Created `src/components/admin/storefront/GiftCardLedger.tsx`** - Transaction history view:
+   - Queries `marketplace_gift_card_ledger` table for a specific card
+   - Shows all transactions: Issue, Use, Adjustment, Refund, Reload
+   - Color-coded amounts (green for credits, red for debits)
+   - Transaction type badges with distinct colors
+   - Directional icons (TrendingUp/TrendingDown)
+   - Balance-after column showing running balance
+   - Back navigation button to return to main table
+   - Card info in header (code, recipient, current/initial balance)
+
+4. **Created `src/components/admin/storefront/GiftCardBalanceCheck.tsx`** - Quick balance lookup:
+   - Input field for gift card code (auto-uppercased)
+   - Calls `validate_marketplace_gift_card` RPC for validation
+   - Shows balance and validity status with appropriate badges
+   - Error handling for invalid/disabled/depleted cards
+   - Enter key support for quick lookup
+
+5. **Rewrote `src/components/admin/storefront/StorefrontGiftCardManager.tsx`** - Issue dialog:
+   - Preset amount buttons ($25, $50, $100, $250) for quick selection
+   - Custom amount input with proper validation
+   - Recipient email and name fields
+   - Custom code input (auto-uppercased, font-mono)
+   - Internal notes field
+   - Loading state with spinner on submit button
+   - Uses `issue_marketplace_gift_card` RPC
+   - Proper error handling with logger and toast
+
+6. **Fixed pre-existing build error** in `src/lib/utils/sanitize.ts`:
+   - Added `sanitizeBasicHtml` export alias (was imported by HeroSection but not exported)
 
 ### Acceptance Criteria Met:
-- [x] Breadcrumbs show on all admin pages (via AdminLayout integration)
-- [x] Links navigate correctly (each intermediate segment links to proper admin route)
-- [x] Current page highlighted (font-medium, text-foreground, non-clickable)
+- [x] Can create gift cards with custom amounts (preset $25/$50/$100/$250 + custom)
+- [x] Can search and manage existing gift cards in table (search by code/email/name)
+- [x] Balance displays correctly (current balance with "of initial" when partially used)
+- [x] Gift card status updates (active/disabled/depleted with color-coded badges)
+- [x] Bulk actions (deactivate/activate multiple cards)
+- [x] Filter by status (all/active/disabled/depleted)
+- [x] Balance check functionality (quick code lookup via RPC)
+- [x] Redemption history view per card (full ledger with transaction types)
 
 ### Files Changed:
-- `src/components/admin/Breadcrumbs.tsx` (new)
-- `src/pages/admin/AdminLayout.tsx` (modified)
+- `src/pages/admin/storefront/StorefrontGiftCards.tsx` (rewritten)
+- `src/components/admin/storefront/StorefrontGiftCardManager.tsx` (rewritten)
+- `src/components/admin/storefront/GiftCardTable.tsx` (new)
+- `src/components/admin/storefront/GiftCardLedger.tsx` (new)
+- `src/components/admin/storefront/GiftCardBalanceCheck.tsx` (new)
+- `src/lib/utils/sanitize.ts` (fix pre-existing missing export)
+
+### Build Status:
+- `npm run build` passes with no errors
