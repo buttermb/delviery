@@ -1,0 +1,56 @@
+## Enhance Menu Security - Screenshot Detection and Velocity Checks
+
+### Status: COMPLETED
+
+### What was done:
+
+1. **Created `src/lib/security/auto-burn.ts`**
+   - Screenshot detection with auto-burn capability (PrintScreen, Win+Shift+S, Mac Cmd+Shift+3/4/5)
+   - DevTools detection via window size heuristic
+   - Clipboard copy prevention
+   - Print detection with content hiding
+   - Visibility change monitoring (app switching)
+   - Client-side velocity checking with in-memory sliding window
+   - Menu burn trigger that updates menu status to "burned" and logs security events
+   - Suspicious activity logging to `menu_security_events` table
+   - IP hashing utility for privacy-preserving velocity tracking
+
+2. **Enhanced `supabase/functions/menu-access-validate/index.ts`**
+   - Added VelocityChecker integration with Redis
+   - IP hashing before velocity check for privacy
+   - Velocity check runs before access validation (blocks with 429 on rate limit)
+   - Failed access code attempts are recorded for velocity tracking
+   - Security events logged on velocity violations
+   - Fail-open behavior if Redis is unavailable (continues without velocity check)
+
+3. **Enhanced `src/lib/security/screenshot-protection.ts`**
+   - Added `ScreenshotProtectionConfig` interface with autoBurn options
+   - Added `configure()` method for setting menuId, burnType, threshold
+   - Integrated `logSuspiciousActivity()` from auto-burn module
+   - Screenshot events now trigger auto-burn when configured (threshold-based)
+   - Import from auto-burn module for `logSuspiciousActivity` and `burnMenu`
+
+4. **Created `supabase/functions/report-security-event/index.ts`**
+   - Server-side endpoint for client-reported security events
+   - Validates event types via Zod schema
+   - Logs events to `menu_security_events` with proper severity
+   - Checks menu `security_settings.screenshot_attempt_action` for auto-burn/block config
+   - Auto-burns menu if configured and screenshot event detected
+   - CORS-compliant with proper error handling
+
+5. **Enhanced `src/hooks/useScreenshotProtection.ts`**
+   - Added `autoBurnEnabled` and `autoBurnAction` options
+   - Reports screenshot events to server via `report-security-event` edge function
+   - Maps detection method to proper event type for server-side processing
+   - Includes device fingerprint in server reports
+
+6. **Created `src/lib/utils/sanitize.ts`** (pre-existing build fix)
+   - HTML sanitization utility to fix missing import in ProductDetailPage
+   - Allowlist-based tag and attribute filtering
+   - XSS prevention (blocks javascript: URLs, strips dangerous tags)
+
+### Acceptance Criteria Met:
+- ✅ Screenshot detection triggers burn
+- ✅ DevTools detection logs activity
+- ✅ Velocity check blocks rapid access
+- ✅ All suspicious activity logged

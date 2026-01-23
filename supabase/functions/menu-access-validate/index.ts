@@ -1,4 +1,16 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { VelocityChecker } from '../_shared/velocity-check.ts';
+
+/**
+ * Hash an IP address for privacy-preserving velocity tracking
+ */
+async function hashIp(ip: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(ip);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b: number) => b.toString(16).padStart(2, '0')).join('');
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -14,6 +26,12 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    // Initialize velocity checker
+    const redisHost = Deno.env.get('REDIS_HOST') || 'localhost';
+    const redisPort = parseInt(Deno.env.get('REDIS_PORT') || '6379');
+    const redisPassword = Deno.env.get('REDIS_PASSWORD');
+    const velocity = new VelocityChecker(redisHost, redisPort, redisPassword);
 
     const requestBody = await req.json();
     console.log('Received request body:', JSON.stringify(requestBody));
@@ -104,6 +122,44 @@ serve(async (req) => {
 
     console.log('Menu found:', menu.name);
 
+    // Velocity Check - prevent rapid access attempts
+    const clientIp = req.headers.get('x-forwarded-for') || ip_address || 'unknown';
+    const ipHash = await hashIp(clientIp);
+
+    try {
+      const velocityCheck = await velocity.checkVelocity(menu.id, ipHash);
+      if (!velocityCheck.allowed) {
+        console.log('Velocity limit exceeded for menu:', menu.id, 'IP hash:', ipHash);
+
+        // Log security event
+        await supabaseClient.from('menu_security_events').insert({
+          menu_id: menu.id,
+          event_type: 'velocity_exceeded',
+          severity: 'high',
+          event_data: {
+            ip_hash: ipHash,
+            action: velocityCheck.action,
+            timestamp: new Date().toISOString(),
+          },
+        });
+
+        return new Response(
+          JSON.stringify({
+            error: 'Too many requests',
+            access_granted: false,
+            violations: ['Rate limit exceeded - too many access attempts'],
+          }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Record the access for velocity tracking
+      await velocity.recordAccess(menu.id, ipHash);
+    } catch (velocityError) {
+      // If Redis is unavailable, log but continue (fail-open for availability)
+      console.warn('Velocity check failed (Redis unavailable):', velocityError);
+    }
+
     // Check menu status
     if (menu.status !== 'active') {
       return new Response(
@@ -166,6 +222,13 @@ serve(async (req) => {
           severity: 'medium',
           event_data: { ip_address, device_fingerprint }
         });
+
+        // Record failed attempt for velocity tracking
+        try {
+          await velocity.recordFailedAttempt(menu.id, ipHash);
+        } catch {
+          // Redis unavailable - continue
+        }
 
         return new Response(
           JSON.stringify({
