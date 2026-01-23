@@ -29,8 +29,9 @@ interface CheckoutRequest {
     items: CheckoutItem[];
     customer_email: string;
     customer_name: string;
-    subtotal?: number;    // IGNORED: Will be recalculated
-    delivery_fee?: number; // IGNORED: Will be fetched from store settings
+    subtotal?: number;        // IGNORED: Will be recalculated
+    delivery_fee?: number;    // IGNORED: Will be fetched from store settings
+    discount_amount?: number; // Client-reported discount (coupon + loyalty + deals)
     success_url: string;
     cancel_url: string;
 }
@@ -54,8 +55,7 @@ serve(async (req) => {
             items,
             customer_email,
             customer_name,
-            subtotal,
-            delivery_fee,
+            discount_amount,
             success_url,
             cancel_url
         } = body;
@@ -209,6 +209,20 @@ serve(async (req) => {
             });
         }
 
+        // Create a Stripe coupon for discounts (coupon + loyalty + deals) if applicable
+        let discounts: Stripe.Checkout.SessionCreateParams.Discount[] | undefined;
+        if (discount_amount && discount_amount > 0) {
+            // Cap discount at subtotal to prevent negative charges
+            const cappedDiscount = Math.min(discount_amount, calculatedSubtotal);
+            const coupon = await stripe.coupons.create({
+                amount_off: Math.round(cappedDiscount * 100),
+                currency: "usd",
+                name: "Order Discount",
+                duration: "once",
+            });
+            discounts = [{ coupon: coupon.id }];
+        }
+
         // Create Stripe Checkout session
         const session = await stripe.checkout.sessions.create({
             customer_email,
@@ -216,6 +230,7 @@ serve(async (req) => {
             mode: "payment",
             success_url: success_url || `${req.headers.get("origin")}/order-confirmation/${order_id}`,
             cancel_url: cancel_url || `${req.headers.get("origin")}/checkout`,
+            ...(discounts ? { discounts } : {}),
             metadata: {
                 store_id,
                 order_id,

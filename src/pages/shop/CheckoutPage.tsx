@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
@@ -74,9 +74,10 @@ const STEPS = [
   { id: 4, name: 'Review', icon: Check },
 ];
 
-export default function CheckoutPage() {
+export function CheckoutPage() {
   const { storeSlug } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { store, setCartItemCount } = useShop();
   const { isLuxuryTheme, accentColor, cardBg, cardBorder, textPrimary, textMuted, inputBg, inputBorder, inputText } = useLuxuryTheme();
   const { toast } = useToast();
@@ -84,6 +85,20 @@ export default function CheckoutPage() {
   // Check store status
   const { data: storeStatus } = useStoreStatus(store?.id);
   const isStoreClosed = storeStatus?.isOpen === false;
+
+  // Handle cancelled Stripe checkout return
+  useEffect(() => {
+    if (searchParams.get('cancelled') === 'true') {
+      toast({
+        title: 'Payment cancelled',
+        description: 'Your payment was not completed. You can try again or choose a different payment method.',
+      });
+      // Remove the cancelled param from URL without navigation
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('cancelled');
+      window.history.replaceState({}, '', `${window.location.pathname}${newParams.toString() ? '?' + newParams.toString() : ''}`);
+    }
+  }, [searchParams, toast]);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<CheckoutData>({
@@ -565,15 +580,18 @@ export default function CheckoutPage() {
       if (formData.paymentMethod === 'card' && store?.id) {
         try {
           const checkoutItems = cartItems.map((item) => ({
+            product_id: item.productId,
             name: item.name,
-            price: item.price,
             quantity: item.quantity,
             image_url: item.imageUrl,
           }));
 
           const origin = window.location.origin;
-          const successUrl = `${origin}/shop/${storeSlug}/order-confirmation?order=${data.order_number}&token=${data.tracking_token}&total=${total}`;
-          const cancelUrl = `${origin}/shop/${storeSlug}/checkout`;
+          const successUrl = `${origin}/shop/${storeSlug}/order-confirmation?order=${data.order_id}&token=${data.tracking_token}&total=${total}&session_id={CHECKOUT_SESSION_ID}`;
+          const cancelUrl = `${origin}/shop/${storeSlug}/checkout?cancelled=true`;
+
+          // Calculate total discount applied (coupon + loyalty + deals)
+          const totalDiscountAmount = couponDiscount + loyaltyDiscount + dealsDiscount;
 
           const response = await supabase.functions.invoke('storefront-checkout', {
             body: {
@@ -583,7 +601,8 @@ export default function CheckoutPage() {
               customer_email: formData.email,
               customer_name: `${formData.firstName} ${formData.lastName}`,
               subtotal,
-              delivery_fee: deliveryFee,
+              delivery_fee: effectiveDeliveryFee,
+              discount_amount: totalDiscountAmount,
               success_url: successUrl,
               cancel_url: cancelUrl,
             },
@@ -595,6 +614,12 @@ export default function CheckoutPage() {
 
           const { url } = response.data;
           if (url) {
+            // Clear cart before redirecting to Stripe (order already created)
+            localStorage.removeItem(`shop_cart_${store.id}`);
+            if (formStorageKey) {
+              localStorage.removeItem(formStorageKey);
+            }
+            setCartItemCount(0);
             // Redirect to Stripe checkout
             window.location.href = url;
             return;
