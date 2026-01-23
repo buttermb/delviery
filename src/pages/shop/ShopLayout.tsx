@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState, createContext, useContext } from 'react';
-import { Outlet, Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { Outlet, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -89,12 +89,30 @@ export default function ShopLayout() {
   const { storeSlug } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
   const [ageVerified, setAgeVerified] = useState(false);
 
   // Check if in preview mode
   const isPreviewMode = searchParams.get('preview') === 'true';
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
 
   // Fetch store by slug
   const { data: store, isLoading, error } = useQuery({
@@ -522,11 +540,11 @@ export default function ShopLayout() {
 
             {/* Mobile Menu */}
             {mobileMenuOpen && (
-              <nav className="md:hidden py-4 border-t mt-3">
+              <nav className="md:hidden py-4 border-t mt-3" role="navigation" aria-label="Mobile menu">
                 <div className="flex flex-col gap-2">
                   <Link
                     to={`/shop/${storeSlug}/products${isPreviewMode ? '?preview=true' : ''}`}
-                    className="py-2 px-4 rounded-lg hover:bg-muted"
+                    className="py-3 px-4 rounded-lg hover:bg-muted min-h-[44px] flex items-center touch-manipulation active:scale-[0.98]"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Products
@@ -535,14 +553,14 @@ export default function ShopLayout() {
                     <>
                       <Link
                         to={`/shop/${storeSlug}/cart`}
-                        className="py-2 px-4 rounded-lg hover:bg-muted"
+                        className="py-3 px-4 rounded-lg hover:bg-muted min-h-[44px] flex items-center touch-manipulation active:scale-[0.98]"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         Cart ({cartItemCount})
                       </Link>
                       <Link
                         to={`/shop/${storeSlug}/account`}
-                        className="py-2 px-4 rounded-lg hover:bg-muted"
+                        className="py-3 px-4 rounded-lg hover:bg-muted min-h-[44px] flex items-center touch-manipulation active:scale-[0.98]"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         Account

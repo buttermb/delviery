@@ -33,7 +33,12 @@ export function MobileBottomNav({ cartItemCount, primaryColor }: MobileBottomNav
   };
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50 safe-area-pb" role="navigation" aria-label="Main">
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t shadow-lg z-50"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      role="navigation"
+      aria-label="Main"
+    >
       <div className="grid grid-cols-5 h-16">
         {navItems.map(({ path, icon: Icon, label, badge, exact }) => {
           const active = isActive(path, exact);
@@ -42,8 +47,9 @@ export function MobileBottomNav({ cartItemCount, primaryColor }: MobileBottomNav
               key={path}
               to={path}
               aria-current={active ? 'page' : undefined}
+              aria-label={`Navigate to ${label}`}
               className={cn(
-                'flex flex-col items-center justify-center gap-1 transition-colors relative min-h-[44px] min-w-[44px]',
+                'flex flex-col items-center justify-center gap-1 transition-colors relative min-h-[48px] min-w-[48px] touch-manipulation active:scale-95',
                 active ? 'text-primary' : 'text-muted-foreground'
               )}
               style={{ color: active ? primaryColor : undefined }}
@@ -73,9 +79,4 @@ export function MobileBottomNav({ cartItemCount, primaryColor }: MobileBottomNav
     </nav>
   );
 }
-
-export default MobileBottomNav;
-
-
-
 

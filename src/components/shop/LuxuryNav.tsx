@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Search, ShoppingBag, Menu, X, User } from 'lucide-react';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,6 +15,7 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { storeSlug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { store, isPreviewMode } = useShop();
   const [scrolled, setScrolled] = useState(false);
 
@@ -25,6 +26,23 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
 
   const previewParam = isPreviewMode ? '?preview=true' : '';
 
@@ -155,12 +173,27 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
       {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="fixed top-20 left-0 right-0 z-40 bg-[#015358] border-t border-white/10 shadow-xl overflow-hidden md:hidden"
-          >
+          <>
+            {/* Backdrop to catch taps outside menu */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-black/30 md:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className={cn(
+                "fixed left-0 right-0 z-50 bg-[#015358] border-t border-white/10 shadow-xl md:hidden",
+                scrolled ? "top-16" : "top-20"
+              )}
+              style={{ maxHeight: 'calc(100dvh - 5rem)' }}
+            >
             <nav className="flex flex-col p-6 gap-4">
               <div className="flex items-center bg-white/10 rounded-full px-4 py-3 border border-white/20 mb-4">
                 <Search className="w-5 h-5 text-white/70 mr-3" />
@@ -200,7 +233,8 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
                 </>
               )}
             </nav>
-          </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>

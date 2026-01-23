@@ -99,10 +99,11 @@ export function MobileBottomNav() {
       <OfflineIndicator />
       <MobileErrorBoundary>
         <nav
-          className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t lg:hidden min-h-[64px] safe-area-bottom shadow-lg"
+          className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t lg:hidden min-h-[64px] shadow-lg"
           style={{
             pointerEvents: 'auto',
-            zIndex: 100
+            zIndex: 50,
+            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
           }}
           role="navigation"
           aria-label="Mobile bottom navigation"
