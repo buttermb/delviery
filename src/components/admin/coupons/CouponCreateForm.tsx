@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { sanitizeCouponCode, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import {
   Dialog,
   DialogContent,
@@ -156,10 +157,10 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
     const isEditing = !!coupon;
 
     const couponData: CouponInsert | CouponUpdate = {
-      code: formData.code.toUpperCase(),
+      code: sanitizeCouponCode(formData.code),
       discount_type: formData.discount_type,
       discount_value: formData.discount_value,
-      description: formData.description || null,
+      description: formData.description ? sanitizeTextareaInput(formData.description, 500) : null,
       start_date: formData.start_date || null,
       end_date: formData.never_expires ? null : (formData.end_date || null),
       never_expires: formData.never_expires,

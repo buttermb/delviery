@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import {
   Dialog,
   DialogContent,
@@ -115,27 +116,24 @@ export function SupplierForm({ open, onOpenChange, supplier, onSuccess }: Suppli
 
     const isEditing = !!supplier;
 
+    const sanitizedData = {
+      supplier_name: sanitizeFormInput(formData.supplier_name, 200),
+      contact_person: formData.contact_person ? sanitizeFormInput(formData.contact_person, 200) : null,
+      email: formData.email ? sanitizeEmail(formData.email) : null,
+      phone: formData.phone ? sanitizePhoneInput(formData.phone) : null,
+      address: formData.address ? sanitizeTextareaInput(formData.address, 500) : null,
+      payment_terms: formData.payment_terms ? sanitizeFormInput(formData.payment_terms, 200) : null,
+    };
+
     if (isEditing) {
       const updateData: SupplierUpdate = {
-        supplier_name: formData.supplier_name,
-        contact_person: formData.contact_person || null,
-        email: formData.email || null,
-        phone: formData.phone || null,
-        address: formData.address || null,
-        payment_terms: formData.payment_terms || null,
+        ...sanitizedData,
         updated_at: new Date().toISOString(),
       };
 
       await updateMutation.mutateAsync(updateData);
     } else {
-      const insertData: SupplierInsert = {
-        supplier_name: formData.supplier_name,
-        contact_person: formData.contact_person || null,
-        email: formData.email || null,
-        phone: formData.phone || null,
-        address: formData.address || null,
-        payment_terms: formData.payment_terms || null,
-      };
+      const insertData: SupplierInsert = sanitizedData;
 
       await createMutation.mutateAsync(insertData);
     }

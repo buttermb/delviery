@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import {
   Dialog,
   DialogContent,
@@ -169,7 +170,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
         await createPurchaseOrder.mutateAsync({
           supplier_id: formData.supplier_id,
           expected_delivery_date: formData.expected_delivery_date || undefined,
-          notes: formData.notes || undefined,
+          notes: formData.notes ? sanitizeTextareaInput(formData.notes, 1000) : undefined,
           items: items.map(item => ({
             product_id: item.product_id,
             quantity_lbs: item.quantity_lbs,
@@ -193,7 +194,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
         await createPurchaseOrder.mutateAsync({
           supplier_id: formData.supplier_id,
           expected_delivery_date: formData.expected_delivery_date || undefined,
-          notes: formData.notes || undefined,
+          notes: formData.notes ? sanitizeTextareaInput(formData.notes, 1000) : undefined,
           items: items.map(item => ({
             product_id: item.product_id,
             quantity_lbs: item.quantity_lbs,

@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeFormInput, sanitizeTextareaInput } from '@/lib/utils/sanitize';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -46,10 +47,10 @@ export function ReviewSubmissionForm({
                 store_id: storeId,
                 tenant_id: tenantId,
                 customer_id: user?.id || null,
-                customer_name: user?.user_metadata?.full_name || 'Anonymous',
+                customer_name: sanitizeFormInput(user?.user_metadata?.full_name || 'Anonymous', 100),
                 rating,
-                title: title.trim() || null,
-                content: content.trim(),
+                title: title.trim() ? sanitizeFormInput(title, 100) : null,
+                content: sanitizeTextareaInput(content, 1000),
                 status: 'pending', // All reviews start as pending
             };
 

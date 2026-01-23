@@ -1,3 +1,86 @@
+## Task: Add Input Sanitization for All Forms
+
+### What was done:
+1. Enhanced `src/lib/utils/sanitize.ts` with comprehensive form sanitization functions:
+   - `sanitizeFormInput()` - For plain text inputs (trims, removes HTML, encodes angle brackets, enforces max length)
+   - `sanitizeBasicHtml()` - For rendering simple rich text (allows only b/i/em/strong/u/br/span/p tags)
+   - `sanitizeEmail()` - Trims, lowercases, removes dangerous characters
+   - `sanitizeNumericInput()` - Only allows digits, decimal, minus
+   - `sanitizePhoneInput()` - Only allows phone-valid characters
+   - `sanitizeUrlInput()` - Blocks dangerous URL schemes (javascript:, data:, vbscript:)
+   - `sanitizeSlugInput()` - Only allows lowercase alphanumeric, hyphens, underscores
+   - `sanitizeTextareaInput()` - Like sanitizeFormInput but preserves newlines, normalizes excessive breaks
+   - `sanitizeCouponCode()` - Only uppercase alphanumeric, hyphens, underscores
+   - `sanitizeSkuInput()` - Uppercase alphanumeric and hyphens
+   - `sanitizePriceInput()` - Only digits and single decimal point
+   - `sanitizeFormData()` - Generic helper to sanitize all string fields in a form data object
+
+2. Applied sanitization to 17 form components at point of submission:
+
+   **Admin Forms:**
+   - `AppointmentForm.tsx` - customer_id, notes
+   - `CouponCreateForm.tsx` - code, description
+   - `SupplierForm.tsx` - supplier_name, contact_person, email, phone, address, payment_terms
+   - `ProductForm.tsx` - name, sku, vendor_name, strain_name, batch_number, description, metrc_retail_id
+   - `TicketForm.tsx` - subject, description
+   - `RecallForm.tsx` - batch_number, product_name, reason
+   - `POCreateForm.tsx` - notes
+   - `RACreateForm.tsx` - product_name, notes
+   - `CustomIntegrationForm.tsx` - name, endpoint_url, description
+
+   **Admin Dialogs:**
+   - `CreateClientDialog.tsx` - business_name, contact_name, email, phone, address, notes
+   - `EditClientDialog.tsx` - business_name, contact_name, email, phone, address, notes
+   - `CreateTenantDialog.tsx` - business_name, owner_email, owner_name, phone
+   - `AddCourierDialog.tsx` - full_name, email, phone, license_number, vehicle fields
+   - `PaymentDialog.tsx` - reference_number, notes
+   - `CreateMenuDialog.tsx` - name, description, geofence_location, custom_message
+
+   **Storefront Forms:**
+   - `SinglePageCheckout.tsx` - firstName, lastName, email, phone, street, apartment, city, state, zip, deliveryNotes
+   - `ReviewForm.tsx` - customer_name, customer_email, title, comment
+   - `ReviewSubmissionForm.tsx` - customer_name, title, content
+   - `EmailCaptureSection.tsx` - email
+
+### Sanitization Strategy:
+- Sanitization is applied at the point of form submission (not onChange) to avoid interfering with user typing
+- Each field uses the appropriate sanitizer based on its data type (email, phone, URL, text, textarea, etc.)
+- All sanitizers enforce maximum length limits to prevent oversized input attacks
+- HTML tags are stripped from text inputs, dangerous URL schemes are blocked
+- XSS vectors (script injection, event handlers, javascript: URLs) are neutralized
+
+### Acceptance Criteria Met:
+- [x] All form inputs are sanitized before being sent to database/API
+- [x] Different sanitization strategies for different input types (email, phone, text, textarea, URL, etc.)
+- [x] Protection against XSS, script injection, and HTML injection
+- [x] Maximum length enforcement on all inputs
+- [x] Build passes with no TypeScript errors
+- [x] Existing form validation logic preserved (sanitization is additive)
+
+### Files Changed:
+- `src/lib/utils/sanitize.ts` (rewritten - comprehensive sanitization utilities)
+- `src/components/admin/appointments/AppointmentForm.tsx` (sanitization added)
+- `src/components/admin/coupons/CouponCreateForm.tsx` (sanitization added)
+- `src/components/admin/suppliers/SupplierForm.tsx` (sanitization added)
+- `src/components/admin/products/ProductForm.tsx` (sanitization added)
+- `src/components/admin/support/TicketForm.tsx` (sanitization added)
+- `src/components/admin/recall/RecallForm.tsx` (sanitization added)
+- `src/components/admin/purchase-orders/POCreateForm.tsx` (sanitization added)
+- `src/components/admin/returns/RACreateForm.tsx` (sanitization added)
+- `src/components/admin/sidebar/CustomIntegrationForm.tsx` (sanitization added)
+- `src/components/admin/CreateClientDialog.tsx` (sanitization added)
+- `src/components/admin/EditClientDialog.tsx` (sanitization added)
+- `src/components/admin/CreateTenantDialog.tsx` (sanitization added)
+- `src/components/admin/AddCourierDialog.tsx` (sanitization added)
+- `src/components/admin/PaymentDialog.tsx` (sanitization added)
+- `src/components/admin/disposable-menus/CreateMenuDialog.tsx` (sanitization added)
+- `src/components/shop/SinglePageCheckout.tsx` (sanitization added)
+- `src/components/shop/ReviewForm.tsx` (sanitization added)
+- `src/components/reviews/ReviewSubmissionForm.tsx` (sanitization added)
+- `src/components/EmailCaptureSection.tsx` (sanitization added)
+
+---
+
 ## Task: Add Breadcrumb Navigation Between Panels
 
 ### What was done:

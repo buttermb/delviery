@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Mail, Gift } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
+import { sanitizeEmail } from "@/lib/utils/sanitize";
 
 const EmailCaptureSection = () => {
   const [email, setEmail] = useState("");
@@ -18,11 +19,13 @@ const EmailCaptureSection = () => {
     }
 
     setLoading(true);
-    
+
+    const sanitizedEmail = sanitizeEmail(email);
+
     // Store email in localStorage for now
     const subscribers = JSON.parse(localStorage.getItem("newsletter_subscribers") || "[]");
-    if (!subscribers.includes(email)) {
-      subscribers.push(email);
+    if (!subscribers.includes(sanitizedEmail)) {
+      subscribers.push(sanitizedEmail);
       localStorage.setItem("newsletter_subscribers", JSON.stringify(subscribers));
       toast.success("Thanks for subscribing! Check your inbox for a special offer 🎁");
       setEmail("");
