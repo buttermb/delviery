@@ -111,8 +111,8 @@ vi.mock('@/integrations/supabase/client', () => {
   ];
 
   const mockCustomers = [
-    { id: 'cust-1', name: 'John Doe', email: 'john@example.com', phone: '555-1234' },
-    { id: 'cust-2', name: 'Jane Smith', email: 'jane@example.com', phone: '555-5678' },
+    { id: 'cust-1', first_name: 'John', last_name: 'Doe', email: 'john@example.com', phone: '555-1234' },
+    { id: 'cust-2', first_name: 'Jane', last_name: 'Smith', email: 'jane@example.com', phone: '555-5678' },
   ];
 
   const mockTransactions = [
@@ -737,23 +737,24 @@ describe('Cart Item Management', () => {
 describe('Customer Filtering', () => {
   it('should filter customers by name', () => {
     const customers = [
-      { id: '1', name: 'John Doe', email: 'john@test.com', phone: '555-1234' },
-      { id: '2', name: 'Jane Smith', email: 'jane@test.com', phone: '555-5678' },
+      { id: '1', first_name: 'John', last_name: 'Doe', email: 'john@test.com', phone: '555-1234' },
+      { id: '2', first_name: 'Jane', last_name: 'Smith', email: 'jane@test.com', phone: '555-5678' },
     ];
     const searchQuery = 'john';
 
-    const filtered = customers.filter(c =>
-      c.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filtered = customers.filter(c => {
+      const fullName = `${c.first_name} ${c.last_name}`;
+      return fullName.toLowerCase().includes(searchQuery.toLowerCase());
+    });
 
     expect(filtered).toHaveLength(1);
-    expect(filtered[0].name).toBe('John Doe');
+    expect(filtered[0].first_name).toBe('John');
   });
 
   it('should filter customers by email', () => {
     const customers = [
-      { id: '1', name: 'John Doe', email: 'john@test.com', phone: '555-1234' },
-      { id: '2', name: 'Jane Smith', email: 'jane@test.com', phone: '555-5678' },
+      { id: '1', first_name: 'John', last_name: 'Doe', email: 'john@test.com', phone: '555-1234' },
+      { id: '2', first_name: 'Jane', last_name: 'Smith', email: 'jane@test.com', phone: '555-5678' },
     ];
     const searchQuery = 'jane@';
 
@@ -762,13 +763,13 @@ describe('Customer Filtering', () => {
     );
 
     expect(filtered).toHaveLength(1);
-    expect(filtered[0].name).toBe('Jane Smith');
+    expect(filtered[0].first_name).toBe('Jane');
   });
 
   it('should filter customers by phone', () => {
     const customers = [
-      { id: '1', name: 'John Doe', email: 'john@test.com', phone: '555-1234' },
-      { id: '2', name: 'Jane Smith', email: 'jane@test.com', phone: '555-5678' },
+      { id: '1', first_name: 'John', last_name: 'Doe', email: 'john@test.com', phone: '555-1234' },
+      { id: '2', first_name: 'Jane', last_name: 'Smith', email: 'jane@test.com', phone: '555-5678' },
     ];
     const searchQuery = '5678';
 
@@ -777,6 +778,6 @@ describe('Customer Filtering', () => {
     );
 
     expect(filtered).toHaveLength(1);
-    expect(filtered[0].name).toBe('Jane Smith');
+    expect(filtered[0].first_name).toBe('Jane');
   });
 });

@@ -1,0 +1,45 @@
+# Fix CashRegister Type Mismatches - Progress
+
+## Task: Fix CashRegister Type Mismatches
+
+## Status: COMPLETED
+
+## Changes Made
+
+### src/pages/admin/CashRegister.tsx
+
+1. **Product.category**: Changed from `string | null` to `string` to match DB schema (non-nullable)
+2. **Product.stock_quantity**: Changed from `number` to `number | null` to match DB schema (nullable)
+   - Added `?? 0` null-coalescing throughout the component where stock_quantity is used:
+     - `addToCart`: stock comparison
+     - `updateQuantity`: min/max bounds
+     - Quick Add button disabled state
+     - Cart item quantity increase button disabled state
+     - Product dialog opacity class
+     - Product dialog "Out of Stock" overlay
+     - Product dialog stock display
+     - Offline queue payload
+     - RPC transaction payload
+3. **Customer interface**: Changed from `name: string` to `first_name: string` + `last_name: string` to match DB schema
+   - Updated customer query to select `first_name, last_name` instead of `name`
+   - Updated customer query ordering from `name` to `first_name`
+   - Updated customer filter logic to use full name (`${c.first_name} ${c.last_name}`)
+   - Updated customer display in cart section
+   - Updated customer display in selection dialog
+4. **POSTransaction.payment_status**: Changed from `string | null` to `string` to match DB schema (non-nullable)
+   - Removed `|| 'pending'` fallback in transaction display
+5. **POSTransaction.payment_method**: Changed from `string | null` to `string` to match DB schema (non-nullable)
+6. **Removed unnecessary `@ts-expect-error`**: The `pos_transactions` table exists in the auto-generated Supabase types
+7. **Fixed error type narrowing**: Updated catch blocks to use proper `unknown` type narrowing pattern (`typeof error === 'object'` + `'code' in error`) instead of incorrect `instanceof Error` pattern (PostgrestError is not an Error subclass)
+8. **Removed unnecessary null check on `product.category`**: Since category is non-nullable, simplified the category filter comparison
+
+### src/pages/admin/__tests__/CashRegister.test.tsx
+
+- Updated all mock customer data from `name` to `first_name`/`last_name` fields
+- Updated customer filtering test assertions to use `first_name` instead of `name`
+- Updated customer filter test logic to use full name matching pattern
+
+## Verification
+
+- TypeScript compilation (`tsc --noEmit`): PASSES with zero errors
+- Unit tests: 43/44 pass (1 pre-existing failure unrelated to type changes - tests for `$0.00` text which is only rendered when cart has items)
