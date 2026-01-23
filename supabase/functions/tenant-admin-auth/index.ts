@@ -67,13 +67,32 @@ serve(async (req) => {
   }
 
   try {
+    const url = new URL(req.url);
+    const action = url.searchParams.get('action');
+
+    // Health check endpoint - no auth required, verifies function is deployed and running
+    if (action === 'health') {
+      const hasSupabaseUrl = !!Deno.env.get('SUPABASE_URL');
+      const hasServiceRoleKey = !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+      return new Response(
+        JSON.stringify({
+          status: 'ok',
+          function: 'tenant-admin-auth',
+          timestamp: new Date().toISOString(),
+          env: {
+            SUPABASE_URL: hasSupabaseUrl,
+            SUPABASE_SERVICE_ROLE_KEY: hasServiceRoleKey,
+          },
+        }),
+        { status: 200, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
-
-    const url = new URL(req.url);
-    const action = url.searchParams.get('action');
 
     // Only parse JSON body for actions that need it
     let requestBody: any = {};

@@ -82,12 +82,33 @@ serve(async (req) => {
   }
 
   try {
+    const url = new URL(req.url);
+    const action = url.searchParams.get("action");
+
+    // Health check endpoint - no auth required, verifies function is deployed and running
+    if (action === 'health') {
+      const hasSupabaseUrl = !!Deno.env.get('SUPABASE_URL');
+      const hasServiceRoleKey = !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      const hasJwtSecret = !!Deno.env.get('JWT_SECRET');
+
+      return new Response(
+        JSON.stringify({
+          status: 'ok',
+          function: 'customer-auth',
+          timestamp: new Date().toISOString(),
+          env: {
+            SUPABASE_URL: hasSupabaseUrl,
+            SUPABASE_SERVICE_ROLE_KEY: hasServiceRoleKey,
+            JWT_SECRET: hasJwtSecret,
+          },
+        }),
+        { status: 200, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const url = new URL(req.url);
-    const action = url.searchParams.get("action");
 
     let requestBody: any = {};
     if (action !== 'verify' && action !== 'logout' && req.method === 'POST') {
