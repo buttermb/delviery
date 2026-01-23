@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode, useRef, useC
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getTokenExpiration } from "@/lib/auth/jwt";
+import { createRefreshTimer, isValidRefreshToken, tokenNeedsRefresh, type RefreshTimerHandle } from "@/lib/auth/tokenRefresh";
 
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
@@ -170,6 +171,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const [secondsUntilLogout, setSecondsUntilLogout] = useState(60);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const refreshTimerHandleRef = useRef<RefreshTimerHandle | null>(null);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const hasShownOnboardingRef = useRef(false);
   const [mfaRequired, setMfaRequired] = useState(false);
@@ -704,20 +706,16 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     };
   }, [location.pathname]); // Re-run when route changes
 
-  // Periodic token validation (every 30 seconds)
+  // Periodic token validation - acts as a safety net alongside the visibility-aware timer.
+  // The primary refresh mechanism is the createRefreshTimer (handles visibility + sleep detection).
+  // This interval provides a fallback in case the timer misses (e.g., long-running tabs).
   useEffect(() => {
     if (!isAuthenticated || !token) return;
 
     const validateToken = async () => {
       try {
-        const expiration = getTokenExpiration(token);
-        if (!expiration) return;
-
-        const timeUntilExpiry = expiration.getTime() - Date.now();
-
-        // If token expires in less than 5 minutes, refresh it
-        if (timeUntilExpiry < REFRESH_BUFFER_MS) {
-          logger.debug('[AUTH] Token expiring soon, refreshing proactively');
+        if (tokenNeedsRefresh(token, REFRESH_BUFFER_MS)) {
+          logger.debug('[AUTH] Periodic check: token expiring soon, refreshing proactively');
           await refreshAuthToken();
         }
       } catch (error) {
@@ -728,7 +726,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     // Initial check
     validateToken();
 
-    // Check every 2 minutes (reduced from 30s to prevent excessive re-renders)
+    // Check every 2 minutes as a safety net (primary mechanism is visibility-aware timer)
     const interval = setInterval(validateToken, 120000);
 
     return () => clearInterval(interval);
@@ -743,11 +741,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     const currentRefreshToken = refreshToken || safeStorage.getItem(REFRESH_TOKEN_KEY);
 
     // STEP 2: Validate refresh token exists and is not empty/invalid
-    if (!currentRefreshToken ||
-        currentRefreshToken === 'undefined' ||
-        currentRefreshToken === 'null' ||
-        currentRefreshToken.trim() === '' ||
-        currentRefreshToken.length < 10) {
+    if (!isValidRefreshToken(currentRefreshToken)) {
       logger.warn('[AUTH] Cannot refresh token - no valid refresh token available');
       clearAuthState();
       toast.error('Your session has expired. Please log in again.', { duration: 5000 });
@@ -1112,7 +1106,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   };
 
   const setupRefreshTimer = (token: string) => {
-    // Clear existing timers
+    // Clean up any previous timer handle (visibility-aware timer)
+    if (refreshTimerHandleRef.current) {
+      refreshTimerHandleRef.current.cleanup();
+      refreshTimerHandleRef.current = null;
+    }
+
+    // Also clear legacy timeout refs if still active
     if (refreshTimerRef.current) {
       clearTimeout(refreshTimerRef.current);
       refreshTimerRef.current = null;
@@ -1122,41 +1122,18 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       warningTimerRef.current = null;
     }
 
-    // Get token expiration
-    const expiration = getTokenExpiration(token);
-    if (!expiration) {
-      logger.warn("Could not get token expiration, skipping proactive refresh");
-      return;
-    }
-
-    // Calculate time until refresh (5 minutes before expiration)
-    const timeUntilRefresh = expiration.getTime() - Date.now() - REFRESH_BUFFER_MS;
-    const timeUntilWarning = expiration.getTime() - Date.now() - (60 * 1000); // 1 minute before expiry
-
-    if (timeUntilRefresh <= 0) {
-      // Token expires very soon, refresh immediately
-      logger.debug("Token expires very soon, refreshing immediately");
-      refreshAuthToken();
-      return;
-    }
-
-    // Set timer to show warning 1 minute before expiration
-    if (timeUntilWarning > 0 && timeUntilWarning < timeUntilRefresh) {
-      logger.debug(`Setting up session timeout warning in ${Math.round(timeUntilWarning / 1000)} seconds`);
-      warningTimerRef.current = setTimeout(() => {
-        const secondsLeft = Math.floor((expiration.getTime() - Date.now()) / 1000);
+    // Create a robust, visibility-aware refresh timer
+    // This handles: tab backgrounding, wake-from-sleep, and regular scheduling
+    refreshTimerHandleRef.current = createRefreshTimer({
+      token,
+      onRefresh: refreshAuthToken,
+      onWarning: (secondsLeft) => {
         setSecondsUntilLogout(secondsLeft > 0 ? secondsLeft : 60);
         setShowTimeoutWarning(true);
-      }, timeUntilWarning);
-    }
-
-    logger.debug(`Setting up proactive token refresh in ${Math.round(timeUntilRefresh / 1000 / 60)} minutes`);
-
-    // Set timer to refresh token before it expires
-    refreshTimerRef.current = setTimeout(() => {
-      logger.debug("Proactively refreshing token before expiration");
-      refreshAuthToken();
-    }, timeUntilRefresh);
+      },
+      bufferMs: REFRESH_BUFFER_MS,
+      warningBufferMs: 60 * 1000,
+    });
   };
 
   const verifyMfa = async (code: string) => {
@@ -1606,13 +1583,17 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     };
   }, [tenant?.id, tenant?.subscription_plan, tenant?.subscription_status, accessToken]);
 
-  // Proactive token refresh effect
+  // Proactive token refresh effect - sets up visibility-aware timer
   useEffect(() => {
     if (accessToken) {
       setupRefreshTimer(accessToken);
     }
 
     return () => {
+      if (refreshTimerHandleRef.current) {
+        refreshTimerHandleRef.current.cleanup();
+        refreshTimerHandleRef.current = null;
+      }
       if (refreshTimerRef.current) {
         clearTimeout(refreshTimerRef.current);
       }

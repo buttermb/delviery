@@ -4,6 +4,39 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import {
+  isValidRefreshToken,
+  tokenNeedsRefresh,
+  extractRefreshTokenFromCookies,
+  cleanupStaleAuthState,
+  cleanupAuthCookies,
+  createRefreshTimer,
+  createRefreshExecutor,
+  REFRESH_BUFFER_MS,
+} from '@/lib/auth/tokenRefresh';
+
+// Mock the logger
+vi.mock('@/lib/logger', () => ({
+  logger: {
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+// Helper: create a fake JWT token with a given expiration
+function createFakeToken(expiresInMs: number): string {
+  const now = Math.floor(Date.now() / 1000);
+  const exp = now + Math.floor(expiresInMs / 1000);
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  const payload = btoa(JSON.stringify({ exp, iat: now, sub: 'test-user' }))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  const signature = btoa('fake-signature')
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  return `${header}.${payload}.${signature}`;
+}
 
 // Mock localStorage
 const mockLocalStorage = (() => {
@@ -30,27 +63,6 @@ const mockLocalStorage = (() => {
   };
 })();
 
-// Mock sessionStorage
-const mockSessionStorage = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => {
-      store[key] = value;
-    }),
-    removeItem: vi.fn((key: string) => {
-      delete store[key];
-    }),
-    clear: vi.fn(() => {
-      store = {};
-    }),
-    get length() {
-      return Object.keys(store).length;
-    },
-    key: vi.fn((i: number) => Object.keys(store)[i] || null),
-  };
-})();
-
 // Mock document.cookie
 let mockCookies = '';
 Object.defineProperty(document, 'cookie', {
@@ -74,61 +86,90 @@ Object.defineProperty(document, 'cookie', {
   }),
 });
 
-describe('Token Refresh - Validation', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockLocalStorage.clear();
-    mockSessionStorage.clear();
-    mockCookies = '';
-    Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
-    Object.defineProperty(window, 'sessionStorage', { value: mockSessionStorage });
+describe('Token Refresh - isValidRefreshToken', () => {
+  it('should return false for null token', () => {
+    expect(isValidRefreshToken(null)).toBe(false);
   });
 
-  afterEach(() => {
-    vi.resetAllMocks();
+  it('should return false for undefined token', () => {
+    expect(isValidRefreshToken(undefined)).toBe(false);
   });
 
-  describe('isValidRefreshToken', () => {
-    const isValidRefreshToken = (token: string | null | undefined): boolean => {
-      if (!token) return false;
-      if (token === 'undefined' || token === 'null') return false;
-      if (typeof token !== 'string') return false;
-      if (token.trim() === '') return false;
-      if (token.length < 10) return false;
-      return true;
-    };
+  it('should return false for "undefined" string', () => {
+    expect(isValidRefreshToken('undefined')).toBe(false);
+  });
 
-    it('should return false for null token', () => {
-      expect(isValidRefreshToken(null)).toBe(false);
-    });
+  it('should return false for "null" string', () => {
+    expect(isValidRefreshToken('null')).toBe(false);
+  });
 
-    it('should return false for undefined token', () => {
-      expect(isValidRefreshToken(undefined)).toBe(false);
-    });
+  it('should return false for empty string', () => {
+    expect(isValidRefreshToken('')).toBe(false);
+  });
 
-    it('should return false for "undefined" string', () => {
-      expect(isValidRefreshToken('undefined')).toBe(false);
-    });
+  it('should return false for whitespace only', () => {
+    expect(isValidRefreshToken('   ')).toBe(false);
+  });
 
-    it('should return false for "null" string', () => {
-      expect(isValidRefreshToken('null')).toBe(false);
-    });
+  it('should return false for token shorter than 10 characters', () => {
+    expect(isValidRefreshToken('short')).toBe(false);
+  });
 
-    it('should return false for empty string', () => {
-      expect(isValidRefreshToken('')).toBe(false);
-    });
+  it('should return true for valid token', () => {
+    expect(isValidRefreshToken('valid-refresh-token-here')).toBe(true);
+  });
+});
 
-    it('should return false for whitespace only', () => {
-      expect(isValidRefreshToken('   ')).toBe(false);
-    });
+describe('Token Refresh - tokenNeedsRefresh', () => {
+  it('should return true when token expires within buffer', () => {
+    // Token expires in 2 minutes (within default 5 min buffer)
+    const token = createFakeToken(2 * 60 * 1000);
+    expect(tokenNeedsRefresh(token)).toBe(true);
+  });
 
-    it('should return false for token shorter than 10 characters', () => {
-      expect(isValidRefreshToken('short')).toBe(false);
-    });
+  it('should return false when token has plenty of time left', () => {
+    // Token expires in 30 minutes
+    const token = createFakeToken(30 * 60 * 1000);
+    expect(tokenNeedsRefresh(token)).toBe(false);
+  });
 
-    it('should return true for valid token', () => {
-      expect(isValidRefreshToken('valid-refresh-token-here')).toBe(true);
-    });
+  it('should return true when token is already expired', () => {
+    // Token expired 1 minute ago
+    const token = createFakeToken(-60 * 1000);
+    expect(tokenNeedsRefresh(token)).toBe(true);
+  });
+
+  it('should respect custom buffer parameter', () => {
+    // Token expires in 8 minutes, buffer is 10 minutes
+    const token = createFakeToken(8 * 60 * 1000);
+    expect(tokenNeedsRefresh(token, 10 * 60 * 1000)).toBe(true);
+    // Same token with 5 minute buffer should be fine
+    expect(tokenNeedsRefresh(token, 5 * 60 * 1000)).toBe(false);
+  });
+
+  it('should return false for invalid token format', () => {
+    expect(tokenNeedsRefresh('not-a-jwt')).toBe(false);
+  });
+});
+
+describe('Token Refresh - extractRefreshTokenFromCookies', () => {
+  it('should extract refresh token from cookie string', () => {
+    const cookies = 'tenant_access_token=access123; tenant_refresh_token=refresh456; other=value';
+    expect(extractRefreshTokenFromCookies(cookies)).toBe('refresh456');
+  });
+
+  it('should return null when refresh token cookie is missing', () => {
+    const cookies = 'tenant_access_token=access123; other=value';
+    expect(extractRefreshTokenFromCookies(cookies)).toBeNull();
+  });
+
+  it('should handle empty cookie string', () => {
+    expect(extractRefreshTokenFromCookies('')).toBeNull();
+  });
+
+  it('should support custom cookie names', () => {
+    const cookies = 'my_refresh=token123; other=value';
+    expect(extractRefreshTokenFromCookies(cookies, 'my_refresh')).toBe('token123');
   });
 });
 
@@ -153,8 +194,7 @@ describe('Token Refresh - Stale State Cleanup', () => {
     vi.resetAllMocks();
   });
 
-  it('should clear all auth-related localStorage keys on login cleanup', () => {
-    // Simulate the cleanup that happens before login
+  it('should clear all auth-related localStorage keys on cleanup', () => {
     const keysToClean = [
       'sb-access-token',
       'sb-refresh-token',
@@ -166,9 +206,7 @@ describe('Token Refresh - Stale State Cleanup', () => {
       'lastTenantSlug',
     ];
 
-    keysToClean.forEach(key => {
-      mockLocalStorage.removeItem(key);
-    });
+    cleanupStaleAuthState(mockLocalStorage as unknown as Storage, keysToClean);
 
     // Verify all keys were removed
     keysToClean.forEach(key => {
@@ -176,13 +214,9 @@ describe('Token Refresh - Stale State Cleanup', () => {
     });
   });
 
-  it('should clear auth-related cookies on login cleanup', () => {
-    // Simulate cookie cleanup
+  it('should clear auth-related cookies on cleanup', () => {
     const cookiesToClear = ['sb-access-token', 'tenant_access_token', 'tenant_refresh_token'];
-
-    cookiesToClear.forEach(name => {
-      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-    });
+    cleanupAuthCookies(cookiesToClear);
 
     // After cleanup, cookies should not contain the cleared values
     expect(mockCookies).not.toContain('sb-access-token=old');
@@ -191,61 +225,20 @@ describe('Token Refresh - Stale State Cleanup', () => {
   });
 });
 
-describe('Token Refresh - Race Condition Prevention', () => {
-  let isRefreshing = false;
-  let refreshPromise: Promise<boolean> | null = null;
-
-  const simulateRefresh = async (): Promise<boolean> => {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return true;
-  };
-
-  const refreshWithRaceProtection = async (): Promise<boolean> => {
-    // If already refreshing, wait for the existing promise
-    if (isRefreshing && refreshPromise) {
-      return refreshPromise;
-    }
-
-    isRefreshing = true;
-    refreshPromise = simulateRefresh();
-
-    try {
-      return await refreshPromise;
-    } finally {
-      isRefreshing = false;
-      refreshPromise = null;
-    }
-  };
-
-  beforeEach(() => {
-    isRefreshing = false;
-    refreshPromise = null;
-  });
-
+describe('Token Refresh - createRefreshExecutor (Race Condition Prevention)', () => {
   it('should prevent multiple simultaneous refresh calls', async () => {
-    const refreshSpy = vi.fn(simulateRefresh);
+    const refreshSpy = vi.fn(async () => {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      return true;
+    });
 
-    // Replace the actual refresh with our spy
-    const mockRefresh = async (): Promise<boolean> => {
-      if (isRefreshing && refreshPromise) {
-        return refreshPromise;
-      }
-      isRefreshing = true;
-      refreshPromise = refreshSpy();
-      try {
-        return await refreshPromise;
-      } finally {
-        isRefreshing = false;
-        refreshPromise = null;
-      }
-    };
+    const executor = createRefreshExecutor(refreshSpy);
 
     // Start multiple refresh calls simultaneously
     const results = await Promise.all([
-      mockRefresh(),
-      mockRefresh(),
-      mockRefresh(),
+      executor(),
+      executor(),
+      executor(),
     ]);
 
     // All should succeed
@@ -256,78 +249,179 @@ describe('Token Refresh - Race Condition Prevention', () => {
   });
 
   it('should allow new refresh after previous completes', async () => {
-    const refreshSpy = vi.fn(simulateRefresh);
+    const refreshSpy = vi.fn(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50));
+      return true;
+    });
 
-    const mockRefresh = async (): Promise<boolean> => {
-      if (isRefreshing && refreshPromise) {
-        return refreshPromise;
-      }
-      isRefreshing = true;
-      refreshPromise = refreshSpy();
-      try {
-        return await refreshPromise;
-      } finally {
-        isRefreshing = false;
-        refreshPromise = null;
-      }
-    };
+    const executor = createRefreshExecutor(refreshSpy);
 
     // First refresh
-    await mockRefresh();
+    await executor();
 
-    // Second refresh (should be a new call)
-    await mockRefresh();
+    // Second refresh (should be a new call since first completed)
+    await executor();
 
     // Should be called twice (once per independent refresh)
     expect(refreshSpy).toHaveBeenCalledTimes(2);
   });
+
+  it('should propagate failures correctly', async () => {
+    const refreshSpy = vi.fn(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50));
+      return false;
+    });
+
+    const executor = createRefreshExecutor(refreshSpy);
+    const result = await executor();
+
+    expect(result).toBe(false);
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
+  });
 });
 
-describe('Token Refresh - Cookie Parsing', () => {
-  it('should extract refresh token from cookie string', () => {
-    const cookieString = 'tenant_access_token=access123; tenant_refresh_token=refresh456; other=value';
-
-    const extractRefreshToken = (cookies: string): string | null => {
-      const cookieArray = cookies.split(';').map(c => c.trim());
-      const refreshCookie = cookieArray.find(c => c.startsWith('tenant_refresh_token='));
-      if (refreshCookie) {
-        return refreshCookie.split('=')[1] || null;
-      }
-      return null;
-    };
-
-    expect(extractRefreshToken(cookieString)).toBe('refresh456');
+describe('Token Refresh - createRefreshTimer', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
   });
 
-  it('should return null when refresh token cookie is missing', () => {
-    const cookieString = 'tenant_access_token=access123; other=value';
-
-    const extractRefreshToken = (cookies: string): string | null => {
-      const cookieArray = cookies.split(';').map(c => c.trim());
-      const refreshCookie = cookieArray.find(c => c.startsWith('tenant_refresh_token='));
-      if (refreshCookie) {
-        return refreshCookie.split('=')[1] || null;
-      }
-      return null;
-    };
-
-    expect(extractRefreshToken(cookieString)).toBeNull();
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
-  it('should handle empty cookie string', () => {
-    const cookieString = '';
+  it('should trigger refresh before token expires', async () => {
+    const onRefresh = vi.fn().mockResolvedValue(true);
+    // Token expires in 10 minutes
+    const token = createFakeToken(10 * 60 * 1000);
 
-    const extractRefreshToken = (cookies: string): string | null => {
-      if (!cookies) return null;
-      const cookieArray = cookies.split(';').map(c => c.trim());
-      const refreshCookie = cookieArray.find(c => c.startsWith('tenant_refresh_token='));
-      if (refreshCookie) {
-        return refreshCookie.split('=')[1] || null;
-      }
-      return null;
-    };
+    const handle = createRefreshTimer({
+      token,
+      onRefresh,
+    });
 
-    expect(extractRefreshToken(cookieString)).toBeNull();
+    // Advance 5 minutes (within the 5-minute buffer before expiry)
+    vi.advanceTimersByTime(5 * 60 * 1000 + 1000);
+
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+    handle.cleanup();
+  });
+
+  it('should refresh immediately when token is already near expiry', async () => {
+    const onRefresh = vi.fn().mockResolvedValue(true);
+    // Token expires in 2 minutes (already within buffer)
+    const token = createFakeToken(2 * 60 * 1000);
+
+    const handle = createRefreshTimer({
+      token,
+      onRefresh,
+    });
+
+    // Should fire immediately (on next tick)
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+    handle.cleanup();
+  });
+
+  it('should not trigger refresh when token has plenty of time', () => {
+    const onRefresh = vi.fn().mockResolvedValue(true);
+    // Token expires in 1 hour
+    const token = createFakeToken(60 * 60 * 1000);
+
+    const handle = createRefreshTimer({
+      token,
+      onRefresh,
+    });
+
+    // Advance 10 minutes - should not trigger yet
+    vi.advanceTimersByTime(10 * 60 * 1000);
+
+    expect(onRefresh).not.toHaveBeenCalled();
+    handle.cleanup();
+  });
+
+  it('should call onWarning before expiry', () => {
+    const onRefresh = vi.fn().mockResolvedValue(true);
+    const onWarning = vi.fn();
+    // Token expires in 7 minutes; buffer=5min means refresh at 2min mark,
+    // warningBuffer=3min means warning at 4min mark.
+    // Warning fires after refresh in this case, but we just need to verify it fires.
+    // Use a token where warning fires first: expires in 4 minutes, buffer=2min (refresh at 2min),
+    // warningBuffer=3min (warning at 1min mark - fires first).
+    const token = createFakeToken(4 * 60 * 1000);
+
+    const handle = createRefreshTimer({
+      token,
+      onRefresh,
+      onWarning,
+      bufferMs: 2 * 60 * 1000,
+      warningBufferMs: 3 * 60 * 1000,
+    });
+
+    // Advance to 1 minute in (warning should fire at 1 minute = 4min - 3min)
+    vi.advanceTimersByTime(1 * 60 * 1000 + 1000);
+
+    expect(onWarning).toHaveBeenCalled();
+    handle.cleanup();
+  });
+
+  it('should clean up timers on disposal', () => {
+    const onRefresh = vi.fn().mockResolvedValue(true);
+    // Token expires in 10 minutes
+    const token = createFakeToken(10 * 60 * 1000);
+
+    const handle = createRefreshTimer({
+      token,
+      onRefresh,
+    });
+
+    // Clean up before timer fires
+    handle.cleanup();
+
+    // Advance past expiration
+    vi.advanceTimersByTime(15 * 60 * 1000);
+
+    // Should not have been called since we cleaned up
+    expect(onRefresh).not.toHaveBeenCalled();
+  });
+
+  it('should detect visibility change and check token', () => {
+    const onRefresh = vi.fn().mockResolvedValue(true);
+    // Token expires in 3 minutes (within buffer)
+    const token = createFakeToken(3 * 60 * 1000);
+
+    const handle = createRefreshTimer({
+      token,
+      onRefresh,
+    });
+
+    // Simulate tab becoming visible
+    Object.defineProperty(document, 'visibilityState', {
+      value: 'visible',
+      writable: true,
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    // Should trigger refresh since token is within buffer
+    expect(onRefresh).toHaveBeenCalled();
+    handle.cleanup();
+  });
+
+  it('should handle checkNow method', () => {
+    const onRefresh = vi.fn().mockResolvedValue(true);
+    // Token expires in 2 minutes (within buffer)
+    const token = createFakeToken(2 * 60 * 1000);
+
+    const handle = createRefreshTimer({
+      token,
+      onRefresh,
+    });
+
+    // Calling checkNow should trigger refresh since within buffer
+    handle.checkNow();
+
+    expect(onRefresh).toHaveBeenCalled();
+    handle.cleanup();
   });
 });
 
@@ -384,5 +478,11 @@ describe('Token Refresh - Fallback Mechanisms', () => {
     expect(success).toBe(false);
     expect(edgeFunctionRefresh).toHaveBeenCalledTimes(1);
     expect(supabaseRefresh).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Token Refresh - REFRESH_BUFFER_MS constant', () => {
+  it('should be 5 minutes in milliseconds', () => {
+    expect(REFRESH_BUFFER_MS).toBe(5 * 60 * 1000);
   });
 });
