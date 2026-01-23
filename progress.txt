@@ -1,0 +1,51 @@
+# Task: Enhance Menu Customer Ordering Experience
+
+## Status: COMPLETED
+
+## Changes Made
+
+### 1. Expiration Countdown Timer (src/pages/customer/SecureMenuView.tsx)
+- Added `TimeRemaining` component that shows a live countdown (days/hours/minutes/seconds)
+- Timer color transitions from amber to red when time is running low (< 2 hours)
+- Pulses when urgent (< 1 hour remaining)
+- Shows "Menu Expired" badge with alert styling when time runs out
+- Added `expiration_date` and `never_expires` fields to the MenuData interface
+- Timer is displayed below the header in the sticky top bar
+
+### 2. Enhanced Product Cards (src/pages/customer/SecureMenuView.tsx)
+- Added gradient background placeholder for products without images, using strain-type-aware colors
+- Shows category badge on the no-image placeholder
+- Leaf icon placeholder for visual consistency
+
+### 3. Enhanced Sticky Cart Summary Bar (src/pages/customer/SecureMenuView.tsx)
+- Redesigned floating cart with gradient background and blur effect
+- Added cart icon in a circular container with item count badge
+- Added item count and total price display
+- Gradient checkout button with shadow for visual emphasis
+- Added bottom padding to content area to prevent cart from overlapping products
+
+### 4. Order Confirmation with SMS Option (src/components/menu/ModernCheckoutFlow.tsx)
+- Added SMS notification opt-in card to the OrderSuccess component
+- Users can enable SMS order status updates after placing an order
+- Shows phone icon, description, and "Enable SMS Alerts" button
+- Calls `menu-order-sms-subscribe` edge function to register
+- Shows confirmation message once enabled
+- Loading state on the button during API call
+- Graceful error handling if SMS subscription fails
+- Passed `menuId` and `phone` props through to OrderSuccess
+
+### 5. Bug Fix: Missing sanitize utility (src/lib/utils/sanitize.ts)
+- Created missing `sanitize.ts` utility that was imported by ProductDetailPage
+- Exports `sanitizeHtml`, `stripHtml`, and `sanitizeInput` functions
+- Fixed pre-existing build failure
+
+## Files Modified
+- `src/pages/customer/SecureMenuView.tsx` - Timer, product cards, sticky cart
+- `src/components/menu/ModernCheckoutFlow.tsx` - SMS opt-in on order success
+
+## Files Created
+- `src/lib/utils/sanitize.ts` - HTML sanitization utility (fixed build)
+
+## Build Status
+- TypeScript: PASS (tsc --noEmit)
+- Vite build: PASS

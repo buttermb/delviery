@@ -1426,16 +1426,20 @@ function ConfirmStep({
 }
 
 // Success State
-function OrderSuccess({ 
+function OrderSuccess({
   orderId,
   formData,
-  onClose 
-}: { 
+  onClose,
+  menuId
+}: {
   orderId: string;
-  formData: { deliveryMethod: string; firstName: string };
+  formData: { deliveryMethod: string; firstName: string; phone: string };
   onClose: () => void;
+  menuId: string;
 }) {
   const [copied, setCopied] = useState(false);
+  const [smsLoading, setSmsLoading] = useState(false);
+  const [smsConfirmed, setSmsConfirmed] = useState(false);
 
   useEffect(() => {
     // Trigger confetti
@@ -1483,8 +1487,27 @@ function OrderSuccess({
     }
   };
 
+  const handleSmsOptIn = async () => {
+    setSmsLoading(true);
+    try {
+      await supabase.functions.invoke('menu-order-sms-subscribe', {
+        body: {
+          order_id: orderId,
+          menu_id: menuId,
+          phone: formData.phone.replace(/\D/g, ''),
+        }
+      });
+      setSmsConfirmed(true);
+      toast.success('You will receive SMS updates for your order');
+    } catch {
+      toast.error('Could not enable SMS notifications');
+    } finally {
+      setSmsLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+    <div className="flex flex-col items-center justify-center py-8 px-4 text-center overflow-y-auto">
       {/* Success animation */}
       <div className="relative mb-6">
         <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-2xl animate-pulse" />
@@ -1499,7 +1522,7 @@ function OrderSuccess({
       </p>
 
       {/* Order ID */}
-      <Card className="w-full max-w-xs bg-muted/50 mb-6">
+      <Card className="w-full max-w-xs bg-muted/50 mb-4">
         <CardContent className="p-4">
           <div className="text-xs text-muted-foreground mb-1">Order Reference</div>
           <div className="flex items-center justify-center gap-2">
@@ -1512,14 +1535,53 @@ function OrderSuccess({
       </Card>
 
       {/* ETA */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
         <Clock className="h-4 w-4" />
         <span>
-          {formData.deliveryMethod === 'delivery' 
+          {formData.deliveryMethod === 'delivery'
             ? 'Estimated delivery: 30-60 minutes'
             : 'Ready for pickup: 15-20 minutes'}
         </span>
       </div>
+
+      {/* SMS Notifications Opt-in */}
+      {formData.phone && !smsConfirmed && (
+        <Card className="w-full max-w-xs mb-4 border-primary/20 bg-primary/5">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Phone className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="font-medium text-sm">Get SMS Updates</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Receive order status notifications via text message
+                </p>
+                <Button
+                  size="sm"
+                  className="mt-2 gap-1.5"
+                  onClick={handleSmsOptIn}
+                  disabled={smsLoading}
+                >
+                  {smsLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <MessageCircle className="h-3.5 w-3.5" />
+                  )}
+                  Enable SMS Alerts
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {smsConfirmed && (
+        <div className="flex items-center gap-2 text-sm text-emerald-600 mb-4 w-full max-w-xs justify-center">
+          <CheckCircle className="h-4 w-4" />
+          <span>SMS notifications enabled</span>
+        </div>
+      )}
 
       {/* Action buttons */}
       <div className="grid grid-cols-2 gap-3 w-full max-w-xs mb-6">
@@ -1739,10 +1801,11 @@ export function ModernCheckoutFlow({
         {/* Content */}
         <div className="flex-1 flex flex-col min-h-0">
           {orderId ? (
-            <OrderSuccess 
-              orderId={orderId} 
+            <OrderSuccess
+              orderId={orderId}
               formData={formData}
-              onClose={handleClose} 
+              onClose={handleClose}
+              menuId={menuId}
             />
           ) : (
             <>
