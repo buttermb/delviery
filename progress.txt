@@ -1,0 +1,35 @@
+## Task: Fix Complete Login Flow - Token Storage and Validation
+
+### Status: COMPLETED
+
+### Changes Made:
+
+1. **Added `tenantSlug` to TenantAdminAuthContext interface and provider** (src/contexts/TenantAdminAuthContext.tsx)
+   - Added `tenantSlug: string | null` to `TenantAdminAuthContextType` interface
+   - Added `tenantSlug` state variable with `useState<string | null>(null)`
+   - Added `useEffect` to sync `tenantSlug` from `tenant?.slug`
+   - Added `tenantSlug` to the provider value object
+   - Added `setTenantSlug(null)` to `clearAuthState()` for proper cleanup on logout
+
+2. **Fixed duplicate storage call** (src/contexts/TenantAdminAuthContext.tsx)
+   - Removed duplicate `safeStorage.setItem('floraiq_user_id', data.admin.id)` call in login function
+
+3. **Created `useAuthenticatedApi` hook** (src/hooks/useAuthenticatedApi.ts)
+   - Provides `apiCall` wrapper that automatically retries on 401 errors
+   - On 401: attempts token refresh via `refreshAuthToken()`
+   - If refresh succeeds: retries the original request
+   - If refresh fails: logs user out and throws 'Session expired' error
+
+4. **Created sanitize utility module** (src/lib/utils/sanitize.ts)
+   - Created missing `sanitizeHtml`, `stripHtml`, and `sanitizeInput` functions
+   - Uses DOMPurify for XSS prevention
+   - This was blocking the build (imported by ProductDetailPage.tsx)
+
+### Acceptance Criteria Met:
+- [x] Login clears all stale tokens first (already implemented in src/pages/saas/LoginPage.tsx)
+- [x] Tokens stored correctly after login (verified in TenantAdminAuthContext.tsx)
+- [x] 401 errors trigger token refresh (new useAuthenticatedApi hook)
+- [x] Failed refresh triggers logout (useAuthenticatedApi + existing refreshAuthToken logic)
+- [x] tenantSlug property exists in context
+- [x] No TypeScript errors (tsc --noEmit passes)
+- [x] Build passes (npm run build succeeds)
