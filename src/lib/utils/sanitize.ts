@@ -53,3 +53,8 @@ export function sanitizeHtml(html: string): string {
 
   return sanitized;
 }
+
+/**
+ * Alias for sanitizeHtml - basic HTML sanitization for section content.
+ */
+export const sanitizeBasicHtml = sanitizeHtml;
