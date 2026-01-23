@@ -36,6 +36,7 @@ const AutomatedSecuritySettings = lazy(() => import('./AutomatedSecuritySettings
 const NotificationSettings = lazy(() => import('./NotificationSettings').then(m => ({ default: m.NotificationSettings })));
 const CustomerMessaging = lazy(() => import('./CustomerMessaging').then(m => ({ default: m.CustomerMessaging })));
 const EncryptionMigrationTool = lazy(() => import('./EncryptionMigrationTool').then(m => ({ default: m.EncryptionMigrationTool })));
+const MenuAnalyticsDashboard = lazy(() => import('./MenuAnalyticsDashboard').then(m => ({ default: m.MenuAnalyticsDashboard })));
 
 // Enhanced Order Card with more details
 function OrderCard({ order, onStatusChange }: { order: any; onStatusChange?: (id: string, status: string) => void }) {
@@ -654,26 +655,30 @@ export function SmartDashboard() {
       <main className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Tab Navigation */}
-          <TabsList className="grid w-full max-w-lg grid-cols-3 p-1 bg-muted/50">
+          <TabsList className="grid w-full max-w-2xl grid-cols-4 p-1 bg-muted/50">
             <TabsTrigger value="menus" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow">
               <LayoutGrid className="h-4 w-4" />
-              <span>Menus</span>
+              <span className="hidden sm:inline">Menus</span>
               <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
                 {stats.activeMenus}
               </Badge>
             </TabsTrigger>
             <TabsTrigger value="orders" className="gap-2 relative data-[state=active]:bg-background data-[state=active]:shadow">
               <ShoppingBag className="h-4 w-4" />
-              <span>Orders</span>
+              <span className="hidden sm:inline">Orders</span>
               {stats.pendingOrders > 0 && (
                 <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center animate-pulse">
                   {stats.pendingOrders}
                 </span>
               )}
             </TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow">
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Analytics</span>
+            </TabsTrigger>
             <TabsTrigger value="setup" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow">
               <Settings className="h-4 w-4" />
-              <span>Setup</span>
+              <span className="hidden sm:inline">Setup</span>
             </TabsTrigger>
           </TabsList>
 
@@ -765,6 +770,27 @@ export function SmartDashboard() {
           {/* Orders Tab */}
           <TabsContent value="orders" className="mt-0">
             <OrdersTab />
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics" className="mt-0">
+            <Suspense fallback={
+              <div className="space-y-4">
+                <Skeleton className="h-10 w-full" />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                    <Skeleton key={i} className="h-24" />
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {[1, 2].map((i) => (
+                    <Skeleton key={i} className="h-80" />
+                  ))}
+                </div>
+              </div>
+            }>
+              <MenuAnalyticsDashboard />
+            </Suspense>
           </TabsContent>
 
           {/* Setup Tab */}
