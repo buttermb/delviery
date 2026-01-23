@@ -10,11 +10,10 @@ import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
 import {
-    Plus, GripVertical, Trash2, Save, ArrowLeft, Layout, Palette, Type,
+    Plus, GripVertical, Trash2, Save, ArrowLeft, Layout,
     Monitor, Smartphone, Tablet, Copy, Eye, EyeOff, Undo2, Redo2,
     FileText, Image, MessageSquare, HelpCircle, Mail, Sparkles, X, ZoomIn, ZoomOut,
     Code, Globe, GlobeLock, AlertCircle, Store
@@ -30,7 +29,6 @@ import { FAQSection } from '@/components/shop/sections/FAQSection';
 import { CustomHTMLSection } from '@/components/shop/sections/CustomHTMLSection';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -38,10 +36,10 @@ import { CSS } from '@dnd-kit/utilities';
 import { ThemePresetStrip } from '@/components/admin/storefront/ThemePresetSelector';
 import { THEME_PRESETS, applyThemeToConfig, type ThemePreset } from '@/lib/storefrontThemes';
 import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
+import { SectionEditor } from '@/components/admin/storefront/SectionEditors';
 import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Textarea } from '@/components/ui/textarea';
 
 // Define available section types (8 total)
 const SECTION_TYPES = {
@@ -85,6 +83,11 @@ interface SectionConfig {
     content: Record<string, unknown>;
     styles: Record<string, unknown>;
     visible?: boolean;
+    responsive?: {
+        mobile?: { padding_y?: string; hidden?: boolean };
+        tablet?: { padding_y?: string; hidden?: boolean };
+        desktop?: { padding_y?: string; hidden?: boolean };
+    };
 }
 
 // Sortable section item component
@@ -641,6 +644,23 @@ export function StorefrontBuilder() {
         setLayoutConfig(newConfig);
     };
 
+    const updateSectionResponsive = (id: string, device: 'mobile' | 'tablet' | 'desktop', key: string, value: unknown) => {
+        const newConfig = layoutConfig.map(s => {
+            if (s.id !== id) return s;
+            return {
+                ...s,
+                responsive: {
+                    ...s.responsive,
+                    [device]: {
+                        ...(s.responsive?.[device] || {}),
+                        [key]: value
+                    }
+                }
+            };
+        });
+        setLayoutConfig(newConfig);
+    };
+
     const applyTemplate = (templateKey: keyof typeof TEMPLATES) => {
         const template = TEMPLATES[templateKey];
         const newSections: SectionConfig[] = template.sections.map(type => ({
@@ -1007,7 +1027,13 @@ export function StorefrontBuilder() {
 
                         {/* Sections Render */}
                         <div className="min-h-[calc(100%-4rem)] bg-background" style={{ backgroundColor: themeConfig.colors?.background }}>
-                            {layoutConfig.filter(s => s.visible !== false).map((section) => {
+                            {layoutConfig.filter(s => {
+                                if (s.visible === false) return false;
+                                // Check responsive visibility for current device preview
+                                const responsiveHidden = s.responsive?.[devicePreview]?.hidden;
+                                if (responsiveHidden) return false;
+                                return true;
+                            }).map((section) => {
                                 const Component = SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.component as React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string }>;
                                 if (!Component) return <div key={section.id} className="p-4 text-destructive">Unknown: {section.type}</div>;
 
@@ -1059,56 +1085,12 @@ export function StorefrontBuilder() {
                             </Button>
                         </div>
                         <ScrollArea className="flex-1 p-4">
-                            <Accordion type="single" collapsible defaultValue="content" className="w-full">
-                                <AccordionItem value="content">
-                                    <AccordionTrigger>Content</AccordionTrigger>
-                                    <AccordionContent className="space-y-4 pt-2">
-                                        {Object.keys(sectionDefaults(selectedSection.type).content).map((key) => (
-                                            <div key={key} className="space-y-2">
-                                                <Label className="capitalize text-xs">{key.replace(/_/g, ' ')}</Label>
-                                                <Input
-                                                    value={selectedSection.content[key] || ''}
-                                                    onChange={(e) => updateSection(selectedSection.id, 'content', key, e.target.value)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </AccordionContent>
-                                </AccordionItem>
-                                <AccordionItem value="styles">
-                                    <AccordionTrigger>Styles</AccordionTrigger>
-                                    <AccordionContent className="space-y-4 pt-2">
-                                        {Object.keys(sectionDefaults(selectedSection.type).styles).map((key) => {
-                                            const isColor = key.includes('color') || key.includes('gradient');
-                                            return (
-                                                <div key={key} className="space-y-2">
-                                                    <Label className="capitalize text-xs">{key.replace(/_/g, ' ')}</Label>
-                                                    {isColor ? (
-                                                        <div className="flex gap-2">
-                                                            <Input
-                                                                type="color"
-                                                                className="w-10 h-10 p-0"
-                                                                value={selectedSection.styles[key] || '#ffffff'}
-                                                                onChange={(e) => updateSection(selectedSection.id, 'styles', key, e.target.value)}
-                                                            />
-                                                            <Input
-                                                                type="text"
-                                                                value={selectedSection.styles[key] || ''}
-                                                                onChange={(e) => updateSection(selectedSection.id, 'styles', key, e.target.value)}
-                                                                className="flex-1"
-                                                            />
-                                                        </div>
-                                                    ) : (
-                                                        <Input
-                                                            value={selectedSection.styles[key] || ''}
-                                                            onChange={(e) => updateSection(selectedSection.id, 'styles', key, e.target.value)}
-                                                        />
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </AccordionContent>
-                                </AccordionItem>
-                            </Accordion>
+                            <SectionEditor
+                                section={selectedSection}
+                                onUpdateContent={(key, value) => updateSection(selectedSection.id, 'content', key, value)}
+                                onUpdateStyles={(key, value) => updateSection(selectedSection.id, 'styles', key, value)}
+                                onUpdateResponsive={(device, key, value) => updateSectionResponsive(selectedSection.id, device, key, value)}
+                            />
                         </ScrollArea>
                     </div>
                 )}
@@ -1213,31 +1195,85 @@ export function StorefrontBuilder() {
 // Helper to get defaults dynamically so we don't crash on new props
 function sectionDefaults(type: string) {
     if (type === 'hero') return {
-        content: { heading_line_1: 'Premium', heading_line_2: 'Flower', heading_line_3: 'Delivered', subheading: 'Premium delivery service.' },
+        content: {
+            heading_line_1: 'Premium',
+            heading_line_2: 'Flower',
+            heading_line_3: 'Delivered',
+            subheading: 'Curated strains. Same-day delivery.',
+            cta_primary_text: 'Explore Collection',
+            cta_primary_link: '/shop',
+            cta_secondary_text: 'View Menu',
+            cta_secondary_link: '/menu',
+            trust_badges: true
+        },
         styles: { background_gradient_start: '#000000', background_gradient_end: '#022c22', text_color: '#ffffff', accent_color: '#34d399' }
     };
     if (type === 'features') return {
-        content: { heading_small: 'The Difference', heading_large: 'Excellence' },
+        content: {
+            heading_small: 'The Difference',
+            heading_large: 'Excellence in Every Detail',
+            features: [
+                { icon: 'clock', title: 'Same-Day Delivery', description: 'Order before 9 PM for delivery within the hour.' },
+                { icon: 'shield', title: 'Lab Verified', description: 'Every strain tested for purity and quality.' },
+                { icon: 'lock', title: 'Discreet Service', description: 'Unmarked packaging. Your privacy is our priority.' },
+                { icon: 'star', title: 'Premium Selection', description: 'Hand-picked strains. Top-shelf quality.' },
+            ]
+        },
         styles: { background_color: '#171717', text_color: '#ffffff', icon_color: '#34d399' }
     };
     if (type === 'product_grid') return {
-        content: { heading: 'Shop Collection', subheading: 'Curated selection.' },
+        content: {
+            heading: 'Shop Premium Collection',
+            subheading: 'Premium indoor-grown flower from licensed cultivators',
+            show_search: true,
+            show_categories: true,
+            initial_categories_shown: 2,
+            show_premium_filter: true
+        },
         styles: { background_color: '#f4f4f5', text_color: '#000000', accent_color: '#10b981' }
     };
     if (type === 'testimonials') return {
-        content: { heading: 'What Our Customers Say', subheading: 'Join thousands of satisfied customers' },
+        content: {
+            heading: 'What Our Customers Say',
+            subheading: 'Join thousands of satisfied customers',
+            testimonials: [
+                { name: 'Sarah M.', role: 'Verified Customer', quote: 'The quality is unmatched. Fast delivery and exactly what I was looking for.', rating: 5 },
+                { name: 'Michael R.', role: 'Regular Customer', quote: 'Best service in the city. Professional, discreet, and always reliable.', rating: 5 },
+                { name: 'Jessica L.', role: 'New Customer', quote: 'Impressed with the selection and the speed of delivery. Highly recommend!', rating: 5 },
+            ]
+        },
         styles: { background_color: '#ffffff', text_color: '#000000', accent_color: '#10b981', card_background: '#f9fafb' }
     };
     if (type === 'newsletter') return {
-        content: { heading: 'Stay in the Loop', subheading: 'Subscribe for exclusive drops.', button_text: 'Subscribe', placeholder_text: 'Enter your email', success_message: 'Thanks for subscribing!' },
+        content: { heading: 'Stay in the Loop', subheading: 'Subscribe for exclusive drops, deals, and updates.', button_text: 'Subscribe', placeholder_text: 'Enter your email', success_message: 'Thanks for subscribing!' },
         styles: { background_gradient_start: '#000000', background_gradient_end: '#1f2937', text_color: '#ffffff', accent_color: '#10b981', button_color: '#10b981' }
     };
     if (type === 'gallery') return {
-        content: { heading: 'Gallery', subheading: 'A curated visual experience' },
+        content: {
+            heading: 'Gallery',
+            subheading: 'A curated visual experience',
+            images: [
+                { url: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=600', alt: 'Product 1' },
+                { url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600', alt: 'Product 2' },
+                { url: 'https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?w=600', alt: 'Product 3' },
+                { url: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600', alt: 'Product 4' },
+                { url: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600', alt: 'Product 5' },
+                { url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600', alt: 'Product 6' },
+            ]
+        },
         styles: { background_color: '#000000', text_color: '#ffffff', accent_color: '#10b981' }
     };
     if (type === 'faq') return {
-        content: { heading: 'Frequently Asked Questions', subheading: 'Got questions? We\'ve got answers.' },
+        content: {
+            heading: 'Frequently Asked Questions',
+            subheading: 'Got questions? We\'ve got answers.',
+            faqs: [
+                { question: 'What are your delivery hours?', answer: 'We deliver 7 days a week from 10 AM to 10 PM. Same-day delivery available.' },
+                { question: 'How do I track my order?', answer: 'You\'ll receive a tracking link via SMS and email once dispatched.' },
+                { question: 'What payment methods do you accept?', answer: 'We accept cash, debit cards, and all major credit cards.' },
+                { question: 'Is there a minimum order?', answer: 'Minimum order is $50 for delivery. Orders above $100 get free delivery.' },
+            ]
+        },
         styles: { background_color: '#f9fafb', text_color: '#000000', accent_color: '#10b981', border_color: '#e5e7eb' }
     };
     if (type === 'custom_html') return {
