@@ -2657,3 +2657,30 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create RoleGuard.tsx Component
+
+### What was done:
+
+1. **Created `src/components/auth/RoleGuard.tsx`** - Role-based access guard component that:
+   - Accepts `requiredRoles` prop (array of `Role` values: owner, admin, team_member, viewer)
+   - Uses `usePermissions()` hook to get the current user's role
+   - Renders children if the user's role is in the `requiredRoles` array
+   - Logs unauthorized access attempts via `logger.warn()` with user context (userId, tenantId, role, requiredRoles)
+   - Supports `redirectTo` prop for navigation-based denial (redirects unauthorized users)
+   - Supports `fallback` prop for custom access-denied UI
+   - Shows a default "Access Denied" Alert (shadcn/ui) with required roles listed when no fallback/redirect is provided
+   - Uses a ref to ensure unauthorized access is logged only once per mount
+   - Returns `null` while permissions are loading to avoid flash of denied content
+
+### Design Decisions:
+- Follows existing `PermissionGuard.tsx` pattern but checks roles instead of granular permissions
+- Uses `useTenantAdminAuth()` for logging context (userId, tenantId, tenantSlug)
+- Named export only (no default export) per project conventions
+- Uses `@/` import alias throughout
+- Uses `logger` from `@/lib/logger` (never console.log)
+
+### Files Changed:
+- `src/components/auth/RoleGuard.tsx` (new file)
