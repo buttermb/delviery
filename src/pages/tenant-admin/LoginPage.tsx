@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { TwoFactorVerification } from "@/components/auth/TwoFactorVerification";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { AccountLockedScreen } from "@/components/auth/AccountLockedScreen";
 import { Database } from "@/integrations/supabase/types";
 
 
@@ -28,6 +29,8 @@ export default function TenantAdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+  const [accountLocked, setAccountLocked] = useState(false);
+  const [lockDurationSeconds, setLockDurationSeconds] = useState(0);
 
 
   useEffect(() => {
@@ -76,7 +79,33 @@ export default function TenantAdminLoginPage() {
       navigate(`/${tenantSlug}/admin/dashboard`, { replace: true });
     } catch (error: unknown) {
       logger.error("Tenant admin login error", error, { component: 'TenantAdminLoginPage' });
+
+      // Check if account is locked (429 rate limit or explicit lock)
+      const authError = error as { status?: number; retryAfter?: string; message?: string };
+      if (authError.status === 429 || authError.retryAfter) {
+        const retrySeconds = authError.retryAfter
+          ? parseInt(authError.retryAfter, 10)
+          : 900; // Default 15 minutes
+        setLockDurationSeconds(retrySeconds);
+        setAccountLocked(true);
+        setLoading(false);
+        return;
+      }
+
       const errorMessage = error instanceof Error ? error.message : "Invalid credentials";
+
+      // Check for locked account message from server
+      if (
+        errorMessage.toLowerCase().includes('locked') ||
+        errorMessage.toLowerCase().includes('too many') ||
+        errorMessage.toLowerCase().includes('temporarily blocked')
+      ) {
+        setLockDurationSeconds(900); // Default 15 minutes
+        setAccountLocked(true);
+        setLoading(false);
+        return;
+      }
+
       toast({
         variant: "destructive",
         title: "Login failed",
@@ -124,6 +153,33 @@ export default function TenantAdminLoginPage() {
                 title: "Authentication Successful",
                 description: "You have been securely logged in.",
               });
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (accountLocked) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4">
+        <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--tenant-surface))] p-6 sm:p-8">
+          <AccountLockedScreen
+            email={email}
+            tenantSlug={tenantSlug || ''}
+            lockDurationSeconds={lockDurationSeconds}
+            businessName={tenant.business_name || tenantSlug || ''}
+            onUnlocked={() => {
+              setAccountLocked(false);
+              setLockDurationSeconds(0);
+              toast({
+                title: "Account Unlocked",
+                description: "You can now try logging in again.",
+              });
+            }}
+            onBack={() => {
+              setAccountLocked(false);
+              setLockDurationSeconds(0);
             }}
           />
         </div>

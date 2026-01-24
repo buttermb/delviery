@@ -2657,3 +2657,43 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Add Account Recovery Flow for Locked Accounts
+
+### What was implemented:
+Added a complete account recovery flow for locked accounts that handles rate-limiting (429) and explicit account lock scenarios in the tenant admin login flow.
+
+### Features:
+1. **Account Locked Message** - Shows a clear "Account Locked" screen with shield icon when login attempts are exhausted
+2. **Unlock Time Countdown** - Real-time countdown timer showing exactly when the account will unlock (mm:ss format)
+3. **Contact Support Link** - Mailto link pre-filled with account details for direct support contact
+4. **Automatic Unlock Check** - Timer-based interval that automatically checks and unlocks when the lock period expires, calling `onUnlocked` callback
+5. **Request Admin Unlock via Email** - Form to request early unlock; sends notification to tenant admin via edge function; prevents email enumeration
+
+### Files Created:
+- `src/hooks/useAccountLockStatus.ts` - Hook managing lock state with countdown timer, auto-unlock detection, and cleanup
+- `src/components/auth/AccountLockedScreen.tsx` - Full locked account UI with timer, unlock request form, and support link
+- `supabase/functions/request-account-unlock/index.ts` - Edge function handling unlock requests; creates notification for tenant owner; prevents email enumeration
+
+### Files Modified:
+- `src/pages/tenant-admin/LoginPage.tsx` - Integrated account lock detection (429 status, retryAfter header, locked message keywords) and renders AccountLockedScreen
+
+### How it works:
+1. User attempts login and gets rate-limited (HTTP 429 with `retryAfter` header) or receives a "locked/too many attempts" error
+2. LoginPage detects the lock condition and shows AccountLockedScreen
+3. AccountLockedScreen displays countdown timer, support contact, and unlock request form
+4. Timer automatically counts down and unlocks when expired
+5. User can request early admin unlock - creates a notification in the notifications table
+6. Edge function validates input but always returns 200 to prevent email enumeration
+
+### Verification Results:
+- [x] `npm run build` - PASSES (0 TypeScript errors)
+- [x] `npm run lint` - PASSES (0 errors in new/modified files)
+- [x] No `console.log` in application code (uses `logger` utility)
+- [x] Named exports only
+- [x] `@/` import aliases used throughout
+- [x] Buttons have loading + disabled states
+- [x] Edge function follows shared deps pattern
+- [x] Security: prevents email enumeration in unlock requests
