@@ -1,92 +1,85 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Clock, User, Activity } from 'lucide-react';
+/**
+ * Activity Logs Page
+ * Unified activity feed with filterable timeline for tracking all system activities.
+ */
 
-import { handleError } from '@/utils/errorHandling/handlers';
+import { useActivityFeed } from '@/hooks/useActivityFeed';
+import { ActivityFeedTimeline } from '@/components/admin/ActivityFeedTimeline';
+import { ActivityFeedFilters } from '@/components/admin/ActivityFeedFilters';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-export default function ActivityLogs() {
-  const { tenant } = useTenantAdminAuth();
-  const tenantId = tenant?.id;
-
-  const { data: logs, isLoading } = useQuery({
-    queryKey: ['activity-logs', tenantId],
-    queryFn: async () => {
-      if (!tenantId) return [];
-
-      try {
-        const { data, error } = await supabase
-          .from('activity_logs' as any)
-          .select('*')
-          .eq('tenant_id', tenantId)
-          .order('created_at', { ascending: false })
-          .limit(100);
-
-        if (error && error.code === '42P01') return [];
-        if (error) throw error;
-        return data || [];
-      } catch (error) {
-        if ((error as any)?.code === '42P01') return [];
-        handleError(error, { component: 'ActivityLogs', toastTitle: 'Failed to load activity logs' });
-        throw error;
-      }
-    },
-    enabled: !!tenantId,
-  });
-
-  if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading activity logs...</div>
-      </div>
-    );
-  }
+export function ActivityLogs() {
+  const {
+    entries,
+    totalCount,
+    isLoading,
+    filters,
+    updateFilters,
+    refetch,
+    currentPage,
+    totalPages,
+    nextPage,
+    prevPage,
+    hasNextPage,
+    hasPrevPage,
+  } = useActivityFeed();
 
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Activity Logs</h1>
-        <p className="text-muted-foreground">Track all system activities and user actions</p>
+        <h1 className="text-3xl font-bold">Activity Feed</h1>
+        <p className="text-muted-foreground">
+          Track all system activities and user actions across your organization
+        </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>Latest system activities</CardDescription>
+          <CardTitle>Activity Timeline</CardTitle>
+          <CardDescription>Chronological feed of all platform activity</CardDescription>
         </CardHeader>
-        <CardContent>
-          {logs && logs.length > 0 ? (
-            <div className="space-y-4">
-              {logs.map((log: any) => (
-                <div key={log.id} className="flex items-start gap-4 p-4 border rounded-lg">
-                  <Activity className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium">{log.action || 'Unknown action'}</span>
-                      <Badge variant="outline">{log.type || 'info'}</Badge>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {log.description || 'No description'}
-                    </div>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <User className="h-3 w-3" />
-                        <span>{log.user_email || 'System'}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        <span>{new Date(log.created_at).toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              No activity logs available. Activity logging will appear here once the activity_logs table is created.
+        <CardContent className="space-y-4">
+          <ActivityFeedFilters
+            filters={filters}
+            onFilterChange={updateFilters}
+            onRefresh={() => refetch()}
+            isLoading={isLoading}
+            totalCount={totalCount}
+          />
+
+          <ActivityFeedTimeline
+            entries={entries}
+            isLoading={isLoading}
+          />
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4 border-t">
+              <span className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={prevPage}
+                  disabled={!hasPrevPage || isLoading}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={nextPage}
+                  disabled={!hasNextPage || isLoading}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
@@ -94,4 +87,3 @@ export default function ActivityLogs() {
     </div>
   );
 }
-
