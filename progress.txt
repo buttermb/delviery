@@ -2657,3 +2657,38 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create handle_user_login database function
+
+### What was done:
+
+1. **Created migration** `supabase/migrations/20260124000001_handle_user_login_function.sql`:
+   - Ensures prerequisite tables exist (`user_profiles`, `auth_audit_log`, `user_sessions`) with `CREATE TABLE IF NOT EXISTS`
+   - Creates `handle_user_login` function with `SECURITY DEFINER` and `SET search_path = public`
+
+2. **Function behavior** (`public.handle_user_login`):
+   - **Parameters**: `p_user_id`, `p_session_token`, `p_refresh_token`, `p_ip_address`, `p_user_agent`, `p_device_info`, `p_tenant_id`, `p_session_expires_at`
+   - **Updates `user_profiles`**: Sets `last_login_at = NOW()`, increments `login_count`, resets `failed_login_attempts` to 0, clears `locked_until`
+   - **Creates `auth_audit_log` entry**: Inserts row with `event_type = 'login_success'`, IP address, user agent, and metadata
+   - **Manages `user_sessions`**: Deactivates stale sessions from same device, then inserts or updates session row using `ON CONFLICT (session_token) DO UPDATE`
+   - **Returns JSONB** with success status, user_id, session_id, login_count, and timestamp
+
+3. **Security**:
+   - Uses `SECURITY DEFINER` with `SET search_path = public` to prevent search_path injection
+   - Validates user exists in `auth.users` before proceeding
+   - Validates user profile exists before updating
+   - Grants execute permission to `authenticated` role only
+
+### Acceptance Criteria Met:
+- [x] Updates `user_profiles.last_login_at` to current timestamp
+- [x] Increments `user_profiles.login_count`
+- [x] Resets `user_profiles.failed_login_attempts` to 0
+- [x] Creates `auth_audit_log` entry with `login_success` event type
+- [x] Updates or creates `user_sessions` row (via UPSERT on session_token)
+- [x] Uses `SECURITY DEFINER` with `SET search_path = public`
+- [x] Grants execute to authenticated users
+
+### Files Changed:
+- `supabase/migrations/20260124000001_handle_user_login_function.sql` (new)
