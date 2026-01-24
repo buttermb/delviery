@@ -106,6 +106,9 @@ export {
 } from './InsufficientCreditsModal';
 export type { InsufficientCreditsModalProps } from './InsufficientCreditsModal';
 
+export { CreditUsageIndicator } from './CreditUsageIndicator';
+export type { CreditUsageIndicatorProps } from './CreditUsageIndicator';
+
 // Re-export hook from hooks directory
 export { useCreditAlert } from '@/hooks/useCreditAlert';
 export type { UseCreditAlertReturn } from '@/hooks/useCreditAlert';
