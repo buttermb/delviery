@@ -14,6 +14,7 @@ import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { TwoFactorVerification } from "@/components/auth/TwoFactorVerification";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { Database } from "@/integrations/supabase/types";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 
 type Tenant = Database['public']['Tables']['tenants']['Row'];
@@ -28,6 +29,7 @@ export default function TenantAdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+  const { validateToken } = useCsrfToken();
 
 
   useEffect(() => {
@@ -53,6 +55,15 @@ export default function TenantAdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!validateToken()) {
+      toast({
+        variant: "destructive",
+        title: "Security Error",
+        description: "Invalid security token. Please refresh the page and try again.",
+      });
+      return;
+    }
 
     if (!tenantSlug) {
       toast({

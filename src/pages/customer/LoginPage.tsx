@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 
 export default function CustomerLoginPage() {
@@ -21,6 +22,7 @@ export default function CustomerLoginPage() {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { login } = useCustomerAuth();
   const { user } = useAuth();
+  const { validateToken } = useCsrfToken();
 
   // State declarations (RAMS fix: missing state)
   const [email, setEmail] = useState('');
@@ -81,6 +83,15 @@ export default function CustomerLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateToken()) {
+      toast({
+        variant: "destructive",
+        title: "Security Error",
+        description: "Invalid security token. Please refresh the page and try again.",
+      });
+      return;
+    }
 
     if (!tenantSlug) {
       toast({

@@ -8,6 +8,7 @@ import { Loader2, CheckCircle2, XCircle, Key } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { verifyResetToken, resetPasswordWithToken } from "@/utils/passwordReset";
 import { handleError } from "@/utils/errorHandling/handlers";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 export default function PasswordResetPage() {
   const { token } = useParams<{ token: string }>();
@@ -20,6 +21,7 @@ export default function PasswordResetPage() {
   const [email, setEmail] = useState("");
   const [userType, setUserType] = useState<"super_admin" | "tenant_admin" | "customer">("tenant_admin");
   const [success, setSuccess] = useState(false);
+  const { validateToken } = useCsrfToken();
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -73,6 +75,15 @@ export default function PasswordResetPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateToken()) {
+      toast({
+        variant: "destructive",
+        title: "Security Error",
+        description: "Invalid security token. Please refresh the page and try again.",
+      });
+      return;
+    }
 
     if (password !== confirmPassword) {
       toast({

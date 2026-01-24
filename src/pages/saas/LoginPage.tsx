@@ -34,6 +34,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import { motion, AnimatePresence } from 'framer-motion';
 import FloraIQLogo from '@/components/FloraIQLogo';
+import { useCsrfToken } from '@/hooks/useCsrfToken';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -53,6 +54,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [searchParams] = useSearchParams();
   const signupSuccess = searchParams.get('signup') === 'success';
+  const { validateToken } = useCsrfToken();
 
   // Monitor connection status
   useEffect(() => {
@@ -87,6 +89,11 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
+    if (!validateToken()) {
+      toast({ title: 'Security Error', description: 'Invalid security token. Please refresh the page and try again.', variant: 'destructive' });
+      return;
+    }
+
     if (isOffline()) {
       toast({ title: 'No Internet Connection', description: 'Please check your connection.', variant: 'destructive' });
       return;

@@ -13,6 +13,7 @@ import {
 import { Loader2, Mail } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { requestSuperAdminPasswordReset, requestTenantAdminPasswordReset, requestCustomerPasswordReset } from "@/utils/passwordReset";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 interface ForgotPasswordDialogProps {
   userType: "super_admin" | "tenant_admin" | "customer";
@@ -24,9 +25,20 @@ export function ForgotPasswordDialog({ userType, tenantSlug, trigger }: ForgotPa
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const { validateToken } = useCsrfToken();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateToken()) {
+      toast({
+        variant: "destructive",
+        title: "Security Error",
+        description: "Invalid security token. Please refresh the page and try again.",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {

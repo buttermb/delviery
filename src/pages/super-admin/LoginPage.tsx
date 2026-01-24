@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 
 export default function SuperAdminLoginPage() {
@@ -19,9 +20,20 @@ export default function SuperAdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const { validateToken } = useCsrfToken();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateToken()) {
+      toast({
+        variant: "destructive",
+        title: "Security Error",
+        description: "Invalid security token. Please refresh the page and try again.",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {

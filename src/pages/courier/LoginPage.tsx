@@ -11,6 +11,7 @@ import { Loader2, Package, Lock, ArrowLeft } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 import { clientEncryption } from '@/lib/encryption/clientEncryption';
+import { useCsrfToken } from '@/hooks/useCsrfToken';
 
 export default function CourierLoginPage() {
   useAuthRedirect(); // Auto-redirect if already logged in
@@ -22,9 +23,20 @@ export default function CourierLoginPage() {
   const [courierId, setCourierId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { validateToken } = useCsrfToken();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateToken()) {
+      toast({
+        title: 'Security Error',
+        description: 'Invalid security token. Please refresh the page and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {

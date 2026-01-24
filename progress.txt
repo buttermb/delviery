@@ -2657,3 +2657,66 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Agent 99: Add CSRF Protection to All Auth Forms
+
+### Summary
+Added CSRF (Cross-Site Request Forgery) protection to all authentication forms in the application. The implementation generates a cryptographically secure token on page load, stores it in sessionStorage, validates it on form submission, regenerates after each use, and blocks requests without a valid token.
+
+### Implementation Details
+
+#### Core CSRF Utility (`src/lib/csrf.ts`)
+- `generateCsrfToken()`: Generates 32-byte cryptographically secure random token using `crypto.getRandomValues()`, stores in sessionStorage with timestamp
+- `getCsrfToken()`: Retrieves token from sessionStorage, checks 30-minute expiration
+- `validateCsrfToken()`: Validates submitted token against stored token using constant-time comparison to prevent timing attacks
+- `regenerateCsrfToken()`: Clears old token and generates a new one (called after successful validation)
+- `clearCsrfToken()`: Removes token and timestamp from sessionStorage
+
+#### React Hook (`src/hooks/useCsrfToken.ts`)
+- Generates token on component mount (page load)
+- `validateToken()`: Validates current token and auto-regenerates on success
+- `refreshToken()`: Manual token refresh if needed
+- Returns `{ csrfToken, validateToken, refreshToken }`
+
+#### Protected Auth Forms (11 forms total)
+All forms validate CSRF token before processing submission, showing "Security Error" toast and blocking the request if token is invalid:
+
+1. `src/pages/customer/LoginPage.tsx` - Customer login
+2. `src/pages/customer/SignUpPage.tsx` - Customer registration
+3. `src/pages/customer/ForgotPasswordPage.tsx` - Customer password reset request
+4. `src/pages/customer/ResetPasswordPage.tsx` - Customer password reset
+5. `src/pages/tenant-admin/LoginPage.tsx` - Tenant admin login
+6. `src/pages/saas/LoginPage.tsx` - SaaS platform login
+7. `src/pages/saas/SignUpPage.tsx` - SaaS platform registration
+8. `src/pages/super-admin/LoginPage.tsx` - Super admin login
+9. `src/pages/courier/LoginPage.tsx` - Courier login
+10. `src/pages/auth/PasswordResetPage.tsx` - Universal password reset
+11. `src/components/auth/ForgotPasswordDialog.tsx` - Forgot password dialog (used across multiple login pages)
+
+### Security Features
+- **Cryptographic randomness**: Uses Web Crypto API (`crypto.getRandomValues`) for 256-bit tokens
+- **Timing attack prevention**: Constant-time string comparison in validation
+- **Token expiration**: 30-minute maximum age prevents stale token reuse
+- **Single-use tokens**: Automatically regenerated after each successful validation
+- **Session isolation**: Stored in sessionStorage (tab-specific, cleared on close)
+
+### Files Changed
+- `src/lib/csrf.ts` (new - CSRF token utility functions)
+- `src/hooks/useCsrfToken.ts` (new - React hook for CSRF integration)
+- `src/pages/customer/LoginPage.tsx` (CSRF validation added)
+- `src/pages/customer/SignUpPage.tsx` (CSRF validation added)
+- `src/pages/customer/ForgotPasswordPage.tsx` (CSRF validation added)
+- `src/pages/customer/ResetPasswordPage.tsx` (CSRF validation added)
+- `src/pages/tenant-admin/LoginPage.tsx` (CSRF validation added)
+- `src/pages/saas/LoginPage.tsx` (CSRF validation added)
+- `src/pages/saas/SignUpPage.tsx` (CSRF validation added)
+- `src/pages/super-admin/LoginPage.tsx` (CSRF validation added)
+- `src/pages/courier/LoginPage.tsx` (CSRF validation added)
+- `src/pages/auth/PasswordResetPage.tsx` (CSRF validation added)
+- `src/components/auth/ForgotPasswordDialog.tsx` (CSRF validation added)
+
+### Build Status
+- `npm run build`: PASS (0 errors)
+- `npm run lint`: PASS (0 new warnings/errors)

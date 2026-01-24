@@ -15,6 +15,7 @@ import { Loader2, Lock, ArrowLeft, CheckCircle2, Eye, EyeOff } from 'lucide-reac
 import { toast } from '@/hooks/use-toast';
 import { apiFetch } from '@/lib/utils/apiClient';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
+import { useCsrfToken } from '@/hooks/useCsrfToken';
 
 export default function CustomerResetPasswordPage() {
   const navigate = useNavigate();
@@ -32,6 +33,7 @@ export default function CustomerResetPasswordPage() {
   const [reset, setReset] = useState(false);
   const [tenant, setTenant] = useState<any>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+  const { validateToken } = useCsrfToken();
 
   useEffect(() => {
     const fetchTenant = async () => {
@@ -56,6 +58,15 @@ export default function CustomerResetPasswordPage() {
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateToken()) {
+      toast({
+        variant: 'destructive',
+        title: 'Security Error',
+        description: 'Invalid security token. Please refresh the page and try again.',
+      });
+      return;
+    }
 
     if (!token) {
       toast({
