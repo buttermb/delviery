@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkBruteForce, logAuthEvent, getClientIP, GENERIC_AUTH_ERROR, GENERIC_AUTH_DETAIL } from '../_shared/bruteForceProtection.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,8 +20,32 @@ serve(async (req) => {
     const { action, email, password } = await req.json();
 
     if (action === "login") {
-      // Rate limit check
-      const clientIp = req.headers.get("x-forwarded-for") || "unknown";
+      // Extract client info
+      const clientIp = getClientIP(req);
+      const userAgent = req.headers.get("user-agent") || "unknown";
+
+      // Brute force protection: Block IP after 10 failed attempts across ANY account in 1 hour
+      const bruteForceResult = await checkBruteForce(clientIp);
+      if (bruteForceResult.blocked) {
+        // Log the blocked attempt
+        await logAuthEvent({
+          eventType: 'login_attempt',
+          ipAddress: clientIp,
+          email: email?.toLowerCase(),
+          success: false,
+          failureReason: 'ip_blocked_brute_force',
+          userAgent,
+          metadata: { failedAttempts: bruteForceResult.failedAttempts },
+        });
+
+        // Return generic error - do NOT reveal the IP is blocked
+        return new Response(
+          JSON.stringify({ error: GENERIC_AUTH_ERROR }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Rate limit check (per-email)
       const { data: rateCheck } = await supabase.rpc('check_auth_rate_limit', {
         p_identifier: email,
         p_identifier_type: 'email'
@@ -40,18 +65,38 @@ serve(async (req) => {
       });
 
       if (authError) {
-        // Log failed attempt (no password)
+        // Log failed attempt to auth_audit_log for brute force tracking
+        await logAuthEvent({
+          eventType: 'login_attempt',
+          ipAddress: clientIp,
+          email: email?.toLowerCase(),
+          success: false,
+          failureReason: 'invalid_credentials',
+          userAgent,
+        });
+
+        // Also log to legacy auth_failed_attempts table
         await supabase.from('auth_failed_attempts').insert({
           email,
           ip_address: clientIp,
-          user_agent: req.headers.get("user-agent") || "unknown",
+          user_agent: userAgent,
           failure_reason: 'invalid_credentials'
         });
+
         return new Response(
-          JSON.stringify({ error: "Invalid credentials" }),
+          JSON.stringify({ error: GENERIC_AUTH_ERROR }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      // Log successful login to auth_audit_log
+      await logAuthEvent({
+        eventType: 'login_attempt',
+        ipAddress: clientIp,
+        email: email?.toLowerCase(),
+        success: true,
+        userAgent,
+      });
 
       // Clear rate limit on success
       await supabase.rpc('clear_auth_rate_limit', {
