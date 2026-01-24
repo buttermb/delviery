@@ -1,3 +1,36 @@
+## Task: Create process_credit_purchase database function
+
+### What was done:
+
+1. **Created migration `supabase/migrations/20260124000000_process_credit_purchase.sql`** containing:
+
+   - **Schema additions to `credit_packages` table:**
+     - `bonus_credits INTEGER DEFAULT 0` - Extra credits awarded with purchase
+     - `max_purchases_per_user INTEGER` - Per-user purchase limit (NULL = unlimited)
+     - `total_purchase_limit INTEGER` - Global purchase cap (NULL = unlimited)
+     - `current_purchases INTEGER DEFAULT 0` - Counter for total purchases made
+
+   - **`process_credit_purchase(p_user_id, p_tenant_id, p_package_id, p_payment_intent_id)` function:**
+     - SECURITY DEFINER with `SET search_path = public`
+     - Locks package row with `FOR UPDATE` to prevent race conditions
+     - Validates package exists and is active
+     - Validates `total_purchase_limit` not exceeded
+     - Validates `max_purchases_per_user` not exceeded (via credit_transactions metadata lookup)
+     - Calculates total credits as `credits + bonus_credits`
+     - Calls `update_credit_balance` with purchase transaction type and descriptive message
+     - Increments `current_purchases` counter on the package
+     - Updates the transaction metadata with package details (package_id, name, slug, base/bonus/total credits, price, payment_intent_id)
+     - Returns JSONB with: success, transaction_id, package details, total_credits, new_balance, payment_intent_id, current_purchases
+
+   - **Performance index:** `idx_credit_transactions_package_lookup` on `(metadata->>'package_id', tenant_id, transaction_type)` for efficient per-user purchase count queries
+
+   - **Permissions:** GRANT EXECUTE to `authenticated` and `service_role`
+
+2. **Dependencies:** This function calls `update_credit_balance` which is a sister task (parallel_group 3). The function signature expected:
+   - `update_credit_balance(p_user_id, p_tenant_id, p_amount, p_transaction_type, p_description, p_reference_type, p_reference_id)` returning new balance as INTEGER
+
+---
+
 ## Task: Create Unified Admin Dashboard Hub with 5 Stat Cards
 
 ### What was done:
