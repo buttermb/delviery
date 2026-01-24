@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Plus, Trash2, ChevronsUpDown, Check } from "lucide-react";
+import { useState } from "react";
+import { Plus, Trash2, ChevronsUpDown, Check, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,9 +23,11 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters";
 import { useProducts } from "@/hooks/crm/useProducts";
+import type { Product } from "@/hooks/crm/useProducts";
 import { LineItem } from "@/types/crm";
 
 interface LineItemsEditorProps {
@@ -178,7 +180,7 @@ export function LineItemsEditor({ items, onChange }: LineItemsEditorProps) {
 interface ProductSelectorProps {
     value?: string;
     onSelect: (value: string) => void;
-    products: any[];
+    products: Product[];
     isLoading: boolean;
 }
 
@@ -199,7 +201,16 @@ function ProductSelector({ value, onSelect, products, isLoading }: ProductSelect
                         !value && "text-muted-foreground"
                     )}
                 >
-                    {selectedProduct ? selectedProduct.name : "Select product..."}
+                    <span className="flex items-center gap-1.5 truncate">
+                        {selectedProduct ? (
+                            <>
+                                {selectedProduct.name}
+                                {selectedProduct.isOutOfStock && (
+                                    <AlertTriangle className="h-3 w-3 text-destructive shrink-0" />
+                                )}
+                            </>
+                        ) : "Select product..."}
+                    </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
@@ -215,11 +226,17 @@ function ProductSelector({ value, onSelect, products, isLoading }: ProductSelect
                                 products.map((product) => (
                                     <CommandItem
                                         key={product.id}
-                                        value={product.name} // Search by name
+                                        value={product.name}
+                                        disabled={product.isOutOfStock}
                                         onSelect={() => {
-                                            onSelect(product.id);
-                                            setOpen(false);
+                                            if (!product.isOutOfStock) {
+                                                onSelect(product.id);
+                                                setOpen(false);
+                                            }
                                         }}
+                                        className={cn(
+                                            product.isOutOfStock && "opacity-50 cursor-not-allowed"
+                                        )}
                                     >
                                         <Check
                                             className={cn(
@@ -227,10 +244,27 @@ function ProductSelector({ value, onSelect, products, isLoading }: ProductSelect
                                                 value === product.id ? "opacity-100" : "opacity-0"
                                             )}
                                         />
-                                        <div className="flex flex-col">
-                                            <span>{product.name}</span>
+                                        <div className="flex flex-col flex-1">
+                                            <div className="flex items-center gap-1.5">
+                                                <span>{product.name}</span>
+                                                {product.isOutOfStock && (
+                                                    <Badge variant="destructive" className="text-[10px] px-1 py-0 h-4">
+                                                        Out of Stock
+                                                    </Badge>
+                                                )}
+                                                {product.isLowStock && !product.isOutOfStock && (
+                                                    <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 text-amber-600">
+                                                        Low Stock
+                                                    </Badge>
+                                                )}
+                                            </div>
                                             <span className="text-xs text-muted-foreground">
                                                 {formatCurrency(product.price)}
+                                                {!product.isOutOfStock && (
+                                                    <span className="ml-1">
+                                                        ({product.stockQuantity} available)
+                                                    </span>
+                                                )}
                                             </span>
                                         </div>
                                     </CommandItem>

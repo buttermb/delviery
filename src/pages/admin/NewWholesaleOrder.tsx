@@ -20,6 +20,7 @@ import {
 import {
   ArrowLeft,
   AlertCircle,
+  AlertTriangle,
   CheckCircle2,
   Package,
   DollarSign,
@@ -625,27 +626,44 @@ export default function NewWholesaleOrder() {
                         filteredInventory.map((product: any) => {
                           const inCart = orderData.products.find((p) => p.id === product.id);
                           const stockQty = product.quantity_available ?? 0;
+                          const isOutOfStock = stockQty <= 0;
                           return (
                             <Card
                               key={product.id}
                               className={cn(
-                                'p-3 cursor-pointer transition-all',
-                                inCart
+                                'p-3 transition-all',
+                                isOutOfStock
+                                  ? 'opacity-50 cursor-not-allowed border-destructive/30'
+                                  : 'cursor-pointer',
+                                !isOutOfStock && inCart
                                   ? 'border-emerald-500 bg-emerald-500/5'
-                                  : 'hover:border-muted-foreground/50'
+                                  : !isOutOfStock && 'hover:border-muted-foreground/50'
                               )}
-                              onClick={() => handleAddProduct(product)}
+                              onClick={() => !isOutOfStock && handleAddProduct(product)}
                             >
                               <div className="flex items-center justify-between">
                                 <div className="min-w-0 flex-1">
-                                  <div className="font-medium truncate">{product.product_name}</div>
+                                  <div className="font-medium truncate flex items-center gap-1.5">
+                                    {product.product_name}
+                                    {isOutOfStock && (
+                                      <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />
+                                    )}
+                                  </div>
                                   <div className="text-xs text-muted-foreground flex items-center gap-2">
-                                    <span>Stock: {stockQty} units</span>
+                                    {isOutOfStock ? (
+                                      <span className="text-destructive font-medium">Out of Stock</span>
+                                    ) : (
+                                      <span>Stock: {stockQty} units</span>
+                                    )}
                                     <span>|</span>
                                     <span className="font-mono">{formatCurrency(product.base_price)}/unit</span>
                                   </div>
                                 </div>
-                                {inCart ? (
+                                {isOutOfStock ? (
+                                  <Badge variant="destructive" className="shrink-0 text-xs">
+                                    Unavailable
+                                  </Badge>
+                                ) : inCart ? (
                                   <Badge className="bg-emerald-500 shrink-0">
                                     {inCart.qty} in cart
                                   </Badge>
