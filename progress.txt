@@ -4316,3 +4316,24 @@ Created `src/hooks/useLogin.ts` - a standalone login hook using TanStack Query's
 
 ### Files Changed:
 - `src/hooks/usePasswordReset.ts` (new)
+
+---
+
+## Agent 41: Create useEmailVerification hook
+
+### Task:
+Create src/hooks/useEmailVerification.ts hook with useMutation calling auth-verify-email, accepts token from URL params, handles already verified case, handles expired token with option to resend, provides resendVerification function calling auth-signup with resend flag.
+
+### Implementation:
+Rewrote `src/hooks/useEmailVerification.ts` (previously an email format/domain validation hook) to implement token-based email verification flow:
+
+- **verifyEmail mutation**: Calls `auth-verify-email` edge function with a token (from URL `?token=` param or passed explicitly)
+- **resendVerification mutation**: Calls `auth-signup` edge function with `{ email, resend: true }` flag
+- **URL param extraction**: Uses `useSearchParams` from react-router-dom to read `token` from URL
+- **Already verified handling**: Response `alreadyVerified` flag exposed via `verificationState.isAlreadyVerified`
+- **Expired token handling**: Response `expired` flag exposed via `verificationState.isExpired` and `verificationState.canResend`
+- **Error logging**: Uses `logger.error` per project conventions
+- **TypeScript strict**: All types explicitly defined, no `any` usage, named export only
+
+### Files Changed:
+- `src/hooks/useEmailVerification.ts` (complete rewrite)
