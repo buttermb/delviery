@@ -1442,3 +1442,77 @@ Enhanced `src/hooks/useInventorySync.ts` with two new mutation hooks that handle
 - `src/components/admin/quick-view/CustomerQuickViewModal.tsx` (customer quick view)
 - `src/components/admin/quick-view/ProductQuickViewModal.tsx` (product quick view)
 - `src/components/admin/quick-view/index.ts` (barrel export)
+
+---
+
+## Task: Create RelatedEntities Panel Showing Linked Items on Detail Pages with Lazy Load Accordion
+
+### What was done:
+
+1. **Created `src/components/admin/RelatedEntitiesPanel.tsx`** - Reusable panel component that:
+   - Uses shadcn/ui `Accordion` (type="multiple") with lazy-loading behavior
+   - Only fetches data when a section is expanded (accordion opened) for performance
+   - Displays each related entity section with: icon, label, item count badge, loading spinner
+   - Shows loading skeletons while data is being fetched
+   - Shows error state if fetch fails
+   - Shows empty state with customizable message when no items exist
+   - Each item row displays: title, subtitle, status badge (color-coded), meta info, navigation arrow
+   - Supports navigation to related entity detail pages via `onNavigate` callback
+   - Wrapped in a Card with Link2 icon header
+
+2. **Created `src/hooks/useRelatedEntities.ts`** - Lazy-loading hooks for related entity data:
+   - `useLazyQuery` - Internal utility hook wrapping TanStack Query with `enabled` flag that starts `false`
+   - `useRelatedClientInvoices(clientId)` - Fetches invoices for a client (lazy)
+   - `useRelatedClientPreOrders(clientId)` - Fetches pre-orders for a client (lazy)
+   - `useRelatedCustomerOrders(customerId)` - Fetches orders for a customer (lazy)
+   - `useRelatedPreOrderInvoices(clientId)` - Fetches invoices by same client as a pre-order (lazy)
+   - `useRelatedInvoicePreOrders(clientId)` - Fetches pre-orders by same client as an invoice (lazy)
+   - `useRelatedClientPayments(clientId)` - Fetches payments for a client (lazy)
+   - All hooks use `useAccountIdSafe()` for tenant isolation and existing `queryKeys` patterns
+   - Data is formatted into `RelatedEntityItem` shape with proper status badges and formatted amounts
+
+3. **Integrated into `src/pages/admin/ClientDetailPage.tsx`**:
+   - Added RelatedEntitiesPanel at the bottom of the page below the Tabs
+   - Shows 2 sections: Invoices and Pre-Orders (linked by client_id)
+   - Navigation to invoice/pre-order detail pages on click
+
+4. **Integrated into `src/pages/admin/InvoiceDetailPage.tsx`**:
+   - Added RelatedEntitiesPanel in the sidebar between Client Details card and Timeline card
+   - Shows 1 section: Pre-Orders (by same client)
+   - Navigation to pre-order detail pages on click
+
+5. **Integrated into `src/pages/admin/PreOrderDetailPage.tsx`**:
+   - Added RelatedEntitiesPanel in the sidebar between Client Details card and Timeline card
+   - Shows 1 section: Invoices (by same client)
+   - Navigation to invoice detail pages on click
+
+### Lazy Loading Behavior:
+- Data is NOT fetched on page load - the `enabled` flag in useQuery starts as `false`
+- When user clicks to expand an accordion section, the `fetchItems` callback sets `enabled = true`
+- TanStack Query then fires the queryFn and shows loading skeletons in the UI
+- Results are cached by TanStack Query for subsequent open/close cycles
+- Each section is independently lazy-loaded (opening one doesn't fetch others)
+
+### Acceptance Criteria Met:
+- [x] RelatedEntities panel shows linked items on detail pages
+- [x] Uses accordion with lazy loading (data fetched only on expand)
+- [x] Integrated into ClientDetailPage (invoices, pre-orders)
+- [x] Integrated into InvoiceDetailPage (pre-orders by same client)
+- [x] Integrated into PreOrderDetailPage (invoices by same client)
+- [x] Loading skeletons while fetching
+- [x] Error state display
+- [x] Empty state display
+- [x] Navigation to related entity detail pages
+- [x] Tenant isolation via useAccountIdSafe
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/components/admin/RelatedEntitiesPanel.tsx` (new)
+- `src/hooks/useRelatedEntities.ts` (new)
+- `src/pages/admin/ClientDetailPage.tsx` (modified - added panel)
+- `src/pages/admin/InvoiceDetailPage.tsx` (modified - added panel)
+- `src/pages/admin/PreOrderDetailPage.tsx` (modified - added panel)
+
+### Build Status:
+- `npm run build` passes with no errors
+- `tsc --noEmit` passes with no TypeScript errors
