@@ -89,6 +89,7 @@ export const useInventoryTransfer = () => {
         .from("inventory_transfers")
         .select("*")
         .eq("id", transferId)
+        .eq("tenant_id", tenant.id)
         .single();
       if (!transfer || transfer.status !== 'pending') throw new Error("Invalid transfer");
 
@@ -114,7 +115,7 @@ export const useInventoryTransfer = () => {
         });
       }
 
-      await supabase.from("inventory_transfers").update({ status: 'completed', completed_at: new Date().toISOString() }).eq("id", transferId);
+      await supabase.from("inventory_transfers").update({ status: 'completed', completed_at: new Date().toISOString() }).eq("id", transferId).eq("tenant_id", tenant.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventory-transfers"] });
@@ -126,7 +127,8 @@ export const useInventoryTransfer = () => {
 
   const cancelTransferMutation = useMutation({
     mutationFn: async (transferId: string) => {
-      await supabase.from("inventory_transfers").update({ status: 'cancelled' }).eq("id", transferId);
+      if (!tenant?.id) throw new Error("No tenant");
+      await supabase.from("inventory_transfers").update({ status: 'cancelled' }).eq("id", transferId).eq("tenant_id", tenant.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventory-transfers"] });

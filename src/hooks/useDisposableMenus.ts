@@ -7,8 +7,9 @@ export const useDisposableMenus = (tenantId?: string) => {
   return useQuery({
     queryKey: ['disposable-menus', tenantId],
     queryFn: async () => {
-      // Simplified query - remove nested FK joins that don't exist in schema
-      let query = supabase
+      if (!tenantId) return [];
+
+      const { data, error } = await supabase
         .from('disposable_menus')
         .select(`
           *,
@@ -16,13 +17,9 @@ export const useDisposableMenus = (tenantId?: string) => {
           menu_access_whitelist(count),
           menu_access_logs(count),
           menu_orders(*)
-        `);
-
-      if (tenantId) {
-        query = query.eq('tenant_id', tenantId);
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
+        `)
+        .eq('tenant_id', tenantId)
+        .order('created_at', { ascending: false });
 
       if (error) {
         // Log but don't throw - return empty array for graceful degradation
@@ -39,7 +36,7 @@ export const useDisposableMenus = (tenantId?: string) => {
         total_revenue: menu.menu_orders?.reduce((sum: number, o: any) => sum + Number(o.total_amount || 0), 0) || 0,
       }));
     },
-    enabled: tenantId !== undefined,
+    enabled: !!tenantId,
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
   });
@@ -258,26 +255,26 @@ export const useMenuOrders = (menuId?: string, tenantId?: string) => {
   return useQuery({
     queryKey: ['menu-orders', menuId, tenantId],
     queryFn: async () => {
+      if (!tenantId) return [];
+
       let query = supabase
         .from('menu_orders')
         .select(`
           *,
           menu:disposable_menus(name)
         `)
+        .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false });
 
       if (menuId) {
         query = query.eq('menu_id', menuId);
-      } else if (tenantId) {
-        // When no menuId, filter by tenant for security
-        query = query.eq('tenant_id', tenantId);
       }
 
       const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    enabled: !!menuId || !!tenantId,
+    enabled: !!tenantId,
     // Performance: cache for 15 seconds (orders change more frequently)
     staleTime: 15 * 1000,
     gcTime: 2 * 60 * 1000,
@@ -288,27 +285,27 @@ export const useMenuSecurityEvents = (menuId?: string, tenantId?: string) => {
   return useQuery({
     queryKey: ['menu-security-events', menuId, tenantId],
     queryFn: async () => {
+      if (!tenantId) return [];
+
       let query = supabase
         .from('menu_security_events')
         .select(`
           *,
           menu:disposable_menus(name)
         `)
+        .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (menuId) {
         query = query.eq('menu_id', menuId);
-      } else if (tenantId) {
-        // When no menuId, filter by tenant for security
-        query = (query as any).eq('tenant_id', tenantId);
       }
 
       const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    enabled: !!menuId || !!tenantId,
+    enabled: !!tenantId,
     staleTime: 60 * 1000, // Security events change less frequently
     gcTime: 10 * 60 * 1000,
   });

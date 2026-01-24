@@ -38,18 +38,20 @@ export function useInvoices() {
     const useInvoiceQuery = (id: string) => useQuery({
         queryKey: crmInvoiceKeys.detail(id),
         queryFn: async () => {
-            const { data, error } = await supabase.from('crm_invoices').select('*, client:crm_clients(*)').eq('id', id).maybeSingle();
+            if (!accountId) throw new Error('Account ID required');
+            const { data, error } = await supabase.from('crm_invoices').select('*, client:crm_clients(*)').eq('id', id).eq('account_id', accountId).maybeSingle();
             if (error) throw error;
             return normalizeInvoice(data);
         },
-        enabled: !!id,
+        enabled: !!id && !!accountId,
     });
 
     const useMarkInvoicePaid = () => {
         const queryClient = useQueryClient();
         return useMutation({
             mutationFn: async (invoiceId: string) => {
-                const { data, error } = await supabase.from('crm_invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', invoiceId).select('*, client:crm_clients(*)').maybeSingle();
+                if (!accountId) throw new Error('Account ID required');
+                const { data, error } = await supabase.from('crm_invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', invoiceId).eq('account_id', accountId).select('*, client:crm_clients(*)').maybeSingle();
                 if (error) throw error;
                 return normalizeInvoice(data);
             },
@@ -60,7 +62,11 @@ export function useInvoices() {
     const useDeleteInvoice = () => {
         const queryClient = useQueryClient();
         return useMutation({
-            mutationFn: async (invoiceId: string) => { const { error } = await supabase.from('crm_invoices').delete().eq('id', invoiceId); if (error) throw error; },
+            mutationFn: async (invoiceId: string) => {
+                if (!accountId) throw new Error('Account ID required');
+                const { error } = await supabase.from('crm_invoices').delete().eq('id', invoiceId).eq('account_id', accountId);
+                if (error) throw error;
+            },
             onSuccess: () => { queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all }); toast.success('Invoice deleted'); },
         });
     };
@@ -69,10 +75,12 @@ export function useInvoices() {
         const queryClient = useQueryClient();
         return useMutation({
             mutationFn: async (invoiceId: string) => {
+                if (!accountId) throw new Error('Account ID required');
                 const { data, error } = await supabase
                     .from('crm_invoices')
                     .update({ status: 'sent' })
                     .eq('id', invoiceId)
+                    .eq('account_id', accountId)
                     .select('*, client:crm_clients(*)')
                     .maybeSingle();
                 if (error) throw error;
@@ -88,10 +96,12 @@ export function useInvoices() {
         const queryClient = useQueryClient();
         return useMutation({
             mutationFn: async (invoiceId: string) => {
+                if (!accountId) throw new Error('Account ID required');
                 const { data, error } = await supabase
                     .from('crm_invoices')
                     .update({ status: 'cancelled' })
                     .eq('id', invoiceId)
+                    .eq('account_id', accountId)
                     .select('*, client:crm_clients(*)')
                     .maybeSingle();
                 if (error) throw error;
@@ -107,11 +117,13 @@ export function useInvoices() {
         const queryClient = useQueryClient();
         return useMutation({
             mutationFn: async (invoiceId: string) => {
+                if (!accountId) throw new Error('Account ID required');
                 // First fetch the original invoice
                 const { data: original, error: fetchError } = await supabase
                     .from('crm_invoices')
                     .select('*')
                     .eq('id', invoiceId)
+                    .eq('account_id', accountId)
                     .maybeSingle();
 
                 if (fetchError) throw fetchError;

@@ -147,31 +147,37 @@ export const useQuickStats = () => {
       const today = new Date();
       const startOfToday = startOfDay(today);
       
+      if (!tenant?.id) throw new Error('No tenant');
+
       // Parallel fetch all stats
       const [paymentsResult, ordersResult, clientsResult, frontedResult] = await Promise.all([
         // Today's payments received
         supabase
           .from('wholesale_payments')
           .select('amount')
+          .eq('tenant_id', tenant.id)
           .gte('created_at', startOfToday.toISOString()),
-        
+
         // Today's orders (revenue)
         supabase
           .from('wholesale_orders')
           .select('total_amount')
+          .eq('tenant_id', tenant.id)
           .gte('created_at', startOfToday.toISOString())
           .neq('status', 'cancelled'),
-        
+
         // Outstanding AR
         supabase
           .from('wholesale_clients')
           .select('outstanding_balance')
+          .eq('tenant_id', tenant.id)
           .gt('outstanding_balance', 0),
-        
+
         // Fronted inventory value
         supabase
           .from('fronted_inventory')
           .select('expected_revenue')
+          .eq('tenant_id', tenant.id)
           .eq('status', 'active')
       ]);
       
@@ -211,6 +217,8 @@ export const useCashFlowPulse = () => {
       const weekStart = startOfWeek(today);
       const weekEnd = endOfWeek(today);
       
+      if (!tenant?.id) throw new Error('No tenant');
+
       // Parallel fetch
       const [
         todayPaymentsResult,
@@ -222,29 +230,33 @@ export const useCashFlowPulse = () => {
         supabase
           .from('wholesale_payments')
           .select('amount, created_at')
+          .eq('tenant_id', tenant.id)
           .gte('created_at', startOfToday.toISOString())
           .lte('created_at', endOfToday.toISOString()),
-        
+
         // Today's orders (outgoing product)
         supabase
           .from('wholesale_orders')
           .select('total_amount, created_at')
+          .eq('tenant_id', tenant.id)
           .gte('created_at', startOfToday.toISOString())
           .lte('created_at', endOfToday.toISOString())
           .neq('status', 'cancelled'),
-        
+
         // This week's orders (for forecast)
         supabase
           .from('wholesale_orders')
           .select('total_amount, created_at')
+          .eq('tenant_id', tenant.id)
           .gte('created_at', weekStart.toISOString())
           .lte('created_at', weekEnd.toISOString())
           .neq('status', 'cancelled'),
-        
+
         // Last 30 days for burn rate calculation
         supabase
           .from('wholesale_orders')
           .select('total_amount')
+          .eq('tenant_id', tenant.id)
           .gte('created_at', subDays(today, 30).toISOString())
           .neq('status', 'cancelled')
       ]);
@@ -321,9 +333,12 @@ export const useARCommand = () => {
       const now = new Date();
       const weekEnd = endOfWeek(now);
       
+      if (!tenant?.id) throw new Error('No tenant');
+
       const { data: clients, error } = await supabase
         .from('wholesale_clients')
         .select('id, business_name, outstanding_balance, last_payment_date, payment_terms, phone, email')
+        .eq('tenant_id', tenant.id)
         .gt('outstanding_balance', 0)
         .order('outstanding_balance', { ascending: false });
       
@@ -383,6 +398,8 @@ export const useFrontedInventory = () => {
     queryFn: async (): Promise<FrontedData> => {
       const now = new Date();
       
+      if (!tenant?.id) throw new Error('No tenant');
+
       const { data: items, error } = await supabase
         .from('fronted_inventory')
         .select(`
@@ -395,6 +412,7 @@ export const useFrontedInventory = () => {
           status,
           product:products(name)
         `)
+        .eq('tenant_id', tenant.id)
         .eq('status', 'active')
         .order('dispatched_at', { ascending: true });
       
@@ -482,33 +500,39 @@ export const usePerformancePulse = () => {
       const lastMonthStart = startOfMonth(subMonths(now, 1));
       const lastMonthEnd = endOfMonth(subMonths(now, 1));
       
+      if (!tenant?.id) throw new Error('No tenant');
+
       // Parallel fetch
       const [thisMonthResult, lastMonthResult, clientsResult, trendResult] = await Promise.all([
         // This month orders
         supabase
           .from('wholesale_orders')
           .select('total_amount, client_id')
+          .eq('tenant_id', tenant.id)
           .gte('created_at', thisMonthStart.toISOString())
           .lte('created_at', thisMonthEnd.toISOString())
           .neq('status', 'cancelled'),
-        
+
         // Last month orders
         supabase
           .from('wholesale_orders')
           .select('total_amount')
+          .eq('tenant_id', tenant.id)
           .gte('created_at', lastMonthStart.toISOString())
           .lte('created_at', lastMonthEnd.toISOString())
           .neq('status', 'cancelled'),
-        
+
         // Client names for top clients
         supabase
           .from('wholesale_clients')
-          .select('id, business_name'),
-        
+          .select('id, business_name')
+          .eq('tenant_id', tenant.id),
+
         // Last 90 days for trend
         supabase
           .from('wholesale_orders')
           .select('total_amount, created_at')
+          .eq('tenant_id', tenant.id)
           .gte('created_at', subDays(now, 90).toISOString())
           .neq('status', 'cancelled')
       ]);
@@ -620,20 +644,23 @@ export const usePerformancePulse = () => {
 
 // Collection actions
 export const useCollectionActions = () => {
+  const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
-  
+
   const logActivity = useMutation({
-    mutationFn: async (data: { 
-      clientId: string; 
+    mutationFn: async (data: {
+      clientId: string;
       type: 'call' | 'text' | 'invoice' | 'reminder';
       notes?: string;
     }) => {
+      if (!tenant?.id) throw new Error('No tenant');
       const { data: result, error } = await supabase
         .from('collection_activities')
         .insert({
           client_id: data.clientId,
           activity_type: data.type,
           notes: data.notes,
+          tenant_id: tenant.id,
           performed_by: (await supabase.auth.getUser()).data.user?.id
         })
         .select()
@@ -678,15 +705,18 @@ export const useCollectionActions = () => {
 
 // Fronted inventory actions
 export const useFrontedActions = () => {
+  const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
-  
+
   const convertToSale = useMutation({
     mutationFn: async (frontedId: string) => {
+      if (!tenant?.id) throw new Error('No tenant');
       const { error } = await supabase
         .from('fronted_inventory')
         .update({ status: 'sold' })
-        .eq('id', frontedId);
-      
+        .eq('id', frontedId)
+        .eq('tenant_id', tenant.id);
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -697,11 +727,13 @@ export const useFrontedActions = () => {
   
   const recallInventory = useMutation({
     mutationFn: async (frontedId: string) => {
+      if (!tenant?.id) throw new Error('No tenant');
       const { error } = await supabase
         .from('fronted_inventory')
         .update({ status: 'recalled' })
-        .eq('id', frontedId);
-      
+        .eq('id', frontedId)
+        .eq('tenant_id', tenant.id);
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -712,11 +744,13 @@ export const useFrontedActions = () => {
   
   const extendDueDate = useMutation({
     mutationFn: async ({ frontedId, newDate }: { frontedId: string; newDate: Date }) => {
+      if (!tenant?.id) throw new Error('No tenant');
       const { error } = await supabase
         .from('fronted_inventory')
         .update({ payment_due_date: newDate.toISOString() })
-        .eq('id', frontedId);
-      
+        .eq('id', frontedId)
+        .eq('tenant_id', tenant.id);
+
       if (error) throw error;
     },
     onSuccess: () => {

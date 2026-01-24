@@ -101,6 +101,7 @@ export function useAttentionQueue() {
           const { data } = await supabase
             .from('deliveries')
             .select('id, created_at')
+            .eq('tenant_id', tenant.id)
             .eq('status', 'in_transit');
           return (data as unknown as DeliveryRow[]) || [];
         } catch { return []; }
@@ -111,6 +112,7 @@ export function useAttentionQueue() {
           const { data } = await supabase
             .from('deliveries')
             .select('id, created_at')
+            .eq('tenant_id', tenant.id)
             .eq('status', 'in_transit');
           return (data as unknown as DeliveryRow[]) || [];
         } catch { return []; }
