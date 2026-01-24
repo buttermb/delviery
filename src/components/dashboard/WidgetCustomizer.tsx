@@ -131,9 +131,9 @@ export function WidgetCustomizer({
                                         {widget.description}
                                     </p>
                                 )}
-                                {widget.category && (
+                                {(widget as any).category && (
                                     <Badge variant="outline" className="text-[10px] mt-1">
-                                        {widget.category}
+                                        {(widget as any).category}
                                     </Badge>
                                 )}
                             </div>

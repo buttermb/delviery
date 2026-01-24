@@ -57,15 +57,15 @@ export function GiftCardLedger({ storeId, card, onBack }: GiftCardLedgerProps) {
   const { data: ledgerEntries = [], isLoading } = useQuery({
     queryKey: ['gift-card-ledger', card.id],
     queryFn: async () => {
-      const { data, error } = await (supabase
-        .from as unknown as (table: string) => ReturnType<typeof supabase.from>)('marketplace_gift_card_ledger')
+      const { data, error } = await (supabase as any)
+        .from('marketplace_gift_card_ledger')
         .select('*')
         .eq('gift_card_id', card.id)
         .eq('store_id', storeId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as LedgerEntry[];
+      return (data || []) as unknown as LedgerEntry[];
     },
     enabled: !!card.id && !!storeId,
   });

@@ -115,7 +115,7 @@ export function useCreateClient() {
             }
             return data as CRMClient;
         },
-        onMutate: async (values) => {
+        onMutate: async (values: { account_id?: string; name: string; email?: string | null; phone?: string | null; status?: string }) => {
             await queryClient.cancelQueries({ queryKey: crmClientKeys.lists() });
             const previousClients = queryClient.getQueriesData<CRMClient[]>({ queryKey: crmClientKeys.lists() });
 

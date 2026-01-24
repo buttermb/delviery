@@ -72,7 +72,7 @@ export function StorefrontAnalyticsWidget({ storeId, className }: StorefrontAnal
       }
 
       // Fetch unique visitors (marketplace_customers who accessed the store recently)
-      const { count: visitorCount, error: visitorsError } = await supabase
+      const { count: visitorCount, error: visitorsError } = await (supabase as any)
         .from('marketplace_customers')
         .select('*', { count: 'exact', head: true })
         .eq('store_id', storeId)

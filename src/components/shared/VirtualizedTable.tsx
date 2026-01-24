@@ -84,7 +84,7 @@ const VirtualizedRow = memo(function VirtualizedRow({
             style={{ width: column.width || 'auto', minWidth: column.width || 150 }}
           >
             {cellContent !== null && cellContent !== undefined
-              ? (typeof cellContent === 'object' ? cellContent : String(cellContent))
+              ? (typeof cellContent === 'object' ? JSON.stringify(cellContent) : String(cellContent))
               : '-'}
           </div>
         );
@@ -151,7 +151,7 @@ function VirtualizedTableInner<T>({
         rowHeight={rowHeight}
         overscanCount={overscanCount}
         style={{ height: listHeight }}
-        rowComponent={VirtualizedRow}
+        rowComponent={VirtualizedRow as any}
         rowProps={rowProps}
       />
     </div>
