@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { TrendingUp, DollarSign, Users, Package, Clock, ArrowLeft } from 'lucide-react';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
@@ -66,8 +67,12 @@ export default function AdvancedAnalytics() {
 
   if (ordersLoading || customersLoading) {
     return (
-      <div className="p-6">
-        <div className="text-center">Loading analytics...</div>
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Advanced Analytics</h1>
+          <p className="text-muted-foreground">Deep insights and business intelligence</p>
+        </div>
+        <EnhancedLoadingState variant="dashboard" />
       </div>
     );
   }

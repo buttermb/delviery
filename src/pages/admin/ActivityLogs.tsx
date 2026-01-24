@@ -9,6 +9,7 @@ import { ActivityFeedFilters } from '@/components/admin/ActivityFeedFilters';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 export function ActivityLogs() {
   const {
@@ -25,6 +26,18 @@ export function ActivityLogs() {
     hasNextPage,
     hasPrevPage,
   } = useActivityFeed();
+
+  if (isLoading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Activity Feed</h1>
+          <p className="text-muted-foreground">Track all system activities and user actions across your organization</p>
+        </div>
+        <EnhancedLoadingState variant="list" count={5} />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">

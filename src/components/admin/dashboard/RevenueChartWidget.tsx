@@ -4,6 +4,7 @@
  */
 
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, DollarSign, Calendar } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,7 +17,7 @@ import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 export function RevenueChartWidget() {
   const { account } = useAccount();
 
-  const { data: revenueData } = useQuery({
+  const { data: revenueData, isLoading } = useQuery({
     queryKey: ['revenue-chart', account?.id],
     queryFn: async () => {
       if (!account?.id) return null;
@@ -108,7 +109,25 @@ export function RevenueChartWidget() {
         <Calendar className="h-4 w-4 text-muted-foreground" />
       </div>
 
-      {revenueData ? (
+      {isLoading ? (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-[200px] w-full rounded-lg" />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-6 w-24" />
+            </div>
+            <div className="space-y-1">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-6 w-24" />
+            </div>
+          </div>
+        </div>
+      ) : revenueData ? (
         <>
           <div className="mb-4">
             <div className="text-3xl font-bold mb-1">

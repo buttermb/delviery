@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { triggerHaptic } from '@/lib/utils/mobile';
 
@@ -346,7 +347,28 @@ export default function InventoryDashboard() {
 
           <TabsContent value="locations" className="space-y-4">
             {locationsLoading ? (
-              <div className="text-center py-8">Loading locations...</div>
+              <div className="grid gap-4 md:grid-cols-2">
+                {[1, 2, 3, 4].map(i => (
+                  <Card key={i} className="border-none shadow-sm p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-2">
+                        <Skeleton className="h-5 w-32" />
+                        <Skeleton className="h-4 w-20" />
+                      </div>
+                      <Skeleton className="h-8 w-16" />
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-2 w-full" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 pt-3 border-t">
+                      <Skeleton className="h-16 w-full rounded-lg" />
+                      <Skeleton className="h-16 w-full rounded-lg" />
+                    </div>
+                  </Card>
+                ))}
+              </div>
             ) : locations && locations.length > 0 ? (
               <div className="grid gap-4 md:grid-cols-2">
                 {locations.map((location, index) => {

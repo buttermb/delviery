@@ -5,6 +5,7 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Truck, ArrowRight, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,7 +25,7 @@ export function PendingTransfersWidget() {
     return href;
   };
 
-  const { data: transfers } = useQuery({
+  const { data: transfers, isLoading } = useQuery({
     queryKey: ['pending-transfers', account?.id],
     queryFn: async () => {
       if (!account?.id) return [];
@@ -84,7 +85,21 @@ export function PendingTransfersWidget() {
       </div>
 
       <div className="space-y-3">
-        {transfers && transfers.length > 0 ? (
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="flex-1 space-y-1">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-3 w-32" />
+                <Skeleton className="h-3 w-28" />
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <Skeleton className="h-5 w-20 rounded-full" />
+                <Skeleton className="h-3 w-14" />
+              </div>
+            </div>
+          ))
+        ) : transfers && transfers.length > 0 ? (
           transfers.map((transfer) => (
             <div
               key={transfer.id}

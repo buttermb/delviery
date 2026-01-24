@@ -968,6 +968,72 @@ const settingsLink = usePermissionAwareLink({
 
 ---
 
+## Task: Add Loading Skeletons and Spinners to All Components with useQuery/useMutation
+
+### What was done:
+
+Added proper loading skeletons and spinners to components that previously showed basic "Loading..." text or had no loading state at all during async operations.
+
+#### 1. Admin Pages - Replaced "Loading..." text with EnhancedLoadingState skeletons:
+- **ActivityLogs.tsx** - Added `EnhancedLoadingState variant="list"` (5 skeleton items)
+- **AdvancedAnalytics.tsx** - Added `EnhancedLoadingState variant="dashboard"` (chart + stats layout)
+- **ApiAccess.tsx** - Added `EnhancedLoadingState variant="card" count={3}` (API key cards)
+- **AuditTrail.tsx** - Added `EnhancedLoadingState variant="table" count={8}` (audit log table)
+- **CustomerAnalytics.tsx** - Added `EnhancedLoadingState variant="dashboard"` (analytics layout)
+- **InventoryDashboard.tsx** - Added Skeleton grid for locations tab (was basic "Loading locations..." text)
+- **DataExport.tsx** - Added Skeleton list for export history section (previously no loading state)
+- **CustomDomain.tsx** - Added `EnhancedLoadingState variant="card" count={2}` (domain cards)
+- **Webhooks.tsx** - Added `EnhancedLoadingState variant="card" count={3}` (webhook cards)
+
+#### 2. Dashboard Widgets - Added Skeleton loading states (previously had no loading UI):
+- **ActivityFeedWidget.tsx** - Added isLoading + Skeleton list items (icon + text placeholder)
+- **RecentOrdersWidget.tsx** - Added isLoading + Skeleton order rows (status dot, text, badge)
+- **TopProductsWidget.tsx** - Added isLoading + Skeleton product rows (rank circle, text, price)
+- **InventoryAlertsWidget.tsx** - Added isLoading + Skeleton alert items (icon, text, badge)
+- **PendingTransfersWidget.tsx** - Added isLoading + Skeleton transfer rows (text, badge, weight)
+- **RecentActivityWidget.tsx** - Added isLoading + Skeleton activity items (avatar, text, time)
+- **RevenueChartWidget.tsx** - Added isLoading + Skeleton chart area (title, chart, stat grid)
+
+#### 3. Admin Components - Improved loading skeleton:
+- **InventoryMovementLog.tsx** - Replaced "Loading movements..." text with Skeleton rows (icon circle, text, badge, amount)
+
+#### 4. Mutation Buttons - Added Loader2 spinner icons during isPending state:
+- **ApiAccess.tsx** - Create Key button: Loader2 spinner + "Creating..." text during mutation
+- **CustomDomain.tsx** - Add Domain button: Loader2 spinner + "Adding..." text during mutation
+- **Webhooks.tsx** - Create/Update button: Loader2 spinner + contextual text during mutation
+- **StorefrontSettings.tsx** - Save Changes button: Loader2 spinner replaces Save icon during mutation
+
+### Pattern Applied:
+- **useQuery loading**: Added `isLoading` destructuring and skeleton UI matching the component's content layout
+- **useMutation loading**: Added `Loader2` spinner icon with `animate-spin` + disabled state + contextual text
+- **Consistency**: All skeletons use `animate-pulse` via the project's existing `Skeleton` component
+- **Progressive**: Page-level queries use `EnhancedLoadingState` with appropriate variants; widget-level uses inline Skeleton
+
+### Build Status:
+- `npm run build` passes with no TypeScript errors
+
+### Files Changed:
+- `src/pages/admin/ActivityLogs.tsx`
+- `src/pages/admin/AdvancedAnalytics.tsx`
+- `src/pages/admin/ApiAccess.tsx`
+- `src/pages/admin/AuditTrail.tsx`
+- `src/pages/admin/CustomerAnalytics.tsx`
+- `src/pages/admin/InventoryDashboard.tsx`
+- `src/pages/admin/DataExport.tsx`
+- `src/pages/admin/CustomDomain.tsx`
+- `src/pages/admin/Webhooks.tsx`
+- `src/pages/admin/storefront/StorefrontSettings.tsx`
+- `src/components/admin/dashboard/ActivityFeedWidget.tsx`
+- `src/components/admin/dashboard/RecentOrdersWidget.tsx`
+- `src/components/admin/dashboard/TopProductsWidget.tsx`
+- `src/components/admin/dashboard/InventoryAlertsWidget.tsx`
+- `src/components/admin/dashboard/PendingTransfersWidget.tsx`
+- `src/components/admin/dashboard/RecentActivityWidget.tsx`
+- `src/components/admin/dashboard/RevenueChartWidget.tsx`
+- `src/components/admin/InventoryMovementLog.tsx`
+
+---
+
 ## Task: Refactor StorefrontBuilder for Modularity
 
 ### What was done:

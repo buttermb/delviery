@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { FileText, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
@@ -25,7 +26,7 @@ export function RecentOrdersWidget() {
   };
   const { account } = useAccount();
 
-  const { data: orders } = useQuery({
+  const { data: orders, isLoading } = useQuery({
     queryKey: ['recent-orders-widget', account?.id],
     queryFn: async () => {
       if (!account?.id) return [];
@@ -94,7 +95,23 @@ export function RecentOrdersWidget() {
       </div>
 
       <div className="space-y-3">
-        {orders && orders.length > 0 ? (
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="flex items-center gap-3">
+                <Skeleton className="w-2 h-2 rounded-full" />
+                <div className="space-y-1">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-40" />
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-5 w-20 rounded-full" />
+              </div>
+            </div>
+          ))
+        ) : orders && orders.length > 0 ? (
           orders.map((order) => (
             <div
               key={order.id}

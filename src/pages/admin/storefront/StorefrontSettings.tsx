@@ -36,7 +36,8 @@ import {
   Shield,
   Star,
   PanelRightClose,
-  PanelRightOpen
+  PanelRightOpen,
+  Loader2
 } from 'lucide-react';
 import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog';
 import { generateUrlToken } from '@/utils/menuHelpers';
@@ -412,7 +413,11 @@ export default function StorefrontSettings() {
             onClick={() => saveMutation.mutate()}
             disabled={!isDirty || saveMutation.isPending}
           >
-            <Save className="w-4 h-4 mr-2" />
+            {saveMutation.isPending ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
             {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
