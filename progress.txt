@@ -2657,3 +2657,54 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create src/hooks/useCreditPackages.ts hook
+
+### What was done:
+
+1. **Added `creditPackages` query keys** in `src/lib/queryKeys.ts`:
+   - `creditPackages.all` - base key `['credit-packages']`
+   - `creditPackages.lists()` - list queries
+   - `creditPackages.list(tenantId?)` - list filtered by tenant
+   - `creditPackages.details()` - detail queries base
+   - `creditPackages.detail(id)` - single package detail
+
+2. **Created `src/hooks/useCreditPackages.ts`** - Custom hook that:
+   - Uses `useQuery` with TanStack Query to fetch active packages from `credit_packages` table
+   - Filters by `is_active = true` (with option to include inactive for admin use)
+   - Sorts by featured (badge) first, then by `sort_order`, then by `price_cents` ascending
+   - Calculates **savings percentage** for bulk packages:
+     - Computes price-per-credit for each package (including bonus credits)
+     - Uses the highest price-per-credit (smallest package) as baseline
+     - Calculates percentage savings relative to that baseline
+   - Checks **purchase eligibility** for each package:
+     - Marks inactive packages as ineligible with reason
+     - Marks packages without Stripe price ID as ineligible (payment not configured)
+   - Returns enriched `CreditPackage` objects with computed fields:
+     - `totalCredits` (credits + bonus_credits)
+     - `pricePerCredit` (price_cents / totalCredits)
+     - `savingsPercent` (savings vs baseline per-credit price)
+     - `isFeatured` (has a badge like POPULAR or BEST VALUE)
+     - `isEligible` / `ineligibleReason` for purchase gating
+   - Provides convenience getters:
+     - `cheapestPackage` - lowest price_cents
+     - `bestValuePackage` - lowest pricePerCredit
+     - `featuredPackage` - first package with a badge
+   - Uses tenant context from `useTenantAdminAuth()` for query key scoping
+   - Configures appropriate cache settings (5min staleTime, 10min gcTime)
+   - Uses `logger` for error reporting (no console.log)
+   - Named exports only, `@/` import aliases
+
+### Verification Results:
+- [x] `npm run build` - PASSES (0 TypeScript errors)
+- [x] Hook follows existing codebase patterns (useCredits.ts, useContacts.ts)
+- [x] Uses queryKeys factory pattern consistently
+- [x] No `console.log` - uses `logger` from `@/lib/logger`
+- [x] Named exports only
+- [x] TypeScript strict mode compatible
+
+### Files Changed:
+- `src/hooks/useCreditPackages.ts` (new file - main hook implementation)
+- `src/lib/queryKeys.ts` (added creditPackages query key factory)
