@@ -2657,3 +2657,31 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create CreditsBadge.tsx Header Component
+
+### What was done:
+
+1. **Created `src/components/credits/CreditsBadge.tsx`** - Small badge component for the admin header that:
+   - Shows current credit balance with a Coins icon and formatted number
+   - Only renders for free-tier users (returns null for paid subscriptions)
+   - Links to the credits analytics page (`/:tenantSlug/admin/credits/analytics`) on click
+   - Pulses briefly (1.5s `animate-pulse` with ring highlight) when the balance changes
+   - Tooltip shows a quick breakdown of purchased vs bonus/free credits
+   - Color-coded by balance level (emerald > 2000, yellow > 1000, amber > 500, orange > 100, red <= 100)
+   - Supports dark mode with appropriate color variants
+   - Uses existing `CreditContext` for balance and free-tier status
+   - Fetches purchased vs bonus breakdown via TanStack Query with 5-min stale time
+   - Accessible with `aria-label` and proper focus ring styles
+   - Uses `useRef` to track previous balance for change detection
+
+### Architecture Decisions:
+- Uses `CreditContext` (not raw `useCredits` hook) to stay consistent with `CreditBalance.tsx`
+- Uses `button` element (not `div`) for proper keyboard accessibility and semantic correctness
+- Navigates via `react-router-dom` instead of opening purchase modal (task spec says "links to credits page")
+- Breakdown query aggregates lifetime `purchase` vs `bonus`/`free_grant` transaction types
+
+### Files Changed:
+- `src/components/credits/CreditsBadge.tsx` (new file)
