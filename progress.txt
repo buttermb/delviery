@@ -4387,3 +4387,31 @@ Rewrote `src/hooks/useEmailVerification.ts` (previously an email format/domain v
 
 ### Files Changed:
 - `src/hooks/useEmailVerification.ts` (complete rewrite)
+---
+
+## Task: Create useAuthGuard Hook
+
+### What was done:
+Created `src/hooks/useAuthGuard.ts` - a comprehensive authentication guard hook that:
+1. **Checks authentication status** via `useTenantAdminAuth` context and redirects to login if not authenticated
+2. **Accepts `requiredRole` prop** - checks user's role against a role hierarchy (owner > admin > team_member > viewer)
+3. **Accepts `requiredPermissions` prop** - leverages the existing `usePermissions` hook to check granular permissions
+4. **Supports `requireAnyPermission`** - toggle between requiring all vs any of the specified permissions
+5. **Returns `isAuthorized`, `isLoading`, `user`** - with full type safety for the authenticated user object
+6. **Handles tenant context** - validates URL tenant slug matches authenticated tenant, redirects on mismatch
+7. **Smart login redirect** - uses tenant slug from URL params, falls back to localStorage, then /saas/login
+
+### Integration:
+- Exported from `src/hooks/index.ts` barrel file
+- Uses existing `useTenantAdminAuth` context for auth state
+- Uses existing `usePermissions` hook for permission checks
+- Uses existing `Role` and `Permission` types from `@/lib/permissions/rolePermissions`
+- Follows project conventions: named exports, `@/` imports, `logger` for logging, no `any` types
+
+### Files Changed:
+- `src/hooks/useAuthGuard.ts` (new file - the auth guard hook)
+- `src/hooks/index.ts` (added barrel export)
+
+### Verification:
+- [x] TypeScript compilation passes (0 errors)
+- [x] ESLint passes (0 errors)

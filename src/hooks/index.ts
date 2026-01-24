@@ -17,6 +17,7 @@ export { useFeatureTracking } from './useFeatureTracking';
 // Auth Hooks
 export { useTenantLimits } from './useTenantLimits';
 export { usePermissions } from './usePermissions';
+export { useAuthGuard } from './useAuthGuard';
 
 // Realtime Hooks
 export { useRealtimeSubscription } from './useRealtimeSubscription';
