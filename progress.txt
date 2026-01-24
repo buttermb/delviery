@@ -982,3 +982,45 @@ Enhanced `src/hooks/useInventorySync.ts` with two new mutation hooks that handle
 - `src/lib/queryKeys.ts` (modified - added history key)
 - `src/hooks/useInventoryHistory.ts` (new)
 - `src/components/admin/inventory/InventoryHistoryTimeline.tsx` (new)
+
+---
+
+## Task: Create Auto Reorder Suggestions Widget
+
+### What was done:
+
+1. **Created `src/components/admin/dashboard/AutoReorderSuggestionsWidget.tsx`** - A dashboard widget that:
+   - Queries the `wholesale_inventory` table for products at or below their `reorder_point`
+   - Filters and sorts by severity: critical (< 25% of reorder point) vs warning (25-100%)
+   - Displays up to 5 products needing reorder with their current stock vs reorder point
+   - Shows severity badges (Critical/Low) for quick prioritization
+   - Includes a "Create PO" button per product that creates a purchase order via the existing `usePurchaseOrders` hook
+   - Calculates suggested order quantity (enough to reach 2x reorder point)
+   - Loading skeleton state during data fetch
+   - Empty state when all products are above reorder point
+   - "View All Purchase Orders" footer link with tenant-aware navigation
+   - Proper loading/disabled states on Create PO buttons during async operations
+   - Uses `queryKeys.inventory.alerts()` for proper cache invalidation alignment
+
+2. **Integrated into `src/components/admin/ModernDashboard.tsx`**:
+   - Added import for `AutoReorderSuggestionsWidget`
+   - Placed widget in the right sidebar column between InventoryAlertsWidget and ActivityFeedWidget
+   - This provides a natural flow: see low-stock alerts → see reorder suggestions → take action
+
+### Acceptance Criteria Met:
+- [x] Shows products at or below their reorder point from wholesale_inventory table
+- [x] Severity indicators (critical when < 25% of reorder point, warning otherwise)
+- [x] Create PO button per product that uses existing purchase order creation flow
+- [x] Loading states (skeleton on initial load, spinner on PO creation)
+- [x] Disabled states on buttons during async operations
+- [x] Empty state when no products need reordering
+- [x] Proper tenant isolation (filters by account.id / tenant_id)
+- [x] Uses queryKeys factory for cache management
+- [x] Uses logger for error tracking (no console.log)
+- [x] TypeScript strict mode - no `any` types
+- [x] Named exports only
+- [x] Build passes with no errors
+
+### Files Changed:
+- `src/components/admin/dashboard/AutoReorderSuggestionsWidget.tsx` (new)
+- `src/components/admin/ModernDashboard.tsx` (modified - import + widget placement)
