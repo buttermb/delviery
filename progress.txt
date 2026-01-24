@@ -2657,3 +2657,67 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create stripe-webhook edge function with credit_subscriptions support
+
+### What was done:
+
+1. **Created `supabase/migrations/20260124000000_credit_subscriptions.sql`** - Migration for the credit_subscriptions table:
+   - `id` UUID primary key
+   - `user_id` UUID references auth.users (NOT NULL)
+   - `tenant_id` UUID references tenants (NOT NULL)
+   - `package_id` UUID references credit_packages (optional)
+   - `stripe_subscription_id` TEXT UNIQUE for Stripe linkage
+   - `status` TEXT with CHECK constraint: active, paused, cancelled, past_due, trialing
+   - `credits_per_period` INTEGER NOT NULL - credits granted per billing cycle
+   - `period_type` TEXT: monthly, yearly, weekly
+   - `current_period_start` / `current_period_end` TIMESTAMPTZ for period tracking
+   - `credits_remaining_this_period` INTEGER for usage tracking
+   - `cancel_at_period_end` BOOLEAN for end-of-period cancellation
+   - `cancelled_at` TIMESTAMPTZ for cancellation timestamp
+   - RLS enabled with policies for user SELECT and service_role ALL
+   - Indexes on tenant_id, user_id, stripe_subscription_id, status
+   - Updated_at trigger via security definer function
+
+2. **Updated `supabase/functions/stripe-webhook/index.ts`** - Enhanced the edge function with credit subscription handling:
+   - **Imports from `_shared/deps.ts`** as required by project conventions
+   - **Webhook signature validation** using `stripe.webhooks.constructEventAsync`
+   - **Idempotency** via `stripe_event_id` check in `subscription_events` table
+   - **`checkout.session.completed` (type=credit_subscription)**: Creates credit_subscriptions row, grants first period credits immediately
+   - **`customer.subscription.updated`**: Syncs status changes to credit_subscriptions (maps Stripe statuses to allowed values), updates period info and cancel_at_period_end
+   - **`invoice.paid`**: Grants recurring credits for active credit subscriptions, updates period info, resets warning flags, restores active status if was past_due
+   - **`invoice.payment_failed`**: Sets credit_subscriptions status to past_due, tracks analytics
+   - **`customer.deleted`**: Cancels all active credit subscriptions for the tenant
+   - Eliminated `any` types, using `Record<string, unknown>`, `Stripe.Event`, and proper error typing
+   - All existing webhook handlers preserved (checkout, subscription updates, payment methods, etc.)
+
+3. **Updated `supabase/functions/stripe-webhook/validation.ts`** - Extended Zod schema:
+   - Added `id`, `trial_end`, `cancel_at_period_end`, `current_period_start`, `current_period_end`
+   - Added `customer`, `amount_paid`, `amount_total`, `payment_intent` fields
+   - Proper nullable handling for subscription and payment_intent fields
+
+### Credit Subscription Event Flow:
+- `checkout.session.completed` (type=credit_subscription) → Creates row + grants first credits
+- `invoice.paid` (with matching stripe_subscription_id) → Grants recurring credits + updates period
+- `invoice.payment_failed` (with matching stripe_subscription_id) → Sets status to past_due
+- `customer.subscription.updated` → Syncs status, period, cancel_at_period_end to credit_subscriptions
+- `customer.subscription.deleted` → Sets credit_subscriptions status to cancelled
+- `customer.deleted` → Cancels all active credit subscriptions for tenant
+
+### Acceptance Criteria Met:
+- [x] Handles `customer.subscription.updated` for status changes on credit_subscriptions
+- [x] Handles `invoice.paid` for recurring credit grants
+- [x] Handles `invoice.payment_failed` for past_due status
+- [x] Validates webhook signature before processing
+- [x] Updates credit_subscriptions accordingly
+- [x] Grants credits on successful payment (invoice.paid)
+- [x] Idempotent processing (deduplication via stripe_event_id)
+- [x] No `any` types used
+- [x] Imports from _shared/deps.ts
+
+### Files Changed:
+- `supabase/migrations/20260124000000_credit_subscriptions.sql` (new)
+- `supabase/functions/stripe-webhook/index.ts` (updated with credit subscription handlers)
+- `supabase/functions/stripe-webhook/validation.ts` (extended schema)

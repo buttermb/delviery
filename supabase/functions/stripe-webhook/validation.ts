@@ -9,9 +9,18 @@ export const stripeWebhookSchema = z.object({
   type: z.string(),
   data: z.object({
     object: z.object({
+      id: z.string().optional(),
       metadata: stripeMetadataSchema.optional(),
-      subscription: z.string().optional(),
+      subscription: z.union([z.string(), z.null()]).optional(),
       status: z.string().optional(),
+      trial_end: z.number().nullable().optional(),
+      cancel_at_period_end: z.boolean().optional(),
+      current_period_start: z.number().optional(),
+      current_period_end: z.number().optional(),
+      customer: z.string().optional(),
+      amount_paid: z.number().optional(),
+      amount_total: z.number().optional(),
+      payment_intent: z.string().nullable().optional(),
     }).passthrough(), // Allow additional properties
   }),
   created: z.number().optional(),
