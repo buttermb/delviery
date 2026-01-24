@@ -2657,3 +2657,73 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create src/contexts/AuthContext.tsx with AuthProvider
+
+### What was done:
+
+Enhanced the existing `AuthContext.tsx` to provide a comprehensive authentication context with all required features.
+
+1. **Extended AuthContextType interface** to include:
+   - `user: User | null` - Current Supabase user
+   - `session: Session | null` - Current Supabase session
+   - `isAuthenticated: boolean` - Convenience boolean (true when both user and session exist)
+   - `isLoading: boolean` - Loading state during initial auth resolution
+   - `loading: boolean` - Deprecated alias for backward compatibility with existing consumers
+   - `login(credentials)` - Email/password sign-in via Supabase
+   - `logout()` - Sign out with full cleanup
+   - `signOut()` - Deprecated alias for backward compatibility with existing consumers
+   - `signup(credentials)` - Email/password registration with optional metadata
+
+2. **Auth state change listener** (`onAuthStateChange`):
+   - Listens for INITIAL_SESSION, SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED events
+   - Updates user/session state reactively
+   - Logs all state transitions via both `logger` and `logAuth` debug utilities
+   - Fallback `getSession()` call ensures loading resolves even if listener doesn't fire
+
+3. **Token refresh on app focus**:
+   - Listens to both `window.focus` and `document.visibilitychange` events (covers desktop + mobile)
+   - Checks if token expires within 5 minutes (300 seconds threshold)
+   - Uses `tokenRefreshManager` singleton to prevent race conditions/duplicate refreshes
+   - Logs refresh attempts, successes, and failures
+
+4. **Login function**:
+   - Calls `supabase.auth.signInWithPassword()`
+   - Returns `{ success, error? }` result object
+   - Logs attempts, successes, and failures via `logger`
+
+5. **Signup function**:
+   - Calls `supabase.auth.signUp()` with optional user metadata
+   - Handles email confirmation flow (user exists but no session)
+   - Returns `{ success, error? }` result object
+   - Logs all outcomes
+
+6. **Logout function**:
+   - Calls `supabase.auth.signOut()`
+   - Clears local user/session state
+   - Resets `tokenRefreshManager` for auth-context scope
+   - Calls `performLogoutCleanup()` for encryption, query cache, and storage cleanup
+   - Logs initiation and completion
+
+7. **Auth state persistence**:
+   - Relies on Supabase client's built-in `persistSession: true` + `localStorage` storage
+   - Session restored automatically on mount via INITIAL_SESSION event
+   - No custom persistence needed since Supabase handles localStorage internally
+
+8. **Backward compatibility**:
+   - `signOut` alias for `logout` (used by Navigation.tsx, SuperAdminEnhanced.tsx)
+   - `loading` alias for `isLoading` (used by ProtectedRoute.tsx, SuperAdminProtectedRoute.tsx)
+
+### Verification:
+- [x] `npm run build` passes with zero TypeScript errors
+- [x] All existing consumers of `useAuth()` remain compatible (signOut, loading aliases)
+- [x] Named exports only (AuthProvider, useAuth)
+- [x] Uses `@/` import aliases
+- [x] Uses `logger` from `@/lib/logger` for all auth events
+- [x] No `any` types used
+- [x] Proper cleanup in useEffect return functions
+
+### Files Changed:
+- `src/contexts/AuthContext.tsx` (rewritten with full auth provider implementation)
