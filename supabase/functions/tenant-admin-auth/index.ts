@@ -1,10 +1,11 @@
 // @ts-nocheck - Disable type checking for Deno/Supabase client compatibility
 // Edge Function: tenant-admin-auth
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { loginSchema, refreshSchema, setupPasswordSchema } from './validation.ts';
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from '../_shared/rateLimiting.ts';
 
-serve(async (req) => {
+serve(secureHeadersMiddleware(async (req) => {
   // Get origin from request for CORS (required when credentials are included)
   const origin = req.headers.get('origin');
   const hasCredentials = req.headers.get('cookie') || req.headers.get('authorization');
@@ -839,4 +840,4 @@ serve(async (req) => {
       { status: 500, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
     );
   }
-});
+}));
