@@ -2657,3 +2657,38 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create supabase/functions/auth-login Edge Function
+
+### What was done:
+
+1. **Created `supabase/functions/auth-login/index.ts`** - Edge function handling user login:
+   - Imports from `_shared/deps.ts` (serve, createClient, corsHeaders, z)
+   - Uses `createLogger` from `_shared/logger.ts` for structured logging
+   - Uses `withZenProtection` from `_shared/zen-firewall.ts` for security middleware
+   - Validates input with Zod schema (email, password, tenant_slug)
+   - Handles CORS OPTIONS requests
+   - Only accepts POST method
+
+2. **Security features implemented:**
+   - Verifies tenant exists by slug before proceeding
+   - Checks `user_profiles.locked_until` to detect locked accounts (HTTP 423)
+   - Uses `supabase.auth.signInWithPassword` for credential validation
+   - Verifies user belongs to the specified tenant after auth
+   - Never reveals whether an email exists - always returns generic "Invalid email or password"
+   - Signs out user if they don't belong to the requested tenant
+
+3. **Login flow:**
+   - On success: Calls `handle_user_login` RPC (updates last_login_at, login_count, resets failed_login_attempts, creates audit log + session)
+   - On failure: Calls `handle_failed_login` RPC (increments failed_login_attempts, potentially locks account after 5 attempts)
+   - Returns session tokens (access_token, refresh_token, expires_in, expires_at, token_type) and basic user info on success
+
+4. **Error handling:**
+   - 400: Invalid input (Zod validation failures)
+   - 401: Invalid credentials (generic message)
+   - 405: Method not allowed (non-POST)
+   - 423: Account locked (with locked_until timestamp)
+   - 500: Unexpected server errors (generic message, details logged server-side)
+
+### Files Created:
+- `supabase/functions/auth-login/index.ts`
