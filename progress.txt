@@ -3184,3 +3184,36 @@ Created migration `supabase/migrations/20260124000001_create_password_reset_toke
 
 ### Files Changed:
 - `supabase/migrations/20260124000001_handle_user_login_function.sql` (new)
+
+---
+
+## Task: Create handle_failed_login Database Function
+
+### What was done:
+
+1. **Created migration `supabase/migrations/20260124000000_handle_failed_login.sql`** that:
+
+   - **Adds columns to `profiles` table**:
+     - `failed_login_attempts integer NOT NULL DEFAULT 0` - tracks consecutive failed attempts
+     - `locked_until timestamptz` - when set, account is locked until this time
+
+   - **Adds index** `idx_profiles_locked_until` for efficient locked account lookups
+
+   - **Creates `handle_failed_login(p_user_id, p_ip_address, p_user_agent)` function**:
+     - `SECURITY DEFINER` with `SET search_path = public` per project conventions
+     - Returns `jsonb` with `locked`, `attempts`, and `locked_until` fields
+     - Increments `failed_login_attempts` on the user's profile
+     - If attempts >= 5: sets `locked_until` to `now() + 30 minutes` and logs `account_locked` event to `audit_logs`
+     - Always logs `login_failed` event to `audit_logs` with `ip` and `user_agent` metadata in the `changes` jsonb column
+     - Also stores `ip_address` and `user_agent` in dedicated audit_logs columns
+     - Handles edge case where profile doesn't exist (logs event and returns error info)
+     - IP and user_agent fall back to request headers if not provided as parameters
+
+### Verification Results:
+- [x] `npm run build` - PASSES (0 TypeScript errors)
+- [x] Migration follows project conventions (SECURITY DEFINER, SET search_path, timestamptz, RLS-compatible)
+- [x] Uses existing `audit_logs` table structure correctly
+- [x] No `console.log` or `any` types introduced
+
+### Files Changed:
+- `supabase/migrations/20260124000000_handle_failed_login.sql` (new migration)
