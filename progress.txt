@@ -92,12 +92,14 @@
    - Clears shared session keys (`floraiq_user_id`, `lastTenantSlug`) from both localStorage and sessionStorage
    - Provides `broadcastLogout()` helper for cross-tab synchronization
    - Supports all 5 auth tiers: super_admin, tenant_admin, customer, vendor, base
+   - **Fixed**: Added try/catch block to `broadcastLogout` to prevent "Channel closed" errors during rapid logout/login cycles
 
 2. Updated `src/contexts/TenantAdminAuthContext.tsx`:
    - Added `useQueryClient` hook and `performLogoutCleanup` import
    - Replaced manual cleanup in `logout()` with centralized `performLogoutCleanup()`
    - Updated cross-tab logout handler to also clear query cache via `performLogoutCleanup()`
    - Replaced inline BroadcastChannel code with `broadcastLogout()` helper
+   - **Fixed**: Added `if (mounted)` check in `onAuthStateChange` to prevent state updates on unmounted component
 
 3. Updated `src/contexts/SuperAdminAuthContext.tsx`:
    - Added `useQueryClient` hook and `performLogoutCleanup` import
@@ -141,6 +143,8 @@
 - [x] Cross-tab logout synchronization maintained
 - [x] VendorAuthContext brought to parity with other auth contexts
 - [x] Build passes with no TypeScript errors
+- [x] Fixed "Channel closed" error in logout broadcast
+- [x] Fixed unmounted component state update error in TenantAdminAuthContext
 
 ### Files Changed:
 - `src/lib/auth/logoutCleanup.ts` (new)
@@ -288,7 +292,7 @@
    - Proper error handling with logger and toast
 
 6. **Fixed pre-existing build error** in `src/lib/utils/sanitize.ts`:
-   - Added `sanitizeBasicHtml` export alias (was imported by HeroSection but not exported)
+   - Added `sanitizeBasicHtml` export alias (was imported by HeroSection but was never defined)
 
 ### Acceptance Criteria Met:
 - [x] Can create gift cards with custom amounts (preset $25/$50/$100/$250 + custom)
@@ -310,3 +314,66 @@
 
 ### Build Status:
 - `npm run build` passes with no errors
+
+---
+
+## Task: Refactor StorefrontBuilder for Modularity
+
+### What was done:
+Refactored the 1,251-line monolithic StorefrontBuilder component into 8 focused modules
+within a new `src/pages/admin/storefront/builder/` directory:
+
+1. **storefront-builder.config.ts** - Shared configuration (SECTION_TYPES, TEMPLATES,
+   sectionDefaults, SectionConfig/ThemeConfig types, DEFAULT_THEME constant)
+
+2. **useStorefrontBuilder.ts** - Custom hook encapsulating all state management:
+   - UI state (tabs, device preview, zoom, panel visibility)
+   - Builder state (layout config, theme config, section selection, undo/redo history)
+   - Store creation state (dialog, slug validation, credit-gated action)
+   - All mutations (create, save draft, publish, unpublish)
+   - Section actions (add, remove, duplicate, toggle visibility, reorder, update)
+
+3. **SortableSectionItem.tsx** - Extracted draggable section list item component
+
+4. **BuilderHeader.tsx** - Top toolbar (back button, device preview toggles,
+   undo/redo, zoom controls, store status indicator, action buttons)
+
+5. **BuilderLeftPanel.tsx** - Left sidebar with Sections/Theme/Templates tabs,
+   including DnD context for section reordering
+
+6. **BuilderPreview.tsx** - Center preview area with device-responsive scaling
+   and live section rendering
+
+7. **BuilderPropertyEditor.tsx** - Right sidebar property editor with
+   content/styles accordion panels
+
+8. **BuilderCreateStoreDialog.tsx** - Store creation dialog with slug
+   validation and credit cost display
+
+9. **index.ts** - Barrel export for all builder sub-modules
+
+The main `StorefrontBuilder.tsx` is now a ~145-line orchestrator that composes
+sub-components with shared state from useStorefrontBuilder hook.
+
+### Additional fix:
+- Added `sanitizeBasicHtml` export alias in `src/lib/utils/sanitize.ts` to fix
+  a pre-existing build error from HeroSection importing a non-existent export.
+
+### Verification:
+- [x] Build passes (npm run build - 6540 modules transformed, no errors)
+- [x] All 14 existing tests pass (StorefrontBuilder.test.tsx)
+- [x] Existing API preserved (named + default exports, lazy loading compatible)
+- [x] No behavioral changes - pure structural refactoring
+
+### Files Changed:
+- `src/pages/admin/storefront/StorefrontBuilder.tsx` (rewritten as orchestrator)
+- `src/pages/admin/storefront/builder/storefront-builder.config.ts` (new)
+- `src/pages/admin/storefront/builder/useStorefrontBuilder.ts` (new)
+- `src/pages/admin/storefront/builder/SortableSectionItem.tsx` (new)
+- `src/pages/admin/storefront/builder/BuilderHeader.tsx` (new)
+- `src/pages/admin/storefront/builder/BuilderLeftPanel.tsx` (new)
+- `src/pages/admin/storefront/builder/BuilderPreview.tsx` (new)
+- `src/pages/admin/storefront/builder/BuilderPropertyEditor.tsx` (new)
+- `src/pages/admin/storefront/builder/BuilderCreateStoreDialog.tsx` (new)
+- `src/pages/admin/storefront/builder/index.ts` (new)
+- `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export alias)
