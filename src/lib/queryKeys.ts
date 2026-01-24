@@ -484,4 +484,18 @@ export const queryKeys = {
     mode: (tenantId?: string) => ['collection-mode', tenantId] as const,
     activities: (clientId: string) => ['collection-activities', clientId] as const,
   },
+
+  // Activity Feed
+  activityFeed: {
+    all: ['activity-feed'] as const,
+    lists: () => [...queryKeys.activityFeed.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) =>
+      [...queryKeys.activityFeed.lists(), filters] as const,
+    byTenant: (tenantId: string) =>
+      [...queryKeys.activityFeed.all, 'tenant', tenantId] as const,
+    byCategory: (tenantId: string, category: string) =>
+      [...queryKeys.activityFeed.byTenant(tenantId), 'category', category] as const,
+    byUser: (tenantId: string, userId: string) =>
+      [...queryKeys.activityFeed.byTenant(tenantId), 'user', userId] as const,
+  },
 } as const;

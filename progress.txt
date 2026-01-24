@@ -428,3 +428,94 @@ sub-components with shared state from useStorefrontBuilder hook.
 - `src/pages/admin/storefront/builder/BuilderCreateStoreDialog.tsx` (new)
 - `src/pages/admin/storefront/builder/index.ts` (new)
 - `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export alias)
+
+---
+
+## Task: Build Unified Activity Feed with activity_log table, useActivityFeed hook, and filterable timeline component
+
+### What was done:
+
+1. **Created migration `supabase/migrations/20260123100000_enhance_activity_logs_unified_feed.sql`**:
+   - Added `category` column (order, inventory, user, system, payment, settings, crm, delivery)
+   - Added `severity` column (info, warning, error, success)
+   - Added `user_email` column for display without joins
+   - Added `description` column for human-readable context
+   - Added `tenant_id`, `resource`, `resource_id`, `metadata` columns (IF NOT EXISTS)
+   - Created composite indexes for tenant+category+created_at filtering
+   - Added RLS policy for tenant member access
+   - Created `log_unified_activity()` security definer function with `SET search_path = public`
+   - Function auto-resolves user email from auth.uid()
+   - Granted EXECUTE to authenticated and service_role
+
+2. **Created `src/hooks/useActivityFeed.ts`** - TanStack Query hook providing:
+   - Filtered, paginated access to the activity_logs table
+   - Filters: category, severity, date range, search term, user
+   - Pagination: offset-based with page tracking
+   - `logActivity` mutation calling `log_unified_activity` RPC
+   - Auto-invalidates query cache on new entries
+   - Proper error handling with logger
+   - Graceful fallback when table doesn't exist (code 42P01)
+   - TypeScript interfaces for ActivityLogEntry, ActivityFeedFilters
+   - Exports: ActivityCategory, ActivitySeverity types
+
+3. **Created `src/components/admin/ActivityFeedTimeline.tsx`** - Timeline component:
+   - Groups entries by date with date headers
+   - Visual timeline with left border and category-colored dots
+   - Category-specific icons (ShoppingCart, Package, User, CreditCard, etc.)
+   - Severity badges (Info, Success, Warning, Error)
+   - Relative timestamps via formatRelativeTime utility
+   - User email and resource info display
+   - Loading skeleton state
+   - Empty state with helpful messaging
+   - Hover effects and smooth transitions
+   - ScrollArea with configurable max height
+
+4. **Created `src/components/admin/ActivityFeedFilters.tsx`** - Filter controls:
+   - Search input (searches action, description, user_email)
+   - Category dropdown (8 categories + All)
+   - Severity dropdown (4 levels + All)
+   - Date range inputs (start/end)
+   - Clear filters button (shown only when filters active)
+   - Refresh button with loading spinner
+   - Entry count display with "(filtered)" indicator
+
+5. **Updated `src/pages/admin/ActivityLogs.tsx`** - Rewrote page to use:
+   - `useActivityFeed` hook for data fetching
+   - `ActivityFeedTimeline` component for display
+   - `ActivityFeedFilters` component for filtering
+   - Pagination controls (Previous/Next with page indicator)
+   - Named export (per project convention)
+
+6. **Updated `src/pages/tenant-admin/ActivityLogsPage.tsx`**:
+   - Changed to named export
+   - Imports from named export of ActivityLogs
+
+7. **Updated `src/App.tsx` and `src/pages/admin/hubs/OperationsHubPage.tsx`**:
+   - Updated lazy imports to use `.then(m => ({ default: m.ActivityLogsPage }))` pattern
+
+8. **Updated `src/lib/queryKeys.ts`**:
+   - Added `activityFeed` section with keys: all, lists, list, byTenant, byCategory, byUser
+
+### Acceptance Criteria Met:
+- [x] activity_logs table enhanced with category, severity, description, user_email columns
+- [x] RLS policies protect tenant-isolated data
+- [x] useActivityFeed hook provides filtered, paginated access with TanStack Query
+- [x] logActivity mutation enables creating new entries via RPC
+- [x] ActivityFeedTimeline displays entries in chronological timeline grouped by date
+- [x] ActivityFeedFilters provides category, severity, date range, and search filtering
+- [x] Pagination supports navigating large activity histories
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `supabase/migrations/20260123100000_enhance_activity_logs_unified_feed.sql` (new)
+- `src/hooks/useActivityFeed.ts` (new)
+- `src/components/admin/ActivityFeedTimeline.tsx` (new)
+- `src/components/admin/ActivityFeedFilters.tsx` (new)
+- `src/pages/admin/ActivityLogs.tsx` (rewritten)
+- `src/pages/tenant-admin/ActivityLogsPage.tsx` (updated to named export)
+- `src/App.tsx` (updated lazy import)
+- `src/pages/admin/hubs/OperationsHubPage.tsx` (updated lazy import)
+- `src/lib/queryKeys.ts` (added activityFeed keys)
+
+### Build Status:
+- `npm run build` passes with no errors

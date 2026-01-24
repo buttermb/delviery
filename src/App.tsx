@@ -319,7 +319,7 @@ const SmartTVDashboard = lazy(() => import("./pages/admin/SmartTVDashboard"));
 
 const MarketingHubPage = lazy(() => import("./pages/admin/hubs/MarketingHubPage"));
 const RoleManagement = lazy(() => import("./pages/admin/RoleManagement"));
-const ActivityLogsPage = lazy(() => import("./pages/tenant-admin/ActivityLogsPage"));
+const ActivityLogsPage = lazy(() => import("./pages/tenant-admin/ActivityLogsPage").then(m => ({ default: m.ActivityLogsPage })));
 const LocationAnalyticsPage = lazy(() => import("./pages/tenant-admin/LocationAnalyticsPage"));
 const BulkOperationsPage = lazy(() => import("./pages/tenant-admin/BulkOperationsPage"));
 const APIAccessPage = lazy(() => import("./pages/tenant-admin/APIAccessPage"));
