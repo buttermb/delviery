@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { logger } from "@/lib/logger";
+import { queryKeys } from "@/lib/queryKeys";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { format } from "date-fns";
@@ -143,6 +144,8 @@ export default function ProductSyncPage() {
                 toast.success("Product synced successfully");
                 queryClient.invalidateQueries({ queryKey: ['products-sync'] });
                 queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] });
+                // Invalidate storefront product caches for instant sync
+                queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
             } else {
                 toast.error(`Sync failed: ${(error as Error).message}`);
             }

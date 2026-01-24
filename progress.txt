@@ -545,3 +545,78 @@ Enhanced `src/hooks/useInventorySync.ts` with two new mutation hooks that handle
 
 ### Build Status:
 - `npm run build` passes with no errors
+
+---
+
+## Task: Sync Admin Product Changes to Storefront Instantly
+
+### What was done:
+
+1. **Extended `src/lib/queryKeys.ts`** with shared storefront product query keys:
+   - Added `products.byTenant(tenantId)` for tenant-scoped admin product queries
+   - Added `shopProducts` namespace with: `all`, `list(storeId)`, `detail(storeId, productId)`, `detailBySlug(storeId, slug)`, `categories(storeId)`, `related(storeId, category)`, `carousels(storeId)`
+   - These keys are now the single source of truth for both admin and storefront product queries
+
+2. **Created `src/hooks/useProductMutations.ts`** - Centralized cache invalidation hook:
+   - `invalidateProductCaches(options)` invalidates all product-related caches across the app
+   - Invalidates admin product queries (`products.all`, `products.byTenant`)
+   - Invalidates storefront queries (`shopProducts.all`, `shopProducts.list`, `shopProducts.detail`, `shopProducts.carousels`, `shopProducts.categories`, `shopProducts.related`)
+   - Invalidates related systems: marketplace-product-settings, products-sync, marketplace-product-stats, POS products, inventory, CRM products
+   - Accepts optional `tenantId`, `storeId`, `productId`, `category` for targeted invalidation
+
+3. **Refactored `src/pages/admin/ProductManagement.tsx`**:
+   - Replaced manual `loadProducts()` + `useState` + `useEffect` pattern with TanStack Query (`useQuery`)
+   - Products now fetched via `queryKeys.products.byTenant(tenant.id)` for proper cache management
+   - Added `invalidateProductCaches()` calls after every mutation:
+     - Product create (insert)
+     - Product update (optimistic lock)
+     - Product delete (single)
+     - Batch delete (multiple)
+     - Inline field edits (name, price, quantity)
+     - Bulk price update
+     - Bulk category update
+     - Publish to storefront
+   - All mutations pass `tenantId`, `storeId`, `productId`, and `category` for targeted invalidation
+
+4. **Updated `src/pages/shop/ProductCatalogPage.tsx`**:
+   - Replaced hardcoded `['shop-products', store?.id]` with `queryKeys.shopProducts.list(store?.id)`
+   - Replaced hardcoded `['shop-categories', store?.id]` with `queryKeys.shopProducts.categories(store?.id)`
+
+5. **Updated `src/pages/shop/ProductDetailPage.tsx`**:
+   - Replaced hardcoded `['shop-product', store?.id, identifier, isSlugBased]` with `queryKeys.shopProducts.detail()`/`detailBySlug()`
+   - Replaced hardcoded `['related-products', store?.id, product?.category]` with `queryKeys.shopProducts.related()`
+
+6. **Updated `src/components/shop/StorefrontDynamicCarousels.tsx`**:
+   - Replaced hardcoded `['marketplace-products-map', storeId]` with `queryKeys.shopProducts.carousels(storeId)`
+
+7. **Updated `src/pages/admin/storefront/StorefrontProducts.tsx`**:
+   - Added `queryKeys.shopProducts.all` invalidation to all 4 mutations (visibility toggle, price update, bulk visibility, display order)
+   - Storefront now reflects visibility/pricing changes instantly
+
+8. **Updated `src/pages/admin/marketplace/ProductSyncPage.tsx`**:
+   - Added `queryKeys.shopProducts.all` invalidation after successful product sync
+
+### How It Works:
+- Admin and storefront now share the same TanStack Query cache (they're in the same React app with one `QueryClient`)
+- When admin creates/updates/deletes a product, `invalidateProductCaches()` marks storefront query caches as stale
+- TanStack Query automatically refetches stale queries when their components are mounted
+- If the storefront is open in the same browser session, products update instantly without page reload
+- If the storefront is in a different browser, it picks up changes on next navigation (normal TanStack Query behavior)
+
+### Acceptance Criteria Met:
+- [x] Shared query keys between admin and storefront (via `queryKeys.shopProducts`)
+- [x] Admin product mutations invalidate storefront caches instantly
+- [x] Storefront uses the shared query key factory (not hardcoded strings)
+- [x] All mutation paths covered: create, update, delete, batch delete, inline edit, bulk edit, publish, sync
+- [x] StorefrontProducts admin page visibility/pricing changes also sync instantly
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/lib/queryKeys.ts` (extended with `shopProducts` namespace and `products.byTenant`)
+- `src/hooks/useProductMutations.ts` (new - centralized cache invalidation hook)
+- `src/pages/admin/ProductManagement.tsx` (refactored to TanStack Query + cache invalidation)
+- `src/pages/shop/ProductCatalogPage.tsx` (uses shared query keys)
+- `src/pages/shop/ProductDetailPage.tsx` (uses shared query keys)
+- `src/components/shop/StorefrontDynamicCarousels.tsx` (uses shared query keys)
+- `src/pages/admin/storefront/StorefrontProducts.tsx` (added storefront cache invalidation)
+- `src/pages/admin/marketplace/ProductSyncPage.tsx` (added storefront cache invalidation)

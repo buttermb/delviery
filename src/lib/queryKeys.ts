@@ -11,14 +11,29 @@
  */
 
 export const queryKeys = {
-  // Products
+  // Products (admin)
   products: {
     all: ['products'] as const,
     lists: () => [...queryKeys.products.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.products.lists(), filters] as const,
     details: () => [...queryKeys.products.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.products.details(), id] as const,
+    byTenant: (tenantId: string) => [...queryKeys.products.all, 'tenant', tenantId] as const,
+  },
+
+  // Storefront products (shop-facing)
+  shopProducts: {
+    all: ['shop-products'] as const,
+    list: (storeId?: string) => [...queryKeys.shopProducts.all, storeId] as const,
+    detail: (storeId?: string, productId?: string) =>
+      ['shop-product', storeId, productId] as const,
+    detailBySlug: (storeId?: string, slug?: string) =>
+      ['shop-product', storeId, slug, true] as const,
+    categories: (storeId?: string) => ['shop-categories', storeId] as const,
+    related: (storeId?: string, category?: string) =>
+      ['related-products', storeId, category] as const,
+    carousels: (storeId?: string) => ['marketplace-products-map', storeId] as const,
   },
 
   // Orders

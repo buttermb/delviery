@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,8 @@ import { useOptimisticList } from "@/hooks/useOptimisticUpdate";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useOptimisticLock } from "@/hooks/useOptimisticLock";
+import { useProductMutations } from "@/hooks/useProductMutations";
+import { queryKeys } from "@/lib/queryKeys";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -104,6 +106,8 @@ export default function ProductManagement() {
   const [searchParams] = useSearchParams();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
+  const queryClient = useQueryClient();
+  const { invalidateProductCaches } = useProductMutations();
 
   // Read URL search params for filtering
   const urlSearch = searchParams.get('search') || '';
@@ -119,7 +123,7 @@ export default function ProductManagement() {
     setItems: setProducts,
   } = useOptimisticList<Product>([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState(urlSearch);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -219,37 +223,47 @@ export default function ProductManagement() {
     enabled: !!tenant?.id,
   });
 
-  // Load products
-  const loadProducts = async () => {
-    if (!tenant?.id) {
-      toast.error('Tenant not found. Please refresh.');
-      setLoading(false);
-      return;
-    }
-    try {
-      setLoading(true);
+  // Load products via TanStack Query for cache-based instant sync
+  const { data: queryProducts, isLoading: productsLoading, error: productsError, refetch: refetchProducts } = useQuery({
+    queryKey: queryKeys.products.byTenant(tenant?.id || ''),
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('tenant_id', tenant.id)
+        .eq('tenant_id', tenant!.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProducts(data || []);
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      return data || [];
+    },
+    enabled: !!tenant?.id,
+  });
+
+  // Sync query data into optimistic list state
+  useEffect(() => {
+    if (queryProducts) {
+      setProducts(queryProducts);
+    }
+  }, [queryProducts, setProducts]);
+
+  // Handle query errors
+  useEffect(() => {
+    if (productsError) {
+      const errorMessage = productsError instanceof Error ? productsError.message : 'Unknown error';
       logger.error('Error loading products:', { error: errorMessage });
       toast.error('Failed to load products');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [productsError]);
 
+  // Sync loading state
   useEffect(() => {
-    if (tenant?.id) {
-      loadProducts();
-    }
-  }, [tenant?.id]);
+    setLoading(productsLoading);
+  }, [productsLoading]);
+
+  // Helper to reload products (triggers refetch + cache invalidation)
+  const loadProducts = useCallback(async () => {
+    await refetchProducts();
+  }, [refetchProducts]);
 
   // Derived state for categories
   const categories = useMemo(() => {
@@ -444,12 +458,28 @@ export default function ProductManagement() {
         toast.success("Product updated");
         // Update state with new version
         setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...productData, version: expectedVersion + 1 } : p));
+
+        // Invalidate all product caches so storefront reflects changes instantly
+        invalidateProductCaches({
+          tenantId: tenant.id,
+          storeId: store?.id || undefined,
+          productId: editingProduct.id,
+          category: productData.category || undefined,
+        });
       } else {
         const { data: newProduct, error } = await supabase.from('products').insert(productData).select().single();
         if (error) throw error;
         toast.success("Product created");
         // Manually update state
         setProducts(prev => [newProduct, ...prev]);
+
+        // Invalidate all product caches so storefront reflects changes instantly
+        invalidateProductCaches({
+          tenantId: tenant.id,
+          storeId: store?.id || undefined,
+          productId: newProduct.id,
+          category: productData.category || undefined,
+        });
       }
       setIsDialogOpen(false);
       setEditingProduct(null);
@@ -498,11 +528,21 @@ export default function ProductManagement() {
         return;
       }
 
+      const deletedCategory = productToDelete.category;
       const { error } = await supabase.from('products').delete().eq('id', productToDelete.id).eq('tenant_id', tenant.id);
       if (error) throw error;
 
       setProducts(prev => prev.filter(p => p.id !== productToDelete.id));
       toast.success("Product deleted");
+
+      // Invalidate all product caches so storefront reflects deletion instantly
+      invalidateProductCaches({
+        tenantId: tenant.id,
+        storeId: store?.id || undefined,
+        productId: productToDelete.id,
+        category: deletedCategory || undefined,
+      });
+
       setDeleteDialogOpen(false);
       setProductToDelete(null);
     } catch (e: any) {
@@ -597,6 +637,13 @@ export default function ProductManagement() {
           }
 
           setProducts(prev => prev.filter(p => !deletableIds.includes(p.id)));
+
+          // Invalidate all product caches so storefront reflects batch deletion
+          invalidateProductCaches({
+            tenantId: tenant.id,
+            storeId: store?.id || undefined,
+          });
+
           handleCombinedBatchClear();
           closeBatchDeleteDialog();
         } catch (err: any) {
@@ -618,15 +665,22 @@ export default function ProductManagement() {
     setBulkPriceEditorOpen(true);
   };
 
-  const handleBulkPriceUpdate = async (updates: any) => {
-    // Logic for bulk update would go here or inside the component
-    // Since component handles it, we just refresh
+  const handleBulkPriceUpdate = async (updates: unknown) => {
+    // Component handles the DB update; we refresh and invalidate caches
     await loadProducts();
+    invalidateProductCaches({
+      tenantId: tenant?.id || undefined,
+      storeId: store?.id || undefined,
+    });
     setBulkPriceEditorOpen(false);
   }
 
   const handleBulkCategoryUpdate = async () => {
     await loadProducts();
+    invalidateProductCaches({
+      tenantId: tenant?.id || undefined,
+      storeId: store?.id || undefined,
+    });
     setBatchCategoryEditorOpen(false);
   }
 
@@ -662,6 +716,12 @@ export default function ProductManagement() {
 
       if ((data as any)?.success) {
         toast.success("Product published to storefront");
+        // Invalidate storefront caches so the new product appears instantly
+        invalidateProductCaches({
+          tenantId: tenant?.id || undefined,
+          storeId: store?.id || undefined,
+          productId,
+        });
       } else {
         toast.error((data as any)?.error || "Failed to publish product");
       }
@@ -716,6 +776,13 @@ export default function ProductManagement() {
         prev.map((p) => (p.id === productId ? { ...p, [field]: updateValue } : p))
       );
       toast.success('Updated!');
+
+      // Invalidate storefront caches for instant sync
+      invalidateProductCaches({
+        tenantId: tenant.id,
+        storeId: store?.id || undefined,
+        productId,
+      });
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Update failed';
       toast.error(errorMessage);
