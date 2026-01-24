@@ -4674,3 +4674,50 @@ Created the `useCreditPromo` hook that provides promo code validation and discou
 - [x] TypeScript compiles with no errors (`npx tsc --noEmit` passes)
 - [x] ESLint passes with no errors
 - [x] Follows project conventions: named exports, `@/` imports, `logger` usage, `useTenantAdminAuth` for tenant context
+
+---
+
+## Task: Create src/hooks/useCreditSubscription.ts hook
+
+### What was done:
+
+1. **Created `src/hooks/useCreditSubscription.ts`** - Full subscription management hook that:
+   - **Subscription State**: Fetches current subscription via `subscriptions` table (joined through `accounts` by `tenant_id`)
+   - **Available Plans**: Fetches active plans from `subscription_plans` table
+   - **Status Flags**: Derives `isActive`, `isPaused`, `isCancelled`, `isTrial`, `isPastDue`, `isFreeTier` from subscription or tenant fields
+   - **Renewal Date**: Exposes `renewalDate` from `current_period_end`
+   - **Status Label**: Human-readable label via `getSubscriptionStatusLabel()`
+   - **Credit Period Info**: Calculates `creditsUsedThisPeriod`, `creditsRemainingThisPeriod`, `daysRemainingInPeriod`, `dailyBurnRate`, `projectedEndOfPeriodBalance` using `tenant_credits` balance and period dates
+   - **Subscribe Mutation**: Creates new subscription record, updates tenant `subscription_plan`/`subscription_status`/`is_free_tier`, logs `subscription_events`
+   - **Cancel Mutation**: Sets status to `cancelled`, records `cancelled_at` and `cancel_at` (end of period), updates tenant cancellation fields
+   - **Pause Mutation**: Sets status to `suspended`, stores previous status in metadata for restore
+   - **Resume Mutation**: Restores previous status from metadata, clears pause metadata
+   - **Upgrade Mutation**: Changes `plan_id`, optionally resets billing period (immediate), updates tenant plan
+   - **Downgrade Mutation**: For immediate: changes plan_id directly; for deferred: stores `downgrade_pending` in metadata with effective date
+   - **Event Logging**: All mutations log to `subscription_events` table with relevant metadata
+   - **Error Handling**: try-catch with `logger.error()` and `toast.error()` for user feedback
+   - **Mutation States**: Exposes `isSubscribing`, `isCancelling`, `isPausing`, `isResuming`, `isChangingPlan` booleans
+
+2. **Added `subscriptions` query keys** in `src/lib/queryKeys.ts`:
+   - `subscriptions.all` - base key
+   - `subscriptions.byTenant(tenantId)` - tenant-scoped subscription
+   - `subscriptions.plans()` - available plans
+
+3. **Added barrel export** in `src/hooks/index.ts`:
+   - `export { useCreditSubscription } from './useCreditSubscription'`
+
+### Key Design Decisions:
+- Uses `accounts` table as bridge between `tenant_id` and `subscriptions` (which reference `account_id`)
+- Plan credits per period defined as constants matching existing plan tiers (Starter: 500, Professional: 10000, Enterprise: 50000)
+- Downgrades are deferred to period-end by default (industry-standard billing pattern); upgrades are immediate by default
+- Reuses existing `subscriptionPlans.ts` and `subscriptionStatus.ts` utility types
+- Follows existing hook patterns from `useCredits.ts` (TanStack Query, toast feedback, logger, named exports)
+
+### Verification Results:
+- [x] `npm run build` - PASSES (no TypeScript errors)
+- [x] `npx eslint src/hooks/useCreditSubscription.ts` - PASSES (no lint errors)
+
+### Files Changed:
+- `src/hooks/useCreditSubscription.ts` (new - main hook implementation)
+- `src/hooks/index.ts` (added export)
+- `src/lib/queryKeys.ts` (added subscriptions query keys)
