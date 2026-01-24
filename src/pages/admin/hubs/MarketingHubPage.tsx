@@ -54,7 +54,7 @@ export default function MarketingHubPage() {
     }, [setSearchParams]);
 
     return (
-        <div className="min-h-dvh bg-background">
+        <div className="space-y-0">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header - Sticky Tabs */}
                 <div className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur-sm px-4 pt-4 pb-0">
