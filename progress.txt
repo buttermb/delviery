@@ -568,6 +568,68 @@
 
 ---
 
+## Task: Implement Customer Tags System
+
+### What was done:
+
+1. **Created database migration** `supabase/migrations/20260123000001_customer_tags_system.sql`:
+   - `tags` table: id, tenant_id, name, color, description, created_at, updated_at
+   - `customer_tags` junction table: id, tenant_id, contact_id, tag_id, created_at
+   - UNIQUE constraint on (tenant_id, name) for tags
+   - UNIQUE constraint on (contact_id, tag_id) for customer_tags
+   - Indexes on tenant_id, contact_id, tag_id for query performance
+   - RLS enabled on both tables with tenant isolation policies (select, insert, update, delete)
+   - Updated_at trigger for tags table (SECURITY DEFINER with SET search_path = public)
+
+2. **Created `src/hooks/useCustomerTags.ts`** - Complete hook module with:
+   - `useTags()` - Fetch all tags for the current tenant
+   - `useContactTags(contactId)` - Fetch tags assigned to a specific contact
+   - `useCreateTag()` - Create a new tag with name, color, description
+   - `useUpdateTag()` - Update an existing tag's name, color, or description
+   - `useDeleteTag()` - Delete a tag (cascades to customer_tags)
+   - `useAssignTag()` - Assign a tag to a contact
+   - `useRemoveTag()` - Remove a tag from a contact
+   - `useBatchAssignTags()` - Batch assign multiple tags to multiple contacts
+   - All hooks use `useTenantAdminAuth()` for tenant context
+   - All queries filter by `tenant_id`
+   - Proper cache invalidation via `queryKeys.tags` and `queryKeys.customerTags`
+   - Error logging via `logger`
+   - TypeScript interfaces for Tag, CustomerTag, CreateTagInput, UpdateTagInput
+
+3. **Created `src/components/admin/TagManager.tsx`** - Reusable tag management UI:
+   - Displays assigned tags as color-coded badges
+   - Remove tags with X button on each badge
+   - Popover for adding tags (shows available unassigned tags)
+   - Inline new tag creation with color picker (9 preset colors)
+   - Creates and assigns tag in one action
+   - Loading states and disabled states during mutations
+   - `readOnly` prop for view-only mode
+   - Keyboard support (Enter to create)
+
+4. **Updated `src/lib/queryKeys.ts`**:
+   - Added `tags` query key factory (all, lists, list, details, detail)
+   - Added `customerTags` query key factory (all, byContact, byTag)
+
+### Acceptance Criteria Met:
+- [x] `tags` table created with proper tenant isolation
+- [x] `customer_tags` junction table with foreign keys to contacts and tags
+- [x] RLS policies enforce tenant isolation on both tables
+- [x] `useCustomerTags` hook provides full CRUD + assign/remove/batch operations
+- [x] `TagManager` component renders tags, allows add/remove, and create inline
+- [x] Query keys integrated into existing queryKeys factory
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `supabase/migrations/20260123000001_customer_tags_system.sql` (new)
+- `src/hooks/useCustomerTags.ts` (new)
+- `src/components/admin/TagManager.tsx` (new)
+- `src/lib/queryKeys.ts` (modified - added tags and customerTags keys)
+
+### Build Status:
+- `npm run build` passes with no errors
+
+---
+
 ## Task: Refactor StorefrontBuilder for Modularity
 
 ### What was done:
