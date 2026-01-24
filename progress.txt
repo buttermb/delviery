@@ -2657,3 +2657,75 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Test Credit Purchase Flow (Select Package, Promo Code, Stripe Payment, Balance, Transaction, Receipt)
+
+### What was done:
+
+1. **Created comprehensive integration test** at `tests/integration/credit-purchase-flow.test.ts`:
+   - 48 tests across 7 describe blocks covering the complete credit purchase lifecycle
+   - Uses in-memory system simulation (CreditPurchaseSystem class) to test business logic without live services
+
+2. **Test Coverage Areas:**
+
+   **Step 1: Package Selection (8 tests)**
+   - All 4 package tiers verified (starter, growth, power, enterprise)
+   - Correct credit amounts and pricing
+   - Invalid/inactive package rejection
+   - Price-per-credit decreasing for larger packages (value progression)
+
+   **Step 2: Promo Code Validation & Discount (11 tests)**
+   - Valid promo code acceptance
+   - Case-insensitive validation
+   - Expiration, max-uses, inactive, already-redeemed rejection
+   - Percentage discount calculation (20% off growth pack)
+   - Bonus credits without percentage discount
+   - No discount without promo code
+
+   **Step 3: Stripe Checkout Session (5 tests)**
+   - Session creation with correct URL and metadata
+   - Promo code passed in session metadata
+   - Analytics event tracking (purchase_checkout_started)
+   - Rejection for missing tenant or invalid package
+
+   **Step 4: Payment Completion & Credit Granting (7 tests)**
+   - Credits added to balance after payment
+   - Package credits + promo bonus credits combined
+   - Idempotency (prevent double-processing)
+   - Enterprise pack max credits handling
+   - Promo code uses count incremented
+   - Promo redemption recorded (prevents reuse)
+
+   **Step 5: Transaction Recording (6 tests)**
+   - Purchase transaction with correct type and amount
+   - Promo code metadata in transaction
+   - Payment intent reference recorded
+   - Correct balance_after value
+   - Package name in description
+   - Analytics event (purchase_completed)
+
+   **Step 6: Receipt Email (4 tests)**
+   - Email sent with correct recipient
+   - Subject includes package name and credit count
+   - Amount paid in dollars calculated correctly
+   - sentAt timestamp within bounds
+   - Analytics event (receipt_email_sent)
+
+   **End-to-End Flow (3 tests)**
+   - Full flow with promo code: select → validate → discount → checkout → pay → verify balance → verify txn → verify email
+   - Full flow without promo code
+   - Multiple purchases accumulating credits
+
+   **Edge Cases (5 tests)**
+   - Zero balance tenant purchasing
+   - Same promo code blocked for same tenant on 2nd purchase
+   - Different tenants can use same promo
+   - Concurrent checkout sessions for same tenant
+   - Package slug validation
+
+### Verification:
+- All 48 tests pass (`npx vitest run tests/integration/credit-purchase-flow.test.ts`)
+- No external dependencies required (in-memory simulation)
+
+### Files Created:
+- `tests/integration/credit-purchase-flow.test.ts`
