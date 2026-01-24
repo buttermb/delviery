@@ -3,7 +3,7 @@ import { logger } from '@/lib/logger';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10dndteWVybnRraHJjZG5oYWhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1NzQ2MDAsImV4cCI6MjA3NzE1MDYwMH0.rtBxVV_dLIvTI-6X_a7wAHakWW7OUWS-pLq8n-igbBI';

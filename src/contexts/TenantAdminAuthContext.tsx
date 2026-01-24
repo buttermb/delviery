@@ -114,7 +114,7 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Validate environment variables
 const validateEnvironment = (): { valid: boolean; error?: string } => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
   if (!supabaseUrl) {
     return { valid: false, error: 'Missing VITE_SUPABASE_URL environment variable' };
@@ -447,7 +447,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
         // PRIORITY 1: Try cookie-based verification first (most secure)
         try {
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
           // Check if token is expired before attempting verification
           let tokenToUse = storedToken;
@@ -673,7 +673,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
         // Verify authentication via API (cookies sent automatically)
         // This is now optional and runs in background - if it fails, we already have localStorage auth
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
         try {
           const { response: verifyResponse } = await resilientFetch(
@@ -825,7 +825,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       }
 
       try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
         // STEP 3: Attempt to refresh the session via edge function
         const { response } = await resilientFetch(
@@ -936,7 +936,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         throw new Error(envCheck.error || 'Environment configuration error');
       }
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
       // Check if token will expire soon (within 60 seconds)
       const tokenExpiration = getTokenExpiration(tokenToVerify);
@@ -1194,7 +1194,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const url = `${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`;
 
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
