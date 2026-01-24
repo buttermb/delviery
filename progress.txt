@@ -2657,3 +2657,32 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create src/components/auth/SessionCard.tsx
+
+### What was done:
+
+Created `src/components/auth/SessionCard.tsx` - a component that displays a single user session with:
+
+1. **Device icon** - Uses lucide-react icons (Monitor, Smartphone, Tablet) based on `device_type` field
+2. **Browser and OS info** - Displays browser name and OS (e.g., "Chrome on Windows")
+3. **Location** - Shows city and country with a MapPin icon when available
+4. **Last active relative time** - Uses `date-fns` `formatDistanceToNow` for human-readable time (e.g., "5 minutes ago")
+5. **Current session badge** - Shows a "Current" badge and highlights the card with primary border/background when `is_current` is true
+6. **Revoke button** - Only shown for non-current sessions, with:
+   - Confirmation AlertDialog before revoking
+   - Loading state (spinner) during the revoke operation
+   - Disabled state while revoking
+   - Destructive styling for the confirm action
+
+### Exports:
+- `SessionCard` (named export) - The main component
+- `SessionInfo` (interface export) - The session data interface for consumers
+
+### Props interface:
+- `session: SessionInfo` - Session data including id, device_type, browser, os, location, last_activity_at, is_current
+- `onRevoke: (sessionId: string) => Promise<void>` - Async callback for session revocation
+
+### Build verification:
+- TypeScript strict mode passes with no errors
+- Production build completes successfully
