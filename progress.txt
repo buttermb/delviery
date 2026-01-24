@@ -1,3 +1,29 @@
+## Task: Create supabase/functions/auth-logout Edge Function
+
+### What was done:
+
+1. **Created `supabase/functions/auth-logout/index.ts`** - Edge function that:
+   - Accepts an optional `session_token` in the POST body or uses the `Authorization` header
+   - Uses Zod validation for the optional request body schema
+   - Determines user identity from auth header JWT first, falls back to session_token lookup
+   - Marks `user_sessions` row as `is_active = false` (specific session if token provided, all sessions otherwise)
+   - Logs `logout` event to `auth_audit_log` with IP, user agent, and metadata
+   - Calls `supabase.auth.signOut()` when auth header is present
+   - Handles already-logged-out sessions gracefully (returns success with descriptive message)
+   - Handles missing/invalid auth context gracefully (returns success with "No active session found")
+   - Follows FloraIQ patterns: imports from `_shared/deps.ts`, uses `withZenProtection`, CORS handling
+   - Uses service role key for admin DB operations, anon key for user-scoped auth operations
+   - Proper error handling with typed catch block
+
+### Key design decisions:
+- When `session_token` is provided: deactivates only that specific session
+- When only auth header is provided: deactivates all active sessions for the user
+- When session is already inactive: returns 200 with "Session already logged out" message
+- When no user identity can be determined: returns 200 with "No active session found" (graceful for already-logged-out cases)
+- Sign out from Supabase Auth only when auth header is available (can't sign out without a valid JWT)
+
+---
+
 ## Task: Create Unified Admin Dashboard Hub with 5 Stat Cards
 
 ### What was done:
