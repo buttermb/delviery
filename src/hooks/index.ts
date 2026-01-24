@@ -18,6 +18,9 @@ export { useFeatureTracking } from './useFeatureTracking';
 export { useTenantLimits } from './useTenantLimits';
 export { usePermissions } from './usePermissions';
 
+// Realtime Hooks
+export { useRealtimeSubscription } from './useRealtimeSubscription';
+
 // Toast Hook
 export { useToast, toast } from './use-toast';
 
