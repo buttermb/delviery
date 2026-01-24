@@ -486,3 +486,62 @@ sub-components with shared state from useStorefrontBuilder hook.
 - `src/pages/admin/storefront/builder/BuilderCreateStoreDialog.tsx` (new)
 - `src/pages/admin/storefront/builder/index.ts` (new)
 - `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export alias)
+
+---
+
+## Task: Build useInventorySync Hook with Optimistic Updates
+
+### What was done:
+
+Enhanced `src/hooks/useInventorySync.ts` with two new mutation hooks that handle inventory synchronization when order status changes:
+
+1. **`useConfirmOrderInventory()`** - Decrements inventory when an order is confirmed:
+   - Calls `decrement_stock` RPC for each order item
+   - Optimistically updates both product detail and list caches immediately
+   - Cancels in-flight queries to prevent cache overwrites during optimistic update
+   - Snapshots previous cache state for rollback context
+   - On error: rolls back all cache entries to previous state, invalidates queries, shows error toast
+   - On success: invalidates product/inventory queries for freshness, shows success toast
+
+2. **`useCancelOrderInventory()`** - Increments (restores) inventory when an order is cancelled:
+   - Calls `increment_stock` RPC for each order item
+   - Optimistically updates both product detail and list caches immediately
+   - Same cancel/snapshot/rollback pattern as confirm hook
+   - On error: rolls back all cache entries, invalidates queries, shows error toast
+   - On success: invalidates product/inventory queries for freshness, shows success toast
+
+3. **Shared types exported:**
+   - `OrderItem` interface (`product_id`, `quantity`, `product_name?`)
+   - Both hooks accept `{ orderId, items: OrderItem[] }` input
+
+### Optimistic Update Pattern:
+- Uses TanStack Query's `onMutate` → `onError` → `onSuccess` lifecycle
+- `onMutate`: Cancels queries, snapshots cache, optimistically updates `stock_quantity` and `available_quantity`
+- `onError`: Restores snapshot data to product detail caches, invalidates list caches
+- `onSuccess`: Invalidates all product/inventory queries to ensure eventual consistency
+- Updates both individual product detail caches AND product list caches for complete UI consistency
+
+### Key Design Decisions:
+- Leverages existing `decrement_stock`/`increment_stock` RPCs (same as `availabilityService.ts`)
+- Uses `useTenantAdminAuth()` for tenant context (multi-tenant isolation)
+- Uses `queryKeys` factory from `@/lib/queryKeys` for consistent cache management
+- Uses `useToast` for user feedback on success/failure
+- Uses `logger` for error tracking (no console.log)
+- Properly typed with TanStack Query generics: `useMutation<TData, TError, TVariables, TContext>`
+- `stock_quantity` clamped to 0 minimum on decrement (prevents negative display)
+
+### Acceptance Criteria Met:
+- [x] Decrements inventory on order confirm
+- [x] Increments inventory on order cancel
+- [x] Optimistic updates reflect immediately in UI
+- [x] Automatic rollback on RPC failure
+- [x] Cache invalidation ensures eventual consistency
+- [x] User feedback via toast notifications
+- [x] TypeScript strict mode compliance (no `any` types)
+- [x] Build passes with no errors
+
+### Files Changed:
+- `src/hooks/useInventorySync.ts` (enhanced with useConfirmOrderInventory + useCancelOrderInventory)
+
+### Build Status:
+- `npm run build` passes with no errors
