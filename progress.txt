@@ -1,3 +1,51 @@
+## Task: Create CreditTransactionRow Component
+
+### What was done:
+
+1. **Created `src/components/credits/CreditTransactionRow.tsx`** - Standalone transaction list item component with:
+   - **Icon by type**: purchase (green Plus), usage (red Minus), refund (blue RotateCcw), grant/bonus/promo (purple Gift)
+   - **Signed amount display**: positive amounts shown with `+` prefix, colored by type (green for additions, red for usage, blue for refunds)
+   - **Running balance**: shows `bal: X` below the amount
+   - **Truncated description**: truncates at 40 chars with `...` suffix, full description available on expand
+   - **Relative date**: shows "just now", "5m ago", "3h ago", "yesterday", "2d ago", "1w ago", or formatted date for older
+   - **Expandable details panel**: click to expand showing full description, reference ID (with optional link), metadata key-value pairs, and full timestamp
+   - Dark mode support with proper color tokens
+   - Accessible with ARIA attributes (role, tabIndex, aria-expanded, aria-label)
+   - Uses shadcn/ui Collapsible, Badge components
+   - Named export, TypeScript strict (no `any`)
+
+2. **Updated `src/components/credits/index.ts`** - Added exports:
+   - `CreditTransactionRow` component
+   - `CreditTransactionRowProps` type
+   - `CreditTransactionRowTransaction` interface
+
+### Interface:
+```typescript
+interface CreditTransactionRowTransaction {
+  id: string;
+  amount: number;
+  balance_after: number;
+  transaction_type: 'purchase' | 'usage' | 'refund' | 'free_grant' | 'bonus' | 'promo';
+  description?: string;
+  reference_id?: string;
+  reference_url?: string;
+  metadata?: Record<string, unknown>;
+  created_at: string;
+}
+
+interface CreditTransactionRowProps {
+  transaction: CreditTransactionRowTransaction;
+  className?: string;
+  defaultExpanded?: boolean;
+}
+```
+
+### Files changed:
+- `src/components/credits/CreditTransactionRow.tsx` (new)
+- `src/components/credits/index.ts` (modified)
+
+---
+
 ## Task: Create Unified Admin Dashboard Hub with 5 Stat Cards
 
 ### What was done:
