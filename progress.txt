@@ -2657,3 +2657,55 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Test Complete Signup Flow
+
+### What was done:
+
+Created comprehensive integration test for the complete signup flow at `src/pages/saas/__tests__/SignUpFlow.test.tsx` covering all 5 requirements:
+
+1. **Form submission with email, password, name, phone** (4 tests):
+   - Renders signup form with all required fields (business name, name, email, password)
+   - Submits form and calls `tenant-signup` edge function with correct data
+   - Includes phone number when optional fields are expanded
+   - Shows validation errors for invalid form data
+
+2. **Email verification sent** (1 test):
+   - Verifies `tenant-signup` edge function is called which triggers the email confirmation flow
+
+3. **Verification link and token processing** (4 tests):
+   - Verifies OTP token via `supabase.auth.verifyOtp()` on AuthConfirmPage
+   - Handles expired token with appropriate error message ("Link Expired")
+   - Handles invalid token with appropriate error message ("Invalid Link")
+   - Redirects to tenant admin dashboard after successful verification
+
+4. **User login after verification** (3 tests):
+   - Allows login with correct email/password after verification
+   - Rejects login with wrong password
+   - Rejects login for unverified email
+
+5. **Credits account created with zero balance** (7 tests):
+   - Calls `grant_free_credits` RPC after successful signup
+   - Sets tenant as free tier with `credits_enabled: true`
+   - Handles credit grant failure gracefully without blocking signup
+   - Navigates to dashboard with `welcome=true` flag
+   - Initializes credit account with 10,000 credits for free tier
+   - Sets `purchased_credits_balance` to 0 on new account
+   - Creates idempotency key to prevent duplicate initial grants
+
+6. **Session establishment** (2 tests):
+   - Sets Supabase session with tokens from edge function response
+   - Saves `lastTenantSlug` to localStorage
+
+7. **Error handling** (2 tests):
+   - Handles edge function errors gracefully
+   - Handles duplicate email errors
+
+### Test Results:
+- 23 tests total, all passing
+- Covers: SignUpPage form submission, AuthConfirmPage token verification, login flow, credits initialization
+
+### Files Created:
+- `src/pages/saas/__tests__/SignUpFlow.test.tsx`
