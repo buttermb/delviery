@@ -2657,3 +2657,49 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create PromoCodeInput.tsx with Input, Apply Button, Validation States, and Parent State Storage
+
+### What was done:
+
+1. **Rewrote `src/components/credits/PromoCodeInput.tsx`** - Complete checkout-ready promo code input component:
+   - **Text input with apply button**: Monospace uppercase input with Tag icon, "Apply" button with disabled state when code is too short
+   - **Loading during validation**: Shows `Loader2` spinner in the Apply button while `validatePromoCode` mutation is pending
+   - **Success with discount preview**: When valid, renders a green success banner showing the applied code and "+X bonus credits" discount preview
+   - **Error message**: Shows red error text with `XCircle` icon below the input when validation fails
+   - **Clears on invalid**: Input text is cleared when validation returns an error or network failure
+   - **Stores valid code in parent state**: Exposes `onCodeApplied(validatedCode)` callback that passes `ValidatedPromoCode` (code, creditsAmount, description) to parent for checkout use
+   - **Handles already applied state**: When `appliedCode` prop is provided, renders the success preview with an "X" button to remove; hides remove button when `disabled`
+   - Keyboard support: Enter key triggers apply when code length >= 3
+   - Accessibility: `aria-label`, `aria-invalid`, `aria-describedby`, `role="alert"` on error
+   - Dark mode support via Tailwind dark: variants
+
+2. **Exported `ValidatedPromoCode` type** from `src/components/credits/index.ts`:
+   - Added `ValidatedPromoCode` to the type export alongside `PromoCodeInputProps`
+
+### Key Design Decisions:
+- **Removed coupling to tenant/credits context**: The old implementation tied itself to `useTenantAdminAuth` and `useCredits` (checking `isFreeTier`). The new version is a pure checkout-focused input that receives its state via props, making it reusable in any context.
+- **Parent-controlled state pattern**: Uses `onCodeApplied` + `appliedCode` props instead of internal-only state, enabling the parent checkout component to track the validated code.
+- **Removed redeem logic**: The old version had both validate+redeem. The new version only validates and passes the code to the parent. Redemption happens at checkout time.
+
+### Props Interface:
+```typescript
+interface PromoCodeInputProps {
+  onCodeApplied: (promoCode: ValidatedPromoCode | null) => void;
+  appliedCode?: ValidatedPromoCode | null;
+  className?: string;
+  disabled?: boolean;
+}
+
+interface ValidatedPromoCode {
+  code: string;
+  creditsAmount: number;
+  description?: string;
+}
+```
+
+### Files Changed:
+- `src/components/credits/PromoCodeInput.tsx` (complete rewrite)
+- `src/components/credits/index.ts` (added ValidatedPromoCode type export)
