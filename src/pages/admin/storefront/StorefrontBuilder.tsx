@@ -132,9 +132,9 @@ export function StorefrontBuilder() {
 
             {/* Out of Credits Modal */}
             <OutOfCreditsModal
-                isOpen={builder.showOutOfCreditsModal}
-                onClose={builder.closeOutOfCreditsModal}
-                blockedAction={builder.blockedAction ?? undefined}
+                open={builder.showOutOfCreditsModal}
+                onOpenChange={builder.closeOutOfCreditsModal}
+                actionAttempted={builder.blockedAction ?? undefined}
             />
         </div>
     );

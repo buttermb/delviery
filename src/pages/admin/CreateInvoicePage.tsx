@@ -102,12 +102,11 @@ export default function CreateInvoicePage() {
                     due_date: values.due_date.toISOString().split('T')[0],
                     status: values.status,
                     line_items: lineItems,
-                    subtotal,
                     tax_rate: taxRate,
                     tax_amount: taxAmount,
                     total,
                     notes: values.notes,
-                });
+                } as any);
 
                 // Log activity
                 logActivity.mutate({

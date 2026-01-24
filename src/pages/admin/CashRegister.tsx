@@ -197,7 +197,7 @@ function CashRegisterContent() {
     queryFn: async () => {
       if (!tenantId) return [];
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('customers')
           .select('id, name, email, phone')
           .eq('tenant_id', tenantId)
@@ -206,7 +206,7 @@ function CashRegisterContent() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return (data || []) as Customer[];
+        return (data || []) as unknown as Customer[];
       } catch (error: unknown) {
         if (error instanceof Error && 'code' in error && (error as { code: string }).code === '42P01') return [];
         throw error;
@@ -222,8 +222,7 @@ function CashRegisterContent() {
       if (!tenantId) return [];
 
       try {
-        // @ts-expect-error pos_transactions table may not exist in all environments
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('pos_transactions')
           .select('*')
           .eq('tenant_id', tenantId)
@@ -351,8 +350,7 @@ function CashRegisterContent() {
       }));
 
       // Use atomic RPC - prevents race conditions on inventory
-      // @ts-expect-error RPC function not in auto-generated types
-      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic', {
+      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('create_pos_transaction_atomic', {
         p_tenant_id: tenantId,
         p_items: items,
         p_payment_method: paymentMethod,
@@ -379,7 +377,7 @@ function CashRegisterContent() {
         throw new Error(errorMessage);
       }
 
-      const result = rpcResult as POSTransactionResult;
+      const result = rpcResult as unknown as POSTransactionResult;
 
       if (!result.success) {
         // Handle specific error codes with user-friendly messages
@@ -535,7 +533,7 @@ function CashRegisterContent() {
           </head>
           <body>
             <div class="header">
-              <h2>${tenant?.name || 'Store'}</h2>
+              <h2>${(tenant as any)?.name || 'Store'}</h2>
               <p>Transaction: ${lastTransaction.transaction_number}</p>
               <p>${new Date(lastTransaction.created_at || '').toLocaleString()}</p>
             </div>

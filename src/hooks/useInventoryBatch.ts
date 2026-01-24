@@ -10,7 +10,7 @@ export const useInventoryBatch = (productIds: string[]) => {
     queryFn: async () => {
       if (!productIds.length || !tenant?.id) return {};
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("inventory")
         .select("product_id, stock")
         .eq("tenant_id", tenant.id)
