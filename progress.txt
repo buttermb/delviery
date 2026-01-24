@@ -7303,3 +7303,63 @@ Created comprehensive integration test for the complete signup flow at `src/page
 
 ### Files Created:
 - `src/pages/saas/__tests__/SignUpFlow.test.tsx`
+
+---
+
+## Task: Test Complete Login Flow with Valid Credentials, Invalid Password, Locked Account, and Remember Me
+
+### What was done:
+
+Created comprehensive login flow tests in `src/pages/saas/__tests__/LoginFlowComplete.test.tsx` with 24 tests across 4 test suites:
+
+#### 1. Complete Login Flow with Valid Credentials (7 tests):
+- Authenticates via Supabase signInWithPassword and verifies session tokens stored
+- Verifies admin and tenant data persisted in localStorage
+- Verifies user ID stored in both sessionStorage and localStorage
+- Verifies lastTenantSlug stored for session continuity
+- Tests welcome toast and navigation to tenant dashboard
+- Validates edge function called with correct email/password/tenantSlug payload
+- Confirms email normalized to lowercase before login
+
+#### 2. Invalid Password Error - No Email Disclosure (5 tests):
+- Invalid password shows generic "Login Failed" error without revealing email exists
+- Non-existent email shows same generic error (prevents user enumeration)
+- Password field cleared after failed attempt (security best practice)
+- No session data stored on failed login
+- Edge function 401 response shows generic "Invalid credentials" message
+
+#### 3. Locked/Suspended Account (5 tests):
+- Suspended tenant account shows "Account suspended" message
+- Unauthorized tenant access shows "You do not have access to this tenant"
+- No session data stored when account is locked
+- Rate-limited (429) shows "Too many login attempts" with retry message
+- No tenant found handled without revealing account details
+
+#### 4. Remember Me Session Persistence (7 tests):
+- "Remember me" checkbox renders in login form
+- Access/refresh tokens persisted in localStorage (survives browser restart)
+- Admin and tenant data persisted for session recovery
+- lastTenantSlug stored for cross-session persistence
+- User ID stored in both sessionStorage and localStorage (hybrid persistence)
+- Edge function sets httpOnly cookies with 7-day Max-Age for persistent sessions
+- Stale session cleared before new login to prevent conflicts
+
+### Test Architecture:
+- Uses Vitest + React Testing Library + userEvent
+- Mocks: Supabase client, resilientFetch, authFlowLogger, encryption, toast, navigation
+- AAA pattern (Arrange-Act-Assert) for all tests
+- Black-box testing of observable behavior
+- Each test isolates storage (localStorage.clear, sessionStorage.clear in beforeEach)
+
+### Acceptance Criteria Met:
+- ✅ Test complete login flow with valid credentials verifying session created
+- ✅ Test invalid password shows error without revealing email exists
+- ✅ Test locked account shows appropriate message
+- ✅ Test remember me persists session longer
+
+### Test Results:
+- 24 tests passing (all green)
+- 1 test file, 4 describe blocks
+
+### Files Changed:
+- `src/pages/saas/__tests__/LoginFlowComplete.test.tsx` (new - 24 tests)
