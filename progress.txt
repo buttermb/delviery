@@ -6374,3 +6374,33 @@ interface PermissionGuardProps {
 
 ### Files Changed:
 - `src/components/credits/CreditGuard.tsx` (new file)
+
+---
+
+## Task: Create AuthLayout.tsx Layout Wrapper for Auth Pages
+
+### What was done:
+
+1. **Created `src/components/auth/AuthLayout.tsx`** - Reusable layout wrapper for authentication pages with:
+   - **Centered card design**: Full-viewport flex layout with Card component centered vertically and horizontally
+   - **Logo at top**: FloraIQLogo component (lg size) positioned above the auth card
+   - **Optional background pattern**: SVG grid pattern with subtle decorative gradient blobs (primary/accent colors) - enabled by default via `showPattern` prop
+   - **Optional background image**: Alternative to the pattern, accepts a URL via `backgroundImage` prop, rendered with low opacity overlay
+   - **Footer with links**: Sticky footer with Terms of Service, Privacy Policy, and Support links, separated by centered dots on desktop
+   - **Responsive padding**: Mobile-first with `px-4 py-8` scaling to `sm:px-6 lg:px-8`, card padding from `p-6` to `sm:p-8`
+   - **Brand styling**: Uses CSS variables for colors (primary, accent, border, muted-foreground), glassmorphism backdrop-blur on card and footer, shadow-lg on card
+   - **Full-viewport height**: Uses `min-h-dvh` for proper mobile viewport handling
+   - **Accessibility**: Decorative elements have `aria-hidden="true"`, links have proper hover states
+
+### Props Interface:
+- `children: ReactNode` - Auth form content to render inside the card
+- `backgroundImage?: string` - Optional URL for a background image
+- `showPattern?: boolean` - Toggle decorative grid pattern (default: true)
+- `className?: string` - Additional classes for the outer container
+- `cardClassName?: string` - Additional classes for the card wrapper
+
+### Build Result:
+- Zero TypeScript errors
+- Named export only (no default export)
+- Uses `@/` import alias throughout
+- Compatible with existing auth components (GoogleSignInButton, PasswordStrengthIndicator, etc.)
