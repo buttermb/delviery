@@ -2657,3 +2657,63 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create src/pages/credits/CreditsPage.tsx Protected Credits Overview Page
+
+### What was done:
+
+1. **Created `src/pages/credits/CreditsPage.tsx`** - Protected page with full credits overview:
+   - Uses `useTenantAdminAuth()` for tenant context and route protection
+   - Uses `useCredits()` hook for balance, lifetime stats, and status flags
+   - Fetches recent transactions via `getCreditTransactions` from `@/lib/credits`
+
+2. **Current Balance Card** (prominent, spans 2 columns on md+):
+   - Large 5xl font balance number with color-coded text (green/yellow/amber/orange/red based on threshold)
+   - Color-coded background/border matching balance health
+   - Coins icon with "Current Balance" label
+
+3. **Quick Stats Cards** (lifetime purchased and lifetime used):
+   - "Lifetime Purchased" card with TrendingUp icon showing total credits acquired
+   - "Lifetime Used" card with TrendingDown icon, progress bar showing percentage used
+   - Both with descriptive sub-text
+
+4. **Subscription Status Card**:
+   - Shows current plan name and status badges
+   - Free tier messaging with upgrade encouragement
+   - "Manage subscription" link to billing settings page
+
+5. **Buy More Credits CTA Card**:
+   - Gradient background with primary color hints
+   - Descriptive text encouraging purchase/upgrade
+   - "Buy Credits" button navigating to credits analytics page
+
+6. **Recent Transactions Preview** (full-width, last 5):
+   - Each transaction shows: type icon (color-coded), description, relative time, amount (green +/red -), balance after
+   - "View all" link navigating to credits analytics
+   - Empty state with helpful messaging when no transactions exist
+
+7. **Responsive Grid Layout**:
+   - Mobile: single column stack
+   - Tablet (md): 2-column grid, balance spans full width
+   - Desktop (lg): 4-column grid for compact stat display
+
+8. **Loading States**:
+   - Skeleton placeholders for all sections during data fetch
+   - Graceful handling of missing tenant context
+
+### Acceptance Criteria Met:
+- [x] Current balance displayed prominently with color-coding
+- [x] Quick stats showing lifetime purchased and used
+- [x] Recent transactions preview with view all link
+- [x] Buy more credits CTA button
+- [x] Subscription status card with plan info
+- [x] Responsive grid layout (1/2/4 columns)
+- [x] Protected page using `useTenantAdminAuth()`
+- [x] TypeScript strict mode, no `any` types
+- [x] Named export only
+- [x] Uses `@/` import alias throughout
+- [x] Uses `logger` for error logging
+- [x] Build passes with zero TypeScript errors
+
+### Files Created:
+- `src/pages/credits/CreditsPage.tsx`
