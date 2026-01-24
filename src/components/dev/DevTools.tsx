@@ -40,7 +40,8 @@ let logId = 0;
 let networkId = 0;
 let intercepted = false;
 
-// Initialize interception once globally
+// Initialize interception once globally - legitimately intercepts console methods
+/* eslint-disable no-console */
 if (!intercepted) {
   intercepted = true;
   

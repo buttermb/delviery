@@ -9,6 +9,7 @@
 
 export type LogContext = string | Record<string, unknown>;
 
+/* eslint-disable no-console */
 class Logger {
   private isDev = (typeof import.meta !== 'undefined' && import.meta.env?.DEV) || (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development');
   private isProduction = (typeof import.meta !== 'undefined' && import.meta.env?.PROD) || (typeof process !== 'undefined' && process.env?.NODE_ENV === 'production');
