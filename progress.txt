@@ -2657,3 +2657,38 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create credits table migration
+
+### What was done:
+
+1. **Created migration `supabase/migrations/20260124000001_create_credits_table.sql`**:
+   - `id` UUID primary key with `gen_random_uuid()` default
+   - `user_id` UUID NOT NULL referencing `auth.users(id)` with CASCADE delete
+   - `tenant_id` UUID NOT NULL referencing `public.tenants(id)` with CASCADE delete
+   - `balance` INTEGER NOT NULL DEFAULT 0 with CHECK constraint `balance >= 0`
+   - `lifetime_purchased` INTEGER NOT NULL DEFAULT 0
+   - `lifetime_used` INTEGER NOT NULL DEFAULT 0
+   - `lifetime_expired` INTEGER NOT NULL DEFAULT 0
+   - `lifetime_refunded` INTEGER NOT NULL DEFAULT 0
+   - `last_purchase_at` TIMESTAMPTZ (nullable)
+   - `last_used_at` TIMESTAMPTZ (nullable)
+   - `created_at` TIMESTAMPTZ NOT NULL DEFAULT NOW()
+   - `updated_at` TIMESTAMPTZ NOT NULL DEFAULT NOW()
+   - UNIQUE constraint on `(user_id, tenant_id)`
+
+2. **Indexes**:
+   - `idx_credits_user_id` on `user_id`
+   - `idx_credits_tenant_id` on `tenant_id`
+
+3. **RLS**:
+   - Enabled Row Level Security on the table
+   - Policy "Users can view own credits" - SELECT only where `user_id = auth.uid()`
+
+4. **Trigger**:
+   - `update_credits_updated_at` - auto-updates `updated_at` on row modification
+
+### Files Changed:
+- `supabase/migrations/20260124000001_create_credits_table.sql` (new file)
