@@ -2657,3 +2657,37 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create credits-subscribe Edge Function
+
+### What was done:
+
+1. **Created migration `supabase/migrations/20260124000001_credit_subscriptions.sql`**:
+   - Adds `package_type` (one_time/subscription) and `billing_interval` (monthly/yearly/weekly) columns to `credit_packages` table
+   - Creates `credit_subscriptions` table with: id, user_id, tenant_id, package_id, stripe_subscription_id, stripe_customer_id, status, credits_per_period, period_type, current_period_start, current_period_end, credits_remaining_this_period, cancel_at_period_end, cancelled_at, created_at, updated_at
+   - Enables RLS with tenant-scoped SELECT and service_role ALL policies
+   - Creates indexes on user_id, tenant_id, status, and stripe_subscription_id
+   - Adds updated_at trigger
+
+2. **Created `supabase/functions/credits-subscribe/index.ts`** edge function that:
+   - Requires auth (JWT token from Authorization header)
+   - Accepts `tenant_id`, `package_id`, and `payment_method_id` in request body (Zod validated)
+   - Verifies package is active and has `package_type = 'subscription'`
+   - Verifies user has tenant access (owner or tenant_users member)
+   - Checks for existing active subscription (prevents duplicates - 409 conflict)
+   - Gets or creates Stripe customer for tenant
+   - Attaches payment method and sets as default
+   - Gets or creates Stripe recurring price for the package
+   - Creates Stripe subscription with metadata linking back to tenant/package
+   - Inserts `credit_subscriptions` row with period info from Stripe
+   - On DB insert failure, cancels the Stripe subscription (rollback)
+   - Grants first period credits immediately (credits + bonus_credits) by updating `tenant_credits`
+   - Records credit transaction with type 'subscription_grant'
+   - Tracks analytics event 'subscription_created'
+   - Returns subscription details, credits granted, and new balance
+
+### Files Created:
+- `supabase/migrations/20260124000001_credit_subscriptions.sql`
+- `supabase/functions/credits-subscribe/index.ts`
