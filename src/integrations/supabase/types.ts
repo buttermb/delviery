@@ -11797,6 +11797,7 @@ export type Database = {
       }
       tenant_invitations: {
         Row: {
+          accepted_at: string | null
           accepted_by: string | null
           created_at: string | null
           email: string
@@ -11810,6 +11811,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          accepted_at?: string | null
           accepted_by?: string | null
           created_at?: string | null
           email: string
@@ -11823,6 +11825,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          accepted_at?: string | null
           accepted_by?: string | null
           created_at?: string | null
           email?: string
