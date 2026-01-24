@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { queryKeys } from "@/lib/queryKeys";
 import { toast } from "sonner";
 
@@ -18,6 +19,7 @@ interface CreatePORequest {
 }
 
 export function usePurchaseOrders() {
+  const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
 
   const createPurchaseOrder = useMutation({
@@ -53,10 +55,12 @@ export function usePurchaseOrders() {
 
   const updatePurchaseOrderStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      if (!tenant?.id) throw new Error('No tenant');
       const { error } = await supabase
         .from('purchase_orders')
         .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('tenant_id', tenant.id);
 
       if (error) throw error;
     },
@@ -72,11 +76,12 @@ export function usePurchaseOrders() {
 
   const deletePurchaseOrder = useMutation({
     mutationFn: async (id: string) => {
-      // First, delete items
+      if (!tenant?.id) throw new Error('No tenant');
+      // First, delete items scoped to tenant's PO
       await supabase.from('purchase_order_items').delete().eq('purchase_order_id', id);
-      
+
       // Then delete the PO
-      const { error } = await supabase.from('purchase_orders').delete().eq('id', id);
+      const { error } = await supabase.from('purchase_orders').delete().eq('id', id).eq('tenant_id', tenant.id);
       if (error) throw error;
     },
     onSuccess: () => {

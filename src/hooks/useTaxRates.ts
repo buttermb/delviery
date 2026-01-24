@@ -51,7 +51,11 @@ export function useTaxRates(tenantId?: string) {
 
   const addTaxRate = useMutation({
     mutationFn: async (taxRate: Omit<TaxRate, "id">) => {
-      const { error } = await supabase.from("tax_rates").insert(taxRate);
+      if (!tenantId) throw new Error("No tenant");
+      const { error } = await supabase.from("tax_rates").insert({
+        ...taxRate,
+        tenant_id: tenantId,
+      });
       if (error) throw error;
     },
     onSuccess: () => {

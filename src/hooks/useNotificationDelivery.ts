@@ -119,14 +119,16 @@ export function useNotificationDelivery() {
   // Retry failed notification
   const retryNotification = useMutation({
     mutationFn: async (logId: string): Promise<void> => {
+      if (!tenant?.id) throw new Error('No tenant');
       const { error } = await supabase
         .from('notification_delivery_log')
-        .update({ 
+        .update({
           status: 'pending',
           next_retry_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
-        .eq('id', logId);
+        .eq('id', logId)
+        .eq('tenant_id', tenant.id);
 
       if (error) throw error;
     },

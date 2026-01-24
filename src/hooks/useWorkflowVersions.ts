@@ -47,20 +47,21 @@ export function useWorkflowVersions(workflowId: string | null) {
   const queryClient = useQueryClient();
 
   const { data: versions, isLoading } = useQuery<WorkflowVersion[]>({
-    queryKey: ['workflow-versions', workflowId],
+    queryKey: ['workflow-versions', workflowId, tenant?.id],
     queryFn: async () => {
-      if (!workflowId) return [];
+      if (!workflowId || !tenant?.id) return [];
 
       const { data, error } = await supabase
         .from('workflow_versions')
         .select('*')
         .eq('workflow_id', workflowId)
+        .eq('tenant_id', tenant.id)
         .order('version_number', { ascending: false });
 
       if (error) throw error;
       return (data as WorkflowVersion[]) || [];
     },
-    enabled: !!workflowId,
+    enabled: !!workflowId && !!tenant?.id,
   });
 
   const restoreVersion = useMutation({
@@ -71,9 +72,11 @@ export function useWorkflowVersions(workflowId: string | null) {
       workflowId: string;
       versionNumber: number;
     }) => {
+      if (!tenant?.id) throw new Error('No tenant');
       const { data, error } = await supabase.rpc('restore_workflow_version', {
         p_workflow_id: workflowId,
         p_version_number: versionNumber,
+        p_tenant_id: tenant.id,
       });
 
       if (error) throw error;
@@ -116,10 +119,12 @@ export function useWorkflowVersions(workflowId: string | null) {
       versionA: number;
       versionB: number;
     }) => {
+      if (!tenant?.id) throw new Error('No tenant');
       const { data, error } = await supabase.rpc('compare_workflow_versions', {
         p_workflow_id: workflowId,
         p_version_a: versionA,
         p_version_b: versionB,
+        p_tenant_id: tenant.id,
       });
 
       if (error) throw error;
@@ -136,21 +141,24 @@ export function useWorkflowVersions(workflowId: string | null) {
 }
 
 export function useWorkflowVersionStats(workflowId: string | null) {
+  const { tenant } = useTenantAdminAuth();
+
   const { data: versions } = useQuery<WorkflowVersion[]>({
-    queryKey: ['workflow-versions', workflowId],
+    queryKey: ['workflow-versions', workflowId, tenant?.id],
     queryFn: async () => {
-      if (!workflowId) return [];
+      if (!workflowId || !tenant?.id) return [];
 
       const { data, error } = await supabase
         .from('workflow_versions')
         .select('*')
         .eq('workflow_id', workflowId)
+        .eq('tenant_id', tenant.id)
         .order('version_number', { ascending: false });
 
       if (error) throw error;
       return (data as WorkflowVersion[]) || [];
     },
-    enabled: !!workflowId,
+    enabled: !!workflowId && !!tenant?.id,
   });
 
   const stats = {

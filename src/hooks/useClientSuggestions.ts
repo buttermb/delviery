@@ -203,13 +203,17 @@ export function useClientSuggestions() {
  * Hook to toggle a client's favorite status
  */
 export function useToggleClientFavorite() {
+  const { tenant } = useTenantAdminAuth();
+
   const toggleFavorite = async (clientId: string, isFavorite: boolean) => {
+    if (!tenant?.id) return false;
     try {
       // @ts-ignore - is_favorite field mismatch with Supabase types
       const { error } = await supabase
         .from('wholesale_clients')
         .update({ is_favorite: isFavorite } as any)
-        .eq('id', clientId);
+        .eq('id', clientId)
+        .eq('tenant_id', tenant.id);
 
       if (error) throw error;
       return true;
