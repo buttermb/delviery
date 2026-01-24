@@ -8,6 +8,7 @@
 export { useCredits } from './useCredits';
 export { useCreditTransactions } from './useCreditTransactions';
 export { usePurchaseCredits, usePurchaseSuccess } from './usePurchaseCredits';
+export { useCreditPromo } from './useCreditPromo';
 export { useFreeTierLimits } from './useFreeTierLimits';
 export { useSmartUpgradeNudge } from './useSmartUpgradeNudge';
 export { useCreditUpgradeTriggers } from './useCreditUpgradeTriggers';
