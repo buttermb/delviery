@@ -2657,3 +2657,51 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create src/pages/credits/TransactionHistoryPage.tsx
+
+### What was done:
+
+1. **Created `src/hooks/useCreditTransactions.ts`** - Custom hook that:
+   - Wraps `credit_transactions` table queries with TanStack Query
+   - Supports paginated loading via "load more" pattern (accumulative pages)
+   - Filters by transaction type (all, purchase, usage, refund)
+   - Supports date range filtering (from/to with end-of-day handling)
+   - Fetches total count for showing remaining items
+   - Scoped to current tenant via `useTenantAdminAuth()`
+   - 30-second staleTime for optimal caching
+   - Exports `TransactionTypeFilter` and `UseCreditTransactionsReturn` types
+
+2. **Created `src/pages/credits/TransactionHistoryPage.tsx`** - Protected page with:
+   - Header with back navigation and refresh button
+   - **Filter tabs**: All, Purchases, Usage, Refunds (using shadcn Tabs)
+   - **Date range picker**: From/To calendar popovers with mutual constraints
+   - **Paginated transaction table** with columns: Date, Type, Amount, Balance, Description
+   - **Expandable rows**: Click chevron to reveal action type, reference ID/type, full datetime, metadata
+   - **Load More button**: Shows remaining count, loading spinner while fetching
+   - **Loading skeletons**: 10 skeleton rows during initial load
+   - **Empty state**: Icon + contextual message based on active filter
+   - Color-coded type badges (red=usage, green=purchase, cyan=refund, etc.)
+   - Signed amount display (green positive, red negative)
+   - Responsive layout with mobile-friendly table overflow
+   - Dark mode support for all badge colors
+
+3. **Added route in `src/App.tsx`**:
+   - Lazy import: `const TransactionHistoryPage = lazy(() => import("./pages/credits/TransactionHistoryPage").then(m => ({ default: m.TransactionHistoryPage })))`
+   - Route: `<Route path="credits/transactions" element={<TransactionHistoryPage />} />`
+   - Available at `/:tenantSlug/admin/credits/transactions`
+
+### Verification:
+- [x] TypeScript compilation passes (`npx tsc --noEmit`)
+- [x] ESLint passes on new files
+- [x] Production build succeeds (`npm run build`)
+- [x] Named exports only (no default exports)
+- [x] Uses `@/` import alias throughout
+- [x] Uses `logger` from `@/lib/logger` (no console.log)
+- [x] Tenant-aware via `useTenantAdminAuth()`
+- [x] Filters by `tenant_id` in all queries
+
+### Files Changed:
+- `src/hooks/useCreditTransactions.ts` (new - paginated transaction hook)
+- `src/pages/credits/TransactionHistoryPage.tsx` (new - transaction history page)
+- `src/App.tsx` (lazy import + route registration)
