@@ -428,3 +428,61 @@ sub-components with shared state from useStorefrontBuilder hook.
 - `src/pages/admin/storefront/builder/BuilderCreateStoreDialog.tsx` (new)
 - `src/pages/admin/storefront/builder/index.ts` (new)
 - `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export alias)
+
+---
+
+## Task: Build Inventory History Log
+
+### What was done:
+
+1. **Created `supabase/migrations/20260123000000_create_inventory_history.sql`** - Database migration:
+   - `inventory_history` table with UUID primary key (`gen_random_uuid()`)
+   - `tenant_id` UUID for multi-tenant isolation (references `tenants`)
+   - `product_id` UUID (references `products`)
+   - `change_type` TEXT with CHECK constraint (stock_in, stock_out, transfer, adjustment, sale, return, receiving, disposal)
+   - `previous_quantity` / `new_quantity` / `change_amount` NUMERIC columns for tracking changes
+   - `reference_type` / `reference_id` for linking to source entities (orders, transfers, etc.)
+   - `location_id` / `batch_id` for warehouse and batch tracking
+   - `reason` / `notes` TEXT columns for audit context
+   - `performed_by` UUID referencing `auth.users(id)`
+   - `metadata` JSONB for flexible additional data
+   - `created_at` TIMESTAMPTZ with DEFAULT now()
+   - RLS enabled with tenant isolation policy (users can only access their tenant's history)
+   - 7 performance indexes including composite indexes for common query patterns
+
+2. **Updated `src/lib/queryKeys.ts`** - Added `history` key to the inventory section:
+   - `queryKeys.inventory.history(filters)` for TanStack Query cache management
+
+3. **Created `src/hooks/useInventoryHistory.ts`** - Custom hook:
+   - Uses `useTenantAdminAuth()` for tenant context
+   - Uses `queryKeys.inventory.history()` for cache key
+   - Fetches from `inventory_history` with joined `products(id, name, sku)`
+   - Supports filters: `productId`, `changeType`, `startDate`, `endDate`, `limit`
+   - Properly typed with `InventoryHistoryEntry` and `InventoryHistoryFilters` interfaces
+   - Enabled only when `tenant?.id` exists
+   - Uses `logger` for error reporting
+
+4. **Created `src/components/admin/inventory/InventoryHistoryTimeline.tsx`** - Timeline component:
+   - Renders inventory history entries in a visual timeline format
+   - Color-coded icons per change type (green for stock_in, red for stock_out, blue for transfer, etc.)
+   - Dropdown filter for change type (All Types / individual types)
+   - Shows product name, change amount (+/-), previous→new quantity
+   - Displays reason, notes, reference type/ID, and timestamps
+   - Loading state with spinner, empty state message, error state
+   - Uses shadcn/ui Card, Badge, and Select components
+   - Accepts optional `productId` prop for product-specific history
+
+### Acceptance Criteria Met:
+- [x] `inventory_history` table created with proper schema
+- [x] RLS policy enforces tenant isolation
+- [x] Performance indexes for common query patterns
+- [x] `useInventoryHistory` hook with filtering support
+- [x] Timeline component with visual change type indicators
+- [x] Filter by change type in the UI
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `supabase/migrations/20260123000000_create_inventory_history.sql` (new)
+- `src/lib/queryKeys.ts` (modified - added history key)
+- `src/hooks/useInventoryHistory.ts` (new)
+- `src/components/admin/inventory/InventoryHistoryTimeline.tsx` (new)
