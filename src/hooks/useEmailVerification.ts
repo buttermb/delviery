@@ -1,119 +1,88 @@
-import { useState, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
-export interface EmailVerificationResult {
-  email: string;
-  isValid: boolean;
-  isDisposable: boolean;
-  isFreeProvider: boolean;
-  hasMxRecords: boolean;
-  domain: string;
-  mxRecords: string[];
-  syntaxValid: boolean;
-  score: number;
-  reason?: string;
+interface VerifyEmailResponse {
+  success: boolean;
+  alreadyVerified?: boolean;
+  expired?: boolean;
+  message?: string;
 }
 
-interface UseEmailVerificationOptions {
-  checkMx?: boolean;
-  checkDisposable?: boolean;
+interface ResendVerificationResponse {
+  success: boolean;
+  message?: string;
 }
 
-export function useEmailVerification(options: UseEmailVerificationOptions = {}) {
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [result, setResult] = useState<EmailVerificationResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+export interface EmailVerificationState {
+  isAlreadyVerified: boolean;
+  isExpired: boolean;
+  canResend: boolean;
+}
 
-  const verifyEmail = useCallback(async (email: string): Promise<EmailVerificationResult | null> => {
-    if (!email || !email.includes('@')) {
-      setError('Invalid email format');
-      return null;
-    }
+export function useEmailVerification() {
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
 
-    setIsVerifying(true);
-    setError(null);
-
-    try {
-      const { data, error: fnError } = await supabase.functions.invoke('verify-email', {
-        body: {
-          email,
-          checkMx: options.checkMx ?? true,
-          checkDisposable: options.checkDisposable ?? true,
-        },
-      });
-
-      if (fnError) {
-        throw new Error(fnError.message);
+  const verifyEmail = useMutation({
+    mutationFn: async (verificationToken?: string): Promise<VerifyEmailResponse> => {
+      const tokenToUse = verificationToken || token;
+      if (!tokenToUse) {
+        throw new Error('No verification token provided');
       }
 
-      setResult(data);
-      return data;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Verification failed';
-      setError(errorMessage);
-      logger.error('Email verification error', err);
-      return null;
-    } finally {
-      setIsVerifying(false);
-    }
-  }, [options.checkMx, options.checkDisposable]);
+      const { data, error } = await supabase.functions.invoke('auth-verify-email', {
+        body: { token: tokenToUse },
+      });
 
-  const reset = useCallback(() => {
-    setResult(null);
-    setError(null);
-  }, []);
+      if (error) {
+        throw new Error(error.message || 'Email verification failed');
+      }
+
+      return data as VerifyEmailResponse;
+    },
+    onError: (error: Error) => {
+      logger.error('Email verification failed', error, { component: 'useEmailVerification' });
+    },
+  });
+
+  const resendVerification = useMutation({
+    mutationFn: async (email: string): Promise<ResendVerificationResponse> => {
+      if (!email) {
+        throw new Error('Email is required to resend verification');
+      }
+
+      const { data, error } = await supabase.functions.invoke('auth-signup', {
+        body: { email, resend: true },
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Failed to resend verification email');
+      }
+
+      return data as ResendVerificationResponse;
+    },
+    onError: (error: Error) => {
+      logger.error('Resend verification failed', error, { component: 'useEmailVerification' });
+    },
+  });
+
+  const verificationState: EmailVerificationState = {
+    isAlreadyVerified: verifyEmail.data?.alreadyVerified === true,
+    isExpired: verifyEmail.data?.expired === true,
+    canResend: verifyEmail.data?.expired === true,
+  };
 
   return {
+    token,
     verifyEmail,
-    isVerifying,
-    result,
-    error,
-    reset,
+    resendVerification,
+    verificationState,
+    isVerifying: verifyEmail.isPending,
+    isResending: resendVerification.isPending,
+    verifyError: verifyEmail.error,
+    resendError: resendVerification.error,
+    isSuccess: verifyEmail.isSuccess && !verifyEmail.data?.alreadyVerified && !verifyEmail.data?.expired,
   };
-}
-
-// Quick validation without full verification (for real-time typing)
-export function useQuickEmailValidation() {
-  const [isValid, setIsValid] = useState<boolean | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-
-  const validate = useCallback((email: string) => {
-    if (!email) {
-      setIsValid(null);
-      setMessage(null);
-      return;
-    }
-
-    // Basic format check
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setIsValid(false);
-      setMessage('Invalid email format');
-      return;
-    }
-
-    // Check for common disposable domains (quick check)
-    const domain = email.split('@')[1]?.toLowerCase();
-    const quickDisposableCheck = [
-      'tempmail.com', 'throwaway.email', 'guerrillamail.com', 
-      'mailinator.com', 'yopmail.com', '10minutemail.com'
-    ];
-    
-    if (quickDisposableCheck.includes(domain)) {
-      setIsValid(false);
-      setMessage('Disposable emails not allowed');
-      return;
-    }
-
-    setIsValid(true);
-    setMessage(null);
-  }, []);
-
-  const reset = useCallback(() => {
-    setIsValid(null);
-    setMessage(null);
-  }, []);
-
-  return { validate, isValid, message, reset };
 }
