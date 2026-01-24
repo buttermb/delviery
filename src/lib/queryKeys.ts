@@ -538,6 +538,14 @@ export const queryKeys = {
     byTag: (tagId: string) => [...queryKeys.customerTags.all, 'tag', tagId] as const,
   },
 
+  // Credit Transactions
+  creditTransactions: {
+    all: ['credit-transactions'] as const,
+    lists: () => [...queryKeys.creditTransactions.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) =>
+      [...queryKeys.creditTransactions.lists(), filters] as const,
+  },
+
   // Activity Feed
   activityFeed: {
     all: ['activity-feed'] as const,
