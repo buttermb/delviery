@@ -2657,3 +2657,58 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create src/components/auth/SignupForm.tsx Reusable Form Component
+
+### What was done:
+
+1. **Created `src/components/auth/SignupForm.tsx`** - A fully reusable signup form component with:
+
+   **Inputs & Validation:**
+   - **Full Name** - Required, min 2 chars, max 100 chars, trimmed on submit
+   - **Email** - Required, regex validation, max 255 chars
+   - **Phone** - Required, auto-formatted as (XXX) XXX-XXXX, validates 10 digits
+   - **Password** - Required, min 8 chars, must contain letter + number
+   - **Confirm Password** - Required, must match password field
+
+   **Password Features:**
+   - Show/hide toggle with Eye/EyeOff icons on both password fields
+   - Integrated `PasswordStrengthIndicator` component (reused existing)
+   - Real-time re-validation of confirm password when password changes
+
+   **Terms & Conditions:**
+   - Checkbox with links to Terms of Service and Privacy Policy
+   - Configurable URLs via `termsUrl` and `privacyUrl` props
+   - Validation error if not accepted on submit
+
+   **Submit Button:**
+   - Uses `Button` with `hero` variant and `loading` prop
+   - Shows "Creating Account..." text during loading
+   - Customizable label via `submitLabel` prop
+   - Disabled during loading state
+
+   **Error Handling:**
+   - Per-field inline errors (shown after blur/touch)
+   - External error prop for API-level errors (displayed as alert banner)
+   - `ErrorSummary` component shown when 3+ errors exist
+   - All inputs disabled during loading state
+
+   **Architecture:**
+   - Named export only (no default export)
+   - Uses `@/` import alias throughout
+   - Leverages existing UI components: `Input`, `Button`, `Checkbox`, `Label`, `FormField`, `ErrorSummary`
+   - Exported `SignupFormData` interface for parent component type safety
+   - Configurable via `SignupFormProps` interface
+   - `onSubmit` callback receives cleaned data (trimmed strings, digits-only phone)
+   - No `any` types - TypeScript strict mode compliant
+   - Accessible: aria-invalid, aria-label, role="alert", proper label associations
+
+### Verification Results:
+- [x] `npx tsc --noEmit` - PASSES (0 TypeScript errors)
+- [x] `npx eslint src/components/auth/SignupForm.tsx` - PASSES (0 errors, 0 warnings)
+- [x] `npm run build` - PASSES successfully
+
+### Files Created:
+- `src/components/auth/SignupForm.tsx`
