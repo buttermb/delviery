@@ -2657,3 +2657,52 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create ResetPasswordPage.tsx with Password Reset Flow
+
+### What was done:
+
+1. **Created `src/hooks/usePasswordReset.ts`** - Custom hook using TanStack Query mutations:
+   - `requestReset` function calls `auth-forgot-password` edge function
+   - `confirmReset` function calls `auth-reset-password` edge function with token + new password
+   - `verifyToken` function validates token against backend before showing form
+   - Exposes loading/error/success states for both flows
+   - Uses `apiFetch` with `skipAuth: true` for unauthenticated requests
+   - Handles expired/invalid token errors with user-friendly messages
+   - Uses `logger` for error tracking (not console.log)
+
+2. **Created `src/pages/auth/ResetPasswordPage.tsx`** - Full password reset page with:
+   - **Token extraction**: Reads `token` from URL search params (`?token=...`)
+   - **Token format validation**: Regex pattern check (alphanumeric + dashes, min 20 chars)
+   - **Token verification**: Calls backend to verify token is valid/not expired before showing form
+   - **Password form**: New password input with show/hide toggle
+   - **Password strength meter**: Visual Progress bar with color-coded strength labels (very weak -> strong)
+   - **Requirements checklist**: Real-time checkmarks for each requirement (length, uppercase, lowercase, number, special char)
+   - **Confirm password**: Second input with match/mismatch indicator
+   - **Submit**: Calls `usePasswordReset.confirmReset`, button disabled until all requirements met + passwords match
+   - **Success state**: Green checkmark, success message, "Go to Login" link
+   - **Expired token handling**: Shows "Link Expired" with explanation and "Request a New Reset Link" button
+   - **Invalid token handling**: Shows "Invalid Reset Link" with "Request a New Reset Link" option
+   - **Loading state**: Spinner during token verification
+   - Named export (no default export), uses `@/` imports, uses `logger`
+
+### Acceptance Criteria Met:
+- [x] Extracts token from URL search params
+- [x] Validates token format client-side before API call
+- [x] Shows new password form with strength meter (Progress bar + color)
+- [x] Confirm password with match/mismatch feedback
+- [x] Requirements checklist with real-time validation
+- [x] Calls usePasswordReset confirmReset on submit
+- [x] Shows success state with login link
+- [x] Handles expired token with "request new link" option
+- [x] Handles invalid token with "request new link" option
+- [x] Loading state during token verification
+- [x] Button disabled until password is strong + passwords match
+- [x] Show/hide password toggles
+- [x] No TypeScript errors, build passes cleanly
+
+### Files Changed:
+- `src/hooks/usePasswordReset.ts` (new)
+- `src/pages/auth/ResetPasswordPage.tsx` (new)
