@@ -1719,3 +1719,75 @@ Enhanced `src/hooks/useInventorySync.ts` with two new mutation hooks that handle
 
 ### Build Status:
 - `npm run build` passes with no errors
+
+---
+
+## Task: Create useRealtimeSubscription Hook for Supabase
+
+### What was done:
+
+1. **Created `src/hooks/useRealtimeSubscription.ts`** - A generic, reusable hook that:
+   - Subscribes to Supabase Realtime `postgres_changes` on any table
+   - Auto-invalidates specified TanStack Query cache keys when changes occur
+   - Supports filtering by column value (e.g., `tenant_id=eq.${tenantId}`)
+   - Supports event-specific listeners (`onInsert`, `onUpdate`, `onDelete`) and generic `onChange`
+   - Provides optional debouncing for high-frequency tables
+   - Reports subscription status (`connecting`, `subscribed`, `error`, `closed`, `idle`)
+   - Uses stable refs for callbacks to avoid unnecessary re-subscriptions
+   - Properly cleans up channels and debounce timers on unmount
+   - Auto-generates unique channel names from table + filter (or accepts custom names)
+
+2. **Updated `src/hooks/index.ts`** - Added barrel export for the new hook
+
+### How it differs from existing hooks:
+- `useRealtimeTable` (existing): Provides callbacks but no TanStack Query integration
+- `useRealtimeSync` (existing): Hardcoded to specific tables with hardcoded query key mappings
+- **`useRealtimeSubscription` (new)**: Generic hook that takes any table + any query keys to invalidate - making it trivial to add realtime to any existing query
+
+### Usage Examples:
+```typescript
+// Basic: invalidate all products queries on any change
+useRealtimeSubscription({
+  table: 'products',
+  queryKeys: [queryKeys.products.all],
+});
+
+// With tenant filter
+useRealtimeSubscription({
+  table: 'orders',
+  filter: `tenant_id=eq.${tenantId}`,
+  queryKeys: [queryKeys.orders.all, queryKeys.analytics.all],
+  enabled: !!tenantId,
+});
+
+// With debounce for high-frequency updates
+useRealtimeSubscription({
+  table: 'inventory_movements',
+  queryKeys: [queryKeys.inventory.all],
+  debounceMs: 1000,
+});
+
+// With event callbacks
+useRealtimeSubscription({
+  table: 'orders',
+  queryKeys: [queryKeys.orders.all],
+  events: ['INSERT', 'UPDATE'],
+  onInsert: (record) => logger.debug('New order', { record }),
+});
+```
+
+### Acceptance Criteria Met:
+- [x] Subscribes to any Supabase table via Realtime postgres_changes
+- [x] Invalidates specified TanStack Query keys on INSERT/UPDATE/DELETE
+- [x] Supports column-based filtering (e.g., tenant_id, store_id)
+- [x] Supports event-specific callbacks (onInsert, onUpdate, onDelete, onChange)
+- [x] Supports debouncing for high-frequency tables
+- [x] Reports subscription status (connecting/subscribed/error/closed/idle)
+- [x] Properly cleans up on unmount (removes channel, clears debounce timers)
+- [x] Uses stable refs to avoid unnecessary re-subscriptions
+- [x] Follows project conventions (logger, @/ imports, named exports, strict TypeScript)
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/hooks/useRealtimeSubscription.ts` (new)
+- `src/hooks/index.ts` (added barrel export)
