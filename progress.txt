@@ -4892,3 +4892,37 @@ Created `src/lib/auth/sessionManager.ts` - a singleton session manager utility t
 
 ### Files Changed:
 - `src/lib/auth/sessionManager.ts` (new file)
+
+---
+
+## Task: Create src/lib/auth/passwordValidator.ts utility
+
+### What was done:
+
+1. **Created `src/lib/auth/passwordValidator.ts`** - Password validation utility with:
+   - `validatePassword(password: string): PasswordValidationResult` - Checks all 5 criteria:
+     - Minimum 8 characters
+     - At least one uppercase letter
+     - At least one lowercase letter
+     - At least one number
+     - At least one special character (any non-alphanumeric)
+   - Returns `{ isValid: boolean, failures: string[] }` with specific failure messages
+   - `getPasswordStrength(password: string): PasswordStrength` - Returns 'weak', 'medium', or 'strong':
+     - weak: fewer than 3 criteria met
+     - medium: 3-4 criteria met
+     - strong: all 5 criteria met
+   - Exported types: `PasswordValidationResult`, `PasswordStrength`
+   - Designed for use by signup and password reset forms
+
+2. **Created `src/lib/auth/__tests__/passwordValidator.test.ts`** - 18 tests covering:
+   - All individual validation criteria
+   - Multiple failures for weak passwords
+   - Empty string edge case
+   - Exact boundary (8 chars)
+   - Various special character types
+   - All three strength levels with different combinations
+   - Edge cases for strength assessment
+
+### Files Changed:
+- `src/lib/auth/passwordValidator.ts` (new file)
+- `src/lib/auth/__tests__/passwordValidator.test.ts` (new file)
