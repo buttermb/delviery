@@ -6136,3 +6136,34 @@ import { CreditUsageIndicator } from '@/components/credits';
 ### Files Changed:
 - `src/components/credits/CreditUsageIndicator.tsx` (new)
 - `src/components/credits/index.ts` (added exports)
+---
+
+## Task: Create src/components/auth/ProtectedRoute.tsx
+
+### What was done:
+
+1. **Cherry-picked `useAuthGuard.ts` hook** from another branch (commit d4fc8bb3) as a dependency:
+   - `src/hooks/useAuthGuard.ts` - Hook that checks authentication status, role hierarchy, and permissions
+   - Updated `src/hooks/index.ts` to export `useAuthGuard`
+
+2. **Created `src/components/auth/ProtectedRoute.tsx`** - Wrapper component that:
+   - Uses `useAuthGuard` hook for authentication and authorization checking
+   - Shows a centered loading spinner with "Verifying access..." text while auth state is loading
+   - Redirects to login with `returnUrl` query parameter (encoding the current path) if not authenticated
+   - Renders children when authenticated and authorized
+   - Shows an access denied UI (or custom `accessDeniedFallback`) when authenticated but lacking required role/permissions
+   - Supports `requiredRole` prop with role hierarchy (owner > admin > team_member > viewer)
+   - Supports `requiredPermissions` prop for permission-based access control
+   - Supports `requireAnyPermission` prop to require at least one permission instead of all
+   - Supports custom `redirectTo` path for login redirect
+   - Uses `hasRedirected` ref to prevent redirect loops
+   - Follows existing codebase patterns (named export, `@/` imports, `logger` for debug logging)
+
+### Verification:
+- TypeScript compilation: zero errors
+- ESLint: zero warnings/errors on new files
+
+### Files Changed:
+- `src/hooks/useAuthGuard.ts` (new - cherry-picked from another branch)
+- `src/hooks/index.ts` (added useAuthGuard export)
+- `src/components/auth/ProtectedRoute.tsx` (new)
