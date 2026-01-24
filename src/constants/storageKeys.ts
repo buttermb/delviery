@@ -95,6 +95,9 @@ export const STORAGE_KEYS = {
   // Command Palette
   COMMAND_PALETTE_RECENT_SEARCHES: 'command_palette_recent_searches',
 
+  // Dashboard
+  DASHBOARD_WIDGETS: 'dashboard_widgets',
+
   // Performance
   NETWORK_QUALITY: 'network_quality',
   REDUCED_MOTION: 'reduced_motion',

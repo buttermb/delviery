@@ -1,10 +1,9 @@
-import { logger } from '@/lib/logger';
 /**
  * Dashboard Widget Grid
- * Manages the layout and rendering of dashboard widgets based on user preference
+ * Renders dashboard widgets filtered by user role/permissions.
+ * Uses useDashboardWidgets hook for role-based access control.
  */
 
-import { useState, useEffect } from 'react';
 import { QuickActionsHub } from '@/components/tenant-admin/QuickActionsHub';
 import { RealtimeSalesWidget } from '@/components/tenant-admin/RealtimeSalesWidget';
 import { InventoryForecastWidget } from '@/components/tenant-admin/InventoryForecastWidget';
@@ -12,7 +11,7 @@ import { RevenueForecastWidget } from '@/components/tenant-admin/RevenueForecast
 import { MultiChannelOrderList } from '@/components/tenant-admin/MultiChannelOrderList';
 import { StorefrontPerformanceWidget } from '@/components/tenant-admin/StorefrontPerformanceWidget';
 import { Button } from '@/components/ui/button';
-import { Settings2 } from 'lucide-react';
+import { Settings2, RotateCcw } from 'lucide-react';
 import {
     Sheet,
     SheetContent,
@@ -23,94 +22,47 @@ import {
 } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useDashboardWidgets, DashboardWidgetId } from '@/hooks/useDashboardWidgets';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export type WidgetId = 'quick_actions' | 'realtime_sales' | 'inventory_forecast' | 'revenue_forecast' | 'recent_orders' | 'storefront_summary';
-
-interface WidgetConfig {
-    id: WidgetId;
-    visible: boolean;
-    order: number;
-    label: string;
+function renderWidget(id: DashboardWidgetId) {
+    switch (id) {
+        case 'quick_actions': return <QuickActionsHub />;
+        case 'realtime_sales': return <RealtimeSalesWidget />;
+        case 'storefront_summary': return <StorefrontPerformanceWidget />;
+        case 'inventory_forecast': return <InventoryForecastWidget />;
+        case 'revenue_forecast': return <RevenueForecastWidget />;
+        case 'recent_orders': return <MultiChannelOrderList />;
+        default: return null;
+    }
 }
 
-const DEFAULT_CONFIG: WidgetConfig[] = [
-    { id: 'quick_actions', visible: true, order: 0, label: 'Quick Actions' },
-    { id: 'realtime_sales', visible: true, order: 1, label: 'Real-Time Sales' },
-    { id: 'storefront_summary', visible: true, order: 2, label: 'Storefront' },
-    { id: 'inventory_forecast', visible: true, order: 3, label: 'Inventory Forecast' },
-    { id: 'revenue_forecast', visible: true, order: 4, label: 'Revenue Forecast' },
-    { id: 'recent_orders', visible: true, order: 5, label: 'Recent Orders' },
-];
-
 export function DashboardWidgetGrid() {
-    const { tenant } = useTenantAdminAuth();
-    const tenantId = tenant?.id;
-    const [widgets, setWidgets] = useState<WidgetConfig[]>(DEFAULT_CONFIG);
-    const [isLoaded, setIsLoaded] = useState(false);
+    const {
+        permittedWidgets,
+        visibleWidgets,
+        widgetStates,
+        toggleWidget,
+        moveWidget,
+        resetToDefaults,
+        isLoaded,
+        isPermissionsLoading,
+    } = useDashboardWidgets();
 
-    // Load config from localStorage
-    useEffect(() => {
-        if (!tenantId) return;
-
-        const savedConfig = localStorage.getItem(`dashboard_widgets_${tenantId}`);
-        if (savedConfig) {
-            try {
-                const parsed = JSON.parse(savedConfig);
-                // Merge with default to handle new widgets in future
-                const merged = DEFAULT_CONFIG.map(def => {
-                    const saved = parsed.find((p: WidgetConfig) => p.id === def.id);
-                    return saved ? { ...def, ...saved } : def;
-                });
-                setWidgets(merged.sort((a, b) => a.order - b.order));
-            } catch (e) {
-                logger.error('Failed to parse widget config', e);
-            }
-        }
-        setIsLoaded(true);
-    }, [tenantId]);
-
-    // Save config to localStorage
-    const saveConfig = (newConfig: WidgetConfig[]) => {
-        setWidgets(newConfig);
-        if (tenantId) {
-            localStorage.setItem(`dashboard_widgets_${tenantId}`, JSON.stringify(newConfig));
-        }
-    };
-
-    const toggleWidget = (id: WidgetId) => {
-        const newConfig = widgets.map(w =>
-            w.id === id ? { ...w, visible: !w.visible } : w
+    if (isPermissionsLoading || !isLoaded) {
+        return (
+            <div className="space-y-6">
+                <Skeleton className="h-10 w-48 ml-auto" />
+                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-48 w-full" />
+            </div>
         );
-        saveConfig(newConfig);
-    };
+    }
 
-    const moveWidget = (index: number, direction: 'up' | 'down') => {
-        const newConfig = [...widgets];
-        if (direction === 'up' && index > 0) {
-            [newConfig[index], newConfig[index - 1]] = [newConfig[index - 1], newConfig[index]];
-        } else if (direction === 'down' && index < newConfig.length - 1) {
-            [newConfig[index], newConfig[index + 1]] = [newConfig[index + 1], newConfig[index]];
-        }
-
-        // Update order property
-        newConfig.forEach((w, i) => w.order = i);
-        saveConfig(newConfig);
-    };
-
-    const renderWidget = (id: WidgetId) => {
-        switch (id) {
-            case 'quick_actions': return <QuickActionsHub />;
-            case 'realtime_sales': return <RealtimeSalesWidget />;
-            case 'storefront_summary': return <StorefrontPerformanceWidget />;
-            case 'inventory_forecast': return <InventoryForecastWidget />;
-            case 'revenue_forecast': return <RevenueForecastWidget />;
-            case 'recent_orders': return <MultiChannelOrderList />;
-            default: return null;
-        }
-    };
-
-    if (!isLoaded) return null;
+    if (widgetStates.length === 0) {
+        return null;
+    }
 
     return (
         <div className="space-y-6">
@@ -127,56 +79,68 @@ export function DashboardWidgetGrid() {
                             <SheetTitle>Customize Dashboard</SheetTitle>
                             <SheetDescription>
                                 Toggle visibility and reorder your widgets.
+                                Only widgets you have permission to access are shown.
                             </SheetDescription>
                         </SheetHeader>
-                        <div className="py-6 space-y-6">
-                            {widgets.map((widget, index) => (
-                                <div key={widget.id} className="flex items-center justify-between p-3 border rounded-lg bg-card">
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex flex-col gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-6 w-6"
-                                                disabled={index === 0}
-                                                onClick={() => moveWidget(index, 'up')}
-                                            >
-                                                ▲
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-6 w-6"
-                                                disabled={index === widgets.length - 1}
-                                                onClick={() => moveWidget(index, 'down')}
-                                            >
-                                                ▼
-                                            </Button>
+                        <div className="py-6 space-y-4">
+                            {widgetStates.map((state, index) => {
+                                const def = permittedWidgets.find(w => w.id === state.id);
+
+                                return (
+                                    <div key={state.id} className="flex items-center justify-between p-3 border rounded-lg bg-card">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex flex-col gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6"
+                                                    disabled={index === 0}
+                                                    onClick={() => moveWidget(index, 'up')}
+                                                >
+                                                    ▲
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6"
+                                                    disabled={index === widgetStates.length - 1}
+                                                    onClick={() => moveWidget(index, 'down')}
+                                                >
+                                                    ▼
+                                                </Button>
+                                            </div>
+                                            <Label htmlFor={`widget-${state.id}`} className="font-medium">
+                                                {def?.label ?? state.id}
+                                            </Label>
                                         </div>
-                                        <Label htmlFor={`widget-${widget.id}`} className="font-medium">
-                                            {widget.label}
-                                        </Label>
+                                        <Switch
+                                            id={`widget-${state.id}`}
+                                            checked={state.visible}
+                                            onCheckedChange={() => toggleWidget(state.id)}
+                                        />
                                     </div>
-                                    <Switch
-                                        id={`widget-${widget.id}`}
-                                        checked={widget.visible}
-                                        onCheckedChange={() => toggleWidget(widget.id)}
-                                    />
-                                </div>
-                            ))}
+                                );
+                            })}
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="gap-2 mt-4 w-full"
+                                onClick={resetToDefaults}
+                            >
+                                <RotateCcw className="h-4 w-4" />
+                                Reset to Defaults
+                            </Button>
                         </div>
                     </SheetContent>
                 </Sheet>
             </div>
 
             <div className="space-y-6">
-                {widgets
-                    .filter(w => w.visible)
-                    .map(widget => (
-                        <div key={widget.id} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            {renderWidget(widget.id)}
-                        </div>
-                    ))}
+                {visibleWidgets.map(widget => (
+                    <div key={widget.id} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {renderWidget(widget.id)}
+                    </div>
+                ))}
             </div>
         </div>
     );
