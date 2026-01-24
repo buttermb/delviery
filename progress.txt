@@ -3256,3 +3256,45 @@ Created migration `supabase/migrations/20260124000001_create_password_reset_toke
 
 ### Files Changed:
 - `supabase/migrations/20260124000000_add_update_credit_balance_function.sql` (new)
+
+---
+
+## Task: Create expire_credits Database Function
+
+### What was done:
+
+1. **Created `credit_expiration_rules` table** (`supabase/migrations/20260124000000_expire_credits_function.sql`):
+   - `id` UUID primary key
+   - `tenant_id` UUID references tenants (with ON DELETE CASCADE)
+   - `name` TEXT - human-readable rule name
+   - `days_until_expiration` INTEGER (CHECK > 0) - days after grant before credits expire
+   - `applies_to` TEXT - credit type: 'purchased', 'bonus', 'promotional', 'subscription'
+   - `warning_days_before` INTEGER[] - array of days before expiration to send warnings (default: {30, 7, 1})
+   - `is_active` BOOLEAN - whether rule is active
+   - RLS enabled with tenant isolation policy and service_role full access
+
+2. **Added `lifetime_expired` column** to `tenant_credits`:
+   - INTEGER NOT NULL DEFAULT 0
+   - Tracks total credits expired over the account lifetime
+
+3. **Updated `credit_transactions` CHECK constraint**:
+   - Added 'expiration' to allowed transaction_type values
+   - Preserved existing types: free_grant, purchase, usage, refund, bonus, adjustment, signup_bonus, promo
+
+4. **Created `expire_credits()` function** (SECURITY DEFINER, search_path = public):
+   - **Phase 1**: Expires `credit_grants` with explicit `expires_at` dates that have passed
+   - **Phase 2**: Expires credits based on `credit_expiration_rules` (matches grant_type to applies_to category, calculates expiry from granted_at + days_until_expiration)
+   - **Phase 3**: Expires free credits where `free_credits_expires_at` has passed on `tenant_credits`
+   - For each expiration:
+     - Calculates expired amount (capped at current balance)
+     - Updates `tenant_credits.balance` and `lifetime_expired`
+     - Creates `credit_transactions` row with type 'expiration', negative amount, and detailed metadata
+     - Marks `credit_grants.is_used = true`
+   - Returns JSONB summary with total_credits_expired, total_grants_expired, execution timestamp, and details array
+
+5. **Scheduled pg_cron job** (`expire_credits_nightly`):
+   - Runs at `0 0 * * *` (midnight UTC daily)
+   - Gracefully handles missing pg_cron extension (no-op if not available)
+
+### Files Changed:
+- `supabase/migrations/20260124000000_expire_credits_function.sql` (new)
