@@ -160,6 +160,7 @@ import { UrlEncodingFixer } from "./components/UrlEncodingFixer";
 const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePage"));
 const TenantAdminVerifyEmailPage = lazy(() => import("./pages/tenant-admin/VerifyEmailPage"));
 const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
+const SignupSuccessPage = lazy(() => import("./pages/auth/SignupSuccessPage").then(m => ({ default: m.SignupSuccessPage })));
 
 // Tenant Admin Pages
 const TenantAdminLoginPage = lazy(() => import("./pages/tenant-admin/LoginPage"));
@@ -629,6 +630,7 @@ const App = () => {
                                       <Route path="/select-plan%3F/*" element={<EncodedUrlRedirect />} />
                                       <Route path="/saas/login" element={<SaasLoginPage />} />
                                       <Route path="/verify-email" element={<VerifyEmailPage />} />
+                                      <Route path="/signup-success" element={<SignupSuccessPage />} />
                                       <Route path="/auth/confirm" element={<AuthConfirmPage />} />
 
 
