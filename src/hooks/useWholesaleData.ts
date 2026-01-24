@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { logger } from "@/lib/logger";
 
 /**
  * Fetch active wholesale clients (excludes soft-deleted)
@@ -78,14 +79,26 @@ export const useCreateWholesaleOrder = () => {
 
       return data;
     },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["wholesale-orders"] });
+      const previousOrders = queryClient.getQueryData(["wholesale-orders"]);
+      return { previousOrders };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousOrders) {
+        queryClient.setQueryData(["wholesale-orders"], context.previousOrders);
+      }
+      const message = error instanceof Error ? error.message : "Failed to create order";
+      logger.error('Failed to create wholesale order', error, { component: 'useCreateWholesaleOrder' });
+      showErrorToast("Order Failed", message);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["wholesale-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["wholesale-clients"] });
       showSuccessToast("Order Created", "Wholesale order created successfully");
     },
-    onError: (error) => {
-      showErrorToast("Order Failed", error instanceof Error ? error.message : "Failed to create order");
-    }
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["wholesale-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["wholesale-clients"] });
+    },
   });
 };
 
@@ -108,14 +121,31 @@ export const useProcessPayment = () => {
 
       return data;
     },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["wholesale-clients"] });
+      await queryClient.cancelQueries({ queryKey: ["wholesale-payments"] });
+      const previousClients = queryClient.getQueryData(["wholesale-clients"]);
+      const previousPayments = queryClient.getQueryData(["wholesale-payments"]);
+      return { previousClients, previousPayments };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousClients) {
+        queryClient.setQueryData(["wholesale-clients"], context.previousClients);
+      }
+      if (context?.previousPayments) {
+        queryClient.setQueryData(["wholesale-payments"], context.previousPayments);
+      }
+      const message = error instanceof Error ? error.message : "Failed to process payment";
+      logger.error('Failed to process payment', error, { component: 'useProcessPayment' });
+      showErrorToast("Payment Failed", message);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["wholesale-clients"] });
-      queryClient.invalidateQueries({ queryKey: ["wholesale-payments"] });
       showSuccessToast("Payment Processed", "Payment recorded successfully");
     },
-    onError: (error) => {
-      showErrorToast("Payment Failed", error instanceof Error ? error.message : "Failed to process payment");
-    }
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["wholesale-clients"] });
+      queryClient.invalidateQueries({ queryKey: ["wholesale-payments"] });
+    },
   });
 };
 
@@ -138,15 +168,32 @@ export const useAssignDelivery = () => {
 
       return result;
     },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["wholesale-orders"] });
+      await queryClient.cancelQueries({ queryKey: ["wholesale-deliveries"] });
+      const previousOrders = queryClient.getQueryData(["wholesale-orders"]);
+      const previousDeliveries = queryClient.getQueryData(["wholesale-deliveries"]);
+      return { previousOrders, previousDeliveries };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousOrders) {
+        queryClient.setQueryData(["wholesale-orders"], context.previousOrders);
+      }
+      if (context?.previousDeliveries) {
+        queryClient.setQueryData(["wholesale-deliveries"], context.previousDeliveries);
+      }
+      const message = error instanceof Error ? error.message : "Failed to assign delivery";
+      logger.error('Failed to assign delivery', error, { component: 'useAssignDelivery' });
+      showErrorToast("Assignment Failed", message);
+    },
     onSuccess: () => {
+      showSuccessToast("Delivery Assigned", "Runner assigned successfully");
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["wholesale-orders"] });
       queryClient.invalidateQueries({ queryKey: ["wholesale-deliveries"] });
       queryClient.invalidateQueries({ queryKey: ["runners"] });
-      showSuccessToast("Delivery Assigned", "Runner assigned successfully");
     },
-    onError: (error) => {
-      showErrorToast("Assignment Failed", error instanceof Error ? error.message : "Failed to assign delivery");
-    }
   });
 };
 
@@ -169,14 +216,31 @@ export const useUpdateDeliveryStatus = () => {
 
       return result;
     },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["wholesale-deliveries"] });
+      await queryClient.cancelQueries({ queryKey: ["active-deliveries"] });
+      const previousDeliveries = queryClient.getQueryData(["wholesale-deliveries"]);
+      const previousActiveDeliveries = queryClient.getQueryData(["active-deliveries"]);
+      return { previousDeliveries, previousActiveDeliveries };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousDeliveries) {
+        queryClient.setQueryData(["wholesale-deliveries"], context.previousDeliveries);
+      }
+      if (context?.previousActiveDeliveries) {
+        queryClient.setQueryData(["active-deliveries"], context.previousActiveDeliveries);
+      }
+      const message = error instanceof Error ? error.message : "Failed to update status";
+      logger.error('Failed to update delivery status', error, { component: 'useUpdateDeliveryStatus' });
+      showErrorToast("Update Failed", message);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["wholesale-deliveries"] });
-      queryClient.invalidateQueries({ queryKey: ["active-deliveries"] });
       showSuccessToast("Status Updated", "Delivery status updated successfully");
     },
-    onError: (error) => {
-      showErrorToast("Update Failed", error instanceof Error ? error.message : "Failed to update status");
-    }
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["wholesale-deliveries"] });
+      queryClient.invalidateQueries({ queryKey: ["active-deliveries"] });
+    },
   });
 };
 

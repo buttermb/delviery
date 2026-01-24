@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 
 // Types
 export type ContactType = 'retail' | 'wholesale' | 'crm';
@@ -287,7 +288,79 @@ export function useCreateContact() {
 
       return data as Contact;
     },
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: contactsKeys.lists() });
+      const previousContacts = queryClient.getQueriesData<Contact[]>({ queryKey: contactsKeys.lists() });
+
+      const optimisticContact: Contact = {
+        id: `temp-${Date.now()}`,
+        tenant_id: tenant?.id || '',
+        contact_type: input.contact_type || ['retail'],
+        name: input.name || null,
+        first_name: input.first_name || null,
+        last_name: input.last_name || null,
+        email: input.email || null,
+        phone: input.phone || null,
+        address: input.address || null,
+        city: input.city || null,
+        state: input.state || null,
+        zip_code: input.zip_code || null,
+        country: 'US',
+        auth_user_id: null,
+        business_name: input.business_name || null,
+        business_license: null,
+        tax_id: null,
+        credit_limit: input.credit_limit || 0,
+        outstanding_balance: 0,
+        payment_terms: input.payment_terms || 'net_30',
+        client_type: input.client_type || null,
+        account_manager_id: null,
+        lead_status: input.lead_status || null,
+        lead_source: input.lead_source || null,
+        assigned_to: null,
+        company_name: input.company_name || null,
+        job_title: input.job_title || null,
+        loyalty_points: 0,
+        loyalty_tier: null,
+        lifetime_value: 0,
+        total_orders: 0,
+        is_verified: false,
+        verified_at: null,
+        age_verified: false,
+        status: 'active',
+        email_opt_in: false,
+        sms_opt_in: false,
+        preferred_contact_method: 'email',
+        notes: input.notes || null,
+        tags: input.tags || null,
+        metadata: input.metadata || {},
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        last_contacted_at: null,
+        last_order_at: null,
+      };
+
+      queryClient.setQueriesData<Contact[]>(
+        { queryKey: contactsKeys.lists() },
+        (old) => old ? [optimisticContact, ...old] : [optimisticContact]
+      );
+
+      return { previousContacts };
+    },
+    onError: (error, _input, context) => {
+      if (context?.previousContacts) {
+        context.previousContacts.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      const message = error instanceof Error ? error.message : 'Failed to create contact';
+      logger.error('Contact creation failed', error, { component: 'useCreateContact' });
+      toast.error('Contact creation failed', { description: message });
+    },
     onSuccess: () => {
+      toast.success('Contact created successfully');
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
     },
   });
@@ -325,9 +398,50 @@ export function useUpdateContact() {
 
       return data as Contact;
     },
-    onSuccess: (data) => {
+    onMutate: async ({ contactId, ...input }) => {
+      await queryClient.cancelQueries({ queryKey: contactsKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: contactsKeys.detail(contactId) });
+
+      const previousLists = queryClient.getQueriesData<Contact[]>({ queryKey: contactsKeys.lists() });
+      const previousDetail = queryClient.getQueryData<Contact>(contactsKeys.detail(contactId));
+
+      // Update list caches optimistically
+      queryClient.setQueriesData<Contact[]>(
+        { queryKey: contactsKeys.lists() },
+        (old) => old?.map(contact =>
+          contact.id === contactId ? { ...contact, ...input, updated_at: new Date().toISOString() } : contact
+        )
+      );
+
+      // Update detail cache
+      if (previousDetail) {
+        queryClient.setQueryData<Contact>(
+          contactsKeys.detail(contactId),
+          { ...previousDetail, ...input, updated_at: new Date().toISOString() }
+        );
+      }
+
+      return { previousLists, previousDetail, contactId };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousLists) {
+        context.previousLists.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      if (context?.previousDetail && context.contactId) {
+        queryClient.setQueryData(contactsKeys.detail(context.contactId), context.previousDetail);
+      }
+      const message = error instanceof Error ? error.message : 'Failed to update contact';
+      logger.error('Contact update failed', error, { component: 'useUpdateContact' });
+      toast.error('Contact update failed', { description: message });
+    },
+    onSuccess: () => {
+      toast.success('Contact updated successfully');
+    },
+    onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: contactsKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: contactsKeys.detail(variables.contactId) });
     },
   });
 }
@@ -357,7 +471,32 @@ export function useDeleteContact() {
 
       return contactId;
     },
+    onMutate: async (contactId) => {
+      await queryClient.cancelQueries({ queryKey: contactsKeys.lists() });
+      const previousContacts = queryClient.getQueriesData<Contact[]>({ queryKey: contactsKeys.lists() });
+
+      // Optimistically remove from active lists
+      queryClient.setQueriesData<Contact[]>(
+        { queryKey: contactsKeys.lists() },
+        (old) => old?.filter(contact => contact.id !== contactId)
+      );
+
+      return { previousContacts };
+    },
+    onError: (error, _contactId, context) => {
+      if (context?.previousContacts) {
+        context.previousContacts.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      const message = error instanceof Error ? error.message : 'Failed to delete contact';
+      logger.error('Contact deletion failed', error, { component: 'useDeleteContact' });
+      toast.error('Contact deletion failed', { description: message });
+    },
     onSuccess: () => {
+      toast.success('Contact deleted successfully');
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
     },
   });
@@ -371,13 +510,13 @@ export function useUpdateContactBalance() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      contactId, 
-      amount, 
-      operation 
-    }: { 
-      contactId: string; 
-      amount: number; 
+    mutationFn: async ({
+      contactId,
+      amount,
+      operation
+    }: {
+      contactId: string;
+      amount: number;
       operation: 'add' | 'subtract';
     }) => {
       if (!tenant?.id) throw new Error('No tenant');
@@ -396,9 +535,52 @@ export function useUpdateContactBalance() {
 
       return { contactId, newBalance };
     },
-    onSuccess: ({ contactId }) => {
+    onMutate: async ({ contactId, amount, operation }) => {
+      await queryClient.cancelQueries({ queryKey: contactsKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: contactsKeys.detail(contactId) });
+
+      const previousLists = queryClient.getQueriesData<Contact[]>({ queryKey: contactsKeys.lists() });
+      const previousDetail = queryClient.getQueryData<Contact>(contactsKeys.detail(contactId));
+
+      const balanceChange = operation === 'add' ? amount : -amount;
+
+      queryClient.setQueriesData<Contact[]>(
+        { queryKey: contactsKeys.lists() },
+        (old) => old?.map(contact =>
+          contact.id === contactId
+            ? { ...contact, outstanding_balance: contact.outstanding_balance + balanceChange }
+            : contact
+        )
+      );
+
+      if (previousDetail) {
+        queryClient.setQueryData<Contact>(
+          contactsKeys.detail(contactId),
+          { ...previousDetail, outstanding_balance: previousDetail.outstanding_balance + balanceChange }
+        );
+      }
+
+      return { previousLists, previousDetail, contactId };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousLists) {
+        context.previousLists.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      if (context?.previousDetail && context.contactId) {
+        queryClient.setQueryData(contactsKeys.detail(context.contactId), context.previousDetail);
+      }
+      const message = error instanceof Error ? error.message : 'Failed to update balance';
+      logger.error('Balance update failed', error, { component: 'useUpdateContactBalance' });
+      toast.error('Balance update failed', { description: message });
+    },
+    onSuccess: () => {
+      toast.success('Balance updated successfully');
+    },
+    onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: contactsKeys.detail(contactId) });
+      queryClient.invalidateQueries({ queryKey: contactsKeys.detail(variables.contactId) });
     },
   });
 }
@@ -427,9 +609,51 @@ export function useAddContactType() {
 
       return { contactId, contactType };
     },
-    onSuccess: ({ contactId }) => {
+    onMutate: async ({ contactId, contactType }) => {
+      await queryClient.cancelQueries({ queryKey: contactsKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: contactsKeys.detail(contactId) });
+
+      const previousLists = queryClient.getQueriesData<Contact[]>({ queryKey: contactsKeys.lists() });
+      const previousDetail = queryClient.getQueryData<Contact>(contactsKeys.detail(contactId));
+
+      // Optimistically add the contact type
+      queryClient.setQueriesData<Contact[]>(
+        { queryKey: contactsKeys.lists() },
+        (old) => old?.map(contact =>
+          contact.id === contactId
+            ? { ...contact, contact_type: [...(contact.contact_type || []), contactType] }
+            : contact
+        )
+      );
+
+      if (previousDetail) {
+        queryClient.setQueryData<Contact>(
+          contactsKeys.detail(contactId),
+          { ...previousDetail, contact_type: [...(previousDetail.contact_type || []), contactType] }
+        );
+      }
+
+      return { previousLists, previousDetail, contactId };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousLists) {
+        context.previousLists.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      if (context?.previousDetail && context.contactId) {
+        queryClient.setQueryData(contactsKeys.detail(context.contactId), context.previousDetail);
+      }
+      const message = error instanceof Error ? error.message : 'Failed to add contact type';
+      logger.error('Add contact type failed', error, { component: 'useAddContactType' });
+      toast.error('Failed to add contact type', { description: message });
+    },
+    onSuccess: () => {
+      toast.success('Contact type added successfully');
+    },
+    onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: contactsKeys.detail(contactId) });
+      queryClient.invalidateQueries({ queryKey: contactsKeys.detail(variables.contactId) });
     },
   });
 }

@@ -115,14 +115,43 @@ export function useCreateClient() {
             }
             return data as CRMClient;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
-            toast.success('Client created successfully');
+        onMutate: async (values) => {
+            await queryClient.cancelQueries({ queryKey: crmClientKeys.lists() });
+            const previousClients = queryClient.getQueriesData<CRMClient[]>({ queryKey: crmClientKeys.lists() });
+
+            const optimisticClient = {
+                id: `temp-${Date.now()}`,
+                account_id: values.account_id || accountId || '',
+                name: values.name,
+                email: values.email || null,
+                phone: values.phone || null,
+                status: values.status || 'active',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            } as CRMClient;
+
+            queryClient.setQueriesData<CRMClient[]>(
+                { queryKey: crmClientKeys.lists() },
+                (old) => old ? [optimisticClient, ...old] : [optimisticClient]
+            );
+
+            return { previousClients };
         },
-        onError: (error: unknown) => {
+        onError: (error: unknown, _variables: unknown, context: { previousClients?: [unknown, CRMClient[] | undefined][] } | undefined) => {
+            if (context?.previousClients) {
+                context.previousClients.forEach(([queryKey, data]) => {
+                    queryClient.setQueryData(queryKey as readonly unknown[], data);
+                });
+            }
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Client creation failed', error, { component: 'useCreateClient' });
-            toast.error(`Failed to create client: ${errorMessage}`);
+            toast.error('Client creation failed', { description: errorMessage });
+        },
+        onSuccess: () => {
+            toast.success('Client created successfully');
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
         },
     });
 }
@@ -160,15 +189,50 @@ export function useUpdateClient() {
             }
             return data as CRMClient;
         },
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
-            queryClient.invalidateQueries({ queryKey: crmClientKeys.detail(variables.id) });
-            toast.success('Client updated successfully');
+        onMutate: async ({ id, values }) => {
+            await queryClient.cancelQueries({ queryKey: crmClientKeys.lists() });
+            await queryClient.cancelQueries({ queryKey: crmClientKeys.detail(id) });
+
+            const previousLists = queryClient.getQueriesData<CRMClient[]>({ queryKey: crmClientKeys.lists() });
+            const previousDetail = queryClient.getQueryData<CRMClient>(crmClientKeys.detail(id));
+
+            queryClient.setQueriesData<CRMClient[]>(
+                { queryKey: crmClientKeys.lists() },
+                (old) => old?.map(client =>
+                    client.id === id ? { ...client, ...values, updated_at: new Date().toISOString() } : client
+                )
+            );
+
+            if (previousDetail) {
+                queryClient.setQueryData<CRMClient>(
+                    crmClientKeys.detail(id),
+                    { ...previousDetail, ...values, updated_at: new Date().toISOString() }
+                );
+            }
+
+            return { previousLists, previousDetail, clientId: id };
         },
-        onError: (error: unknown) => {
+        onError: (error: unknown, _variables: unknown, context: { previousLists?: [unknown, CRMClient[] | undefined][]; previousDetail?: CRMClient; clientId?: string } | undefined) => {
+            if (context?.previousLists) {
+                context.previousLists.forEach(([queryKey, data]) => {
+                    queryClient.setQueryData(queryKey as readonly unknown[], data);
+                });
+            }
+            if (context?.previousDetail && context.clientId) {
+                queryClient.setQueryData(crmClientKeys.detail(context.clientId), context.previousDetail);
+            }
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Client update failed', error, { component: 'useUpdateClient' });
-            toast.error(`Failed to update client: ${errorMessage}`);
+            toast.error('Client update failed', { description: errorMessage });
+        },
+        onSuccess: () => {
+            toast.success('Client updated successfully');
+        },
+        onSettled: (_data: unknown, _error: unknown, variables: { id: string; values: Partial<ClientFormValues> } | undefined) => {
+            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
+            if (variables) {
+                queryClient.invalidateQueries({ queryKey: crmClientKeys.detail(variables.id) });
+            }
         },
     });
 }
@@ -201,15 +265,36 @@ export function useArchiveClient() {
             }
             return data as CRMClient;
         },
-        onSuccess: (_, clientId) => {
-            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
-            queryClient.invalidateQueries({ queryKey: crmClientKeys.detail(clientId) });
-            toast.success('Client archived successfully');
+        onMutate: async (clientId) => {
+            await queryClient.cancelQueries({ queryKey: crmClientKeys.lists() });
+            const previousClients = queryClient.getQueriesData<CRMClient[]>({ queryKey: crmClientKeys.lists() });
+
+            // Optimistically remove from active lists
+            queryClient.setQueriesData<CRMClient[]>(
+                { queryKey: crmClientKeys.lists() },
+                (old) => old?.filter(client => client.id !== clientId)
+            );
+
+            return { previousClients };
         },
-        onError: (error: unknown) => {
+        onError: (error: unknown, _clientId: unknown, context: { previousClients?: [unknown, CRMClient[] | undefined][] } | undefined) => {
+            if (context?.previousClients) {
+                context.previousClients.forEach(([queryKey, data]) => {
+                    queryClient.setQueryData(queryKey as readonly unknown[], data);
+                });
+            }
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Client archive failed', error, { component: 'useArchiveClient' });
-            toast.error(`Failed to archive client: ${errorMessage}`);
+            toast.error('Client archive failed', { description: errorMessage });
+        },
+        onSuccess: () => {
+            toast.success('Client archived successfully');
+        },
+        onSettled: (_data: unknown, _error: unknown, clientId: string | undefined) => {
+            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
+            if (clientId) {
+                queryClient.invalidateQueries({ queryKey: crmClientKeys.detail(clientId) });
+            }
         },
     });
 }
@@ -242,15 +327,38 @@ export function useRestoreClient() {
             }
             return data as CRMClient;
         },
-        onSuccess: (_, clientId) => {
-            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
-            queryClient.invalidateQueries({ queryKey: crmClientKeys.detail(clientId) });
-            toast.success('Client restored successfully');
+        onMutate: async (clientId) => {
+            await queryClient.cancelQueries({ queryKey: crmClientKeys.lists() });
+            const previousClients = queryClient.getQueriesData<CRMClient[]>({ queryKey: crmClientKeys.lists() });
+
+            // Optimistically update status in cached lists
+            queryClient.setQueriesData<CRMClient[]>(
+                { queryKey: crmClientKeys.lists() },
+                (old) => old?.map(client =>
+                    client.id === clientId ? { ...client, status: 'active' } : client
+                )
+            );
+
+            return { previousClients };
         },
-        onError: (error: unknown) => {
+        onError: (error: unknown, _clientId: unknown, context: { previousClients?: [unknown, CRMClient[] | undefined][] } | undefined) => {
+            if (context?.previousClients) {
+                context.previousClients.forEach(([queryKey, data]) => {
+                    queryClient.setQueryData(queryKey as readonly unknown[], data);
+                });
+            }
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Client restore failed', error, { component: 'useRestoreClient' });
-            toast.error(`Failed to restore client: ${errorMessage}`);
+            toast.error('Client restore failed', { description: errorMessage });
+        },
+        onSuccess: () => {
+            toast.success('Client restored successfully');
+        },
+        onSettled: (_data: unknown, _error: unknown, clientId: string | undefined) => {
+            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
+            if (clientId) {
+                queryClient.invalidateQueries({ queryKey: crmClientKeys.detail(clientId) });
+            }
         },
     });
 }
