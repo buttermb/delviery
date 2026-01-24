@@ -2657,3 +2657,73 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create src/components/auth/LoginForm.tsx Reusable Component
+
+### What was done:
+
+1. **Created `src/components/auth/LoginForm.tsx`** - A fully reusable login form component with:
+
+   - **React Hook Form + Zod validation**:
+     - Email: required, valid email format, max 255 chars
+     - Password: required, max 128 chars
+     - Remember me: boolean checkbox, defaults to false
+     - Uses `@hookform/resolvers/zod` for schema-based validation
+
+   - **Email input field**:
+     - Type="email" with autocomplete="email"
+     - Placeholder text for guidance
+     - Proper FormLabel connected via shadcn Form components
+     - aria-required="true" for accessibility
+     - Disabled during loading state
+
+   - **Password input with show/hide toggle**:
+     - Toggle button with Eye/EyeOff icons from lucide-react
+     - aria-label changes between "Show password" and "Hide password"
+     - aria-pressed reflects current toggle state
+     - Toggle button uses tabIndex={-1} to avoid tab-stop clutter
+     - autocomplete="current-password" for browser integration
+     - aria-required="true" for accessibility
+
+   - **Remember me checkbox**:
+     - Uses shadcn Checkbox (Radix UI primitive)
+     - Properly labeled with cursor-pointer styling
+     - Connected to React Hook Form via FormField controller
+     - Disabled during loading state
+
+   - **Submit button**:
+     - Full-width with loading state (Loader2 spinner + "Signing in..." text)
+     - disabled when isLoading
+     - aria-busy={isLoading} for screen readers
+     - Enter key submission handled natively by form element
+
+   - **Error alert component**:
+     - Uses shadcn Alert with destructive variant
+     - AlertCircle icon for visual indicator
+     - role="alert" and aria-live="assertive" for screen reader announcements
+     - Conditionally rendered when error prop is provided
+
+   - **Accessibility features**:
+     - Proper form labels via FormLabel (connected to inputs via htmlFor)
+     - aria-describedby for error messages (via FormControl Slot)
+     - aria-invalid on fields with errors (via FormControl)
+     - aria-required on email and password inputs
+     - aria-busy on submit button during loading
+     - aria-label on password toggle button
+     - noValidate on form to use custom validation instead of browser defaults
+     - aria-label="Login form" on the form element
+
+   - **Props interface (LoginFormProps)**:
+     - `onSubmit`: async function receiving { email, password, rememberMe }
+     - `error`: optional string for displaying auth errors
+     - `isLoading`: boolean for loading state (defaults to false)
+     - `defaultEmail`: optional pre-filled email (defaults to '')
+
+   - **Data handling**:
+     - Email trimmed and lowercased before submission
+     - Named export only (per project conventions)
+     - No console.log usage
+     - Uses @/ import alias throughout
+
+### Files Created:
+- `src/components/auth/LoginForm.tsx`
