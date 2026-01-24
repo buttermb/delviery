@@ -2657,3 +2657,52 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create CreditUsageIndicator Component
+
+### What was done:
+
+1. **Created `src/components/credits/CreditUsageIndicator.tsx`** - Small inline component that:
+   - Displays a coin icon (`Coins` from lucide-react) with the credit cost amount
+   - Shows a tooltip on hover explaining the charge (action name, description, cost breakdown, balance after)
+   - Warns visually when the action would exceed the user's balance (red text + `AlertTriangle` icon)
+   - Shows amber color when balance would be low after the action (< 500 credits remaining)
+   - Only renders for free-tier users with non-zero costs (hides for paid users)
+   - Supports both `actionKey` (from CREDIT_COSTS config) and direct `cost` prop
+   - Has `size` variant (`sm`/`md`) for different placement contexts
+   - Has `showWarning` prop to control warning icon display
+   - Accepts custom `description` to override tooltip text
+   - Uses existing `useCredits` hook and `getCreditCost`/`getCreditCostInfo` utilities
+   - Follows project patterns: named exports, `@/` imports, no `any` types
+
+2. **Updated `src/components/credits/index.ts`** - Added exports:
+   - `CreditUsageIndicator` component export
+   - `CreditUsageIndicatorProps` type export
+
+### Usage Example:
+```tsx
+import { CreditUsageIndicator } from '@/components/credits';
+
+// Next to a button or feature label
+<button>
+  Create Menu <CreditUsageIndicator actionKey="menu_create" />
+</button>
+
+// With direct cost
+<span>
+  Send SMS <CreditUsageIndicator cost={25} description="Sends an SMS notification" />
+</span>
+```
+
+### Design Decisions:
+- Kept it minimal (coin icon + number) to work inline next to feature labels
+- Distinguished from `CreditCostBadge` (which uses Badge wrapper, has hoverMode/compact/inline variants)
+- Distinguished from `CreditCostIndicator` (which is a larger block-level form indicator)
+- Tooltip shows cost, current balance, and remaining balance after action
+- Color coding: muted (affordable), amber (would be low), red (can't afford)
+
+### Files Changed:
+- `src/components/credits/CreditUsageIndicator.tsx` (new)
+- `src/components/credits/index.ts` (added exports)
