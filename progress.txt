@@ -2657,3 +2657,95 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Add Password Breach Checking on Signup and Password Change
+
+### What was done:
+
+1. **Created `src/lib/security/passwordBreach.ts`** - Core utility for password breach checking:
+   - `checkPasswordBreach(password)` - Checks password against HaveIBeenPwned Passwords API using k-anonymity
+   - K-anonymity approach: SHA-1 hashes the password, sends only first 5 chars to API, checks full hash locally
+   - `Add-Padding: true` header to prevent response-length timing attacks
+   - `BLOCK_THRESHOLD = 10` - Passwords found 10+ times are blocked outright
+   - `WARN_THRESHOLD = 1` - Passwords found 1+ times show a warning
+   - Graceful fallback: if API is unavailable, allows the password (doesn't block users)
+   - `generateStrongPassword(length)` - Generates cryptographically secure random passwords
+   - Uses `crypto.getRandomValues()` for secure randomness
+   - Ensures at least one uppercase, lowercase, number, and symbol
+   - Fisher-Yates shuffle with crypto randomness for uniform distribution
+
+2. **Created `src/hooks/usePasswordBreachCheck.ts`** - React hook for breach checking:
+   - Debounces API calls (800ms default) to avoid excessive requests while typing
+   - Minimum length check (8 chars) before making API calls
+   - Handles race conditions with abort flags for stale requests
+   - Exposes: `checking`, `result`, `suggestPassword()`, `checkPassword()`, `reset()`
+   - Properly cleans up timeouts on unmount
+
+3. **Created `src/components/auth/PasswordBreachWarning.tsx`** - UI component:
+   - Shows "Checking password security..." with spinner while checking
+   - Shows green "No known breaches found" shield icon when safe
+   - Shows amber warning with breach count for warned passwords
+   - Shows red "blocked" message for commonly breached passwords
+   - "Generate strong password" button to suggest a secure alternative
+   - Copy-to-clipboard and "Use this password" actions for generated passwords
+   - "New" button to regenerate if user doesn't like the suggestion
+
+4. **Integrated into Account Signup** (`src/pages/AccountSignup.tsx`):
+   - Added breach check hook and warning UI below password requirements
+   - Blocks form submission if password is in too many breaches
+   - "Use this password" auto-fills the generated password
+
+5. **Integrated into Customer Signup** (`src/pages/customer/SignUpPage.tsx`):
+   - Added breach check below PasswordStrengthIndicator
+   - Blocks commonly breached passwords on submit
+   - Generated passwords auto-fill both password and confirm fields
+
+6. **Integrated into Password Reset** (`src/pages/auth/PasswordResetPage.tsx`):
+   - Added breach check for new password during reset
+   - Blocks commonly breached passwords
+   - Generated passwords fill both password and confirm fields
+
+7. **Integrated into Customer Password Reset** (`src/pages/customer/ResetPasswordPage.tsx`):
+   - Added breach check below strength indicator
+   - Blocks commonly breached passwords
+   - Generated passwords fill both fields
+
+8. **Integrated into Customer Settings** (`src/pages/customer/SettingsPage.tsx`):
+   - Added breach check on password change form
+   - Blocks commonly breached passwords
+   - Generated passwords fill new password and confirm fields
+
+9. **Integrated into Tenant Admin Security Settings** (`src/pages/tenant-admin/settings/SecuritySettings.tsx`):
+   - Added breach check below password strength progress bar
+   - Blocks commonly breached passwords
+   - Generated passwords fill new password and confirm fields
+
+### Key Design Decisions:
+- **K-anonymity**: Only first 5 chars of SHA-1 hash sent to HIBP - full password never leaves the client
+- **Non-blocking on API failure**: If HIBP is unreachable, users can still proceed
+- **Debounced checking**: 800ms debounce prevents excessive API calls while typing
+- **Block vs Warn**: Passwords found 10+ times are blocked; 1-9 times shows warning but allows proceed
+- **Password generation**: 16-char passwords with crypto.getRandomValues for true randomness
+- **UX**: Copy button, "Use this password", and "New" button for seamless generated password experience
+
+### Verification Results:
+- [x] `npm run build` - PASSES (0 TypeScript errors)
+- [x] `npm run lint` - PASSES (0 errors, only pre-existing warnings)
+- [x] No `console.log` statements (uses logger utility)
+- [x] Named exports used throughout
+- [x] TypeScript strict mode - no `any` types
+
+### Files Created:
+- `src/lib/security/passwordBreach.ts`
+- `src/hooks/usePasswordBreachCheck.ts`
+- `src/components/auth/PasswordBreachWarning.tsx`
+
+### Files Modified:
+- `src/pages/AccountSignup.tsx`
+- `src/pages/customer/SignUpPage.tsx`
+- `src/pages/auth/PasswordResetPage.tsx`
+- `src/pages/customer/ResetPasswordPage.tsx`
+- `src/pages/customer/SettingsPage.tsx`
+- `src/pages/tenant-admin/settings/SecuritySettings.tsx`

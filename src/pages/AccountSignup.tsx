@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowRight, ArrowLeft, CheckCircle, Mail, Eye, EyeOff, Building2, Sparkles } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { usePasswordBreachCheck } from "@/hooks/usePasswordBreachCheck";
+import { PasswordBreachWarning } from "@/components/auth/PasswordBreachWarning";
 
 
 export default function AccountSignup() {
@@ -40,6 +42,9 @@ export default function AccountSignup() {
     { id: "enterprise", name: "ENTERPRISE", price: 499, description: "For large operations" },
   ];
 
+  // Password breach checking
+  const { checking: breachChecking, result: breachResult, suggestPassword } = usePasswordBreachCheck(password);
+
   // Password validation
   const passwordValid = {
     length: password.length >= 8,
@@ -62,6 +67,14 @@ export default function AccountSignup() {
       toast({
         title: "Password requirements not met",
         description: "Please ensure your password meets all requirements",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (breachResult?.blocked) {
+      toast({
+        title: "Password not allowed",
+        description: "This password has been found in too many data breaches. Please choose a different password.",
         variant: "destructive",
       });
       return;
@@ -274,6 +287,16 @@ export default function AccountSignup() {
                         </span>
                       ))}
                     </div>
+                    {/* Password Breach Check */}
+                    {password.length >= 8 && (
+                      <PasswordBreachWarning
+                        checking={breachChecking}
+                        result={breachResult}
+                        suggestPassword={suggestPassword}
+                        onGeneratePassword={(pw) => setPassword(pw)}
+                        className="mt-2"
+                      />
+                    )}
                   </div>
 
                   <Button

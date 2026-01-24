@@ -10,6 +10,8 @@ import { ShoppingBag, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
+import { PasswordBreachWarning } from "@/components/auth/PasswordBreachWarning";
+import { usePasswordBreachCheck } from "@/hooks/usePasswordBreachCheck";
 import { Tenant } from "@/types/tenant-extended";
 
 export default function CustomerSignUpPage() {
@@ -35,6 +37,9 @@ export default function CustomerSignUpPage() {
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+
+  // Password breach checking
+  const { checking: breachChecking, result: breachResult, suggestPassword } = usePasswordBreachCheck(formData.password);
 
   useEffect(() => {
     const fetchTenant = async () => {
@@ -83,6 +88,15 @@ export default function CustomerSignUpPage() {
         variant: "destructive",
         title: "Error",
         description: "Password must be at least 8 characters",
+      });
+      return;
+    }
+
+    if (breachResult?.blocked) {
+      toast({
+        variant: "destructive",
+        title: "Password not allowed",
+        description: "This password has been found in too many data breaches. Please choose a different password.",
       });
       return;
     }
@@ -309,6 +323,14 @@ export default function CustomerSignUpPage() {
                 className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
               />
               <PasswordStrengthIndicator password={formData.password} />
+              {formData.password.length >= 8 && (
+                <PasswordBreachWarning
+                  checking={breachChecking}
+                  result={breachResult}
+                  suggestPassword={suggestPassword}
+                  onGeneratePassword={(pw) => setFormData({ ...formData, password: pw, confirmPassword: pw })}
+                />
+              )}
             </div>
 
             <div className="space-y-2">

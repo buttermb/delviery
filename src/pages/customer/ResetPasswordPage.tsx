@@ -15,6 +15,8 @@ import { Loader2, Lock, ArrowLeft, CheckCircle2, Eye, EyeOff } from 'lucide-reac
 import { toast } from '@/hooks/use-toast';
 import { apiFetch } from '@/lib/utils/apiClient';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
+import { PasswordBreachWarning } from '@/components/auth/PasswordBreachWarning';
+import { usePasswordBreachCheck } from '@/hooks/usePasswordBreachCheck';
 
 export default function CustomerResetPasswordPage() {
   const navigate = useNavigate();
@@ -32,6 +34,9 @@ export default function CustomerResetPasswordPage() {
   const [reset, setReset] = useState(false);
   const [tenant, setTenant] = useState<any>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+
+  // Password breach checking
+  const { checking: breachChecking, result: breachResult, suggestPassword } = usePasswordBreachCheck(newPassword);
 
   useEffect(() => {
     const fetchTenant = async () => {
@@ -89,6 +94,15 @@ export default function CustomerResetPasswordPage() {
         variant: 'destructive',
         title: 'Passwords Do Not Match',
         description: 'Please make sure both passwords match',
+      });
+      return;
+    }
+
+    if (breachResult?.blocked) {
+      toast({
+        variant: 'destructive',
+        title: 'Password not allowed',
+        description: 'This password has been found in too many data breaches. Please choose a different password.',
       });
       return;
     }
@@ -216,6 +230,17 @@ export default function CustomerResetPasswordPage() {
               </div>
               {newPassword && (
                 <PasswordStrengthIndicator password={newPassword} />
+              )}
+              {newPassword.length >= 8 && (
+                <PasswordBreachWarning
+                  checking={breachChecking}
+                  result={breachResult}
+                  suggestPassword={suggestPassword}
+                  onGeneratePassword={(pw) => {
+                    setNewPassword(pw);
+                    setConfirmPassword(pw);
+                  }}
+                />
               )}
             </div>
 
