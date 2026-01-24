@@ -6,6 +6,7 @@
 
 // Credit System Hooks
 export { useCredits } from './useCredits';
+export { useCreditPromo } from './useCreditPromo';
 export { useFreeTierLimits } from './useFreeTierLimits';
 export { useSmartUpgradeNudge } from './useSmartUpgradeNudge';
 export { useCreditUpgradeTriggers } from './useCreditUpgradeTriggers';

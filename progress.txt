@@ -2657,3 +2657,42 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create src/hooks/useCreditPromo.ts
+
+### What was done:
+Created the `useCreditPromo` hook that provides promo code validation and discount preview functionality for the credit checkout flow.
+
+### Implementation Details:
+- **Client-side validation**: Validates promo code format (3-30 chars, alphanumeric + hyphens/underscores) before making server calls
+- **Edge function call**: Uses `useMutation` to call `credits-apply-promo` edge function via `supabase.functions.invoke`
+- **Discount preview**: Returns `PromoDiscountPreview` with discount type, amount, final price without applying the promo
+- **Active promo state**: Stores validated promo in component state (`activePromo`) for use during checkout
+- **Error handling**: Maps server errors to specific user-friendly messages for expired, invalid, usage limit, per-user limit, and inactive codes
+- **Toast notifications**: Shows success/error toasts via sonner
+- **Barrel export**: Added `useCreditPromo` to `src/hooks/index.ts`
+
+### Exported Types:
+- `PromoDiscountPreview` - Discount preview data structure
+- `ApplyPromoInput` - Input for applying a promo code
+- `ApplyPromoError` - Typed error with specific error categories
+- `UseCreditPromoReturn` - Hook return type
+
+### Hook API:
+- `applyPromo(input)` - Validate and preview a promo code
+- `isValidating` - Loading state
+- `activePromo` - Currently stored valid promo for checkout
+- `clearPromo()` - Clear stored promo
+- `promoError` - Last validation error
+- `clearError()` - Clear error state
+
+### Files Changed:
+- `src/hooks/useCreditPromo.ts` (new file)
+- `src/hooks/index.ts` (added barrel export)
+
+### Verification:
+- [x] TypeScript compiles with no errors (`npx tsc --noEmit` passes)
+- [x] ESLint passes with no errors
+- [x] Follows project conventions: named exports, `@/` imports, `logger` usage, `useTenantAdminAuth` for tenant context
