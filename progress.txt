@@ -428,3 +428,61 @@ sub-components with shared state from useStorefrontBuilder hook.
 - `src/pages/admin/storefront/builder/BuilderCreateStoreDialog.tsx` (new)
 - `src/pages/admin/storefront/builder/index.ts` (new)
 - `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export alias)
+
+---
+
+## Task: Add Contextual Breadcrumb Navigation to All Admin Pages
+
+### What was done:
+
+1. **Enhanced `src/components/admin/Breadcrumbs.tsx`** - Complete rewrite of the global breadcrumb component:
+   - Added tenant context as the first breadcrumb element (shows business_name or formatted slug)
+   - Uses `Building2` icon for tenant identity, links to tenant dashboard
+   - Expanded `SEGMENT_LABELS` mapping to cover all 100+ admin page routes
+   - Added dynamic segment handling for UUID/numeric IDs with context-aware labels
+   - `DYNAMIC_SEGMENT_CONTEXT` map provides parent-aware labels (e.g., "Order Details" when under orders/)
+   - Memoized breadcrumb computation with `useMemo` for performance
+   - All intermediate breadcrumbs are clickable navigation links
+   - Current page shown as non-clickable text with `aria-current="page"`
+   - Truncation with `max-w-[120px]` on links and `max-w-[160px]` on current page for overflow protection
+   - Title attributes on all items for accessibility on truncated text
+   - Now shows breadcrumbs on ALL pages including dashboard (shows just tenant name)
+   - Uses `useTenantAdminAuth()` to get tenant business name
+
+2. **Enhanced `src/components/admin/HubBreadcrumbs.tsx`** - Updated hub-specific breadcrumbs:
+   - Added tenant context as the first breadcrumb element (consistent with global breadcrumbs)
+   - Uses `Building2` icon and `useTenantAdminAuth()` for tenant name
+   - Removed separate "Dashboard" breadcrumb (tenant name links to dashboard instead)
+   - Consistent visual style with the global breadcrumbs (same icon size, separators, colors)
+
+### How it works:
+- The `AdminLayout` renders `<Breadcrumbs />` in its header for ALL admin pages automatically
+- URL path is parsed, tenant slug and "admin" segments are filtered out
+- Remaining segments are mapped to human-readable labels via `SEGMENT_LABELS`
+- Dynamic segments (UUIDs, numeric IDs) get context-aware labels based on parent segment
+- Fallback: kebab-case segments are converted to Title Case
+- Hub pages additionally render `<HubBreadcrumbs />` in their content area for tab-level navigation
+
+### Breadcrumb Format Examples:
+- Dashboard: `[Acme Corp]` > `Dashboard`
+- Products page: `[Acme Corp]` > `Products`
+- Order detail: `[Acme Corp]` > `Orders` > `Order Details`
+- Inventory hub tab: `[Acme Corp]` > `Inventory` > `Stock Levels`
+- Storefront builder: `[Acme Corp]` > `Storefront` > `Builder`
+- Settings hub: `[Acme Corp]` > `Settings` > `Team`
+
+### Acceptance Criteria Met:
+- [x] Tenant slug/name shown as contextual first element on all admin pages
+- [x] Clickable navigation path with proper tenant-aware routes
+- [x] All intermediate segments are clickable links
+- [x] Current page shown as non-clickable (aria-current="page")
+- [x] Handles dynamic segments (UUIDs, IDs) with context-aware labels
+- [x] Comprehensive segment labels for 100+ admin pages
+- [x] Consistent styling between global and hub breadcrumbs
+- [x] Performance optimized with useMemo
+- [x] Accessible (aria-label, aria-current, title attributes)
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/components/admin/Breadcrumbs.tsx` (rewritten - contextual tenant breadcrumbs with comprehensive labels)
+- `src/components/admin/HubBreadcrumbs.tsx` (updated - tenant context added, consistent styling)
