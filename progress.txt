@@ -2657,3 +2657,64 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create src/components/auth/PermissionGuard.tsx Component
+
+### What was done:
+
+Updated the existing `src/components/auth/PermissionGuard.tsx` and `src/components/admin/PermissionGuard.tsx` to match the task specification:
+
+1. **Renamed prop** from `permission` to `required` for clarity (accepts `Permission | Permission[]`)
+2. **Changed default behavior** for arrays: `requireAll` now defaults to `true` (renders children only if user has ALL specified permissions)
+3. **Added loading state handling**: Returns `null` while `usePermissions` is loading to prevent flash of unauthorized content
+4. **Removed unused `showMessage` prop and Alert UI**: Component now shows fallback or nothing when unauthorized (cleaner API)
+5. **Removed unused imports**: `Alert`, `AlertDescription`, `AlertTriangle` no longer imported
+6. **Both copies updated**: `src/components/auth/` and `src/components/admin/` are now consistent
+
+### Component API:
+
+```typescript
+interface PermissionGuardProps {
+  required: Permission | Permission[];  // Permission string or array
+  children: ReactNode;                  // Content shown when authorized
+  fallback?: ReactNode;                 // Optional fallback when unauthorized
+  requireAll?: boolean;                 // Default: true (all permissions required)
+}
+```
+
+### Usage Examples:
+
+```tsx
+// Single permission
+<PermissionGuard required="orders:create">
+  <CreateOrderButton />
+</PermissionGuard>
+
+// Multiple permissions (all required by default)
+<PermissionGuard required={['orders:create', 'inventory:edit']}>
+  <BulkOperations />
+</PermissionGuard>
+
+// Multiple permissions (any one is sufficient)
+<PermissionGuard required={['orders:view', 'reports:view']} requireAll={false}>
+  <DashboardWidget />
+</PermissionGuard>
+
+// With fallback
+<PermissionGuard required="settings:edit" fallback={<p>Contact admin for access</p>}>
+  <SettingsPanel />
+</PermissionGuard>
+```
+
+### Acceptance Criteria Met:
+- [x] Accepts `required` permission as string or array
+- [x] Uses `usePermissions` hook for permission checking
+- [x] Renders children if user has all required permissions
+- [x] Shows fallback if provided when not authorized
+- [x] Returns null (nothing) if no fallback and not authorized
+- [x] Handles loading state gracefully (returns null while loading)
+- [x] Build passes with zero errors
+
+### Files Changed:
+- `src/components/auth/PermissionGuard.tsx` (updated)
+- `src/components/admin/PermissionGuard.tsx` (updated)
