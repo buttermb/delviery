@@ -7,16 +7,16 @@ export const useGenerateProductImage = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      productId, 
-      productName, 
-      category, 
-      strainType 
-    }: { 
-      productId: string; 
-      productName: string; 
-      category: string; 
-      strainType?: string; 
+    mutationFn: async ({
+      productId,
+      productName,
+      category,
+      strainType
+    }: {
+      productId: string;
+      productName: string;
+      category: string;
+      strainType?: string;
     }) => {
       // Call edge function to generate image
       const { data, error } = await supabase.functions.invoke('generate-product-images', {
@@ -45,7 +45,7 @@ export const useGenerateProductImage = () => {
 
       // Upload to storage
       const fileName = `${productId}-${Date.now()}.png`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('product-images')
         .upload(fileName, blob, {
           contentType: 'image/png',
@@ -69,15 +69,26 @@ export const useGenerateProductImage = () => {
 
       return { publicUrl };
     },
+    onMutate: async ({ productId }) => {
+      await queryClient.cancelQueries({ queryKey: ['products'] });
+      const previousProducts = queryClient.getQueryData(['products']);
+      return { previousProducts, productId };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousProducts) {
+        queryClient.setQueryData(['products'], context.previousProducts);
+      }
+      const message = error instanceof Error ? error.message : 'Failed to generate image';
+      logger.error('Image generation failed', error, { component: 'useGenerateProductImage' });
+      toast.error('Image generation failed', { description: message });
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['products-for-wholesale'] });
       toast.success('Product image generated successfully');
     },
-    onError: (error) => {
-      logger.error('Error generating image:', error);
-      toast.error('Failed to generate image');
-    }
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['products-for-wholesale'] });
+    },
   });
 };
 
@@ -85,27 +96,27 @@ export const useBulkGenerateImages = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (products: Array<{ 
-      id: string; 
-      name: string; 
-      category: string; 
-      strain_type?: string; 
+    mutationFn: async (products: Array<{
+      id: string;
+      name: string;
+      category: string;
+      strain_type?: string;
     }>) => {
       logger.debug('useBulkGenerateImages called with:', products.length, 'products');
       const results = [];
-      
+
       for (let i = 0; i < products.length; i++) {
         const product = products[i];
-        
+
         try {
           logger.debug(`Generating image ${i + 1}/${products.length} for:`, product.name);
-          
+
           // Call edge function to generate image
           const { data, error } = await supabase.functions.invoke('generate-product-images', {
-            body: { 
-              productName: product.name, 
-              category: product.category, 
-              strainType: product.strain_type 
+            body: {
+              productName: product.name,
+              category: product.category,
+              strainType: product.strain_type
             }
           });
 
@@ -133,8 +144,8 @@ export const useBulkGenerateImages = () => {
           // Upload to storage
           const fileName = `${product.id}-${Date.now()}.png`;
           logger.debug('Uploading to storage:', fileName);
-          
-          const { data: uploadData, error: uploadError } = await supabase.storage
+
+          const { error: uploadError } = await supabase.storage
             .from('product-images')
             .upload(fileName, blob, {
               contentType: 'image/png',
@@ -166,7 +177,7 @@ export const useBulkGenerateImages = () => {
 
           logger.debug(`Successfully generated image for ${product.name}`);
           results.push({ productId: product.id, success: true, url: publicUrl });
-          
+
           // Add delay between requests to avoid rate limits
           if (i < products.length - 1) {
             await new Promise(resolve => setTimeout(resolve, 2000));
@@ -180,15 +191,26 @@ export const useBulkGenerateImages = () => {
       logger.debug('Bulk generation complete. Results:', results);
       return results;
     },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['products'] });
+      const previousProducts = queryClient.getQueryData(['products']);
+      return { previousProducts };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousProducts) {
+        queryClient.setQueryData(['products'], context.previousProducts);
+      }
+      const message = error instanceof Error ? error.message : 'Failed to generate images';
+      logger.error('Bulk image generation failed', error, { component: 'useBulkGenerateImages' });
+      toast.error('Bulk image generation failed', { description: message });
+    },
     onSuccess: (results) => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['products-for-wholesale'] });
       const successCount = results.filter(r => r.success).length;
       toast.success(`Generated ${successCount}/${results.length} images successfully`);
     },
-    onError: (error) => {
-      logger.error('Error in bulk generation:', error);
-      toast.error('Failed to generate images');
-    }
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['products-for-wholesale'] });
+    },
   });
 };

@@ -30,13 +30,24 @@ export function usePurchaseOrderActions() {
       if (error) throw error;
       return data;
     },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.purchaseOrders.lists() });
+      const previousPOs = queryClient.getQueryData(queryKeys.purchaseOrders.lists());
+      return { previousPOs };
+    },
+    onError: (error: unknown, _variables: unknown, context: { previousPOs?: unknown } | undefined) => {
+      if (context?.previousPOs) {
+        queryClient.setQueryData(queryKeys.purchaseOrders.lists(), context.previousPOs);
+      }
+      const message = error instanceof Error ? error.message : 'Failed to create purchase order';
+      logger.error('Failed to create purchase order', error, { component: 'usePurchaseOrderActions' });
+      toast.error('Purchase order creation failed', { description: message });
+    },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.lists() });
       toast.success(`Purchase Order ${data.po_number} created successfully`);
     },
-    onError: (error: any) => {
-      logger.error('Failed to create purchase order', error, { component: 'usePurchaseOrderActions' });
-      toast.error(error.message || 'Failed to create purchase order');
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.lists() });
     },
   });
 

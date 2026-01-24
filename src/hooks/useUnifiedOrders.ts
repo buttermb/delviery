@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 
 // Types
 export type OrderType = 'retail' | 'wholesale' | 'menu' | 'pos' | 'all';
@@ -282,7 +283,63 @@ export function useCreateUnifiedOrder() {
 
       return order as UnifiedOrder;
     },
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: unifiedOrdersKeys.lists() });
+      const previousOrders = queryClient.getQueriesData<UnifiedOrder[]>({ queryKey: unifiedOrdersKeys.lists() });
+
+      // Create optimistic order
+      const optimisticOrder: UnifiedOrder = {
+        id: `temp-${Date.now()}`,
+        tenant_id: tenant?.id || '',
+        order_number: 'Creating...',
+        order_type: input.order_type,
+        source: input.source,
+        status: 'pending',
+        subtotal: input.items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0),
+        tax_amount: 0,
+        discount_amount: 0,
+        total_amount: input.items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0),
+        payment_method: input.payment_method || null,
+        payment_status: 'unpaid',
+        customer_id: input.customer_id || null,
+        wholesale_client_id: input.wholesale_client_id || null,
+        menu_id: input.menu_id || null,
+        shift_id: input.shift_id || null,
+        delivery_address: input.delivery_address || null,
+        delivery_notes: input.delivery_notes || null,
+        courier_id: input.courier_id || null,
+        contact_name: input.contact_name || null,
+        contact_phone: input.contact_phone || null,
+        metadata: input.metadata || {},
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        cancelled_at: null,
+        cancellation_reason: null,
+      };
+
+      // Add to all matching list caches
+      queryClient.setQueriesData<UnifiedOrder[]>(
+        { queryKey: unifiedOrdersKeys.lists() },
+        (old) => old ? [optimisticOrder, ...old] : [optimisticOrder]
+      );
+
+      return { previousOrders };
+    },
+    onError: (error, _input, context) => {
+      // Rollback
+      if (context?.previousOrders) {
+        context.previousOrders.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      const message = error instanceof Error ? error.message : 'Failed to create order';
+      logger.error('Failed to create order', error, { component: 'useCreateUnifiedOrder' });
+      toast.error('Order creation failed', { description: message });
+    },
     onSuccess: () => {
+      toast.success('Order created successfully');
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
     },
   });
@@ -323,9 +380,57 @@ export function useUpdateOrderStatus() {
 
       return data as UnifiedOrder;
     },
+    onMutate: async ({ orderId, status, notes }) => {
+      await queryClient.cancelQueries({ queryKey: unifiedOrdersKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: unifiedOrdersKeys.detail(orderId) });
+
+      const previousLists = queryClient.getQueriesData<UnifiedOrder[]>({ queryKey: unifiedOrdersKeys.lists() });
+      const previousDetail = queryClient.getQueryData<UnifiedOrder>(unifiedOrdersKeys.detail(orderId));
+
+      const updateFields: Partial<UnifiedOrder> = {
+        status,
+        updated_at: new Date().toISOString(),
+      };
+      if (status === 'cancelled') {
+        updateFields.cancelled_at = new Date().toISOString();
+        updateFields.cancellation_reason = notes;
+      }
+
+      // Update list caches
+      queryClient.setQueriesData<UnifiedOrder[]>(
+        { queryKey: unifiedOrdersKeys.lists() },
+        (old) => old?.map(order => order.id === orderId ? { ...order, ...updateFields } : order)
+      );
+
+      // Update detail cache
+      if (previousDetail) {
+        queryClient.setQueryData<UnifiedOrder>(
+          unifiedOrdersKeys.detail(orderId),
+          { ...previousDetail, ...updateFields }
+        );
+      }
+
+      return { previousLists, previousDetail, orderId };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousLists) {
+        context.previousLists.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      if (context?.previousDetail && context.orderId) {
+        queryClient.setQueryData(unifiedOrdersKeys.detail(context.orderId), context.previousDetail);
+      }
+      const message = error instanceof Error ? error.message : 'Failed to update order status';
+      logger.error('Failed to update order status', error, { component: 'useUpdateOrderStatus' });
+      toast.error('Status update failed', { description: message });
+    },
     onSuccess: (data) => {
+      toast.success(`Order status updated to ${data.status}`);
+    },
+    onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.detail(variables.orderId) });
     },
   });
 }
@@ -386,9 +491,53 @@ export function useCancelOrder() {
 
       return data as UnifiedOrder;
     },
-    onSuccess: (data) => {
+    onMutate: async ({ orderId, reason }) => {
+      await queryClient.cancelQueries({ queryKey: unifiedOrdersKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: unifiedOrdersKeys.detail(orderId) });
+
+      const previousLists = queryClient.getQueriesData<UnifiedOrder[]>({ queryKey: unifiedOrdersKeys.lists() });
+      const previousDetail = queryClient.getQueryData<UnifiedOrder>(unifiedOrdersKeys.detail(orderId));
+
+      const cancelFields: Partial<UnifiedOrder> = {
+        status: 'cancelled',
+        cancelled_at: new Date().toISOString(),
+        cancellation_reason: reason,
+        updated_at: new Date().toISOString(),
+      };
+
+      queryClient.setQueriesData<UnifiedOrder[]>(
+        { queryKey: unifiedOrdersKeys.lists() },
+        (old) => old?.map(order => order.id === orderId ? { ...order, ...cancelFields } : order)
+      );
+
+      if (previousDetail) {
+        queryClient.setQueryData<UnifiedOrder>(
+          unifiedOrdersKeys.detail(orderId),
+          { ...previousDetail, ...cancelFields }
+        );
+      }
+
+      return { previousLists, previousDetail, orderId };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousLists) {
+        context.previousLists.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      if (context?.previousDetail && context.orderId) {
+        queryClient.setQueryData(unifiedOrdersKeys.detail(context.orderId), context.previousDetail);
+      }
+      const message = error instanceof Error ? error.message : 'Failed to cancel order';
+      logger.error('Failed to cancel order', error, { component: 'useCancelOrder' });
+      toast.error('Order cancellation failed', { description: message });
+    },
+    onSuccess: () => {
+      toast.success('Order cancelled successfully');
+    },
+    onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.detail(variables.orderId) });
     },
   });
 }

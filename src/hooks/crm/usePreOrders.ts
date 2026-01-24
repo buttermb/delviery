@@ -68,8 +68,21 @@ export function useCreatePreOrder() {
             if (error) throw error;
             return normalizePreOrder(data);
         },
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.all }); toast.success('Pre-order created'); },
-        onError: (error: any) => { logger.error('Create failed', error); toast.error(error.message); },
+        onMutate: async () => {
+            await queryClient.cancelQueries({ queryKey: crmPreOrderKeys.lists() });
+            const previousPreOrders = queryClient.getQueryData(crmPreOrderKeys.lists());
+            return { previousPreOrders };
+        },
+        onError: (error: unknown, _variables: unknown, context: { previousPreOrders?: unknown } | undefined) => {
+            if (context?.previousPreOrders) {
+                queryClient.setQueryData(crmPreOrderKeys.lists(), context.previousPreOrders);
+            }
+            const message = error instanceof Error ? error.message : 'Failed to create pre-order';
+            logger.error('Pre-order creation failed', error, { component: 'useCreatePreOrder' });
+            toast.error('Pre-order creation failed', { description: message });
+        },
+        onSuccess: () => { toast.success('Pre-order created'); },
+        onSettled: () => { queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.all }); },
     });
 }
 
@@ -83,7 +96,27 @@ export function useCancelPreOrder() {
             if (error) throw error;
             return normalizePreOrder(data);
         },
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.all }); toast.success('Pre-order cancelled'); },
+        onMutate: async (preOrderId) => {
+            await queryClient.cancelQueries({ queryKey: crmPreOrderKeys.lists() });
+            const previousPreOrders = queryClient.getQueryData<CRMPreOrder[]>(crmPreOrderKeys.lists());
+
+            queryClient.setQueryData<CRMPreOrder[]>(
+                crmPreOrderKeys.lists(),
+                (old) => old?.map(po => po.id === preOrderId ? { ...po, status: 'cancelled' } : po)
+            );
+
+            return { previousPreOrders };
+        },
+        onError: (error: unknown, _variables: unknown, context: { previousPreOrders?: CRMPreOrder[] } | undefined) => {
+            if (context?.previousPreOrders) {
+                queryClient.setQueryData(crmPreOrderKeys.lists(), context.previousPreOrders);
+            }
+            const message = error instanceof Error ? error.message : 'Failed to cancel pre-order';
+            logger.error('Pre-order cancellation failed', error, { component: 'useCancelPreOrder' });
+            toast.error('Pre-order cancellation failed', { description: message });
+        },
+        onSuccess: () => { toast.success('Pre-order cancelled'); },
+        onSettled: () => { queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.all }); },
     });
 }
 
@@ -105,7 +138,26 @@ export function useConvertPreOrderToInvoice() {
             if (updateError) throw updateError;
             return { invoice: normalizeInvoice(invoice), preOrder: normalizePreOrder(preOrder) };
         },
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.all }); queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all }); toast.success('Converted successfully'); },
-        onError: (error: any) => { logger.error('Convert failed', error); toast.error(error.message); },
+        onMutate: async ({ preOrderId }) => {
+            await queryClient.cancelQueries({ queryKey: crmPreOrderKeys.lists() });
+            const previousPreOrders = queryClient.getQueryData<CRMPreOrder[]>(crmPreOrderKeys.lists());
+
+            queryClient.setQueryData<CRMPreOrder[]>(
+                crmPreOrderKeys.lists(),
+                (old) => old?.map(po => po.id === preOrderId ? { ...po, status: 'converting' } : po)
+            );
+
+            return { previousPreOrders };
+        },
+        onError: (error: unknown, _variables: unknown, context: { previousPreOrders?: CRMPreOrder[] } | undefined) => {
+            if (context?.previousPreOrders) {
+                queryClient.setQueryData(crmPreOrderKeys.lists(), context.previousPreOrders);
+            }
+            const message = error instanceof Error ? error.message : 'Failed to convert pre-order';
+            logger.error('Pre-order conversion failed', error, { component: 'useConvertPreOrderToInvoice' });
+            toast.error('Conversion failed', { description: message });
+        },
+        onSuccess: () => { toast.success('Converted successfully'); },
+        onSettled: () => { queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.all }); queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all }); },
     });
 }
