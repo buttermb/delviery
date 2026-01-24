@@ -4145,3 +4145,42 @@ Created `supabase/functions/credits-purchase/index.ts` — a Supabase Edge Funct
 - `supabase/migrations/20260124000000_credit_subscriptions.sql` (new)
 - `supabase/functions/stripe-webhook/index.ts` (updated with credit subscription handlers)
 - `supabase/functions/stripe-webhook/validation.ts` (extended schema)
+
+---
+
+## Task: Create src/hooks/useSignup.ts Hook
+
+### What was done:
+
+1. **Created `src/hooks/useSignup.ts`** - Custom signup hook with:
+   - `useMutation` from TanStack Query calling `auth-signup` edge function via `supabase.functions.invoke`
+   - Client-side Zod validation schema before submission:
+     - `email`: required, valid email, max 255 chars, auto-lowercased/trimmed
+     - `password`: required, 8-72 chars, must include uppercase + lowercase + number
+     - `fullName`: required, 2-100 chars, letters/spaces/hyphens/apostrophes only, trimmed
+     - `phone`: optional, digits/spaces/hyphens/parens/plus only, max 20 chars
+     - `tenantSlug`: required, 2-63 chars, lowercase alphanumeric + hyphens only
+   - Loading state via `isPending` from TanStack Query
+   - Error state with structured error messages and validation error details per field
+   - Success state tracking via `isSuccess`
+   - `reset()` function to clear mutation state and validation errors
+   - Sensitive data clearing: password, email, and phone are overwritten in mutable input copies after edge function call completes (in `finally` block)
+   - Both sync (`signup`) and async (`signupAsync`) mutation triggers
+   - Proper logging via `@/lib/logger` (no console.log)
+   - Named exports only, `@/` import alias throughout
+
+### Acceptance Criteria Met:
+- [x] Hook uses `useMutation` from TanStack Query
+- [x] Calls `auth-signup` edge function via `supabase.functions.invoke`
+- [x] Accepts email, password, fullName, phone, tenantSlug as input
+- [x] Handles loading state (`isLoading` from `isPending`)
+- [x] Handles error state (`isError`, `error` message)
+- [x] Validates input client-side with Zod before submit
+- [x] Returns success state (`isSuccess`)
+- [x] Returns error messages (both mutation error and field-level validation errors)
+- [x] Clears sensitive data (password, email, phone) from memory after use
+- [x] Zero ESLint errors/warnings
+- [x] TypeScript strict mode compatible
+
+### Files Changed:
+- `src/hooks/useSignup.ts` (new file)
