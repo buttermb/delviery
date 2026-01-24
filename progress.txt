@@ -2657,3 +2657,31 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create src/contexts/CreditsContext.tsx with CreditsProvider
+
+### What was done:
+
+1. **Created `src/contexts/CreditsContext.tsx`** - User-facing credit management context that:
+   - Integrates with `AuthContext` for user identity (derives `tenantId` from `user.app_metadata`)
+   - Provides `balance`, `isFreeTier`, `isLowCredits`, `isCriticalCredits`, `isOutOfCredits` status flags
+   - Provides `lifetimeEarned` and `lifetimeSpent` metrics
+   - Fetches and exposes recent `transactions` via TanStack Query
+   - Provides `purchaseCredits(amount, stripePaymentId?)` mutation with toast feedback
+   - Provides `useCreditsAction(actionKey, referenceId?, referenceType?)` for credit-gated actions
+   - Subscribes to Supabase Realtime on `tenant_credits` and `credit_transactions` tables
+   - Shows progressive low balance warnings per threshold using session-scoped deduplication
+   - Includes idempotency protection via in-flight action tracking with refs
+   - Uses `showCreditDeductionToast` for action consumption feedback
+   - Exports `useCreditsContext` hook for consuming the context
+
+2. **Key design decisions:**
+   - Uses `AuthContext` (not `TenantAdminAuthContext`) per task requirements
+   - Named `CreditsContext.tsx` (distinct from existing `CreditContext.tsx` which wraps admin hook)
+   - Follows existing patterns: named exports, `@/` imports, `logger` usage, no `console.log`
+   - Real-time subscription invalidates both balance and transaction queries
+   - Purchase mutation uses `useMutation` with `onSuccess` cache invalidation
+   - Low balance warnings use `sessionStorage` to prevent spam across re-renders
+
+### Files Changed:
+- `src/contexts/CreditsContext.tsx` (new file)
