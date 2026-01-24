@@ -340,6 +340,7 @@ const CreditPurchaseSuccessPage = lazy(() => import("./pages/tenant-admin/credit
 const CreditPurchaseCancelledPage = lazy(() => import("./pages/tenant-admin/credits/CreditPurchaseCancelledPage"));
 const CreditAnalyticsPage = lazy(() => import("./pages/tenant-admin/credits/CreditAnalyticsPage").then(m => ({ default: m.CreditAnalyticsPage })));
 const CreditsCheckoutPage = lazy(() => import("./pages/credits/CheckoutPage"));
+const TransactionHistoryPage = lazy(() => import("./pages/credits/TransactionHistoryPage").then(m => ({ default: m.TransactionHistoryPage })));
 const CustomerDetails = lazy(() => import("./pages/admin/CustomerDetails"));
 const StockAlertsPage = lazy(() => import("./pages/tenant-admin/StockAlertsPage"));
 const InventoryTransfersPage = lazy(() => import("./pages/tenant-admin/InventoryTransfersPage"));
@@ -877,6 +878,7 @@ const App = () => {
                                         {/* Credit Routes */}
                                         <Route path="credits/analytics" element={<CreditAnalyticsPage />} />
                                         <Route path="credits/checkout" element={<CreditsCheckoutPage />} />
+                                        <Route path="credits/transactions" element={<TransactionHistoryPage />} />
                                         <Route path="credits/success" element={<CreditPurchaseSuccessPage />} />
                                         <Route path="credits/cancelled" element={<CreditPurchaseCancelledPage />} />
                                         <Route path="settings" element={<FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute>} />

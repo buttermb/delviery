@@ -1,200 +1,193 @@
 /**
  * useCreditTransactions Hook
  *
- * Provides paginated credit transaction history using useInfiniteQuery.
- * Supports filtering by transaction type and date range.
- * Returns formatted transactions with relative date strings.
+ * Provides paginated, filterable credit transaction history for the current tenant.
+ * Wraps getCreditTransactions with TanStack Query for caching and pagination.
  */
 
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useCallback, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { type CreditTransaction } from '@/lib/credits';
 
 // ============================================================================
 // Types
 // ============================================================================
 
-export type CreditTransactionType =
-  | 'free_grant'
-  | 'purchase'
-  | 'usage'
-  | 'refund'
-  | 'bonus'
-  | 'promo';
+export type TransactionTypeFilter = 'all' | 'purchase' | 'usage' | 'refund';
 
-export interface CreditTransaction {
-  id: string;
-  tenant_id: string;
-  amount: number;
-  balance_after: number;
-  transaction_type: CreditTransactionType;
-  action_type: string | null;
-  reference_id: string | null;
-  reference_type: string | null;
-  description: string | null;
-  metadata: Record<string, unknown> | null;
-  created_at: string;
-  created_by: string | null;
+export interface CreditTransactionFilters {
+  type: TransactionTypeFilter;
+  dateFrom?: Date;
+  dateTo?: Date;
 }
 
-export interface FormattedCreditTransaction extends CreditTransaction {
-  relativeDate: string;
-  isCredit: boolean;
-  absoluteAmount: number;
-}
-
-export interface CreditTransactionsFilters {
-  type?: CreditTransactionType;
-  startDate?: string;
-  endDate?: string;
+export interface UseCreditTransactionsOptions {
+  pageSize?: number;
+  filters?: CreditTransactionFilters;
 }
 
 export interface UseCreditTransactionsReturn {
-  transactions: FormattedCreditTransaction[];
+  transactions: CreditTransaction[];
   isLoading: boolean;
-  isFetchingNextPage: boolean;
+  isFetchingMore: boolean;
   error: Error | null;
-  hasNextPage: boolean;
-  fetchNextPage: () => void;
+  hasMore: boolean;
+  totalCount: number;
+  loadMore: () => void;
   refetch: () => void;
 }
 
 // ============================================================================
-// Constants
-// ============================================================================
-
-const PAGE_SIZE = 20;
-
-// ============================================================================
-// Helpers
-// ============================================================================
-
-function formatRelativeDate(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffSeconds = Math.floor(diffMs / 1000);
-  const diffMinutes = Math.floor(diffSeconds / 60);
-  const diffHours = Math.floor(diffMinutes / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffSeconds < 60) {
-    return 'Just now';
-  }
-  if (diffMinutes < 60) {
-    return `${diffMinutes}m ago`;
-  }
-  if (diffHours < 24) {
-    return `${diffHours}h ago`;
-  }
-  if (diffDays === 1) {
-    return 'Yesterday';
-  }
-  if (diffDays < 7) {
-    return `${diffDays}d ago`;
-  }
-  if (diffDays < 30) {
-    const weeks = Math.floor(diffDays / 7);
-    return `${weeks}w ago`;
-  }
-
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
-  });
-}
-
-function formatTransaction(tx: CreditTransaction): FormattedCreditTransaction {
-  return {
-    ...tx,
-    relativeDate: formatRelativeDate(tx.created_at),
-    isCredit: tx.amount > 0,
-    absoluteAmount: Math.abs(tx.amount),
-  };
-}
-
-// ============================================================================
-// Hook
+// Hook Implementation
 // ============================================================================
 
 export function useCreditTransactions(
-  filters: CreditTransactionsFilters = {}
+  options: UseCreditTransactionsOptions = {}
 ): UseCreditTransactionsReturn {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
 
-  const {
-    data,
-    isLoading,
-    isFetchingNextPage,
-    error,
-    hasNextPage,
-    fetchNextPage,
-    refetch,
-  } = useInfiniteQuery({
-    queryKey: queryKeys.creditTransactions.list({
-      tenantId,
-      type: filters.type,
-      startDate: filters.startDate,
-      endDate: filters.endDate,
-    }),
-    queryFn: async ({ pageParam = 0 }) => {
-      if (!tenantId) return { data: [], nextOffset: null };
+  const { pageSize = 20, filters } = options;
+  const [loadedPages, setLoadedPages] = useState(1);
 
-      let query = supabase
-        .from('credit_transactions')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false })
-        .range(pageParam, pageParam + PAGE_SIZE - 1);
+  const typeFilter = filters?.type ?? 'all';
+  const dateFrom = filters?.dateFrom;
+  const dateTo = filters?.dateTo;
 
-      if (filters.type) {
-        query = query.eq('transaction_type', filters.type);
+  // Fetch total count for pagination
+  const { data: totalCount = 0 } = useQuery({
+    queryKey: ['credit-transactions-count', tenantId, typeFilter, dateFrom?.toISOString(), dateTo?.toISOString()],
+    queryFn: async () => {
+      if (!tenantId) return 0;
+
+      try {
+        let query = supabase
+          .from('credit_transactions')
+          .select('id', { count: 'exact', head: true })
+          .eq('tenant_id', tenantId);
+
+        if (typeFilter !== 'all') {
+          query = query.eq('transaction_type', typeFilter);
+        }
+
+        if (dateFrom) {
+          query = query.gte('created_at', dateFrom.toISOString());
+        }
+
+        if (dateTo) {
+          const endOfDay = new Date(dateTo);
+          endOfDay.setHours(23, 59, 59, 999);
+          query = query.lte('created_at', endOfDay.toISOString());
+        }
+
+        const { count, error } = await query;
+
+        if (error) {
+          logger.error('Failed to get transaction count', error, { tenantId });
+          return 0;
+        }
+
+        return count ?? 0;
+      } catch (err) {
+        logger.error('Error getting transaction count', err as Error, { tenantId });
+        return 0;
       }
-
-      if (filters.startDate) {
-        query = query.gte('created_at', filters.startDate);
-      }
-
-      if (filters.endDate) {
-        query = query.lte('created_at', filters.endDate);
-      }
-
-      const { data: rows, error: queryError } = await query;
-
-      if (queryError) {
-        logger.error('Failed to fetch credit transactions', {
-          error: queryError,
-          tenantId,
-          filters,
-        });
-        throw queryError;
-      }
-
-      const results = (rows || []) as CreditTransaction[];
-      const nextOffset = results.length === PAGE_SIZE ? pageParam + PAGE_SIZE : null;
-
-      return { data: results, nextOffset };
     },
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextOffset,
     enabled: !!tenantId,
     staleTime: 30 * 1000,
   });
 
-  const transactions: FormattedCreditTransaction[] =
-    data?.pages.flatMap((page) => page.data.map(formatTransaction)) ?? [];
+  // Fetch transactions with pagination
+  const {
+    data: transactions = [],
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['credit-transactions', tenantId, typeFilter, dateFrom?.toISOString(), dateTo?.toISOString(), loadedPages],
+    queryFn: async () => {
+      if (!tenantId) return [];
+
+      try {
+        const limit = pageSize * loadedPages;
+
+        let query = supabase
+          .from('credit_transactions')
+          .select('*')
+          .eq('tenant_id', tenantId)
+          .order('created_at', { ascending: false })
+          .limit(limit);
+
+        if (typeFilter !== 'all') {
+          query = query.eq('transaction_type', typeFilter);
+        }
+
+        if (dateFrom) {
+          query = query.gte('created_at', dateFrom.toISOString());
+        }
+
+        if (dateTo) {
+          const endOfDay = new Date(dateTo);
+          endOfDay.setHours(23, 59, 59, 999);
+          query = query.lte('created_at', endOfDay.toISOString());
+        }
+
+        const { data, error: queryError } = await query;
+
+        if (queryError) {
+          logger.error('Failed to get credit transactions', queryError, { tenantId });
+          return [];
+        }
+
+        return (data || []).map(row => ({
+          id: row.id,
+          tenantId: row.tenant_id,
+          amount: row.amount,
+          balanceAfter: row.balance_after,
+          transactionType: row.transaction_type as CreditTransaction['transactionType'],
+          actionType: row.action_type ?? undefined,
+          referenceId: row.reference_id ?? undefined,
+          referenceType: row.reference_type ?? undefined,
+          description: row.description ?? undefined,
+          metadata: (row.metadata as Record<string, unknown>) ?? undefined,
+          createdAt: row.created_at,
+        }));
+      } catch (err) {
+        logger.error('Error fetching credit transactions', err as Error, { tenantId });
+        return [];
+      }
+    },
+    enabled: !!tenantId,
+    staleTime: 30 * 1000,
+  });
+
+  const hasMore = transactions.length < totalCount;
+  const isFetchingMore = isFetching && transactions.length > 0;
+
+  const loadMore = useCallback(() => {
+    if (hasMore && !isFetching) {
+      setLoadedPages(prev => prev + 1);
+    }
+  }, [hasMore, isFetching]);
+
+  // Reset pages when filters change
+  const resetAndRefetch = useCallback(() => {
+    setLoadedPages(1);
+    refetch();
+  }, [refetch]);
 
   return {
     transactions,
     isLoading,
-    isFetchingNextPage,
+    isFetchingMore,
     error: error as Error | null,
-    hasNextPage: !!hasNextPage,
-    fetchNextPage: () => { fetchNextPage(); },
-    refetch: () => { refetch(); },
+    hasMore,
+    totalCount,
+    loadMore,
+    refetch: resetAndRefetch,
   };
 }
