@@ -2657,3 +2657,35 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create UserMenu Dropdown Component
+
+### What was done:
+
+1. **Created `src/components/auth/UserMenu.tsx`** - Dropdown menu component for authenticated users:
+   - Uses shadcn/ui `DropdownMenu` with proper `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuItem`
+   - Shows user avatar with initials fallback (computed from name or email)
+   - Displays user display name (truncated on smaller screens, hidden on mobile)
+   - Menu header shows full name and email
+   - Shows current credit balance for free-tier users
+   - Menu items: Profile, Settings, Credits, Sessions, Log out
+   - Each menu item has an appropriate Lucide icon
+   - Navigation uses tenant-aware routing (`/${tenantSlug}/admin/...`)
+   - Logout calls the auth context `logout()` and redirects to login page
+   - Named export only (no default export)
+   - Uses `@/` import aliases throughout
+   - Consumes `useTenantAdminAuth` for user/tenant data and logout
+   - Consumes `useCredits` hook for real-time credit balance
+   - Accessible: proper `aria-label` on trigger, keyboard navigable via Radix
+
+### Files Created:
+- `src/components/auth/UserMenu.tsx`
+
+### Key Design Decisions:
+- Credit balance only shown for free-tier users (paid plans have unlimited credits)
+- Initials logic: uses first letters of two name parts, or first two chars of single name/email
+- Display name falls back to email when name is not set
+- Trigger button is responsive: shows avatar + name on md+, avatar-only on mobile
+- Uses `cursor-pointer` via the shadcn dropdown item styles for clickable items
