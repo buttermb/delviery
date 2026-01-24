@@ -161,6 +161,7 @@ const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePa
 const TenantAdminVerifyEmailPage = lazy(() => import("./pages/tenant-admin/VerifyEmailPage"));
 const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
 const SignupSuccessPage = lazy(() => import("./pages/auth/SignupSuccessPage").then(m => ({ default: m.SignupSuccessPage })));
+const AccountSettingsPage = lazy(() => import("./pages/auth/AccountSettingsPage").then(m => ({ default: m.AccountSettingsPage })));
 
 // Tenant Admin Pages
 const TenantAdminLoginPage = lazy(() => import("./pages/tenant-admin/LoginPage"));
@@ -873,6 +874,7 @@ const App = () => {
                                         <Route path="credits/success" element={<CreditPurchaseSuccessPage />} />
                                         <Route path="credits/cancelled" element={<CreditPurchaseCancelledPage />} />
                                         <Route path="settings" element={<FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute>} />
+                                        <Route path="account-settings" element={<AccountSettingsPage />} />
 
                                         {/* Marketplace Routes (B2B) */}
                                         <Route path="marketplace/dashboard" element={<FeatureProtectedRoute featureId="marketplace"><MarketplaceDashboard /></FeatureProtectedRoute>} />
