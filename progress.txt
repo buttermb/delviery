@@ -5462,3 +5462,53 @@ Created `src/pages/auth/AccountSettingsPage.tsx` - a protected account settings 
 ### Verification Results:
 - [x] `npm run build` - PASSES (0 TypeScript errors)
 - [x] `npm run lint` - PASSES (0 errors on new file, 0 new warnings)
+
+---
+
+## Task: Create ChangePasswordPage.tsx Protected Page
+
+### What was done:
+
+1. **Created `src/pages/auth/ChangePasswordPage.tsx`** - Full-featured password change page:
+   - **Current password input** with show/hide toggle for identity verification
+   - **New password input** with show/hide toggle and real-time password strength meter (Weak/Medium/Strong with Progress bar)
+   - **Confirm new password** with match/mismatch visual feedback (checkmark/X icons)
+   - **Sign out other devices checkbox** using Radix Checkbox component
+   - **Submit button** with loading spinner and disabled state during async operations
+   - Validates current password is provided before allowing change
+   - Validates new password is at least 8 characters
+   - Validates confirm password matches new password
+   - Button disabled until all form validations pass (`isFormValid` computed)
+   - Calls `tenant-admin-auth` edge function with `action: 'update-password'` (same pattern as SecuritySettings)
+   - Passes `signOutOtherDevices` flag to the API
+   - Shows **success toast** on password update
+   - Shows **success state UI** with green checkmark and redirect message
+   - **Auto-redirects** to `/:tenantSlug/admin/settings` after 2 seconds
+   - "Back to Settings" ghost button for manual navigation
+   - Uses `useTenantAdminAuth()` for tenant context
+   - Uses `handleError()` for proper error handling with toast display
+   - Uses `logger` instead of `console.log`
+   - Named export only (no default exports)
+   - All imports use `@/` alias
+   - Accessible with proper labels, aria-labels, and autoComplete attributes
+   - Responsive min-h-[44px] touch targets
+
+2. **Updated `src/App.tsx`**:
+   - Added lazy import: `const ChangePasswordPage = lazy(() => import("./pages/auth/ChangePasswordPage").then(m => ({ default: m.ChangePasswordPage })))`
+   - Added protected route: `<Route path="/:tenantSlug/admin/change-password" element={<TenantAdminProtectedRoute><ChangePasswordPage /></TenantAdminProtectedRoute>} />`
+   - Route placed alongside other protected auth routes (welcome, verify-email)
+
+### Verification Results:
+- [x] `npm run build` - PASSES (0 TypeScript errors)
+- [x] `npm run lint` - PASSES (0 errors, only pre-existing warnings)
+- [x] Named export used (no default export)
+- [x] Uses `@/` import alias throughout
+- [x] Uses `logger` from `@/lib/logger`
+- [x] Uses `STORAGE_KEYS` from `@/constants/storageKeys`
+- [x] Button has loading + disabled states
+- [x] Errors wrapped in try-catch with toast.error()
+- [x] No `any` types used
+
+### Files Changed:
+- `src/pages/auth/ChangePasswordPage.tsx` (new file)
+- `src/App.tsx` (lazy import + route definition)

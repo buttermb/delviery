@@ -162,6 +162,7 @@ const TenantAdminVerifyEmailPage = lazy(() => import("./pages/tenant-admin/Verif
 const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
 const SignupSuccessPage = lazy(() => import("./pages/auth/SignupSuccessPage").then(m => ({ default: m.SignupSuccessPage })));
 const AccountSettingsPage = lazy(() => import("./pages/auth/AccountSettingsPage").then(m => ({ default: m.AccountSettingsPage })));
+const ChangePasswordPage = lazy(() => import("./pages/auth/ChangePasswordPage").then(m => ({ default: m.ChangePasswordPage })));
 
 // Tenant Admin Pages
 const TenantAdminLoginPage = lazy(() => import("./pages/tenant-admin/LoginPage"));
@@ -717,6 +718,9 @@ const App = () => {
 
                                       {/* Email Verification Page */}
                                       <Route path="/:tenantSlug/admin/verify-email" element={<TenantAdminProtectedRoute><TenantAdminVerifyEmailPage /></TenantAdminProtectedRoute>} />
+
+                                      {/* Change Password Page */}
+                                      <Route path="/:tenantSlug/admin/change-password" element={<TenantAdminProtectedRoute><ChangePasswordPage /></TenantAdminProtectedRoute>} />
 
                                       {/* Trial Expired Page (must be before AdminLayout) */}
                                       <Route path="/:tenantSlug/admin/trial-expired" element={<TenantAdminProtectedRoute><TrialExpiredPage /></TenantAdminProtectedRoute>} />
