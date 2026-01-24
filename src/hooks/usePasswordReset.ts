@@ -1,7 +1,8 @@
-import { useMutation } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/logger';
-import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/utils/apiClient";
+import { logger } from "@/lib/logger";
+import { getErrorMessage } from "@/utils/errorHandling/typeGuards";
 
 // ============================================================================
 // Types
@@ -13,8 +14,10 @@ interface PasswordStrengthResult {
   errors: string[];
 }
 
-interface RequestResetParams {
+interface ResetRequestParams {
   email: string;
+  tenantSlug?: string;
+  userType?: "super_admin" | "tenant_admin" | "customer";
 }
 
 interface ConfirmResetParams {
@@ -22,9 +25,15 @@ interface ConfirmResetParams {
   newPassword: string;
 }
 
-interface PasswordResetResponse {
+interface PasswordResetResult {
   success: boolean;
-  message?: string;
+  message: string;
+}
+
+interface TokenVerifyResult {
+  valid: boolean;
+  email?: string;
+  error?: string;
 }
 
 // ============================================================================
@@ -80,137 +89,130 @@ export function validatePasswordStrength(password: string): PasswordStrengthResu
 }
 
 // ============================================================================
-// Error Message Mapping
-// ============================================================================
-
-function getRequestResetErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    const msg = error.message.toLowerCase();
-
-    if (msg.includes('rate limit') || msg.includes('too many')) {
-      return 'Too many reset requests. Please wait a few minutes before trying again.';
-    }
-    if (msg.includes('not found') || msg.includes('no user')) {
-      // Don't reveal whether the email exists for security
-      return 'If an account with that email exists, a reset link has been sent.';
-    }
-    if (msg.includes('invalid email') || msg.includes('email')) {
-      return 'Please enter a valid email address.';
-    }
-    if (msg.includes('network') || msg.includes('fetch')) {
-      return 'Network error. Please check your connection and try again.';
-    }
-    if (msg.includes('timeout')) {
-      return 'Request timed out. Please try again.';
-    }
-  }
-  return 'Unable to process your request. Please try again later.';
-}
-
-function getConfirmResetErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    const msg = error.message.toLowerCase();
-
-    if (msg.includes('expired') || msg.includes('token expired')) {
-      return 'This reset link has expired. Please request a new password reset.';
-    }
-    if (msg.includes('invalid') && msg.includes('token')) {
-      return 'This reset link is invalid or has already been used. Please request a new one.';
-    }
-    if (msg.includes('same password') || msg.includes('same_password')) {
-      return 'New password cannot be the same as your current password.';
-    }
-    if (msg.includes('weak') || msg.includes('strength')) {
-      return 'Password does not meet strength requirements.';
-    }
-    if (msg.includes('network') || msg.includes('fetch')) {
-      return 'Network error. Please check your connection and try again.';
-    }
-    if (msg.includes('timeout')) {
-      return 'Request timed out. Please try again.';
-    }
-  }
-  return 'Unable to reset your password. Please try again or request a new reset link.';
-}
-
-// ============================================================================
 // Hook Implementation
 // ============================================================================
 
 export function usePasswordReset() {
-  const requestResetMutation = useMutation<PasswordResetResponse, Error, RequestResetParams>({
-    mutationFn: async ({ email }: RequestResetParams): Promise<PasswordResetResponse> => {
-      const { data, error } = await supabase.functions.invoke('auth-forgot-password', {
-        body: { email },
+  const [tokenVerification, setTokenVerification] = useState<{
+    isVerifying: boolean;
+    isValid: boolean;
+    email: string | null;
+    error: string | null;
+  }>({
+    isVerifying: false,
+    isValid: false,
+    email: null,
+    error: null,
+  });
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+  const requestResetMutation = useMutation<PasswordResetResult, Error, ResetRequestParams>({
+    mutationFn: async ({ email, tenantSlug, userType = "tenant_admin" }) => {
+      const response = await apiFetch(`${supabaseUrl}/functions/v1/auth-forgot-password`, {
+        method: "POST",
+        body: JSON.stringify({ email, tenantSlug, userType }),
+        skipAuth: true,
       });
 
-      if (error) {
-        throw new Error(error.message || 'Failed to send reset email');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to send reset email");
       }
 
-      return data as PasswordResetResponse;
+      return {
+        success: true,
+        message: "If an account exists with that email, a reset link has been sent.",
+      };
     },
-    onSuccess: () => {
-      showSuccessToast(
-        'Reset link sent',
-        'If an account with that email exists, you will receive a password reset link.'
-      );
-    },
-    onError: (error: Error) => {
-      const message = getRequestResetErrorMessage(error);
-      logger.error('Password reset request failed', { error: error.message });
-      showErrorToast('Reset request failed', message);
+    onError: (error) => {
+      logger.warn("Password reset request failed", { error: getErrorMessage(error) });
     },
   });
 
-  const confirmResetMutation = useMutation<PasswordResetResponse, Error, ConfirmResetParams>({
-    mutationFn: async ({ token, newPassword }: ConfirmResetParams): Promise<PasswordResetResponse> => {
+  const confirmResetMutation = useMutation<PasswordResetResult, Error, ConfirmResetParams>({
+    mutationFn: async ({ token, newPassword }) => {
       const strengthResult = validatePasswordStrength(newPassword);
       if (!strengthResult.isValid) {
         throw new Error(strengthResult.errors[0] || 'Password does not meet requirements');
       }
 
-      const { data, error } = await supabase.functions.invoke('auth-reset-password', {
-        body: { token, newPassword },
+      const response = await apiFetch(`${supabaseUrl}/functions/v1/auth-reset-password`, {
+        method: "POST",
+        body: JSON.stringify({ token, newPassword }),
+        skipAuth: true,
       });
 
-      if (error) {
-        throw new Error(error.message || 'Failed to reset password');
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorMessage = errorData.error || "Failed to reset password";
+
+        if (errorMessage.toLowerCase().includes("expired")) {
+          throw new Error("This reset link has expired. Please request a new one.");
+        }
+        if (errorMessage.toLowerCase().includes("invalid") || errorMessage.toLowerCase().includes("not found")) {
+          throw new Error("This reset link is invalid. Please request a new one.");
+        }
+        throw new Error(errorMessage);
       }
 
-      return data as PasswordResetResponse;
+      return {
+        success: true,
+        message: "Password reset successfully. You can now log in with your new password.",
+      };
     },
-    onSuccess: () => {
-      showSuccessToast(
-        'Password reset successful',
-        'Your password has been updated. You can now log in with your new password.'
-      );
-    },
-    onError: (error: Error) => {
-      const message = getConfirmResetErrorMessage(error);
-      logger.error('Password reset confirmation failed', { error: error.message });
-      showErrorToast('Password reset failed', message);
+    onError: (error) => {
+      logger.warn("Password confirm reset failed", { error: getErrorMessage(error) });
     },
   });
 
+  const verifyToken = async (token: string): Promise<TokenVerifyResult> => {
+    setTokenVerification({ isVerifying: true, isValid: false, email: null, error: null });
+
+    try {
+      const response = await apiFetch(`${supabaseUrl}/functions/v1/auth-reset-password`, {
+        method: "POST",
+        body: JSON.stringify({ action: "verify", token }),
+        skipAuth: true,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const error = errorData.error || "Invalid or expired token";
+        setTokenVerification({ isVerifying: false, isValid: false, email: null, error });
+        return { valid: false, error };
+      }
+
+      const data = await response.json();
+      setTokenVerification({ isVerifying: false, isValid: true, email: data.email || null, error: null });
+      return { valid: true, email: data.email };
+    } catch (error) {
+      const message = getErrorMessage(error) || "Failed to verify token";
+      setTokenVerification({ isVerifying: false, isValid: false, email: null, error: message });
+      logger.warn("Token verification failed", { error: message });
+      return { valid: false, error: message };
+    }
+  };
+
+  const requestReset = (params: ResetRequestParams) => {
+    return requestResetMutation.mutateAsync(params);
+  };
+
+  const confirmReset = (params: ConfirmResetParams) => {
+    return confirmResetMutation.mutateAsync(params);
+  };
+
   return {
-    // Request reset
-    requestReset: requestResetMutation.mutate,
-    requestResetAsync: requestResetMutation.mutateAsync,
+    requestReset,
+    confirmReset,
+    verifyToken,
+    tokenVerification,
+    validatePasswordStrength,
     isRequestingReset: requestResetMutation.isPending,
     requestResetError: requestResetMutation.error,
-
-    // Confirm reset
-    confirmReset: confirmResetMutation.mutate,
-    confirmResetAsync: confirmResetMutation.mutateAsync,
     isConfirmingReset: confirmResetMutation.isPending,
     confirmResetError: confirmResetMutation.error,
-
-    // Password validation
-    validatePasswordStrength,
-
-    // Reset states
-    resetRequestState: requestResetMutation.reset,
-    resetConfirmState: confirmResetMutation.reset,
+    requestResetSuccess: requestResetMutation.isSuccess,
+    confirmResetSuccess: confirmResetMutation.isSuccess,
   };
 }
