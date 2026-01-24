@@ -2657,3 +2657,45 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create supabase/functions/credits-use edge function
+
+### What was done:
+
+1. **Created `update_credit_balance` database function** (`supabase/migrations/20260124000000_create_update_credit_balance.sql`):
+   - Accepts `p_user_id`, `p_tenant_id`, `p_amount`, `p_transaction_type`, `p_description`, `p_reference_type`, `p_reference_id`
+   - Validates transaction_type against allowed values (purchase, usage, refund, expiration, bonus, adjustment, transfer_in, transfer_out)
+   - Validates amount is positive
+   - Implements idempotency check via `reference_id` to prevent duplicate transactions
+   - Uses `FOR UPDATE` row lock on `tenant_credits` to prevent race conditions
+   - For 'usage' type: validates sufficient balance before deducting, returns error with shortfall details if insufficient
+   - For credit types (purchase, refund, bonus, etc.): adds to balance
+   - Updates `lifetime_spent` and `lifetime_earned` counters appropriately
+   - Creates `credit_transactions` record with balance_before/after metadata
+   - Returns JSONB with `success`, `new_balance`, `transaction_id`, `amount`, `balance_before`
+   - Uses `SECURITY DEFINER` with `SET search_path = public`
+
+2. **Created `supabase/functions/credits-use/index.ts`** edge function:
+   - Requires authentication via Authorization header (JWT)
+   - Accepts POST with body: `{ amount, reference_type, reference_id, description? }`
+   - Validates input with Zod schema (amount: positive int, reference_type/id: non-empty strings)
+   - Extracts user from JWT (never trusts client data)
+   - Resolves user's tenant_id from `tenant_users` table
+   - Calls `update_credit_balance` RPC with type 'usage'
+   - Returns 402 (Payment Required) when insufficient credits with balance/shortfall info
+   - Returns 200 with `{ success, new_balance, transaction_id, amount_used }` on success
+   - Handles CORS preflight (OPTIONS)
+   - Imports from `_shared/deps.ts` per project conventions
+   - Proper error codes: MISSING_AUTH, INVALID_TOKEN, INVALID_REQUEST, NO_TENANT, INSUFFICIENT_CREDITS, RPC_ERROR
+
+### Design Decisions:
+- This is an internal function called by other features that consume credits (not directly by end users)
+- Uses service role key for Supabase client to bypass RLS (the function enforces auth itself)
+- The `update_credit_balance` function handles atomicity and race conditions at the database level
+- Idempotency is built into both layers (reference_id dedup in DB, Zod validation in edge function)
+
+### Files Created:
+- `supabase/migrations/20260124000000_create_update_credit_balance.sql`
+- `supabase/functions/credits-use/index.ts`
