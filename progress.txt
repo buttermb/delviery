@@ -3606,3 +3606,57 @@ Created migration `supabase/migrations/20260124000001_create_password_reset_toke
 
 ### Files Created:
 - `supabase/functions/auth-change-password/index.ts`
+
+---
+
+## Task: Create supabase/functions/auth-sessions Edge Function
+
+### What was done:
+
+1. **Created `supabase/functions/auth-sessions/index.ts`** - Auth-protected edge function that manages user sessions:
+
+   **Authentication:**
+   - Extracts user from JWT via Authorization header (never trusts client data)
+   - Returns 401 for missing or invalid auth tokens
+   - Uses `supabase.auth.getUser()` to validate the token
+
+   **GET - List Active Sessions:**
+   - Queries `user_sessions` table filtered by authenticated `user_id`
+   - Only returns active sessions (`is_active = true`) that haven't expired
+   - Returns `device_info` (jsonb with user_agent, browser, os, device_type)
+   - Returns `location` (jsonb with city, country)
+   - Returns `last_activity_at` timestamp
+   - Adds `is_current` flag by comparing session_token to the current auth token
+   - Strips sensitive session_token from response
+   - Orders by last_activity_at descending
+
+   **POST action=revoke - Revoke Specific Session:**
+   - Accepts `session_id` (uuid, required) in request body
+   - Validates session belongs to the authenticated user
+   - Checks session is currently active before revoking
+   - Sets `is_active = false` on the target session
+   - Logs `session_revoked` event to `auth_audit_log` with metadata
+
+   **POST action=revoke_all_others - Revoke All Other Sessions:**
+   - Finds all active sessions for the user except the current one
+   - Sets `is_active = false` on all matching sessions
+   - Returns count of revoked sessions
+   - Logs `session_revoked` event with list of revoked session IDs
+
+   **Audit Logging:**
+   - All revocation actions log to `auth_audit_log` table
+   - Event type: `session_revoked`
+   - Includes: user_id, ip_address, user_agent, metadata (action type, session IDs)
+   - Audit logging failures don't block the main operation
+
+   **Patterns followed:**
+   - Imports from `../_shared/deps.ts` (serve, createClient, corsHeaders, z)
+   - CORS OPTIONS handler
+   - Zod schema validation for POST body
+   - `error instanceof Error` pattern (no `any` types)
+   - Service role key for database operations
+   - `.maybeSingle()` for optional lookups
+   - Proper HTTP status codes (401, 400, 404, 405, 500)
+
+### Files Created:
+- `supabase/functions/auth-sessions/index.ts`
