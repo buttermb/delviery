@@ -2657,3 +2657,35 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create AccountDangerZone Component
+
+### What was done:
+
+1. **Created `src/components/auth/AccountDangerZone.tsx`** - A reusable danger zone component for account settings that provides:
+   - A clearly styled "Danger Zone" section with destructive border styling
+   - "Delete Account" button that triggers a multi-step confirmation dialog
+   - **Step 1 - Password Verification**: User must enter their current password, verified via `supabase.auth.signInWithPassword`
+   - **Step 2 - Type DELETE Confirmation**: User must type "DELETE" to confirm the action
+   - A list of what data will be affected/deleted (customizable via props)
+   - Calls the `delete-customer-account` edge function with proper payload
+   - Handles edge function errors (both throw errors and response body errors)
+   - Inline error display within the dialog + toast notifications on failure
+   - Loading/disabled states on buttons during async operations
+   - Haptic feedback for destructive actions, success, and errors
+   - Keyboard support (Enter key) for both steps
+   - State cleanup on dialog close
+   - Proper logging via `logger` utility
+   - Follows all FloraIQ code conventions (named export, `@/` imports, no `any` types, no console.log)
+
+### Props Interface:
+- `userId` - ID of the user whose account will be deleted
+- `tenantId` - Tenant ID for multi-tenant context
+- `userEmail` - Displayed in the warning message
+- `onAccountDeleted` - Callback after successful deletion (for navigation/logout)
+- `affectedData` - Optional custom list of items that will be affected
+
+### Files Changed:
+- `src/components/auth/AccountDangerZone.tsx` (new file)
