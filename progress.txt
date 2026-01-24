@@ -6970,3 +6970,93 @@ All forms validate CSRF token before processing submission, showing "Security Er
 - `supabase/functions/tenant-admin-auth/index.ts` (updated)
 - `supabase/functions/admin-auth/index.ts` (updated)
 - `supabase/functions/magic-link-login/index.ts` (updated)
+
+---
+
+## Task: Add Suspicious Activity Detection
+
+### What was done:
+
+1. **Database Migration** (`supabase/migrations/20260124100000_suspicious_activity_detection.sql`):
+   - Created `user_known_devices` table to track trusted devices per user with fingerprint, browser, OS, IP, geo info, and trust status
+   - Created `suspicious_login_alerts` table to track suspicious login events with email notification status, user response, and one-click secure token
+   - Added RLS policies for user self-service (view/update own devices and alerts) and tenant admin visibility
+   - Created `check_device_suspicious_login()` SECURITY DEFINER function that:
+     - Detects new device logins by comparing fingerprint against known devices
+     - Detects new location logins by comparing geo info
+     - Auto-trusts first device (no alert on first-ever login)
+     - Creates alerts with severity levels (warning/critical)
+     - Generates secure tokens (24hr expiry) for one-click account lock
+     - Logs all events to `audit_events` table (auth category)
+   - Created `secure_account_from_alert()` function for one-click email action (marks device as untrusted, logs critical audit event)
+   - Created `confirm_login_was_me()` function for user to confirm legitimate login and trust the device
+   - Performance indexes on user_id, fingerprint, token, pending alerts, and tenant
+
+2. **Edge Function: detect-suspicious-login** (`supabase/functions/detect-suspicious-login/index.ts`):
+   - Validates input with Zod schema
+   - Extracts IP address from request headers
+   - Gets geo-location for the IP (extensible for MaxMind/ip-api integration)
+   - Calls `check_device_suspicious_login` RPC
+   - On suspicious detection, sends HTML email notification via Resend API with:
+     - Device details (browser, OS, type)
+     - Location info (city, country, IP)
+     - Login timestamp
+     - One-click "Secure My Account" button with secure token URL
+   - Updates alert with email_sent status
+   - Uses `withZenProtection` and CORS headers per project patterns
+
+3. **Edge Function: secure-account** (`supabase/functions/secure-account/index.ts`):
+   - Two actions: `secure` (one-click from email, no auth required) and `confirm` (user confirms login, auth required)
+   - `secure` action: Validates token, calls `secure_account_from_alert` RPC, revokes all user sessions via `auth.admin.signOut(userId, 'global')`
+   - `confirm` action: Authenticates user via JWT, calls `confirm_login_was_me` RPC, trusts the device
+
+4. **Frontend Hook: useSuspiciousLoginDetection** (`src/hooks/useSuspiciousLoginDetection.ts`):
+   - Listens for `SIGNED_IN` auth events
+   - Generates device fingerprint and calls `detect-suspicious-login` edge function
+   - Handles network errors gracefully (no disruption to user experience)
+   - Integrated into `DeviceTracker` component (already mounted app-wide)
+
+5. **Frontend Hook: useKnownDevices** (`src/hooks/useKnownDevices.ts`):
+   - TanStack Query-based hook for managing known devices and alerts
+   - Queries: `devices`, `alerts`, `pendingAlerts`
+   - Mutations: `trustDevice`, `untrustDevice`, `removeDevice`, `confirmAlert`
+   - All mutations invalidate relevant queries on success
+
+6. **Admin Component: SuspiciousActivityPanel** (`src/components/admin/SuspiciousActivityPanel.tsx`):
+   - Pending alerts section with severity badges and "Was me" confirmation
+   - Known devices list with trust/untrust/remove actions
+   - Alert history with resolution status indicators
+   - Device type icons (desktop/mobile/tablet)
+   - Geo-location and IP display
+
+7. **Secure Account Page** (`src/pages/auth/SecureAccountPage.tsx`):
+   - Public page at `/auth/secure-account?token=...`
+   - Handles the one-click secure link from email
+   - Shows loading, success, error, and expired states
+   - On success: advises password change, links to login
+   - Route added to `App.tsx`
+
+8. **Query Keys** (`src/lib/queryKeys.ts`):
+   - Added `security.knownDevices(userId)` and `security.suspiciousAlerts(userId)` keys
+
+### Audit Logging Integration:
+All suspicious activity events are logged to the existing `audit_events` partitioned table:
+- `suspicious_login_new_device` (warning)
+- `suspicious_login_new_location` (warning)
+- `suspicious_login_new_device_and_location` (critical)
+- `first_device_registered` (info)
+- `device_login` (info - normal known device login)
+- `account_secured_from_alert` (critical)
+- `login_confirmed_by_user` (info)
+
+### Files Changed:
+- `supabase/migrations/20260124100000_suspicious_activity_detection.sql` (new)
+- `supabase/functions/detect-suspicious-login/index.ts` (new)
+- `supabase/functions/secure-account/index.ts` (new)
+- `src/hooks/useSuspiciousLoginDetection.ts` (new)
+- `src/hooks/useKnownDevices.ts` (new)
+- `src/components/admin/SuspiciousActivityPanel.tsx` (new)
+- `src/pages/auth/SecureAccountPage.tsx` (new)
+- `src/components/DeviceTracker.tsx` (added suspicious login detection)
+- `src/App.tsx` (added SecureAccountPage lazy import and route)
+- `src/lib/queryKeys.ts` (added security query keys)

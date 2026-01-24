@@ -572,6 +572,14 @@ export const queryKeys = {
       [...queryKeys.creditTransactions.lists(), filters] as const,
   },
 
+  // Security: Known Devices & Suspicious Activity
+  security: {
+    all: ['security'] as const,
+    knownDevices: (userId?: string) => ['known-devices', userId] as const,
+    suspiciousAlerts: (userId?: string) => ['suspicious-login-alerts', userId] as const,
+    pendingAlerts: (userId?: string) => ['suspicious-login-alerts', userId, 'pending'] as const,
+  },
+
   // Activity Feed
   activityFeed: {
     all: ['activity-feed'] as const,
