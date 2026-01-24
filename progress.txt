@@ -2657,3 +2657,44 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create src/pages/auth/SessionsPage.tsx Protected Sessions Page
+
+### What was done:
+
+1. **Created `src/hooks/useSessions.ts`** - TanStack Query hook for session management:
+   - Fetches active sessions via `get-active-sessions` edge function
+   - Identifies current session by matching access token
+   - Provides `revokeSession` mutation (expires individual session)
+   - Provides `revokeAllOthers` mutation (revokes all except current via edge function)
+   - Exposes loading/pending states for UI feedback
+   - Uses `queryKeys.sessions.all` for cache management
+
+2. **Added `sessions` query keys** to `src/lib/queryKeys.ts`:
+   - `sessions.all` - base key for all session queries
+   - `sessions.list(userId)` - per-user session list key
+
+3. **Created `src/pages/auth/SessionsPage.tsx`** - Protected page with full session management:
+   - Auth guard via `supabase.auth.getUser()` - redirects to `/login` if unauthenticated
+   - Displays all active sessions from `useSessions` hook
+   - Device type icon (Monitor/Smartphone/Tablet) based on user agent parsing
+   - Browser name detection (Chrome, Firefox, Safari, Edge, Opera)
+   - Device type label (iPhone, Android, Mac, Windows PC, Linux)
+   - IP address display with MapPin icon
+   - Last active time with relative formatting (just now, X minutes/hours/days ago)
+   - Current session highlighted with primary border/background and "Current" badge
+   - Sessions sorted: current first, then by creation date descending
+   - Revoke button per non-current session (destructive ghost variant)
+   - "Revoke All Others" button when multiple sessions exist
+   - AlertDialog confirmation before any revoke action
+   - Loading skeletons during session fetch
+   - Empty state with icon when no sessions found
+   - Button loading/disabled states during async operations
+   - Toast notifications for success/error feedback
+
+### Files created:
+- `src/hooks/useSessions.ts`
+- `src/pages/auth/SessionsPage.tsx`
+
+### Files modified:
+- `src/lib/queryKeys.ts` (added sessions query keys)

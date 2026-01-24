@@ -538,6 +538,12 @@ export const queryKeys = {
     byTag: (tagId: string) => [...queryKeys.customerTags.all, 'tag', tagId] as const,
   },
 
+  // Sessions
+  sessions: {
+    all: ['sessions'] as const,
+    list: (userId?: string) => ['sessions', 'list', userId] as const,
+  },
+
   // Activity Feed
   activityFeed: {
     all: ['activity-feed'] as const,
