@@ -2706,3 +2706,46 @@ verifying all 5 stat cards load with real data and their navigation links work c
 
 ### Files Changed:
 - `supabase/migrations/20260124000000_create_user_profiles.sql` (new)
+
+---
+
+## Task: Create user_sessions table migration
+
+### What was done:
+
+1. **Created migration file** `supabase/migrations/20260124000001_create_user_sessions.sql`:
+   - **Table**: `public.user_sessions` with all required columns:
+     - `id` uuid PRIMARY KEY (auto-generated)
+     - `user_id` uuid NOT NULL references `auth.users(id)` ON DELETE CASCADE
+     - `tenant_id` uuid references `public.tenants(id)` ON DELETE CASCADE
+     - `session_token` text UNIQUE NOT NULL
+     - `refresh_token` text UNIQUE
+     - `device_info` jsonb (stores user_agent, browser, os, device_type)
+     - `ip_address` inet (supports IPv4/IPv6)
+     - `location` jsonb (stores city, country)
+     - `is_active` boolean DEFAULT true
+     - `expires_at` timestamptz NOT NULL
+     - `last_activity_at` timestamptz DEFAULT now()
+     - `created_at` timestamptz DEFAULT now()
+
+2. **Indexes for performance**:
+   - `idx_user_sessions_user_id` on `user_id`
+   - `idx_user_sessions_session_token` on `session_token`
+   - `idx_user_sessions_tenant_id` on `tenant_id`
+   - `idx_user_sessions_expires_at` partial index on `expires_at` WHERE `is_active = true`
+
+3. **Row Level Security (RLS)**:
+   - RLS enabled on table
+   - SELECT policy: users can only view their own sessions (`auth.uid() = user_id`)
+   - INSERT policy: users can only insert their own sessions
+   - UPDATE policy: users can only update their own sessions
+   - DELETE policy: users can only delete their own sessions
+
+4. **Data validation constraints**:
+   - `check_device_info_structure`: validates device_info contains expected keys (user_agent, browser, os, device_type)
+   - `check_location_structure`: validates location contains expected keys (city, country)
+
+5. **Documentation**: Table and column comments added for clarity
+
+### Files Changed:
+- `supabase/migrations/20260124000001_create_user_sessions.sql` (new file)
