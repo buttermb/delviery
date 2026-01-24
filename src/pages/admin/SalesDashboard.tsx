@@ -1,11 +1,14 @@
 import { logger } from '@/lib/logger';
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { DollarSign, TrendingUp, ShoppingCart, Activity } from 'lucide-react';
+import {
+  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+} from 'recharts';
+import { DollarSign, TrendingUp, ShoppingCart, Activity, BarChart3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { Button } from '@/components/ui/button';
@@ -13,16 +16,47 @@ import { cn } from '@/lib/utils';
 import { LastUpdated } from '@/components/shared/LastUpdated';
 import { RecentItemsWidget } from "@/components/admin/dashboard/RecentItemsWidget";
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
-import { BarChart3 } from 'lucide-react';
+import { useSalesReportDrilldown } from '@/hooks/useSalesReportDrilldown';
+import { SalesReportDrilldownModal } from '@/components/admin/analytics/SalesReportDrilldownModal';
+import { format, parseISO } from 'date-fns';
+
+const STATUS_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+
+interface SalesDataPoint {
+  date: string;
+  isoDate: string;
+  revenue: number;
+  orders: number;
+}
+
+interface StatusDataPoint {
+  name: string;
+  value: number;
+}
+
+interface OrderRecord {
+  id: string;
+  created_at: string;
+  status: string;
+  total?: string | number;
+  total_amount?: string | number;
+  order_items?: Array<{
+    product_name: string;
+    quantity: number;
+    price: number;
+  }>;
+  [key: string]: unknown;
+}
 
 export default function SalesDashboard() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
+  const drilldown = useSalesReportDrilldown();
 
   const { data: orders, isLoading, refetch } = useQuery({
     queryKey: ['sales-dashboard', tenantId, timeRange],
-    queryFn: async () => {
+    queryFn: async (): Promise<OrderRecord[]> => {
       if (!tenantId) return [];
 
       try {
@@ -35,7 +69,7 @@ export default function SalesDashboard() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        return (data as OrderRecord[]) || [];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         logger.error('Error fetching sales dashboard data', error, { component: 'SalesDashboard' });
@@ -44,6 +78,66 @@ export default function SalesDashboard() {
     },
     enabled: !!tenantId,
   });
+
+  const { salesData, statusData, totalRevenue, totalOrders, avgOrderValue } = useMemo(() => {
+    const orderList = orders || [];
+    const dateMap: Record<string, SalesDataPoint> = {};
+    const statusMap: Record<string, number> = {};
+    let revenue = 0;
+
+    orderList.forEach((order) => {
+      const orderTotal = parseFloat((order.total_amount ?? order.total ?? 0).toString());
+      revenue += orderTotal;
+
+      const isoDate = format(parseISO(order.created_at), 'yyyy-MM-dd');
+      const displayDate = format(parseISO(order.created_at), 'MMM d');
+
+      if (!dateMap[isoDate]) {
+        dateMap[isoDate] = { date: displayDate, isoDate, revenue: 0, orders: 0 };
+      }
+      dateMap[isoDate].revenue += orderTotal;
+      dateMap[isoDate].orders += 1;
+
+      const status = order.status || 'unknown';
+      statusMap[status] = (statusMap[status] || 0) + 1;
+    });
+
+    const sortedSalesData = Object.values(dateMap).sort((a, b) => a.isoDate.localeCompare(b.isoDate));
+    const statusDataArr: StatusDataPoint[] = Object.entries(statusMap).map(([name, value]) => ({ name, value }));
+    const count = orderList.length;
+    const avg = count > 0 ? revenue / count : 0;
+
+    return {
+      salesData: sortedSalesData,
+      statusData: statusDataArr,
+      totalRevenue: revenue,
+      totalOrders: count,
+      avgOrderValue: avg,
+    };
+  }, [orders]);
+
+  const handleChartClick = useCallback((data: Record<string, unknown> | null | undefined, type: 'date' | 'status') => {
+    if (!data) return;
+    if (type === 'date') {
+      const point = data as unknown as SalesDataPoint;
+      if (point.isoDate) {
+        drilldown.openDrilldown({
+          type: 'date',
+          label: point.date,
+          value: point.isoDate,
+        });
+      }
+    } else if (type === 'status') {
+      const point = data as unknown as StatusDataPoint;
+      if (point.name) {
+        drilldown.openDrilldown({
+          type: 'status',
+          label: point.name,
+          value: point.name,
+        });
+      }
+    }
+  }, [drilldown]);
 
   if (isLoading) {
     return (
@@ -61,23 +155,6 @@ export default function SalesDashboard() {
       </div>
     );
   }
-
-  const salesData = (orders || []).reduce((acc: any[], order: any) => {
-    const date = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const existing = acc.find(item => item.date === date);
-    const revenue = parseFloat(order.total || 0);
-    if (existing) {
-      existing.revenue += revenue;
-      existing.orders += 1;
-    } else {
-      acc.push({ date, revenue, orders: 1 });
-    }
-    return acc;
-  }, []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  const totalRevenue = orders?.reduce((sum: number, o: any) => sum + parseFloat(o.total || 0), 0) || 0;
-  const totalOrders = orders?.length || 0;
-  const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   const stats = [
     {
@@ -187,10 +264,20 @@ export default function SalesDashboard() {
                 <CardDescription>Daily revenue over time</CardDescription>
               </CardHeader>
               <CardContent className="p-0 sm:p-6">
+                <p className="text-xs text-muted-foreground px-4 sm:px-0 mb-2">Click a data point to see orders for that day</p>
                 <div className="h-[300px] w-full">
                   {salesData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={salesData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <AreaChart
+                        data={salesData}
+                        margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                        onClick={(e) => {
+                          if (e?.activePayload?.[0]?.payload) {
+                            handleChartClick(e.activePayload[0].payload as Record<string, unknown>, 'date');
+                          }
+                        }}
+                        style={{ cursor: 'pointer' }}
+                      >
                         <defs>
                           <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
@@ -226,6 +313,7 @@ export default function SalesDashboard() {
                           strokeWidth={2}
                           fillOpacity={1}
                           fill="url(#colorRevenue)"
+                          activeDot={{ r: 6, strokeWidth: 2, cursor: 'pointer' }}
                         />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -253,10 +341,20 @@ export default function SalesDashboard() {
                 <CardDescription>Daily order count</CardDescription>
               </CardHeader>
               <CardContent className="p-0 sm:p-6">
+                <p className="text-xs text-muted-foreground px-4 sm:px-0 mb-2">Click a bar to see orders for that day</p>
                 <div className="h-[300px] w-full">
                   {salesData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={salesData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <BarChart
+                        data={salesData}
+                        margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                        onClick={(e) => {
+                          if (e?.activePayload?.[0]?.payload) {
+                            handleChartClick(e.activePayload[0].payload as Record<string, unknown>, 'date');
+                          }
+                        }}
+                        style={{ cursor: 'pointer' }}
+                      >
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                         <XAxis
                           dataKey="date"
@@ -301,10 +399,77 @@ export default function SalesDashboard() {
           </motion.div>
         </div>
 
-        <div>
+        <div className="space-y-6">
+          {/* Order Status Breakdown - Clickable */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.6 }}
+          >
+            <Card className="border-none shadow-md">
+              <CardHeader>
+                <CardTitle>Order Status</CardTitle>
+                <CardDescription>Click a segment to see orders</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {statusData.length > 0 ? (
+                  <div className="h-[220px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={statusData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={70}
+                          paddingAngle={3}
+                          dataKey="value"
+                          onClick={(_, index) => {
+                            const segment = statusData[index];
+                            if (segment) {
+                              handleChartClick(segment as unknown as Record<string, unknown>, 'status');
+                            }
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {statusData.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--popover))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px'
+                          }}
+                        />
+                        <Legend
+                          verticalAlign="bottom"
+                          height={36}
+                          wrapperStyle={{ fontSize: '12px' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-[220px] text-muted-foreground text-sm">
+                    No status data
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+
           <RecentItemsWidget />
         </div>
       </div>
+
+      <SalesReportDrilldownModal
+        open={drilldown.isOpen}
+        onOpenChange={(open) => { if (!open) drilldown.closeDrilldown(); }}
+        filter={drilldown.filter}
+        orders={orders || []}
+      />
     </div>
   );
 }
