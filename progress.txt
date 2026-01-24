@@ -1,3 +1,65 @@
+## Task: Implement Bulk Order Status Updates with Checkbox Selection, BulkActionsBar, Confirmation Modal, and Progress Indicator
+
+### What was done:
+
+1. **Created `src/components/admin/orders/OrderBulkStatusConfirmDialog.tsx`** - Confirmation modal that:
+   - Shows before any bulk status change is executed
+   - Displays the number of selected orders and target status
+   - Has status-specific icons and descriptions for each order status (pending, confirmed, preparing, in_transit, delivered, cancelled)
+   - Warns about destructive actions (cancellation) with distinct styling
+   - Has loading state while the operation is in progress
+   - Uses AlertDialog from Radix UI for proper modal behavior
+
+2. **Created `src/hooks/useOrderBulkStatusUpdate.ts`** - Hook for managing bulk status updates with progress:
+   - Processes orders in batches of 10 for progress visibility
+   - Tracks completed, succeeded, and failed counts with failed item details
+   - Supports cancellation mid-operation via abort ref
+   - Sets appropriate timestamp fields based on status (delivered_at, courier_assigned_at, accepted_at)
+   - Enforces tenant isolation on all database operations (`.eq('tenant_id', tenantId)`)
+   - Invalidates related queries (orders, products, inventory) on success
+   - Provides haptic feedback on success/warning/error
+   - Shows appropriate toast notifications for partial vs full success vs failure
+
+3. **Updated `src/pages/admin/Orders.tsx`** - Integrated all components:
+   - Replaced inline `BulkActions` toolbar with floating `BulkActionsBar` component (fixed bottom bar with animation)
+   - BulkActionsBar shows: Confirmed, Delivered, Preparing, In Transit, Cancel, Delete actions
+   - Status actions open confirmation dialog before executing
+   - Delete action still uses existing `ConfirmDeleteDialog`
+   - Added `BulkOperationProgress` dialog showing real-time progress during bulk updates
+   - Fixed `handleSelectAll` to select only filtered/visible orders
+   - Removed old inline bulk status update logic (previously had no confirmation or progress)
+   - Maintained existing checkbox selection in table and mobile views
+
+### User Flow:
+1. User selects orders via checkboxes (table or mobile card view)
+2. Floating `BulkActionsBar` appears at bottom with status actions
+3. User clicks a status action (e.g., "Confirmed")
+4. `OrderBulkStatusConfirmDialog` shows with order count, target status, and description
+5. User clicks "Update X Orders" to confirm
+6. `BulkOperationProgress` dialog shows real-time progress (percentage, succeeded/failed counts)
+7. On completion, shows success/warning/error with option to close
+8. Failed items shown in scrollable list with error details
+
+### Acceptance Criteria Met:
+- [x] Checkbox selection for orders in table and mobile views
+- [x] Floating BulkActionsBar appears when orders are selected
+- [x] Confirmation modal shows before bulk status changes
+- [x] Progress indicator shows real-time update progress
+- [x] Failed items tracked and displayed
+- [x] Cancellation support during operation
+- [x] Tenant isolation maintained in all database operations
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/components/admin/orders/OrderBulkStatusConfirmDialog.tsx` (new)
+- `src/hooks/useOrderBulkStatusUpdate.ts` (new)
+- `src/pages/admin/Orders.tsx` (modified - integrated BulkActionsBar, confirmation, progress)
+
+### Build Status:
+- `npm run build` passes with no errors
+
+---
+
 ## Task: Optimize Large Table Rendering (PERF-001)
 
 ### What was done:
