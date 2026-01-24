@@ -2657,3 +2657,37 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create supabase/functions/auth-reset-password Edge Function
+
+### What was done:
+
+1. **Created `supabase/functions/auth-reset-password/index.ts`** - Secure password reset edge function that:
+   - Accepts `token` and `new_password` in POST request body
+   - Validates input with Zod schema
+   - Hashes the submitted token with SHA-256 for secure lookup (supports both hashed and legacy raw tokens)
+   - Validates token exists in `password_reset_tokens` table, is not expired, and has not been used
+   - Validates password strength: minimum 8 characters with at least one uppercase, one lowercase, one number, and one special character
+   - Updates password via `supabase.auth.admin.updateUserById` for users with linked auth accounts
+   - Falls back to updating `password_hash` directly for legacy users without auth accounts
+   - Marks token as used (`used_at` timestamp)
+   - Revokes all customer sessions by expiring them
+   - Revokes all Supabase Auth sessions via `supabase.auth.admin.signOut(userId, 'global')`
+   - Logs `password_change` audit event via `log_audit_event` RPC with full context (tenant, actor, IP, user-agent)
+   - Returns success message on completion
+
+### Security Features:
+- Token hashing (SHA-256) prevents token exposure in database
+- Password strength validation (uppercase, lowercase, number, special char, 8+ min length)
+- Token expiration check
+- Single-use token enforcement
+- All sessions revoked after password change
+- Structured logging with no sensitive data exposure
+- CORS headers on all responses including errors
+- Method validation (POST only)
+- Environment variable validation
+
+### Files Changed:
+- `supabase/functions/auth-reset-password/index.ts` (new file)
