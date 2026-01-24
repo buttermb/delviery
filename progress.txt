@@ -3492,3 +3492,46 @@ Created migration `supabase/migrations/20260124000001_create_password_reset_toke
 
 ### Files Changed:
 - `supabase/functions/auth-verify-email/index.ts` (new file)
+
+---
+
+## Task: Create auth-forgot-password Edge Function
+
+### What was done:
+
+1. **Created `supabase/functions/auth-forgot-password/index.ts`** - Edge function implementing secure password reset flow:
+   - Accepts `email` and `tenantSlug` in POST body with Zod validation
+   - Uses `withZenProtection` middleware for security
+   - Rate-limits requests using the existing `PASSWORD_RESET` rate limit (3 per hour per IP)
+   - Looks up tenant by slug to scope the user search
+   - Finds customer user by email + tenant_id without revealing whether user exists
+   - Invalidates any existing unused reset tokens for the user
+   - Generates a 32-byte cryptographically secure hex token
+   - Hashes the token with SHA-256 before storing (so DB leak doesn't expose valid tokens)
+   - Stores token hash in `password_reset_tokens` table with 1-hour expiry, IP, and user-agent
+   - Builds reset URL pointing to `/shop/{tenantSlug}/reset-password?token=...&email=...`
+   - Sends branded HTML reset email via Klaviyo (or logs in development)
+   - Logs event to `audit_logs` table with action `password_reset_requested`
+   - **Always returns the same success message** regardless of whether user exists, preventing email enumeration
+   - Uses structured logging via `createLogger` from `_shared/logger.ts`
+
+### Security features:
+- Email enumeration prevention: same response for all cases (user not found, tenant not found, invalid input, errors)
+- Token hashing: only SHA-256 hash stored in DB, raw token sent in email
+- 1-hour token expiry
+- Rate limiting: 3 requests per hour per IP
+- Previous tokens invalidated when new one is generated
+- IP address and user-agent logged for audit trail
+- Zen firewall protection for input sanitization
+
+### Files created:
+- `supabase/functions/auth-forgot-password/index.ts`
+
+### Existing infrastructure leveraged:
+- `password_reset_tokens` table (from migration `20250215000002_password_reset_system.sql`)
+- `_shared/deps.ts` for shared imports
+- `_shared/zen-firewall.ts` for request protection
+- `_shared/logger.ts` for structured logging
+- `_shared/rateLimiting.ts` for rate limiting with `PASSWORD_RESET` preset
+- `audit_logs` table for event logging
+- `send-klaviyo-email` function for email delivery
