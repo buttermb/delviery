@@ -224,7 +224,7 @@ export default function InventoryManagement() {
       cell: (item) => {
         const status = getStockStatus(Number(item.available_quantity || 0), item.low_stock_alert);
         return (
-          <Badge variant={status.color as "destructive" | "warning" | "default"} className="inline-flex items-center">
+          <Badge variant={status.color === 'warning' ? 'secondary' : status.color as "destructive" | "default"} className="inline-flex items-center">
             {getStatusIcon(status.status)}
             {status.label}
           </Badge>
@@ -265,7 +265,7 @@ export default function InventoryManagement() {
             />
             <div className="font-medium text-base">{item.name}</div>
           </div>
-          <Badge variant={status.color as "destructive" | "warning" | "default"} className="flex-shrink-0">
+          <Badge variant={status.color === 'warning' ? 'secondary' : status.color as "destructive" | "default"} className="flex-shrink-0">
             {status.label}
           </Badge>
         </div>
