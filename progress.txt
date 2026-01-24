@@ -6167,3 +6167,28 @@ import { CreditUsageIndicator } from '@/components/credits';
 - `src/hooks/useAuthGuard.ts` (new - cherry-picked from another branch)
 - `src/hooks/index.ts` (added useAuthGuard export)
 - `src/components/auth/ProtectedRoute.tsx` (new)
+
+---
+
+## Agent 84: Create PublicOnlyRoute Component
+
+### Task:
+Create `src/components/auth/PublicOnlyRoute.tsx` - a wrapper for login/signup pages that redirects authenticated users to their dashboard and renders children for unauthenticated users.
+
+### Implementation:
+- Uses `useAuth()` from `AuthContext` to check authentication status and loading state
+- Shows `LoadingFallback` during auth check (loading state)
+- If user is authenticated, uses `getCurrentUserType()` and `getDashboardUrl()` from `authHelpers` to determine the correct dashboard redirect
+- Falls back to `/marketing` if no user type is detected
+- Uses `<Navigate replace />` for redirect (consistent with existing route guards)
+- Renders children when user is not authenticated
+
+### Design Decisions:
+- Leverages existing `AuthContext` (Supabase session) rather than checking all three auth contexts individually - the `useAuth` hook provides the base authentication state
+- Uses `getCurrentUserType()` from `authHelpers.ts` which already checks all auth tiers (super_admin, tenant_admin, customer, courier) via storage tokens
+- Uses `getDashboardUrl()` which handles tenant-slug-aware routing for tenant admins and customers
+- Named export only (per project conventions)
+- No `@ts-nocheck` - strict TypeScript throughout
+
+### Files Created:
+- `src/components/auth/PublicOnlyRoute.tsx`
