@@ -4415,3 +4415,50 @@ Created `src/hooks/useAuthGuard.ts` - a comprehensive authentication guard hook 
 ### Verification:
 - [x] TypeScript compilation passes (0 errors)
 - [x] ESLint passes (0 errors)
+---
+
+## Task: Create src/hooks/useCredits.ts Master Credits Hook
+
+### What was done:
+
+1. **Rewrote `src/hooks/useCredits.ts`** as the master credits hook:
+   - Fetches credit balance from the `credits-balance` edge function via `supabase.functions.invoke`
+   - Provides structured `lifetimeStats` object with `earned`, `spent`, `purchased`, `expired`, `refunded`
+   - Provides `subscription` object with `status`, `isFreeTier`, `creditsPerPeriod`, `currentPeriodEnd`, `cancelAtPeriodEnd`
+   - Adds `hasCredits(amount)` function for checking if balance is sufficient for a given amount
+   - Auto-refreshes every 30 seconds (`refetchInterval: 30_000`)
+   - Uses `staleTime: 15_000` for optimal cache behavior
+   - Invalidates on relevant mutations via real-time subscriptions on `tenant_credits` and `credit_transactions` tables
+   - Uses `queryKeys.credits.balance(tenantId)` for consistent cache keys
+   - Provides `invalidate()` function for manual invalidation after mutations
+   - Exports `withCreditInvalidation()` utility for spreading into mutation options
+   - Maintains full backward compatibility with existing consumers (all legacy fields preserved)
+
+2. **Added `credits` query keys** in `src/lib/queryKeys.ts`:
+   - `credits.all` - base key for all credit queries
+   - `credits.balance(tenantId)` - balance query scoped by tenant
+   - `credits.transactions(tenantId)` - transaction queries
+   - `credits.packages(tenantId)` - package queries
+   - `credits.subscription(tenantId)` - subscription queries
+
+3. **New exports from useCredits.ts**:
+   - `LifetimeStats` interface
+   - `SubscriptionInfo` interface
+   - `CreditsBalanceResponse` interface
+   - `hasCredits(amount: number) => boolean` function on hook return
+   - `invalidate()` function on hook return
+   - `withCreditInvalidation(queryClient)` utility function
+
+4. **Backward compatibility maintained**:
+   - `useCredits()` hook signature unchanged
+   - `useCreditGatedAction()` helper hook preserved
+   - `UseCreditsReturn` type extended (not breaking)
+   - Legacy fields `lifetimeEarned`, `lifetimeSpent`, `nextFreeGrantAt`, `percentUsed` still present
+   - `CreditBalance` and `ConsumeCreditsResult` type re-exports preserved
+
+### Build verification:
+- [x] `npm run build` passes with zero TypeScript errors
+
+### Files Changed:
+- `src/hooks/useCredits.ts` (complete rewrite to fetch from edge function)
+- `src/lib/queryKeys.ts` (added `credits` query key factory)

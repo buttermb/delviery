@@ -1,19 +1,18 @@
 /**
- * useCredits Hook
- * 
- * Provides real-time credit balance and credit operations for components.
- * Handles credit checking, consumption, and low credit warnings.
+ * useCredits Hook - Master Credits Hook
+ *
+ * Fetches credit balance from the credits-balance edge function.
+ * Provides balance, lifetimeStats, subscription info, and hasCredits check.
+ * Auto-refreshes every 30 seconds and invalidates on relevant mutations.
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
 import {
-  getCreditBalance,
-  checkCredits,
   consumeCredits,
   trackCreditEvent,
   getCreditCost,
@@ -22,7 +21,6 @@ import {
   CRITICAL_CREDIT_THRESHOLD,
   FREE_TIER_MONTHLY_CREDITS,
   LOW_BALANCE_WARNING_LEVELS,
-  CREDIT_WARNING_THRESHOLDS,
   type CreditBalance,
   type ConsumeCreditsResult,
 } from '@/lib/credits';
@@ -32,6 +30,30 @@ import { toast } from 'sonner';
 // ============================================================================
 // Types
 // ============================================================================
+
+export interface LifetimeStats {
+  earned: number;
+  spent: number;
+  purchased: number;
+  expired: number;
+  refunded: number;
+}
+
+export interface SubscriptionInfo {
+  status: 'active' | 'trial' | 'cancelled' | 'past_due' | 'none';
+  isFreeTier: boolean;
+  creditsPerPeriod: number;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+}
+
+export interface CreditsBalanceResponse {
+  balance: number;
+  lifetimeStats: LifetimeStats;
+  subscription: SubscriptionInfo;
+  nextFreeGrantAt: string | null;
+  pendingTransactions: number;
+}
 
 export interface UseCreditsReturn {
   // Balance info
@@ -45,13 +67,18 @@ export interface UseCreditsReturn {
   isCriticalCredits: boolean;
   isOutOfCredits: boolean;
 
-  // Helper values
+  // Structured data
+  lifetimeStats: LifetimeStats;
+  subscription: SubscriptionInfo;
+
+  // Legacy helper values (backward compat)
   lifetimeEarned: number;
   lifetimeSpent: number;
   nextFreeGrantAt: Date | null;
   percentUsed: number;
 
-  // Actions
+  // Functions
+  hasCredits: (amount: number) => boolean;
   canPerformAction: (actionKey: string) => Promise<boolean>;
   performAction: (
     actionKey: string,
@@ -59,11 +86,31 @@ export interface UseCreditsReturn {
     referenceType?: string
   ) => Promise<ConsumeCreditsResult>;
   refetch: () => void;
+  invalidate: () => void;
 }
 
 // ============================================================================
-// Hook Implementation
+// Constants
 // ============================================================================
+
+const REFETCH_INTERVAL_MS = 30_000; // 30 seconds
+const STALE_TIME_MS = 15_000; // 15 seconds
+
+const DEFAULT_LIFETIME_STATS: LifetimeStats = {
+  earned: FREE_TIER_MONTHLY_CREDITS,
+  spent: 0,
+  purchased: 0,
+  expired: 0,
+  refunded: 0,
+};
+
+const DEFAULT_SUBSCRIPTION: SubscriptionInfo = {
+  status: 'none',
+  isFreeTier: true,
+  creditsPerPeriod: FREE_TIER_MONTHLY_CREDITS,
+  currentPeriodEnd: null,
+  cancelAtPeriodEnd: false,
+};
 
 // Client-side rate limiting config
 const RATE_LIMIT = {
@@ -71,9 +118,31 @@ const RATE_LIMIT = {
   windowMs: 60 * 1000, // 1 minute
 };
 
-/**
- * Get warning message based on threshold level
- */
+// ============================================================================
+// Edge Function Fetcher
+// ============================================================================
+
+async function fetchCreditsBalance(tenantId: string): Promise<CreditsBalanceResponse> {
+  const { data, error } = await supabase.functions.invoke('credits-balance', {
+    body: { tenant_id: tenantId },
+  });
+
+  if (error) {
+    logger.error('Failed to fetch credits balance from edge function', error, { tenantId });
+    throw new Error(error.message || 'Failed to fetch credit balance');
+  }
+
+  if (!data) {
+    throw new Error('No data returned from credits-balance');
+  }
+
+  return data as CreditsBalanceResponse;
+}
+
+// ============================================================================
+// Warning Messages
+// ============================================================================
+
 function getWarningMessage(threshold: number, balance: number): { title: string; description: string } | null {
   switch (threshold) {
     case 2000:
@@ -101,37 +170,35 @@ function getWarningMessage(threshold: number, balance: number): { title: string;
   }
 }
 
+// ============================================================================
+// Hook Implementation
+// ============================================================================
+
 export function useCredits(): UseCreditsReturn {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [showWarning, setShowWarning] = useState(false);
-  // Track which warning thresholds have been shown to avoid duplicates
   const [shownWarningThresholds, setShownWarningThresholds] = useState<Set<number>>(new Set());
-  // RACE CONDITION FIX: Track in-flight actions to prevent double-execution
   const [inFlightActions, setInFlightActions] = useState<Set<string>>(new Set());
-  // CLIENT-SIDE RATE LIMITING: Track recent operations with timestamps
   const [recentOperations, setRecentOperations] = useState<number[]>([]);
 
   const tenantId = tenant?.id;
 
-  // Fetch credit balance
+  // Fetch credit balance from credits-balance edge function
   const {
     data: creditData,
     isLoading,
     error,
     refetch,
   } = useQuery({
-    queryKey: ['credits', tenantId],
-    queryFn: async () => {
-      if (!tenantId) return null;
-      return getCreditBalance(tenantId);
-    },
+    queryKey: queryKeys.credits.balance(tenantId),
+    queryFn: () => fetchCreditsBalance(tenantId!),
     enabled: !!tenantId,
-    staleTime: 30 * 1000, // 30 seconds
-    refetchInterval: 60 * 1000, // Refetch every minute
+    staleTime: STALE_TIME_MS,
+    refetchInterval: REFETCH_INTERVAL_MS,
   });
 
-  // Subscribe to real-time credit updates
+  // Subscribe to real-time credit updates for instant invalidation
   useEffect(() => {
     if (!tenantId) return;
 
@@ -145,9 +212,20 @@ export function useCredits(): UseCreditsReturn {
           table: 'tenant_credits',
           filter: `tenant_id=eq.${tenantId}`,
         },
-        (payload) => {
-          logger.info('Credit balance updated', { payload });
-          queryClient.invalidateQueries({ queryKey: ['credits', tenantId] });
+        () => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.credits.all });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'credit_transactions',
+          filter: `tenant_id=eq.${tenantId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.credits.all });
         }
       )
       .subscribe();
@@ -159,9 +237,13 @@ export function useCredits(): UseCreditsReturn {
 
   // Derived values
   const balance = creditData?.balance ?? FREE_TIER_MONTHLY_CREDITS;
-  const isFreeTier = creditData?.isFreeTier ?? false;
-  const lifetimeEarned = creditData?.lifetimeEarned ?? FREE_TIER_MONTHLY_CREDITS;
-  const lifetimeSpent = creditData?.lifetimeSpent ?? 0;
+  const lifetimeStats: LifetimeStats = creditData?.lifetimeStats ?? DEFAULT_LIFETIME_STATS;
+  const subscription: SubscriptionInfo = creditData?.subscription ?? DEFAULT_SUBSCRIPTION;
+  const isFreeTier = subscription.isFreeTier;
+
+  // Legacy backward-compat values
+  const lifetimeEarned = lifetimeStats.earned;
+  const lifetimeSpent = lifetimeStats.spent;
   const nextFreeGrantAt = creditData?.nextFreeGrantAt
     ? new Date(creditData.nextFreeGrantAt)
     : null;
@@ -177,8 +259,18 @@ export function useCredits(): UseCreditsReturn {
     return Math.round((lifetimeSpent / lifetimeEarned) * 100);
   }, [isFreeTier, lifetimeSpent, lifetimeEarned]);
 
-  // Track low credit warnings - balance is intentionally NOT in deps
-  // We only want to track when isLowCredits becomes true, not on every balance change
+  // hasCredits: Check if current balance is sufficient for a given amount
+  const hasCredits = useCallback((amount: number): boolean => {
+    if (!isFreeTier) return true;
+    return balance >= amount;
+  }, [isFreeTier, balance]);
+
+  // Invalidate all credit queries (useful after mutations)
+  const invalidate = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.credits.all });
+  }, [queryClient]);
+
+  // Track low credit warnings
   useEffect(() => {
     if (isLowCredits && !showWarning && tenantId) {
       setShowWarning(true);
@@ -187,37 +279,31 @@ export function useCredits(): UseCreditsReturn {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLowCredits, showWarning, tenantId]);
 
-  // Show progressive low balance warnings at 2000, 1000, 500, 100 credits
+  // Show progressive low balance warnings
   useEffect(() => {
     if (!tenantId || !isFreeTier || isLoading) return;
 
-    // Check each warning level threshold
     for (const threshold of LOW_BALANCE_WARNING_LEVELS) {
-      // Skip if we've already shown this warning
       if (shownWarningThresholds.has(threshold)) continue;
 
-      // Show warning if balance just dropped to or below this threshold
       if (balance <= threshold) {
         setShownWarningThresholds(prev => new Set(prev).add(threshold));
         trackCreditEvent(tenantId, `low_balance_warning_${threshold}`, balance);
 
-        // Show appropriate toast based on threshold severity
         const warningMessage = getWarningMessage(threshold, balance);
         if (warningMessage) {
           toast.warning(warningMessage.title, {
             description: warningMessage.description,
-            duration: threshold <= 500 ? 8000 : 5000, // Longer duration for critical warnings
+            duration: threshold <= 500 ? 8000 : 5000,
             action: threshold <= 500 ? {
               label: 'Buy Credits',
               onClick: () => {
-                // This will be handled by the CreditContext opening the modal
                 logger.info('Low balance warning: Buy Credits clicked', { threshold, balance });
               },
             } : undefined,
           });
         }
 
-        // Only show one warning per balance check
         break;
       }
     }
@@ -226,8 +312,6 @@ export function useCredits(): UseCreditsReturn {
   // Check if can perform action
   const canPerformAction = useCallback(async (actionKey: string): Promise<boolean> => {
     if (!tenantId) return false;
-
-    // Not on free tier = unlimited
     if (!isFreeTier) return true;
 
     const cost = getCreditCost(actionKey);
@@ -251,7 +335,6 @@ export function useCredits(): UseCreditsReturn {
       };
     }
 
-    // Not on free tier = skip credit consumption
     if (!isFreeTier) {
       return {
         success: true,
@@ -260,7 +343,7 @@ export function useCredits(): UseCreditsReturn {
       };
     }
 
-    // CLIENT-SIDE RATE LIMITING: Check if rate limit exceeded
+    // Client-side rate limiting
     const now = Date.now();
     const recentOps = recentOperations.filter(t => now - t < RATE_LIMIT.windowMs);
     if (recentOps.length >= RATE_LIMIT.maxOperations) {
@@ -273,8 +356,7 @@ export function useCredits(): UseCreditsReturn {
       };
     }
 
-    // RACE CONDITION FIX: Prevent double-execution of same action
-    // Uses action+reference combo as unique key
+    // Prevent double-execution of same action
     const idempotencyKey = `${actionKey}:${referenceId || 'default'}`;
     if (inFlightActions.has(idempotencyKey)) {
       logger.warn('Duplicate action prevented', { actionKey, referenceId });
@@ -286,27 +368,24 @@ export function useCredits(): UseCreditsReturn {
       };
     }
 
-    // Mark action as in-flight and track for rate limiting
     setInFlightActions(prev => new Set(prev).add(idempotencyKey));
     setRecentOperations(prev => [...prev.filter(t => now - t < RATE_LIMIT.windowMs), now]);
 
     try {
-      // IDEMPOTENCY FIX: Ensure we always have a reference ID
       const safeReferenceId = referenceId || crypto.randomUUID();
 
       const result = await consumeCredits(
         tenantId,
         actionKey,
         safeReferenceId,
-        undefined, // description
-        referenceType ? { reference_type: referenceType } : undefined // metadata
+        undefined,
+        referenceType ? { reference_type: referenceType } : undefined
       );
 
-      // Refetch balance after consumption
       if (result.success) {
-        queryClient.invalidateQueries({ queryKey: ['credits', tenantId] });
+        // Invalidate credit queries after consumption
+        queryClient.invalidateQueries({ queryKey: queryKeys.credits.all });
 
-        // Show credit deduction toast
         const costInfo = getCreditCostInfo(actionKey);
         if (costInfo && result.creditsCost > 0) {
           showCreditDeductionToast(
@@ -316,7 +395,6 @@ export function useCredits(): UseCreditsReturn {
           );
         }
       } else {
-        // Track failed action due to insufficient credits
         trackCreditEvent(
           tenantId,
           'action_blocked_insufficient_credits',
@@ -326,7 +404,6 @@ export function useCredits(): UseCreditsReturn {
       }
       return result;
     } finally {
-      // Remove from in-flight set
       setInFlightActions(prev => {
         const next = new Set(prev);
         next.delete(idempotencyKey);
@@ -347,16 +424,22 @@ export function useCredits(): UseCreditsReturn {
     isCriticalCredits,
     isOutOfCredits,
 
-    // Helper values
+    // Structured data
+    lifetimeStats,
+    subscription,
+
+    // Legacy helper values
     lifetimeEarned,
     lifetimeSpent,
     nextFreeGrantAt,
     percentUsed,
 
-    // Actions
+    // Functions
+    hasCredits,
     canPerformAction,
     performAction,
     refetch,
+    invalidate,
   };
 }
 
@@ -365,13 +448,12 @@ export function useCredits(): UseCreditsReturn {
 // ============================================================================
 
 /**
- * Hook that wraps an action with credit checking
- * Use this to gate specific actions behind credit consumption
+ * Hook that wraps an action with credit checking.
+ * Use this to gate specific actions behind credit consumption.
  */
 export function useCreditGatedAction() {
   const {
     isFreeTier,
-    balance,
     canPerformAction,
     performAction
   } = useCredits();
@@ -386,12 +468,10 @@ export function useCreditGatedAction() {
       referenceType?: string;
     }
   ): Promise<T | null> => {
-    // RACE CONDITION FIX: Prevent double-execution
     if (isPerforming) {
       return null;
     }
 
-    // Check credits first
     const canDo = await canPerformAction(actionKey);
     if (!canDo) {
       options?.onInsufficientCredits?.();
@@ -400,7 +480,6 @@ export function useCreditGatedAction() {
 
     setIsPerforming(true);
     try {
-      // Consume credits
       const creditResult = await performAction(
         actionKey,
         options?.referenceId,
@@ -408,7 +487,6 @@ export function useCreditGatedAction() {
       );
 
       if (!creditResult.success) {
-        // If it's a specific system error (not just low balance), show it
         if (creditResult.errorMessage && creditResult.errorMessage !== 'Insufficient credits') {
           toast.error('Action Failed', {
             description: creditResult.errorMessage,
@@ -419,11 +497,9 @@ export function useCreditGatedAction() {
         return null;
       }
 
-      // Execute the actual action
       const result = await action();
       return result;
     } catch (err) {
-      // Catch unexpected errors during execution
       toast.error('Action Failed', {
         description: 'An unexpected error occurred. Please try again.',
       });
@@ -441,14 +517,23 @@ export function useCreditGatedAction() {
 }
 
 // ============================================================================
+// Utility: Invalidate credits on relevant mutations
+// ============================================================================
+
+/**
+ * Returns mutation options that invalidate credit queries on success.
+ * Spread into any useMutation call that affects credits.
+ */
+export function withCreditInvalidation(queryClient: ReturnType<typeof useQueryClient>) {
+  return {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.credits.all });
+    },
+  };
+}
+
+// ============================================================================
 // Export Types
 // ============================================================================
 
 export type { CreditBalance, ConsumeCreditsResult };
-
-
-
-
-
-
-

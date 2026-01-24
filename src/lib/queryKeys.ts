@@ -545,6 +545,15 @@ export const queryKeys = {
     byTag: (tagId: string) => [...queryKeys.customerTags.all, 'tag', tagId] as const,
   },
 
+  // Credits
+  credits: {
+    all: ['credits'] as const,
+    balance: (tenantId?: string) => [...queryKeys.credits.all, 'balance', tenantId] as const,
+    transactions: (tenantId?: string) => [...queryKeys.credits.all, 'transactions', tenantId] as const,
+    packages: (tenantId?: string) => [...queryKeys.credits.all, 'packages', tenantId] as const,
+    subscription: (tenantId?: string) => [...queryKeys.credits.all, 'subscription', tenantId] as const,
+  },
+
   // Activity Feed
   activityFeed: {
     all: ['activity-feed'] as const,
