@@ -484,4 +484,21 @@ export const queryKeys = {
     mode: (tenantId?: string) => ['collection-mode', tenantId] as const,
     activities: (clientId: string) => ['collection-activities', clientId] as const,
   },
+
+  // Tags
+  tags: {
+    all: ['tags'] as const,
+    lists: () => [...queryKeys.tags.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) =>
+      [...queryKeys.tags.lists(), filters] as const,
+    details: () => [...queryKeys.tags.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.tags.details(), id] as const,
+  },
+
+  // Customer Tags (junction)
+  customerTags: {
+    all: ['customer-tags'] as const,
+    byContact: (contactId: string) => [...queryKeys.customerTags.all, 'contact', contactId] as const,
+    byTag: (tagId: string) => [...queryKeys.customerTags.all, 'tag', tagId] as const,
+  },
 } as const;
