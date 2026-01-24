@@ -2657,3 +2657,39 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create credit_transactions table migration
+
+### What was done:
+
+1. **Created migration `supabase/migrations/20250624000001_create_credit_transactions.sql`**:
+   - `id` UUID primary key with `gen_random_uuid()` default
+   - `user_id` UUID NOT NULL references `auth.users(id)` ON DELETE CASCADE
+   - `tenant_id` UUID NOT NULL references `public.tenants(id)` ON DELETE CASCADE
+   - `type` TEXT NOT NULL with CHECK constraint for: purchase, usage, refund, expiration, bonus, adjustment, transfer_in, transfer_out
+   - `amount` INTEGER NOT NULL (positive for credits added, negative for deducted)
+   - `balance_before` INTEGER NOT NULL (snapshot before transaction)
+   - `balance_after` INTEGER NOT NULL (snapshot after transaction)
+   - `description` TEXT (optional human-readable note)
+   - `reference_type` TEXT with CHECK constraint for: order, subscription, promotion, admin_adjustment, gift
+   - `reference_id` UUID (links to the referenced entity)
+   - `metadata` JSONB (stores payment_method, stripe_charge_id, promo_code, etc.)
+   - `processed_by` UUID references `auth.users(id)` ON DELETE SET NULL
+   - `created_at` TIMESTAMPTZ NOT NULL DEFAULT NOW()
+
+2. **Indexes created**:
+   - `idx_credit_transactions_user_id` on user_id
+   - `idx_credit_transactions_tenant_id` on tenant_id
+   - `idx_credit_transactions_type` on type
+   - `idx_credit_transactions_created_at` on created_at DESC
+   - `idx_credit_transactions_user_tenant` composite on (user_id, tenant_id)
+
+3. **RLS policies**:
+   - RLS enabled on table
+   - Users can SELECT their own transactions (`user_id = auth.uid()`)
+   - Tenant admins (owner/admin role) can SELECT all tenant transactions
+   - Tenant admins can INSERT transactions within their tenant
+   - Super admins have full access (ALL operations)
+
+### Files Changed:
+- `supabase/migrations/20250624000001_create_credit_transactions.sql` (new)
