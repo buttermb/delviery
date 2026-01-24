@@ -6733,4 +6733,80 @@ Enhanced the existing `TwoFactorSetup.tsx` component with the following improvem
 - `src/pages/customer/LoginPage.tsx`
 - `src/pages/super-admin/LoginPage.tsx`
 - `src/pages/courier/LoginPage.tsx`
+
+---
+
+## Task: Add Rate Limiting Display to Login and Signup Forms
+
+### What was done:
+
+1. **Created `src/hooks/useAuthRateLimit.ts`** - Custom hook that:
+   - Tracks client-side attempt counts per form (separate sessionStorage keys)
+   - Implements exponential backoff: after 5 failed attempts, lockout starts at 15s and doubles each subsequent attempt (15s, 30s, 60s, 120s, capped at 300s)
+   - Persists state across page refresh via `sessionStorage`
+   - Provides `isLocked`, `remainingSeconds`, `attemptCount` reactive state
+   - Countdown timer updates every second during lockout
+   - `recordAttempt()` increments counter and triggers lockout when threshold exceeded
+   - `resetOnSuccess()` clears all state on successful auth
+   - Logs rate limit triggers via project's `logger` utility
+
+2. **Created `src/components/auth/RateLimitWarning.tsx`** - Reusable alert component:
+   - Shows "Too many attempts. Please try again in X" message
+   - Supports `dark` variant (for customer forms with dark backgrounds) and `light` variant (for SaaS/marketing forms)
+   - Uses `AlertCircle` icon from lucide-react
+   - Accessible with `role="alert"` and `aria-live="polite"`
+   - Formats time as seconds or minutes depending on duration
+   - Self-hides when `remainingSeconds <= 0`
+
+3. **Integrated into Customer Login (`src/pages/customer/LoginPage.tsx`)**:
+   - Uses storageKey `floraiq_customer_login_rate_limit`
+   - Shows dark-variant warning above form fields
+   - Disables both password and magic link submit buttons when locked
+   - Records attempt on login failure, resets on success
+   - Guards `handleSubmit` from executing when locked
+
+4. **Integrated into Customer Signup (`src/pages/customer/SignUpPage.tsx`)**:
+   - Uses storageKey `floraiq_customer_signup_rate_limit`
+   - Shows dark-variant warning above form fields
+   - Disables submit button when locked
+   - Records attempt on signup failure, resets on success
+
+5. **Integrated into SaaS Admin Login (`src/pages/saas/LoginPage.tsx`)**:
+   - Uses storageKey `floraiq_saas_login_rate_limit`
+   - Shows light-variant warning above form
+   - Disables submit button when locked
+   - Records attempt on login failure, resets on success
+   - Respects existing offline detection (rate limit check runs first)
+
+6. **Integrated into Account Signup (`src/pages/AccountSignup.tsx`)**:
+   - Uses storageKey `floraiq_account_signup_rate_limit`
+   - Shows light-variant warning in Step 2 (the actual API submission step)
+   - Disables submit button when locked
+   - Records attempt on signup failure, resets on success
+
+### Exponential Backoff Schedule:
+- Attempts 1-5: No lockout (user can retry immediately)
+- Attempt 6: 15 second lockout
+- Attempt 7: 30 second lockout
+- Attempt 8: 60 second lockout
+- Attempt 9: 120 second lockout
+- Attempt 10+: 300 second (5 minute) lockout (capped)
+
+### Verification Results:
+- [x] `npm run build` - PASSES (0 TypeScript errors)
+- [x] `npm run lint` - PASSES (0 errors in new files)
+- [x] All 4 forms properly integrated
+- [x] sessionStorage persistence across page refresh
+- [x] Countdown display with live updates
+- [x] Button disabled states during lockout
+- [x] Accessible alert component with ARIA attributes
+
+### Files Added:
+- `src/hooks/useAuthRateLimit.ts`
+- `src/components/auth/RateLimitWarning.tsx`
+
+### Files Modified:
+- `src/pages/customer/LoginPage.tsx`
+- `src/pages/customer/SignUpPage.tsx`
+- `src/pages/saas/LoginPage.tsx`
 - `src/pages/AccountSignup.tsx`

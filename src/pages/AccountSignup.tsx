@@ -13,6 +13,8 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AuthOfflineIndicator } from "@/components/auth/AuthOfflineIndicator";
 import { useAuthOffline } from "@/hooks/useAuthOffline";
+import { RateLimitWarning } from "@/components/auth/RateLimitWarning";
+import { useAuthRateLimit } from "@/hooks/useAuthRateLimit";
 
 
 export default function AccountSignup() {
@@ -33,6 +35,10 @@ export default function AccountSignup() {
   const [businessName, setBusinessName] = useState("");
   const [industry, setIndustry] = useState("cannabis wholesale");
   const [selectedPlan, setSelectedPlan] = useState(searchParams.get("plan") || "free");
+
+  const { isLocked, remainingSeconds, recordAttempt, resetOnSuccess } = useAuthRateLimit({
+    storageKey: 'floraiq_account_signup_rate_limit',
+  });
 
   const industries = ["Cannabis Wholesale", "Food & Beverage", "General Distribution", "Other"];
 
@@ -74,6 +80,11 @@ export default function AccountSignup() {
 
   const handleStep2 = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isLocked) {
+      return;
+    }
+
     if (!businessName) {
       toast({
         title: "Business name required",
@@ -140,6 +151,8 @@ export default function AccountSignup() {
 
       if (tenantUserError) throw tenantUserError;
 
+      resetOnSuccess();
+
       toast({
         title: "🎉 Account created!",
         description: "Please check your email to verify your account.",
@@ -155,6 +168,7 @@ export default function AccountSignup() {
         },
       });
     } catch (error: any) {
+      recordAttempt();
       logger.error("Signup error", error, { component: 'AccountSignup' });
       toast({
         title: "Signup failed",
@@ -347,6 +361,8 @@ export default function AccountSignup() {
               {/* STEP 2: Business Info + Plan */}
               {step === 2 && (
                 <form onSubmit={handleStep2} className="space-y-5">
+                  <RateLimitWarning remainingSeconds={remainingSeconds} variant="light" />
+
                   <div>
                     <Label htmlFor="businessName">Business Name</Label>
                     <div className="relative mt-2">
@@ -457,7 +473,7 @@ export default function AccountSignup() {
                     </Button>
                     <Button
                       type="submit"
-                      disabled={loading || !isOnline}
+                      disabled={loading || !isOnline || isLocked}
                       className="flex-[2] bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white h-14 text-lg font-semibold"
                     >
                       {loading ? (
