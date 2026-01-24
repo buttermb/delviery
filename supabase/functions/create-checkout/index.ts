@@ -9,10 +9,11 @@
  */
 
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
+import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { validateCreateCheckout } from './validation.ts';
 
-serve(async (req) => {
+serve(secureHeadersMiddleware(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -216,4 +217,4 @@ serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+}));

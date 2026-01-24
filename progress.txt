@@ -7206,3 +7206,48 @@ All suspicious activity events are logged to the existing `audit_events` partiti
 - `supabase/functions/tenant-admin-auth/index.ts` (invalidate previous sessions on login)
 - `supabase/functions/customer-auth/index.ts` (invalidate previous customer sessions on login)
 - `src/lib/auth/logoutCleanup.ts` (integrated session nonce invalidation into cleanup pipeline)
+
+---
+
+## Agent 104: Add Secure Headers Middleware for Edge Functions
+
+### Task
+Add secure headers middleware for edge functions setting:
+- X-Content-Type-Options: nosniff
+- X-Frame-Options: DENY
+- X-XSS-Protection: 1; mode=block
+- Content-Security-Policy: default-src 'none'; frame-ancestors 'none'
+- Referrer-Policy: strict-origin-when-cross-origin
+
+### Implementation
+
+#### Created: `supabase/functions/_shared/secure-headers.ts`
+New shared module providing:
+- `secureHeaders` - constant object with all security headers
+- `withSecureHeaders(headers)` - merges secure headers into existing headers object
+- `secureHeadersMiddleware(handler)` - wrapper that automatically applies secure headers to all responses from a handler
+
+#### Updated: `supabase/functions/_shared/deps.ts`
+- Added re-exports of `secureHeaders`, `withSecureHeaders`, and `secureHeadersMiddleware` from the new module
+
+#### Updated: `supabase/functions/_shared/zen-firewall.ts`
+- Integrated secure headers into the `withZenProtection` wrapper
+- All functions using `withZenProtection` now automatically include secure headers in both blocked and allowed responses
+
+#### Updated Edge Functions (direct middleware adoption):
+- `supabase/functions/admin-auth/index.ts` - wrapped with `secureHeadersMiddleware`
+- `supabase/functions/customer-auth/index.ts` - wrapped with `secureHeadersMiddleware`
+- `supabase/functions/super-admin-auth/index.ts` - wrapped with `secureHeadersMiddleware`
+- `supabase/functions/tenant-admin-auth/index.ts` - wrapped with `secureHeadersMiddleware`
+- `supabase/functions/create-checkout/index.ts` - wrapped with `secureHeadersMiddleware`
+- `supabase/functions/storefront-checkout/index.ts` - wrapped with `secureHeadersMiddleware`, also migrated to use `_shared/deps.ts` imports
+
+### How It Works
+1. Functions using `withZenProtection` get secure headers automatically (no changes needed)
+2. Functions not using `withZenProtection` can adopt `secureHeadersMiddleware` as a wrapper around their handler
+3. For inline header composition, `withSecureHeaders(headers)` can merge secure headers with existing ones
+4. All three approaches are exported from `_shared/deps.ts` for consistent imports
+
+### Verification Results:
+- [x] `npm run build` - PASSES (0 TypeScript errors)
+- [x] `npm run lint` - PASSES (0 errors, 1873 warnings pre-existing)

@@ -3,6 +3,8 @@
  * Provides runtime security protection for edge functions
  */
 
+import { secureHeaders } from './secure-headers.ts';
+
 const AIKIDO_TOKEN = Deno.env.get('AIKIDO_TOKEN');
 const AIKIDO_ENDPOINT = 'https://runtime.aikido.dev/api/v1';
 
@@ -143,11 +145,22 @@ export function withZenProtection(
           headers: {
             'Content-Type': 'application/json',
             'X-Zen-Firewall': 'blocked',
+            ...secureHeaders,
           },
         }
       );
     }
 
-    return handler(req);
+    const response = await handler(req);
+    const newHeaders = new Headers(response.headers);
+    for (const [key, value] of Object.entries(secureHeaders)) {
+      newHeaders.set(key, value);
+    }
+
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: newHeaders,
+    });
   };
 }

@@ -1,5 +1,6 @@
 // Edge Function: super-admin-auth
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { signJWT, verifyJWT as verifyJWTSecure } from '../_shared/jwt.ts';
 import { loginSchema, refreshSchema, updatePasswordSchema } from './validation.ts';
 
@@ -120,7 +121,7 @@ async function comparePassword(password: string, hashValue: string): Promise<boo
   }
 }
 
-serve(async (req) => {
+serve(secureHeadersMiddleware(async (req) => {
   // Get origin from request for CORS
   const origin = req.headers.get('origin');
   const hasCredentials = req.headers.get('cookie') || req.headers.get('authorization');
@@ -641,5 +642,5 @@ serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+}));
 

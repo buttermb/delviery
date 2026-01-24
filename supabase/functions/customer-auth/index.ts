@@ -1,5 +1,6 @@
 // Edge Function: customer-auth
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { hashPassword, comparePassword } from '../_shared/password.ts';
 import { signJWT, verifyJWT as verifyJWTSecure } from '../_shared/jwt.ts';
 import { signupSchema, loginSchema, updatePasswordSchema } from './validation.ts';
@@ -24,7 +25,7 @@ async function verifyCustomerToken(token: string): Promise<CustomerJWTPayload | 
   return payload as unknown as CustomerJWTPayload;
 }
 
-serve(async (req) => {
+serve(secureHeadersMiddleware(async (req) => {
   // Get origin from request for CORS
   const origin = req.headers.get('origin');
   const hasCredentials = req.headers.get('cookie') || req.headers.get('authorization');
@@ -660,5 +661,5 @@ serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+}));
 
