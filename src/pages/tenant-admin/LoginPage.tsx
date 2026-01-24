@@ -13,6 +13,8 @@ import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { TwoFactorVerification } from "@/components/auth/TwoFactorVerification";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { AuthOfflineIndicator } from "@/components/auth/AuthOfflineIndicator";
+import { useAuthOffline } from "@/hooks/useAuthOffline";
 import { Database } from "@/integrations/supabase/types";
 
 
@@ -28,6 +30,17 @@ export default function TenantAdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+
+  const { isOnline, hasQueuedAttempt, preventSubmit, queueLoginAttempt } = useAuthOffline(
+    async (qEmail, qPassword, qSlug) => {
+      await login(qEmail, qPassword, qSlug || '');
+      toast({
+        title: "Welcome back!",
+        description: `Logged in to ${tenant?.business_name || tenantSlug}`,
+      });
+      navigate(`/${tenantSlug}/admin/dashboard`, { replace: true });
+    }
+  );
 
 
   useEffect(() => {
@@ -60,6 +73,11 @@ export default function TenantAdminLoginPage() {
         title: "Error",
         description: "Tenant slug is required",
       });
+      return;
+    }
+
+    if (!isOnline) {
+      queueLoginAttempt(email, password, tenantSlug);
       return;
     }
 
@@ -191,6 +209,9 @@ export default function TenantAdminLoginPage() {
             </div>
           </div>
 
+          {/* Offline Indicator */}
+          <AuthOfflineIndicator isOnline={isOnline} hasQueuedAttempt={hasQueuedAttempt} className="mb-4" />
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             <div className="space-y-2">
@@ -232,7 +253,7 @@ export default function TenantAdminLoginPage() {
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || !isOnline}
               className="w-full bg-gradient-to-r from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-white min-h-[44px] sm:h-12 font-semibold shadow-md touch-manipulation text-sm sm:text-base"
             >
               {loading ? (
@@ -258,7 +279,7 @@ export default function TenantAdminLoginPage() {
             {/* Google Sign In */}
             <GoogleSignInButton
               redirectTo={`${window.location.origin}/${tenantSlug}/admin/auth/callback`}
-              disabled={loading}
+              disabled={loading || !isOnline}
               className="bg-background/50 backdrop-blur-sm border-border hover:bg-background/80"
             />
 

@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowRight, ArrowLeft, CheckCircle, Mail, Eye, EyeOff, Building2, Sparkles } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { AuthOfflineIndicator } from "@/components/auth/AuthOfflineIndicator";
+import { useAuthOffline } from "@/hooks/useAuthOffline";
 
 
 export default function AccountSignup() {
@@ -20,6 +22,7 @@ export default function AccountSignup() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isOnline } = useAuthOffline();
 
   // Step 1: Account + Name
   const [email, setEmail] = useState("");
@@ -76,6 +79,14 @@ export default function AccountSignup() {
         title: "Business name required",
         description: "Please enter your business name",
         variant: "destructive",
+      });
+      return;
+    }
+    if (!isOnline) {
+      toast({
+        variant: "destructive",
+        title: "You are offline",
+        description: "Please check your internet connection to create your account.",
       });
       return;
     }
@@ -198,6 +209,8 @@ export default function AccountSignup() {
             </CardHeader>
 
             <CardContent className="pt-2">
+              <AuthOfflineIndicator isOnline={isOnline} className="mb-4" />
+
               {/* STEP 1: Create Account */}
               {step === 1 && (
                 <form onSubmit={handleStep1} className="space-y-4">
@@ -444,7 +457,7 @@ export default function AccountSignup() {
                     </Button>
                     <Button
                       type="submit"
-                      disabled={loading}
+                      disabled={loading || !isOnline}
                       className="flex-[2] bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white h-14 text-lg font-semibold"
                     >
                       {loading ? (

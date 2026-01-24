@@ -11,6 +11,8 @@ import { Loader2, Package, Lock, ArrowLeft } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 import { clientEncryption } from '@/lib/encryption/clientEncryption';
+import { AuthOfflineIndicator } from '@/components/auth/AuthOfflineIndicator';
+import { useAuthOffline } from '@/hooks/useAuthOffline';
 
 export default function CourierLoginPage() {
   useAuthRedirect(); // Auto-redirect if already logged in
@@ -22,9 +24,16 @@ export default function CourierLoginPage() {
   const [courierId, setCourierId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isOnline) {
+      queueLoginAttempt(email, password);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -254,6 +263,7 @@ export default function CourierLoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <AuthOfflineIndicator isOnline={isOnline} hasQueuedAttempt={hasQueuedAttempt} className="mb-4" />
           <form onSubmit={handleEmailLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -286,7 +296,7 @@ export default function CourierLoginPage() {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={loading || !isOnline}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Continue
             </Button>
