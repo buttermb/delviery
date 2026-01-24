@@ -478,6 +478,13 @@ export const queryKeys = {
       [...queryKeys.frontedInventory.detail(frontedId), 'payments'] as const,
   },
 
+  // Sidebar Badge Counts
+  sidebarBadges: {
+    all: ['sidebar-badges'] as const,
+    counts: (tenantId?: string) =>
+      [...queryKeys.sidebarBadges.all, 'counts', { tenantId }] as const,
+  },
+
   // Collections
   collections: {
     all: ['collections'] as const,

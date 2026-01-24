@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Lock, Star } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useSidebar } from './SidebarContext';
+import { useLiveBadge } from './LiveBadgeContext';
+import { LiveCountBadge } from './LiveCountBadge';
 import { useRoutePrefetch } from '@/hooks/useRoutePrefetch';
 import type { SidebarItem } from '@/types/sidebar';
 import type { FeatureId } from '@/lib/featureConfig';
@@ -33,6 +35,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
 }: SidebarMenuItemProps) {
   const { tenantSlug } = useParams();
   const { favorites, toggleFavorite, trackFeatureClick } = useSidebar();
+  const liveBadgeContext = useLiveBadge();
   const { prefetchRoute } = useRoutePrefetch();
 
   // Guard: Ensure favorites is an array
@@ -85,6 +88,9 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
 
   const IconComponent = item.icon;
 
+  // Check for live badge data
+  const liveBadge = liveBadgeContext?.getBadge(item.path) ?? null;
+
   return (
     <UISidebarMenuItem>
       <SidebarMenuButton
@@ -103,8 +109,14 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
           {IconComponent && <IconComponent className="h-5 w-5 flex-shrink-0" />}
           <span className="flex-1 truncate text-sm">{item.name}</span>
 
-          {/* Show only the most important indicator */}
-          {item.badge ? (
+          {/* Priority: live count badge > static badge > hot > favorite */}
+          {liveBadge ? (
+            <LiveCountBadge
+              count={liveBadge.count}
+              level={liveBadge.level}
+              pulse={liveBadge.pulse}
+            />
+          ) : item.badge ? (
             <Badge variant="secondary" className="ml-auto h-5 px-1.5 text-xs flex-shrink-0">
               {item.badge}
             </Badge>

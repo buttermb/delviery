@@ -34,6 +34,8 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { LiveBadgeProvider, useLiveBadge } from '@/components/admin/sidebar/LiveBadgeContext';
+import { LiveCountBadge } from '@/components/admin/sidebar/LiveCountBadge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
     getSidebarForTier,
@@ -66,6 +68,9 @@ export function OptimizedSidebar({
     const [showMoreSections, setShowMoreSections] = useState<Set<string>>(new Set());
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+
+    // Get live badge counts
+    const liveBadgeContext = useLiveBadge();
 
     // Get sections filtered by tier
     const sections = useMemo(() => getSidebarForTier(userTier), [userTier]);
@@ -159,43 +164,51 @@ export function OptimizedSidebar({
     }, [navigate, getFullPath, onNavigate]);
 
     // Render a single nav item
-    const renderNavItem = (item: NavItem) => (
-        <NavLink
-            key={item.id}
-            to={getFullPath(item.path)}
-            onClick={onNavigate}
-            className={({ isActive: linkActive }) =>
-                cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all',
-                    'hover:bg-accent hover:text-accent-foreground',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    linkActive || isActive(item.path)
-                        ? 'bg-primary/10 text-primary font-medium'
-                        : 'text-muted-foreground'
-                )
-            }
-        >
-            <item.icon className="h-4 w-4 flex-shrink-0" />
-            {!collapsed && (
-                <>
-                    <span className="flex-1 truncate">{item.name}</span>
-                    {item.badge && (
-                        <Badge variant="secondary" className="ml-auto text-xs">
-                            {item.badge}
-                        </Badge>
-                    )}
-                    {item.hot && (
-                        <span className="ml-auto h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-                    )}
-                    {item.shortcut && (
-                        <kbd className="ml-auto hidden lg:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 text-xs text-muted-foreground">
-                            {item.shortcut}
-                        </kbd>
-                    )}
-                </>
-            )}
-        </NavLink>
-    );
+    const renderNavItem = (item: NavItem) => {
+        const liveBadge = liveBadgeContext?.getBadge(item.path) ?? null;
+
+        return (
+            <NavLink
+                key={item.id}
+                to={getFullPath(item.path)}
+                onClick={onNavigate}
+                className={({ isActive: linkActive }) =>
+                    cn(
+                        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all',
+                        'hover:bg-accent hover:text-accent-foreground',
+                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                        linkActive || isActive(item.path)
+                            ? 'bg-primary/10 text-primary font-medium'
+                            : 'text-muted-foreground'
+                    )
+                }
+            >
+                <item.icon className="h-4 w-4 flex-shrink-0" />
+                {!collapsed && (
+                    <>
+                        <span className="flex-1 truncate">{item.name}</span>
+                        {liveBadge ? (
+                            <LiveCountBadge
+                                count={liveBadge.count}
+                                level={liveBadge.level}
+                                pulse={liveBadge.pulse}
+                            />
+                        ) : item.badge ? (
+                            <Badge variant="secondary" className="ml-auto text-xs">
+                                {item.badge}
+                            </Badge>
+                        ) : item.hot ? (
+                            <span className="ml-auto h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+                        ) : item.shortcut ? (
+                            <kbd className="ml-auto hidden lg:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 text-xs text-muted-foreground">
+                                {item.shortcut}
+                            </kbd>
+                        ) : null}
+                    </>
+                )}
+            </NavLink>
+        );
+    };
 
     // Render a section
     const renderSection = (section: NavSection) => {

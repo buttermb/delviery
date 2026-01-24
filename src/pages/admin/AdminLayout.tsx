@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminErrorBoundary } from "@/components/admin/AdminErrorBoundary";
 import { AdaptiveSidebar } from "@/components/admin/sidebar/AdaptiveSidebar";
 import { OptimizedSidebar } from "@/components/sidebar/OptimizedSidebar";
+import { LiveBadgeProvider } from "@/components/admin/sidebar/LiveBadgeContext";
 import { useSidebarMode } from "@/hooks/useSidebarMode";
 import { SidebarErrorBoundary } from "@/components/admin/sidebar/SidebarErrorBoundary";
 import { MobileBottomNav } from "@/components/admin/MobileBottomNav";
@@ -121,11 +122,13 @@ const AdminLayout = () => {
         <SidebarProvider>
           <div className="min-h-dvh flex w-full premium-gradient-mesh">
             <SidebarErrorBoundary>
-              {isOptimized ? (
-                <OptimizedSidebar userTier="PROFESSIONAL" />
-              ) : (
-                <AdaptiveSidebar />
-              )}
+              <LiveBadgeProvider>
+                {isOptimized ? (
+                  <OptimizedSidebar userTier="PROFESSIONAL" />
+                ) : (
+                  <AdaptiveSidebar />
+                )}
+              </LiveBadgeProvider>
             </SidebarErrorBoundary>
             <div className="flex-1 flex flex-col min-w-0">
               <AccountSwitcher />

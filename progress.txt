@@ -1,3 +1,77 @@
+## Task: Add Live Count Badges to Sidebar Navigation
+
+### What was done:
+
+1. **Created `src/components/admin/sidebar/LiveCountBadge.tsx`** - A reusable badge component with:
+   - Pulse animation for critical-level badges (uses Tailwind `animate-ping`)
+   - Support for 4 severity levels: critical (red), warning (orange), info (primary), success (green)
+   - Count formatting (shows "99+" for counts exceeding 99)
+   - Compact design (min 20px width, 5px height, 10px bold text)
+   - Memoized with `React.memo` for performance
+
+2. **Created `src/components/admin/sidebar/LiveBadgeContext.tsx`** - A React context that:
+   - Wraps the existing `useAdminBadgeCounts` hook to provide badge data to sidebar items
+   - Maps navigation paths to badge count types:
+     - `/admin/orders` → pendingOrders count
+     - `/admin/inventory-hub` → lowStockItems count
+     - `/admin/stock-alerts` → lowStockItems count
+     - `/admin/live-chat` → unreadMessages count
+     - `/admin/notifications` → unreadMessages count
+     - `/admin/dispatch-inventory` → pendingShipments count
+     - `/admin/delivery-tracking` → pendingShipments count
+   - Returns badge info (count, severity level, pulse state) per path
+   - Gracefully returns null when used outside provider (no crash)
+
+3. **Updated `src/components/admin/sidebar/SidebarMenuItem.tsx`**:
+   - Integrated `useLiveBadge` context to get live counts per item path
+   - Live count badges take priority over static badges in the render hierarchy:
+     live count → static badge → hot indicator → favorite star
+   - No changes to locked item rendering
+
+4. **Updated `src/components/sidebar/OptimizedSidebar.tsx`**:
+   - Added live badge support to the optimized sidebar variant
+   - Updated `renderNavItem` to show `LiveCountBadge` when a live count exists
+   - Priority: live badge → static badge → hot indicator → shortcut
+
+5. **Updated `src/pages/admin/AdminLayout.tsx`**:
+   - Wrapped both sidebar variants (AdaptiveSidebar and OptimizedSidebar) with `LiveBadgeProvider`
+   - Provider lives at the layout level so both sidebar modes can access live counts
+
+6. **Updated `src/lib/queryKeys.ts`**:
+   - Added `sidebarBadges` query key factory for cache invalidation support
+
+### How it works:
+- The existing `useAdminBadgeCounts` hook fetches counts from Supabase with real-time subscriptions
+  (wholesale_orders, menu_orders tables) and a 30-second polling fallback
+- `LiveBadgeContext` maps item paths to count types and computes severity levels
+- `LiveCountBadge` renders a compact colored badge with optional pulse animation
+- Critical counts (≥10 pending orders, ≥5 low stock, ≥5 unread) show red with pulse
+- Warning counts (≥5 pending orders, ≥2 low stock) show orange
+- Info-level counts show primary color without pulse
+
+### Acceptance Criteria Met:
+- [x] Pending orders count shown on Orders nav item
+- [x] Low stock items count shown on Inventory Hub and Stock Alerts items
+- [x] Unread messages count shown on Live Chat and Notifications items
+- [x] Pending shipments count shown on Delivery Tracking and Dispatch items
+- [x] Pulse animation on critical-level badges
+- [x] Real-time updates via Supabase realtime subscriptions
+- [x] Both AdaptiveSidebar and OptimizedSidebar supported
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/components/admin/sidebar/LiveCountBadge.tsx` (new)
+- `src/components/admin/sidebar/LiveBadgeContext.tsx` (new)
+- `src/components/admin/sidebar/SidebarMenuItem.tsx` (modified)
+- `src/components/sidebar/OptimizedSidebar.tsx` (modified)
+- `src/pages/admin/AdminLayout.tsx` (modified)
+- `src/lib/queryKeys.ts` (modified)
+
+### Build Status:
+- `npm run build` passes with no errors
+
+---
+
 ## Task: Optimize Large Table Rendering (PERF-001)
 
 ### What was done:
