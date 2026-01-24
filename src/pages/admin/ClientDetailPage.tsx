@@ -7,6 +7,8 @@ import { NotesPanel } from '@/components/crm/NotesPanel';
 import { MessagesThread } from '@/components/crm/MessagesThread';
 import { ActivityTimeline } from '@/components/crm/ActivityTimeline';
 import { EditClientDialog } from '@/components/crm/EditClientDialog';
+import { RelatedEntitiesPanel } from '@/components/admin/RelatedEntitiesPanel';
+import { useRelatedClientInvoices, useRelatedClientPreOrders } from '@/hooks/useRelatedEntities';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -34,6 +36,9 @@ export default function ClientDetailPage() {
     const { data: client, isLoading } = useClient(clientId);
     const { data: invoices } = useClientInvoices(clientId);
     const { data: preOrders } = useClientPreOrders(clientId);
+
+    const relatedInvoices = useRelatedClientInvoices(clientId);
+    const relatedPreOrders = useRelatedClientPreOrders(clientId);
 
     if (isLoading) {
         return (
@@ -260,6 +265,35 @@ export default function ClientDetailPage() {
                         <ActivityTimeline clientId={client.id} />
                     </TabsContent>
                 </Tabs>
+
+                {/* Related Entities */}
+                <RelatedEntitiesPanel
+                    title="Related Items"
+                    sections={[
+                        {
+                            key: 'invoices',
+                            label: 'Invoices',
+                            icon: Receipt,
+                            items: relatedInvoices.items,
+                            isLoading: relatedInvoices.isLoading,
+                            error: relatedInvoices.error,
+                            fetchItems: relatedInvoices.fetchItems,
+                            onNavigate: (id) => navigateToAdmin(`crm/invoices/${id}`),
+                            emptyMessage: 'No invoices for this client',
+                        },
+                        {
+                            key: 'pre-orders',
+                            label: 'Pre-Orders',
+                            icon: FileText,
+                            items: relatedPreOrders.items,
+                            isLoading: relatedPreOrders.isLoading,
+                            error: relatedPreOrders.error,
+                            fetchItems: relatedPreOrders.fetchItems,
+                            onNavigate: (id) => navigateToAdmin(`crm/pre-orders/${id}`),
+                            emptyMessage: 'No pre-orders for this client',
+                        },
+                    ]}
+                />
             </div>
         </SwipeBackWrapper>
     );

@@ -2,6 +2,8 @@ import { useParams } from "react-router-dom";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useTenant } from "@/contexts/TenantContext";
 import { useInvoices } from "@/hooks/crm/useInvoices";
+import { RelatedEntitiesPanel } from "@/components/admin/RelatedEntitiesPanel";
+import { useRelatedInvoicePreOrders } from "@/hooks/useRelatedEntities";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +15,8 @@ import {
     Printer,
     Trash2,
     Copy,
-    Ban
+    Ban,
+    FileText
 } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/utils/formatters";
@@ -48,6 +51,7 @@ export default function InvoiceDetailPage() {
     const { useInvoiceQuery, useMarkInvoicePaid, useMarkInvoiceSent, useVoidInvoice, useDuplicateInvoice, useDeleteInvoice } = useInvoices();
 
     const { data: invoice, isLoading } = useInvoiceQuery(invoiceId || '');
+    const relatedPreOrders = useRelatedInvoicePreOrders(invoice?.client_id, invoiceId);
     const markAsPaid = useMarkInvoicePaid();
     const markAsSent = useMarkInvoiceSent();
     const voidInvoiceMutation = useVoidInvoice();
@@ -383,6 +387,23 @@ export default function InvoiceDetailPage() {
                                 </div>
                             </CardContent>
                         </Card>
+
+                        <RelatedEntitiesPanel
+                            title="Related Items"
+                            sections={[
+                                {
+                                    key: 'pre-orders',
+                                    label: 'Pre-Orders',
+                                    icon: FileText,
+                                    items: relatedPreOrders.items,
+                                    isLoading: relatedPreOrders.isLoading,
+                                    error: relatedPreOrders.error,
+                                    fetchItems: relatedPreOrders.fetchItems,
+                                    onNavigate: (id) => navigateToAdmin(`crm/pre-orders/${id}`),
+                                    emptyMessage: 'No pre-orders for this client',
+                                },
+                            ]}
+                        />
 
                         <Card>
                             <CardHeader>
