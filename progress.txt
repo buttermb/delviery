@@ -3936,3 +3936,43 @@ Created `supabase/functions/credits-purchase/index.ts` — a Supabase Edge Funct
 ### Files Created:
 - `supabase/migrations/20260124000000_create_update_credit_balance.sql`
 - `supabase/functions/credits-use/index.ts`
+
+---
+
+## Task: Create supabase/functions/credits-apply-promo edge function
+
+### What was done:
+
+1. **Created `supabase/migrations/20260124000001_credit_promotions.sql`** - Migration that:
+   - Creates `credit_promotions` table with columns: `id`, `tenant_id`, `code`, `type` (percentage/fixed_credits/multiplier), `value`, `min_purchase_credits`, `max_discount_credits`, `usage_limit`, `usage_count`, `per_user_limit`, `valid_from`, `valid_until`, `is_active`
+   - Creates `credit_promotion_usage` table to track per-user usage with columns: `id`, `promotion_id`, `user_id`, `package_id`, `discount_amount`, `used_at`
+   - Adds indexes for efficient lookups on tenant, code, active status, user, and promotion
+   - Enables RLS on both tables with appropriate policies
+   - Unique constraint on `(tenant_id, code)` to prevent duplicate codes per tenant
+
+2. **Created `supabase/functions/credits-apply-promo/index.ts`** - Edge function that:
+   - Requires authentication (validates JWT token)
+   - Accepts `promo_code` (string) and `package_id` (UUID) in request body
+   - Validates input with Zod schema
+   - Fetches and validates the credit package exists and is active
+   - Finds promo code (case-insensitive match) and validates:
+     - Code exists and is_active
+     - Within valid date range (valid_from <= now <= valid_until)
+     - Under global usage_limit
+     - Under per_user_limit for the authenticated user
+     - Package meets min_purchase_credits requirement
+   - Calculates discount based on type:
+     - `percentage`: value% off the price (e.g., 20 = 20% off)
+     - `fixed_credits`: fixed amount in cents deducted from price
+     - `multiplier`: credits multiplied by value (price stays same, more credits)
+   - Applies max_discount_credits cap if set
+   - Returns discount preview without applying:
+     - `promo_code`, `promotion_id`, `promotion_type`
+     - Package info (id, name, credits, original_price_cents)
+     - Discount details (type, value, discount_cents, final_price_cents, effective_credits, savings_description)
+   - Follows project CORS, auth, and error handling patterns
+   - Uses shared deps from `_shared/deps.ts`
+
+### Files created:
+- `supabase/migrations/20260124000001_credit_promotions.sql`
+- `supabase/functions/credits-apply-promo/index.ts`
