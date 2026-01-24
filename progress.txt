@@ -2657,3 +2657,47 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Test Password Reset Flow
+
+### What was done:
+
+Created comprehensive tests for the password reset flow covering the full lifecycle:
+1. Request reset for existing email → verify token generated & email sent
+2. Verify email received with valid reset link
+3. Reset password with new strong password
+4. Verify old password no longer works
+5. Verify new password works
+6. Verify all other sessions are revoked after reset
+
+### Test Files Created:
+
+1. **`tests/integration/password-reset-flow.test.ts`** (36 tests) - Integration test using an in-memory database simulation that validates:
+   - **Request Password Reset**: Token generation, 24h expiration, email enumeration protection, tenant validation, IP/user-agent tracking
+   - **Email Verification**: Correct reset URL structure, token matching, business name in subject, no email for non-existing users
+   - **Password Reset**: Hash update, token single-use enforcement, expired token rejection, mismatched tenant/email rejection, password length validation (min 8, max 100)
+   - **Old Password Rejection**: Verifies old password no longer authenticates after reset
+   - **New Password Authentication**: Verifies new password works for login, creates valid sessions
+   - **Session Revocation**: All existing sessions invalidated, other users unaffected, new session creation after re-login
+   - **Full E2E Flow**: Complete lifecycle from initial login → reset request → email → reset → old pass fails → new pass works → sessions revoked → token can't be reused
+   - **Token Security**: Unique tokens per request, sufficient length, audit metadata
+
+2. **`src/pages/customer/__tests__/PasswordResetPages.test.tsx`** (20 tests) - Component tests for UI:
+   - **ForgotPasswordPage**: Form rendering, email validation, button disabled/enabled states, loading state, success state (Check Your Email), error toast, back-to-login link
+   - **ResetPasswordPage**: Form with prefilled email from URL, disabled email input, password matching validation, min-length enforcement, password strength indicator, loading state, success state, error toast, API payload verification, show/hide password toggle, back-to-login link
+
+### Key Design Decisions:
+- Integration tests use an in-memory database simulation (same pattern as `order-inventory-flow.test.ts`) to test the business logic of both Edge Functions without requiring a live Supabase connection
+- Component tests mock Supabase client, apiClient, toast, and PasswordStrengthIndicator to focus on UI behavior
+- Tests verify security properties: email enumeration protection, single-use tokens, session invalidation, password hashing
+
+### Test Results:
+- 56 tests total (36 integration + 20 component), all passing
+- Integration tests: ~10ms execution
+- Component tests: ~6.5s execution (DOM rendering)
+
+### Files Changed:
+- `tests/integration/password-reset-flow.test.ts` (new - 36 tests)
+- `src/pages/customer/__tests__/PasswordResetPages.test.tsx` (new - 20 tests)
