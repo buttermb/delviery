@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/utils/apiClient";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeStorage } from "@/utils/safeStorage";
 import { performLogoutCleanup } from "@/lib/auth/logoutCleanup";
+import { clearPreAuthSessionData, establishFreshSession, invalidateSessionNonce } from "@/lib/auth/sessionFixation";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { tokenRefreshManager } from "@/lib/auth/tokenRefreshManager";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
@@ -198,6 +199,10 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(envCheck.error || 'Environment configuration error');
       }
 
+      // Session fixation protection: Clear all pre-auth session data
+      // This prevents an attacker from setting tokens before the user authenticates
+      clearPreAuthSessionData('customer');
+
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
       const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, {
@@ -272,6 +277,9 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       safeStorage.setItem(CUSTOMER_KEY, JSON.stringify(data.customer));
       safeStorage.setItem(TENANT_KEY, JSON.stringify(data.tenant));
 
+      // Session fixation protection: Establish a fresh session after successful auth
+      establishFreshSession('customer');
+
       // Store user ID for encryption
       if (data.customer?.id) {
         safeStorage.setItem('floraiq_user_id', data.customer.id);
@@ -321,6 +329,9 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
+    // Session fixation protection: Invalidate session nonce on logout
+    invalidateSessionNonce();
+
     logAuth('Customer logout initiated', {
       customerId: customer?.id,
       customerEmail: customer?.email,

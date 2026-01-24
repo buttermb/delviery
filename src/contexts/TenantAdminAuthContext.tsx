@@ -16,6 +16,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useFeatureFlags } from "@/config/featureFlags";
 import { toast } from "sonner";
 import { performLogoutCleanup, broadcastLogout } from "@/lib/auth/logoutCleanup";
+import { clearPreAuthSessionData, establishFreshSession, invalidateSessionNonce } from "@/lib/auth/sessionFixation";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { FreeTierOnboardingFlow } from "@/components/onboarding/FreeTierOnboardingFlow";
 import { useTenantRouteGuard } from "@/hooks/useTenantRouteGuard";
@@ -1194,6 +1195,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
 
+      // Session fixation protection: Clear all pre-auth session data
+      // This prevents an attacker from setting tokens before the user authenticates
+      clearPreAuthSessionData('tenant_admin');
+
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
       const url = `${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`;
 
@@ -1290,6 +1295,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       safeStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
       safeStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
       safeStorage.setItem(TENANT_KEY, JSON.stringify(tenantWithDefaults));
+
+      // Session fixation protection: Establish a fresh session after successful auth
+      // This generates a new session nonce proving the session was legitimately created
+      establishFreshSession('tenant_admin');
 
       // Store user ID for encryption with fallback
       if (data.admin?.id) {
@@ -1407,6 +1416,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   }, [tenant?.slug, navigate]);
 
   const logout = async () => {
+    // Session fixation protection: Invalidate session nonce on logout
+    // Prevents the old session marker from being reused
+    invalidateSessionNonce();
+
     // Clear refresh timer
     if (refreshTimerRef.current) {
       clearTimeout(refreshTimerRef.current);
