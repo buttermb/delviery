@@ -2657,3 +2657,64 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create src/components/auth/TwoFactorSetup.tsx component
+
+### What was done:
+
+Enhanced the existing `TwoFactorSetup.tsx` component with the following improvements:
+
+1. **Password confirmation flow** (NEW - main requirement):
+   - Added a dedicated `password-confirm` step before both enable and disable flows
+   - Uses `supabase.auth.signInWithPassword` to re-authenticate the user
+   - Shows clear error messages for incorrect passwords
+   - Form-based input with autoFocus and autoComplete for accessibility
+   - Loading state during password verification
+
+2. **Proper disable confirmation dialog** (IMPROVED):
+   - Replaced browser `confirm()` with a proper Radix UI Dialog component
+   - Two-step disable: first confirm intent via dialog, then password confirmation
+   - Descriptive warning about security implications
+
+3. **Type safety improvements** (FIXED):
+   - Replaced `useState<any[]>([])` with proper `MfaFactor` interface
+   - Removed `(supabase as any)` cast - `user_backup_codes` table exists in types
+   - Added explicit return types to `generateBackupCodes`, `hashBackupCode`, `saveBackupCodes`
+   - Created typed `SetupStep` and `ActionIntent` union types for state machine
+
+4. **Step-based state machine** (IMPROVED):
+   - Clear flow: idle -> password-confirm -> qr-code -> backup-codes
+   - Each step rendered as a distinct UI section
+   - Cancel returns to idle state with full cleanup
+
+5. **Backup codes UX improvements** (ENHANCED):
+   - Added "Copy to Clipboard" button alongside download
+   - Used proper lucide icons (Download, Copy) for action buttons
+   - Clear visual hierarchy with amber warning styling
+
+6. **All original features preserved**:
+   - TOTP secret generation via `supabase.auth.mfa.enroll()`
+   - QR code generation via `qrcode` library
+   - Manual secret code display as fallback
+   - 6-digit verification code input with numeric filtering
+   - Backup code generation (10 codes, 10 hex chars each)
+   - SHA-256 hashing before database storage
+   - File download as `.txt`
+   - Enable/disable flows with proper loading states
+   - Error handling via `handleError` utility
+   - Toast notifications for success/failure
+
+### Verification Results:
+- [x] `npm run build` - PASSES (0 TypeScript errors)
+- [x] `npm run lint` - PASSES (0 errors for TwoFactorSetup.tsx)
+- [x] No `any` types used
+- [x] Named export only
+- [x] Uses `@/` import alias
+- [x] Uses `logger` from `@/lib/logger`
+- [x] Proper loading + disabled states on all buttons
+- [x] Error handling with try-catch and toast feedback
+
+### Files Changed:
+- `src/components/auth/TwoFactorSetup.tsx` (rewritten with password confirmation, proper types, dialog-based disable flow)
