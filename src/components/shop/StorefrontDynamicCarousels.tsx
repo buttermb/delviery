@@ -6,6 +6,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -180,7 +181,7 @@ export function StorefrontDynamicCarousels({ storeId }: StorefrontDynamicCarouse
     });
 
     const { data: products } = useQuery({
-        queryKey: ['marketplace-products-map', storeId],
+        queryKey: queryKeys.shopProducts.carousels(storeId),
         queryFn: async () => {
             if (!storeId) return [];
             // Use existing RPC to get products with expiry

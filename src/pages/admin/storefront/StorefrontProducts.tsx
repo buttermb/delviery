@@ -33,6 +33,7 @@ import {
   ArrowDown
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { queryKeys } from '@/lib/queryKeys';
 import {
   Table,
   TableBody,
@@ -195,6 +196,8 @@ export default function StorefrontProducts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-product-settings'] });
+      // Invalidate storefront product caches for instant sync
+      queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
     },
     onError: (error) => {
       logger.error('Failed to toggle visibility', error, { component: 'StorefrontProducts' });
@@ -234,6 +237,8 @@ export default function StorefrontProducts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-product-settings'] });
+      // Invalidate storefront product caches for instant sync
+      queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
       toast({ title: 'Price updated!' });
     },
     onError: (error) => {
@@ -284,6 +289,8 @@ export default function StorefrontProducts() {
     },
     onSuccess: (_, isVisible) => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-product-settings'] });
+      // Invalidate storefront product caches for instant sync
+      queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
       setSelectedProducts(new Set());
       toast({
         title: `${selectedProducts.size} products ${isVisible ? 'shown' : 'hidden'}`,
@@ -359,6 +366,8 @@ export default function StorefrontProducts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-product-settings'] });
+      // Invalidate storefront product caches for instant sync
+      queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
     },
     onError: (error) => {
       logger.error('Failed to update order', error, { component: 'StorefrontProducts' });

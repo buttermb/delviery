@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { sanitizeHtml } from '@/lib/utils/sanitize';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -213,7 +214,9 @@ export function ProductDetailPage() {
 
   // Fetch product details - supports both UUID and slug lookups
   const { data: product, isLoading: productLoading } = useQuery({
-    queryKey: ['shop-product', store?.id, identifier, isSlugBased],
+    queryKey: isSlugBased
+      ? queryKeys.shopProducts.detailBySlug(store?.id, identifier)
+      : queryKeys.shopProducts.detail(store?.id, identifier),
     queryFn: async () => {
       if (!store?.id || !identifier) return null;
 
@@ -306,7 +309,7 @@ export function ProductDetailPage() {
 
   // Fetch related products
   const { data: relatedProducts = [] } = useQuery({
-    queryKey: ['related-products', store?.id, product?.category],
+    queryKey: queryKeys.shopProducts.related(store?.id, product?.category || undefined),
     queryFn: async () => {
       if (!store?.id || !product?.category) return [];
 

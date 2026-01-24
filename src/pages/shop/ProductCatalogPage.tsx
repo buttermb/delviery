@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import {
   Sheet,
   SheetContent,
@@ -212,7 +213,7 @@ export function ProductCatalogPage() {
 
   // Fetch products with error handling
   const { data: products = [], isLoading: productsLoading, error: productsError, refetch: refetchProducts } = useQuery({
-    queryKey: ['shop-products', store?.id],
+    queryKey: queryKeys.shopProducts.list(store?.id),
     queryFn: async () => {
       logger.info('ProductCatalogPage: Fetching products', { storeId: store?.id, type: typeof store?.id });
 
@@ -256,7 +257,7 @@ export function ProductCatalogPage() {
 
   // Fetch categories with error handling
   const { data: categories = [], error: categoriesError } = useQuery({
-    queryKey: ['shop-categories', store?.id],
+    queryKey: queryKeys.shopProducts.categories(store?.id),
     queryFn: async () => {
       if (!store?.id) return [];
 
