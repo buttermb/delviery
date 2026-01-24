@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import {
   Dialog,
   DialogContent,
@@ -124,8 +125,8 @@ export function TicketForm({
     }
 
     await createMutation.mutateAsync({
-      subject: formData.subject,
-      description: formData.description,
+      subject: sanitizeFormInput(formData.subject, 200),
+      description: sanitizeTextareaInput(formData.description, 2000),
       priority: formData.priority,
       category: formData.status,
     });

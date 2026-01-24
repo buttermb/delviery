@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import {
   Dialog,
   DialogContent,
@@ -104,11 +105,11 @@ export function AppointmentForm({
     }
 
     await createMutation.mutateAsync({
-      customer_id: formData.customer_id,
+      customer_id: sanitizeFormInput(formData.customer_id),
       scheduled_at: formData.scheduled_at,
       duration_minutes: parseInt(formData.duration_minutes, 10),
       appointment_type: formData.appointment_type,
-      notes: formData.notes || null,
+      notes: formData.notes ? sanitizeTextareaInput(formData.notes, 1000) : null,
       status: "scheduled",
     });
   };

@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeSlugInput } from '@/lib/utils/sanitize';
 import {
   Dialog,
   DialogContent,
@@ -165,14 +166,19 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
           : null;
 
       // Create tenant
+      const sanitizedBusinessName = sanitizeFormInput(data.business_name, 200);
+      const sanitizedOwnerEmail = sanitizeEmail(data.owner_email);
+      const sanitizedOwnerName = sanitizeFormInput(data.owner_name, 200);
+      const sanitizedPhone = data.phone ? sanitizePhoneInput(data.phone) : null;
+
       const { data: tenant, error } = await supabase
         .from('tenants')
         .insert({
-          business_name: data.business_name,
+          business_name: sanitizedBusinessName,
           slug,
-          owner_email: data.owner_email,
-          owner_name: data.owner_name,
-          phone: data.phone || null,
+          owner_email: sanitizedOwnerEmail,
+          owner_name: sanitizedOwnerName,
+          phone: sanitizedPhone,
           subscription_plan: data.subscription_plan,
           subscription_status: data.subscription_status,
           trial_ends_at: trialEndsAt,
@@ -195,10 +201,10 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
 
       // Create owner user
       const { data: userData, error: userError } = await supabase.auth.admin.createUser({
-        email: data.owner_email,
+        email: sanitizedOwnerEmail,
         email_confirm: true,
         user_metadata: {
-          name: data.owner_name,
+          name: sanitizedOwnerName,
         },
       });
 
@@ -208,8 +214,8 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
         // Add user to tenant_users table
         await supabase.from('tenant_users').insert({
           tenant_id: tenant.id,
-          email: data.owner_email,
-          name: data.owner_name,
+          email: sanitizedOwnerEmail,
+          name: sanitizedOwnerName,
           role: 'owner',
           status: 'active',
           email_verified: true,

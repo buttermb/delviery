@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { Loader2 } from "lucide-react";
@@ -68,15 +69,15 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       
       const clientData: WholesaleClientInsert = {
         tenant_id: tenant.id,
-        business_name: formData.business_name,
-        contact_name: formData.contact_name,
-        email: formData.email || null,
-        phone: formData.phone,
-        address: formData.address || null,
+        business_name: sanitizeFormInput(formData.business_name, 200),
+        contact_name: sanitizeFormInput(formData.contact_name, 200),
+        email: formData.email ? sanitizeEmail(formData.email) : null,
+        phone: sanitizePhoneInput(formData.phone),
+        address: formData.address ? sanitizeFormInput(formData.address, 500) : null,
         client_type: formData.client_type,
         credit_limit: parseFloat(formData.credit_limit) || 0,
         payment_terms: parseInt(formData.payment_terms) || 7,
-        notes: formData.notes || null,
+        notes: formData.notes ? sanitizeTextareaInput(formData.notes, 1000) : null,
         status: "active",
         outstanding_balance: 0,
         monthly_volume: 0,
