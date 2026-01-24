@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -104,7 +105,11 @@ export default function MarketplacePurchasesPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-purchases'] });
             toast({ title: 'Order marked as received' });
-        }
+        },
+        onError: (error: Error) => {
+            logger.error('Failed to mark order as received', { error });
+            toast({ title: 'Failed to mark as received', description: error.message, variant: 'destructive' });
+        },
     });
 
     const getStatusBadge = (status: string) => {

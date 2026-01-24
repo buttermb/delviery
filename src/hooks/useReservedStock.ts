@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
 
 export function useReservedStock() {
   const queryClient = useQueryClient();
@@ -21,6 +22,10 @@ export function useReservedStock() {
       }
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },
+    onError: (error: unknown) => {
+      logger.error('Failed to reserve stock', { error });
+      toast({ title: "Reserve Failed", description: error instanceof Error ? error.message : "Failed to reserve stock", variant: "destructive" });
+    },
   });
 
   const releaseStock = useMutation({
@@ -32,6 +37,10 @@ export function useReservedStock() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
+    onError: (error: unknown) => {
+      logger.error('Failed to release stock', { error });
+      toast({ title: "Release Failed", description: error instanceof Error ? error.message : "Failed to release reserved stock", variant: "destructive" });
+    },
   });
 
   const commitStock = useMutation({
@@ -43,6 +52,10 @@ export function useReservedStock() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
+    onError: (error: unknown) => {
+      logger.error('Failed to commit stock', { error });
+      toast({ title: "Commit Failed", description: error instanceof Error ? error.message : "Failed to commit reserved stock", variant: "destructive" });
+    },
   });
 
   const getAvailableStock = (stockQuantity: number, reservedQuantity: number = 0) => {

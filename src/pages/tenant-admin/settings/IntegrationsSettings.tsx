@@ -195,6 +195,10 @@ export default function IntegrationsSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });
     },
+    onError: (error: Error) => {
+      logger.error('Failed to toggle webhook', { error });
+      toast({ title: 'Failed to toggle webhook', description: error.message, variant: 'destructive' });
+    },
   });
 
   const handleConnect = (id: string) => {

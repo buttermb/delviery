@@ -214,6 +214,10 @@ export default function MessagesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-messages', tenantId] });
     },
+    onError: (error: Error) => {
+      logger.error('Failed to mark messages as read', { error });
+      toast({ title: 'Failed to mark as read', description: error.message, variant: 'destructive' });
+    },
   });
 
   // Send reply mutation

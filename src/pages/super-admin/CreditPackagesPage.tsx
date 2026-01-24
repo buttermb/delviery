@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import {
   getAllCreditPackages,
   upsertCreditPackage,
@@ -365,6 +366,10 @@ function EditPackageDialog({
       } else {
         toast.error(result.error || 'Failed to save package');
       }
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to save credit package', { error });
+      toast.error('Failed to save package');
     },
   });
 

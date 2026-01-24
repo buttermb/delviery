@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { differenceInDays } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 interface LicenseAlert {
   clientId: string;
@@ -97,7 +98,11 @@ export function useLicenseExpirationAlerts(tenantId: string | undefined) {
       }
       queryClient.invalidateQueries({ queryKey: ['license-alerts'] });
       queryClient.invalidateQueries({ queryKey: ['wholesale-clients'] });
-    }
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to update license statuses', { error });
+      toast.error('Failed to update license statuses');
+    },
   });
 
   const expiredCount = alerts.filter(a => a.status === 'expired').length;

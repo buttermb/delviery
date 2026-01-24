@@ -84,6 +84,7 @@ export function useCancelPreOrder() {
             return normalizePreOrder(data);
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.all }); toast.success('Pre-order cancelled'); },
+        onError: (error: Error) => { logger.error('Failed to cancel pre-order', { error }); toast.error('Failed to cancel pre-order'); },
     });
 }
 

@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 
 // Types
 export type OrderType = 'retail' | 'wholesale' | 'menu' | 'pos' | 'all';
@@ -284,6 +285,11 @@ export function useCreateUnifiedOrder() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
+      toast.success('Order created successfully');
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to create order', { error });
+      toast.error('Failed to create order');
     },
   });
 }
@@ -326,6 +332,11 @@ export function useUpdateOrderStatus() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.detail(data.id) });
+      toast.success('Order status updated');
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to update order status', { error });
+      toast.error('Failed to update order status');
     },
   });
 }
@@ -389,6 +400,11 @@ export function useCancelOrder() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.detail(data.id) });
+      toast.success('Order cancelled');
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to cancel order', { error });
+      toast.error('Failed to cancel order');
     },
   });
 }

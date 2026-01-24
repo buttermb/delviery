@@ -225,6 +225,10 @@ export default function StorefrontBundles() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-bundles'] });
     },
+    onError: (error: Error) => {
+      logger.error('Failed to toggle bundle status', { error });
+      toast({ title: 'Failed to update bundle', description: error.message, variant: 'destructive' });
+    },
   });
 
   // Delete bundle
@@ -241,6 +245,10 @@ export default function StorefrontBundles() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-bundles'] });
       toast({ title: 'Bundle deleted' });
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to delete bundle', { error });
+      toast({ title: 'Failed to delete bundle', description: error.message, variant: 'destructive' });
     },
   });
 

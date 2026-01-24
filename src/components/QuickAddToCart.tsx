@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { haptics } from "@/utils/haptics";
+import { logger } from "@/lib/logger";
 
 interface QuickAddToCartProps {
   productId: string;
@@ -43,7 +44,9 @@ const QuickAddToCart = ({ productId, productName, size = "default" }: QuickAddTo
         duration: 2000,
       });
     },
-    onError: () => {
+    onError: (error: Error) => {
+      logger.error('Failed to add item to cart', { error });
+      toast.error('Failed to add to cart');
       haptics.error(); // Error haptic feedback
     },
   });
