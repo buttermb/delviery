@@ -2657,3 +2657,43 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create SubscriptionStatusCard.tsx Component
+
+### What was done:
+
+1. **Created `src/components/credits/SubscriptionStatusCard.tsx`** - Component that displays:
+   - Active subscription details fetched from `credit_subscriptions` table
+   - Credits per period and period type (monthly/yearly/weekly)
+   - Credits remaining this period with color-coded progress bar
+   - Next renewal date for active subscriptions
+   - Manage Subscription button linking to `/${tenantSlug}/admin/billing`
+   - Paused state: yellow banner explaining credits won't renew until resumed
+   - Cancelled state: red banner showing cancellation date with note about remaining credits
+   - Past Due state: red banner prompting payment method update
+   - Cancelling (cancel_at_period_end) state: orange banner with end date
+   - Loading skeleton UI while data loads
+   - Returns null when no subscription exists
+
+2. **Updated `src/components/credits/index.ts`** - Added exports:
+   - `SubscriptionStatusCard` component export
+   - `SubscriptionStatusCardProps` type export
+
+### Key Implementation Details:
+- Uses `useQuery` with `['credit-subscription', tenantId]` query key
+- Fetches from `credit_subscriptions` table filtered by `tenant_id`, ordered by most recent
+- Uses `.maybeSingle()` per project convention for optional data
+- Progress bar shows `credits_remaining_this_period / credits_per_period` ratio
+- Status badge color-coded: green (active/trialing), yellow (paused), red (cancelled/past_due), orange (cancelling)
+- Navigate button uses tenant-aware routing `/${tenantSlug}/admin/billing`
+- Inactive subscriptions (paused/cancelled) show "Reactivate Subscription" CTA
+- TypeScript strict mode, named exports, `@/` imports throughout
+
+### Verification Results:
+- [x] `npx tsc --noEmit --skipLibCheck` - PASSES (0 TypeScript errors)
+
+### Files Changed:
+- `src/components/credits/SubscriptionStatusCard.tsx` (new component)
+- `src/components/credits/index.ts` (added exports)
