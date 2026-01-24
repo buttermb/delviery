@@ -99,6 +99,13 @@ export type { CreditTransactionRowProps, CreditTransactionRowTransaction } from 
 export { SubscriptionStatusCard } from './SubscriptionStatusCard';
 export type { SubscriptionStatusCardProps } from './SubscriptionStatusCard';
 
+export {
+  InsufficientCreditsModal,
+  isInsufficientCreditsModalDismissed,
+  resetInsufficientCreditsModalDismissal,
+} from './InsufficientCreditsModal';
+export type { InsufficientCreditsModalProps } from './InsufficientCreditsModal';
+
 // Re-export hook from hooks directory
 export { useCreditAlert } from '@/hooks/useCreditAlert';
 export type { UseCreditAlertReturn } from '@/hooks/useCreditAlert';
