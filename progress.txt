@@ -2779,3 +2779,45 @@ verifying all 5 stat cards load with real data and their navigation links work c
 
 ### Files Changed:
 - `supabase/migrations/20260124000001_create_auth_audit_log.sql` (new)
+
+---
+
+## Task: Create password_reset_tokens table migration
+
+### What was done:
+
+Created migration `supabase/migrations/20260124000001_create_password_reset_tokens.sql` with:
+
+1. **Table `public.password_reset_tokens`**:
+   - `id` UUID primary key (auto-generated)
+   - `user_id` UUID NOT NULL referencing `auth.users(id)` with ON DELETE CASCADE
+   - `token_hash` TEXT UNIQUE NOT NULL (stores SHA-256 hash, never plain token)
+   - `expires_at` TIMESTAMPTZ NOT NULL
+   - `used_at` TIMESTAMPTZ (nullable, set when token is consumed)
+   - `created_at` TIMESTAMPTZ NOT NULL DEFAULT NOW()
+
+2. **Indexes**:
+   - `idx_password_reset_tokens_token_hash` - partial index on `token_hash` WHERE `used_at IS NULL`
+   - `idx_password_reset_tokens_user_id` - for user-scoped queries
+   - `idx_password_reset_tokens_expires_at` - partial index for cleanup queries
+
+3. **RLS**:
+   - Enabled on table
+   - Service-role-only policy (tokens validated server-side via edge functions)
+
+4. **Cleanup function** `cleanup_expired_reset_tokens()`:
+   - SECURITY DEFINER with `SET search_path = public`
+   - Deletes expired tokens AND already-used tokens
+   - Granted to `service_role`
+
+5. **pg_cron automatic cleanup**:
+   - Enables `pg_cron` extension if not present
+   - Schedules hourly cleanup: `'0 * * * *'`
+
+### Notes:
+- Drops the old `password_reset_tokens` table (from migration 20250215000002) which referenced `customer_users` and stored plain tokens
+- New table references `auth.users` directly and stores hashed tokens for better security
+- No tenant_id column since auth.users is global (not tenant-scoped)
+
+### Files Changed:
+- `supabase/migrations/20260124000001_create_password_reset_tokens.sql` (new)
