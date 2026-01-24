@@ -1,36 +1,31 @@
-/**
- * Permission Guard Component
- * Conditionally renders children based on user permissions
- */
-
 import { ReactNode } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
-import { Permission } from '@/lib/constants/permissions';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
+import type { Permission } from '@/lib/permissions/rolePermissions';
 
 interface PermissionGuardProps {
-  permission: Permission | Permission[];
+  required: Permission | Permission[];
   children: ReactNode;
   fallback?: ReactNode;
   requireAll?: boolean;
-  showMessage?: boolean;
 }
 
 export function PermissionGuard({
-  permission,
+  required,
   children,
   fallback,
-  requireAll = false,
-  showMessage = true,
+  requireAll = true,
 }: PermissionGuardProps) {
-  const { checkPermission, checkAnyPermission, checkAllPermissions } = usePermissions();
+  const { checkPermission, checkAnyPermission, checkAllPermissions, isLoading } = usePermissions();
 
-  const hasAccess = Array.isArray(permission)
+  if (isLoading) {
+    return null;
+  }
+
+  const hasAccess = Array.isArray(required)
     ? requireAll
-      ? checkAllPermissions(permission)
-      : checkAnyPermission(permission)
-    : checkPermission(permission);
+      ? checkAllPermissions(required)
+      : checkAnyPermission(required)
+    : checkPermission(required);
 
   if (hasAccess) {
     return <>{children}</>;
@@ -40,17 +35,5 @@ export function PermissionGuard({
     return <>{fallback}</>;
   }
 
-  if (showMessage) {
-    return (
-      <Alert variant="destructive">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>
-          You don't have permission to access this resource.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
   return null;
 }
-
