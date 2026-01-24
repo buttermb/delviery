@@ -132,18 +132,67 @@ if (typeof window !== 'undefined') {
   initConnectionMonitoring();
 }
 
+// Synchronously hydrate initial state from localStorage to prevent flash of unauthenticated UI
+const getInitialAdminState = (): TenantAdmin | null => {
+  try {
+    const stored = localStorage.getItem(ADMIN_KEY);
+    if (stored) return JSON.parse(stored) as TenantAdmin;
+  } catch { /* ignore parse errors */ }
+  return null;
+};
+
+const getInitialTenantState = (): Tenant | null => {
+  try {
+    const stored = localStorage.getItem(TENANT_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as Tenant;
+      return {
+        ...parsed,
+        limits: parsed.limits || { customers: 50, menus: 3, products: 100, locations: 2, users: 3 },
+        usage: parsed.usage || { customers: 0, menus: 0, products: 0, locations: 0, users: 0 },
+      };
+    }
+  } catch { /* ignore parse errors */ }
+  return null;
+};
+
+const getInitialTokenState = (): string | null => {
+  try {
+    return localStorage.getItem(ACCESS_TOKEN_KEY);
+  } catch { /* ignore */ }
+  return null;
+};
+
+const getInitialRefreshTokenState = (): string | null => {
+  try {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
+  } catch { /* ignore */ }
+  return null;
+};
+
 export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { shouldAutoApprove, flags } = useFeatureFlags();
-  const [admin, setAdmin] = useState<TenantAdmin | null>(null);
-  const [tenant, setTenant] = useState<Tenant | null>(null);
-  const [token, setToken] = useState<string | null>(null); // For backwards compatibility
-  const [accessToken, setAccessToken] = useState<string | null>(null); // For backwards compatibility
-  const [refreshToken, setRefreshToken] = useState<string | null>(null); // For backwards compatibility
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // Cookie-based auth state
-  const [loading, setLoading] = useState(true);
+
+  // Synchronously hydrate from localStorage to prevent flash of login screen on reload
+  const initialAdmin = getInitialAdminState();
+  const initialTenant = getInitialTenantState();
+  const initialToken = getInitialTokenState();
+  const initialRefreshToken = getInitialRefreshTokenState();
+  const hasStoredSession = !!(initialAdmin && initialTenant && initialToken);
+
+  const [admin, setAdmin] = useState<TenantAdmin | null>(initialAdmin);
+  const [tenant, setTenant] = useState<Tenant | null>(initialTenant);
+  const [token, setToken] = useState<string | null>(initialToken);
+  const [accessToken, setAccessToken] = useState<string | null>(initialToken);
+  const [refreshToken, setRefreshToken] = useState<string | null>(initialRefreshToken);
+  const [isAuthenticated, setIsAuthenticated] = useState(hasStoredSession); // Pre-authenticate from localStorage
+  const [loading, setLoading] = useState(!hasStoredSession); // If we have stored data, don't block UI
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unknown');
+
+  // Track whether auth has been initialized to prevent re-running on route changes
+  const authInitializedRef = useRef(false);
 
   // Define clearAuthState first so it can be used by other functions
   // Helper function to clear auth state
@@ -154,6 +203,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     setAccessToken(null);
     setRefreshToken(null);
     setIsAuthenticated(false);
+    setLoading(false);
     safeStorage.removeItem(ADMIN_KEY);
     safeStorage.removeItem(TENANT_KEY);
     safeStorage.removeItem('lastTenantSlug'); // Clear tenant slug cache
@@ -161,6 +211,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     safeStorage.removeItem(REFRESH_TOKEN_KEY);
     // Reset token refresh manager to prevent stale refresh attempts
     tokenRefreshManager.reset('tenant-admin');
+    // Allow re-initialization after logout (e.g., switching tenants)
+    authInitializedRef.current = false;
   }, []);
   useEffect(() => {
     const unsubscribe = onConnectionStatusChange((status) => {
@@ -231,12 +283,16 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     return () => subscription.unsubscribe();
   }, []);
 
-  // Initialize authentication (cookie-based)
+  // Initialize authentication (cookie-based) - runs ONCE on mount
   useEffect(() => {
     const LOADING_TIMEOUT_MS = 12000; // 12-second safety timeout
-    const startTime = Date.now();
 
     const initializeAuth = async () => {
+      // Prevent re-initialization on subsequent renders/route changes
+      if (authInitializedRef.current) {
+        return;
+      }
+      authInitializedRef.current = true;
 
       // Declare variables outside try block for catch block access
       let parsedAdmin: TenantAdmin | null = null;
@@ -245,7 +301,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
       // Skip all authentication logic if NOT on a tenant admin route
       if (!isTenantAdminRoute) {
-        setLoading(false);
+        // If not on admin route but have stored session, keep it (don't clear)
+        if (!hasStoredSession) {
+          setLoading(false);
+        }
         return;
       }
 
@@ -712,7 +771,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     return () => {
       clearTimeout(safetyTimeout);
     };
-  }, [location.pathname]); // Re-run when route changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount - auth state persists across route changes
 
   // Periodic token validation (every 30 seconds)
   useEffect(() => {
