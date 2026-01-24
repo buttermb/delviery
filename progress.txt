@@ -2657,3 +2657,36 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create supabase/functions/auth-refresh Edge Function
+
+### What was done:
+
+1. **Created `supabase/functions/auth-refresh/index.ts`** - Edge function for refreshing authentication tokens:
+   - Accepts `refresh_token` in POST body
+   - Validates input with Zod schema (requires non-empty `refresh_token`)
+   - Looks up token in `user_sessions` table (must be active)
+   - Checks session `expires_at` is not past current time
+   - Verifies JWT signature/expiry of the refresh token via `_shared/jwt.ts`
+   - Generates new `access_token` (1-hour expiry) and `refresh_token` (30-day expiry) using `signJWT`
+   - Updates `user_sessions` row with new `session_token`, `refresh_token`, `last_activity_at`, and `expires_at`
+   - Returns new token pair with `expires_in` and `token_type`
+   - Handles expired sessions (marks inactive, returns `TOKEN_EXPIRED`)
+   - Handles invalid/revoked tokens (returns `INVALID_TOKEN`)
+   - Handles malformed JWT (deactivates session, returns `INVALID_TOKEN`)
+   - Proper CORS handling via `_shared/deps.ts` corsHeaders
+   - Method validation (only POST allowed)
+   - All errors return structured JSON with `error` code and `message`
+
+### Patterns followed:
+- Imports from `_shared/deps.ts` (serve, createClient, corsHeaders, z)
+- Imports JWT utilities from `_shared/jwt.ts` (signJWT, verifyJWT)
+- Uses Zod for input validation
+- Uses `.maybeSingle()` for optional data lookups
+- Uses service role key for privileged database operations
+- Consistent error response format matching API development skill patterns
+
+### Files Created:
+- `supabase/functions/auth-refresh/index.ts`
