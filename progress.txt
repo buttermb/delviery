@@ -2657,3 +2657,47 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create CreditGuard Component
+
+### What was done:
+
+1. **Created `src/components/credits/CreditGuard.tsx`** - A render-prop component that:
+   - Accepts `requiredCredits` (number) to specify the credit cost of the guarded action
+   - Accepts optional `actionKey` for integration with the existing credit cost system
+   - Checks user's credit balance via `useCredits()` hook
+   - Renders children via render props when user has sufficient credits
+   - Shows `OutOfCreditsModal` (acting as InsufficientCreditsModal) when credits are insufficient
+   - Provides `consumeCredits` function to children via render props for on-demand credit consumption
+   - Non-free-tier users always pass the credit check (unlimited credits)
+   - Handles race conditions by preventing double-execution of credit consumption
+   - Supports optional `fallback` prop for rendering custom UI when credits are insufficient
+   - Includes `onCreditsConsumed` and `onConsumptionFailed` callbacks for parent integration
+   - Uses proper error logging via `logger` utility
+
+2. **Render Props Interface (`CreditGuardRenderProps`)**:
+   - `consumeCredits(referenceId?, referenceType?)` - Triggers credit consumption, returns `ConsumeCreditsResult`
+   - `balance` - Current credit balance
+   - `hasSufficientCredits` - Boolean indicating if user can perform the action
+   - `isConsuming` - Loading state during credit consumption
+   - `isFreeTier` - Whether user is on free tier
+
+3. **Component Props (`CreditGuardProps`)**:
+   - `requiredCredits` - Number of credits needed for the action
+   - `actionKey` - Optional action key for cost lookup and tracking
+   - `children` - Render prop function receiving `CreditGuardRenderProps`
+   - `fallback` - Optional fallback UI when insufficient credits
+   - `onCreditsConsumed` - Callback on successful consumption
+   - `onConsumptionFailed` - Callback on failed consumption
+
+### Design Decisions:
+- Uses existing `OutOfCreditsModal` instead of creating a new `InsufficientCreditsModal` since they serve the same purpose
+- Integrates with the existing `useCredits` hook and credit system rather than creating parallel logic
+- Follows the codebase's named export convention
+- Uses TypeScript strict mode with no `any` types
+- Uses `@/` import alias consistently
+
+### Files Changed:
+- `src/components/credits/CreditGuard.tsx` (new file)
