@@ -4821,3 +4821,35 @@ Enhanced the existing `AuthContext.tsx` to provide a comprehensive authenticatio
 
 ### Files Changed:
 - `src/contexts/CreditsContext.tsx` (new file)
+
+---
+
+## Task: Create src/lib/auth/tokenManager.ts
+
+### What was done:
+
+1. **Created `src/lib/auth/tokenManager.ts`** - Centralized token management utility that:
+   - Uses `STORAGE_KEYS` constants from `@/constants/storageKeys` for all storage operations
+   - Encrypts tokens before storage using `clientEncryption` when the encryption engine is initialized; falls back to plaintext when unavailable
+   - Provides `getAccessToken()` and `getRefreshToken()` with automatic decryption
+   - Provides `setTokens({ accessToken, refreshToken })` with automatic encryption
+   - Provides `clearTokens()` to remove all tokens and reset refresh state
+   - Provides `isTokenExpired()` with a 60-second buffer window before actual expiry
+   - Provides `refreshTokens(executor)` with mutex-style race condition protection via the existing `tokenRefreshManager` singleton (deduplicates concurrent refresh calls, enforces minimum refresh intervals)
+   - Provides `isRefreshing()` to check if a refresh is in-flight
+   - Exports `createTokenManager(scope)` factory for custom scope managers
+   - Exports pre-configured singleton instances: `tenantAdminTokenManager`, `customerTokenManager`, `superAdminTokenManager`, `courierTokenManager`
+   - Maps auth scopes to the correct storage keys (super-admin, tenant-admin, customer, courier)
+   - Uses `safeStorage` from `@/utils/safeStorage` for localStorage access (handles incognito/disabled storage)
+   - Uses `logger` from `@/lib/logger` for debug/warn logging (never console.log)
+   - Named exports only, TypeScript strict mode, no `any` types
+
+### Design Decisions:
+- **Encryption prefix**: Encrypted values are prefixed with `enc:` to distinguish from plaintext, enabling graceful migration and fallback
+- **Mutex via tokenRefreshManager**: Reuses the existing `tokenRefreshManager` singleton rather than implementing a new mutex, avoiding duplication
+- **Auto-store on refresh**: `refreshTokens()` automatically stores new tokens on successful refresh to prevent gaps
+- **60-second buffer**: Tokens are considered expired 60 seconds before their actual `exp` claim to allow proactive refresh
+- **Scope-based keys**: Each auth tier maps to specific STORAGE_KEYS entries, with some scopes (super-admin, customer, courier) not supporting refresh tokens
+
+### Files Changed:
+- `src/lib/auth/tokenManager.ts` (new file)
