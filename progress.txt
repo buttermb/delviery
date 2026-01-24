@@ -620,3 +620,48 @@ Enhanced `src/hooks/useInventorySync.ts` with two new mutation hooks that handle
 - `src/components/shop/StorefrontDynamicCarousels.tsx` (uses shared query keys)
 - `src/pages/admin/storefront/StorefrontProducts.tsx` (added storefront cache invalidation)
 - `src/pages/admin/marketplace/ProductSyncPage.tsx` (added storefront cache invalidation)
+
+---
+
+## Task: Add Dashboard Quick Actions Panel with Create Order, Add Product, Send Broadcast, Generate Report buttons using hasPermission
+
+### What was done:
+
+1. **Created `src/components/dashboard/DashboardQuickActionsPanel.tsx`** - A permission-gated quick actions panel component that:
+   - Uses `usePermissions()` hook to check user permissions before showing actions
+   - Uses `useTenantAdminAuth()` for tenant-aware navigation
+   - Defines 4 quick actions with their required permissions:
+     - **Create Order** - Requires `orders:create` permission, navigates to `orders`
+     - **Add Product** - Requires `products:create` permission, navigates to `inventory/products`
+     - **Send Broadcast** - Requires `customers:edit` permission, navigates to `marketing-hub?tab=campaigns`
+     - **Generate Report** - Requires `reports:export` permission, navigates to `reports`
+   - Returns null when loading or when user has no permissions for any action (graceful degradation)
+   - Responsive grid: 2 columns on mobile, 4 columns on sm+ breakpoints
+   - Consistent with existing UI patterns (shadcn Card, Button, lucide-react icons)
+   - Touch-friendly with min-h-[44px] and touch-manipulation classes
+
+2. **Updated `src/pages/tenant-admin/DashboardPage.tsx`**:
+   - Added import for `DashboardQuickActionsPanel`
+   - Placed the panel after the Onboarding Checklist and before the Demo Data banner
+   - Panel is visible for all authenticated admin users based on their role permissions
+
+### Permission Mapping:
+| Button | Permission | Roles with Access |
+|--------|-----------|-------------------|
+| Create Order | `orders:create` | owner, admin, team_member |
+| Add Product | `products:create` | owner, admin |
+| Send Broadcast | `customers:edit` | owner, admin |
+| Generate Report | `reports:export` | owner, admin |
+
+### Acceptance Criteria Met:
+- [x] Panel shows Create Order, Add Product, Send Broadcast, Generate Report buttons
+- [x] Each button is gated by `hasPermission` check
+- [x] Buttons only visible to users with appropriate permissions
+- [x] Panel hidden entirely if user has no applicable permissions
+- [x] Proper tenant-aware navigation for all actions
+- [x] Responsive layout (2-col mobile, 4-col desktop)
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/components/dashboard/DashboardQuickActionsPanel.tsx` (new)
+- `src/pages/tenant-admin/DashboardPage.tsx` (modified - import + usage)

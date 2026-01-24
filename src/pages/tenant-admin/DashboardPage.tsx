@@ -56,6 +56,7 @@ import { SmartNotificationsCenter } from '@/components/tenant-admin/SmartNotific
 import { TrialWelcomeModal } from '@/components/onboarding/TrialWelcomeModal';
 import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
 import { QuickActionsWidget } from '@/components/dashboard/QuickActionsWidget';
+import { DashboardQuickActionsPanel } from '@/components/dashboard/DashboardQuickActionsPanel';
 
 interface DashboardOrderRow {
   total_amount: number | null;
@@ -824,6 +825,9 @@ export default function TenantAdminDashboardPage() {
             className="mb-4"
           />
         )}
+
+        {/* Permission-gated Quick Actions Panel */}
+        <DashboardQuickActionsPanel />
 
         {/* Demo Data Generation Banner */}
         {isEmptyAccount && (
