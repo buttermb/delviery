@@ -130,6 +130,7 @@ export const queryKeys = {
       [...queryKeys.customers.lists(), filters] as const,
     detail: (id: string) => [...queryKeys.customers.all, id] as const,
     analytics: (id: string) => [...queryKeys.customers.detail(id), 'analytics'] as const,
+    stats: (customerId: string) => [...queryKeys.customers.detail(customerId), 'stats'] as const,
   },
 
   // Tenants
