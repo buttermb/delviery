@@ -2657,3 +2657,46 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create credit_subscriptions Table Migration
+
+### What was done:
+
+1. **Created migration `20260124000001_create_credit_subscriptions.sql`** with:
+   - `id` UUID primary key with `gen_random_uuid()` default
+   - `user_id` UUID NOT NULL referencing `auth.users(id)` with CASCADE delete
+   - `tenant_id` UUID NOT NULL referencing `public.tenants(id)` with CASCADE delete
+   - `package_id` UUID referencing `public.credit_packages(id)` with SET NULL on delete
+   - `stripe_subscription_id` TEXT with UNIQUE constraint
+   - `status` TEXT NOT NULL with CHECK constraint: `active`, `paused`, `cancelled`, `past_due`, `trialing`
+   - `credits_per_period` INTEGER NOT NULL
+   - `period_type` TEXT with CHECK constraint: `monthly`, `yearly`, `weekly`
+   - `current_period_start` TIMESTAMPTZ
+   - `current_period_end` TIMESTAMPTZ
+   - `credits_remaining_this_period` INTEGER
+   - `cancel_at_period_end` BOOLEAN DEFAULT false
+   - `cancelled_at` TIMESTAMPTZ
+   - `created_at` TIMESTAMPTZ DEFAULT now()
+   - `updated_at` TIMESTAMPTZ DEFAULT now()
+
+2. **Indexes created:**
+   - `idx_credit_subscriptions_user_id` - user lookups
+   - `idx_credit_subscriptions_tenant_id` - tenant isolation queries
+   - `idx_credit_subscriptions_package_id` - package joins
+   - `idx_credit_subscriptions_status` - status filtering
+   - `idx_credit_subscriptions_stripe_subscription_id` - Stripe webhook lookups
+   - `idx_credit_subscriptions_current_period_end` - period expiry queries
+   - `idx_credit_subscriptions_tenant_status` - composite for tenant+status
+
+3. **RLS policies:**
+   - `credit_subscriptions_select_own` - users can view their own subscriptions
+   - `credit_subscriptions_insert_own` - users can create their own subscriptions
+   - `credit_subscriptions_update_own` - users can update their own subscriptions
+   - Service role bypasses RLS by default for webhook/edge function access
+
+4. **Updated_at trigger:**
+   - `handle_credit_subscriptions_updated_at()` function with SECURITY DEFINER and `SET search_path = public`
+   - Trigger fires BEFORE UPDATE on each row
+
+### Files Changed:
+- `supabase/migrations/20260124000001_create_credit_subscriptions.sql` (new)
