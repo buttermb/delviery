@@ -4229,3 +4229,42 @@ Created `src/hooks/useLogin.ts` - a standalone login hook using TanStack Query's
 - [x] Named export only (no default export)
 - [x] Uses `@/` import alias throughout
 - [x] No `any` types used
+
+---
+
+## Task: Create src/hooks/useLogout.ts hook
+
+### What was done:
+
+1. **Created `src/hooks/useLogout.ts`** - Custom hook using TanStack Query's `useMutation` that:
+   - Calls the `auth-logout` edge function via `supabase.functions.invoke`
+   - Clears all auth-related localStorage keys using `STORAGE_KEYS` constants (covers super admin, tenant admin, customer, and courier tokens/data)
+   - Clears shared session keys (`floraiq_user_id`, `lastTenantSlug`) from both localStorage and sessionStorage
+   - Clears the entire TanStack Query cache via `queryClient.clear()` to prevent stale data leaking between sessions
+   - Redirects to the login page (configurable via `redirectTo` option, defaults to `/login`)
+   - Handles errors gracefully: if user is already logged out (401/403/unauthorized), cleanup still proceeds silently
+   - Uses `onSettled` (not `onSuccess`) to ensure local cleanup always runs regardless of server response
+   - Also calls `supabase.auth.signOut()` to clear the Supabase auth session
+   - Uses `safeStorage` wrapper for localStorage operations (handles private browsing mode)
+   - Uses `logger` instead of `console.log` per project conventions
+   - Shows toast error only for unexpected server errors (not "already logged out" cases)
+
+2. **Hook API**:
+   - `logout()` - Fire-and-forget mutation trigger
+   - `logoutAsync()` - Promise-returning version for awaiting
+   - `isLoggingOut` - Loading state boolean for button disabled states
+
+3. **Configuration**:
+   - `redirectTo` - Custom redirect URL (default: `/login`)
+   - `onSuccess` - Optional callback after successful cleanup
+
+### Conventions followed:
+- Named export only (`export function useLogout`)
+- `@/` import alias for all imports
+- `logger` from `@/lib/logger` (no console.log)
+- `STORAGE_KEYS` from `@/constants/storageKeys`
+- TypeScript strict mode (no `any` types)
+- Error handling with graceful degradation
+
+### Files Changed:
+- `src/hooks/useLogout.ts` (new file)
