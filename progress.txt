@@ -908,6 +908,66 @@ useMutation({
 
 ---
 
+## Task: Add usePermissionAwareLink Hook
+
+### What was done:
+
+1. Created `src/hooks/usePermissionAwareLink.ts` - A hook for permission-aware cross-module navigation:
+   - Accepts a target admin route path and required permission(s)
+   - Checks permissions using the existing `usePermissions` hook
+   - Builds proper tenant-aware URLs using `useTenantNavigation`
+   - Supports single permission or permission arrays
+   - Supports `requireAll` mode (all permissions required vs any permission sufficient)
+   - Returns `hasAccess`/`visible` boolean for conditional rendering
+   - Returns `href` with the full tenant-aware URL
+   - Returns `isLoading` for permission loading state
+   - Defaults to hiding links while permissions are loading (least privilege)
+
+### Usage Examples:
+```tsx
+// Single permission - link only renders if user can view orders
+const ordersLink = usePermissionAwareLink({
+  to: 'orders',
+  permission: 'orders:view',
+});
+if (ordersLink.visible) {
+  return <Link to={ordersLink.href}>Orders</Link>;
+}
+
+// Multiple permissions (any grants access)
+const financeLink = usePermissionAwareLink({
+  to: 'finance',
+  permission: ['finance:view', 'finance:reports'],
+});
+
+// Multiple permissions (all required)
+const settingsLink = usePermissionAwareLink({
+  to: 'settings/billing',
+  permission: ['settings:view', 'settings:billing'],
+  requireAll: true,
+});
+```
+
+### Integration Points:
+- Uses `usePermissions()` from `@/hooks/usePermissions` for role-based permission checking
+- Uses `useTenantNavigation()` from `@/lib/navigation/tenantNavigation` for tenant-aware URLs
+- Uses `Permission` type from `@/lib/permissions/rolePermissions`
+- Works with the existing ROLE_PERMISSIONS matrix (owner/admin/team_member/viewer)
+
+### Acceptance Criteria Met:
+- [x] Cross-module links can be conditionally rendered based on user permissions
+- [x] Hook provides tenant-aware URLs (always includes tenant slug)
+- [x] Supports single and multiple permission checks
+- [x] Defaults to least privilege (hidden while loading)
+- [x] Named export only (no default export)
+- [x] Uses `@/` import alias
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/hooks/usePermissionAwareLink.ts` (new)
+
+---
+
 ## Task: Refactor StorefrontBuilder for Modularity
 
 ### What was done:
