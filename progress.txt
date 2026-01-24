@@ -2657,3 +2657,49 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create CreditBalanceCard Component
+
+### What was done:
+
+1. **Created `src/components/credits/CreditBalanceCard.tsx`** - A card component that displays:
+   - Large balance number (3xl font, tabular-nums) with "credits remaining" label
+   - Optional mini sparkline chart showing balance over time (last 14 days default)
+   - Low balance warning banner when credits are below `LOW_CREDIT_WARNING_THRESHOLD` (2000) or `CRITICAL_CREDIT_THRESHOLD` (100)
+   - "Buy More Credits" button that opens the purchase modal
+   - Only renders for free-tier users (returns null for paid tier)
+
+2. **Updated `src/components/credits/index.ts`** - Added exports:
+   - `CreditBalanceCard` component
+   - `CreditBalanceCardProps` type
+
+### Component Features:
+
+- **Balance Display**: Large prominent number with color coding (red for critical, amber for low, default for healthy)
+- **Sparkline Chart**: Uses recharts `AreaChart` with gradient fill, shows daily balance snapshots by reconstructing from transaction history
+- **Warning States**: Inline alert banner with appropriate severity (critical vs low)
+- **Buy Button**: Full-width button, switches to destructive variant when credits critically low
+- **Props**: `className`, `showChart` (default: true), `chartDays` (default: 14)
+
+### Patterns Used:
+- `useCredits` from CreditContext for balance and modal control
+- `useTenantAdminAuth` for tenant-aware queries
+- TanStack Query for balance history data fetching
+- Recharts AreaChart with linear gradient (same pattern as MetricCard)
+- shadcn/ui Card components
+- `LOW_CREDIT_WARNING_THRESHOLD` and `CRITICAL_CREDIT_THRESHOLD` from `@/lib/credits`
+
+### Acceptance Criteria Met:
+- [x] Shows current balance as large number with credits label
+- [x] Mini chart of balance over time (optional, configurable)
+- [x] Low balance warning if below threshold
+- [x] Buy more button opens purchase modal
+- [x] Suitable for use on dashboard and credits page
+- [x] TypeScript strict mode, no `any` types
+- [x] Named exports only
+- [x] Uses `@/` import aliases
+- [x] Tenant-aware query filtering
+
+### Files Changed:
+- `src/components/credits/CreditBalanceCard.tsx` (new)
+- `src/components/credits/index.ts` (added exports)
