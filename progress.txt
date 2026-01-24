@@ -2657,3 +2657,37 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create supabase/functions/auth-verify-email Edge Function
+
+### What was done:
+
+1. **Created `supabase/functions/auth-verify-email/index.ts`** - Token-based email verification edge function that:
+   - Accepts a `token` in the request body (validated with Zod)
+   - Hashes the token using SHA-256 (Web Crypto API) to match against stored `token_hash`
+   - Looks up the `email_verification_tokens` table by `token_hash`
+   - Validates the token is not expired (`expires_at` check)
+   - Validates the token is not already used (`verified_at` is null check)
+   - Updates `user_profiles.email_verified` to `true` on success
+   - Marks the token as used by setting `verified_at` to current timestamp
+   - Logs the verification event to `audit_logs` table
+   - Returns appropriate error responses for: invalid token, expired token, already verified
+   - Follows all FloraIQ edge function conventions:
+     - Imports from `_shared/deps.ts`
+     - CORS handling with OPTIONS preflight
+     - Service role client for database operations
+     - Proper error handling with try-catch
+     - Environment variable validation
+     - No `console.log` in production paths (uses `console.error` for errors only)
+
+### Security considerations:
+- Token is hashed before lookup (never stored in plain text)
+- Service role key used for privileged database operations
+- Generic error messages to avoid information leakage
+- Audit logging for security monitoring
+- Non-fatal audit/token-update errors don't block the success response
+
+### Files Changed:
+- `supabase/functions/auth-verify-email/index.ts` (new file)
