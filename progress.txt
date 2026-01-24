@@ -2657,3 +2657,52 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create usePasswordReset Hook
+
+### What was done:
+
+1. **Created `src/hooks/usePasswordReset.ts`** - Custom hook providing forgot password flow:
+   - Uses `useMutation` from TanStack Query for both request and confirm operations
+   - `requestReset` function calls `auth-forgot-password` edge function with user email
+   - `confirmReset` function calls `auth-reset-password` edge function with token and new password
+   - Client-side password strength validation before submitting reset confirmation
+   - Comprehensive error state handling with user-friendly messages
+
+2. **Password Strength Validation** (`validatePasswordStrength`):
+   - Minimum 8 characters, maximum 128 characters
+   - Requires at least one uppercase letter
+   - Requires at least one lowercase letter
+   - Requires at least one number
+   - Requires at least one special character
+   - Returns score (0-5) and array of specific error messages
+
+3. **Error Message Mapping**:
+   - Request reset: rate limiting, invalid email, network errors, timeouts
+   - Confirm reset: expired tokens, invalid/used tokens, same password, weak password, network errors
+   - Security-conscious: never reveals whether an email exists in the system
+
+4. **Hook Return Values**:
+   - `requestReset` / `requestResetAsync` - trigger forgot password email
+   - `confirmReset` / `confirmResetAsync` - submit new password with token
+   - `isRequestingReset` / `isConfirmingReset` - loading states for button disabled/loading
+   - `requestResetError` / `confirmResetError` - error objects for form display
+   - `validatePasswordStrength` - exposed for real-time password field validation
+   - `resetRequestState` / `resetConfirmState` - reset mutation states
+
+### Acceptance Criteria Met:
+- [x] Uses `useMutation` from TanStack Query
+- [x] `requestReset` calls `auth-forgot-password` edge function
+- [x] `confirmReset` calls `auth-reset-password` with token and new password
+- [x] Client-side password strength validation (length, uppercase, lowercase, number, special char)
+- [x] Handles all error states with user-friendly messages
+- [x] Named exports only (no default exports)
+- [x] Uses `@/` import alias
+- [x] Uses `logger` from `@/lib/logger` (no console.log)
+- [x] TypeScript strict mode compliant (no `any` types)
+- [x] Toast notifications for success/error states via `showSuccessToast`/`showErrorToast`
+
+### Files Changed:
+- `src/hooks/usePasswordReset.ts` (new)
