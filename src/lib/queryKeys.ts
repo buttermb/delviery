@@ -77,6 +77,8 @@ export const queryKeys = {
       [...queryKeys.inventory.all, 'low-stock-alerts', tenantId] as const,
     movements: (productId?: string) =>
       [...queryKeys.inventory.all, 'movements', productId] as const,
+    history: (filters?: Record<string, unknown>) =>
+      [...queryKeys.inventory.all, 'history', filters] as const,
   },
 
   // Cart
