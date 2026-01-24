@@ -5743,3 +5743,31 @@ Created `src/pages/credits/CheckoutPage.tsx` - a protected page for purchasing c
 - [x] Uses `useTenantAdminAuth` for auth protection
 - [x] Buttons have disabled state during async ops
 - [x] Error handling with toast.error() for user feedback
+
+---
+
+## Task: Create src/pages/credits/PurchaseSuccessPage.tsx
+
+### What was done:
+
+1. **Created `src/pages/credits/PurchaseSuccessPage.tsx`** - User-facing purchase success page with:
+   - **Confetti animation** using `canvas-confetti` (3-second celebratory burst on mount)
+   - **Credits added display** - Shows the purchased amount plus any bonus credits, read from URL search params (`credits_added`, `bonus_credits`)
+   - **New total balance** - Fetches and displays the current credit balance via `useCredits` hook with auto-refresh on mount
+   - **Transaction ID** - Displays truncated transaction ID from search params with copy-to-clipboard functionality
+   - **Continue to Dashboard button** - Primary CTA navigating to the admin dashboard
+   - **View Transaction History button** - Secondary action to view billing history
+   - **Credit suggestions section** - Three actionable suggestions (Place Orders, Unlock Premium Features, Boost Your Business) to guide users on how to use their credits
+   - Named export (per project code style), uses `@/` import aliases, `logger` instead of console.log
+   - Responsive design with dark mode support via shadcn/ui components
+   - Invalidates credit query cache on mount to ensure fresh balance data
+
+### Key Design Decisions:
+- Reads purchase data from URL search params (`credits_added`, `bonus_credits`, `transaction_id`/`session_id`) to support both direct navigation and Stripe redirect flows
+- Uses existing `useCredits` hook for balance fetching (tenant-aware)
+- Uses `useTenantNavigation` for dashboard navigation (tenant-aware routing)
+- Follows the same confetti pattern as `OrderConfirmationPage`
+- Distinct from `CreditPurchaseSuccessPage` in tenant-admin (that one is simpler, this one adds suggestions and richer credits display)
+
+### Files Created:
+- `src/pages/credits/PurchaseSuccessPage.tsx`
