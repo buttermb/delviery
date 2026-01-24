@@ -7575,3 +7575,60 @@ Implemented comprehensive tests for the SessionManagement component covering:
 - Mocks apiFetch, supabase client, CustomerAuthContext, toast, and logger
 - Tests observable behavior (rendered UI) rather than implementation details
 - Follows AAA pattern (Arrange-Act-Assert) per project testing skills
+
+---
+
+## Task: Test Protected Routes - Auth Redirect and Role-Based Access Control
+
+### What was done:
+
+Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.test.tsx` with 22 tests covering:
+
+#### 1. Unauthenticated Access Redirects to Login (5 tests):
+- Redirects to tenant-specific login (`/:tenantSlug/admin/login`) when accessing protected dashboard while logged out
+- Preserves tenant slug from URL in redirect path
+- Falls back to `/saas/login` when URL slug is a UUID (invalid)
+- Uses `lastTenantSlug` from localStorage when URL slug is invalid
+- Does not render protected content when user is not authenticated
+
+#### 2. Authenticated Access Renders Protected Content (4 tests):
+- Renders protected content when user is authenticated with matching tenant slug
+- Blocks access (shows loading/verification) when tenant slug mismatches the authenticated user's tenant
+- Shows loading fallback while auth context is still loading
+- Does not grant access during slug mismatch even with valid auth
+
+#### 3. After Login Redirects Back to Intended Page (3 tests):
+- Renders the intended page when user navigates back after successful login
+- Confirms login page is not shown when authenticated
+- Redirects unauthenticated users to login while preserving tenant context for return
+
+#### 4. Role-Based Access with PermissionGuard (8 tests):
+- Shows "You don't have permission to access this resource." when user lacks required permission
+- Renders content when user has the required permission
+- Shows access denied for viewer trying to access admin-only page (team:invite)
+- Shows access denied for team_member trying to access owner-only settings (settings:billing)
+- Renders custom fallback component when provided
+- Renders nothing when `showMessage=false` and user lacks permission
+- Checks multiple permissions with `requireAll=true`
+- Checks multiple permissions with `requireAll=false` (any permission grants access)
+
+#### 5. Combined Auth + Permission Flow (3 tests):
+- Redirects to login first when unauthenticated (even before permission check)
+- Shows access denied when authenticated but lacking permission (viewer accessing settings:edit)
+- Renders content when authenticated with correct permissions (owner)
+
+### Test Architecture:
+- Mocks `useTenantAdminAuth` context for controlling auth state
+- Mocks `usePermissions` hook for controlling role/permission checks
+- Uses `MemoryRouter` with `LocationDisplay` helper to verify redirects
+- QueryClient with `retry: false` for test isolation
+- Tests both `TenantAdminProtectedRoute` and `PermissionGuard` components
+
+### Acceptance Criteria Met:
+- [x] Accessing protected page while logged out redirects to login with tenant slug preserved
+- [x] After login, redirects back to intended page (tenant context maintained for return navigation)
+- [x] Accessing page without required role shows "access denied" message
+- [x] All 22 tests pass
+
+### Files Changed:
+- `src/components/auth/__tests__/ProtectedRoutes.test.tsx` (new - 22 tests)
