@@ -2657,3 +2657,48 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create src/hooks/useLogin.ts hook
+
+### What was done:
+Created `src/hooks/useLogin.ts` - a standalone login hook using TanStack Query's `useMutation` that calls the `auth-login` edge function.
+
+### Features implemented:
+1. **useMutation with auth-login edge function**: Calls `supabase.functions.invoke('auth-login')` with email, password, and tenantSlug
+2. **LoginCredentials interface**: Accepts `email`, `password`, `tenantSlug`, and `rememberMe` parameters
+3. **Loading/error states**: Exposes `isLoading` (isPending), `error`, `isSuccess`, and `data` from the mutation
+4. **rememberMe session storage**: When `rememberMe` is true, tokens are stored in `localStorage`; when false, they go to `sessionStorage` (cleared on browser close)
+5. **Auth context update on success**: Syncs session with Supabase client via `supabase.auth.setSession()` so RLS and auth context update properly
+6. **Client-side failed attempt tracking**:
+   - Tracks credential failures (count, timestamps)
+   - Shows warning after 3 failed attempts ("X attempts remaining")
+   - Locks out after 5 failed attempts for 60 seconds
+   - Provides `attemptMessage` for UI display and `isLockedOut` flag
+   - `resetAttempts()` to manually clear the counter
+
+### Exported API:
+- `login(credentials)` - fire-and-forget mutation trigger
+- `loginAsync(credentials)` - awaitable promise-returning version
+- `isLoading` - mutation pending state
+- `error` - Error object if mutation failed
+- `isSuccess` - whether last mutation succeeded
+- `data` - LoginResponse on success
+- `failedAttempts` - number of consecutive failures
+- `attemptMessage` - human-readable warning/lockout message (or null)
+- `isLockedOut` - whether user is temporarily locked out
+- `resetAttempts()` - reset the failure counter
+- `reset()` - reset mutation state
+
+### Files Changed:
+- `src/hooks/useLogin.ts` (new file)
+
+### Verification:
+- [x] No TypeScript errors (verified with project tsconfig)
+- [x] No ESLint errors
+- [x] Uses `logger` from `@/lib/logger` (no console.log)
+- [x] Uses `STORAGE_KEYS` from `@/constants/storageKeys`
+- [x] Named export only (no default export)
+- [x] Uses `@/` import alias throughout
+- [x] No `any` types used
