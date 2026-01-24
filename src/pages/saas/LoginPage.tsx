@@ -36,6 +36,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import { motion, AnimatePresence } from 'framer-motion';
 import FloraIQLogo from '@/components/FloraIQLogo';
+import { useCsrfToken } from '@/hooks/useCsrfToken';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -58,6 +59,7 @@ export default function LoginPage() {
   const { isLocked, remainingSeconds, recordAttempt, resetOnSuccess } = useAuthRateLimit({
     storageKey: 'floraiq_saas_login_rate_limit',
   });
+  const { validateToken } = useCsrfToken();
 
   // Monitor connection status
   useEffect(() => {
@@ -92,6 +94,11 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
+    if (!validateToken()) {
+      toast({ title: 'Security Error', description: 'Invalid security token. Please refresh the page and try again.', variant: 'destructive' });
+      return;
+    }
+
     if (isLocked) {
       return;
     }

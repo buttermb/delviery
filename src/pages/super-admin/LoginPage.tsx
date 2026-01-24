@@ -13,6 +13,7 @@ import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { AuthOfflineIndicator } from "@/components/auth/AuthOfflineIndicator";
 import { useAuthOffline } from "@/hooks/useAuthOffline";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 
 export default function SuperAdminLoginPage() {
@@ -21,6 +22,7 @@ export default function SuperAdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const { validateToken } = useCsrfToken();
 
   const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline(
     async (qEmail, qPassword) => {
@@ -35,6 +37,15 @@ export default function SuperAdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateToken()) {
+      toast({
+        variant: "destructive",
+        title: "Security Error",
+        description: "Invalid security token. Please refresh the page and try again.",
+      });
+      return;
+    }
 
     if (!isOnline) {
       queueLoginAttempt(email, password);

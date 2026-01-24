@@ -13,6 +13,7 @@ import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 import { clientEncryption } from '@/lib/encryption/clientEncryption';
 import { AuthOfflineIndicator } from '@/components/auth/AuthOfflineIndicator';
 import { useAuthOffline } from '@/hooks/useAuthOffline';
+import { useCsrfToken } from '@/hooks/useCsrfToken';
 
 export default function CourierLoginPage() {
   useAuthRedirect(); // Auto-redirect if already logged in
@@ -25,9 +26,19 @@ export default function CourierLoginPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline();
+  const { validateToken } = useCsrfToken();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateToken()) {
+      toast({
+        title: 'Security Error',
+        description: 'Invalid security token. Please refresh the page and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     if (!isOnline) {
       queueLoginAttempt(email, password);

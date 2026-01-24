@@ -17,6 +17,7 @@ import { AuthOfflineIndicator } from "@/components/auth/AuthOfflineIndicator";
 import { useAuthOffline } from "@/hooks/useAuthOffline";
 import { AccountLockedScreen } from "@/components/auth/AccountLockedScreen";
 import { Database } from "@/integrations/supabase/types";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 
 type Tenant = Database['public']['Tables']['tenants']['Row'];
@@ -33,6 +34,7 @@ export default function TenantAdminLoginPage() {
   const [tenantLoading, setTenantLoading] = useState(true);
   const [accountLocked, setAccountLocked] = useState(false);
   const [lockDurationSeconds, setLockDurationSeconds] = useState(0);
+  const { validateToken } = useCsrfToken();
 
   const { isOnline, hasQueuedAttempt, preventSubmit, queueLoginAttempt } = useAuthOffline(
     async (qEmail, qPassword, qSlug) => {
@@ -69,6 +71,15 @@ export default function TenantAdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!validateToken()) {
+      toast({
+        variant: "destructive",
+        title: "Security Error",
+        description: "Invalid security token. Please refresh the page and try again.",
+      });
+      return;
+    }
 
     if (!tenantSlug) {
       toast({

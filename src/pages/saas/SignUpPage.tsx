@@ -48,6 +48,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { handleError } from '@/utils/errorHandling/handlers';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import FloraIQLogo from '@/components/FloraIQLogo';
+import { useCsrfToken } from '@/hooks/useCsrfToken';
 
 
 
@@ -146,6 +147,7 @@ export default function SignUpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [captchaToken, setCaptchaToken] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const { validateToken } = useCsrfToken();
 
 
 
@@ -226,6 +228,15 @@ export default function SignUpPage() {
   }, [form]);
 
   const onSubmit = async (data: SignupFormData) => {
+    if (!validateToken()) {
+      toast({
+        title: 'Security Error',
+        description: 'Invalid security token. Please refresh the page and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     // Client-side rate limiting
     const now = Date.now();
     if (now - lastSubmitTime < SUBMIT_COOLDOWN_MS) {

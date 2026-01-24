@@ -13,6 +13,7 @@ import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthInd
 import { RateLimitWarning } from "@/components/auth/RateLimitWarning";
 import { useAuthRateLimit } from "@/hooks/useAuthRateLimit";
 import { Tenant } from "@/types/tenant-extended";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 export default function CustomerSignUpPage() {
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ export default function CustomerSignUpPage() {
   const { isLocked, remainingSeconds, recordAttempt, resetOnSuccess } = useAuthRateLimit({
     storageKey: 'floraiq_customer_signup_rate_limit',
   });
+  const { validateToken } = useCsrfToken();
 
   useEffect(() => {
     const fetchTenant = async () => {
@@ -64,6 +66,15 @@ export default function CustomerSignUpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateToken()) {
+      toast({
+        variant: "destructive",
+        title: "Security Error",
+        description: "Invalid security token. Please refresh the page and try again.",
+      });
+      return;
+    }
 
     if (isLocked) {
       return;

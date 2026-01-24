@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Loader2, Mail, ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { apiFetch } from '@/lib/utils/apiClient';
+import { useCsrfToken } from '@/hooks/useCsrfToken';
 
 function ResendButton({ onResend }: { onResend: () => void }) {
   const [cooldown, setCooldown] = useState(60);
@@ -46,6 +47,7 @@ export default function CustomerForgotPasswordPage() {
   const [sent, setSent] = useState(false);
   const [tenant, setTenant] = useState<any>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+  const { validateToken } = useCsrfToken();
 
   useEffect(() => {
     const fetchTenant = async () => {
@@ -70,6 +72,15 @@ export default function CustomerForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateToken()) {
+      toast({
+        variant: 'destructive',
+        title: 'Security Error',
+        description: 'Invalid security token. Please refresh the page and try again.',
+      });
+      return;
+    }
 
     if (!email) {
       toast({
