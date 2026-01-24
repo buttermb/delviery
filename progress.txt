@@ -2657,3 +2657,78 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create supabase/functions/credits-balance Edge Function
+
+### What was done:
+
+1. **Created `supabase/functions/credits-balance/index.ts`** - Edge function requiring auth that returns comprehensive credit balance information:
+
+   **Authentication:**
+   - Requires `Authorization` header with valid JWT
+   - Extracts user from JWT via `supabase.auth.getUser()` - never trusts client data
+   - Resolves tenant via `tenant_users` table lookup
+   - Returns 401 for missing/invalid auth, 404 if no tenant found
+
+   **Credit Balance:**
+   - Queries `credits` table filtered by `user_id` and `tenant_id`
+   - Returns current `balance` amount
+   - Returns zero-balance defaults if no credits row exists yet
+
+   **Lifetime Stats:**
+   - `lifetime_purchased` - Total credits purchased over account lifetime
+   - `lifetime_used` - Total credits consumed
+   - `lifetime_expired` - Total credits expired
+   - `lifetime_refunded` - Total credits refunded
+
+   **Pending Transactions:**
+   - Queries `credit_transactions` table for transactions with type `'pending'`
+   - Returns up to 50 pending transactions sorted by newest first
+   - Each includes: id, type, amount, description, reference_type, reference_id, created_at
+   - Non-fatal: returns empty array if query fails
+
+   **Subscription Status:**
+   - Queries `credit_subscriptions` table for active subscriptions
+   - Filters by status `IN ('active', 'trialing', 'past_due')`
+   - Returns: id, status, credits_per_period, period_type, current_period_start/end, credits_remaining_this_period, cancel_at_period_end
+   - Returns null if no active subscription
+   - Non-fatal: returns null if query fails
+
+   **Response Format:**
+   ```json
+   {
+     "balance": 5000,
+     "lifetime_stats": {
+       "purchased": 10000,
+       "used": 4500,
+       "expired": 500,
+       "refunded": 0
+     },
+     "last_purchase_at": "2026-01-20T10:00:00Z",
+     "last_used_at": "2026-01-24T15:30:00Z",
+     "pending_transactions": [],
+     "subscription": {
+       "id": "uuid",
+       "status": "active",
+       "credits_per_period": 5000,
+       "period_type": "monthly",
+       "current_period_start": "2026-01-01T00:00:00Z",
+       "current_period_end": "2026-02-01T00:00:00Z",
+       "credits_remaining_this_period": 3000,
+       "cancel_at_period_end": false
+     }
+   }
+   ```
+
+   **Patterns followed:**
+   - Imports from `_shared/deps.ts` (serve, createClient, corsHeaders)
+   - Handles CORS OPTIONS preflight
+   - Proper error handling with try-catch
+   - Uses `.maybeSingle()` for optional data
+   - Filters by both `user_id` and `tenant_id` for multi-tenant isolation
+   - TypeScript interfaces for all data shapes
+   - Graceful degradation for non-critical queries (pending, subscription)
+   - Appropriate HTTP status codes (200, 401, 404, 500)
+
+### Files Created:
+- `supabase/functions/credits-balance/index.ts`
