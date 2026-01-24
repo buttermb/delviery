@@ -2546,3 +2546,64 @@ verifying all 5 stat cards load with real data and their navigation links work c
 
 ### Files Changed:
 - `tests/integration/order-inventory-flow.test.ts` (new - 22 integration tests)
+
+---
+
+## Task: Test Global Search Opening Cmd+K and Verifying Search Finds Existing Orders, Customers, Products
+
+### What was done:
+
+1. **Created `src/components/tenant-admin/__tests__/CommandPalette.test.tsx`** - Comprehensive test suite for the TenantAdminCommandPalette global search:
+
+   **Opening with Cmd+K (4 tests):**
+   - Verifies Cmd+K (metaKey) opens the command palette dialog
+   - Verifies Ctrl+K (for Windows/Linux) opens the command palette
+   - Verifies Cmd+K toggles the palette closed when pressed again
+   - Verifies navigation pages and quick actions display when opened without search
+
+   **Searching for Products (2 tests):**
+   - Verifies product search triggers the correct Supabase query (table, columns, tenant_id filter, ilike match, limit)
+   - Verifies product results render in the DOM with name and SKU
+
+   **Searching for Customers/Clients (2 tests):**
+   - Verifies client search triggers the correct Supabase query (wholesale_clients table, or filter on business_name/contact_name)
+   - Verifies client results render with business name and contact name
+
+   **Searching for Orders (2 tests):**
+   - Verifies orders search triggers the correct Supabase query (orders table, created_at ordering, limit)
+   - Verifies order results render in the DOM (both mock orders displayed)
+
+   **Search Behavior (2 tests):**
+   - Verifies queries are NOT triggered with fewer than 2 characters (search.length < 2 guard)
+   - Verifies all three tables (products, wholesale_clients, orders) are searched simultaneously for 2+ char queries
+
+   **Footer Hints (1 test):**
+   - Verifies keyboard shortcut hints (⌘K to search, ↵ to select) are displayed
+
+   **Zustand Store (2 tests):**
+   - Verifies the palette opens/closes via `setOpen()` store method
+   - Verifies the `toggle()` store method correctly toggles visibility
+
+2. **Test Architecture Decisions:**
+   - Mocked `@/components/ui/command` with simplified React components to bypass cmdk's internal fuzzy filtering (which hides items in jsdom)
+   - Mocked `scrollIntoView` and `getAnimations` for jsdom compatibility
+   - Used fluent chain mock pattern for Supabase queries (`.from().select().eq().ilike().limit()`)
+   - Used Zustand store direct manipulation for reliable palette open/close testing
+   - Used `MemoryRouter` with route params for tenant slug context
+
+### Test Results:
+- All 15 tests pass
+- Test runtime: ~573ms
+
+### Acceptance Criteria Met:
+- [x] Cmd+K keyboard shortcut opens global search
+- [x] Ctrl+K keyboard shortcut works (Windows/Linux support)
+- [x] Search finds existing products with correct query parameters
+- [x] Search finds existing customers/clients with correct query parameters
+- [x] Search finds existing orders with correct query parameters
+- [x] Search requires minimum 2 characters before querying
+- [x] All three data sources searched simultaneously
+- [x] Results render in the DOM with appropriate details
+
+### Files Changed:
+- `src/components/tenant-admin/__tests__/CommandPalette.test.tsx` (new - 15 tests)
