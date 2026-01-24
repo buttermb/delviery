@@ -428,3 +428,44 @@ sub-components with shared state from useStorefrontBuilder hook.
 - `src/pages/admin/storefront/builder/BuilderCreateStoreDialog.tsx` (new)
 - `src/pages/admin/storefront/builder/index.ts` (new)
 - `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export alias)
+
+---
+
+## Task: Add Export with Related Entities Checkboxes to Include Customer Name, Email, and Line Items in CSV Export
+
+### What was done:
+
+1. **Created `src/components/admin/ExportOptionsDialog.tsx`** - A reusable dialog component that:
+   - Accepts configurable export field options with labels, descriptions, and recommended flags
+   - Uses the existing `MultiCheckbox` component for field selection with Select All/Clear controls
+   - Shows item count of records to be exported
+   - Provides Cancel and Export CSV buttons with loading/disabled states
+   - Fully typed with TypeScript (exports `ExportField` interface and `ExportOptionsDialog` component)
+
+2. **Updated `src/pages/admin/Orders.tsx`** - Enhanced the orders export to support related entities:
+   - Replaced the direct `handleExport` call with an export dialog that opens on button click
+   - Added `ExportOptionsDialog` with three configurable related entity checkboxes:
+     - **Customer Name** (recommended) - includes the customer's full name in each exported row
+     - **Customer Email** (recommended) - includes the customer's email address
+     - **Line Items** - expands each order into multiple rows (one per line item) with product name, quantity, and price columns
+   - Typed `order_items` properly with `OrderItemData` interface (product_name, quantity, price, id, product_id)
+   - When Line Items is selected: output is flattened (one row per order item) with order-level fields repeated
+   - When Line Items is not selected: standard one row per order output
+   - Customer name and email columns are conditionally included based on checkbox selection
+   - Added `exportDialogOpen` state to control dialog visibility
+
+### Export Behavior:
+- **Without Line Items**: Each row = one order. Columns: order_number, status, total_amount, delivery_method, created_at, [customer_name], [customer_email]
+- **With Line Items**: Each row = one order item. Additional columns: item_product_name, item_quantity, item_price. Orders with no items still get one row with empty item fields.
+
+### Acceptance Criteria Met:
+- [x] Export button opens a dialog with checkboxes for related entity fields
+- [x] Customer Name checkbox includes full_name in the CSV
+- [x] Customer Email checkbox includes email in the CSV
+- [x] Line Items checkbox flattens orders into item-level rows with product details
+- [x] Checkboxes use MultiCheckbox component with Select All/Clear/Recommended controls
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/components/admin/ExportOptionsDialog.tsx` (new - reusable export options dialog)
+- `src/pages/admin/Orders.tsx` (modified - export dialog integration, OrderItemData type)
