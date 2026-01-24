@@ -1024,3 +1024,49 @@ Enhanced `src/hooks/useInventorySync.ts` with two new mutation hooks that handle
 ### Files Changed:
 - `src/components/admin/dashboard/AutoReorderSuggestionsWidget.tsx` (new)
 - `src/components/admin/ModernDashboard.tsx` (modified - import + widget placement)
+
+---
+
+## Task: Create CustomerOrderHistory Component
+
+### What was done:
+
+1. Created `src/components/shop/CustomerOrderHistory.tsx` - A reusable storefront component showing paginated order history with:
+   - **Paginated order list** using `StandardPagination` component with configurable page sizes (5/10/25)
+   - **Status badges** using the shared `StatusBadge` component for consistent order status display
+   - **Total item count** per order (sums quantities across all order items)
+   - **Reorder button** that adds all items from a previous order to the shopping cart and navigates to cart
+   - **Order total display** with `formatCurrency` utility
+   - **Smart date formatting** using `formatSmartDate` utility
+   - **Tracking link** for orders with tracking tokens (navigates to order tracking page)
+   - **Loading skeletons** for async data fetch
+   - **Empty state** with call-to-action to start shopping
+   - **Responsive layout** - stacks vertically on mobile, horizontal on desktop
+
+2. Component Features:
+   - Props: `customerId` and `storeId` for data fetching
+   - Uses TanStack Query for data fetching with proper cache keys
+   - Fetches from `marketplace_orders` table filtered by `store_id` and `customer_id`
+   - Reorder functionality uses localStorage cart pattern consistent with existing `useShopCart` hook
+   - Updates cart item count via `setCartItemCount` from shop context
+   - Proper error handling with `logger.error()` and `toast.error()` for user feedback
+   - All buttons have loading + disabled states during async operations
+   - Named export only (no default export)
+   - TypeScript strict mode compliant (no `any` types)
+   - Uses `@/` import alias throughout
+
+### Acceptance Criteria Met:
+- [x] Paginated order list (StandardPagination with page size selector)
+- [x] Status badge on each order (using shared StatusBadge component)
+- [x] Total item count displayed per order (sums item quantities)
+- [x] Reorder button that adds items to cart and navigates to cart page
+- [x] Loading and empty states handled
+- [x] Responsive design (mobile + desktop)
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/components/shop/CustomerOrderHistory.tsx` (new)
+
+### Build Status:
+- TypeScript type check passes (tsc --noEmit)
+- `npm run build` passes with no errors
