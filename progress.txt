@@ -2657,3 +2657,63 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Add Session Fixation Protection
+
+### What was done:
+
+1. **Created `src/lib/auth/sessionFixation.ts`** - Session fixation protection utility that:
+   - `clearPreAuthSessionData(tier)`: Clears all pre-authentication tokens, user data, and session markers before login to prevent attackers from pre-setting session tokens
+   - `establishFreshSession(tier)`: Generates a cryptographically random 32-byte session nonce after successful authentication, stored in sessionStorage to prove session legitimacy
+   - `validateSessionFreshness()`: Validates the session nonce format and timestamp to detect tampered sessions
+   - `invalidateSessionNonce()`: Removes session markers during logout to prevent reuse
+   - Uses `crypto.getRandomValues()` for secure random nonce generation
+   - Handles all three auth tiers: `tenant_admin`, `customer`, `super_admin`
+
+2. **Updated `src/contexts/TenantAdminAuthContext.tsx`**:
+   - Calls `clearPreAuthSessionData('tenant_admin')` at the start of the login function (before any network request) to wipe any pre-existing tokens/data that could have been planted by an attacker
+   - Calls `establishFreshSession('tenant_admin')` after successful authentication to generate a fresh session marker
+   - Calls `invalidateSessionNonce()` at the start of logout to prevent old session markers from being reused
+
+3. **Updated `src/contexts/CustomerAuthContext.tsx`**:
+   - Calls `clearPreAuthSessionData('customer')` at the start of the login function
+   - Calls `establishFreshSession('customer')` after successful authentication
+   - Calls `invalidateSessionNonce()` at the start of logout
+
+4. **Updated `supabase/functions/tenant-admin-auth/index.ts`** (Edge Function):
+   - After successful authentication, invalidates all previous `tenant_admin_sessions` for the user via DELETE query
+   - Calls `supabase.auth.admin.signOut(userId, 'others')` to invalidate other Supabase refresh tokens from prior sessions
+   - Both operations are best-effort (logged warnings on failure, don't block login)
+
+5. **Updated `supabase/functions/customer-auth/index.ts`** (Edge Function):
+   - After password verification but before generating new JWT token, deletes all existing `customer_sessions` records for the customer user and tenant
+   - Ensures each login produces a completely fresh session with no carryover
+
+6. **Updated `src/lib/auth/logoutCleanup.ts`**:
+   - Added `invalidateSessionNonce()` as step 1 of the cleanup process
+   - Ensures session nonces are always cleared during logout cleanup (safety net for cross-tab logout scenarios)
+
+### Security Protection Layers:
+- **Client-side pre-login**: Wipes all stored tokens/data before authentication request
+- **Server-side session invalidation**: Deletes all prior sessions from database on login
+- **Server-side token invalidation**: Revokes other Supabase auth sessions on login
+- **Client-side post-login**: Generates fresh session nonce proving legitimate session creation
+- **Logout cleanup**: Invalidates session nonce on every logout path
+
+### Acceptance Criteria Met:
+- [x] Session token regenerated after login (new JWT/access token from Supabase, old sessions deleted)
+- [x] Pre-auth session data invalidated (cleared before login request)
+- [x] Fresh session state on authentication (new nonce, new tokens, old sessions purged)
+- [x] Prevents session hijacking attacks (attacker's pre-set tokens are wiped, old sessions invalidated)
+- [x] Build passes with no TypeScript errors
+- [x] Lint passes with no new errors
+
+### Files Changed:
+- `src/lib/auth/sessionFixation.ts` (new - core session fixation protection utility)
+- `src/contexts/TenantAdminAuthContext.tsx` (added pre-auth cleanup, post-auth fresh session, logout invalidation)
+- `src/contexts/CustomerAuthContext.tsx` (added pre-auth cleanup, post-auth fresh session, logout invalidation)
+- `supabase/functions/tenant-admin-auth/index.ts` (invalidate previous sessions on login)
+- `supabase/functions/customer-auth/index.ts` (invalidate previous customer sessions on login)
+- `src/lib/auth/logoutCleanup.ts` (integrated session nonce invalidation into cleanup pipeline)

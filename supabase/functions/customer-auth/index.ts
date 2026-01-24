@@ -410,6 +410,20 @@ serve(async (req) => {
         customer = data;
       }
 
+      // Session fixation protection: Invalidate all pre-existing sessions for this customer
+      // This ensures a fresh session state on authentication, preventing session hijacking
+      try {
+        await supabase
+          .from('customer_sessions')
+          .delete()
+          .eq('customer_user_id', customerUser.id)
+          .eq('tenant_id', tenant.id);
+        console.log('[SESSION_FIXATION] Previous customer sessions invalidated:', customerUser.id);
+      } catch (sessionCleanupError) {
+        // Log but don't block login - session cleanup is best-effort
+        console.warn('[SESSION_FIXATION] Failed to invalidate previous customer sessions:', sessionCleanupError);
+      }
+
       // Generate JWT token
       const token = await createCustomerToken({
         customer_user_id: customerUser.id,

@@ -282,6 +282,29 @@ serve(async (req) => {
 
       console.log('Login successful for:', email, 'tenant:', tenant.business_name);
 
+      // Session fixation protection: Invalidate any pre-existing sessions for this user
+      // This ensures a fresh session state on authentication, preventing session hijacking
+      try {
+        await serviceClient
+          .from('tenant_admin_sessions')
+          .delete()
+          .eq('user_id', authData.user.id);
+        console.log('[SESSION_FIXATION] Previous sessions invalidated for user:', authData.user.id);
+      } catch (sessionCleanupError) {
+        // Log but don't block login - session cleanup is best-effort
+        console.warn('[SESSION_FIXATION] Failed to invalidate previous sessions:', sessionCleanupError);
+      }
+
+      // Invalidate any Supabase refresh tokens from prior sessions by signing out
+      // other sessions. The current session just created by signInWithPassword is preserved.
+      try {
+        await supabase.auth.admin.signOut(authData.user.id, 'others');
+        console.log('[SESSION_FIXATION] Other Supabase sessions invalidated for user:', authData.user.id);
+      } catch (signOutError) {
+        // Log but don't block - this is a supplementary protection
+        console.warn('[SESSION_FIXATION] Failed to invalidate other Supabase sessions:', signOutError);
+      }
+
       // Prepare httpOnly cookie options
       const cookieOptions = [
         'HttpOnly',
