@@ -313,6 +313,7 @@ const IntegrationsHubPage = lazy(() => import("./pages/admin/hubs/IntegrationsHu
 const StorefrontHubPage = lazy(() => import("./pages/admin/hubs/StorefrontHubPage"));
 const OperationsHubPage = lazy(() => import("./pages/admin/hubs/OperationsHubPage"));
 const FulfillmentHubPage = lazy(() => import("./pages/admin/hubs/FulfillmentHubPage"));
+const DashboardHubPage = lazy(() => import("./pages/admin/hubs/DashboardHubPage").then(m => ({ default: m.DashboardHubPage })));
 
 // Smart TV Dashboard (Big Screen Operations View)
 const SmartTVDashboard = lazy(() => import("./pages/admin/SmartTVDashboard"));
@@ -753,6 +754,16 @@ const App = () => {
                                             <Suspense fallback={<SkeletonDashboard />}>
                                               <FeatureProtectedRoute featureId="dashboard">
                                                 <TenantAdminDashboardPage />
+                                              </FeatureProtectedRoute>
+                                            </Suspense>
+                                          }
+                                        />
+                                        <Route
+                                          path="dashboard-hub"
+                                          element={
+                                            <Suspense fallback={<SkeletonDashboard />}>
+                                              <FeatureProtectedRoute featureId="dashboard">
+                                                <DashboardHubPage />
                                               </FeatureProtectedRoute>
                                             </Suspense>
                                           }

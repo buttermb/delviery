@@ -123,6 +123,13 @@ export const queryKeys = {
     current: () => [...queryKeys.tenants.all, 'current'] as const,
   },
 
+  // Dashboard Hub
+  dashboard: {
+    all: ['dashboard'] as const,
+    stats: (tenantId?: string) =>
+      [...queryKeys.dashboard.all, 'stats', tenantId] as const,
+  },
+
   // Analytics
   analytics: {
     all: ['analytics'] as const,
