@@ -462,20 +462,8 @@ const App = () => {
   }, []);
 
   // Clear stale auth data on marketing/login pages to prevent cross-tenant contamination
-  useEffect(() => {
-    const path = window.location.pathname;
-    if (path === '/marketing' || path === '/login' || path === '/saas/login' || path === '/saas/signup') {
-      // Clear tenant-specific data (preserve super admin if exists)
-      const superAdminToken = localStorage.getItem('super_admin_access_token');
-      if (!superAdminToken) {
-        localStorage.removeItem('tenant_admin_access_token');
-        localStorage.removeItem('tenant_admin_refresh_token');
-        localStorage.removeItem('tenant_admin_user');
-        localStorage.removeItem('tenant_data');
-        localStorage.removeItem('lastTenantSlug'); // Clear tenant slug cache
-      }
-    }
-  }, []);
+  // Note: Auth cleanup moved to explicit logout actions only
+  // to prevent redirect loops when navigating to login pages
 
   // Initialize global button monitoring
   useEffect(() => {
