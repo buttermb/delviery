@@ -2810,7 +2810,7 @@ verifying all 5 stat cards load with real data and their navigation links work c
 
 ---
 
-<<<<<<< HEAD
+
 ## Task: Create user_profiles Table Migration
 
 ### What was done:
@@ -4590,3 +4590,49 @@ Created `src/hooks/useAuthGuard.ts` - a comprehensive authentication guard hook 
 ### Files Changed:
 - `src/hooks/usePurchaseCredits.ts` (new file)
 - `src/hooks/index.ts` (added exports)
+
+---
+
+## Task: Create src/hooks/useConsumeCredits.ts hook
+
+### What was done:
+
+1. **Created `src/hooks/useConsumeCredits.ts`** - A TanStack Query `useMutation` hook for consuming credits:
+   - Calls `credits-use` edge function via `supabase.functions.invoke`
+   - Accepts `amount`, `referenceType`, `referenceId`, and `description` parameters
+   - **Pre-flight balance check**: For free-tier users, verifies sufficient balance before calling the edge function
+   - **Optimistic update**: Immediately deducts credits from the cached balance via `queryClient.setQueryData`
+   - **Rollback on error**: Restores previous balance snapshot if the mutation fails
+   - **Error handling**: Distinguishes between insufficient balance, edge function errors, and consumption failures
+   - **Toast notifications**: Shows appropriate error messages (insufficient credits vs generic errors)
+   - **Query invalidation**: Syncs with server state on success via `queryClient.invalidateQueries`
+   - Exports `hasSufficientBalance()` helper for pre-checking without mutating
+   - Exposes both sync (`consumeCredits`) and async (`consumeCreditsAsync`) mutation triggers
+   - Follows project conventions: named exports, `@/` imports, `logger` for logging, no `any` types
+
+### API:
+```typescript
+const {
+  consumeCredits,       // Fire-and-forget mutation trigger
+  consumeCreditsAsync,  // Async mutation trigger (returns promise)
+  isConsuming,          // Whether mutation is in progress
+  isSuccess,            // Last mutation succeeded
+  isError,              // Last mutation failed
+  error,                // Error details from last failure
+  data,                 // Response from last success
+  hasSufficientBalance, // Pre-check function (amount: number) => boolean
+  balance,              // Current credit balance
+  isFreeTier,           // Whether user is on free tier
+  reset,                // Reset mutation state
+} = useConsumeCredits({ onSuccess?, onError? });
+
+consumeCredits({
+  amount: 100,
+  referenceType: 'order',
+  referenceId: 'order-123',
+  description: 'Order creation',
+});
+```
+
+### Files Changed:
+- `src/hooks/useConsumeCredits.ts` (new file)
