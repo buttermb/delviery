@@ -64,7 +64,7 @@ export { ReferralDashboard } from './ReferralDashboard';
 export type { ReferralDashboardProps } from './ReferralDashboard';
 
 export { PromoCodeInput } from './PromoCodeInput';
-export type { PromoCodeInputProps } from './PromoCodeInput';
+export type { PromoCodeInputProps, ValidatedPromoCode } from './PromoCodeInput';
 
 export { CreditOptimizationTips } from './CreditOptimizationTips';
 export type { CreditOptimizationTipsProps } from './CreditOptimizationTips';
