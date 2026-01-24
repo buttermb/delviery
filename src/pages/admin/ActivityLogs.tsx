@@ -4,6 +4,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, User, Activity } from 'lucide-react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 import { handleError } from '@/utils/errorHandling/handlers';
 
@@ -38,8 +39,12 @@ export default function ActivityLogs() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="text-center">Loading activity logs...</div>
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Activity Logs</h1>
+          <p className="text-muted-foreground">Track all system activities and user actions</p>
+        </div>
+        <EnhancedLoadingState variant="list" count={5} />
       </div>
     );
   }

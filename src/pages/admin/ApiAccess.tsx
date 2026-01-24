@@ -10,7 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Key, Plus, Copy, Trash2 } from 'lucide-react';
+import { Key, Plus, Copy, Trash2, Loader2 } from 'lucide-react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 export default function ApiAccess() {
   const { tenant } = useTenantAdminAuth();
@@ -75,8 +76,12 @@ export default function ApiAccess() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="text-center">Loading API keys...</div>
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">API Access</h1>
+          <p className="text-muted-foreground">Manage API keys and access tokens</p>
+        </div>
+        <EnhancedLoadingState variant="card" count={3} />
       </div>
     );
   }
@@ -176,7 +181,12 @@ export default function ApiAccess() {
               onClick={() => createKeyMutation.mutate(formData)}
               disabled={createKeyMutation.isPending}
             >
-              Create Key
+              {createKeyMutation.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4 mr-2" />
+              )}
+              {createKeyMutation.isPending ? 'Creating...' : 'Create Key'}
             </Button>
           </DialogFooter>
         </DialogContent>

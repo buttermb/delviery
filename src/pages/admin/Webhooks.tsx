@@ -11,8 +11,9 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Webhook, Plus, Edit, Trash2 } from 'lucide-react';
+import { Webhook, Plus, Edit, Trash2, Loader2 } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
 interface WebhookConfig {
@@ -206,8 +207,12 @@ export default function Webhooks() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="text-center">Loading webhooks...</div>
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Webhooks</h1>
+          <p className="text-muted-foreground">Manage webhook integrations</p>
+        </div>
+        <EnhancedLoadingState variant="card" count={3} />
       </div>
     );
   }
@@ -347,7 +352,10 @@ export default function Webhooks() {
                 type="submit"
                 disabled={createWebhookMutation.isPending || updateWebhookMutation.isPending}
               >
-                {editingWebhook ? 'Update' : 'Create'}
+                {(createWebhookMutation.isPending || updateWebhookMutation.isPending) && (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                )}
+                {createWebhookMutation.isPending ? 'Creating...' : updateWebhookMutation.isPending ? 'Updating...' : editingWebhook ? 'Update' : 'Create'}
               </Button>
             </DialogFooter>
           </form>

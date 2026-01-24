@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { History, Search, User, Clock, Shield } from 'lucide-react';
 
 import { handleError } from '@/utils/errorHandling/handlers';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 export default function AuditTrail() {
   const { tenant } = useTenantAdminAuth();
@@ -41,8 +42,12 @@ export default function AuditTrail() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="text-center">Loading audit trail...</div>
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Audit Trail</h1>
+          <p className="text-muted-foreground">Complete history of system changes and user actions</p>
+        </div>
+        <EnhancedLoadingState variant="table" count={8} />
       </div>
     );
   }

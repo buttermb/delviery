@@ -4,6 +4,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Users, TrendingUp, DollarSign, ShoppingCart } from 'lucide-react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
@@ -70,8 +71,12 @@ export default function CustomerAnalytics() {
 
   if (customersLoading || ordersLoading) {
     return (
-      <div className="p-6">
-        <div className="text-center">Loading analytics...</div>
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Customer Analytics</h1>
+          <p className="text-muted-foreground">Understand your customer base</p>
+        </div>
+        <EnhancedLoadingState variant="dashboard" />
       </div>
     );
   }

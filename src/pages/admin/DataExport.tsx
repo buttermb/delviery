@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { Download, Database, FileSpreadsheet } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { CreditCostBadge, CreditCostIndicator, useCreditConfirm, CreditConfirmDialog } from '@/components/credits';
 import { useCredits } from '@/hooks/useCredits';
@@ -22,7 +23,7 @@ export default function DataExport() {
   const [format, setFormat] = useState<string>('csv');
   const { isFreeTier, balance, performAction } = useCredits();
 
-  const { data: exportHistory } = useQuery({
+  const { data: exportHistory, isLoading: historyLoading } = useQuery({
     queryKey: ['data-export-history', tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
@@ -206,7 +207,19 @@ export default function DataExport() {
             <CardDescription>Recent export operations</CardDescription>
           </CardHeader>
           <CardContent>
-            {exportHistory && exportHistory.length > 0 ? (
+            {historyLoading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="space-y-1">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-3 w-32" />
+                    </div>
+                    <Skeleton className="h-5 w-12 rounded-full" />
+                  </div>
+                ))}
+              </div>
+            ) : exportHistory && exportHistory.length > 0 ? (
               <div className="space-y-2">
                 {exportHistory.map((exportItem: any) => (
                   <div key={exportItem.id} className="flex items-center justify-between p-3 border rounded-lg">

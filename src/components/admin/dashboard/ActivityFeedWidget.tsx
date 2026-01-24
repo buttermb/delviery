@@ -4,6 +4,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Activity, CheckCircle2, Package, DollarSign, User, Box } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
@@ -22,7 +23,7 @@ interface ActivityItem {
 export function ActivityFeedWidget() {
   const { tenant } = useTenantAdminAuth();
 
-  const { data: activities = [], refetch } = useQuery<ActivityItem[]>({
+  const { data: activities = [], isLoading, refetch } = useQuery<ActivityItem[]>({
     queryKey: ['activity-feed', tenant?.id],
     queryFn: async (): Promise<ActivityItem[]> => {
       if (!tenant?.id) return [];
@@ -149,7 +150,17 @@ export function ActivityFeedWidget() {
       </div>
 
       <div className="space-y-3">
-        {activities.length === 0 ? (
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-start gap-3 p-2">
+              <Skeleton className="h-4 w-4 mt-0.5 rounded-full" />
+              <div className="flex-1 space-y-1">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-1/3" />
+              </div>
+            </div>
+          ))
+        ) : activities.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No recent activity</p>
