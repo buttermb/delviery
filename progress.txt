@@ -2657,3 +2657,52 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create user_profiles Table Migration
+
+### What was done:
+
+1. **Created migration `supabase/migrations/20260124000000_create_user_profiles.sql`** with:
+   - `id` UUID primary key referencing `auth.users(id)` with `ON DELETE CASCADE`
+   - `tenant_id` UUID referencing `public.tenants(id)` with `ON DELETE CASCADE`
+   - `email` TEXT with UNIQUE and NOT NULL constraints
+   - `full_name` TEXT (optional)
+   - `avatar_url` TEXT (optional)
+   - `phone` TEXT (optional)
+   - `role` TEXT defaulting to `'customer'`
+   - `email_verified` BOOLEAN defaulting to `false`
+   - `phone_verified` BOOLEAN defaulting to `false`
+   - `last_login_at` TIMESTAMPTZ (nullable)
+   - `login_count` INTEGER defaulting to `0`
+   - `failed_login_attempts` INTEGER defaulting to `0`
+   - `locked_until` TIMESTAMPTZ (nullable)
+   - `created_at` TIMESTAMPTZ defaulting to `now()`
+   - `updated_at` TIMESTAMPTZ defaulting to `now()`
+
+2. **RLS enabled** with the following policies:
+   - **"Users can read own profile"** - SELECT where `id = auth.uid()`
+   - **"Tenant admins can view tenant profiles"** - SELECT for admins/owners within same tenant
+   - **"Users can update own profile"** - UPDATE where `id = auth.uid()`
+   - **"Users can insert own profile"** - INSERT where `id = auth.uid()`
+
+3. **Indexes** created for performance:
+   - `idx_user_profiles_tenant_id` on `tenant_id`
+   - `idx_user_profiles_email` on `email`
+   - `idx_user_profiles_role` on `role`
+
+4. **Auto-update trigger** on `updated_at` using existing `update_updated_at_column()` function
+
+### Acceptance Criteria Met:
+- [x] Table has all specified columns with correct types and defaults
+- [x] `id` is UUID primary key referencing `auth.users`
+- [x] `tenant_id` references `public.tenants`
+- [x] `email` is UNIQUE NOT NULL
+- [x] RLS is enabled
+- [x] Users can only read their own profile (via `id = auth.uid()`)
+- [x] Tenant admins can view profiles within their tenant
+- [x] Tenant isolation enforced via `tenant_id` filtering
+- [x] Timestamps use `TIMESTAMPTZ` (not bare `TIMESTAMP`)
+- [x] Proper indexes on foreign keys and filter columns
+
+### Files Changed:
+- `supabase/migrations/20260124000000_create_user_profiles.sql` (new)
