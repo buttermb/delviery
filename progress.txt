@@ -2657,3 +2657,46 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create ForgotPasswordPage.tsx with email input and client-side rate limiting
+
+### What was done:
+
+1. **Created `src/hooks/usePasswordReset.ts`** - Custom hook providing:
+   - `requestReset` mutation that calls the appropriate password reset utility based on user type (super_admin, tenant_admin, customer)
+   - `confirmReset` mutation that calls `resetPasswordWithToken` for the actual password change with token
+   - Uses TanStack Query `useMutation` for state management (isPending, isError, etc.)
+   - Logs errors via `logger` (no console.log)
+   - Named export only, strict TypeScript types
+
+2. **Created `src/pages/auth/ForgotPasswordPage.tsx`** - Full-page forgot password form:
+   - Email input with client-side validation (regex format check)
+   - Calls `usePasswordReset().requestReset` on submit
+   - **Security**: Always shows success message ("Check your email") regardless of whether the email exists in the system, preventing email enumeration attacks
+   - **Client-side rate limiting**: Max 3 requests per 60-second window, then 30-second cooldown with countdown timer displayed
+   - Rate limit state managed via `useRef` (timestamps array) so it persists across re-renders but not page reloads
+   - Success state shows email sent confirmation with option to try different email (also rate-limited)
+   - Link back to `/login` on both form and success views
+   - Accessible: aria-invalid, aria-describedby for errors, role="alert" for error messages
+   - Mobile-optimized: min-h-[44px] touch targets, inputMode="email", enterKeyHint="send", autoComplete="email"
+   - Uses shadcn/ui Card, Button, Input, Label components
+   - Uses lucide-react icons (Mail, ArrowLeft, CheckCircle2, Loader2)
+   - Named export, no default export
+   - No console.log, uses logger
+
+### Key Design Decisions:
+- Shows success immediately on submit (fire-and-forget pattern) to prevent timing attacks that could reveal email existence
+- Rate limiting is client-side only (server-side rate limiting should exist on the edge function)
+- Uses `useRef` for rate limit timestamps to avoid re-renders on every timestamp update
+- Cooldown countdown uses `setInterval` cleaned up properly
+
+### Files Created:
+- `src/hooks/usePasswordReset.ts`
+- `src/pages/auth/ForgotPasswordPage.tsx`
+
+### Verification:
+- [x] `npx tsc --noEmit --strict` passes with 0 errors
+- [x] No console.log in new code
+- [x] Named exports only
+- [x] Uses @/ import alias
+- [x] Uses logger from @/lib/logger
