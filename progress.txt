@@ -428,3 +428,50 @@ sub-components with shared state from useStorefrontBuilder hook.
 - `src/pages/admin/storefront/builder/BuilderCreateStoreDialog.tsx` (new)
 - `src/pages/admin/storefront/builder/index.ts` (new)
 - `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export alias)
+
+---
+
+## Task: Build useCustomerStats Hook and CustomerStatsCard Component
+
+### What was done:
+
+1. **Created `src/hooks/useCustomerStats.ts`** - Custom hook that:
+   - Accepts a `customerId` parameter (string | undefined)
+   - Queries the `unified_orders` table filtered by `tenant_id` and `customer_id`
+   - Only counts orders with status `completed` or `delivered`
+   - Calculates three metrics:
+     - `total_spent` - Sum of all qualifying order `total_amount` values
+     - `order_count` - Number of qualifying orders
+     - `avg_order_value` - Average order value (total_spent / order_count, or 0 if no orders)
+   - Uses `useTenantAdminAuth()` for tenant isolation
+   - Uses `queryKeys.customers.stats(customerId)` for cache management
+   - Enabled only when both `tenant.id` and `customerId` are available
+   - 60-second stale time for performance
+   - Proper error handling with `logger.error()`
+
+2. **Created `src/components/admin/customers/CustomerStatsCard.tsx`** - Component that:
+   - Accepts a `customerId` prop and renders three stat cards in a responsive grid
+   - Uses the `useCustomerStats` hook for data fetching
+   - Displays: Total Spent (DollarSign icon, green), Order Count (ShoppingCart icon, blue), Avg Order Value (TrendingUp icon, purple)
+   - Formats currency values using `Intl.NumberFormat` (USD)
+   - Shows loading skeletons while data is being fetched
+   - Shows graceful error state when data fails to load
+   - Uses shadcn/ui Card and Skeleton components
+   - Responsive layout: 1 column on mobile, 3 columns on desktop
+
+3. **Updated `src/lib/queryKeys.ts`**:
+   - Added `stats` key to the `customers` section: `stats: (customerId: string) => [...queryKeys.customers.detail(customerId), 'stats'] as const`
+
+### Acceptance Criteria Met:
+- [x] Hook calculates total_spent from completed/delivered orders
+- [x] Hook calculates order_count from completed/delivered orders
+- [x] Hook calculates avg_order_value (total_spent / order_count)
+- [x] Component displays all three metrics with proper formatting
+- [x] Tenant isolation via useTenantAdminAuth
+- [x] Loading and error states handled
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/hooks/useCustomerStats.ts` (new)
+- `src/components/admin/customers/CustomerStatsCard.tsx` (new)
+- `src/lib/queryKeys.ts` (added stats key to customers section)
