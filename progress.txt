@@ -1,3 +1,53 @@
+## Task: Update App.tsx Routes - Auth Page Protection & Role-Based Access
+
+### What was done:
+
+1. **Created `src/components/auth/PublicOnlyRoute.tsx`** - Route guard for auth pages that:
+   - Redirects already-authenticated users away from login/signup pages
+   - Supports three portal modes: `tenant-admin`, `super-admin`, `saas`
+   - For tenant-admin: redirects to `/:tenantSlug/admin/dashboard`
+   - For super-admin: redirects to `/super-admin/dashboard`
+   - For saas: checks both auth systems and redirects accordingly
+   - Shows `LoadingFallback` while auth state is resolving
+
+2. **Created `src/components/auth/RoleProtectedRoute.tsx`** - Role-based access control that:
+   - Restricts admin pages based on user role (owner, admin, manager, staff, viewer)
+   - Uses a role hierarchy (owner=100, admin=80, manager=60, staff=40, viewer=20)
+   - If user's role level >= minimum allowed role level, access is granted
+   - Redirects unauthorized users to dashboard with a logged warning
+   - Used inside `TenantAdminProtectedRoute` for fine-grained page access
+
+3. **Created `src/components/auth/TenantContextGuard.tsx`** - Context loading guard that:
+   - Ensures tenant context (admin + tenant data) is fully loaded before rendering
+   - Prevents flashing of unauthorized content during auth initialization
+   - Redirects to login if not authenticated after loading completes
+   - Redirects to correct tenant if URL slug doesn't match authenticated tenant
+   - Sits between `TenantAdminProtectedRoute` and page content
+
+4. **Updated `src/App.tsx`** with route protection:
+   - **Auth pages wrapped with `PublicOnlyRoute`**:
+     - `/signup` → `PublicOnlyRoute portal="saas"`
+     - `/saas/login` → `PublicOnlyRoute portal="saas"`
+     - `/super-admin/login` → `PublicOnlyRoute portal="super-admin"`
+     - `/:tenantSlug/admin/login` → `PublicOnlyRoute portal="tenant-admin"`
+   - **Admin layout wrapped with `TenantContextGuard`**:
+     - Added inside `TenantAdminProtectedRoute`, wrapping `SubscriptionGuard > AdminLayout`
+     - Ensures tenant context is fully loaded before any admin page renders
+   - **Role-based protection on sensitive admin routes**:
+     - `settings`, `settings-hub` → owner, admin only
+     - `staff-management`, `team-members` → owner, admin only
+     - `role-management` → owner, admin only
+     - `system-settings` → owner, admin only
+     - `developer-tools` → owner, admin only
+     - `api-access`, `webhooks` → owner, admin only
+     - `activity-logs`, `audit-trail` → owner, admin, manager
+
+### Build & Lint:
+- `npm run build` passes with zero errors
+- `npm run lint` passes with zero errors (only pre-existing warnings)
+
+---
+
 ## Task: Create Unified Admin Dashboard Hub with 5 Stat Cards
 
 ### What was done:

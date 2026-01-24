@@ -41,6 +41,9 @@ import { SmartRootRedirect } from "./components/SmartRootRedirect";
 import { setupGlobalErrorHandlers, handleMutationError } from "./utils/reactErrorHandler";
 import { FeatureProtectedRoute } from "./components/tenant-admin/FeatureProtectedRoute";
 import { SubscriptionGuard } from "./components/tenant-admin/SubscriptionGuard";
+import { PublicOnlyRoute } from "./components/auth/PublicOnlyRoute";
+import { RoleProtectedRoute } from "./components/auth/RoleProtectedRoute";
+import { TenantContextGuard } from "./components/auth/TenantContextGuard";
 import { runProductionHealthCheck } from "@/utils/productionHealthCheck";
 import { productionLogger } from "@/utils/productionLogger";
 import { toast } from "./hooks/use-toast";
@@ -621,13 +624,13 @@ const App = () => {
                                         <Route path="wishlist" element={<ShopAccountPage />} />
                                       </Route>
 
-                                      {/* Public Authentication */}
-                                      <Route path="/signup" element={<SignUpPage />} />
+                                      {/* Public Authentication - Redirect authenticated users */}
+                                      <Route path="/signup" element={<PublicOnlyRoute portal="saas"><SignUpPage /></PublicOnlyRoute>} />
                                       <Route path="/select-plan" element={<SelectPlanPage />} />
                                       {/* Handle encoded URLs with %3F - React Router doesn't match encoded chars */}
                                       <Route path="/select-plan%3Ftenant_id/*" element={<EncodedUrlRedirect />} />
                                       <Route path="/select-plan%3F/*" element={<EncodedUrlRedirect />} />
-                                      <Route path="/saas/login" element={<SaasLoginPage />} />
+                                      <Route path="/saas/login" element={<PublicOnlyRoute portal="saas"><SaasLoginPage /></PublicOnlyRoute>} />
                                       <Route path="/verify-email" element={<VerifyEmailPage />} />
                                       <Route path="/auth/confirm" element={<AuthConfirmPage />} />
 
@@ -649,7 +652,7 @@ const App = () => {
                                       )}
 
                                       {/* ==================== LEVEL 1: SUPER ADMIN (Platform) ==================== */}
-                                      <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />
+                                      <Route path="/super-admin/login" element={<PublicOnlyRoute portal="super-admin"><SuperAdminLoginPage /></PublicOnlyRoute>} />
                                       <Route path="/super-admin/reset/:token" element={<PasswordResetPage />} />
                                       <Route path="/super-admin/auth/callback" element={<SuperAdminAuthCallback />} />
                                       <Route path="/super-admin/auth/mfa-challenge" element={<MFAChallengePage portal="super-admin" />} />
@@ -704,7 +707,7 @@ const App = () => {
                                       </Route>
 
                                       {/* ==================== LEVEL 2: TENANT ADMIN (Business Owner) ==================== */}
-                                      <Route path="/:tenantSlug/admin/login" element={<TenantAdminLoginPage />} />
+                                      <Route path="/:tenantSlug/admin/login" element={<PublicOnlyRoute portal="tenant-admin"><TenantAdminLoginPage /></PublicOnlyRoute>} />
                                       <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
                                       <Route path="/:tenantSlug/admin/auth/callback" element={<TenantAdminAuthCallback />} />
                                       <Route path="/:tenantSlug/admin/auth/mfa-challenge" element={<MFAChallengePage portal="tenant-admin" />} />
@@ -741,9 +744,11 @@ const App = () => {
                                         element={
                                           <Suspense fallback={<SkeletonAdminLayout />}>
                                             <TenantAdminProtectedRoute>
-                                              <SubscriptionGuard>
-                                                <AdminLayout />
-                                              </SubscriptionGuard>
+                                              <TenantContextGuard>
+                                                <SubscriptionGuard>
+                                                  <AdminLayout />
+                                                </SubscriptionGuard>
+                                              </TenantContextGuard>
                                             </TenantAdminProtectedRoute>
                                           </Suspense>
                                         }
@@ -870,7 +875,7 @@ const App = () => {
                                         <Route path="credits/analytics" element={<CreditAnalyticsPage />} />
                                         <Route path="credits/success" element={<CreditPurchaseSuccessPage />} />
                                         <Route path="credits/cancelled" element={<CreditPurchaseCancelledPage />} />
-                                        <Route path="settings" element={<FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute>} />
+                                        <Route path="settings" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
 
                                         {/* Marketplace Routes (B2B) */}
                                         <Route path="marketplace/dashboard" element={<FeatureProtectedRoute featureId="marketplace"><MarketplaceDashboard /></FeatureProtectedRoute>} />
@@ -934,8 +939,8 @@ const App = () => {
 
 
                                         <Route path="live-orders" element={<Navigate to="orders?tab=live" replace />} />
-                                        <Route path="staff-management" element={<FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute>} />
-                                        <Route path="team-members" element={<FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute>} />
+                                        <Route path="staff-management" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute></RoleProtectedRoute>} />
+                                        <Route path="team-members" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute></RoleProtectedRoute>} />
                                         <Route path="advanced-inventory" element={<Navigate to="inventory-hub?tab=adjustments" replace />} />
                                         <Route path="fronted-inventory" element={<FeatureProtectedRoute featureId="fronted-inventory"><FrontedInventory /></FeatureProtectedRoute>} />
                                         <Route path="invoice-management" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
@@ -943,7 +948,7 @@ const App = () => {
                                         <Route path="delivery-hub" element={<Navigate to="fulfillment-hub" replace />} />
                                         <Route path="fulfillment-hub" element={<FeatureProtectedRoute featureId="delivery-management"><FulfillmentHubPage /></FeatureProtectedRoute>} />
                                         <Route path="finance-hub" element={<FeatureProtectedRoute featureId="financial-center"><FinanceHubPage /></FeatureProtectedRoute>} />
-                                        <Route path="settings-hub" element={<FeatureProtectedRoute featureId="settings"><SettingsHubPage /></FeatureProtectedRoute>} />
+                                        <Route path="settings-hub" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="settings"><SettingsHubPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
                                         <Route path="integrations-hub" element={<Navigate to="settings-hub?tab=integrations" replace />} />
                                         <Route path="storefront-hub" element={<FeatureProtectedRoute featureId="storefront"><StorefrontHubPage /></FeatureProtectedRoute>} />
                                         <Route path="operations-hub" element={<FeatureProtectedRoute featureId="suppliers"><OperationsHubPage /></FeatureProtectedRoute>} />
@@ -1006,7 +1011,7 @@ const App = () => {
 
                                         {/* Additional routes that don't need FeatureProtectedRoute or need different paths */}
                                         <Route path="risk-management" element={<FeatureProtectedRoute featureId="risk-management"><RiskFactorManagement /></FeatureProtectedRoute>} />
-                                        <Route path="system-settings" element={<FeatureProtectedRoute featureId="system-settings"><SystemSettings /></FeatureProtectedRoute>} />
+                                        <Route path="system-settings" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="system-settings"><SystemSettings /></FeatureProtectedRoute></RoleProtectedRoute>} />
                                         <Route path="vendor-management" element={<FeatureProtectedRoute featureId="vendor-management"><VendorManagement /></FeatureProtectedRoute>} />
 
                                         {/* Coming Soon Pages - Professional & Enterprise Features */}
@@ -1023,8 +1028,8 @@ const App = () => {
                                         <Route path="pos-analytics" element={<FeatureProtectedRoute featureId="pos-analytics"><POSAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="pos-shifts" element={<FeatureProtectedRoute featureId="pos-shifts"><POSShiftsPage /></FeatureProtectedRoute>} />
                                         <Route path="z-reports" element={<FeatureProtectedRoute featureId="z-reports"><ZReportPage /></FeatureProtectedRoute>} />
-                                        <Route path="role-management" element={<FeatureProtectedRoute featureId="role-management"><RoleManagement /></FeatureProtectedRoute>} />
-                                        <Route path="activity-logs" element={<FeatureProtectedRoute featureId="activity-logs"><ActivityLogsPage /></FeatureProtectedRoute>} />
+                                        <Route path="role-management" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="role-management"><RoleManagement /></FeatureProtectedRoute></RoleProtectedRoute>} />
+                                        <Route path="activity-logs" element={<RoleProtectedRoute allowedRoles={['owner', 'admin', 'manager']}><FeatureProtectedRoute featureId="activity-logs"><ActivityLogsPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
 
                                         {/* GitHub Repos Integration Routes */}
                                         <Route path="analytics-dashboard" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />
@@ -1038,13 +1043,13 @@ const App = () => {
                                         <Route path="permissions" element={<Navigate to="role-management" replace />} />
                                         <Route path="bulk-operations" element={<FeatureProtectedRoute featureId="bulk-operations"><BulkOperationsPage /></FeatureProtectedRoute>} />
                                         <Route path="operations/receiving" element={<FeatureProtectedRoute featureId="operations"><ReceivingPage /></FeatureProtectedRoute>} />
-                                        <Route path="developer-tools" element={<DeveloperTools />} />
+                                        <Route path="developer-tools" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><DeveloperTools /></RoleProtectedRoute>} />
                                         <Route path="button-tester" element={<ButtonTester />} />
-                                        <Route path="api-access" element={<FeatureProtectedRoute featureId="api-access"><APIAccessPage /></FeatureProtectedRoute>} />
-                                        <Route path="webhooks" element={<FeatureProtectedRoute featureId="webhooks"><WebhooksPage /></FeatureProtectedRoute>} />
+                                        <Route path="api-access" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="api-access"><APIAccessPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
+                                        <Route path="webhooks" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="webhooks"><WebhooksPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
                                         <Route path="custom-integrations" element={<FeatureProtectedRoute featureId="custom-integrations"><CustomIntegrationsPage /></FeatureProtectedRoute>} />
                                         <Route path="data-export" element={<FeatureProtectedRoute featureId="data-export"><DataExportPage /></FeatureProtectedRoute>} />
-                                        <Route path="audit-trail" element={<FeatureProtectedRoute featureId="audit-trail"><AuditTrailPage /></FeatureProtectedRoute>} />
+                                        <Route path="audit-trail" element={<RoleProtectedRoute allowedRoles={['owner', 'admin', 'manager']}><FeatureProtectedRoute featureId="audit-trail"><AuditTrailPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
                                         <Route path="compliance" element={<FeatureProtectedRoute featureId="compliance"><CompliancePage /></FeatureProtectedRoute>} />
                                         <Route path="white-label" element={<FeatureProtectedRoute featureId="white-label"><WhiteLabelPage /></FeatureProtectedRoute>} />
                                         <Route path="custom-domain" element={<FeatureProtectedRoute featureId="custom-domain"><CustomDomainPage /></FeatureProtectedRoute>} />
