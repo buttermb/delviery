@@ -2657,3 +2657,52 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create credit_expiration_rules table migration with pg_cron job
+
+### What was done:
+
+1. **Created migration `20260124000001_credit_expiration_rules.sql`** containing:
+
+   **Table: `credit_expiration_rules`**
+   - `id` UUID primary key (gen_random_uuid)
+   - `tenant_id` UUID NOT NULL references tenants(id) ON DELETE CASCADE
+   - `name` TEXT NOT NULL - human-readable rule name
+   - `days_until_expiration` INTEGER NOT NULL CHECK (> 0)
+   - `applies_to` TEXT NOT NULL CHECK IN ('purchased', 'bonus', 'promotional', 'subscription')
+   - `warning_days_before` INTEGER[] DEFAULT ARRAY[30, 7, 1]
+   - `is_active` BOOLEAN DEFAULT true
+   - `created_at` TIMESTAMPTZ DEFAULT now()
+
+   **Indexes:**
+   - `idx_credit_expiration_rules_tenant_id` on tenant_id
+   - `idx_credit_expiration_rules_applies_to` on applies_to
+   - `idx_credit_expiration_rules_active` partial index on is_active WHERE true
+
+   **RLS Policies (tenant-isolated):**
+   - `credit_expiration_rules_select_tenant` - SELECT own rules
+   - `credit_expiration_rules_insert_tenant` - INSERT own rules
+   - `credit_expiration_rules_update_tenant` - UPDATE own rules
+   - `credit_expiration_rules_delete_tenant` - DELETE own rules
+   - `credit_expiration_rules_service_role` - Full access for service role
+
+2. **Created `expire_credits_nightly()` function** (SECURITY DEFINER, SET search_path = public):
+   - Iterates all active expiration rules
+   - Maps `applies_to` types to `credit_grants.grant_type` values
+   - Finds unexpired grants older than `days_until_expiration`
+   - Uses `FOR UPDATE SKIP LOCKED` to prevent race conditions
+   - Marks grants as used with expiration note
+   - Deducts expired amount from tenant balance (capped at 0)
+   - Records expiration in `credit_transactions` with metadata
+   - Returns JSONB summary of total credits/grants expired
+
+3. **Scheduled pg_cron job:**
+   - Job name: `expire-credits-nightly`
+   - Schedule: `0 2 * * *` (2:00 AM UTC daily)
+   - Calls `SELECT public.expire_credits_nightly()`
+   - Idempotent: unschedules existing job before creating
+
+### Files Changed:
+- `supabase/migrations/20260124000001_credit_expiration_rules.sql` (new)
