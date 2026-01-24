@@ -32,6 +32,8 @@ import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeFetch } from '@/utils/safeFetch';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { supabase } from '@/integrations/supabase/client';
+import { usePasswordBreachCheck } from '@/hooks/usePasswordBreachCheck';
+import { PasswordBreachWarning } from '@/components/auth/PasswordBreachWarning';
 
 interface Session {
   id: string;
@@ -99,6 +101,9 @@ export default function SecuritySettings() {
     confirmPassword: '',
   });
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+
+  // Password breach checking
+  const { checking: breachChecking, result: breachResult, suggestPassword } = usePasswordBreachCheck(passwordData.newPassword);
 
   // Get current session token for comparison
   const currentToken = localStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
@@ -211,6 +216,15 @@ export default function SecuritySettings() {
       return;
     }
 
+    if (breachResult?.blocked) {
+      toast({
+        title: 'Password not allowed',
+        description: 'This password has been found in too many data breaches. Please choose a different password.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -317,6 +331,15 @@ export default function SecuritySettings() {
                     <span className="text-muted-foreground">Min 8 characters</span>
                   </div>
                 </div>
+              )}
+              {/* Password Breach Check */}
+              {passwordData.newPassword.length >= 8 && (
+                <PasswordBreachWarning
+                  checking={breachChecking}
+                  result={breachResult}
+                  suggestPassword={suggestPassword}
+                  onGeneratePassword={(pw) => setPasswordData({ ...passwordData, newPassword: pw, confirmPassword: pw })}
+                />
               )}
             </div>
 

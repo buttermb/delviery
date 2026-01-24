@@ -9,6 +9,8 @@ import { toast } from "@/hooks/use-toast";
 import { verifyResetToken, resetPasswordWithToken } from "@/utils/passwordReset";
 import { handleError } from "@/utils/errorHandling/handlers";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { usePasswordBreachCheck } from "@/hooks/usePasswordBreachCheck";
+import { PasswordBreachWarning } from "@/components/auth/PasswordBreachWarning";
 
 export default function PasswordResetPage() {
   const { token } = useParams<{ token: string }>();
@@ -22,6 +24,9 @@ export default function PasswordResetPage() {
   const [userType, setUserType] = useState<"super_admin" | "tenant_admin" | "customer">("tenant_admin");
   const [success, setSuccess] = useState(false);
   const { validateToken } = useCsrfToken();
+
+  // Password breach checking
+  const { checking: breachChecking, result: breachResult, suggestPassword } = usePasswordBreachCheck(password);
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -99,6 +104,15 @@ export default function PasswordResetPage() {
         variant: "destructive",
         title: "Password Too Short",
         description: "Password must be at least 8 characters",
+      });
+      return;
+    }
+
+    if (breachResult?.blocked) {
+      toast({
+        variant: "destructive",
+        title: "Password not allowed",
+        description: "This password has been found in too many data breaches. Please choose a different password.",
       });
       return;
     }
@@ -289,6 +303,17 @@ export default function PasswordResetPage() {
               <p className={`text-xs ${theme.textLight}`}>
                 Must be at least 8 characters
               </p>
+              {password.length >= 8 && (
+                <PasswordBreachWarning
+                  checking={breachChecking}
+                  result={breachResult}
+                  suggestPassword={suggestPassword}
+                  onGeneratePassword={(pw) => {
+                    setPassword(pw);
+                    setConfirmPassword(pw);
+                  }}
+                />
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className={theme.text}>Confirm Password</Label>
