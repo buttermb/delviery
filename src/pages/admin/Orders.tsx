@@ -32,6 +32,7 @@ import CopyButton from "@/components/CopyButton";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useExport } from "@/hooks/useExport";
+import { ExportOptionsDialog, type ExportField } from "@/components/admin/ExportOptionsDialog";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { formatSmartDate } from "@/lib/utils/formatDate";
@@ -45,6 +46,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+
+interface OrderItemData {
+  id: string;
+  product_name: string;
+  quantity: number;
+  price: number;
+  product_id: string;
+}
 
 interface Order {
   id: string;
@@ -61,7 +70,7 @@ interface Order {
     email: string | null;
     phone: string | null;
   };
-  order_items?: unknown[];
+  order_items?: OrderItemData[];
 }
 
 export default function Orders() {
@@ -115,6 +124,7 @@ export default function Orders() {
     open: boolean;
     targetStatus: string;
   }>({ open: false, targetStatus: '' });
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   // Bulk status update hook
   const bulkStatusUpdate = useOrderBulkStatusUpdate({
@@ -341,8 +351,67 @@ export default function Orders() {
     setDeleteConfirmation({ ...deleteConfirmation, open: false });
   };
 
-  const handleExport = () => {
-    exportCSV(filteredOrders, { filename: `orders-export-${new Date().toISOString().split('T')[0]}.csv` });
+  const orderExportFields: ExportField[] = [
+    {
+      value: 'customer_name',
+      label: 'Customer Name',
+      description: 'Include the customer full name for each order',
+      recommended: true,
+    },
+    {
+      value: 'customer_email',
+      label: 'Customer Email',
+      description: 'Include the customer email address',
+      recommended: true,
+    },
+    {
+      value: 'line_items',
+      label: 'Line Items',
+      description: 'Include product names, quantities, and prices for each order item',
+    },
+  ];
+
+  const handleExportWithOptions = (selectedFields: string[]) => {
+    const includeCustomerName = selectedFields.includes('customer_name');
+    const includeCustomerEmail = selectedFields.includes('customer_email');
+    const includeLineItems = selectedFields.includes('line_items');
+
+    if (includeLineItems) {
+      // Flatten: one row per line item
+      const flatRows = filteredOrders.flatMap(order => {
+        const items = order.order_items && order.order_items.length > 0
+          ? order.order_items
+          : [{ product_name: '', quantity: 0, price: 0, id: '', product_id: '' }];
+
+        return items.map(item => ({
+          order_number: order.order_number || order.id.slice(0, 8),
+          status: order.status,
+          total_amount: order.total_amount,
+          delivery_method: order.delivery_method || '',
+          created_at: order.created_at,
+          ...(includeCustomerName && { customer_name: order.user?.full_name || '' }),
+          ...(includeCustomerEmail && { customer_email: order.user?.email || '' }),
+          item_product_name: item.product_name || '',
+          item_quantity: item.quantity || 0,
+          item_price: item.price || 0,
+        }));
+      });
+      exportCSV(flatRows, { filename: `orders-export-${new Date().toISOString().split('T')[0]}.csv` });
+    } else {
+      // Standard: one row per order
+      const rows = filteredOrders.map(order => ({
+        order_number: order.order_number || order.id.slice(0, 8),
+        status: order.status,
+        total_amount: order.total_amount,
+        delivery_method: order.delivery_method || '',
+        created_at: order.created_at,
+        ...(includeCustomerName && { customer_name: order.user?.full_name || '' }),
+        ...(includeCustomerEmail && { customer_email: order.user?.email || '' }),
+      }));
+      exportCSV(rows, { filename: `orders-export-${new Date().toISOString().split('T')[0]}.csv` });
+    }
+
+    setExportDialogOpen(false);
   };
 
   const handlePrintOrder = (order: Order) => {
@@ -616,7 +685,7 @@ export default function Orders() {
               <Button
                 variant="outline"
                 className="min-h-[48px] touch-manipulation"
-                onClick={handleExport}
+                onClick={() => setExportDialogOpen(true)}
                 disabled={filteredOrders.length === 0}
               >
                 <Download className="mr-2 h-4 w-4" />
@@ -857,6 +926,16 @@ export default function Orders() {
         onConfirm={handleConfirmDelete}
         itemName={deleteConfirmation.type === 'bulk' ? `${selectedOrders.length} orders` : 'this order'}
         description="This action cannot be undone."
+      />
+
+      <ExportOptionsDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        onExport={handleExportWithOptions}
+        fields={orderExportFields}
+        title="Export Orders"
+        description="Choose which related data to include in the CSV export."
+        itemCount={filteredOrders.length}
       />
 
       <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
