@@ -13,6 +13,8 @@ import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { RateLimitWarning } from "@/components/auth/RateLimitWarning";
+import { useAuthRateLimit } from "@/hooks/useAuthRateLimit";
 import { useAuth } from "@/contexts/AuthContext";
 
 
@@ -78,9 +80,16 @@ export default function CustomerLoginPage() {
   }, [tenantSlug]);
 
   const [isMagicLinkMode, setIsMagicLinkMode] = useState(false);
+  const { isLocked, remainingSeconds, recordAttempt, resetOnSuccess } = useAuthRateLimit({
+    storageKey: 'floraiq_customer_login_rate_limit',
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isLocked) {
+      return;
+    }
 
     if (!tenantSlug) {
       toast({
@@ -126,6 +135,8 @@ export default function CustomerLoginPage() {
         // Standard Password Login
         await login(email, password, tenantSlug);
 
+        resetOnSuccess();
+
         toast({
           title: "Welcome!",
           description: `Logged in successfully`,
@@ -147,6 +158,8 @@ export default function CustomerLoginPage() {
         setLoading(false);
         return;
       }
+
+      recordAttempt();
 
       toast({
         variant: "destructive",
@@ -211,6 +224,8 @@ export default function CustomerLoginPage() {
         {/* Card with better contrast */}
         <div className="bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
+            <RateLimitWarning remainingSeconds={remainingSeconds} variant="dark" />
+
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium text-slate-200">
                 Email Address
@@ -235,7 +250,7 @@ export default function CustomerLoginPage() {
                 <Button
                   type="submit"
                   className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-transform duration-300 hover:scale-[1.02] rounded-lg"
-                  disabled={loading}
+                  disabled={loading || isLocked}
                 >
                   {loading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -278,7 +293,7 @@ export default function CustomerLoginPage() {
                 <Button
                   type="submit"
                   className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-transform duration-300 hover:scale-[1.02] rounded-lg"
-                  disabled={loading}
+                  disabled={loading || isLocked}
                 >
                   {loading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />

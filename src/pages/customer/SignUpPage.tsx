@@ -10,6 +10,8 @@ import { ShoppingBag, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
+import { RateLimitWarning } from "@/components/auth/RateLimitWarning";
+import { useAuthRateLimit } from "@/hooks/useAuthRateLimit";
 import { Tenant } from "@/types/tenant-extended";
 
 export default function CustomerSignUpPage() {
@@ -35,6 +37,9 @@ export default function CustomerSignUpPage() {
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+  const { isLocked, remainingSeconds, recordAttempt, resetOnSuccess } = useAuthRateLimit({
+    storageKey: 'floraiq_customer_signup_rate_limit',
+  });
 
   useEffect(() => {
     const fetchTenant = async () => {
@@ -59,6 +64,10 @@ export default function CustomerSignUpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isLocked) {
+      return;
+    }
 
     if (!tenantSlug) {
       toast({
@@ -115,6 +124,8 @@ export default function CustomerSignUpPage() {
 
       const result = await response.json();
 
+      resetOnSuccess();
+
       toast({
         title: "Account created!",
         description: result.message || "Please check your email to verify your account",
@@ -123,6 +134,7 @@ export default function CustomerSignUpPage() {
       // Redirect to verification page
       navigate(`/${tenantSlug}/customer/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch (error: unknown) {
+      recordAttempt();
       logger.error("Customer signup error", error, { component: "CustomerSignUpPage" });
       toast({
         variant: "destructive",
@@ -206,6 +218,8 @@ export default function CustomerSignUpPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
+            <RateLimitWarning remainingSeconds={remainingSeconds} variant="dark" />
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName" className="text-sm font-medium text-slate-200">
@@ -331,7 +345,7 @@ export default function CustomerSignUpPage() {
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || isLocked}
               className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-transform duration-300 hover:scale-[1.02] rounded-lg"
             >
               {loading ? (

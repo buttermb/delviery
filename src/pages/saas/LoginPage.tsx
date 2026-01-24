@@ -30,6 +30,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowRight, CheckCircle2, Lock, Mail, WifiOff, AlertCircle, Eye, EyeOff, ArrowLeft, Wand2, Flower2, Leaf, Star, ShieldCheck } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { RateLimitWarning } from '@/components/auth/RateLimitWarning';
+import { useAuthRateLimit } from '@/hooks/useAuthRateLimit';
 import ThemeToggle from '@/components/ThemeToggle';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -53,6 +55,9 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [searchParams] = useSearchParams();
   const signupSuccess = searchParams.get('signup') === 'success';
+  const { isLocked, remainingSeconds, recordAttempt, resetOnSuccess } = useAuthRateLimit({
+    storageKey: 'floraiq_saas_login_rate_limit',
+  });
 
   // Monitor connection status
   useEffect(() => {
@@ -87,6 +92,10 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
+    if (isLocked) {
+      return;
+    }
+
     if (isOffline()) {
       toast({ title: 'No Internet Connection', description: 'Please check your connection.', variant: 'destructive' });
       return;
@@ -212,6 +221,7 @@ export default function LoginPage() {
       }
 
       authFlowLogger.completeFlow(flowId, { tenantId: authResponse.tenant?.id });
+      resetOnSuccess();
 
       toast({
         title: 'Welcome back!',
@@ -224,6 +234,7 @@ export default function LoginPage() {
       }, 500);
 
     } catch (error: any) {
+      recordAttempt();
       logger.error('Login error', error);
       authFlowLogger.failFlow(flowId, error, ErrorCategory.AUTH);
       toast({
@@ -284,6 +295,8 @@ export default function LoginPage() {
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              <RateLimitWarning remainingSeconds={remainingSeconds} variant="light" className="mb-4" />
 
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -349,7 +362,7 @@ export default function LoginPage() {
                   <Button
                     type="submit"
                     className="w-full h-12 text-base font-medium bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 mt-2"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isLocked}
                   >
                     {isSubmitting ? (
                       <span className="flex items-center gap-2">
