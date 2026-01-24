@@ -428,3 +428,77 @@ sub-components with shared state from useStorefrontBuilder hook.
 - `src/pages/admin/storefront/builder/BuilderCreateStoreDialog.tsx` (new)
 - `src/pages/admin/storefront/builder/index.ts` (new)
 - `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export alias)
+
+---
+
+## Task: Build StorefrontSettings Page for Customizing Logo, Colors, Banner, Featured Products with Live Preview
+
+### What was done:
+
+1. **Created `src/components/admin/storefront/StorefrontSettingsLivePreview.tsx`** - Live preview component that:
+   - Shows real-time visual preview of the storefront as settings change
+   - Renders simulated browser chrome, navigation bar, hero/banner, and featured products grid
+   - Supports three device modes: Desktop, Tablet, Mobile (responsive preview)
+   - Reflects theme changes (Standard vs Luxury) with appropriate dark/light styling
+   - Shows actual logo/banner images when URLs are provided
+   - Displays color swatches for primary/secondary/accent colors
+   - Shows featured product cards with real product data (name, price, image)
+   - Placeholder grid when no featured products are selected
+
+2. **Created `src/components/admin/storefront/FeaturedProductsManager.tsx`** - Featured product selector:
+   - Fetches all in-stock products for the tenant from the database
+   - Search/filter products by name or category
+   - Checkbox-based selection with visual feedback (star icons for selected)
+   - Drag-handle-style numbered list showing selection order
+   - Selected products shown in a highlighted section with quick-remove buttons
+   - Configurable maximum featured count (default 8)
+   - Clear All button for batch removal
+   - Empty state and max-reached warning messages
+
+3. **Enhanced `src/pages/admin/storefront/StorefrontSettings.tsx`**:
+   - Added split-panel layout: settings on left, sticky live preview on right (320px)
+   - Toggle button to show/hide preview panel (PanelRightClose/PanelRightOpen icons)
+   - Added "Featured" tab between Branding and Delivery tabs (10 tabs total)
+   - Featured tab integrates FeaturedProductsManager component
+   - Added Favicon URL field to Branding tab with 32x32 preview
+   - Preview updates in real-time as any branding setting changes (colors, logo, banner, theme, etc.)
+   - Featured products query fetches product details for preview display
+   - Memoized preview settings to prevent unnecessary re-renders
+   - Widened container from max-w-5xl to max-w-7xl to accommodate preview panel
+   - Save mutation includes `featured_product_ids` array
+   - Cast supabase queries to handle the new `featured_product_ids` column (not yet in generated types)
+
+4. **Created migration `supabase/migrations/20260123000001_add_featured_product_ids_to_marketplace_stores.sql`**:
+   - Adds `featured_product_ids TEXT[] DEFAULT '{}'` column to `marketplace_stores` table
+   - Stores ordered array of product IDs for featured display on storefront
+
+### Key Features:
+- **Live Preview**: Real-time visual representation updates as settings change
+- **Device Modes**: Desktop/Tablet/Mobile responsive preview sizing
+- **Theme-Aware**: Preview correctly renders Standard (light) and Luxury (dark) themes
+- **Featured Products**: Select up to 8 products to feature on homepage with ordered display
+- **Favicon Support**: Added favicon URL input with inline 32x32 preview
+
+### Acceptance Criteria Met:
+- [x] Logo URL field with preview in branding settings
+- [x] Color pickers for primary/secondary/accent colors with live preview
+- [x] Banner URL field with image preview in branding settings
+- [x] Favicon URL field with preview
+- [x] Featured products selection and management tab
+- [x] Live preview panel showing real-time changes
+- [x] Responsive device mode switching in preview
+- [x] Theme (Standard/Luxury) correctly reflected in preview
+- [x] Featured products shown in preview with actual product data
+- [x] Save includes all new settings (featured_product_ids)
+- [x] Database migration for featured_product_ids column
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/components/admin/storefront/StorefrontSettingsLivePreview.tsx` (new)
+- `src/components/admin/storefront/FeaturedProductsManager.tsx` (new)
+- `src/pages/admin/storefront/StorefrontSettings.tsx` (enhanced - live preview, featured products tab, favicon)
+- `supabase/migrations/20260123000001_add_featured_product_ids_to_marketplace_stores.sql` (new)
+
+### Build Status:
+- `npm run build` passes with no errors
+- `npx tsc --noEmit --skipLibCheck` passes with no errors
