@@ -3109,3 +3109,43 @@ Created migration `supabase/migrations/20260124000001_create_password_reset_toke
 
 ### Files Changed:
 - `supabase/migrations/20260124000001_create_credit_promotions.sql` (new file)
+
+---
+
+## Task: Create handle_new_user Database Function
+
+### What was done:
+
+1. **Created migration `supabase/migrations/20260124100000_create_handle_new_user_function.sql`**:
+   - `handle_new_user()` trigger function with `SECURITY DEFINER` and `SET search_path = public`
+   - Fires on `AFTER INSERT` on `auth.users` table
+   - Creates `user_profiles` row with id, email, full_name, role defaults, and verification flags
+   - Creates `credits` row with zero balance and all lifetime counters at 0
+   - Logs `signup_completed` event to `auth_audit_log` with email, provider, and name metadata
+   - Sends welcome email via `send-welcome-email` edge function using `pg_net` async HTTP (non-blocking)
+   - Uses `ON CONFLICT DO NOTHING` for idempotency (safe for replays)
+   - Welcome email failure is caught and silenced (never blocks user creation)
+   - Resolves `tenant_id` from `tenant_users` table (populated by existing `handle_new_user_tenant_creation` trigger)
+
+2. **Created edge function `supabase/functions/send-welcome-email/index.ts`**:
+   - Validates input with Zod schema (user_id, email, full_name, tenant_id)
+   - Resolves tenant branding (business_name, slug) from database
+   - Generates HTML + text welcome email with dashboard link
+   - Sends via Klaviyo integration (if configured) or logs for development
+   - CORS headers handled for preflight requests
+   - Always returns success (welcome email is non-critical)
+   - Imports from `_shared/deps.ts` per project conventions
+
+### Technical Details:
+- Trigger name: `on_auth_user_created_handle_new_user`
+- Fires after `handle_new_user_tenant_creation` (alphabetical trigger ordering)
+- Uses `current_setting('app.settings.supabase_url', true)` for pg_net URL resolution
+- Edge function follows same pattern as `send-invitation-email`
+- `GRANT EXECUTE ON FUNCTION public.handle_new_user() TO postgres`
+
+### Files Created:
+- `supabase/migrations/20260124100000_create_handle_new_user_function.sql`
+- `supabase/functions/send-welcome-email/index.ts`
+
+### Build Verification:
+- [x] `npm run build` - PASSES (0 TypeScript errors)
