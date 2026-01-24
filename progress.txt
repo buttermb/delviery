@@ -5869,3 +5869,48 @@ Created `src/pages/credits/CheckoutPage.tsx` - a protected page for purchasing c
 ### Files Changed:
 - `src/components/credits/CreditBalanceCard.tsx` (new)
 - `src/components/credits/index.ts` (added exports)
+
+## Task: Create CreditPackageCard.tsx Component
+
+### What was done:
+
+1. **Created `src/components/credits/CreditPackageCard.tsx`** - Standalone card component for displaying a single credit package with:
+   - **Credit amount display** with bonus credits highlighted in emerald green ("+X bonus")
+   - **Price display** with calculated per-credit cost shown below
+   - **Savings badge** showing percentage savings relative to a base price (for bulk discount packages)
+   - **Featured badges** - "POPULAR" (with TrendingUp icon) or "BEST VALUE" (with Sparkles icon, emerald styling)
+   - **Select button** with loading state (spinner + "Processing..."), disabled state, and contextual label
+   - **Quantity selector** (optional) with +/- buttons, min/max bounds, and updated total price in button text
+   - **Disabled state** with reduced opacity, pointer-events-none, and customizable reason text shown in button and title tooltip
+   - Uses existing `getPricePerCredit` from `@/lib/credits/creditCosts`
+   - Uses shadcn/ui Card, Badge, Button components
+   - Uses lucide-react icons (Coins, Loader2, Minus, Plus, Sparkles, TrendingUp)
+   - Named export only, TypeScript strict (no `any` types)
+   - Fully typed props interface exported as `CreditPackageCardProps`
+
+2. **Updated `src/components/credits/index.ts`** - Added export for `CreditPackageCard` and `CreditPackageCardProps`
+
+### Props Interface:
+- `id`, `name`, `credits`, `priceCents` - core package data
+- `bonusCredits` - optional bonus credits highlighted separately
+- `badge` - badge text (e.g., "POPULAR", "BEST VALUE")
+- `description` - package description text
+- `isFeatured` - applies highlighted border/ring styling
+- `onSelect(id, quantity)` - callback when package is selected
+- `isLoading` - shows loading spinner in button
+- `isDisabled` / `disabledReason` - disabled state with explanation
+- `showQuantitySelector` - enables +/- quantity controls
+- `maxQuantity` / `minQuantity` - bounds for quantity selector
+- `basePricePerCredit` - reference price for savings % calculation
+
+### Verification Results:
+- [x] TypeScript compiles with zero errors (`npx tsc --noEmit --skipLibCheck`)
+- [x] ESLint passes with zero errors/warnings on the new file
+- [x] Named export only (no default export)
+- [x] No `console.log` usage
+- [x] No `any` types
+- [x] Uses `@/` import alias throughout
+
+### Files Changed:
+- `src/components/credits/CreditPackageCard.tsx` (new)
+- `src/components/credits/index.ts` (added export)

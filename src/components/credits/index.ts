@@ -90,6 +90,9 @@ export type { CreditAlertBannerProps } from './CreditAlertBanner';
 export { CreditBalanceCard } from './CreditBalanceCard';
 export type { CreditBalanceCardProps } from './CreditBalanceCard';
 
+export { CreditPackageCard } from './CreditPackageCard';
+export type { CreditPackageCardProps } from './CreditPackageCard';
+
 // Re-export hook from hooks directory
 export { useCreditAlert } from '@/hooks/useCreditAlert';
 export type { UseCreditAlertReturn } from '@/hooks/useCreditAlert';
