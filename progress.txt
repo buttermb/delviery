@@ -368,6 +368,62 @@
 
 ---
 
+## Task: Test Storefront Admin Sync - Product Update Flow
+
+### What was done:
+
+Created comprehensive test suite `src/lib/marketplace/__tests__/storefrontAdminSync.test.ts` (18 tests) that verifies the full admin-to-storefront sync flow:
+
+1. **Admin product update triggers sync** (3 tests):
+   - Admin updates product and syncs to marketplace via `sync_product_to_marketplace` RPC
+   - TanStack Query cache invalidation fires for storefront query keys after sync
+   - Storefront refetches products and receives updated data
+
+2. **Sync with price and display name overrides** (3 tests):
+   - Custom display price override (different from retail_price)
+   - Custom display name override (different from admin product name)
+   - Overridden values reflected in storefront cache after sync
+
+3. **Query cache consistency across storefront pages** (3 tests):
+   - Both product list (`shop-products`) and detail (`shop-product`) queries invalidated
+   - Product detail page shows updated data after sync
+   - Multiple products synced in sequence all reflect correctly
+
+4. **Error handling during sync** (3 tests):
+   - Storefront cache remains unchanged when sync RPC fails (no invalidation)
+   - Application-level failure (success=false) preserves storefront cache
+   - Network error during refetch leaves stale cache as fallback (with gcTime: Infinity)
+
+5. **Sync status tracking** (3 tests):
+   - `products-sync` query reflects synced status after successful sync
+   - `products-sync` and `marketplace-listings` queries invalidated after sync
+
+6. **End-to-end sync flow** (3 tests):
+   - Full flow: admin update → sync RPC → cache invalidation → storefront refetch → verify updated data
+   - Product visibility toggle from admin propagates to storefront (hidden product disappears)
+   - Stock depletion sync (in_stock toggled to false) reflected in storefront
+
+### Test Architecture:
+- Uses Vitest with mocked Supabase client (chainable query builder pattern)
+- TanStack Query's `QueryClient` used directly to test cache invalidation behavior
+- Two QueryClient configurations: `gcTime: 0` for standard tests, `gcTime: Infinity` for cache persistence tests
+- Tests mirror the actual ProductSyncPage.tsx onSettled callback behavior
+
+### Acceptance Criteria Met:
+- [x] Admin product update is verified to trigger sync to marketplace
+- [x] Storefront query cache is invalidated after successful sync
+- [x] Updated product data is reflected in storefront after refetch
+- [x] Price and display name overrides propagate correctly
+- [x] Multiple storefront query keys (list, detail, related) are all invalidated
+- [x] Error cases preserve storefront cache (no false invalidation)
+- [x] End-to-end flow verified: admin update → sync → storefront reflects instantly
+- [x] All 18 tests pass
+
+### Files Changed:
+- `src/lib/marketplace/__tests__/storefrontAdminSync.test.ts` (new - 18 tests)
+
+---
+
 ## Task: Refactor StorefrontBuilder for Modularity
 
 ### What was done:
