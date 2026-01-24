@@ -2324,3 +2324,24 @@ body.keyboard-open [data-radix-dialog-content] {
     @apply bg-primary/10 text-primary border-l-2 border-primary;
   }
 }
+
+/* New order highlight animation */
+@keyframes new-order-highlight {
+  0% {
+    background-color: hsl(var(--primary) / 0.15);
+    transform: scale(1.005);
+  }
+  50% {
+    background-color: hsl(var(--primary) / 0.08);
+    transform: scale(1);
+  }
+  100% {
+    background-color: hsl(var(--primary) / 0.03);
+    transform: scale(1);
+  }
+}
+
+.animate-new-order-highlight {
+  animation: new-order-highlight 2s ease-out;
+  transition: background-color 0.5s ease-out, border-color 0.5s ease-out;
+}

@@ -122,6 +122,75 @@
 - `src/pages/admin/AdminLayout.tsx` (modified)
 - `src/lib/queryKeys.ts` (modified)
 
+---
+
+## Task: Show Storefront Orders in Admin Instantly with Source Column Badge, New Order Highlight Animation, and Browser Notification
+
+### What was done:
+
+1. **Created database migration `supabase/migrations/20260123000001_add_order_source_column.sql`**:
+   - Added `order_source` column to the `orders` table with CHECK constraint: 'admin', 'storefront', 'pos', 'menu', 'api'
+   - Defaults to 'admin' for backward compatibility
+   - Added index on `(tenant_id, order_source)` for efficient filtering
+
+2. **Created `src/hooks/useAdminOrdersRealtime.ts`** - Real-time order notification hook:
+   - Subscribes to both `orders` table (regular) and `marketplace_orders` table (storefront) inserts
+   - Filters storefront orders by matching store IDs belonging to the current tenant
+   - Tracks new order IDs in a Set for highlight animation (auto-clears after 10 seconds)
+   - Plays notification sound via `playNotificationSound()` on new orders
+   - Shows browser Notification API alerts with order details (number, customer, total)
+   - Requests notification permission on first use
+   - Invalidates TanStack Query cache to trigger UI refresh
+   - Calls optional `onNewOrder` callback with order details
+   - Proper cleanup of Supabase channels on unmount
+
+3. **Modified `src/pages/admin/Orders.tsx`**:
+   - Added `order_source` field to the local `Order` interface
+   - Integrated `useAdminOrdersRealtime` hook with toast notification callback
+   - Added `getSourceBadge()` helper rendering color-coded badges with icons:
+     - Storefront: purple badge with Store icon
+     - Admin: blue badge with Monitor icon
+     - POS: green badge with Monitor icon
+     - Menu: orange badge with Utensils icon
+     - API: cyan badge with Zap icon
+   - Added "Source" column to the table (between Order # and Customer)
+   - Added `rowClassName` prop usage for highlight animation on new orders
+   - Order # column shows bold text for highlighted new orders
+   - Mobile renderer includes source badge and highlight animation
+   - Imported Store, Monitor, Utensils, Zap icons from lucide-react
+
+4. **Modified `src/components/shared/ResponsiveTable.tsx`**:
+   - Added `rowClassName` prop to `ResponsiveTableProps<T>` interface
+   - Added `rowClassName` parameter to `MemoizedTableRow` component
+   - Applied per-row className via `cn()` utility in the TableRow
+   - Passed `rowClassName?.(item)` to each MemoizedTableRow instance
+
+5. **Modified `src/index.css`**:
+   - Added `@keyframes new-order-highlight` animation (scales and fades background)
+   - Added `.animate-new-order-highlight` class with the animation and transition
+
+### Features Implemented:
+- **Source Column Badge**: Color-coded badges with icons showing where each order originated (Storefront, Admin, POS, Menu, API)
+- **Real-time Updates**: Subscribes to both regular orders and storefront orders via Supabase Realtime
+- **Highlight Animation**: New orders get a 2-second scale+fade animation with primary color background and left border accent (auto-clears after 10 seconds)
+- **Browser Notifications**: Native Notification API shows order details with sound and vibration (requests permission on first use)
+- **Toast Notifications**: Sonner toast shows source label, order number, customer name, and total amount
+
+### Acceptance Criteria Met:
+- [x] Storefront orders appear in admin Orders page instantly (via realtime subscription)
+- [x] Source column shows origin badge (Storefront, Admin, POS, Menu, API)
+- [x] New orders have visible highlight animation (scale + color fade + left border)
+- [x] Browser notifications fire for new orders (with permission request)
+- [x] Sound plays on new order arrival
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `supabase/migrations/20260123000001_add_order_source_column.sql` (new)
+- `src/hooks/useAdminOrdersRealtime.ts` (new)
+- `src/pages/admin/Orders.tsx` (modified)
+- `src/components/shared/ResponsiveTable.tsx` (modified - added rowClassName prop)
+- `src/index.css` (modified - added highlight animation)
+
 ### Build Status:
 - `npm run build` passes with no errors
 
@@ -197,6 +266,7 @@
 - `src/lib/queryKeys.ts` (modified - added lowStockAlerts key)
 
 ---
+
 
 ## Task: Optimize Large Table Rendering (PERF-001)
 
