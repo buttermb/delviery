@@ -6567,3 +6567,61 @@ Enhanced the existing `TwoFactorSetup.tsx` component with the following improvem
 
 ### Files Changed:
 - `src/components/auth/TwoFactorSetup.tsx` (rewritten with password confirmation, proper types, dialog-based disable flow)
+
+---
+
+## Task: Create src/lib/auth/errorMessages.ts - Auth Error Code Mapping
+
+### What was done:
+
+1. **Created `src/lib/auth/errorMessages.ts`** - Comprehensive auth error code to user-friendly message mapping:
+
+   **Types & Interfaces:**
+   - `AuthErrorCode` - Union type of all supported error codes (19 codes)
+   - `AuthErrorMessage` - Structure with `messageKey` (i18n key), `defaultMessage` (English fallback), and optional `recoveryHint`
+   - `TranslateFn` - Type for optional i18n translation function
+
+   **Error Codes Covered:**
+   - `invalid_credentials` - Invalid email/password
+   - `user_already_registered` / `email_exists` - Duplicate email signup
+   - `weak_password` - Password strength requirements not met
+   - `expired_token` / `otp_expired` / `refresh_token_expired` - Token expiration variants
+   - `account_locked` - Too many failed login attempts
+   - `user_banned` - Suspended accounts
+   - `rate_limited` / `too_many_requests` - Rate limiting
+   - `network_error` - Connection issues (fetch failed, etc.)
+   - `email_not_confirmed` / `phone_not_confirmed` - Unverified accounts
+   - `signup_disabled` - Registration turned off
+   - `user_not_found` - No account for email
+   - `session_expired` - Session timeout
+   - `invalid_otp` - Wrong verification code
+   - `unknown` - Fallback for unrecognized errors
+
+   **Pattern Matching:**
+   - `ERROR_MESSAGE_PATTERNS` - Array of 26 known Supabase/GoTrue error message substrings mapped to error codes
+   - Handles varied Supabase error message formats (e.g., "invalid login credentials", "token is expired", "failed to fetch")
+
+   **Public API:**
+   - `getAuthErrorMessage(error, translate?)` - Returns user-friendly string, resolves via code → status → pattern → fallback
+   - `getAuthErrorDetails(error, translate?)` - Returns full `AuthErrorMessage` with recovery hint
+   - Both accept varied error shapes: string, Error instance, `{ message, code, status }` objects, or unknown
+
+   **i18n Ready:**
+   - Every message has a `messageKey` following `auth.error.*` namespace convention
+   - Optional `TranslateFn` parameter allows plugging in any i18n library (react-i18next, formatjs, etc.)
+   - Falls back to English `defaultMessage` when no translate function is provided
+
+   **Internal Helpers:**
+   - `normalizeError()` - Handles string, Error, object, and unknown input shapes
+   - `resolveEntry()` - Applies translation function when available
+
+### Verification Results:
+- [x] TypeScript type-check passes (no errors in errorMessages.ts)
+- [x] ESLint passes (no warnings or errors)
+- [x] No `console.log` usage
+- [x] No `any` types used
+- [x] Named exports only
+- [x] Uses `@/` import alias convention (no imports needed from project in this standalone utility)
+
+### Files Changed:
+- `src/lib/auth/errorMessages.ts` (new file)
