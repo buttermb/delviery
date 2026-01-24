@@ -3331,3 +3331,34 @@ Created migration `supabase/migrations/20260124000001_create_password_reset_toke
 
 ### Files Changed:
 - `supabase/migrations/20260124000000_expire_credits_function.sql` (new)
+
+---
+
+## Task: Create supabase/functions/auth-signup edge function
+
+### What was done:
+
+1. **Created `supabase/functions/auth-signup/index.ts`** - Edge function that handles user signup:
+   - **Input Validation**: Uses Zod schema to validate `email`, `password`, `full_name`, `tenant_slug`, and optional `phone`
+   - **Password Requirements**: Minimum 8 chars, requires uppercase, lowercase, number, and special character
+   - **Rate Limiting**: 5 signups per hour per IP using the shared `checkRateLimit` utility
+   - **Tenant Verification**: Confirms tenant exists and is active before creating user
+   - **Email Existence Check**: Uses `supabase.auth.admin.listUsers()` to check if email is already registered
+   - **User Creation**: Creates user via `supabase.auth.admin.createUser` with `email_confirm: false` to require verification
+   - **Profile Creation**: Creates `user_profiles` entry with tenant association
+   - **Verification Token**: Generates cryptographically secure 32-byte hex token, stores SHA-256 hash in `email_verification_tokens` table with 24-hour expiry
+   - **Email Sending**: Supports both Resend and SendGrid providers (falls back gracefully if neither configured)
+   - **Audit Logging**: Logs `signup_started` event to `auth_audit_log`
+   - **Error Handling**: Graceful cleanup (deletes auth user if profile creation fails), proper HTTP status codes (400, 404, 405, 409, 429, 500)
+   - **Security**: Never reveals whether an email is registered in error messages for enumeration protection, uses CORS headers from shared deps
+
+### Key Design Decisions:
+- Imports from `_shared/deps.ts` as required by project conventions
+- Uses `supabase.auth.admin.createUser` (not `signUp`) for server-side user creation
+- Token hash stored in DB (not plaintext) using SHA-256
+- Verification email sent asynchronously (doesn't block response)
+- Supports Resend (preferred) and SendGrid as email providers
+- Follows existing patterns from `customer-auth` and `send-verification-email` functions
+
+### Files Created:
+- `supabase/functions/auth-signup/index.ts`
