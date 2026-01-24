@@ -2657,3 +2657,33 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create credits-cancel-subscription Edge Function
+
+### What was done:
+
+1. **Created `supabase/functions/credits-cancel-subscription/index.ts`** - Edge function that:
+   - **Requires authentication** via Bearer token, extracts user from JWT
+   - **Validates input** with Zod schema (`subscription_id` UUID, `cancel_immediately` boolean)
+   - **Verifies ownership** - fetches credit_subscriptions record filtered by user_id
+   - **Validates state** - rejects already-cancelled subscriptions or missing Stripe IDs
+   - **Cancels via Stripe API**:
+     - If `cancel_immediately=true`: DELETEs the Stripe subscription (immediate cancellation)
+     - If `cancel_immediately=false`: POSTs update with `cancel_at_period_end=true`
+   - **Prorates remaining credits** on immediate cancellation:
+     - Calculates remaining fraction of billing period
+     - Deducts proportional unused credits from user balance
+     - Logs proration as a credit_transaction with type 'adjustment'
+   - **Updates credit_subscriptions** record:
+     - Sets `cancelled_at` timestamp
+     - If immediate: sets `status='cancelled'`, zeroes `credits_remaining_this_period`
+     - If at period end: sets `cancel_at_period_end=true`, keeps status active
+   - **Logs event** to `credit_analytics` with full metadata (subscription details, who cancelled, credits removed)
+   - **Logs transaction** to `credit_transactions` for audit trail
+   - **Returns** subscription status, credits removed, and period end date
+   - Follows project patterns: CORS handling, Stripe raw HTTP API calls, proper error responses
+
+### Files Created:
+- `supabase/functions/credits-cancel-subscription/index.ts`
