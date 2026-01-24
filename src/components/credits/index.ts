@@ -96,6 +96,9 @@ export type { CreditPackageCardProps } from './CreditPackageCard';
 export { CreditTransactionRow } from './CreditTransactionRow';
 export type { CreditTransactionRowProps, CreditTransactionRowTransaction } from './CreditTransactionRow';
 
+export { SubscriptionStatusCard } from './SubscriptionStatusCard';
+export type { SubscriptionStatusCardProps } from './SubscriptionStatusCard';
+
 // Re-export hook from hooks directory
 export { useCreditAlert } from '@/hooks/useCreditAlert';
 export type { UseCreditAlertReturn } from '@/hooks/useCreditAlert';
