@@ -3806,3 +3806,42 @@ Response Format:
 
 ### Files Created:
 - `supabase/functions/credits-transactions/index.ts`
+
+---
+
+## Task: Create supabase/functions/credits-packages Edge Function
+
+### What was done:
+
+1. **Created `supabase/functions/credits-packages/index.ts`** - Edge function that:
+   - Accepts `tenant_slug` via GET query parameter or POST body
+   - Validates input using Zod schema
+   - Resolves tenant from slug using service role client
+   - Fetches active credit packages (`is_active = true`) sorted by `sort_order` ascending
+   - Calculates `price_per_credit` (price_cents / effective_credits, rounded to 2 decimals)
+   - Calculates `effective_credits` (base credits + bonus_credits)
+   - Derives `is_featured` flag from non-empty `badge` column
+   - Returns package details including: id, name, slug, credits, bonus_credits, price_cents, price_per_credit, effective_credits, description, badge, is_featured, sort_order
+   - If authenticated (Bearer token present), checks user purchase limits:
+     - Verifies user belongs to the specified tenant via `tenant_users` table
+     - Queries `credit_transactions` for purchase history (transaction_type = 'purchase')
+     - Returns `purchase_info` with: total_purchases, total_credits_purchased, last_purchase_at
+   - Uses `withZenProtection` security middleware
+   - Uses structured logging via `createLogger`
+   - Handles CORS preflight (OPTIONS) requests
+   - Validates environment variables before use
+   - Returns 404 for unknown tenant slugs
+   - Returns 400 for invalid input with Zod error details
+   - Returns tenant context (id, slug, business_name) in response
+
+### Patterns followed:
+- Imports from `_shared/deps.ts` (serve, createClient, corsHeaders, z)
+- Uses `withZenProtection` for security
+- Uses `.maybeSingle()` for optional data lookups
+- Never trusts client data - extracts user from JWT
+- Handles OPTIONS + includes CORS headers in every response
+- Validates with Zod schema
+- Uses service role key for admin queries, anon key + auth header for user verification
+
+### Files Created:
+- `supabase/functions/credits-packages/index.ts`
