@@ -163,6 +163,8 @@ export const queryKeys = {
       [...queryKeys.analytics.all, 'products', filters] as const,
     trafficSources: (filters?: Record<string, unknown>) =>
       [...queryKeys.analytics.all, 'traffic-sources', filters] as const,
+    storefront: (filters?: Record<string, unknown>) =>
+      [...queryKeys.analytics.all, 'storefront', filters] as const,
   },
 
   // Super Admin

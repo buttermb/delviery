@@ -1323,3 +1323,49 @@ Enhanced `src/hooks/useInventorySync.ts` with two new mutation hooks that handle
 ### Build Status:
 - `npm run build` passes with no errors
 - `npx tsc --noEmit --skipLibCheck` passes with no errors
+
+---
+
+## Task: Add StorefrontAnalytics Widget to Dashboard
+
+### What was done:
+
+1. **Created `src/components/admin/storefront/StorefrontAnalyticsWidget.tsx`** - A new analytics widget showing:
+   - **Page Views** - Estimated from visitor and order data with blue icon
+   - **Visitors** - From `marketplace_customers` with recent `last_login_at` (purple icon)
+   - **Orders** - Non-cancelled orders from `storefront_orders` in last 7 days (green icon)
+   - **Conversion Rate** - Orders / Page Views percentage (orange icon)
+   - **7-Day Area Chart** - Dual-series chart showing page views (blue) and orders (green) with gradient fills
+   - Uses Recharts `AreaChart` with responsive container, custom tooltip styling, and gradient definitions
+   - Loading skeleton state with stat cards + chart placeholder
+   - Auto-refreshes every 60 seconds for near-live data
+   - Queries `storefront_orders` and `marketplace_customers` tables filtered by store_id
+   - Graceful error handling for missing tables/data
+
+2. **Updated `src/lib/queryKeys.ts`** - Added `storefront` query key to the analytics section:
+   - `queryKeys.analytics.storefront({ storeId, period })` for consistent cache management
+
+3. **Updated `src/pages/admin/storefront/StorefrontDashboard.tsx`** - Integrated the widget:
+   - Imported `StorefrontAnalyticsWidget` component
+   - Placed between the Sales Funnel and Quick Actions sections
+   - Conditionally rendered when `activeStoreId` is available
+
+### Widget Features:
+- 4 summary stat cards in a responsive 2x2/4-column grid
+- Area chart with page views and orders series
+- Gradient fills for visual polish
+- Custom tooltip matching the app's design system (card background, border color, rounded corners)
+- Weekday-abbreviated x-axis labels for the 7-day period
+- Uses established patterns: `queryKeys` factory, `logger`, shadcn/ui Card, Skeleton loading states
+
+### Acceptance Criteria Met:
+- [x] Shows page views, visitors, orders, and conversion rate metrics
+- [x] 7-day chart with daily breakdown
+- [x] Integrated into the storefront dashboard
+- [x] Build passes with no TypeScript errors
+- [x] Follows FloraIQ coding conventions (named exports, @/ imports, logger, queryKeys)
+
+### Files Changed:
+- `src/components/admin/storefront/StorefrontAnalyticsWidget.tsx` (new)
+- `src/lib/queryKeys.ts` (added storefront analytics query key)
+- `src/pages/admin/storefront/StorefrontDashboard.tsx` (integrated widget)

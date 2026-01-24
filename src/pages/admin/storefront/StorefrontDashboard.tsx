@@ -46,6 +46,7 @@ import { StoreSelector } from '@/components/admin/storefront/StoreSelector';
 import { StoreListView } from '@/components/admin/storefront/StoreListView';
 import { SmartOnboardingWidget } from '@/components/admin/storefront/SmartOnboardingWidget';
 import { OnboardingProgressChecklist } from '@/components/admin/storefront/OnboardingProgressChecklist';
+import { StorefrontAnalyticsWidget } from '@/components/admin/storefront/StorefrontAnalyticsWidget';
 
 interface MarketplaceStore {
   id: string;
@@ -663,6 +664,11 @@ export default function StorefrontDashboard() {
           storeId={activeStoreId}
           primaryColor={activeStore?.primary_color || '#000'}
         />
+      )}
+
+      {/* Storefront Analytics - 7 Day Overview */}
+      {activeStoreId && (
+        <StorefrontAnalyticsWidget storeId={activeStoreId} />
       )}
 
       {/* Quick Actions + Recent Orders */}
