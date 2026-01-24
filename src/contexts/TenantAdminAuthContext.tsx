@@ -12,8 +12,10 @@ import { safeStorage } from "@/utils/safeStorage";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { resilientFetch, safeFetch, ErrorCategory, getErrorMessage, initConnectionMonitoring, onConnectionStatusChange, type ConnectionStatus } from "@/lib/utils/networkResilience";
 import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLogger";
+import { useQueryClient } from '@tanstack/react-query';
 import { useFeatureFlags } from "@/config/featureFlags";
 import { toast } from "sonner";
+import { performLogoutCleanup, broadcastLogout } from "@/lib/auth/logoutCleanup";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { FreeTierOnboardingFlow } from "@/components/onboarding/FreeTierOnboardingFlow";
 import { useTenantRouteGuard } from "@/hooks/useTenantRouteGuard";
@@ -173,6 +175,7 @@ const getInitialRefreshTokenState = (): string | null => {
 export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { shouldAutoApprove, flags } = useFeatureFlags();
 
   // Synchronously hydrate from localStorage to prevent flash of login screen on reload
@@ -1380,12 +1383,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         // Clear only local state, don't trigger API logout (already done by other tab)
         clearAuthState();
 
-        // Destroy encryption session
-        clientEncryption.destroy();
-
-        // Clear user ID from storage
-        sessionStorage.removeItem('floraiq_user_id');
-        safeStorage.removeItem('floraiq_user_id');
+        // Comprehensive cleanup: encryption, query cache, storage
+        performLogoutCleanup({ queryClient, tier: 'tenant_admin' });
 
         toast.info("You have been logged out from another tab.", {
           duration: 5000,
@@ -1415,20 +1414,14 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     }
 
     // Notify other tabs immediately
-    try {
-      const channel = new BroadcastChannel('tenant_auth_channel');
-      channel.postMessage({ type: 'LOGOUT' });
-      channel.close();
-    } catch (e) {
-      logger.warn('[AUTH] Failed to broadcast logout event', e);
-    }
+    broadcastLogout('tenant_auth_channel');
 
     try {
       // Call logout endpoint to clear cookies
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
       await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
         method: "POST",
-        credentials: 'include', // ⭐ Send cookies to be cleared
+        credentials: 'include',
         headers: {
           "Content-Type": "application/json",
         },
@@ -1441,18 +1434,14 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     } catch (error) {
       logger.error("[AUTH] Logout error", error);
     } finally {
-      // Destroy encryption session before logout
-      clientEncryption.destroy();
-
       // Clear Supabase session
       await supabase.auth.signOut();
 
-      // Always clear local state
+      // Clear local React state
       clearAuthState();
 
-      // Clear user ID from storage
-      sessionStorage.removeItem('floraiq_user_id');
-      safeStorage.removeItem('floraiq_user_id');
+      // Comprehensive cleanup: encryption, query cache, storage
+      performLogoutCleanup({ queryClient, tier: 'tenant_admin' });
     }
   };
 

@@ -1,10 +1,12 @@
 import { logger } from '@/lib/logger';
 import { logAuth, logAuthWarn, logAuthError } from '@/lib/debug/logger';
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
+import { useQueryClient } from '@tanstack/react-query';
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeStorage } from "@/utils/safeStorage";
+import { performLogoutCleanup } from "@/lib/auth/logoutCleanup";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { tokenRefreshManager } from "@/lib/auth/tokenRefreshManager";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
@@ -75,6 +77,7 @@ const validateEnvironment = (): { valid: boolean; error?: string } => {
 };
 
 export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
+  const queryClient = useQueryClient();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -318,7 +321,6 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    // Debug: Log logout attempt
     logAuth('Customer logout initiated', {
       customerId: customer?.id,
       customerEmail: customer?.email,
@@ -357,19 +359,13 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         hadToken: !!token,
       });
     } finally {
-      // Destroy encryption session before logout
-      clientEncryption.destroy();
-
+      // Clear local React state
       setToken(null);
       setCustomer(null);
       setTenant(null);
-      safeStorage.removeItem(TOKEN_KEY);
-      safeStorage.removeItem(CUSTOMER_KEY);
-      safeStorage.removeItem(TENANT_KEY);
 
-      // Clear user ID from storage
-      safeStorage.removeItem('floraiq_user_id');
-      safeStorage.removeItem('floraiq_user_id');
+      // Comprehensive cleanup: encryption, query cache, storage
+      performLogoutCleanup({ queryClient, tier: 'customer' });
 
       // Reset token refresh manager to prevent stale refresh attempts
       tokenRefreshManager.reset('customer');

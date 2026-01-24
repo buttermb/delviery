@@ -1,9 +1,11 @@
 import { logger } from '@/lib/logger';
 import { logAuth, logAuthWarn, logAuthError } from '@/lib/debug/logger';
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
+import { useQueryClient } from '@tanstack/react-query';
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
+import { performLogoutCleanup } from "@/lib/auth/logoutCleanup";
 
 interface AuthContextType {
   user: User | null;
@@ -15,6 +17,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,25 +81,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // Debug: Log sign out attempt
       logAuth('Sign out initiated', {
         userId: user?.id,
         userEmail: user?.email,
         source: 'AuthContext'
       });
 
-      // Destroy encryption session before signing out
-      clientEncryption.destroy();
-
       await supabase.auth.signOut();
       setUser(null);
       setSession(null);
 
-      // Clear user ID from storage
-      sessionStorage.removeItem('floraiq_user_id');
-      localStorage.removeItem('floraiq_user_id');
+      // Comprehensive cleanup: encryption, query cache, storage
+      performLogoutCleanup({ queryClient, tier: 'base' });
 
-      // Debug: Log successful sign out
       logAuth('Sign out completed', { source: 'AuthContext' });
     } catch (error) {
       logAuthError('Sign out failed', {

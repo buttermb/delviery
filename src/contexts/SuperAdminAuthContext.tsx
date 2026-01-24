@@ -1,8 +1,10 @@
 import { logger } from '@/lib/logger';
 import { createContext, useContext, useEffect, useState, ReactNode, useRef, useCallback } from "react";
+import { useQueryClient } from '@tanstack/react-query';
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeStorage } from "@/utils/safeStorage";
+import { performLogoutCleanup } from "@/lib/auth/logoutCleanup";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,6 +41,7 @@ if (typeof window !== 'undefined') {
   initConnectionMonitoring();
 }
 export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) => {
+  const queryClient = useQueryClient();
   const [superAdmin, setSuperAdmin] = useState<SuperAdmin | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [supabaseSession, setSupabaseSession] = useState<Session | null>(null);
@@ -300,19 +303,14 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       authFlowLogger.failFlow(flowId, error, category);
       logger.error("Logout error", error);
     } finally {
-      // Destroy encryption session before logout
-      clientEncryption.destroy();
-
+      // Clear local React state
       setToken(null);
       setSuperAdmin(null);
       setSupabaseSession(null);
-      safeStorage.removeItem(TOKEN_KEY);
-      safeStorage.removeItem(SUPER_ADMIN_KEY);
       safeStorage.removeItem(SUPABASE_SESSION_KEY);
 
-      // Clear user ID from storage
-      safeStorage.removeItem('floraiq_user_id');
-      safeStorage.removeItem('floraiq_user_id');
+      // Comprehensive cleanup: encryption, query cache, storage
+      performLogoutCleanup({ queryClient, tier: 'super_admin' });
     }
   };
 
