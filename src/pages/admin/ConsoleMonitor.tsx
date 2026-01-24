@@ -13,10 +13,11 @@ interface LogEntry {
   timestamp: Date;
   type: 'log' | 'warn' | 'error' | 'info';
   message: string;
-  args: any[];
+  args: unknown[];
 }
 
-export default function ConsoleMonitor() {
+/* eslint-disable no-console */
+export function ConsoleMonitor() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [filter, setFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
@@ -28,7 +29,7 @@ export default function ConsoleMonitor() {
     const originalError = console.error;
     const originalInfo = console.info;
 
-    const addLog = (type: LogEntry['type'], args: any[]) => {
+    const addLog = (type: LogEntry['type'], args: unknown[]) => {
       const message = args.map(arg => {
         if (typeof arg === 'object') {
           try {

@@ -219,6 +219,7 @@ export function measurePerformance(name: string): () => void {
     const duration = performance.now() - start;
     if (duration > 16) {
       // Log slow renders (> 1 frame at 60fps)
+      // eslint-disable-next-line no-console
       console.debug(`[Perf] ${name} took ${duration.toFixed(2)}ms`);
     }
   };
