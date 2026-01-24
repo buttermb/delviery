@@ -7515,3 +7515,63 @@ Created comprehensive tests for the password reset flow covering the full lifecy
 
 ### Files Created:
 - `tests/integration/credit-purchase-flow.test.ts`
+
+---
+
+## Task: Test Session Management (Agent 110)
+
+### What was done:
+Implemented comprehensive tests for the SessionManagement component covering:
+
+1. **Viewing all sessions with current marked correctly** (13 tests)
+   - Displays loading state during fetch
+   - Shows all active sessions with IP addresses and device info
+   - Marks current session with "Current" badge (exactly one)
+   - Correctly detects device types (desktop/mobile/tablet) from user agents
+   - Shows session count in description
+   - Hides revoke button for current session
+   - Shows revoke buttons for non-current sessions
+   - Calls get-active-sessions edge function with correct customer_user_id
+   - Handles empty state and session limit warning (5 sessions)
+   - Shows error toast on load failure
+   - Skips fetch when customer or tenant is null
+
+2. **Revoking single session** (5 tests)
+   - Successfully revokes non-current session by setting expires_at
+   - Calls supabase update with session ID for .eq() filter
+   - Shows error toast on revoke failure
+   - Prevents revoking current session (no button rendered)
+   - Reloads sessions after successful revoke
+
+3. **Revoking all other sessions** (8 tests)
+   - Shows "Revoke All Others" button only when >1 session exists
+   - Calls revoke-all-sessions edge function with customer_user_id and current_token
+   - Shows success toast after revoking
+   - Only current session remains active after revoking all
+   - Shows error toast on failure
+   - Shows "Revoking..." loading state during operation
+   - Guards against null customer or token
+
+4. **Audit log entries verification** (6 tests)
+   - Verifies supabase update is called with session ID (enables DB audit triggers)
+   - Passes customer_user_id to revoke-all edge function (server-side audit trail)
+   - Session ID included in revoke calls for audit traceability
+   - Logger.error called with component context on session operation failures
+   - Logger.error called on load failures for audit visibility
+   - Logger.error called on revoke-all failures for audit visibility
+
+5. **Edge cases** (5 tests)
+   - Handles network errors gracefully
+   - Handles malformed/null session data
+   - Correctly detects tablet user agents
+   - Handles unknown browser user agents
+
+### Test Results:
+- 38 tests, all passing
+- File: `src/components/customer/__tests__/SessionManagement.test.tsx`
+
+### Technical Notes:
+- Uses vi.resetAllMocks() in beforeEach to prevent mock contamination between tests
+- Mocks apiFetch, supabase client, CustomerAuthContext, toast, and logger
+- Tests observable behavior (rendered UI) rather than implementation details
+- Follows AAA pattern (Arrange-Act-Assert) per project testing skills
