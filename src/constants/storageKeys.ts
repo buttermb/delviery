@@ -92,6 +92,9 @@ export const STORAGE_KEYS = {
   FEATURE_USAGE: 'feature_usage',
   BUSINESS_TIER_OVERRIDE: 'business_tier_override',
   
+  // Command Palette
+  COMMAND_PALETTE_RECENT_SEARCHES: 'command_palette_recent_searches',
+
   // Performance
   NETWORK_QUALITY: 'network_quality',
   REDUCED_MOTION: 'reduced_motion',
