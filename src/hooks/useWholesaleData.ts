@@ -279,21 +279,21 @@ export const useProductsForWholesale = () => {
 
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, price, wholesale_price, cost_per_unit, stock_quantity, category, image_url, in_stock")
+        .select("id, name, price, wholesale_price, cost_per_unit, stock_quantity, available_quantity, category, image_url, in_stock")
         .eq("tenant_id", tenant.id)
-        .eq("in_stock", true)
         .order("name");
 
       if (error) throw error;
-      
+
       // Map to consistent format for wholesale orders
+      // Include all products so out-of-stock items are shown as disabled
       return (data || []).map(product => ({
         id: product.id,
         product_name: product.name,
         base_price: product.wholesale_price || product.price || 0,
         retail_price: product.price || 0,
         cost_per_unit: product.cost_per_unit || 0,
-        quantity_available: product.stock_quantity || 0,
+        quantity_available: product.available_quantity ?? product.stock_quantity ?? 0,
         category: product.category,
         image_url: product.image_url,
         source: 'products' as const,

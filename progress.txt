@@ -127,6 +127,77 @@
 
 ---
 
+## Task: Create Low Stock Alert System
+
+### What was done:
+
+1. **Created `src/hooks/useLowStockAlerts.ts`** - Custom hook that:
+   - Fetches products below their low stock threshold for the current tenant
+   - Classifies alerts into three severity levels: `out_of_stock`, `critical` (<=25% of threshold), and `warning`
+   - Returns summary counts (outOfStockCount, criticalCount, warningCount, totalAlerts)
+   - Provides `outOfStockIds` and `lowStockIds` Sets for quick product lookups
+   - Uses TanStack Query with 60-second stale time and window focus refetch
+   - Integrates with `queryKeys.inventory.lowStockAlerts(tenantId)` for proper cache management
+   - Tenant-aware: filters by `tenant_id` via `useTenantAdminAuth()`
+
+2. **Created `src/components/admin/LowStockBanner.tsx`** - Dismissible alert banner that:
+   - Shows different severity levels (danger/critical/warning) with appropriate colors
+   - Displays count badge showing number of affected products
+   - Lists product names when 3 or fewer are affected
+   - Provides "View Inventory" action button (optional via `onViewDetails` prop)
+   - Dismissible with X button (reappears on page refresh or if new alerts arise)
+   - Follows the established CreditAlertBanner pattern for consistency
+   - Uses shadcn/ui Alert, Badge, and Button components
+
+3. **Updated `src/hooks/crm/useProducts.ts`** - Enhanced Product interface:
+   - Added `stockQuantity`, `isOutOfStock`, and `isLowStock` fields
+   - Fetches `stock_quantity`, `available_quantity`, and `low_stock_alert` columns
+   - Computes stock status from available quantity vs threshold
+
+4. **Updated `src/components/crm/LineItemsEditor.tsx`** - Disabled out-of-stock products:
+   - `ProductSelector` now shows "Out of Stock" badge (destructive) for unavailable products
+   - Shows "Low Stock" badge (amber) for products below threshold
+   - Displays available quantity count for in-stock products
+   - Out-of-stock items are disabled (cannot be selected, grayed out with cursor-not-allowed)
+   - Selected product shows warning icon if it became out of stock after selection
+   - Added Badge import for stock status indicators
+
+5. **Updated `src/pages/admin/NewWholesaleOrder.tsx`** - Disabled out-of-stock in wholesale form:
+   - Product cards with zero quantity show as disabled (opacity-50, cursor-not-allowed)
+   - "Out of Stock" text replaces stock count for empty products
+   - "Unavailable" destructive badge replaces the add button
+   - AlertTriangle icon shown next to out-of-stock product names
+   - Click handler is no-op for out-of-stock products
+   - Distinct border styling (border-destructive/30) for visual clarity
+
+6. **Updated `src/hooks/useWholesaleData.ts`** - Shows all products including out-of-stock:
+   - Removed `in_stock = true` filter so out-of-stock products are visible but disabled
+   - Added `available_quantity` to the select query for more accurate stock data
+   - Uses `available_quantity ?? stock_quantity ?? 0` for quantity calculation
+
+7. **Updated `src/lib/queryKeys.ts`** - Added query key:
+   - Added `lowStockAlerts: (tenantId?: string)` to `queryKeys.inventory`
+
+### Acceptance Criteria Met:
+- [x] `useLowStockAlerts` hook fetches and classifies low-stock products by severity
+- [x] `LowStockBanner` component displays dismissible alert with severity-based styling
+- [x] Out-of-stock products are disabled in CRM pre-order form (LineItemsEditor)
+- [x] Out-of-stock products are disabled in wholesale order form (NewWholesaleOrder)
+- [x] Stock quantities are visible in product selectors
+- [x] Low stock products show warning indicators without blocking selection
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/hooks/useLowStockAlerts.ts` (new)
+- `src/components/admin/LowStockBanner.tsx` (new)
+- `src/hooks/crm/useProducts.ts` (modified - added stock fields)
+- `src/components/crm/LineItemsEditor.tsx` (modified - disabled out-of-stock, stock badges)
+- `src/pages/admin/NewWholesaleOrder.tsx` (modified - disabled out-of-stock products)
+- `src/hooks/useWholesaleData.ts` (modified - include all products, added available_quantity)
+- `src/lib/queryKeys.ts` (modified - added lowStockAlerts key)
+
+---
+
 ## Task: Optimize Large Table Rendering (PERF-001)
 
 ### What was done:

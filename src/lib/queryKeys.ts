@@ -70,10 +70,12 @@ export const queryKeys = {
   inventory: {
     all: ['inventory'] as const,
     lists: () => [...queryKeys.inventory.all, 'list'] as const,
-    list: (warehouseId?: string) => 
+    list: (warehouseId?: string) =>
       [...queryKeys.inventory.lists(), { warehouseId }] as const,
     alerts: () => [...queryKeys.inventory.all, 'alerts'] as const,
-    movements: (productId?: string) => 
+    lowStockAlerts: (tenantId?: string) =>
+      [...queryKeys.inventory.all, 'low-stock-alerts', tenantId] as const,
+    movements: (productId?: string) =>
       [...queryKeys.inventory.all, 'movements', productId] as const,
   },
 
