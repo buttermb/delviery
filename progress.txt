@@ -57,6 +57,47 @@
 
 ---
 
+## Task: Create src/hooks/useAuth.ts Master Auth Hook
+
+### What was done:
+
+1. **Created `src/hooks/useAuth.ts`** - Master authentication hook using TanStack Query that provides:
+   - `user` - Current authenticated user or null
+   - `session` - Current Supabase session or null
+   - `isAuthenticated` - Boolean indicating auth status
+   - `isLoading` - Loading state from TanStack Query
+   - `error` - Combined error state from queries and mutations
+   - `login(credentials)` - Sign in with email/password via `useMutation`
+   - `logout()` - Sign out with full cleanup (tokens, query cache, encryption)
+   - `signup(credentials)` - Create new account with optional metadata
+   - `resetPassword(params)` - Send password reset email via Supabase
+   - `changePassword(params)` - Update password for authenticated user
+   - `refreshSession()` - Manual token refresh via `tokenRefreshManager`
+   - `checkSession()` - Validate current session and update cache
+   - `isLoginPending`, `isSignupPending`, `isLogoutPending` - Mutation loading states
+
+2. **Key implementation details:**
+   - Uses `useQuery` with `AUTH_QUERY_KEY` for session state, 5-minute stale time
+   - Manages Supabase `onAuthStateChange` listener to keep query cache in sync
+   - Stores tokens via `STORAGE_KEYS` (`TENANT_ADMIN_ACCESS_TOKEN`, `TENANT_ADMIN_REFRESH_TOKEN`)
+   - Clears all token types on logout (admin, customer, courier, super admin)
+   - Integrates with `tokenRefreshManager` for deduplication of refresh calls
+   - Uses `performLogoutCleanup` for comprehensive cleanup on sign-out
+   - All logging via `logger` from `@/lib/logger` (never console.log)
+   - Uses `safeStorage` from `@/constants/storageKeys` for safe localStorage access
+   - Properly typed with `UseAuthReturn` interface (named export only)
+   - Listener uses `useRef` to prevent double-subscription in StrictMode
+   - `refetchOnWindowFocus` and `refetchOnReconnect` enabled for session freshness
+
+3. **Verification:**
+   - TypeScript compilation passes (`tsc --noEmit`)
+   - ESLint passes with no warnings or errors
+   - No `any` types used
+   - Named export only (`export function useAuth`)
+   - Uses `@/` import alias throughout
+
+---
+
 ## Task: Create Unified Admin Dashboard Hub with 5 Stat Cards
 
 ### What was done:
