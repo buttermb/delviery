@@ -2657,3 +2657,44 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create InsufficientCreditsModal Component
+
+### What was done:
+
+1. **Created `src/components/credits/InsufficientCreditsModal.tsx`** - Modal component that:
+   - Shows when an action requires more credits than currently available
+   - Displays required amount, current balance, and shortfall in a 3-column grid
+   - Calculates and shows the smallest credit packages that cover the shortfall
+   - Provides quick purchase buttons for each suggested package
+   - Includes a primary "Buy Credits" button and a "Cancel" button
+   - Supports "Don't show again" checkbox that persists preference to localStorage
+   - Exports `isInsufficientCreditsModalDismissed()` helper for callers to check preference
+   - Exports `resetInsufficientCreditsModalDismissal()` to clear the preference
+
+2. **Updated `src/constants/storageKeys.ts`**:
+   - Added `INSUFFICIENT_CREDITS_DISMISSED` storage key for the don't-show-again preference
+
+3. **Updated `src/components/credits/index.ts`**:
+   - Exported `InsufficientCreditsModal`, `isInsufficientCreditsModalDismissed`, `resetInsufficientCreditsModalDismissal`
+   - Exported `InsufficientCreditsModalProps` type
+
+### Features:
+- Required/balance/shortfall breakdown with visual emphasis on the shortfall
+- Smart package suggestions: filters CREDIT_PACKAGES to find smallest packages covering shortfall
+- Shows up to 3 quick purchase options with price and "covers shortfall" indicator
+- "Don't show again" preference stored in localStorage via STORAGE_KEYS
+- Named exports only, TypeScript strict, uses @/ imports
+
+### Acceptance Criteria Met:
+- [x] Modal shown when action requires more credits than available
+- [x] Shows required amount and current balance and shortfall
+- [x] Displays quick purchase options for smallest packages covering shortfall
+- [x] Buy credits button present
+- [x] Cancel button present
+- [x] Remembers "don't show again" preference
+
+### Files Changed:
+- `src/components/credits/InsufficientCreditsModal.tsx` (new)
+- `src/components/credits/index.ts` (added exports)
+- `src/constants/storageKeys.ts` (added INSUFFICIENT_CREDITS_DISMISSED key)

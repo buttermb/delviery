@@ -101,6 +101,9 @@ export const STORAGE_KEYS = {
   // Performance
   NETWORK_QUALITY: 'network_quality',
   REDUCED_MOTION: 'reduced_motion',
+
+  // Credits
+  INSUFFICIENT_CREDITS_DISMISSED: 'insufficient_credits_dismissed',
 } as const;
 
 /**

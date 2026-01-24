@@ -87,6 +87,13 @@ export type { GracePeriodBannerProps, UseGracePeriodReturn } from './GracePeriod
 export { CreditAlertBanner } from './CreditAlertBanner';
 export type { CreditAlertBannerProps } from './CreditAlertBanner';
 
+export {
+  InsufficientCreditsModal,
+  isInsufficientCreditsModalDismissed,
+  resetInsufficientCreditsModalDismissal,
+} from './InsufficientCreditsModal';
+export type { InsufficientCreditsModalProps } from './InsufficientCreditsModal';
+
 // Re-export hook from hooks directory
 export { useCreditAlert } from '@/hooks/useCreditAlert';
 export type { UseCreditAlertReturn } from '@/hooks/useCreditAlert';
