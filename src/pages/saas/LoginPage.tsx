@@ -219,10 +219,7 @@ export default function LoginPage() {
       if (tenantError || !tenant) throw new Error('Invalid tenant configuration');
 
       // 3. Tenant Auth Edge Function
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      if (!supabaseUrl) {
-        throw new Error('Supabase URL not configured');
-      }
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const url = `${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`;
 
       const { response } = await resilientFetch(url, {
