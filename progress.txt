@@ -5676,3 +5676,31 @@ Created `src/components/auth/SessionCard.tsx` - a component that displays a sing
 
 ### Files Created:
 - `src/pages/credits/CreditsPage.tsx`
+
+---
+
+## Task: Create BuyCreditsPage.tsx
+
+### What was done:
+Created a protected BuyCreditsPage at `src/pages/credits/BuyCreditsPage.tsx` that displays credit packages in a card grid with full purchase flow.
+
+### Features implemented:
+- **Protected page**: Uses `useTenantAdminAuth()` for tenant context and access guard
+- **Credit packages grid**: Responsive card layout (1 col mobile, 2 tablet, 4 desktop)
+- **Package cards display**: Credits amount, bonus credits, price, savings percentage, description
+- **Featured badge**: Packages with `BEST VALUE` or `POPULAR` badges show a featured indicator with Sparkles icon
+- **Package selection**: Click to select, highlighted with ring/border styling and checkmark indicator
+- **Promo code input**: Text input with Apply button, validates against promo code service
+- **Promo code feedback**: Shows success with bonus credits amount, or error message
+- **Checkout button**: Proceeds to Stripe payment via `purchase-credits` edge function
+- **Loading states**: Skeleton placeholders while packages load
+- **Error states**: Error card if packages fail to load
+- **Current balance display**: Shows current credit balance in header
+
+### New files created:
+- `src/hooks/useCreditPackages.ts` - Hook that fetches credit packages from DB (with static fallback), calculates savings percentages, and maps to display format
+- `src/pages/credits/BuyCreditsPage.tsx` - Full page component with card grid, promo code, and checkout flow
+
+### Verification:
+- [x] `npm run build` - PASSES (0 TypeScript errors)
+- [x] `npm run lint` - PASSES (0 errors on new files)
