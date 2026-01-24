@@ -2657,3 +2657,35 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create AccountSettingsPage.tsx (Auth - Protected Page with Tabbed Layout)
+
+### What was done:
+Created `src/pages/auth/AccountSettingsPage.tsx` - a protected account settings page for tenant admins with a tabbed interface using shadcn/ui Tabs component.
+
+### Features Implemented:
+1. **Profile Tab** - Edit first name, last name, phone; shows email (read-only with note to use Email tab)
+2. **Email Tab** - Change email with Supabase verification flow (sends verification to both old and new email)
+3. **Password Tab** - Change password with validation (min 8 chars, confirmation match)
+4. **Sessions Tab** - Lists active sessions with current session indicator, revoke buttons, and "Revoke All Others" option
+5. **Danger Zone Tab** - Delete account with AlertDialog confirmation (requires typing "DELETE"), destructive styling
+
+### Architecture:
+- Uses `useTenantAdminAuth()` context for admin/tenant info
+- Supabase auth API for email/password updates and session management
+- Loading skeletons for profile and sessions tabs
+- All buttons have loading + disabled states during async operations
+- Error handling with toast notifications
+- Named export only (no default export)
+- Uses `logger` from `@/lib/logger` (no console.log)
+- Route added at `/:tenantSlug/admin/account-settings` within protected admin layout
+
+### Files Changed:
+- `src/pages/auth/AccountSettingsPage.tsx` (new file)
+- `src/App.tsx` (lazy import + route definition)
+
+### Verification Results:
+- [x] `npm run build` - PASSES (0 TypeScript errors)
+- [x] `npm run lint` - PASSES (0 errors on new file, 0 new warnings)
