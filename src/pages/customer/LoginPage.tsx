@@ -13,6 +13,8 @@ import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { AuthOfflineIndicator } from "@/components/auth/AuthOfflineIndicator";
+import { useAuthOffline } from "@/hooks/useAuthOffline";
 import { useAuth } from "@/contexts/AuthContext";
 
 
@@ -28,6 +30,17 @@ export default function CustomerLoginPage() {
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<any>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+
+  const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline(
+    async (qEmail, qPassword, qSlug) => {
+      await login(qEmail, qPassword, qSlug || '');
+      toast({
+        title: "Welcome!",
+        description: "Logged in successfully",
+      });
+      navigate(`/${tenantSlug}/shop/dashboard`, { replace: true });
+    }
+  );
 
   useAuthRedirect(); // Redirect if already logged in
 
@@ -88,6 +101,11 @@ export default function CustomerLoginPage() {
         title: "Error",
         description: "Tenant slug is required",
       });
+      return;
+    }
+
+    if (!isOnline) {
+      queueLoginAttempt(email, password, tenantSlug);
       return;
     }
 
@@ -210,6 +228,7 @@ export default function CustomerLoginPage() {
 
         {/* Card with better contrast */}
         <div className="bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 p-8">
+          <AuthOfflineIndicator isOnline={isOnline} hasQueuedAttempt={hasQueuedAttempt} className="mb-4" />
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium text-slate-200">
@@ -235,7 +254,7 @@ export default function CustomerLoginPage() {
                 <Button
                   type="submit"
                   className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-transform duration-300 hover:scale-[1.02] rounded-lg"
-                  disabled={loading}
+                  disabled={loading || !isOnline}
                 >
                   {loading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -278,7 +297,7 @@ export default function CustomerLoginPage() {
                 <Button
                   type="submit"
                   className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-transform duration-300 hover:scale-[1.02] rounded-lg"
-                  disabled={loading}
+                  disabled={loading || !isOnline}
                 >
                   {loading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -315,7 +334,7 @@ export default function CustomerLoginPage() {
             {/* Google Sign In */}
             <GoogleSignInButton
               redirectTo={`${window.location.origin}/${tenantSlug}/customer/auth/callback`}
-              disabled={loading}
+              disabled={loading || !isOnline}
               className="h-12 bg-slate-900/50 border-slate-700 text-white hover:bg-slate-900/70 rounded-lg"
             />
 

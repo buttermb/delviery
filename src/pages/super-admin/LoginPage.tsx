@@ -11,6 +11,8 @@ import { Link } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { AuthOfflineIndicator } from "@/components/auth/AuthOfflineIndicator";
+import { useAuthOffline } from "@/hooks/useAuthOffline";
 
 
 export default function SuperAdminLoginPage() {
@@ -20,8 +22,25 @@ export default function SuperAdminLoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline(
+    async (qEmail, qPassword) => {
+      await login(qEmail, qPassword);
+      toast({
+        title: "Welcome, Super Admin!",
+        description: "Logged in successfully",
+      });
+      navigate("/super-admin/dashboard", { replace: true });
+    }
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isOnline) {
+      queueLoginAttempt(email, password);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -106,6 +125,9 @@ export default function SuperAdminLoginPage() {
             </p>
           </div>
 
+          {/* Offline Indicator */}
+          <AuthOfflineIndicator isOnline={isOnline} hasQueuedAttempt={hasQueuedAttempt} className="mb-6" />
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -147,7 +169,7 @@ export default function SuperAdminLoginPage() {
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || !isOnline}
               className="w-full bg-gradient-to-r from-[hsl(var(--super-admin-primary))] to-[hsl(var(--super-admin-secondary))] hover:from-[hsl(var(--super-admin-primary))]/90 hover:to-[hsl(var(--super-admin-secondary))]/90 text-white h-12 font-semibold shadow-lg"
             >
               {loading ? (
@@ -173,7 +195,7 @@ export default function SuperAdminLoginPage() {
             {/* Google Sign In */}
             <GoogleSignInButton
               redirectTo={`${window.location.origin}/super-admin/auth/callback`}
-              disabled={loading}
+              disabled={loading || !isOnline}
               className="bg-[hsl(var(--super-admin-bg))]/50 border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-[hsl(var(--super-admin-bg))]/70"
             />
 

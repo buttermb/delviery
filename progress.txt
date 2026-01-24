@@ -6659,3 +6659,78 @@ Enhanced the existing `TwoFactorSetup.tsx` component with the following improvem
 
 ### Files Changed:
 - `src/components/auth/AuthErrorBoundary.tsx` (rewritten with full error boundary implementation)
+
+---
+
+## Task: Add Offline Handling to Auth Flows
+
+### What was done:
+
+1. **Created `src/hooks/useAuthOffline.ts`** - Custom hook that:
+   - Detects `navigator.onLine` status with event listeners for `online`/`offline` events
+   - Queues login attempts when offline (stores email, password, tenantSlug, timestamp in state)
+   - Auto-retries queued login attempts when connection is restored
+   - Provides `preventSubmit()` helper that blocks form submission when offline with a toast message
+   - Shows appropriate toast messages for offline state, queuing, and retry outcomes
+   - Uses `useRef` for the retry callback to avoid stale closures
+   - Exposes: `isOnline`, `hasQueuedAttempt`, `queuedAttempt`, `queueLoginAttempt`, `clearQueuedAttempt`, `preventSubmit`
+
+2. **Created `src/components/auth/AuthOfflineIndicator.tsx`** - Inline indicator component that:
+   - Shows a red warning banner when user is offline ("You are offline - Check your internet connection")
+   - Shows an amber banner when a login attempt is queued and user is still offline
+   - Shows a blue banner with spinner when retrying a queued login after coming back online
+   - Uses proper ARIA attributes (`role="alert"`, `role="status"`, `aria-live`) for accessibility
+   - Renders nothing when online and no queued attempt exists
+   - Uses lucide-react icons (WifiOff, Clock, Loader2)
+
+3. **Integrated into Tenant Admin Login (`src/pages/tenant-admin/LoginPage.tsx`)**:
+   - Added `useAuthOffline` hook with retry callback that calls `login()` and navigates on success
+   - Added `AuthOfflineIndicator` above the login form
+   - Queues login attempt when form is submitted while offline
+   - Disables submit button and Google Sign-In button when offline
+
+4. **Integrated into Customer Login (`src/pages/customer/LoginPage.tsx`)**:
+   - Added `useAuthOffline` hook with retry callback
+   - Added `AuthOfflineIndicator` above the form
+   - Queues login attempt when offline
+   - Disables both password login and magic link buttons when offline
+   - Disables Google Sign-In button when offline
+
+5. **Integrated into Super Admin Login (`src/pages/super-admin/LoginPage.tsx`)**:
+   - Added `useAuthOffline` hook with retry callback
+   - Added `AuthOfflineIndicator` above the form
+   - Queues login attempt when offline
+   - Disables submit button and Google Sign-In button when offline
+
+6. **Integrated into Courier Login (`src/pages/courier/LoginPage.tsx`)**:
+   - Added `useAuthOffline` hook (no retry callback - courier has PIN step)
+   - Added `AuthOfflineIndicator` in the form card
+   - Queues login attempt when offline
+   - Disables Continue button when offline
+
+7. **Integrated into Account Signup (`src/pages/AccountSignup.tsx`)**:
+   - Added `useAuthOffline` hook for online status detection
+   - Added `AuthOfflineIndicator` inside the card content
+   - Blocks step 2 submission when offline with a toast message
+   - Disables "Create My Account" button when offline
+
+### Verification:
+- [x] `npm run build` - passes with zero TypeScript errors
+- [x] `npm run lint` - passes with zero errors (only pre-existing warnings)
+- [x] All auth forms detect `navigator.onLine` status
+- [x] Login attempts are queued when offline
+- [x] Queued attempts auto-retry when back online
+- [x] Offline indicator shown in all auth forms
+- [x] Form submission prevented when offline
+- [x] OAuth/Google sign-in buttons disabled when offline
+
+### Files Created:
+- `src/hooks/useAuthOffline.ts`
+- `src/components/auth/AuthOfflineIndicator.tsx`
+
+### Files Modified:
+- `src/pages/tenant-admin/LoginPage.tsx`
+- `src/pages/customer/LoginPage.tsx`
+- `src/pages/super-admin/LoginPage.tsx`
+- `src/pages/courier/LoginPage.tsx`
+- `src/pages/AccountSignup.tsx`
