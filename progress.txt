@@ -428,3 +428,64 @@ sub-components with shared state from useStorefrontBuilder hook.
 - `src/pages/admin/storefront/builder/BuilderCreateStoreDialog.tsx` (new)
 - `src/pages/admin/storefront/builder/index.ts` (new)
 - `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export alias)
+
+---
+
+## Task: Build Sales Report Drilldown with Clickable Recharts
+
+### What was done:
+
+1. **Created `src/hooks/useSalesReportDrilldown.ts`** - Custom hook for managing chart drilldown state:
+   - Tracks which chart segment was clicked (filter type: date, status, or product)
+   - Provides `openDrilldown(filter)` and `closeDrilldown()` callbacks
+   - Typed `DrilldownFilter` interface with `type`, `label`, and `value` fields
+   - Exported `DrilldownFilterType` union type for extensibility
+
+2. **Created `src/components/admin/analytics/SalesReportDrilldownModal.tsx`** - Modal showing filtered orders:
+   - Dialog-based modal (shadcn/ui) with proper header, description, and scrollable content
+   - Filters orders by: date (ISO date match), status (exact match), or product (order_items contains)
+   - Displays summary stats: count of filtered orders + total revenue for the segment
+   - Table with columns: Date, Status (with color-coded Badge), Items, Total
+   - Handles both `total` and `total_amount` order fields for compatibility
+   - Empty state when no orders match the filter
+   - ScrollArea wrapper for long order lists (max 400px height)
+
+3. **Updated `src/pages/admin/SalesDashboard.tsx`** - Made all charts clickable:
+   - **Revenue Trend (AreaChart)**: Click any data point to drill down into orders for that day
+     - Added `onClick` handler on the chart that reads `activePayload`
+     - Added `activeDot` with increased radius for visual click affordance
+     - Hint text: "Click a data point to see orders for that day"
+   - **Orders Volume (BarChart)**: Click any bar to drill down into orders for that day
+     - Added `onClick` handler same pattern as AreaChart
+     - Hint text: "Click a bar to see orders for that day"
+   - **Order Status (PieChart - new)**: Added a donut chart showing order status breakdown
+     - Each segment is clickable to show orders filtered by that status
+     - Uses `STATUS_COLORS` palette for consistent segment coloring
+     - Legend and tooltip included
+     - Hint text in card description: "Click a segment to see orders"
+   - Replaced untyped `any[]` data processing with properly typed `useMemo` computation
+   - Added `OrderRecord`, `SalesDataPoint`, `StatusDataPoint` interfaces
+   - Chart data now includes `isoDate` field for reliable date filtering
+   - `handleChartClick` callback dispatches to drilldown hook based on filter type
+   - `SalesReportDrilldownModal` rendered at bottom of page, controlled by drilldown hook state
+
+### Architecture Decisions:
+- Used Dialog (not Drawer) since the modal content is a data table best viewed at desktop width
+- Filtering happens client-side on already-fetched order data (no extra API calls needed)
+- Drilldown hook is decoupled from the modal component for reusability
+- PieChart uses `onClick` on the `Pie` element (per-segment click) rather than chart-level click
+
+### Acceptance Criteria Met:
+- [x] Revenue trend chart is clickable - opens modal with orders for clicked date
+- [x] Orders volume chart is clickable - opens modal with orders for clicked date
+- [x] Order status pie chart is clickable - opens modal with orders filtered by status
+- [x] Modal shows filtered orders with date, status badge, items, and total
+- [x] Modal shows summary (order count + total revenue for segment)
+- [x] Empty state when no orders match
+- [x] Visual click affordances (cursor: pointer, activeDot, hint text)
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/hooks/useSalesReportDrilldown.ts` (new)
+- `src/components/admin/analytics/SalesReportDrilldownModal.tsx` (new)
+- `src/pages/admin/SalesDashboard.tsx` (modified - clickable charts + status pie + drilldown modal)
