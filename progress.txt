@@ -2657,3 +2657,61 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Add Brute Force Protection - Track Failed Logins by IP
+
+### What was done:
+
+1. **Created migration `supabase/migrations/20260124000001_brute_force_protection.sql`**:
+   - **`auth_audit_log` table**: Tracks all login attempts with `event_type`, `ip_address`, `email`, `success`, `failure_reason`, `user_agent`, and `metadata` JSONB. Indexed for fast IP+time lookups.
+   - **`ip_allowlist` table**: Maintains trusted IPs that bypass brute force checks. Unique constraint on IP, `is_active` flag, `description` field.
+   - **`log_auth_audit_event()` RPC**: Security definer function to log auth events.
+   - **`check_ip_brute_force()` RPC**: Checks if IP is blocked (10+ failed attempts across ANY account in 1 hour). Returns `{blocked, allowlisted, failed_attempts}`. Logs `ip_brute_force_blocked` security event when threshold exceeded.
+   - **`cleanup_auth_audit_log()` RPC**: Retention policy - deletes entries older than 90 days.
+   - **RLS policies**: Both tables are service_role-only access.
+   - **Seed data**: Localhost IPs (127.0.0.1, ::1) pre-allowlisted.
+
+2. **Created `supabase/functions/_shared/bruteForceProtection.ts`** - Shared utility:
+   - `getClientIP(req)`: Extracts client IP from x-forwarded-for, cf-connecting-ip, x-real-ip headers.
+   - `checkBruteForce(ip)`: Calls `check_ip_brute_force` RPC, fails open on error.
+   - `logAuthEvent(params)`: Calls `log_auth_audit_event` RPC for tracking.
+   - `GENERIC_AUTH_ERROR` / `GENERIC_AUTH_DETAIL`: Constants for generic error messages that don't reveal IP blocking.
+
+3. **Updated `supabase/functions/tenant-admin-auth/index.ts`**:
+   - Added brute force check BEFORE the per-email rate limit (blocks across all accounts).
+   - Logs failed attempts (invalid_credentials, no_user_returned, not_authorized_for_tenant) to auth_audit_log.
+   - Logs successful logins to auth_audit_log.
+   - Returns generic error on IP block (401 "Invalid credentials" - not revealing block).
+   - Uses shared `getClientIP()` for consistent IP extraction.
+
+4. **Updated `supabase/functions/admin-auth/index.ts`**:
+   - Added brute force check before per-email rate limit.
+   - Logs failed/successful attempts to auth_audit_log.
+   - Returns generic error on IP block (same 401 as normal failure).
+   - Maintains backward compatibility with legacy `auth_failed_attempts` table.
+
+5. **Updated `supabase/functions/magic-link-login/index.ts`**:
+   - Added brute force check to prevent email spam from blocked IPs.
+   - Returns success-like response when blocked (doesn't reveal block status).
+   - Uses shared `getClientIP()` for consistent IP extraction.
+
+### Key Design Decisions:
+- **Generic error on block**: Blocked IPs receive the same 401 "Invalid credentials" error as a normal failure, preventing attackers from learning about the blocking mechanism.
+- **Cross-account tracking**: The 10-attempt threshold is per IP across ALL accounts, preventing distributed credential stuffing.
+- **1-hour window**: Failed attempts expire after 1 hour, allowing recovery without admin intervention.
+- **IP allowlist bypass**: Known good IPs (e.g., office networks, load balancers) can be added to `ip_allowlist` to never be blocked.
+- **Fail open on error**: If the brute force check RPC fails (DB issue), the system fails open to avoid blocking legitimate users.
+- **Security events**: Critical `ip_brute_force_blocked` events are logged to the `security_events` table for monitoring.
+
+### Verification Results:
+- [x] `npm run build` - PASSES (0 TypeScript errors)
+- [x] `npm run lint` - PASSES (0 errors, 1873 warnings - pre-existing)
+
+### Files Changed:
+- `supabase/migrations/20260124000001_brute_force_protection.sql` (new)
+- `supabase/functions/_shared/bruteForceProtection.ts` (new)
+- `supabase/functions/tenant-admin-auth/index.ts` (updated)
+- `supabase/functions/admin-auth/index.ts` (updated)
+- `supabase/functions/magic-link-login/index.ts` (updated)

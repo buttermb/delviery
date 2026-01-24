@@ -3,6 +3,7 @@
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { loginSchema, refreshSchema, setupPasswordSchema } from './validation.ts';
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from '../_shared/rateLimiting.ts';
+import { checkBruteForce, logAuthEvent, getClientIP, GENERIC_AUTH_ERROR, GENERIC_AUTH_DETAIL } from '../_shared/bruteForceProtection.ts';
 
 serve(async (req) => {
   // Get origin from request for CORS (required when credentials are included)
@@ -103,11 +104,32 @@ serve(async (req) => {
       const { email, password, tenantSlug } = validationResult.data;
 
       // Extract client IP for rate limiting
-      const clientIP =
-        req.headers.get('x-forwarded-for')?.split(',')[0] ||
-        req.headers.get('cf-connecting-ip') ||
-        req.headers.get('x-real-ip') ||
-        'unknown';
+      const clientIP = getClientIP(req);
+      const userAgent = req.headers.get('user-agent') || 'unknown';
+
+      // Brute force protection: Block IP after 10 failed attempts across ANY account in 1 hour
+      const bruteForceResult = await checkBruteForce(clientIP);
+      if (bruteForceResult.blocked) {
+        // Log the blocked attempt
+        await logAuthEvent({
+          eventType: 'login_attempt',
+          ipAddress: clientIP,
+          email: email.toLowerCase(),
+          success: false,
+          failureReason: 'ip_blocked_brute_force',
+          userAgent,
+          metadata: { tenantSlug, failedAttempts: bruteForceResult.failedAttempts },
+        });
+
+        // Return generic error - do NOT reveal the IP is blocked
+        return new Response(
+          JSON.stringify({
+            error: GENERIC_AUTH_ERROR,
+            detail: GENERIC_AUTH_DETAIL,
+          }),
+          { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
+        );
+      }
 
       // Rate limiting: 5 attempts per 15 minutes per IP+email combo
       const rateLimitResult = await checkRateLimit(
@@ -195,10 +217,22 @@ serve(async (req) => {
           errorCode: authError.status,
           errorMessage: authError.message
         });
+
+        // Log failed login attempt to auth_audit_log for brute force tracking
+        await logAuthEvent({
+          eventType: 'login_attempt',
+          ipAddress: clientIP,
+          email: email.toLowerCase(),
+          success: false,
+          failureReason: 'invalid_credentials',
+          userAgent,
+          metadata: { tenantSlug },
+        });
+
         return new Response(
           JSON.stringify({
-            error: 'Invalid credentials',
-            detail: 'Email or password is incorrect. Please try again.'
+            error: GENERIC_AUTH_ERROR,
+            detail: GENERIC_AUTH_DETAIL,
           }),
           { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
@@ -206,8 +240,17 @@ serve(async (req) => {
 
       if (!authData.user) {
         console.error('No user returned after authentication');
+        await logAuthEvent({
+          eventType: 'login_attempt',
+          ipAddress: clientIP,
+          email: email.toLowerCase(),
+          success: false,
+          failureReason: 'no_user_returned',
+          userAgent,
+          metadata: { tenantSlug },
+        });
         return new Response(
-          JSON.stringify({ error: 'Authentication failed' }),
+          JSON.stringify({ error: GENERIC_AUTH_ERROR, detail: GENERIC_AUTH_DETAIL }),
           { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
@@ -249,6 +292,18 @@ serve(async (req) => {
             tenantId: tenant.id,
             tenantSlug: tenant.slug
           });
+
+          // Log as a failed attempt (valid credentials but wrong tenant)
+          await logAuthEvent({
+            eventType: 'login_attempt',
+            ipAddress: clientIP,
+            email: email.toLowerCase(),
+            success: false,
+            failureReason: 'not_authorized_for_tenant',
+            userAgent,
+            metadata: { tenantSlug, tenantId: tenant.id },
+          });
+
           return new Response(
             JSON.stringify({
               error: 'You do not have access to this tenant',
@@ -281,6 +336,16 @@ serve(async (req) => {
       };
 
       console.log('Login successful for:', email, 'tenant:', tenant.business_name);
+
+      // Log successful login to auth_audit_log
+      await logAuthEvent({
+        eventType: 'login_attempt',
+        ipAddress: clientIP,
+        email: email.toLowerCase(),
+        success: true,
+        userAgent,
+        metadata: { tenantSlug, tenantId: tenant.id },
+      });
 
       // Prepare httpOnly cookie options
       const cookieOptions = [
