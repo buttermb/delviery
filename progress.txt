@@ -2657,3 +2657,69 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create SocialAuthButtons Component with Google, Apple, GitHub OAuth
+
+### What was done:
+
+1. **Created `src/components/auth/SocialAuthButtons.tsx`** - A configurable social OAuth buttons component that:
+   - Supports three providers: Google, Apple, and GitHub
+   - Renders only the providers specified via the `providers` prop (defaults to all three)
+   - Calls `supabase.auth.signInWithOAuth()` with the appropriate provider
+   - Manages per-button loading states (only the clicked button shows spinner)
+   - Disables all buttons while any OAuth request is in-flight to prevent double-clicks
+   - Shows error toast with provider-specific message if OAuth fails
+   - Logs errors via `logger.error` with component context
+   - Returns `null` when providers array is empty (renders nothing)
+   - Supports custom `redirectTo` URL (defaults to `/auth/callback`)
+   - Accepts `variant`, `className`, and `disabled` props for UI customization
+   - Uses inline SVG icons for Google (multicolor), Apple (currentColor), and GitHub (currentColor)
+   - Follows existing `GoogleSignInButton.tsx` patterns for consistency
+
+### Component API:
+
+```typescript
+type OAuthProvider = "google" | "apple" | "github";
+
+interface SocialAuthButtonsProps {
+  providers?: OAuthProvider[];      // Which buttons to show (default: all)
+  redirectTo?: string;              // Custom redirect URL after auth
+  variant?: "default" | "outline" | "ghost";  // Button style variant
+  className?: string;               // Container className
+  disabled?: boolean;               // External disable control
+}
+```
+
+### Usage Examples:
+
+```tsx
+// Show all providers (default)
+<SocialAuthButtons />
+
+// Show only Google and GitHub
+<SocialAuthButtons providers={["google", "github"]} />
+
+// Custom redirect
+<SocialAuthButtons redirectTo="/dashboard" />
+
+// Disabled state
+<SocialAuthButtons disabled={isSubmitting} />
+```
+
+### Acceptance Criteria Met:
+- [x] Shows Google, Apple, GitHub OAuth buttons
+- [x] Configurable via props which providers to show
+- [x] Calls appropriate Supabase OAuth methods per provider
+- [x] Handles loading states per button (spinner on active, all disabled during request)
+- [x] Shows error toast if OAuth fails
+- [x] Named export only (no default export)
+- [x] Uses `@/` import alias
+- [x] Uses `logger` from `@/lib/logger` (no console.log)
+- [x] TypeScript strict mode (no `any` types)
+- [x] Build passes with zero errors
+
+### Files Changed:
+- `src/components/auth/SocialAuthButtons.tsx` (new file)
+
+### Build Status:
+- `npm run build` - PASSES (0 TypeScript errors)
