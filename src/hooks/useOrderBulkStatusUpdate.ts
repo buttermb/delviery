@@ -158,14 +158,14 @@ export function useOrderBulkStatusUpdate({ tenantId, onSuccess }: UseOrderBulkSt
 
       if (failedCount === 0) {
         toast.success(`Updated ${succeededCount} order${succeededCount !== 1 ? 's' : ''} to ${targetStatus}`);
-        triggerHaptic('success');
+        triggerHaptic('light');
       } else {
         toast.warning(`Updated ${succeededCount} orders, ${failedCount} failed`);
         triggerHaptic('medium');
       }
     } else {
       toast.error(`Failed to update orders`);
-      triggerHaptic('error');
+      triggerHaptic('heavy');
       logger.error('Bulk order status update failed completely', new Error('All batch updates failed'), {
         component: 'useOrderBulkStatusUpdate',
         tenantId,
