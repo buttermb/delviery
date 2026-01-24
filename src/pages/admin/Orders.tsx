@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, CheckCircle, Truck } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -23,7 +23,10 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { SearchInput } from '@/components/shared/SearchInput';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { LastUpdated } from "@/components/shared/LastUpdated";
-import { BulkActions } from "@/components/shared/BulkActions";
+import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
+import { OrderBulkStatusConfirmDialog } from "@/components/admin/orders/OrderBulkStatusConfirmDialog";
+import { BulkOperationProgress } from "@/components/ui/bulk-operation-progress";
+import { useOrderBulkStatusUpdate } from "@/hooks/useOrderBulkStatusUpdate";
 import { Checkbox } from "@/components/ui/checkbox";
 import CopyButton from "@/components/CopyButton";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -108,6 +111,18 @@ export default function Orders() {
     type: 'single' | 'bulk';
     id?: string;
   }>({ open: false, type: 'single' });
+  const [bulkStatusConfirm, setBulkStatusConfirm] = useState<{
+    open: boolean;
+    targetStatus: string;
+  }>({ open: false, targetStatus: '' });
+
+  // Bulk status update hook
+  const bulkStatusUpdate = useOrderBulkStatusUpdate({
+    tenantId: tenant?.id,
+    onSuccess: () => {
+      setSelectedOrders([]);
+    },
+  });
 
   // Save preferences when filter changes
   useEffect(() => {
@@ -268,7 +283,7 @@ export default function Orders() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedOrders(orders.map(o => o.id));
+      setSelectedOrders(filteredOrders.map(o => o.id));
     } else {
       setSelectedOrders([]);
     }
@@ -284,49 +299,21 @@ export default function Orders() {
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
   };
 
-  const handleBulkStatusChange = async (status: string) => {
+  const handleBulkStatusChange = (status: string) => {
     if (!tenant?.id) {
       toast.error("No tenant context available");
       return;
     }
+    setBulkStatusConfirm({ open: true, targetStatus: status });
+  };
 
-    // Optimistic update: capture previous state for rollback
-    const previousOrders = orders;
+  const handleConfirmBulkStatusUpdate = () => {
+    const selectedOrderInfos = orders
+      .filter(o => selectedOrders.includes(o.id))
+      .map(o => ({ id: o.id, order_number: o.order_number }));
 
-    // Optimistically update the UI
-    queryClient.setQueryData(['orders', tenant.id, statusFilter], (old: Order[] = []) =>
-      old.map(o => selectedOrders.includes(o.id) ? { ...o, status } : o)
-    );
-
-    const now = new Date().toISOString();
-
-    try {
-      const { error } = await supabase
-        .from('orders')
-        .update({
-          status,
-          ...(status === 'delivered' && { delivered_at: now }),
-          ...(status === 'in_transit' && { courier_assigned_at: now }),
-          ...(status === 'confirmed' && { accepted_at: now }),
-          updated_at: now
-        })
-        .in('id', selectedOrders)
-        .eq('tenant_id', tenant.id); // CRITICAL: Tenant isolation
-
-      if (error) throw error;
-
-      toast.success(`Updated ${selectedOrders.length} orders to ${status}`);
-      // Invalidate related queries for consistency
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
-      setSelectedOrders([]);
-    } catch (error) {
-      // Rollback on error
-      queryClient.setQueryData(['orders', tenant.id, statusFilter], previousOrders);
-      logger.error('Error updating orders in bulk', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
-      toast.error("Failed to update orders");
-    }
+    setBulkStatusConfirm({ open: false, targetStatus: '' });
+    bulkStatusUpdate.executeBulkUpdate(selectedOrderInfos, bulkStatusConfirm.targetStatus);
   };
 
   const handleClearFilters = () => {
@@ -715,18 +702,7 @@ export default function Orders() {
               </div>
             </div>
 
-            {/* Bulk Actions */}
-            <BulkActions
-              selectedCount={selectedOrders.length}
-              actions={[
-                { label: 'Mark as Confirmed', onClick: () => handleBulkStatusChange('confirmed') },
-                { label: 'Mark as Preparing', onClick: () => handleBulkStatusChange('preparing') },
-                { label: 'Mark as Delivered', onClick: () => handleBulkStatusChange('delivered') },
-                { label: 'Mark as Cancelled', onClick: () => handleBulkStatusChange('cancelled'), variant: 'destructive' },
-              ]}
-              onDelete={handleBulkDelete}
-              className="mb-4 sticky bottom-4 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 rounded-lg border shadow-lg md:static md:bg-transparent md:border-none md:shadow-none md:p-0"
-            />
+            {/* Bulk Actions - handled by floating BulkActionsBar below */}
 
             {/* Responsive Table */}
             <ResponsiveTable<Order>
@@ -802,6 +778,78 @@ export default function Orders() {
           </Card>
         </div>
       </PullToRefresh>
+
+      {/* Floating Bulk Actions Bar */}
+      <BulkActionsBar
+        selectedIds={selectedOrders}
+        onClearSelection={() => setSelectedOrders([])}
+        actions={[
+          {
+            id: 'mark-confirmed',
+            label: 'Confirmed',
+            icon: <CheckCircle className="h-4 w-4" />,
+            onClick: async () => { handleBulkStatusChange('confirmed'); },
+          },
+          {
+            id: 'mark-delivered',
+            label: 'Delivered',
+            icon: <CheckCircle className="h-4 w-4" />,
+            onClick: async () => { handleBulkStatusChange('delivered'); },
+          },
+          {
+            id: 'mark-preparing',
+            label: 'Preparing',
+            icon: <Package className="h-4 w-4" />,
+            onClick: async () => { handleBulkStatusChange('preparing'); },
+          },
+          {
+            id: 'mark-in-transit',
+            label: 'In Transit',
+            icon: <Truck className="h-4 w-4" />,
+            onClick: async () => { handleBulkStatusChange('in_transit'); },
+          },
+          {
+            id: 'mark-cancelled',
+            label: 'Cancel',
+            icon: <XCircle className="h-4 w-4" />,
+            variant: 'destructive',
+            onClick: async () => { handleBulkStatusChange('cancelled'); },
+          },
+          {
+            id: 'delete',
+            label: 'Delete',
+            icon: <Trash2 className="h-4 w-4" />,
+            variant: 'destructive',
+            onClick: async () => { handleBulkDelete(); },
+          },
+        ]}
+      />
+
+      {/* Bulk Status Update Confirmation */}
+      <OrderBulkStatusConfirmDialog
+        open={bulkStatusConfirm.open}
+        onOpenChange={(open) => setBulkStatusConfirm(prev => ({ ...prev, open }))}
+        onConfirm={handleConfirmBulkStatusUpdate}
+        selectedCount={selectedOrders.length}
+        targetStatus={bulkStatusConfirm.targetStatus}
+        isLoading={bulkStatusUpdate.isRunning}
+      />
+
+      {/* Bulk Status Update Progress */}
+      <BulkOperationProgress
+        open={bulkStatusUpdate.showProgress}
+        onOpenChange={(open) => { if (!open) bulkStatusUpdate.closeProgress(); }}
+        title="Updating Order Status"
+        description={`Changing status to "${bulkStatusConfirm.targetStatus}"`}
+        total={bulkStatusUpdate.total}
+        completed={bulkStatusUpdate.completed}
+        succeeded={bulkStatusUpdate.succeeded}
+        failed={bulkStatusUpdate.failed}
+        failedItems={bulkStatusUpdate.failedItems}
+        isRunning={bulkStatusUpdate.isRunning}
+        isComplete={bulkStatusUpdate.isComplete}
+        onCancel={bulkStatusUpdate.cancel}
+      />
 
       <ConfirmDeleteDialog
         open={deleteConfirmation.open}
