@@ -2749,3 +2749,33 @@ verifying all 5 stat cards load with real data and their navigation links work c
 
 ### Files Changed:
 - `supabase/migrations/20260124000001_create_user_sessions.sql` (new file)
+
+---
+
+## Task: Create auth_audit_log table migration
+
+### What was done:
+
+1. **Created migration `supabase/migrations/20260124000001_create_auth_audit_log.sql`**:
+   - `auth_audit_log` table with:
+     - `id` uuid primary key (gen_random_uuid)
+     - `user_id` uuid referencing `auth.users(id)` with ON DELETE SET NULL
+     - `tenant_id` uuid for multi-tenant scoping
+     - `event_type` text NOT NULL with CHECK constraint for valid auth events:
+       login_success, login_failed, logout, password_reset, password_change,
+       email_change, account_locked, account_unlocked, session_revoked,
+       signup_started, signup_completed
+     - `ip_address` inet for client IP tracking
+     - `user_agent` text for browser/client identification
+     - `metadata` jsonb for additional event-specific data
+     - `created_at` timestamptz NOT NULL DEFAULT now()
+   - Composite index on (user_id, event_type, created_at DESC)
+   - Index on tenant_id for tenant-scoped queries
+   - Index on created_at DESC for time-based queries
+   - RLS enabled with:
+     - SELECT policy for tenant admins/owners (via tenant_users lookup)
+     - INSERT policy for service role (backend/edge functions)
+   - Table and column comments for documentation
+
+### Files Changed:
+- `supabase/migrations/20260124000001_create_auth_audit_log.sql` (new)
