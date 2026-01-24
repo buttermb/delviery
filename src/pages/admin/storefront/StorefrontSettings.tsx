@@ -1,13 +1,13 @@
 /**
  * Storefront Settings Page
  * Configure store branding, delivery, payments, and more
+ * Includes live preview panel for real-time visual feedback
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import type { Json } from '@/integrations/supabase/types';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,26 +20,28 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import {
-  ArrowLeft,
   Store,
   Palette,
   Truck,
   CreditCard,
   Clock,
   Globe,
-  Image,
   Save,
   Eye,
-  Upload,
   Share2,
   MapPin,
   Plus,
   Trash2,
   Sparkles,
-  Shield
+  Shield,
+  Star,
+  PanelRightClose,
+  PanelRightOpen
 } from 'lucide-react';
 import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog';
 import { generateUrlToken } from '@/utils/menuHelpers';
+import { StorefrontSettingsLivePreview } from '@/components/admin/storefront/StorefrontSettingsLivePreview';
+import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedProductsManager';
 
 interface DeliveryZone {
   zip_code: string;
@@ -107,6 +109,8 @@ interface StoreSettings {
     max_daily: number | null;
     max_weekly: number | null;
   } | null;
+  // Featured products
+  featured_product_ids: string[];
 }
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -138,6 +142,7 @@ export default function StorefrontSettings() {
   const [formData, setFormData] = useState<Partial<StoreSettings>>({});
   const [isDirty, setIsDirty] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [showPreview, setShowPreview] = useState(true);
 
   // Fetch store data
   const { data: store, isLoading } = useQuery({
@@ -145,7 +150,7 @@ export default function StorefrontSettings() {
     queryFn: async () => {
       if (!tenantId) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as unknown as { from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => { maybeSingle: () => Promise<{ data: StoreSettings | null; error: { code?: string; message?: string } | null }> } } } })
         .from('marketplace_stores')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -156,7 +161,7 @@ export default function StorefrontSettings() {
         throw error;
       }
 
-      return data as unknown as StoreSettings | null;
+      return data;
     },
     enabled: !!tenantId,
   });
@@ -164,9 +169,58 @@ export default function StorefrontSettings() {
   // Initialize form data when store loads
   useEffect(() => {
     if (store) {
-      setFormData(store);
+      setFormData({
+        ...store,
+        featured_product_ids: store.featured_product_ids || [],
+      });
     }
   }, [store]);
+
+  // Fetch featured products for preview
+  const { data: featuredProducts } = useQuery({
+    queryKey: ['featured-products-preview', formData.featured_product_ids],
+    queryFn: async () => {
+      const ids = formData.featured_product_ids || [];
+      if (ids.length === 0) return [];
+      const { data, error } = await (supabase as unknown as { from: (table: string) => { select: (cols: string) => { in: (col: string, vals: string[]) => Promise<{ data: Array<{ id: string; name: string; price: number; image_url: string | null; category: string | null }> | null; error: unknown }> } } })
+        .from('products')
+        .select('id, name, price, image_url, category')
+        .in('id', ids);
+
+      if (error) {
+        logger.error('Failed to fetch featured products', error, { component: 'StorefrontSettings' });
+        return [];
+      }
+      // Sort by the order in featured_product_ids
+      return (data || []).sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+    },
+    enabled: (formData.featured_product_ids || []).length > 0,
+  });
+
+  // Memoize preview settings to avoid unnecessary re-renders
+  const previewSettings = useMemo(() => ({
+    store_name: formData.store_name || '',
+    tagline: formData.tagline || null,
+    logo_url: formData.logo_url || null,
+    banner_url: formData.banner_url || null,
+    primary_color: formData.primary_color || '#10b981',
+    secondary_color: formData.secondary_color || '#059669',
+    accent_color: formData.accent_color || '#34d399',
+    font_family: formData.font_family || 'Inter',
+    theme_config: formData.theme_config || null,
+    featured_product_ids: formData.featured_product_ids || [],
+  }), [
+    formData.store_name,
+    formData.tagline,
+    formData.logo_url,
+    formData.banner_url,
+    formData.primary_color,
+    formData.secondary_color,
+    formData.accent_color,
+    formData.font_family,
+    formData.theme_config,
+    formData.featured_product_ids,
+  ]);
 
   // Update form field
   const updateField = <K extends keyof StoreSettings>(field: K, value: StoreSettings[K]) => {
@@ -206,7 +260,7 @@ export default function StorefrontSettings() {
     mutationFn: async () => {
       if (!store?.id) throw new Error('No store');
 
-      const { error } = await supabase
+      const { error } = await (supabase as unknown as { from: (table: string) => { update: (data: Record<string, unknown>) => { eq: (col: string, val: string) => Promise<{ error: unknown }> } } })
         .from('marketplace_stores')
         .update({
           store_name: formData.store_name,
@@ -229,15 +283,16 @@ export default function StorefrontSettings() {
           require_account: formData.require_account,
           require_age_verification: formData.require_age_verification,
           minimum_age: formData.minimum_age,
-          delivery_zones: formData.delivery_zones as unknown as Json,
+          delivery_zones: formData.delivery_zones,
           payment_methods: formData.payment_methods,
           time_slots: formData.time_slots,
-          theme_config: formData.theme_config as unknown as Json,
+          theme_config: formData.theme_config,
           free_delivery_threshold: formData.free_delivery_threshold,
           default_delivery_fee: formData.default_delivery_fee,
           checkout_settings: formData.checkout_settings,
           operating_hours: formData.operating_hours,
-          purchase_limits: formData.purchase_limits as unknown as Json,
+          purchase_limits: formData.purchase_limits,
+          featured_product_ids: formData.featured_product_ids || [],
         })
         .eq('id', store.id);
 
@@ -321,7 +376,7 @@ export default function StorefrontSettings() {
   const storeUrl = `${window.location.origin}/shop/${formData.slug || store.slug}`;
 
   return (
-    <div className="container mx-auto p-6 max-w-5xl space-y-6">
+    <div className="container mx-auto p-6 max-w-7xl space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
@@ -329,17 +384,31 @@ export default function StorefrontSettings() {
           <p className="text-muted-foreground">Configure your online storefront</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" onClick={() => setShareDialogOpen(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowPreview(!showPreview)}
+            title={showPreview ? 'Hide preview' : 'Show preview'}
+          >
+            {showPreview ? (
+              <PanelRightClose className="w-4 h-4 mr-2" />
+            ) : (
+              <PanelRightOpen className="w-4 h-4 mr-2" />
+            )}
+            {showPreview ? 'Hide Preview' : 'Show Preview'}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setShareDialogOpen(true)}>
             <Share2 className="w-4 h-4 mr-2" />
             Share
           </Button>
-          <Button variant="outline" asChild>
+          <Button variant="outline" size="sm" asChild>
             <a href={storeUrl} target="_blank" rel="noopener noreferrer">
               <Eye className="w-4 h-4 mr-2" />
-              Preview
+              Open Store
             </a>
           </Button>
           <Button
+            size="sm"
             onClick={() => saveMutation.mutate()}
             disabled={!isDirty || saveMutation.isPending}
           >
@@ -366,19 +435,22 @@ export default function StorefrontSettings() {
         />
       )}
 
-      {/* Settings Tabs */}
-      <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-9">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="branding">Branding</TabsTrigger>
-          <TabsTrigger value="delivery">Delivery</TabsTrigger>
-          <TabsTrigger value="zones">Zones</TabsTrigger>
-          <TabsTrigger value="timeslots">Time Slots</TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
-          <TabsTrigger value="checkout">Checkout</TabsTrigger>
-          <TabsTrigger value="hours">Hours</TabsTrigger>
-          <TabsTrigger value="seo">SEO</TabsTrigger>
-        </TabsList>
+      {/* Main Content: Settings + Preview */}
+      <div className={`grid gap-6 ${showPreview ? 'lg:grid-cols-[1fr,320px]' : 'grid-cols-1'}`}>
+        {/* Settings Tabs */}
+        <Tabs defaultValue="general" className="space-y-6 min-w-0">
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
+            <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="branding">Branding</TabsTrigger>
+            <TabsTrigger value="featured">Featured</TabsTrigger>
+            <TabsTrigger value="delivery">Delivery</TabsTrigger>
+            <TabsTrigger value="zones">Zones</TabsTrigger>
+            <TabsTrigger value="timeslots">Time Slots</TabsTrigger>
+            <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="checkout">Checkout</TabsTrigger>
+            <TabsTrigger value="hours">Hours</TabsTrigger>
+            <TabsTrigger value="seo">SEO</TabsTrigger>
+          </TabsList>
 
         {/* General Tab */}
         <TabsContent value="general">
@@ -608,6 +680,26 @@ export default function StorefrontSettings() {
                     )}
                   </div>
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="favicon_url">Favicon URL</Label>
+                  <Input
+                    id="favicon_url"
+                    value={formData.favicon_url || ''}
+                    onChange={(e) => updateField('favicon_url', e.target.value)}
+                    placeholder="https://... (32x32 recommended)"
+                  />
+                  {formData.favicon_url && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <img
+                        src={formData.favicon_url}
+                        alt="Favicon preview"
+                        className="w-8 h-8 object-contain"
+                      />
+                      <span className="text-xs text-muted-foreground">32x32px preview</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <Separator />
@@ -654,6 +746,28 @@ export default function StorefrontSettings() {
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Featured Products Tab */}
+        <TabsContent value="featured">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="w-5 h-5" />
+                Featured Products
+              </CardTitle>
+              <CardDescription>
+                Select which products to highlight on your storefront homepage. These appear in the &quot;Featured Products&quot; section.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FeaturedProductsManager
+                selectedIds={formData.featured_product_ids || []}
+                onSelectionChange={(ids) => updateField('featured_product_ids', ids)}
+                maxFeatured={8}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -1226,7 +1340,18 @@ export default function StorefrontSettings() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+        </Tabs>
+
+        {/* Live Preview Panel */}
+        {showPreview && (
+          <div className="hidden lg:block sticky top-6 self-start">
+            <StorefrontSettingsLivePreview
+              settings={previewSettings}
+              featuredProducts={featuredProducts || []}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
