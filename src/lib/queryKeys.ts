@@ -514,6 +514,16 @@ export const queryKeys = {
     list: (userId?: string) => [...queryKeys.sessions.lists(), { userId }] as const,
   },
 
+  // Credit Packages
+  creditPackages: {
+    all: ['credit-packages'] as const,
+    lists: () => [...queryKeys.creditPackages.all, 'list'] as const,
+    list: (tenantId?: string) =>
+      [...queryKeys.creditPackages.lists(), { tenantId }] as const,
+    details: () => [...queryKeys.creditPackages.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.creditPackages.details(), id] as const,
+  },
+
   // Sidebar Badge Counts
   sidebarBadges: {
     all: ['sidebar-badges'] as const,
