@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -32,6 +32,7 @@ import { useExport } from "@/hooks/useExport";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { formatSmartDate } from "@/lib/utils/formatDate";
+import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
 import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
 import {
   DropdownMenu,
@@ -51,6 +52,7 @@ interface Order {
   delivery_method?: string;
   user_id: string;
   courier_id?: string;
+  order_source?: string;
   user?: {
     full_name: string | null;
     email: string | null;
@@ -79,6 +81,17 @@ export default function Orders() {
   });
 
   const { exportCSV } = useExport();
+
+  // Real-time subscription for new orders (storefront + regular)
+  const { newOrderIds } = useAdminOrdersRealtime({
+    enabled: !!tenant?.id,
+    onNewOrder: (event) => {
+      const sourceLabel = event.source === 'storefront' ? 'Storefront' : event.source;
+      toast.success(`New ${sourceLabel} order #${event.orderNumber}`, {
+        description: `${event.customerName} - $${event.totalAmount.toFixed(2)}`,
+      });
+    },
+  });
 
   // State
   const [searchQuery, setSearchQuery] = useState('');
@@ -426,6 +439,24 @@ export default function Orders() {
     return <Badge variant={variants[status] || "default"}>{status}</Badge>;
   };
 
+  const getSourceBadge = (source: string | undefined) => {
+    const sourceConfig: Record<string, { label: string; icon: typeof Store; className: string }> = {
+      storefront: { label: 'Storefront', icon: Store, className: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800' },
+      admin: { label: 'Admin', icon: Monitor, className: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800' },
+      pos: { label: 'POS', icon: Monitor, className: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' },
+      menu: { label: 'Menu', icon: Utensils, className: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800' },
+      api: { label: 'API', icon: Zap, className: 'bg-cyan-100 text-cyan-700 border-cyan-200 dark:bg-cyan-900/30 dark:text-cyan-300 dark:border-cyan-800' },
+    };
+    const config = sourceConfig[source || 'admin'] || sourceConfig.admin;
+    const Icon = config.icon;
+    return (
+      <Badge variant="outline" className={`gap-1 text-xs font-medium ${config.className}`}>
+        <Icon className="h-3 w-3" />
+        {config.label}
+      </Badge>
+    );
+  };
+
   // Table Config
   const columns: ResponsiveColumn<Order>[] = [
     {
@@ -449,10 +480,17 @@ export default function Orders() {
       header: "Order #",
       cell: (order) => (
         <div className="flex items-center gap-2">
-          {order.order_number || order.id.slice(0, 8)}
+          <span className={newOrderIds.has(order.id) ? 'font-bold text-primary' : ''}>
+            {order.order_number || order.id.slice(0, 8)}
+          </span>
           <CopyButton text={order.order_number || order.id} label="Order Number" showLabel={false} className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       )
+    },
+    {
+      header: "Source",
+      cell: (order) => getSourceBadge(order.order_source),
+      className: "w-[120px]"
     },
     {
       header: "Customer",
@@ -697,6 +735,11 @@ export default function Orders() {
               isLoading={isLoading}
               keyExtractor={(item) => item.id}
               onRowClick={handleOrderClick}
+              rowClassName={(order) =>
+                newOrderIds.has(order.id)
+                  ? 'animate-new-order-highlight bg-primary/5 border-l-4 border-l-primary'
+                  : undefined
+              }
               emptyState={{
                 icon: Package,
                 title: "No orders found",
@@ -727,7 +770,7 @@ export default function Orders() {
                     onClick: () => toast.success("Order archived")
                   }}
                 >
-                  <div className="flex items-start justify-between">
+                  <div className={`flex items-start justify-between ${newOrderIds.has(order.id) ? 'animate-new-order-highlight rounded-lg' : ''}`}>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <Checkbox
@@ -739,6 +782,7 @@ export default function Orders() {
                         <span className="font-mono font-bold text-primary">
                           #{order.order_number || order.id.slice(0, 8)}
                         </span>
+                        {getSourceBadge(order.order_source)}
                       </div>
                       <p className="text-sm font-medium">
                         {order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown Customer'}

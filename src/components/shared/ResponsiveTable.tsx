@@ -28,6 +28,8 @@ interface ResponsiveTableProps<T> {
     emptyState?: Omit<EnhancedEmptyStateProps, "className">;
     mobileRenderer?: (item: T) => React.ReactNode;
     onRowClick?: (item: T) => void;
+    /** Per-row className function for dynamic styling (e.g., highlight animations) */
+    rowClassName?: (item: T) => string | undefined;
     className?: string;
     /** Enable virtualization for large datasets (auto-enabled when data > virtualizeThreshold) */
     virtualize?: boolean;
@@ -45,17 +47,20 @@ const MemoizedTableRow = memo(function MemoizedTableRow<T>({
     columns,
     onRowClick,
     itemKey,
+    rowClassName,
 }: {
     item: T;
     columns: ResponsiveColumn<T>[];
     onRowClick?: (item: T) => void;
     itemKey: string;
+    rowClassName?: string;
 }) {
     return (
         <TableRow
             onClick={() => onRowClick && onRowClick(item)}
             className={cn(
-                onRowClick && "cursor-pointer hover:bg-muted/50 transition-colors"
+                onRowClick && "cursor-pointer hover:bg-muted/50 transition-colors",
+                rowClassName
             )}
         >
             {columns.map((col, index) => (
@@ -74,6 +79,7 @@ const MemoizedTableRow = memo(function MemoizedTableRow<T>({
     columns: ResponsiveColumn<T>[];
     onRowClick?: (item: T) => void;
     itemKey: string;
+    rowClassName?: string;
 }) => React.ReactElement;
 
 export function ResponsiveTable<T>({
@@ -84,6 +90,7 @@ export function ResponsiveTable<T>({
     emptyState,
     mobileRenderer,
     onRowClick,
+    rowClassName,
     className,
     virtualize,
     virtualizeThreshold = 100,
@@ -182,6 +189,7 @@ export function ResponsiveTable<T>({
                                         columns={columns}
                                         onRowClick={onRowClick}
                                         itemKey={keyExtractor(item)}
+                                        rowClassName={rowClassName?.(item)}
                                     />
                                 ))}
                             </TableBody>
