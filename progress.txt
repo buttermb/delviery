@@ -5133,3 +5133,66 @@ Created `src/lib/auth/sessionManager.ts` - a singleton session manager utility t
 
 ### Files Changed:
 - `src/components/auth/PasswordStrengthMeter.tsx` (new file)
+
+---
+
+## Task: Create src/pages/auth/LoginPage.tsx
+
+### What was done:
+
+Created a unified authentication login page at `src/pages/auth/LoginPage.tsx` with the following features:
+
+1. **React Hook Form + Zod Validation**:
+   - Email field with proper email format validation
+   - Password field with required validation
+   - Remember me checkbox integrated as a form field
+   - Form-level error handling via FormMessage components
+
+2. **UI Components Used**:
+   - shadcn/ui Form, FormField, FormControl, FormItem, FormLabel, FormMessage
+   - Input with password visibility toggle (Eye/EyeOff icons)
+   - Checkbox (Radix UI) for remember me
+   - Button with loading state (Loader2 spinner)
+   - Alert with AlertCircle icon for error display
+
+3. **Error Handling**:
+   - Categorized errors into three types: `credentials`, `locked`, `general`
+   - Invalid credentials: Shows "Invalid email or password" message
+   - Locked/suspended account: Shows "Account has been locked" message
+   - General errors: Shows the error message or generic fallback
+   - Password field is cleared on failed login attempt
+
+4. **Tenant-Aware Multi-Tenant Support**:
+   - Reads `tenantSlug` from URL params (`useParams`)
+   - Passes tenant slug to the `login()` function from `useTenantAdminAuth` context
+   - Forgot password link routes to `/${tenantSlug}/admin/forgot-password`
+   - Signup link routes to `/${tenantSlug}/admin/signup`
+   - Falls back to `/auth/forgot-password` and `/auth/signup` if no tenant slug
+
+5. **Redirect on Success**:
+   - Reads `redirect` search param for intended destination
+   - Redirects to intended page if `?redirect=` param exists
+   - Falls back to `/${tenantSlug}/admin/dashboard` on success
+   - Uses `navigate(destination, { replace: true })` for clean history
+
+6. **Already Authenticated Redirect**:
+   - Uses `useAuthRedirect()` hook to auto-redirect logged-in users
+
+7. **Accessibility**:
+   - Proper aria-label on password toggle button
+   - Form labels linked to inputs via FormField
+   - Disabled state on all inputs during submission
+   - tabIndex={-1} on password toggle to keep tab order clean
+
+### Files Created:
+- `src/pages/auth/LoginPage.tsx`
+
+### Verification Results:
+- [x] `npx tsc --noEmit` - PASSES (0 TypeScript errors)
+- [x] `npm run build` - PASSES
+- [x] `npx eslint src/pages/auth/LoginPage.tsx` - PASSES (0 errors/warnings)
+- [x] Named export used (not default export)
+- [x] `@/` import alias used throughout
+- [x] `logger` from `@/lib/logger` used (no console.log)
+- [x] STORAGE_KEYS used for storage access
+- [x] Button has loading + disabled states during async
