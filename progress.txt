@@ -1,3 +1,51 @@
+## Task: Create src/pages/auth/SignupPage.tsx with Multi-Step Signup Form
+
+### What was done:
+
+1. **Created `src/pages/auth/SignupPage.tsx`** - Multi-step signup form with 3 steps:
+   - **Step 1: Email & Password** - Email input with icon, password with show/hide toggle, confirm password, and `PasswordStrengthIndicator` component integration showing real-time strength feedback
+   - **Step 2: Full Name & Phone** - Full name (required) and phone number (optional) with proper input modes and autocomplete attributes
+   - **Step 3: Tenant Selection or Creation** - Toggle between "Create New" organization (with business name and auto-generated slug preview) or "Join Existing" (with organization ID input)
+
+2. **Technical Implementation:**
+   - Uses **React Hook Form** with **Zod** schemas for each step (`step1Schema`, `step2Schema`, `step3Schema`)
+   - Separate form instances per step to isolate validation
+   - `zodResolver` integration for automatic validation
+   - TypeScript strict types via `z.infer<typeof schema>`
+   - Named export (`SignupPage`) following project conventions
+   - All imports use `@/` alias
+
+3. **UX Features:**
+   - Progress indicator showing current step with checkmarks for completed steps
+   - Password strength indicator using existing `PasswordStrengthIndicator` component
+   - Show/hide password toggles with aria-labels
+   - Back/Continue navigation between steps
+   - Loading state with spinner during form submission (`isSubmitting` state)
+   - Disabled buttons during submission
+   - Toast notifications for success and error states
+   - Link to login page (`/saas/login`)
+   - Terms of Service and Privacy Policy links
+   - Auto-generated URL slug preview when creating organization
+
+4. **Responsive Mobile-First Design:**
+   - Uses shadcn/ui components: `Card`, `Button`, `Input`, `Form`, `FormField`, `FormItem`, `FormLabel`, `FormControl`, `FormMessage`
+   - `min-h-dvh` for full viewport height
+   - Responsive padding and text sizes (`text-xl sm:text-2xl`)
+   - Mobile-friendly input heights (`h-11`)
+   - Gradient background (`bg-gradient-to-br from-background to-muted/50`)
+
+5. **Auth Flow:**
+   - Creates Supabase auth user with `signUp()`
+   - Creates tenant record in `tenants` table (if creating new org)
+   - Creates `tenant_users` record
+   - Redirects to `/verify-email` page on success with email in location state
+   - Error handling with `logger.error()` and `toast()` for user feedback
+   - Uses `.maybeSingle()` for optional data per project conventions
+
+6. **Build & Lint:** Both `npm run build` and `eslint` pass with zero errors/warnings.
+
+---
+
 ## Task: Create Unified Admin Dashboard Hub with 5 Stat Cards
 
 ### What was done:
