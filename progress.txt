@@ -2810,6 +2810,7 @@ verifying all 5 stat cards load with real data and their navigation links work c
 
 ---
 
+<<<<<<< HEAD
 ## Task: Create user_profiles Table Migration
 
 ### What was done:
@@ -4553,3 +4554,39 @@ Created `src/hooks/useAuthGuard.ts` - a comprehensive authentication guard hook 
 ### Files Changed:
 - `src/hooks/useCreditPackages.ts` (new file - main hook implementation)
 - `src/lib/queryKeys.ts` (added creditPackages query key factory)
+
+---
+
+## Task: Create src/hooks/usePurchaseCredits.ts Hook
+
+### What was done:
+
+1. **Created `src/hooks/usePurchaseCredits.ts`** - Custom hook for credit purchase flow:
+   - `usePurchaseCredits()` - Main hook wrapping `useMutation` that calls the `credits-purchase` edge function
+   - `usePurchaseSuccess()` - Companion hook for the success page to confirm purchase and show balance
+   - **Stripe Payment Flow**: Invokes `purchase-credits` edge function which creates a Stripe Checkout session with Payment Element
+   - **Loading States**: Exposes `isLoading`, `isPending`, `isSuccess`, `isError` from TanStack Query mutation
+   - **Error Handling**: Comprehensive `StripeCardError` type with `card_error`, `validation_error`, `api_error`, `network_error` categories
+   - **Card Error Messages**: Human-friendly messages for insufficient funds, declined, expired, invalid CVC, lost/stolen cards
+   - **Cache Invalidation**: On success, invalidates both `['credits', tenantId]` and `['tenant-credits']` query keys
+   - **Success Toast**: Shows toast with new balance on purchase confirmation
+   - **Error Toast**: Shows contextual error toasts based on error type (card, validation, network, API)
+   - **Mutation Reset**: Exposes `reset()` to clear error/success state
+   - **Async API**: Both `purchaseCredits` (fire-and-forget) and `purchaseCreditsAsync` (promise-returning) variants
+   - Uses `useTenantAdminAuth()` for tenant context
+   - Generates proper success/cancel URLs with tenant slug
+   - Typed with `PackageSlug` enum matching edge function's Zod schema
+
+2. **Updated `src/hooks/index.ts`** - Added barrel exports:
+   - `usePurchaseCredits` and `usePurchaseSuccess` exported from the credit system hooks section
+
+### Types Exported:
+- `PackageSlug` - Union type for valid package slugs
+- `PurchaseCreditsParams` - Mutation input params
+- `PurchaseCreditsResponse` - Response from edge function
+- `StripeCardError` - Structured error with type, code, message, declineCode
+- `UsePurchaseCreditsReturn` - Full return type of the hook
+
+### Files Changed:
+- `src/hooks/usePurchaseCredits.ts` (new file)
+- `src/hooks/index.ts` (added exports)
