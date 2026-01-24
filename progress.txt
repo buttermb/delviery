@@ -2657,3 +2657,45 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create SignupSuccessPage.tsx
+
+### What was done:
+
+1. **Created `src/pages/auth/SignupSuccessPage.tsx`** - Post-signup email verification page with:
+   - Displays "Check Your Email" message with the user's email address passed via router state
+   - Resend verification email button with 60-second cooldown timer
+   - Spam folder tip (orange warning box matching existing VerifyEmailPage pattern)
+   - Link to login page for users who have already verified
+   - Auto-redirect when email is verified:
+     - Polls session every 5 seconds to detect `email_confirmed_at`
+     - Listens to Supabase `onAuthStateChange` for real-time detection
+     - Redirects based on user metadata (super_admin, tenant_admin with slug, or fallback to login)
+   - Fallback UI when no email is in router state
+   - Split-screen layout matching existing auth pages (form left, branding right)
+   - Uses `ForceLightMode` wrapper for consistent theming
+   - Named export (per project conventions)
+   - Uses `logger` instead of `console.log`
+   - Proper cleanup of intervals and subscriptions on unmount
+
+2. **Updated `src/App.tsx`**:
+   - Added lazy import for `SignupSuccessPage` with named export resolution
+   - Added route `/signup-success` in the public authentication section
+
+### Features:
+- [x] Displays "check your email" message with email address
+- [x] Resend verification email button with 60s cooldown
+- [x] Spam folder tip
+- [x] Link to login page
+- [x] Auto-redirects if email already verified (polling + auth state listener)
+- [x] Follows existing auth page patterns (ForceLightMode, FloraIQLogo, split layout)
+- [x] TypeScript strict mode, no `any` types
+- [x] Named export only
+- [x] Build passes with zero errors
+- [x] Lint passes with no new warnings
+
+### Files Changed:
+- `src/pages/auth/SignupSuccessPage.tsx` (new file)
+- `src/App.tsx` (lazy import + route)
