@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 import { Loader2, Plus, FolderTree, Edit2, Trash2 } from "lucide-react";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 
@@ -103,7 +104,11 @@ export default function MarketplaceCategoryManager() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-categories'] });
             toast.success("Category deleted");
-        }
+        },
+        onError: (error: Error) => {
+            logger.error('Failed to delete category', { error });
+            toast.error("Failed to delete category");
+        },
     });
     
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

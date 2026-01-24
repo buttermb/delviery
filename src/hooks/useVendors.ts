@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export interface Vendor {
     id: string;
@@ -67,6 +69,11 @@ export function useCreateVendor() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['vendors'] });
+            toast.success('Vendor created successfully');
+        },
+        onError: (error: Error) => {
+            logger.error('Failed to create vendor', { error });
+            toast.error('Failed to create vendor');
         },
     });
 }

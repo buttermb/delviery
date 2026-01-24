@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 type NotificationType = 'email' | 'sms' | 'push';
 type NotificationStatus = 'pending' | 'sent' | 'delivered' | 'failed' | 'bounced';
@@ -93,6 +95,10 @@ export function useNotificationDelivery() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-logs', tenant?.id] });
     },
+    onError: (error: Error) => {
+      logger.error('Failed to log notification', { error });
+      toast.error('Failed to log notification');
+    },
   });
 
   // Update notification status
@@ -114,6 +120,10 @@ export function useNotificationDelivery() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-logs', tenant?.id] });
     },
+    onError: (error: Error) => {
+      logger.error('Failed to update notification status', { error });
+      toast.error('Failed to update notification status');
+    },
   });
 
   // Retry failed notification
@@ -134,6 +144,11 @@ export function useNotificationDelivery() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-logs', tenant?.id] });
+      toast.success('Notification queued for retry');
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to retry notification', { error });
+      toast.error('Failed to retry notification');
     },
   });
 

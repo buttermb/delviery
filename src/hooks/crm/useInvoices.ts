@@ -56,6 +56,7 @@ export function useInvoices() {
                 return normalizeInvoice(data);
             },
             onSuccess: () => { queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all }); toast.success('Invoice marked as paid'); },
+            onError: (error: Error) => { logger.error('Failed to mark invoice as paid', { error }); toast.error('Failed to mark invoice as paid'); },
         });
     };
 
@@ -68,6 +69,7 @@ export function useInvoices() {
                 if (error) throw error;
             },
             onSuccess: () => { queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all }); toast.success('Invoice deleted'); },
+            onError: (error: Error) => { logger.error('Failed to delete invoice', { error }); toast.error('Failed to delete invoice'); },
         });
     };
 
@@ -88,6 +90,11 @@ export function useInvoices() {
             },
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
+                toast.success('Invoice marked as sent');
+            },
+            onError: (error: Error) => {
+                logger.error('Failed to mark invoice as sent', { error });
+                toast.error('Failed to mark invoice as sent');
             },
         });
     };
@@ -109,6 +116,11 @@ export function useInvoices() {
             },
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
+                toast.success('Invoice voided');
+            },
+            onError: (error: Error) => {
+                logger.error('Failed to void invoice', { error });
+                toast.error('Failed to void invoice');
             },
         });
     };
@@ -157,6 +169,11 @@ export function useInvoices() {
             },
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
+                toast.success('Invoice duplicated');
+            },
+            onError: (error: Error) => {
+                logger.error('Failed to duplicate invoice', { error });
+                toast.error('Failed to duplicate invoice');
             },
         });
     };

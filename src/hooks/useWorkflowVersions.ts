@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 interface WorkflowAction {
   id?: string;
@@ -129,6 +130,14 @@ export function useWorkflowVersions(workflowId: string | null) {
 
       if (error) throw error;
       return data;
+    },
+    onError: (error: unknown) => {
+      logger.error('Failed to compare workflow versions', { error });
+      toast({
+        title: 'Comparison Failed',
+        description: error instanceof Error ? error.message : 'Failed to compare versions',
+        variant: 'destructive',
+      });
     },
   });
 

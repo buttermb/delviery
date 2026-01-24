@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logger } from '@/lib/logger';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -66,7 +67,11 @@ export default function MarketplaceCartPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-cart'] });
             toast({ title: "Item removed" });
-        }
+        },
+        onError: (error: Error) => {
+            logger.error('Failed to remove cart item', { error });
+            toast({ title: "Failed to remove item", description: error.message, variant: "destructive" });
+        },
     });
 
     // Calculate Totals

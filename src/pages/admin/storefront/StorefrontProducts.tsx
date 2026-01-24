@@ -296,6 +296,10 @@ export default function StorefrontProducts() {
         title: `${selectedProducts.size} products ${isVisible ? 'shown' : 'hidden'}`,
       });
     },
+    onError: (error: Error) => {
+      logger.error('Failed to update product visibility', { error });
+      toast({ title: 'Failed to update visibility', description: error.message, variant: 'destructive' });
+    },
   });
 
   const toggleSelectAll = () => {

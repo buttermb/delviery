@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
 
 export type TaxType = "sales" | "excise" | "local" | "state" | "cannabis_excise";
 
@@ -61,6 +62,10 @@ export function useTaxRates(tenantId?: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tax-rates"] });
       toast({ title: "Tax rate added" });
+    },
+    onError: (error: unknown) => {
+      logger.error('Failed to add tax rate', { error });
+      toast({ title: "Failed to add tax rate", description: error instanceof Error ? error.message : 'An unexpected error occurred', variant: "destructive" });
     },
   });
 
