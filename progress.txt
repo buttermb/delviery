@@ -4853,3 +4853,42 @@ Enhanced the existing `AuthContext.tsx` to provide a comprehensive authenticatio
 
 ### Files Changed:
 - `src/lib/auth/tokenManager.ts` (new file)
+
+---
+
+## Task: Create src/lib/auth/sessionManager.ts
+
+### What was done:
+
+Created `src/lib/auth/sessionManager.ts` - a singleton session manager utility that:
+
+1. **Tracks session state** with typed states: `active`, `idle`, `expiring`, `expired`
+2. **Detects session expiry** with configurable timeout and triggers token refresh via `tokenRefreshManager`
+3. **Handles multiple tabs** using BroadcastChannel to sync session extensions, endings, and activity across tabs
+4. **Detects user activity** (mousedown, keydown, scroll, touchstart) with throttling to extend sessions on interaction
+5. **Provides three main APIs**:
+   - `startSessionTimer(config)` - Initialize session with configurable timeouts, callbacks, and broadcast channel
+   - `extendSession()` - Reset all timers, broadcast extension to other tabs
+   - `endSession()` - Clean up all resources, broadcast logout to other tabs
+
+### Key design decisions:
+- Follows singleton pattern matching `tokenRefreshManager.ts` convention
+- Integrates with existing `tokenRefreshManager` for deduplication of refresh attempts
+- Uses `logger` from `@/lib/logger` (never console.log)
+- Configurable session timeout (default 30min), expiry warning (default 5min), idle timeout (default 15min)
+- Activity detection throttled to 1 event/minute to avoid performance impact
+- Only triggers refresh if user has been active recently (skips refresh for idle users)
+- BroadcastChannel handles: SESSION_EXTENDED, SESSION_ENDED, SESSION_ACTIVITY
+- Graceful degradation when BroadcastChannel or document is unavailable (SSR-safe)
+- All callbacks wrapped in try-catch for resilience
+
+### Verification Results:
+- [x] `npm run build` - PASSES (0 TypeScript errors)
+- [x] `npx eslint src/lib/auth/sessionManager.ts` - PASSES (0 errors, 0 warnings)
+- [x] Named exports only (exports `sessionManager`, `SessionState`, `SessionConfig`)
+- [x] No `console.log` - uses `logger` throughout
+- [x] No `any` types - fully typed with TypeScript strict mode
+- [x] Import alias `@/` used for all imports
+
+### Files Changed:
+- `src/lib/auth/sessionManager.ts` (new file)
