@@ -2657,3 +2657,35 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+## Task: Create AuthErrorBoundary.tsx Error Boundary
+
+### What was done:
+
+1. **Rewrote `src/components/auth/AuthErrorBoundary.tsx`** - Class-based React error boundary that:
+   - Catches auth-related errors thrown by child components, preventing app crashes
+   - Detects auth errors via keyword matching (token, auth, unauthorized, expired, session, jwt, credentials, forbidden, 401, 403)
+   - Distinguishes between general auth errors and session-expired errors for tailored UX
+   - Shows a friendly error message with contextual title ("Session Expired" vs "Authentication Error")
+   - Lists possible causes for non-session errors (expired token, invalid credentials, account status change, network issues)
+   - Provides collapsible technical details section for debugging
+   - **Retry button**: Resets the error boundary state so children re-render without clearing auth
+   - **Login redirect button**: Clears auth tokens and redirects to the appropriate login page using `getLoginUrl()` from authHelpers
+   - Logs full error details via `logger.error()` including component stack, error classification, and user type
+   - Clears auth tokens automatically on detected auth errors via `clearAllAuthTokens()`
+   - Uses `getLoginUrl()` utility for proper login URL resolution based on userType and tenantSlug props
+
+### Acceptance Criteria Met:
+- [x] Catches auth-related errors (getDerivedStateFromError + componentDidCatch)
+- [x] Shows friendly error message with clear description
+- [x] Retry button that resets boundary state
+- [x] Logs error details with logger utility
+- [x] Provides login redirect if session expired
+- [x] Prevents app crash on auth failures (error boundary pattern)
+- [x] TypeScript strict mode - no `any` types
+- [x] Named export only
+- [x] Uses `@/` import alias
+- [x] Uses `logger` instead of console.log
+
+### Files Changed:
+- `src/components/auth/AuthErrorBoundary.tsx` (rewritten with full error boundary implementation)
