@@ -428,3 +428,62 @@ sub-components with shared state from useStorefrontBuilder hook.
 - `src/pages/admin/storefront/builder/BuilderCreateStoreDialog.tsx` (new)
 - `src/pages/admin/storefront/builder/index.ts` (new)
 - `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export alias)
+
+---
+
+## Task: Build Global Command Palette Search (Cmd+K / Ctrl+K)
+
+### What was done:
+
+1. **Rewrote `src/components/tenant-admin/CommandPalette.tsx`** - Complete global command palette with:
+   - **Keyboard shortcut**: Opens with `Cmd+K` (Mac) or `Ctrl+K` (Windows/Linux), toggles on repeat
+   - **Global Zustand store**: `useCommandPaletteStore` for opening from anywhere (sidebar, header, mobile button)
+   - **Debounced database search** (300ms): Searches orders, customers, and products in parallel via Supabase
+   - **Recent searches**: Persisted in localStorage using `STORAGE_KEYS.COMMAND_PALETTE_RECENT_SEARCHES`, max 5 items, with "Clear" button
+   - **Quick actions**: Create Order, Add Product, Add Client, Create Invoice, Create Menu, Generate Barcodes
+   - **Navigation pages**: 16 admin pages with keyboard shortcut hints
+   - **Tenant-aware**: All URLs built with `/${tenantSlug}/admin/...` pattern
+   - **Proper TypeScript**: No `any` types - uses typed interfaces (CustomerRow, OrderRow, ProductRow)
+   - **Loading states**: Spinner while searching database
+   - **Empty state**: Descriptive message when no results found
+   - **Accessibility**: 44px minimum touch targets, keyboard navigation hints in footer
+   - **Search result grouping**: Customers (purple), Orders (orange), Products (blue) with color-coded icons
+
+2. **Updated `src/hooks/useDataSearch.ts`** - Fixed TypeScript violations:
+   - Replaced `any` type casts with proper interfaces: `CustomerRow`, `OrderRow`, `ProductRow`
+   - Uses `as unknown as Type[]` pattern for Supabase query results
+   - Proper null-to-undefined coercion for optional fields
+
+3. **Updated `src/constants/storageKeys.ts`** - Added centralized storage key:
+   - Added `COMMAND_PALETTE_RECENT_SEARCHES: 'command_palette_recent_searches'` for type-safe localStorage access
+
+### Features:
+- **Search triggers at 2+ characters** to reduce database load
+- **Parallel queries** via `Promise.all` for fast results across 3 tables
+- **Recent searches** saved when selecting a data result (order/customer/product)
+- **Type badges** on recent items show the entity type
+- **Arrow indicators** on data results for clear navigation affordance
+- **Footer hint bar** with keyboard shortcuts (⌘K toggle, ↑↓ navigate, ↵ select)
+
+### Integration:
+- Already integrated in `AdminLayout.tsx` (lines 22-23, 53, 118) via:
+  - `useCommandPaletteStore` for the search bar click handler
+  - `<TenantAdminCommandPalette />` rendered in the layout
+- `AdaptiveSidebar.tsx` (line 154) uses `useCommandPaletteStore.getState().setOpen(true)` for sidebar search trigger
+- Desktop: Clickable search bar in header with "⌘K" hint
+- Mobile: Search icon button in header actions
+
+### Acceptance Criteria Met:
+- [x] Opens with Cmd+K or Ctrl+K keyboard shortcut
+- [x] Searches orders from database (with status and amount display)
+- [x] Searches customers from database (with contact name sublabel)
+- [x] Searches products from database (with SKU sublabel)
+- [x] Recent searches persisted in localStorage (max 5, with clear button)
+- [x] Proper TypeScript (no `any` types)
+- [x] Tenant-aware URLs for all navigation
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/components/tenant-admin/CommandPalette.tsx` (rewritten - global command palette)
+- `src/hooks/useDataSearch.ts` (fixed `any` types with proper interfaces)
+- `src/constants/storageKeys.ts` (added COMMAND_PALETTE_RECENT_SEARCHES key)

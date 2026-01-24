@@ -17,6 +17,25 @@ export interface SearchResult {
   url: string;
 }
 
+interface CustomerRow {
+  id: string;
+  business_name: string | null;
+  contact_name: string | null;
+}
+
+interface OrderRow {
+  id: string;
+  total_amount: number | null;
+  status: string | null;
+  wholesale_clients: { business_name: string | null } | null;
+}
+
+interface ProductRow {
+  id: string;
+  name: string;
+  sku: string | null;
+}
+
 interface UseDataSearchReturn {
   results: SearchResult[];
   isSearching: boolean;
@@ -70,12 +89,12 @@ export function useDataSearch(): UseDataSearchReturn {
 
         // Map customers
         if (customersRes.data) {
-          customersRes.data.forEach((c: any) => {
+          (customersRes.data as unknown as CustomerRow[]).forEach((c) => {
             searchResults.push({
               id: c.id,
               type: 'customer',
               label: c.business_name || 'Unnamed Client',
-              sublabel: c.contact_name,
+              sublabel: c.contact_name || undefined,
               icon: '👤',
               url: `/customers/${c.id}`,
             });
@@ -84,12 +103,12 @@ export function useDataSearch(): UseDataSearchReturn {
 
         // Map orders
         if (ordersRes.data) {
-          ordersRes.data.forEach((o: any) => {
+          (ordersRes.data as unknown as OrderRow[]).forEach((o) => {
             searchResults.push({
               id: o.id,
               type: 'order',
               label: `Order #${o.id.slice(0, 8)}`,
-              sublabel: o.wholesale_clients?.business_name || o.status,
+              sublabel: o.wholesale_clients?.business_name || o.status || undefined,
               icon: '📦',
               url: `/orders/${o.id}`,
             });
@@ -98,7 +117,7 @@ export function useDataSearch(): UseDataSearchReturn {
 
         // Map products
         if (productsRes.data) {
-          productsRes.data.forEach((p: any) => {
+          (productsRes.data as unknown as ProductRow[]).forEach((p) => {
             searchResults.push({
               id: p.id,
               type: 'product',
