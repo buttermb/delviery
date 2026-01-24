@@ -4462,3 +4462,43 @@ Created `src/hooks/useAuthGuard.ts` - a comprehensive authentication guard hook 
 ### Files Changed:
 - `src/hooks/useCredits.ts` (complete rewrite to fetch from edge function)
 - `src/lib/queryKeys.ts` (added `credits` query key factory)
+
+---
+
+## Task: Create useCreditTransactions Hook
+
+### What was done:
+
+1. **Created `src/hooks/useCreditTransactions.ts`** - Paginated credit transactions hook using `useInfiniteQuery`:
+   - Fetches from `credit_transactions` table with tenant isolation (`tenant_id` filter)
+   - **Pagination**: 20 items per page, uses Supabase `.range()` for offset-based pagination
+   - **Type filter**: Optional `CreditTransactionType` filter (`free_grant`, `purchase`, `usage`, `refund`, `bonus`, `promo`)
+   - **Date range filter**: Optional `startDate`/`endDate` filters using `gte`/`lte` on `created_at`
+   - **Relative dates**: `formatRelativeDate()` helper returns human-readable strings ("Just now", "5m ago", "2h ago", "Yesterday", "3d ago", "2w ago", or formatted date)
+   - **Formatted transactions**: Each transaction includes `relativeDate`, `isCredit` (boolean), and `absoluteAmount`
+   - **Return values**: `transactions`, `isLoading`, `isFetchingNextPage`, `error`, `hasNextPage`, `fetchNextPage`, `refetch`
+   - Uses `queryKeys.creditTransactions.list()` for cache key consistency
+   - 30-second `staleTime` for performance
+   - Enabled only when `tenantId` is available
+
+2. **Added `creditTransactions` query keys** in `src/lib/queryKeys.ts`:
+   - `creditTransactions.all` - base key
+   - `creditTransactions.lists()` - list scope
+   - `creditTransactions.list(filters)` - parameterized by filters
+
+3. **Added barrel export** in `src/hooks/index.ts`:
+   - `useCreditTransactions` exported alongside other credit system hooks
+
+### Verification:
+- [x] TypeScript compiles with zero errors (`tsc --noEmit`)
+- [x] Production build succeeds (`npm run build`)
+- [x] Named exports only (no default exports)
+- [x] Uses `@/` import alias
+- [x] Uses `logger` from `@/lib/logger` (no console.log)
+- [x] Filters by `tenant_id` for multi-tenant isolation
+- [x] Uses `queryKeys` factory for cache keys
+
+### Files Changed:
+- `src/hooks/useCreditTransactions.ts` (new file)
+- `src/lib/queryKeys.ts` (added `creditTransactions` query key factory)
+- `src/hooks/index.ts` (added barrel export)
