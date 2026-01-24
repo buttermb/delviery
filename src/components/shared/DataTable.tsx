@@ -1,11 +1,12 @@
 /**
  * Modern Data Table Component
- * Reusable table with filtering, sorting, pagination, and bulk actions
+ * Reusable table with filtering, sorting, pagination, and bulk actions.
+ * Automatically virtualizes when data exceeds threshold for optimal performance.
  */
 
 import { useState, useMemo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,13 +37,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  ChevronLeft,
-  ChevronRight,
   Search,
   Download,
   Filter,
-  ChevronsLeft,
-  ChevronsRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VirtualizedTable } from './VirtualizedTable';
@@ -110,8 +107,9 @@ export function DataTable<TData, TValue>({
   }, [data, searchValue, searchColumn]);
 
   // Determine if virtualization should be used
+  // Virtualize large datasets (skip pagination when virtualized for smooth scrolling)
   const shouldVirtualize = virtualized ?? (filteredData.length > virtualizedThreshold);
-  const useVirtual = shouldVirtualize && !pagination; // Don't virtualize if pagination is enabled
+  const useVirtual = shouldVirtualize && !pagination;
 
   // Use standardized pagination hook
   const {

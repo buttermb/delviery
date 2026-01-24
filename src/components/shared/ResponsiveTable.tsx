@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, memo } from "react";
 import {
     Table,
     TableBody,
@@ -10,13 +10,14 @@ import {
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EnhancedEmptyState, EnhancedEmptyStateProps } from "@/components/shared/EnhancedEmptyState";
-import { LucideIcon } from "lucide-react";
+import { VirtualizedTable } from "@/components/shared/VirtualizedTable";
 
 export interface ResponsiveColumn<T> {
     header: string | React.ReactNode;
     accessorKey?: keyof T;
     cell?: (item: T) => React.ReactNode;
     className?: string;
+    width?: number;
 }
 
 interface ResponsiveTableProps<T> {
@@ -28,7 +29,52 @@ interface ResponsiveTableProps<T> {
     mobileRenderer?: (item: T) => React.ReactNode;
     onRowClick?: (item: T) => void;
     className?: string;
+    /** Enable virtualization for large datasets (auto-enabled when data > virtualizeThreshold) */
+    virtualize?: boolean;
+    /** Number of rows above which virtualization auto-activates (default: 100) */
+    virtualizeThreshold?: number;
+    /** Height of the virtualized container in pixels (default: 600) */
+    virtualizeHeight?: number;
+    /** Height of each row in the virtualized table (default: 48) */
+    virtualizeRowHeight?: number;
 }
+
+/** Memoized table row to prevent re-renders when parent updates */
+const MemoizedTableRow = memo(function MemoizedTableRow<T>({
+    item,
+    columns,
+    onRowClick,
+    itemKey,
+}: {
+    item: T;
+    columns: ResponsiveColumn<T>[];
+    onRowClick?: (item: T) => void;
+    itemKey: string;
+}) {
+    return (
+        <TableRow
+            onClick={() => onRowClick && onRowClick(item)}
+            className={cn(
+                onRowClick && "cursor-pointer hover:bg-muted/50 transition-colors"
+            )}
+        >
+            {columns.map((col, index) => (
+                <TableCell key={index} className={col.className}>
+                    {col.cell
+                        ? col.cell(item)
+                        : col.accessorKey
+                            ? (item[col.accessorKey] as React.ReactNode)
+                            : null}
+                </TableCell>
+            ))}
+        </TableRow>
+    );
+}) as <T>(props: {
+    item: T;
+    columns: ResponsiveColumn<T>[];
+    onRowClick?: (item: T) => void;
+    itemKey: string;
+}) => React.ReactElement;
 
 export function ResponsiveTable<T>({
     data,
@@ -39,7 +85,34 @@ export function ResponsiveTable<T>({
     mobileRenderer,
     onRowClick,
     className,
+    virtualize,
+    virtualizeThreshold = 100,
+    virtualizeHeight = 600,
+    virtualizeRowHeight = 48,
 }: ResponsiveTableProps<T>) {
+    // Determine if virtualization should be used (auto-enable for large datasets)
+    const shouldVirtualize = virtualize ?? (data.length > virtualizeThreshold);
+
+    // Convert ResponsiveColumn format to VirtualizedTable column format
+    const virtualizedColumns = useMemo(() => {
+        return columns.map((col, index) => ({
+            id: String(index),
+            header: typeof col.header === 'string' ? col.header : '',
+            accessorKey: col.accessorKey as string | undefined,
+            cell: col.cell
+                ? (row: { original: T; index: number }) => col.cell!(row.original)
+                : undefined,
+            width: col.width,
+            className: col.className,
+        }));
+    }, [columns]);
+
+    // Stable onRowClick adapter for VirtualizedTable
+    const handleVirtualRowClick = useMemo(() => {
+        if (!onRowClick) return undefined;
+        return (row: T) => onRowClick(row);
+    }, [onRowClick]);
+
     if (isLoading) {
         return (
             <div className="space-y-4">
@@ -78,40 +151,43 @@ export function ResponsiveTable<T>({
                 </div>
             )}
 
-            {/* Desktop View (Table) - Hidden on small screens if renderer provided, otherwise always visible */}
-            <div className={cn("rounded-md border", mobileRenderer ? "hidden sm:block" : "block")}>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            {columns.map((col, index) => (
-                                <TableHead key={index} className={col.className}>
-                                    {col.header}
-                                </TableHead>
-                            ))}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {data.map((item) => (
-                            <TableRow
-                                key={keyExtractor(item)}
-                                onClick={() => onRowClick && onRowClick(item)}
-                                className={cn(
-                                    onRowClick && "cursor-pointer hover:bg-muted/50 transition-colors"
-                                )}
-                            >
-                                {columns.map((col, index) => (
-                                    <TableCell key={index} className={col.className}>
-                                        {col.cell
-                                            ? col.cell(item)
-                                            : col.accessorKey
-                                                ? (item[col.accessorKey] as React.ReactNode)
-                                                : null}
-                                    </TableCell>
+            {/* Desktop View - Virtualized for large datasets, standard table for small */}
+            <div className={cn(mobileRenderer ? "hidden sm:block" : "block")}>
+                {shouldVirtualize ? (
+                    <VirtualizedTable
+                        columns={virtualizedColumns}
+                        data={data}
+                        height={virtualizeHeight}
+                        rowHeight={virtualizeRowHeight}
+                        onRowClick={handleVirtualRowClick ? (row: T) => handleVirtualRowClick(row) : undefined}
+                        getRowId={(row: T, index: number) => keyExtractor(row)}
+                    />
+                ) : (
+                    <div className="rounded-md border">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    {columns.map((col, index) => (
+                                        <TableHead key={index} className={col.className}>
+                                            {col.header}
+                                        </TableHead>
+                                    ))}
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {data.map((item) => (
+                                    <MemoizedTableRow
+                                        key={keyExtractor(item)}
+                                        item={item}
+                                        columns={columns}
+                                        onRowClick={onRowClick}
+                                        itemKey={keyExtractor(item)}
+                                    />
                                 ))}
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
             </div>
         </div>
     );
