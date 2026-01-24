@@ -908,6 +908,56 @@ useMutation({
 
 ---
 
+## Task: Create src/hooks/useSessions.ts Hook
+
+### What was done:
+
+1. **Added `sessions` query keys** in `src/lib/queryKeys.ts`:
+   - `sessions.all` - base key for all session queries
+   - `sessions.lists()` - list-level key
+   - `sessions.list(userId)` - user-scoped session list key
+
+2. **Created `src/hooks/useSessions.ts`** - Custom hook that:
+   - Uses `useQuery` to fetch active sessions via the `get-active-sessions` edge function
+   - Provides `revokeSession` mutation (expires a single session by ID via direct table update)
+   - Provides `revokeAllOtherSessions` mutation (calls `revoke-all-sessions` edge function preserving current token)
+   - Identifies the current session by matching against the customer's token from `useCustomerAuth()`
+   - Formats device info: parses user-agent for browser name (Chrome/Firefox/Safari/Edge/Opera), OS name (Windows/macOS/Linux/Android/iOS), and device type (mobile/tablet/desktop)
+   - Formats location display from IP address
+   - Formats last active time as relative time (e.g., "5m ago", "2h ago", "3d ago")
+   - Auto-refreshes every 60 seconds via `refetchInterval: 60000`
+   - Returns `sessions`, `currentSession`, `otherSessions`, loading/error states, mutation pending states, and `refetch` function
+
+### Interface Exported:
+- `SessionInfo` - formatted session data with `id`, `token`, `ipAddress`, `createdAt`, `expiresAt`, `isCurrent`, `deviceType`, `browserName`, `osName`, `displayName`, `locationDisplay`, `lastActive`
+- `useSessions()` - hook returning `UseSessionsReturn` with sessions data, mutations, and status flags
+
+### Acceptance Criteria Met:
+- [x] Uses `useQuery` from TanStack Query to fetch sessions
+- [x] Fetches from `get-active-sessions` edge function
+- [x] Provides `revokeSession` mutation
+- [x] Provides `revokeAllOtherSessions` mutation
+- [x] Identifies current session via token comparison
+- [x] Formats device info (browser, OS, device type)
+- [x] Formats location display from IP
+- [x] Auto-refreshes every 60 seconds
+- [x] Named exports only (no default exports)
+- [x] Uses `@/` import aliases
+- [x] Uses `logger` from `@/lib/logger` (no console.log)
+- [x] Uses `queryKeys` factory for cache keys
+- [x] Toast notifications on mutation success/error
+- [x] Proper TypeScript types (no `any`)
+- [x] Build passes with no TypeScript errors
+- [x] Lint passes with no errors
+
+### Files Changed:
+- `src/hooks/useSessions.ts` (new)
+- `src/lib/queryKeys.ts` (modified - added sessions query keys)
+
+### Build Status:
+- `npm run build` passes with no errors (6569 modules transformed)
+- `eslint` passes with no errors on the new hook
+
 ## Task: Add usePermissionAwareLink Hook
 
 ### What was done:

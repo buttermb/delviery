@@ -507,6 +507,13 @@ export const queryKeys = {
       [...queryKeys.frontedInventory.detail(frontedId), 'payments'] as const,
   },
 
+  // Sessions
+  sessions: {
+    all: ['sessions'] as const,
+    lists: () => [...queryKeys.sessions.all, 'list'] as const,
+    list: (userId?: string) => [...queryKeys.sessions.lists(), { userId }] as const,
+  },
+
   // Sidebar Badge Counts
   sidebarBadges: {
     all: ['sidebar-badges'] as const,
