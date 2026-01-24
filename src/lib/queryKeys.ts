@@ -551,4 +551,12 @@ export const queryKeys = {
     byUser: (tenantId: string, userId: string) =>
       [...queryKeys.activityFeed.byTenant(tenantId), 'user', userId] as const,
   },
+
+  // Subscriptions
+  subscriptions: {
+    all: ['subscriptions'] as const,
+    byTenant: (tenantId: string) =>
+      [...queryKeys.subscriptions.all, 'tenant', tenantId] as const,
+    plans: () => ['subscription-plans'] as const,
+  },
 } as const;
