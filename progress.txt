@@ -2657,3 +2657,48 @@ verifying all 5 stat cards load with real data and their navigation links work c
 - `src/lib/utils/buttonMonitorIntegration.ts` (scoped eslint-disable for dev logging)
 - `src/pages/admin/ConsoleMonitor.tsx` (eslint-disable + any->unknown + named export)
 - `src/components/credits/CreditBalance.tsx` (fix rules-of-hooks violation)
+
+---
+
+## Task: Create src/components/auth/AvatarUpload.tsx Component
+
+### What was done:
+
+1. **Created `src/components/auth/AvatarUpload.tsx`** - Reusable avatar upload component that:
+   - Displays current avatar image or initials placeholder using shadcn Avatar component
+   - Click-to-upload with hidden file input and camera icon overlay
+   - Validates image type (JPEG, PNG, GIF, WebP) and size (max 5MB)
+   - Uploads to Supabase storage `avatars` bucket with upsert
+   - Updates `user_profiles.avatar_url` via `update-account-profile` edge function
+   - Shows upload progress bar using shadcn Progress component
+   - Shows immediate preview via FileReader before upload completes
+   - Reverts preview on upload failure
+   - Provides toast notifications for success/error states
+   - Supports configurable size (`sm`, `md`, `lg`)
+   - Includes `onUploadComplete` callback for parent components
+   - Proper accessibility: aria-label, aria-hidden on file input, button type
+   - Touch-friendly: `touch-manipulation`, `active:opacity-100` for mobile
+   - Uses `logger` for error logging (never console.log)
+   - Named export only (no default export)
+   - All imports use `@/` alias
+
+### Component Props:
+```typescript
+interface AvatarUploadProps {
+  userId: string;                            // Required user ID for file naming
+  currentAvatarUrl?: string | null;         // Current avatar to display
+  userName?: string | null;                 // Name for initials fallback
+  onUploadComplete?: (publicUrl: string) => void;  // Callback after successful upload
+  size?: 'sm' | 'md' | 'lg';              // Avatar size variant
+  className?: string;                       // Additional styling
+}
+```
+
+### Verification Results:
+- [x] `npm run build` - PASSES (0 TypeScript errors)
+- [x] `npm run lint` - PASSES (0 errors, only pre-existing warnings)
+- [x] Follows FloraIQ code style (strict TypeScript, named exports, @/ imports, logger)
+- [x] Consistent with existing avatar upload pattern in AccountSettings.tsx
+
+### Files Changed:
+- `src/components/auth/AvatarUpload.tsx` (new file)
