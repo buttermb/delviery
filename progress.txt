@@ -4974,3 +4974,31 @@ Created `src/lib/auth/sessionManager.ts` - a singleton session manager utility t
 ### Files Changed:
 - `src/lib/auth/passwordValidator.ts` (new file)
 - `src/lib/auth/__tests__/passwordValidator.test.ts` (new file)
+
+---
+
+## Task: Create src/pages/auth/VerifyEmailPage.tsx
+
+### What was done:
+
+1. **Created `src/pages/auth/VerifyEmailPage.tsx`** - Token-based email verification page that:
+   - Extracts `token` (or `token_hash`) and `type` from URL search params
+   - Calls `supabase.auth.verifyOtp` with the token hash to verify the email
+   - Integrates `useEmailVerification` hook from `@/hooks/useEmailVerification` for email validation during the resend flow
+   - Shows a loading spinner with "Verifying your email..." message during verification
+   - Shows a success state with "Email Verified!" and a "Go to Login" button on success
+   - Handles already-verified case gracefully with a distinct "Already Verified" state (ShieldCheck icon) and login button
+   - Shows error states differentiated by type:
+     - **Expired**: Amber icon, email input for resend, "Resend Verification Email" button
+     - **Invalid**: Red icon, email input for resend, "Request New Link" button
+     - **Generic**: Red icon, email input for resend, "Resend Verification Email" button
+   - After resend success, shows "Check Your Inbox" confirmation with the email displayed
+   - Uses `logger` from `@/lib/logger` (no console.log)
+   - Named export only (no default export)
+   - All imports use `@/` alias
+   - Follows the same visual design pattern as `AuthConfirmPage.tsx` (dark theme, glass-morphism card)
+   - Buttons include loading + disabled states during async ops
+   - Error handling via try-catch with `toast.error()` for user feedback
+
+### Files Changed:
+- `src/pages/auth/VerifyEmailPage.tsx` (new file)
