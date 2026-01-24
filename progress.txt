@@ -2719,6 +2719,7 @@ verifying all 5 stat cards load with real data and their navigation links work c
 
 ---
 
+<<<<<<< HEAD
 ## Task: Create user_profiles Table Migration
 
 ### What was done:
@@ -3845,3 +3846,52 @@ Response Format:
 
 ### Files Created:
 - `supabase/functions/credits-packages/index.ts`
+
+---
+
+## Task: Create credits-purchase Edge Function
+
+### What was done:
+
+Created `supabase/functions/credits-purchase/index.ts` — a Supabase Edge Function that handles authenticated credit package purchases via Stripe.
+
+### Implementation Details:
+
+1. **Authentication**: Requires Bearer token in Authorization header. Extracts user from JWT via `supabase.auth.getUser()`.
+
+2. **Request Validation**: Uses Zod schema requiring `package_id` (UUID) and `payment_method_id` (string).
+
+3. **Tenant Resolution**: Looks up the user's tenant via `tenant_users` table.
+
+4. **Package Validation**: Fetches the credit package by ID, verifying it exists and `is_active = true`.
+
+5. **Stripe Customer Management**: Gets or creates a Stripe customer for the tenant. Persists `stripe_customer_id` on the tenant record.
+
+6. **Stripe PaymentIntent**: Creates a confirmed PaymentIntent with:
+   - `off_session: true` for saved payment methods
+   - Idempotency key to prevent duplicate charges
+   - Full metadata (tenant_id, package_id, credits, etc.)
+
+7. **Payment Failure Handling**:
+   - Maps Stripe error codes to user-friendly messages (card_declined, expired_card, insufficient_funds, incorrect_cvc, processing_error, authentication_required)
+   - Tracks failed attempts in `credit_analytics`
+   - Returns 402 status with structured error
+
+8. **3D Secure / SCA Support**: If `requires_action` status, returns `client_secret` for client-side confirmation.
+
+9. **Credit Allocation**: On successful payment, calls `purchase_credits` RPC (the existing database function that atomically updates balance and creates a transaction).
+
+10. **Critical Error Handling**: If payment succeeds but credit allocation fails, logs to `credit_analytics` with `purchase_credit_allocation_failed` event for manual resolution.
+
+11. **Response**: Returns `{ success, balance, credits_added, transaction, payment_intent_id }`.
+
+12. **Analytics**: Tracks `purchase_payment_failed`, `purchase_credit_allocation_failed`, and `purchase_completed` events.
+
+### Key Design Decisions:
+- Uses raw `fetch` to Stripe API (same pattern as `process-auto-topup`) instead of the Stripe SDK to keep bundle size small
+- Calls the existing `purchase_credits` RPC function which handles atomic balance updates
+- Returns the latest transaction from DB for the response
+- CORS headers on all responses per project conventions
+
+### Files Created:
+- `supabase/functions/credits-purchase/index.ts`
