@@ -1,4 +1,4 @@
-## Task: Create process_credit_purchase database function
+﻿## Task: Create process_credit_purchase database function
 
 ### What was done:
 
@@ -215,26 +215,26 @@
 2. **Created `src/components/admin/sidebar/LiveBadgeContext.tsx`** - A React context that:
    - Wraps the existing `useAdminBadgeCounts` hook to provide badge data to sidebar items
    - Maps navigation paths to badge count types:
-     - `/admin/orders` → pendingOrders count
-     - `/admin/inventory-hub` → lowStockItems count
-     - `/admin/stock-alerts` → lowStockItems count
-     - `/admin/live-chat` → unreadMessages count
-     - `/admin/notifications` → unreadMessages count
-     - `/admin/dispatch-inventory` → pendingShipments count
-     - `/admin/delivery-tracking` → pendingShipments count
+     - `/admin/orders` â†’ pendingOrders count
+     - `/admin/inventory-hub` â†’ lowStockItems count
+     - `/admin/stock-alerts` â†’ lowStockItems count
+     - `/admin/live-chat` â†’ unreadMessages count
+     - `/admin/notifications` â†’ unreadMessages count
+     - `/admin/dispatch-inventory` â†’ pendingShipments count
+     - `/admin/delivery-tracking` â†’ pendingShipments count
    - Returns badge info (count, severity level, pulse state) per path
    - Gracefully returns null when used outside provider (no crash)
 
 3. **Updated `src/components/admin/sidebar/SidebarMenuItem.tsx`**:
    - Integrated `useLiveBadge` context to get live counts per item path
    - Live count badges take priority over static badges in the render hierarchy:
-     live count → static badge → hot indicator → favorite star
+     live count â†’ static badge â†’ hot indicator â†’ favorite star
    - No changes to locked item rendering
 
 4. **Updated `src/components/sidebar/OptimizedSidebar.tsx`**:
    - Added live badge support to the optimized sidebar variant
    - Updated `renderNavItem` to show `LiveCountBadge` when a live count exists
-   - Priority: live badge → static badge → hot indicator → shortcut
+   - Priority: live badge â†’ static badge â†’ hot indicator â†’ shortcut
 
 5. **Updated `src/pages/admin/AdminLayout.tsx`**:
    - Wrapped both sidebar variants (AdaptiveSidebar and OptimizedSidebar) with `LiveBadgeProvider`
@@ -248,8 +248,8 @@
   (wholesale_orders, menu_orders tables) and a 30-second polling fallback
 - `LiveBadgeContext` maps item paths to count types and computes severity levels
 - `LiveCountBadge` renders a compact colored badge with optional pulse animation
-- Critical counts (≥10 pending orders, ≥5 low stock, ≥5 unread) show red with pulse
-- Warning counts (≥5 pending orders, ≥2 low stock) show orange
+- Critical counts (â‰¥10 pending orders, â‰¥5 low stock, â‰¥5 unread) show red with pulse
+- Warning counts (â‰¥5 pending orders, â‰¥2 low stock) show orange
 - Info-level counts show primary color without pulse
 
 ### Acceptance Criteria Met:
@@ -1263,7 +1263,7 @@ Created comprehensive test suite `src/lib/marketplace/__tests__/storefrontAdminS
    - `products-sync` and `marketplace-listings` queries invalidated after sync
 
 6. **End-to-end sync flow** (3 tests):
-   - Full flow: admin update → sync RPC → cache invalidation → storefront refetch → verify updated data
+   - Full flow: admin update â†’ sync RPC â†’ cache invalidation â†’ storefront refetch â†’ verify updated data
    - Product visibility toggle from admin propagates to storefront (hidden product disappears)
    - Stock depletion sync (in_stock toggled to false) reflected in storefront
 
@@ -1280,7 +1280,7 @@ Created comprehensive test suite `src/lib/marketplace/__tests__/storefrontAdminS
 - [x] Price and display name overrides propagate correctly
 - [x] Multiple storefront query keys (list, detail, related) are all invalidated
 - [x] Error cases preserve storefront cache (no false invalidation)
-- [x] End-to-end flow verified: admin update → sync → storefront reflects instantly
+- [x] End-to-end flow verified: admin update â†’ sync â†’ storefront reflects instantly
 - [x] All 18 tests pass
 
 ### Files Changed:
@@ -1377,7 +1377,7 @@ Enhanced `src/hooks/useInventorySync.ts` with two new mutation hooks that handle
    - Both hooks accept `{ orderId, items: OrderItem[] }` input
 
 ### Optimistic Update Pattern:
-- Uses TanStack Query's `onMutate` → `onError` → `onSuccess` lifecycle
+- Uses TanStack Query's `onMutate` â†’ `onError` â†’ `onSuccess` lifecycle
 - `onMutate`: Cancels queries, snapshots cache, optimistically updates `stock_quantity` and `available_quantity`
 - `onError`: Restores snapshot data to product detail caches, invalidates list caches
 - `onSuccess`: Invalidates all product/inventory queries to ensure eventual consistency
@@ -1562,14 +1562,14 @@ Enhanced `src/hooks/useInventorySync.ts` with two new mutation hooks that handle
 - **Recent searches** saved when selecting a data result (order/customer/product)
 - **Type badges** on recent items show the entity type
 - **Arrow indicators** on data results for clear navigation affordance
-- **Footer hint bar** with keyboard shortcuts (⌘K toggle, ↑↓ navigate, ↵ select)
+- **Footer hint bar** with keyboard shortcuts (âŒ˜K toggle, â†‘â†“ navigate, â†µ select)
 
 ### Integration:
 - Already integrated in `AdminLayout.tsx` (lines 22-23, 53, 118) via:
   - `useCommandPaletteStore` for the search bar click handler
   - `<TenantAdminCommandPalette />` rendered in the layout
 - `AdaptiveSidebar.tsx` (line 154) uses `useCommandPaletteStore.getState().setOpen(true)` for sidebar search trigger
-- Desktop: Clickable search bar in header with "⌘K" hint
+- Desktop: Clickable search bar in header with "âŒ˜K" hint
 - Mobile: Search icon button in header actions
 
 ### Acceptance Criteria Met:
@@ -1682,7 +1682,7 @@ Enhanced `src/hooks/useInventorySync.ts` with two new mutation hooks that handle
    - Renders inventory history entries in a visual timeline format
    - Color-coded icons per change type (green for stock_in, red for stock_out, blue for transfer, etc.)
    - Dropdown filter for change type (All Types / individual types)
-   - Shows product name, change amount (+/-), previous→new quantity
+   - Shows product name, change amount (+/-), previousâ†’new quantity
    - Displays reason, notes, reference type/ID, and timestamps
    - Loading state with spinner, empty state message, error state
    - Uses shadcn/ui Card, Badge, and Select components
@@ -1725,7 +1725,7 @@ Enhanced `src/hooks/useInventorySync.ts` with two new mutation hooks that handle
 2. **Integrated into `src/components/admin/ModernDashboard.tsx`**:
    - Added import for `AutoReorderSuggestionsWidget`
    - Placed widget in the right sidebar column between InventoryAlertsWidget and ActivityFeedWidget
-   - This provides a natural flow: see low-stock alerts → see reorder suggestions → take action
+   - This provides a natural flow: see low-stock alerts â†’ see reorder suggestions â†’ take action
 
 ### Acceptance Criteria Met:
 - [x] Shows products at or below their reorder point from wholesale_inventory table
@@ -2398,7 +2398,7 @@ useRealtimeSubscription({
 4. **Updated `src/components/dashboard/WidgetCustomizer.tsx`**:
    - Updated imports to use new `DashboardWidgetDefinition` and `DashboardWidgetState` types from the rewritten hook
 
-### Permission Mapping (widget → required permissions):
+### Permission Mapping (widget â†’ required permissions):
 | Widget | Required Permission(s) | Accessible By |
 |--------|----------------------|---------------|
 | Quick Actions | `orders:view` | owner, admin, team_member, viewer |
@@ -2725,7 +2725,7 @@ verifying all 5 stat cards load with real data and their navigation links work c
    - Verifies audit log includes `inventory_restored` flag
 
    **Full Lifecycle (5 tests):**
-   - Complete create → confirm (decrement) → cancel (increment) cycle
+   - Complete create â†’ confirm (decrement) â†’ cancel (increment) cycle
    - Multiple concurrent orders affecting the same product
    - Zero-quantity items handled gracefully
    - Non-existent products don't break confirmation
@@ -2776,7 +2776,7 @@ verifying all 5 stat cards load with real data and their navigation links work c
    - Verifies all three tables (products, wholesale_clients, orders) are searched simultaneously for 2+ char queries
 
    **Footer Hints (1 test):**
-   - Verifies keyboard shortcut hints (⌘K to search, ↵ to select) are displayed
+   - Verifies keyboard shortcut hints (âŒ˜K to search, â†µ to select) are displayed
 
    **Zustand Store (2 tests):**
    - Verifies the palette opens/closes via `setOpen()` store method
@@ -3991,7 +3991,7 @@ Response Format:
 
 ### What was done:
 
-Created `supabase/functions/credits-purchase/index.ts` — a Supabase Edge Function that handles authenticated credit package purchases via Stripe.
+Created `supabase/functions/credits-purchase/index.ts` â€” a Supabase Edge Function that handles authenticated credit package purchases via Stripe.
 
 ### Implementation Details:
 
@@ -4221,12 +4221,12 @@ Created `supabase/functions/credits-purchase/index.ts` — a Supabase Edge Funct
    - Proper nullable handling for subscription and payment_intent fields
 
 ### Credit Subscription Event Flow:
-- `checkout.session.completed` (type=credit_subscription) → Creates row + grants first credits
-- `invoice.paid` (with matching stripe_subscription_id) → Grants recurring credits + updates period
-- `invoice.payment_failed` (with matching stripe_subscription_id) → Sets status to past_due
-- `customer.subscription.updated` → Syncs status, period, cancel_at_period_end to credit_subscriptions
-- `customer.subscription.deleted` → Sets credit_subscriptions status to cancelled
-- `customer.deleted` → Cancels all active credit subscriptions for tenant
+- `checkout.session.completed` (type=credit_subscription) â†’ Creates row + grants first credits
+- `invoice.paid` (with matching stripe_subscription_id) â†’ Grants recurring credits + updates period
+- `invoice.payment_failed` (with matching stripe_subscription_id) â†’ Sets status to past_due
+- `customer.subscription.updated` â†’ Syncs status, period, cancel_at_period_end to credit_subscriptions
+- `customer.subscription.deleted` â†’ Sets credit_subscriptions status to cancelled
+- `customer.deleted` â†’ Cancels all active credit subscriptions for tenant
 
 ### Acceptance Criteria Met:
 - [x] Handles `customer.subscription.updated` for status changes on credit_subscriptions
@@ -5512,3 +5512,43 @@ Created `src/pages/auth/AccountSettingsPage.tsx` - a protected account settings 
 ### Files Changed:
 - `src/pages/auth/ChangePasswordPage.tsx` (new file)
 - `src/App.tsx` (lazy import + route definition)
+## Task: Create src/pages/auth/SessionsPage.tsx Protected Sessions Page
+
+### What was done:
+
+1. **Created `src/hooks/useSessions.ts`** - TanStack Query hook for session management:
+   - Fetches active sessions via `get-active-sessions` edge function
+   - Identifies current session by matching access token
+   - Provides `revokeSession` mutation (expires individual session)
+   - Provides `revokeAllOthers` mutation (revokes all except current via edge function)
+   - Exposes loading/pending states for UI feedback
+   - Uses `queryKeys.sessions.all` for cache management
+
+2. **Added `sessions` query keys** to `src/lib/queryKeys.ts`:
+   - `sessions.all` - base key for all session queries
+   - `sessions.list(userId)` - per-user session list key
+
+3. **Created `src/pages/auth/SessionsPage.tsx`** - Protected page with full session management:
+   - Auth guard via `supabase.auth.getUser()` - redirects to `/login` if unauthenticated
+   - Displays all active sessions from `useSessions` hook
+   - Device type icon (Monitor/Smartphone/Tablet) based on user agent parsing
+   - Browser name detection (Chrome, Firefox, Safari, Edge, Opera)
+   - Device type label (iPhone, Android, Mac, Windows PC, Linux)
+   - IP address display with MapPin icon
+   - Last active time with relative formatting (just now, X minutes/hours/days ago)
+   - Current session highlighted with primary border/background and "Current" badge
+   - Sessions sorted: current first, then by creation date descending
+   - Revoke button per non-current session (destructive ghost variant)
+   - "Revoke All Others" button when multiple sessions exist
+   - AlertDialog confirmation before any revoke action
+   - Loading skeletons during session fetch
+   - Empty state with icon when no sessions found
+   - Button loading/disabled states during async operations
+   - Toast notifications for success/error feedback
+
+### Files created:
+- `src/hooks/useSessions.ts`
+- `src/pages/auth/SessionsPage.tsx`
+
+### Files modified:
+- `src/lib/queryKeys.ts` (added sessions query keys)
