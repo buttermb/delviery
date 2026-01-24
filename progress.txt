@@ -428,3 +428,76 @@ sub-components with shared state from useStorefrontBuilder hook.
 - `src/pages/admin/storefront/builder/BuilderCreateStoreDialog.tsx` (new)
 - `src/pages/admin/storefront/builder/index.ts` (new)
 - `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export alias)
+
+---
+
+## Task: Build QuickViewModal Components for Order, Customer, and Product
+
+### What was done:
+
+1. **Created `src/components/admin/quick-view/QuickViewModal.tsx`** - Reusable base wrapper:
+   - Wraps shadcn/ui Dialog with consistent layout (header, content, footer)
+   - Accepts `title`, `description`, `children`, and `onViewFullDetails` callback
+   - Footer includes a "View Full Details" button with ExternalLink icon
+   - Button closes the modal then navigates to full details view
+   - Configurable `viewFullDetailsLabel` prop for customization
+   - Consistent max-width (`sm:max-w-[480px]`) for quick-view sizing
+
+2. **Created `src/components/admin/quick-view/OrderQuickViewModal.tsx`** - Order quick view:
+   - Displays order number, status badge (semantic colors from statusColors utility)
+   - Customer name and email
+   - Delivery address with borough
+   - Courier name and ETA when assigned
+   - Order items list (first 4 with "+N more" overflow)
+   - Item quantities and prices with running totals
+   - Payment status badge
+   - Total amount prominently displayed
+   - Tracking code (monospace)
+   - "View Full Details" button to navigate to full order page
+
+3. **Created `src/components/admin/quick-view/CustomerQuickViewModal.tsx`** - Customer quick view:
+   - Avatar with initials fallback
+   - Status badge and customer type badge
+   - Contact info (email, phone) with icons
+   - Financial stats grid: total spent (green), loyalty points
+   - Loyalty tier badge
+   - Last purchase date (smart formatted)
+   - Medical card expiration with expired/valid state (warning icon when expired)
+   - "View Full Details" button to navigate to customer profile
+
+4. **Created `src/components/admin/quick-view/ProductQuickViewModal.tsx`** - Product quick view:
+   - Product image with fallback Package icon
+   - Stock status badge (In Stock / Low Stock / Out of Stock) with semantic colors
+   - Brand and category display
+   - Description (2-line clamp)
+   - Price and stock quantity grid
+   - Cost and margin percentage (color-coded: green >=30%, yellow >=15%, red <15%)
+   - Cannabis-specific info section: strain name, THC%, CBD%
+   - "View Full Details" button to navigate to product page
+
+5. **Created `src/components/admin/quick-view/index.ts`** - Barrel export:
+   - Exports all four components for clean import paths
+
+### Design Decisions:
+- Used existing patterns from `OrderHoverCard`, `ProductHoverCard`, and `CustomerQuickViewCard`
+- Modals are more accessible than hover cards (work on mobile, keyboard navigable)
+- Consistent with shadcn/ui Dialog patterns used elsewhere in codebase
+- Named exports only (per CLAUDE.md rules)
+- All imports use `@/` alias
+- Uses existing utilities: `formatCurrency`, `formatSmartDate`, `getStatusColor`
+- TypeScript strict mode with proper null checks
+
+### Acceptance Criteria Met:
+- [x] Order quick view shows key order details (status, customer, items, total, delivery)
+- [x] Customer quick view shows key customer details (contact, spending, loyalty, medical card)
+- [x] Product quick view shows key product details (image, pricing, stock, category, cannabis info)
+- [x] All modals have "View Full Details" button that closes modal and calls navigation callback
+- [x] Build passes with no TypeScript errors
+- [x] No lint errors
+
+### Files Created:
+- `src/components/admin/quick-view/QuickViewModal.tsx` (base wrapper)
+- `src/components/admin/quick-view/OrderQuickViewModal.tsx` (order quick view)
+- `src/components/admin/quick-view/CustomerQuickViewModal.tsx` (customer quick view)
+- `src/components/admin/quick-view/ProductQuickViewModal.tsx` (product quick view)
+- `src/components/admin/quick-view/index.ts` (barrel export)
