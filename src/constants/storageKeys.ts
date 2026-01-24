@@ -92,6 +92,9 @@ export const STORAGE_KEYS = {
   FEATURE_USAGE: 'feature_usage',
   BUSINESS_TIER_OVERRIDE: 'business_tier_override',
   
+  // Dashboard
+  DASHBOARD_WIDGETS: 'dashboard_widgets',
+
   // Performance
   NETWORK_QUALITY: 'network_quality',
   REDUCED_MOTION: 'reduced_motion',

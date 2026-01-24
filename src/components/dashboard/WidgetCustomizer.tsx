@@ -27,7 +27,10 @@ import {
     EyeOff,
     LayoutDashboard,
 } from 'lucide-react';
-import { Widget, WidgetLayout } from '@/hooks/useDashboardWidgets';
+import { DashboardWidgetDefinition, DashboardWidgetState } from '@/hooks/useDashboardWidgets';
+
+type Widget = DashboardWidgetDefinition & { title?: string; icon?: string; description?: string };
+type WidgetLayout = DashboardWidgetState;
 
 interface WidgetCustomizerProps {
     widgets: Widget[];

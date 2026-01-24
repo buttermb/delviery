@@ -428,3 +428,61 @@ sub-components with shared state from useStorefrontBuilder hook.
 - `src/pages/admin/storefront/builder/BuilderCreateStoreDialog.tsx` (new)
 - `src/pages/admin/storefront/builder/index.ts` (new)
 - `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export alias)
+
+---
+
+## Task: Create useDashboardWidgets Hook Making Dashboard Adapt to User Role
+
+### What was done:
+
+1. **Rewrote `src/hooks/useDashboardWidgets.ts`** - Role-aware dashboard widget hook that:
+   - Defines `WIDGET_DEFINITIONS` mapping each widget to required permissions (using the existing permission system from `src/lib/permissions/rolePermissions.ts`)
+   - Uses `usePermissions()` hook to get the current user's role and permission checker
+   - Filters widgets based on user permissions (widget shown if user has ANY of its `requiredPermissions`)
+   - Manages visibility toggle and reordering preferences per-tenant
+   - Persists user preferences to localStorage using `STORAGE_KEYS.DASHBOARD_WIDGETS`
+   - Merges saved preferences with current permissions (removes widgets user lost access to, adds new permitted ones)
+   - Exports `DashboardWidgetId`, `DashboardWidgetDefinition`, `DashboardWidgetState` types
+
+2. **Updated `src/components/tenant-admin/DashboardWidgetGrid.tsx`** - Integrated the role-aware hook:
+   - Replaced internal widget state management with `useDashboardWidgets()` hook
+   - Shows loading skeleton while permissions are being resolved
+   - Customization sheet now only shows widgets the user has permission to access
+   - Added "Reset to Defaults" button in the customization panel
+   - Returns `null` if the user has no permitted widgets (graceful empty state)
+
+3. **Updated `src/constants/storageKeys.ts`**:
+   - Added `DASHBOARD_WIDGETS: 'dashboard_widgets'` storage key
+
+4. **Updated `src/components/dashboard/WidgetCustomizer.tsx`**:
+   - Updated imports to use new `DashboardWidgetDefinition` and `DashboardWidgetState` types from the rewritten hook
+
+### Permission Mapping (widget → required permissions):
+| Widget | Required Permission(s) | Accessible By |
+|--------|----------------------|---------------|
+| Quick Actions | `orders:view` | owner, admin, team_member, viewer |
+| Real-Time Sales | `finance:view` OR `orders:view` | owner, admin (finance) + team_member, viewer (orders) |
+| Storefront | `orders:view` OR `reports:view` | owner, admin, team_member, viewer |
+| Inventory Forecast | `inventory:view` | owner, admin, team_member, viewer |
+| Revenue Forecast | `finance:view` | owner, admin |
+| Recent Orders | `orders:view` | owner, admin, team_member, viewer |
+
+### Role Behavior:
+- **owner/admin**: See all 6 widgets
+- **team_member**: See all except Revenue Forecast (requires `finance:view`)
+- **viewer**: See Quick Actions, Real-Time Sales (via `orders:view`), Storefront, Inventory Forecast, Recent Orders (5 of 6)
+
+### Acceptance Criteria Met:
+- [x] Dashboard adapts to user role showing only permitted widgets
+- [x] Users can only customize visibility/order of widgets they have permission to access
+- [x] Widget preferences persist per-tenant in localStorage
+- [x] If user role changes (loses permissions), previously visible widgets are removed
+- [x] If user gains new permissions, new widgets appear with default visibility
+- [x] Loading state shown while permissions resolve
+- [x] Build passes with no TypeScript errors (`npm run build` and `npx tsc --noEmit`)
+
+### Files Changed:
+- `src/hooks/useDashboardWidgets.ts` (rewritten - role-aware widget management)
+- `src/components/tenant-admin/DashboardWidgetGrid.tsx` (modified - uses hook)
+- `src/constants/storageKeys.ts` (added DASHBOARD_WIDGETS key)
+- `src/components/dashboard/WidgetCustomizer.tsx` (updated imports)
