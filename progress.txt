@@ -1,4 +1,39 @@
-﻿## Task: Create process_credit_purchase database function
+﻿## Task: Test Credit Consumption Flow
+
+### What was done:
+
+1. **Created `src/lib/credits/__tests__/creditConsumptionFlow.test.ts`** (43 tests):
+   - **Feature requiring credits triggers consumption**: Tests consuming credits for menu_create (100), order_create_manual (50), send_sms (25), verifies metadata passing, handles RPC errors, null responses, and exceptions gracefully
+   - **Balance is decremented correctly**: Verifies exact cost deduction, decrement to zero, multi-step decrements tracking running balance, no decrement for free actions (0 cost), high-cost actions, and balance check returning correct remaining credits
+   - **Transaction logged with reference**: Validates reference_id passed to consume_credits RPC, null reference when not provided, description logging, action_key inclusion, metadata for audit trail, default empty metadata, correct response field mapping
+   - **Insufficient credits detection**: Tests checkCredits blocking when balance < cost, allowing when balance equals cost, always allowing free actions, skipping check for paid tier, blocking at zero balance, server-side insufficient reports
+   - **Credit Purchase Options**: Verifies 4+ packages, increasing credit amounts, required fields, quick purchase amounts (5K/15K), better per-credit pricing for larger packages
+   - **Credit Action Cost Verification**: Tests cost info for menu_create, POS, orders, unknown actions, free vs paid distinction
+   - **End-to-End Consumption Scenarios**: Sequential consumption reducing to warning threshold, server-side blocking, concurrent consumption, subscription tier bypass
+
+2. **Created `src/hooks/__tests__/creditConsumptionIntegration.test.tsx`** (40 tests):
+   - **Credit Consumption Flow - Feature Usage**: Hook-level tests for menu_create, passing referenceId for transaction tracking, balance checking before execution, multiple action types in sequence
+   - **Balance Decrement Verification via Hook**: Optimistic deduction in UI, query invalidation for server sync, new balance reporting, rollback on action failure, rollback on credit consumption failure
+   - **Transaction Reference Verification via Hook**: referenceId passed to performAction, undefined when not provided, referenceType for categorized tracking, multiple references in sequence without interference
+   - **Insufficient Credits - Modal with Purchase Options**:
+     - Hook-level: Shows modal when insufficient, blocks action, returns wasBlocked, calls onInsufficientCredits callback, blocks high-cost actions, handles server-side insufficient error, allows modal close
+     - Modal rendering: Displays title, blocked action name, progress bar, balance and action cost, 5K/15K quick purchase buttons with correct callbacks, view all packages link navigating to billing, auto top-up suggestion, subscription upgrade option, urgency messaging, Stay Limited dismiss button
+   - **Complete Flow**: End-to-end test from action attempt -> insufficient -> modal shown -> purchase options displayed -> user clicks purchase
+
+### Acceptance Criteria Met:
+- [x] Credit consumption flow tested using feature that requires credits (menu_create, order_create_manual, send_sms, pos_process_sale)
+- [x] Balance decremented correctly verified (exact cost, zero, multi-step, free actions)
+- [x] Transaction logged with reference verified (referenceId, referenceType, description, metadata, action_key)
+- [x] Insufficient credits shows modal with purchase options (quick 5K/15K, view all packages, auto top-up, subscription upgrade)
+- [x] All 83 tests pass
+
+### Files Changed:
+- `src/lib/credits/__tests__/creditConsumptionFlow.test.ts` (new - 43 tests)
+- `src/hooks/__tests__/creditConsumptionIntegration.test.tsx` (new - 40 tests)
+
+---
+
+## Task: Create process_credit_purchase database function
 
 ### What was done:
 
