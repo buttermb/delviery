@@ -4,8 +4,10 @@ import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Package, TrendingUp, ArrowUpDown, Settings, AlertTriangle, CheckCircle, Warehouse } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Package, TrendingUp, ArrowUpDown, Settings, AlertTriangle, CheckCircle, Warehouse, Layers } from "lucide-react";
 import { StockAdjustmentDialog } from "@/components/admin/StockAdjustmentDialog";
+import { BulkInventoryModal } from "@/components/admin/BulkInventoryModal";
 import { InventoryMovementLog } from "@/components/admin/InventoryMovementLog";
 import { BulkImageGenerator } from "@/components/admin/products/BulkImageGenerator";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -41,6 +43,8 @@ export default function InventoryManagement() {
 
   const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadInventory() {
@@ -131,7 +135,62 @@ export default function InventoryManagement() {
     return quantity * cost;
   };
 
+  const toggleProductSelection = (productId: string) => {
+    setSelectedProductIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(productId)) {
+        next.delete(productId);
+      } else {
+        next.add(productId);
+      }
+      return next;
+    });
+  };
+
+  const toggleAllSelection = () => {
+    if (selectedProductIds.size === products.length) {
+      setSelectedProductIds(new Set());
+    } else {
+      setSelectedProductIds(new Set(products.map((p) => p.id)));
+    }
+  };
+
+  const selectedBulkProducts = products.filter((p) => selectedProductIds.has(p.id));
+
+  const handleBulkComplete = () => {
+    setSelectedProductIds(new Set());
+    // Re-fetch inventory
+    if (tenant?.id) {
+      supabase
+        .from('products')
+        .select('*')
+        .eq('tenant_id', tenant.id)
+        .order('name')
+        .then(({ data }) => {
+          if (data) setProducts(data);
+        });
+    }
+  };
+
   const columns: ResponsiveColumn<Product>[] = [
+    {
+      header: (
+        <Checkbox
+          checked={products.length > 0 && selectedProductIds.size === products.length}
+          onCheckedChange={toggleAllSelection}
+          aria-label="Select all products"
+        />
+      ),
+      className: 'w-[40px]',
+      cell: (item) => (
+        <Checkbox
+          checked={selectedProductIds.has(item.id)}
+          onCheckedChange={() => toggleProductSelection(item.id)}
+          aria-label={`Select ${item.name}`}
+          onClick={(e) => e.stopPropagation()}
+        />
+      ),
+    },
     {
       header: 'Product',
       accessorKey: 'name',
@@ -198,7 +257,14 @@ export default function InventoryManagement() {
     return (
       <div className="space-y-3">
         <div className="flex items-start justify-between">
-          <div className="font-medium text-base">{item.name}</div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              checked={selectedProductIds.has(item.id)}
+              onCheckedChange={() => toggleProductSelection(item.id)}
+              aria-label={`Select ${item.name}`}
+            />
+            <div className="font-medium text-base">{item.name}</div>
+          </div>
           <Badge variant={status.color as "destructive" | "warning" | "default"} className="flex-shrink-0">
             {status.label}
           </Badge>
@@ -240,6 +306,16 @@ export default function InventoryManagement() {
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">Wholesale scale inventory across multiple warehouses</p>
         </div>
         <div className="flex gap-2 flex-wrap w-full sm:w-auto">
+          {selectedProductIds.size > 0 && (
+            <Button
+              variant="outline"
+              className="min-h-[44px] touch-manipulation text-sm sm:text-base"
+              onClick={() => setBulkModalOpen(true)}
+            >
+              <Layers className="h-4 w-4 mr-2" />
+              Bulk Adjust ({selectedProductIds.size})
+            </Button>
+          )}
           <BulkImageGenerator products={products} />
           <Button
             className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation flex-1 sm:flex-initial text-sm sm:text-base min-w-[100px]"
@@ -354,6 +430,13 @@ export default function InventoryManagement() {
           onOpenChange={setAdjustmentDialogOpen}
         />
       )}
+
+      <BulkInventoryModal
+        open={bulkModalOpen}
+        onOpenChange={setBulkModalOpen}
+        selectedProducts={selectedBulkProducts}
+        onComplete={handleBulkComplete}
+      />
     </div>
   );
 }

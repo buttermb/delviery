@@ -759,6 +759,59 @@
 
 ---
 
+## Task: Implement Bulk Inventory Adjustment with BulkInventoryModal
+
+### What was done:
+
+1. **Created `src/components/admin/BulkInventoryModal.tsx`** - A comprehensive bulk inventory adjustment dialog that:
+   - Supports three adjustment types via selector: Add Stock, Reduce Stock, and Set to Amount
+   - Shows a live preview of all changes before applying (current qty -> new qty with change badge)
+   - Warns when subtracting more than available (quantities clamped to 0, not negative)
+   - Records inventory_history entries in `wholesale_inventory_movements` table for each adjustment
+   - History entries include: tenant_id, inventory_id, product_name, movement_type (bulk_add/bulk_subtract/bulk_set), quantity_change, notes with previous/new quantities, and warehouse location
+   - Reason selector with options: Receiving/Restock, Damage/Loss, Theft, Quality Issue, Count Correction, Audit Adjustment, Transfer, Other
+   - Optional notes field for additional context
+   - Loading state with spinner during bulk operation
+   - Success/warning toasts (reports partial failures)
+   - Query invalidation for products, inventory-movements, and products-for-wholesale
+   - Tenant-aware operations (always filters by tenant_id)
+   - Proper error handling with logger
+
+2. **Updated `src/pages/admin/InventoryManagement.tsx`** to integrate bulk selection:
+   - Added checkbox column (select all / individual) to the inventory table
+   - Added checkbox to mobile card view for touch-friendly selection
+   - "Bulk Adjust" button appears in header when products are selected (shows count)
+   - Checkbox selection state management with Set<string>
+   - Automatic re-fetch of products after bulk adjustment completes
+   - Selection cleared after bulk operation
+
+### Key Features:
+- **Adjustment Type Selector**: Radio-style dropdown with Add/Subtract/Set options and color-coded icons
+- **Live Preview**: Shows each product's current quantity, new quantity, and change amount with color-coded badges (green for add, red for subtract)
+- **Inventory History**: Each individual product adjustment creates a `wholesale_inventory_movements` entry with movement_type `bulk_add`, `bulk_subtract`, or `bulk_set`
+- **Batch Processing**: Processes all selected products sequentially, continues even if individual items fail
+- **Warning Alert**: Shows destructive alert when subtract would exceed available stock
+
+### Acceptance Criteria Met:
+- [x] BulkInventoryModal with adjustment type selector (add/subtract/set)
+- [x] Live preview of quantity changes before applying
+- [x] Inventory history entries created in wholesale_inventory_movements
+- [x] Multi-product selection via checkboxes (desktop + mobile)
+- [x] Reason and notes fields for audit trail
+- [x] Proper tenant isolation (tenant_id on all operations)
+- [x] Loading/disabled states during processing
+- [x] Error handling with toasts and logger
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/components/admin/BulkInventoryModal.tsx` (new)
+- `src/pages/admin/InventoryManagement.tsx` (modified - added bulk selection + modal integration)
+
+### Build Status:
+- `npm run build` passes with no errors (6547 modules transformed)
+
+---
+
 ## Task: Refactor StorefrontBuilder for Modularity
 
 ### What was done:
