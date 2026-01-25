@@ -266,6 +266,7 @@ export default function AccountSignup() {
                         onChange={(e) => setEmail(e.target.value.toLowerCase().trim())}
                         className="pl-10 h-12"
                         required
+                        autoComplete="email"
                       />
                     </div>
                   </div>
@@ -282,6 +283,7 @@ export default function AccountSignup() {
                         className="pr-10 h-12"
                         required
                         minLength={8}
+                        autoComplete="new-password"
                       />
                       <button
                         type="button"

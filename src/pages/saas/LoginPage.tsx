@@ -391,6 +391,7 @@ export default function LoginPage() {
                               type={showPassword ? "text" : "password"}
                               className="h-12 bg-white border-slate-200 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]/20 rounded-xl pl-4 pr-10 transition-all duration-200 shadow-sm group-hover:shadow-md"
                               placeholder="••••••••"
+                              autoComplete="current-password"
                             />
                             <button
                               type="button"
@@ -589,6 +590,7 @@ export default function LoginPage() {
                   value={forgotPasswordEmail}
                   onChange={(e) => setForgotPasswordEmail(e.target.value)}
                   className="h-11"
+                  autoComplete="email"
                 />
               </div>
               <div className="flex gap-3">
