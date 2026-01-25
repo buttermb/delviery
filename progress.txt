@@ -7690,3 +7690,16 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Remove ts-ignore in useAttentionQueue.ts line 100
+
+### Completed: 2026-01-25T13:43:07-08:00
+
+**Issue:** Line 100 had an unnecessary `@ts-expect-error` comment for a "Deep type instantiation issue with Supabase".
+
+**Solution:** Removed the `@ts-expect-error` comment. The type casting `(data as unknown as DeliveryRow[])` at the return statement (line 106) already properly handles the type conversion, making the suppression comment unnecessary.
+
+**Verification:** Ran `npx tsc --noEmit` - TypeScript compiles successfully with no errors.
+
+### Files Changed:
+- `src/hooks/useAttentionQueue.ts` - Removed unnecessary @ts-expect-error on line 100

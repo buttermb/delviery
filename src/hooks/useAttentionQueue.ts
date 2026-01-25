@@ -97,7 +97,6 @@ export function useAttentionQueue() {
 
       const fetchLateDeliveries = async (): Promise<DeliveryRow[]> => {
         try {
-          // @ts-expect-error - Deep type instantiation issue with Supabase
           const { data } = await supabase
             .from('deliveries')
             .select('id, created_at')
