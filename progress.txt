@@ -7690,3 +7690,12 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: BuilderPreview.tsx mobile width style change
+
+### Change Made:
+- File: `src/pages/admin/storefront/builder/BuilderPreview.tsx` line 36
+- Changed mobile preview style from `width: '375px'` to `width: '100%', maxWidth: '375px'`
+- This allows the mobile preview to be responsive (filling available width up to 375px) instead of fixed width
