@@ -7690,3 +7690,16 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: BuilderPreview desktop width change
+
+Changed BuilderPreview.tsx line 38 desktop preview width from fixed 1200px to responsive:
+- Before: width: '1200px'
+- After: width: '100%', maxWidth: '1200px'
+
+This allows the preview to be responsive while capping at 1200px max width.
+
+### File Changed:
+- src/pages/admin/storefront/builder/BuilderPreview.tsx
