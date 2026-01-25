@@ -4,9 +4,10 @@
  */
 
 import { Link, useParams, useLocation } from 'react-router-dom';
-import { Home, Search, ShoppingCart, User, Heart } from 'lucide-react';
+import { Home, Search, ShoppingCart, User, Heart, Moon, Sun } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface MobileBottomNavProps {
   cartItemCount: number;
@@ -16,6 +17,7 @@ interface MobileBottomNavProps {
 export function MobileBottomNav({ cartItemCount, primaryColor }: MobileBottomNavProps) {
   const { storeSlug } = useParams();
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   const navItems = [
     { path: `/shop/${storeSlug}`, icon: Home, label: 'Home', exact: true },
@@ -33,8 +35,8 @@ export function MobileBottomNav({ cartItemCount, primaryColor }: MobileBottomNav
   };
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50 safe-area-pb" role="navigation" aria-label="Main">
-      <div className="grid grid-cols-5 h-16">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t dark:border-gray-800 shadow-lg z-50 safe-area-pb" role="navigation" aria-label="Main">
+      <div className="grid grid-cols-6 h-16">
         {navItems.map(({ path, icon: Icon, label, badge, exact }) => {
           const active = isActive(path, exact);
           return (
@@ -69,6 +71,21 @@ export function MobileBottomNav({ cartItemCount, primaryColor }: MobileBottomNav
             </Link>
           );
         })}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+          className="flex flex-col items-center justify-center gap-1 transition-colors relative min-h-[44px] min-w-[44px] text-muted-foreground hover:text-primary"
+        >
+          <div className="relative">
+            {theme === 'light' ? (
+              <Moon className="w-5 h-5" aria-hidden="true" />
+            ) : (
+              <Sun className="w-5 h-5" aria-hidden="true" />
+            )}
+          </div>
+          <span className="text-[10px] font-medium">{theme === 'light' ? 'Dark' : 'Light'}</span>
+        </button>
       </div>
     </nav>
   );
