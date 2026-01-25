@@ -432,6 +432,18 @@ export const navigationSections: NavSection[] = [
         tier: 'professional'
       },
       {
+        title: 'Revenue',
+        href: '/admin/revenue',
+        icon: TrendingUp,
+        tier: 'professional'
+      },
+      {
+        title: 'Expenses',
+        href: '/admin/expenses',
+        icon: TrendingDown,
+        tier: 'professional'
+      },
+      {
         title: 'Payments & Invoices',
         href: '/admin/invoice-management',
         icon: Receipt,
