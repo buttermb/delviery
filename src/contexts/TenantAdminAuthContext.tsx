@@ -1539,8 +1539,14 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             // Refresh tenant data
             const storedAdmin = safeStorage.getItem(ADMIN_KEY);
             if (storedAdmin) {
+              let adminData;
               try {
-                const adminData = JSON.parse(storedAdmin);
+                adminData = JSON.parse(storedAdmin);
+              } catch (parseError) {
+                logger.error('Failed to parse stored admin data', parseError);
+                return;
+              }
+              try {
                 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
                 const { response } = await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
                   method: "GET",

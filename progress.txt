@@ -7690,3 +7690,55 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Agent 11 - Wrap JSON.parse in try-catch in TenantAdminAuthContext.tsx
+
+### Task: Find all JSON.parse calls and wrap each in try-catch
+
+### Analysis
+
+Found 5 JSON.parse calls in TenantAdminAuthContext.tsx:
+
+1. **Line 145** (`getInitialAdminState`): Already wrapped in try-catch with empty catch block - acceptable for initial hydration
+2. **Line 154** (`getInitialTenantState`): Already wrapped in try-catch with empty catch block - acceptable for initial hydration
+3. **Line 620** (`initializeAuth`): Already wrapped in dedicated try-catch block
+4. **Line 627** (`initializeAuth`): Already wrapped in dedicated try-catch block
+5. **Line 1543** (subscription handler): Was inside a broader try-catch, but JSON.parse errors were mixed with network errors
+
+### Change Made
+
+Wrapped the JSON.parse on line 1543 (now line 1544 after edit) in its own dedicated try-catch block:
+- Separated JSON.parse error handling from network error handling
+- Added specific error logging for parse failures
+- Early return on parse failure to prevent undefined data from being used
+
+### Code Change (src/contexts/TenantAdminAuthContext.tsx):
+
+Before:
+```typescript
+if (storedAdmin) {
+  try {
+    const adminData = JSON.parse(storedAdmin);
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '...';
+```
+
+After:
+```typescript
+if (storedAdmin) {
+  let adminData;
+  try {
+    adminData = JSON.parse(storedAdmin);
+  } catch (parseError) {
+    logger.error('Failed to parse stored admin data', parseError);
+    return;
+  }
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '...';
+```
+
+### Verification
+
+- **Build**: `npm run build` passes with 0 TypeScript errors
+- All 5 JSON.parse calls now have proper try-catch handling
