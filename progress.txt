@@ -7690,3 +7690,15 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Change ban-ts-comment from warn to error
+
+### Completed:
+Changed the `@typescript-eslint/ban-ts-comment` rule in `eslint.config.js` line 26 from `"warn"` to `"error"`.
+
+This enforces stricter TypeScript comment handling by treating `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck`, and `@ts-check` comments as errors instead of warnings.
+
+### Files Changed:
+- `eslint.config.js` - Changed `"@typescript-eslint/ban-ts-comment": "warn"` to `"@typescript-eslint/ban-ts-comment": "error"`
