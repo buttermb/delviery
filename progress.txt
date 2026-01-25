@@ -7690,3 +7690,18 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: BuilderPreview.tsx minHeight Change (Agent-28)
+
+**Status:** Already completed in commit d9bbee92
+
+**Task:** Change minHeight from '800px' to 'calc(100vh - 200px)' in BuilderPreview.tsx line 48
+
+**Verification:** The change was already made in the previous commit (d9bbee92 - feat: storefront settings live preview and UI improvements). The file at src/pages/admin/storefront/builder/BuilderPreview.tsx line 48 already contains:
+```typescript
+minHeight: 'calc(100vh - 200px)',
+```
+
+No additional changes needed - task was completed in a prior commit.
