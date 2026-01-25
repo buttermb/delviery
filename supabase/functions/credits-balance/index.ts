@@ -22,29 +22,28 @@ interface PendingTransaction {
   created_at: string;
 }
 
-interface SubscriptionStatus {
-  id: string;
-  status: string;
-  credits_per_period: number;
-  period_type: string;
-  current_period_start: string | null;
-  current_period_end: string | null;
-  credits_remaining_this_period: number | null;
-  cancel_at_period_end: boolean;
+// Frontend-expected subscription format (camelCase)
+interface SubscriptionInfo {
+  status: 'active' | 'trial' | 'trialing' | 'cancelled' | 'past_due' | 'none';
+  isFreeTier: boolean;
+  creditsPerPeriod: number;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
 }
 
+// Frontend-expected response format (camelCase)
 interface CreditsBalanceResponse {
   balance: number;
-  lifetime_stats: {
+  lifetimeStats: {
+    earned: number;
+    spent: number;
     purchased: number;
-    used: number;
     expired: number;
     refunded: number;
   };
-  last_purchase_at: string | null;
-  last_used_at: string | null;
-  pending_transactions: PendingTransaction[];
-  subscription: SubscriptionStatus | null;
+  subscription: SubscriptionInfo;
+  nextFreeGrantAt: string | null;
+  pendingTransactions: number;
 }
 
 serve(async (req: Request) => {
@@ -98,6 +97,32 @@ serve(async (req: Request) => {
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Fetch tenant info to determine free tier status
+    // Note: is_free_tier column may not exist in all deployments
+    const { data: tenantData, error: tenantInfoError } = await supabase
+      .from('tenants')
+      .select('subscription_status, subscription_plan')
+      .eq('id', tenantId)
+      .maybeSingle();
+
+    if (tenantInfoError) {
+      console.error('Error fetching tenant info:', tenantInfoError);
+      // Non-fatal: continue with default free tier assumption
+    }
+
+    // Determine if user is on free tier
+    // Paid plans (professional, enterprise) are NEVER free tier
+    const isPaidPlan = tenantData?.subscription_plan === 'professional' ||
+                       tenantData?.subscription_plan === 'enterprise';
+
+    // Active subscription statuses (including 'trialing')
+    const hasActiveSubscription = tenantData?.subscription_status === 'active' ||
+                                   tenantData?.subscription_status === 'trial' ||
+                                   tenantData?.subscription_status === 'trialing';
+
+    // User is NOT free tier if they have a paid plan OR active subscription
+    const isFreeTier = !(isPaidPlan || hasActiveSubscription);
 
     // Fetch credit balance
     const { data: credits, error: creditsError } = await supabase
@@ -158,18 +183,36 @@ serve(async (req: Request) => {
       // Non-fatal: continue with null subscription
     }
 
+    // Build subscription response in frontend-expected format (camelCase)
+    const subscriptionResponse: SubscriptionInfo = subscription
+      ? {
+          status: subscription.status as SubscriptionInfo['status'],
+          isFreeTier,
+          creditsPerPeriod: subscription.credits_per_period ?? 0,
+          currentPeriodEnd: subscription.current_period_end,
+          cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
+        }
+      : {
+          status: 'none',
+          isFreeTier,
+          creditsPerPeriod: 0,
+          currentPeriodEnd: null,
+          cancelAtPeriodEnd: false,
+        };
+
+    // Build response in frontend-expected format (camelCase)
     const response: CreditsBalanceResponse = {
       balance: creditBalance.balance,
-      lifetime_stats: {
+      lifetimeStats: {
+        earned: creditBalance.lifetime_purchased, // earned = total credits received
+        spent: creditBalance.lifetime_used,
         purchased: creditBalance.lifetime_purchased,
-        used: creditBalance.lifetime_used,
         expired: creditBalance.lifetime_expired,
         refunded: creditBalance.lifetime_refunded,
       },
-      last_purchase_at: creditBalance.last_purchase_at,
-      last_used_at: creditBalance.last_used_at,
-      pending_transactions: pendingTransactions ?? [],
-      subscription: subscription ?? null,
+      subscription: subscriptionResponse,
+      nextFreeGrantAt: null, // TODO: Calculate from tenant data if needed
+      pendingTransactions: (pendingTransactions ?? []).length,
     };
 
     return new Response(

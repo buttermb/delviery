@@ -65,19 +65,25 @@ export interface CheckCreditsResult {
  */
 export async function getCreditBalance(tenantId: string): Promise<CreditBalance | null> {
   try {
-    // PRIORITY: Check tenants table for subscription_status first
+    // PRIORITY: Check tenants table for subscription_status and plan first
     // This is the source of truth for whether user is on free tier
     const { data: tenantData, error: tenantError } = await supabase
       .from('tenants')
-      .select('subscription_status, is_free_tier, credits_enabled')
+      .select('subscription_status, subscription_plan, credits_enabled')
       .eq('id', tenantId)
       .maybeSingle();
 
-    // If tenant has active subscription, they are NOT on free tier
-    // regardless of what tenant_credits.is_free_tier says
-    const hasActiveSubscription = tenantData?.subscription_status === 'active' || 
-                                   tenantData?.subscription_status === 'trial';
-    const tenantIsFreeTier = hasActiveSubscription ? false : (tenantData?.is_free_tier ?? true);
+    // Paid plans (professional, enterprise) are NEVER free tier
+    const isPaidPlan = tenantData?.subscription_plan === 'professional' ||
+                       tenantData?.subscription_plan === 'enterprise';
+
+    // Active subscription statuses (including 'trialing')
+    const hasActiveSubscription = tenantData?.subscription_status === 'active' ||
+                                   tenantData?.subscription_status === 'trial' ||
+                                   tenantData?.subscription_status === 'trialing';
+
+    // User is NOT free tier if they have a paid plan OR active subscription
+    const tenantIsFreeTier = !(isPaidPlan || hasActiveSubscription);
 
     // Query credit balance data
     const { data, error } = await supabase
