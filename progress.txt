@@ -7690,3 +7690,32 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Run npx eslint --fix src to auto-fix all fixable issues
+
+### Completed: 2026-01-25
+
+Ran `npx eslint --fix src` command to auto-fix all fixable ESLint issues.
+
+### Results:
+- **Total issues found**: 1935 warnings, 0 errors
+- **Auto-fixed files**: 2 files modified
+
+### Files Modified:
+1. **`src/lib/featureFlags.ts`**
+   - Changed `let flagsCache` to `const flagsCache` (prefer-const rule)
+   - The Map variable is never reassigned, only its contents are modified
+
+2. **`src/hooks/useWholesaleData.ts`**
+   - Removed unused eslint-disable comment for `@typescript-eslint/no-explicit-any`
+   - The disable comment was unnecessary since the rule is configured as warning-only
+
+### Remaining Warnings (not auto-fixable):
+The 1935 remaining warnings require manual intervention:
+- `@typescript-eslint/no-explicit-any` - Need to specify proper types
+- `react-refresh/only-export-components` - Need to separate non-component exports
+- `no-empty` - Need to add logic or comments to empty blocks
+- `react-hooks/exhaustive-deps` - Need to review dependency arrays
+- `@typescript-eslint/ban-ts-comment` - Need to change @ts-ignore to @ts-expect-error
+
+These are pre-existing technical debt items that cannot be automatically fixed.
