@@ -171,6 +171,18 @@ export const navigationSections: NavSection[] = [
         title: 'Receiving & Packaging',
         href: '/admin/operations/receiving',
         icon: ClipboardList
+      },
+      {
+        title: 'Team',
+        href: '/admin/team-members',
+        icon: UsersRound,
+        tier: 'professional'
+      },
+      {
+        title: 'Roles',
+        href: '/admin/role-management',
+        icon: Shield,
+        tier: 'enterprise'
       }
     ]
   },
