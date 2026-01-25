@@ -570,7 +570,7 @@ export default function StorefrontDashboard() {
       {productStats && productStats.total === 0 ? (
         <SmartOnboardingWidget productCount={0} className="mb-2" />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
