@@ -7632,3 +7632,42 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/auth/__tests__/ProtectedRoutes.test.tsx` (new - 22 tests)
+
+---
+
+## Task: Wrap all JSON.parse calls in try-catch blocks in storageKeys.ts CustomerAuthContext SuperAdminAuthContext TenantAdminAuthContext
+
+### What was done:
+
+**Audit completed:** All JSON.parse calls in the specified files were reviewed and found to already be wrapped in try-catch blocks.
+
+#### File Analysis:
+
+1. **storageKeys.ts (line 168)**:
+   - `JSON.parse(json)` in `safeJsonParse` function - Already wrapped in try-catch (lines 167-172)
+   - The function is designed specifically for safe JSON parsing with error handling
+
+2. **CustomerAuthContext.tsx (lines 127-128)**:
+   - `JSON.parse(storedCustomer)` and `JSON.parse(storedTenant)` - Already wrapped in try-catch block (lines 126-137)
+   - Catch block clears storage and sets loading to false on parse failure
+
+3. **SuperAdminAuthContext.tsx (lines 139, 143)**:
+   - `JSON.parse(storedAdmin)` and `JSON.parse(storedSupabaseSession)` - Already wrapped in try-catch block (lines 138-166)
+   - Catch block clears storage and sets loading to false on parse failure
+
+4. **TenantAdminAuthContext.tsx (lines 145, 154, 620, 627, 1543)**:
+   - Line 145: `JSON.parse(stored)` in `getInitialAdminState()` - Wrapped in try-catch (lines 143-148)
+   - Line 154: `JSON.parse(stored)` in `getInitialTenantState()` - Wrapped in try-catch (lines 151-163)
+   - Line 620: `JSON.parse(storedAdmin)` - Wrapped in try-catch (lines 619-625)
+   - Line 627: `JSON.parse(storedTenant)` - Wrapped in try-catch (lines 626-632)
+   - Line 1543: `JSON.parse(storedAdmin)` in real-time subscription handler - Wrapped in try-catch (lines 1542-1590)
+
+### Acceptance Criteria Met:
+- [x] All JSON.parse calls in storageKeys.ts are wrapped in try-catch
+- [x] All JSON.parse calls in CustomerAuthContext.tsx are wrapped in try-catch
+- [x] All JSON.parse calls in SuperAdminAuthContext.tsx are wrapped in try-catch
+- [x] All JSON.parse calls in TenantAdminAuthContext.tsx are wrapped in try-catch
+- [x] Error handling properly clears state/storage on parse failures
+
+### Conclusion:
+No code changes were required - all JSON.parse calls were already properly wrapped in try-catch blocks with appropriate error handling that clears corrupted storage and resets auth state.
