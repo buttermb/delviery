@@ -48,27 +48,37 @@ interface CreditsBalanceResponse {
 }
 
 serve(async (req: Request) => {
+  console.log('[credits-balance] === New request ===', req.method, req.url);
+  
   if (req.method === 'OPTIONS') {
+    console.log('[credits-balance] Handling CORS preflight');
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
+    console.log('[credits-balance] Processing request...');
+    
     const authHeader = req.headers.get('Authorization');
+    console.log('[credits-balance] Authorization header present:', !!authHeader);
+    
     if (!authHeader) {
+      console.log('[credits-balance] Missing authorization header');
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    // Use service role client to bypass RLS for user validation
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Extract user from JWT - never trust client data
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Extract JWT token and validate it - never trust client data
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
