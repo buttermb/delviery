@@ -7690,3 +7690,30 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Remove @ts-ignore from SuperAdminLayout.tsx line 74
+
+### Date: 2026-01-25
+
+### What was done:
+
+1. **Removed @ts-ignore comment from line 74**
+   - The `@ts-ignore` was originally added with comment "Columns exist in DB but types not yet regenerated"
+   - Verified that all columns used in the query (`id, action, resource_type, tenant_id, timestamp, actor_type`) are properly defined in the `audit_logs` table types in `src/integrations/supabase/types.ts`
+   - The types were already present, making the `@ts-ignore` unnecessary
+
+2. **Added `created_at` to the select statement**
+   - The original code referenced `log.created_at` in line 92 as a fallback for timestamp
+   - But `created_at` was not in the select statement, which would have caused a TypeScript error once `@ts-ignore` was removed
+   - Added `created_at` to the select: `'id, action, resource_type, tenant_id, timestamp, created_at, actor_type'`
+
+3. **Removed `any` type annotation from map callback**
+   - Changed `logs.map((log: any) => ({` to `logs.map((log) => ({`
+   - TypeScript now properly infers the type from the Supabase query result
+
+4. **Build verification**
+   - Ran `npm run build` - PASSES with 0 TypeScript errors
+   - All types are now properly inferred without any type suppressions
+
+### Files Changed:
+- `src/layouts/SuperAdminLayout.tsx` (removed @ts-ignore, added created_at to select, removed any type)
