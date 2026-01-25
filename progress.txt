@@ -7690,3 +7690,16 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Add Route for customer-invoices path in App.tsx
+
+### What was done:
+- Added a new route at path `customer-invoices` in the tenant admin routes section of App.tsx (line 949)
+- The route uses `FeatureProtectedRoute` with featureId `invoice-management` to maintain access control consistency
+- The route renders the existing `CustomerInvoices` component (already lazy-loaded at line 204)
+- Added alongside existing `invoice-management` route to provide an alternative path for accessing customer invoices
+
+### Files Changed:
+- `src/App.tsx` - Added customer-invoices route

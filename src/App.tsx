@@ -946,6 +946,7 @@ const App = () => {
                                         <Route path="advanced-inventory" element={<Navigate to="inventory-hub?tab=adjustments" replace />} />
                                         <Route path="fronted-inventory" element={<FeatureProtectedRoute featureId="fronted-inventory"><FrontedInventory /></FeatureProtectedRoute>} />
                                         <Route path="invoice-management" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
+                                        <Route path="customer-invoices" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
                                         <Route path="fleet-management" element={<Navigate to="fulfillment-hub?tab=fleet" replace />} />
                                         <Route path="delivery-hub" element={<Navigate to="fulfillment-hub" replace />} />
                                         <Route path="fulfillment-hub" element={<FeatureProtectedRoute featureId="delivery-management"><FulfillmentHubPage /></FeatureProtectedRoute>} />
