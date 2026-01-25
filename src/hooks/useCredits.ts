@@ -239,7 +239,18 @@ export function useCredits(): UseCreditsReturn {
   const balance = creditData?.balance ?? FREE_TIER_MONTHLY_CREDITS;
   const lifetimeStats: LifetimeStats = creditData?.lifetimeStats ?? DEFAULT_LIFETIME_STATS;
   const subscription: SubscriptionInfo = creditData?.subscription ?? DEFAULT_SUBSCRIPTION;
-  const isFreeTier = subscription.isFreeTier;
+  
+  // CRITICAL: If credits are disabled for tenant OR they have a paid plan,
+  // force isFreeTier to false to prevent credit warnings
+  const isPaidPlan = tenant?.subscription_plan === 'professional' || 
+                     tenant?.subscription_plan === 'enterprise';
+  const hasActiveStatus = tenant?.subscription_status === 'active';
+  const creditsDisabled = (tenant as { credits_enabled?: boolean })?.credits_enabled === false;
+  
+  // Determine isFreeTier: use subscription data if available, else fallback to tenant context
+  const isFreeTier = creditData 
+    ? subscription.isFreeTier 
+    : !(creditsDisabled || isPaidPlan || hasActiveStatus);
 
   // Legacy backward-compat values
   const lifetimeEarned = lifetimeStats.earned;
@@ -248,10 +259,10 @@ export function useCredits(): UseCreditsReturn {
     ? new Date(creditData.nextFreeGrantAt)
     : null;
 
-  // Status flags
-  const isLowCredits = isFreeTier && balance <= LOW_CREDIT_WARNING_THRESHOLD;
-  const isCriticalCredits = isFreeTier && balance <= CRITICAL_CREDIT_THRESHOLD;
-  const isOutOfCredits = isFreeTier && balance <= 0;
+  // Status flags - ONLY show warnings for true free tier users
+  const isLowCredits = isFreeTier && !creditsDisabled && balance <= LOW_CREDIT_WARNING_THRESHOLD;
+  const isCriticalCredits = isFreeTier && !creditsDisabled && balance <= CRITICAL_CREDIT_THRESHOLD;
+  const isOutOfCredits = isFreeTier && !creditsDisabled && balance <= 0;
 
   // Calculate percent used
   const percentUsed = useMemo(() => {
