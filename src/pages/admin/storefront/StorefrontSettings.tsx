@@ -959,7 +959,7 @@ export default function StorefrontSettings() {
                             slots[index] = { ...slots[index], start: e.target.value };
                             updateField('time_slots', slots);
                           }}
-                          className="w-28"
+                          className="w-full sm:w-28"
                         />
                         <span className="text-muted-foreground">to</span>
                         <Input
@@ -970,7 +970,7 @@ export default function StorefrontSettings() {
                             slots[index] = { ...slots[index], end: e.target.value };
                             updateField('time_slots', slots);
                           }}
-                          className="w-28"
+                          className="w-full sm:w-28"
                         />
                         <Button
                           variant="ghost"
