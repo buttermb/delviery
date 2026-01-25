@@ -282,6 +282,14 @@ export default function CustomerInvoices() {
         // Fallback to timestamp-based number
       }
 
+      // Map line items to edge function expected format (unit_price, total instead of rate, amount)
+      const mappedLineItems = lineItems.map(item => ({
+        description: item.description,
+        quantity: item.quantity,
+        unit_price: item.rate,  // Edge function expects unit_price
+        total: item.amount,     // Edge function expects total
+      }));
+
       const invoiceData = {
         tenant_id: tenant.id,
         customer_id: formData.customer_id,
@@ -292,7 +300,7 @@ export default function CustomerInvoices() {
         amount_paid: 0,
         amount_due: total,
         status: 'draft',
-        line_items: lineItems,
+        line_items: mappedLineItems,
         issue_date: new Date().toISOString().split('T')[0],
         due_date: formData.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       };
