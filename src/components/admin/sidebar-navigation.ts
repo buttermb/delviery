@@ -566,6 +566,18 @@ export const navigationSections: NavSection[] = [
         href: '/admin/advanced-analytics',
         icon: BarChart4,
         tier: 'enterprise'
+      },
+      {
+        title: 'Reports',
+        href: '/admin/analytics/reports',
+        icon: FileSpreadsheet,
+        tier: 'professional'
+      },
+      {
+        title: 'Advanced',
+        href: '/admin/analytics/advanced',
+        icon: Rocket,
+        tier: 'enterprise'
       }
     ]
   },
