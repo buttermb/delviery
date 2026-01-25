@@ -7690,3 +7690,43 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Add scroll-into-view when SidebarMenuItem becomes active
+
+### What was done:
+
+1. **Modified `src/components/admin/sidebar/SidebarMenuItem.tsx`**:
+   - Added `useEffect` and `useRef` imports from React
+   - Created `itemRef` using `useRef<HTMLLIElement>(null)` to reference the menu item element
+   - Added a `useEffect` hook that triggers when `isActive` changes to scroll the item into view
+   - Uses `scrollIntoView` with smooth behavior and 'nearest' block/inline positioning to avoid jarring scrolls
+   - Applied the ref to both `UISidebarMenuItem` render branches (locked items and regular items)
+
+### Implementation details:
+
+```typescript
+const itemRef = useRef<HTMLLIElement>(null);
+
+// Scroll into view when item becomes active
+useEffect(() => {
+  if (isActive && itemRef.current) {
+    itemRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'nearest',
+    });
+  }
+}, [isActive]);
+```
+
+The `block: 'nearest'` and `inline: 'nearest'` options ensure the scrolling is minimal - only scrolling if the element is outside the visible viewport, which prevents unnecessary jumps when the item is already visible.
+
+### Acceptance Criteria Met:
+- [x] Active menu items automatically scroll into view when they become active
+- [x] Scroll behavior is smooth and non-jarring
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/components/admin/sidebar/SidebarMenuItem.tsx`

@@ -4,7 +4,7 @@
  * Individual menu item with tracking, favorites, and active state
  */
 
-import { memo } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { SidebarMenuButton, SidebarMenuItem as UISidebarMenuItem, useSidebar as useUiSidebar } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +37,18 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
   const { favorites, toggleFavorite, trackFeatureClick } = useSidebar();
   const liveBadgeContext = useLiveBadge();
   const { prefetchRoute } = useRoutePrefetch();
+  const itemRef = useRef<HTMLLIElement>(null);
+
+  // Scroll into view when item becomes active
+  useEffect(() => {
+    if (isActive && itemRef.current) {
+      itemRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest',
+      });
+    }
+  }, [isActive]);
 
   // Guard: Ensure favorites is an array
   const safeFavorites = Array.isArray(favorites) ? favorites : [];
@@ -73,7 +85,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
   if (!hasAccess && item.featureId) {
     const IconComponent = item.icon;
     return (
-      <UISidebarMenuItem>
+      <UISidebarMenuItem ref={itemRef}>
         <SidebarMenuButton
           onClick={() => onLockedItemClick(item.featureId!)}
           className="cursor-pointer opacity-60 hover:opacity-100"
@@ -92,7 +104,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
   const liveBadge = liveBadgeContext?.getBadge(item.path) ?? null;
 
   return (
-    <UISidebarMenuItem>
+    <UISidebarMenuItem ref={itemRef}>
       <SidebarMenuButton
         asChild
         isActive={isActive}
