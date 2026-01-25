@@ -62,7 +62,8 @@ import {
   BarChart4,
   UserCheck,
   Flame,
-  Brain
+  Brain,
+  MapPinned
 } from 'lucide-react';
 
 export interface NavItem {
@@ -171,6 +172,25 @@ export const navigationSections: NavSection[] = [
         title: 'Receiving & Packaging',
         href: '/admin/operations/receiving',
         icon: ClipboardList
+      }
+    ]
+  },
+
+  // 🚚 FULFILLMENT
+  {
+    title: 'Fulfillment',
+    items: [
+      {
+        title: 'Fulfillment Hub',
+        href: '/admin/fulfillment-hub',
+        icon: Truck,
+        tier: 'professional'
+      },
+      {
+        title: 'Tracking',
+        href: '/admin/fulfillment-hub?tab=map',
+        icon: MapPinned,
+        tier: 'enterprise'
       }
     ]
   },
