@@ -7690,3 +7690,64 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Remove ts-nocheck from src/pages/vendor/VendorLoginPage.tsx and fix types
+
+### Changes Made:
+
+1. **Removed `// @ts-nocheck` directive** from VendorLoginPage.tsx
+
+2. **Fixed missing `isLoading` state** - Added the `useState` hook for `isLoading`:
+   ```typescript
+   const [isLoading, setIsLoading] = useState(false);
+   ```
+
+3. **Consolidated `useVendorAuth()` calls** - Combined two separate hook calls into one:
+   ```typescript
+   // Before:
+   const { login } = useVendorAuth();
+   const { vendor, isAuthenticated } = useVendorAuth();
+   
+   // After:
+   const { login, vendor, isAuthenticated } = useVendorAuth();
+   ```
+
+4. **Fixed error typing in catch block** - Replaced `any` type with proper type checking:
+   ```typescript
+   // Before:
+   } catch (error: any) {
+     logger.error('Vendor login failed', error, { component: 'VendorLoginPage' });
+     toast.error(error.message || "Invalid credentials");
+   
+   // After:
+   } catch (error) {
+     logger.error('Vendor login failed', error instanceof Error ? error : new Error(String(error)), { component: 'VendorLoginPage' });
+     toast.error(error instanceof Error ? error.message : "Invalid credentials");
+   ```
+
+5. **Changed from default export to named export** per project conventions:
+   ```typescript
+   // Before:
+   export default function VendorLoginPage()
+   
+   // After:
+   export function VendorLoginPage()
+   ```
+
+6. **Updated lazy import in App.tsx** to work with named export:
+   ```typescript
+   // Before:
+   const VendorLoginPage = lazy(() => import("./pages/vendor/VendorLoginPage"));
+   
+   // After:
+   const VendorLoginPage = lazy(() => import("./pages/vendor/VendorLoginPage").then(m => ({ default: m.VendorLoginPage })));
+   ```
+
+### Verification:
+- `npm run build` - PASSES (TypeScript compilation successful, 0 errors)
+
+### Files Changed:
+- `src/pages/vendor/VendorLoginPage.tsx` - Removed ts-nocheck, fixed types, named export
+- `src/App.tsx` - Updated lazy import for named export

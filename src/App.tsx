@@ -240,7 +240,7 @@ const SupportTicketsPage = lazy(() => import("./pages/admin/SupportTicketsPage")
 const BatchRecallPage = lazy(() => import("./pages/admin/BatchRecallPage"));
 const ComplianceVaultPage = lazy(() => import("./pages/admin/ComplianceVaultPage"));
 const AdvancedReportingPage = lazy(() => import("./pages/admin/AdvancedReportingPage"));
-const VendorLoginPage = lazy(() => import("./pages/vendor/VendorLoginPage"));
+const VendorLoginPage = lazy(() => import("./pages/vendor/VendorLoginPage").then(m => ({ default: m.VendorLoginPage })));
 const VendorDashboardPage = lazy(() => import("./pages/vendor/VendorDashboardPage"));
 const VendorOrderDetailPage = lazy(() => import("./pages/vendor/VendorOrderDetailPage"));
 const ProtectedVendorRoute = lazy(() => import("./components/vendor/ProtectedVendorRoute"));
