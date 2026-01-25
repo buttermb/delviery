@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { SwipeableCartItem } from "@/components/SwipeableCartItem";
 import { haptics } from "@/utils/haptics";
+import { logger } from "@/lib/logger";
 import type { AppUser } from "@/types/auth";
 import type { Product } from "@/types/product";
 import type { DbCartItem, GuestCartItemWithProduct, RenderCartItem } from "@/types/cart";
@@ -28,9 +29,13 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        setUser(session?.user ?? null);
+      })
+      .catch((error: unknown) => {
+        logger.error("Failed to get auth session in CartDrawer", error);
+      });
   }, []);
 
   const { data: dbCartItems = [] } = useQuery<DbCartItem[]>({
