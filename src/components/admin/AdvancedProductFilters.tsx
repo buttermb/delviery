@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Filter, X, Save, Trash2 } from "lucide-react";
 import { useSavedFilters, type ProductFilterConfig } from "@/hooks/useSavedFilters";
 import { toast } from "sonner";
@@ -35,6 +43,8 @@ export function AdvancedProductFilters({
   activeFilters,
 }: AdvancedProductFiltersProps) {
   const [filters, setFilters] = useState<FilterConfig>(activeFilters);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [filterName, setFilterName] = useState("");
   
   // Use persistent saved filters hook
   const { 
@@ -78,11 +88,17 @@ export function AdvancedProductFilters({
     onFilterChange(defaultFilters);
   };
 
-  const saveCurrentFilter = () => {
-    const name = prompt("Enter filter name:");
-    if (name && name.trim()) {
-      saveFilter(name.trim(), filters as ProductFilterConfig);
-      toast.success(`Filter "${name}" saved`);
+  const openSaveDialog = () => {
+    setFilterName("");
+    setSaveDialogOpen(true);
+  };
+
+  const handleSaveFilter = () => {
+    if (filterName.trim()) {
+      saveFilter(filterName.trim(), filters as ProductFilterConfig);
+      toast.success(`Filter "${filterName.trim()}" saved`);
+      setSaveDialogOpen(false);
+      setFilterName("");
     }
   };
 
@@ -228,13 +244,49 @@ export function AdvancedProductFilters({
               <X className="mr-2 h-4 w-4" />
               Clear
             </Button>
-            <Button variant="outline" onClick={saveCurrentFilter} className="flex-1">
+            <Button variant="outline" onClick={openSaveDialog} className="flex-1">
               <Save className="mr-2 h-4 w-4" />
               Save
             </Button>
           </div>
         </div>
       </SheetContent>
+
+      {/* Save Filter Dialog */}
+      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save Filter</DialogTitle>
+            <DialogDescription>
+              Enter a name for this filter preset to save it for later use.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="filter-name">Filter Name</Label>
+            <Input
+              id="filter-name"
+              value={filterName}
+              onChange={(e) => setFilterName(e.target.value)}
+              placeholder="e.g., High THC Indica"
+              className="mt-2"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSaveFilter();
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveFilter} disabled={!filterName.trim()}>
+              <Save className="mr-2 h-4 w-4" />
+              Save Filter
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Sheet>
   );
 }
