@@ -1,13 +1,14 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 
-interface CreditBalance {
+interface TenantCredits {
   balance: number;
-  lifetime_purchased: number;
-  lifetime_used: number;
-  lifetime_expired: number;
-  lifetime_refunded: number;
-  last_purchase_at: string | null;
-  last_used_at: string | null;
+  lifetime_earned: number;
+  lifetime_spent: number;
+  free_credits_balance: number;
+  purchased_credits_balance: number;
+  free_credits_expires_at: string | null;
+  last_free_grant_at: string | null;
+  next_free_grant_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -99,10 +100,9 @@ serve(async (req: Request) => {
     }
 
     // Fetch tenant info to determine free tier status
-    // Note: is_free_tier column may not exist in all deployments
     const { data: tenantData, error: tenantInfoError } = await supabase
       .from('tenants')
-      .select('subscription_status, subscription_plan')
+      .select('subscription_status, subscription_plan, credits_enabled, is_free_tier')
       .eq('id', tenantId)
       .maybeSingle();
 
@@ -113,6 +113,7 @@ serve(async (req: Request) => {
 
     // Determine if user is on free tier
     // Paid plans (professional, enterprise) are NEVER free tier
+    // If credits are disabled for tenant, they are NOT free tier (they're paid)
     const isPaidPlan = tenantData?.subscription_plan === 'professional' ||
                        tenantData?.subscription_plan === 'enterprise';
 
@@ -121,14 +122,19 @@ serve(async (req: Request) => {
                                    tenantData?.subscription_status === 'trial' ||
                                    tenantData?.subscription_status === 'trialing';
 
-    // User is NOT free tier if they have a paid plan OR active subscription
-    const isFreeTier = !(isPaidPlan || hasActiveSubscription);
+    // Credits disabled means they're on a paid plan that doesn't use credits
+    const creditsDisabled = tenantData?.credits_enabled === false;
 
-    // Fetch credit balance
+    // User is NOT free tier if:
+    // 1. Credits are disabled for their tenant
+    // 2. They have a paid plan
+    // 3. They have an active subscription
+    const isFreeTier = creditsDisabled ? false : !(isPaidPlan || hasActiveSubscription);
+
+    // Fetch credit balance from tenant_credits table
     const { data: credits, error: creditsError } = await supabase
-      .from('credits')
-      .select('balance, lifetime_purchased, lifetime_used, lifetime_expired, lifetime_refunded, last_purchase_at, last_used_at, created_at, updated_at')
-      .eq('user_id', user.id)
+      .from('tenant_credits')
+      .select('balance, lifetime_earned, lifetime_spent, free_credits_balance, purchased_credits_balance, free_credits_expires_at, last_free_grant_at, next_free_grant_at, created_at, updated_at')
       .eq('tenant_id', tenantId)
       .maybeSingle();
 
@@ -141,14 +147,15 @@ serve(async (req: Request) => {
     }
 
     // If no credits row exists, return zero balance
-    const creditBalance: CreditBalance = credits ?? {
+    const creditBalance: TenantCredits = credits ?? {
       balance: 0,
-      lifetime_purchased: 0,
-      lifetime_used: 0,
-      lifetime_expired: 0,
-      lifetime_refunded: 0,
-      last_purchase_at: null,
-      last_used_at: null,
+      lifetime_earned: 0,
+      lifetime_spent: 0,
+      free_credits_balance: 0,
+      purchased_credits_balance: 0,
+      free_credits_expires_at: null,
+      last_free_grant_at: null,
+      next_free_grant_at: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -204,14 +211,14 @@ serve(async (req: Request) => {
     const response: CreditsBalanceResponse = {
       balance: creditBalance.balance,
       lifetimeStats: {
-        earned: creditBalance.lifetime_purchased, // earned = total credits received
-        spent: creditBalance.lifetime_used,
-        purchased: creditBalance.lifetime_purchased,
-        expired: creditBalance.lifetime_expired,
-        refunded: creditBalance.lifetime_refunded,
+        earned: creditBalance.lifetime_earned,
+        spent: creditBalance.lifetime_spent,
+        purchased: creditBalance.purchased_credits_balance,
+        expired: 0, // Not tracked in tenant_credits
+        refunded: 0, // Not tracked in tenant_credits
       },
       subscription: subscriptionResponse,
-      nextFreeGrantAt: null, // TODO: Calculate from tenant data if needed
+      nextFreeGrantAt: creditBalance.next_free_grant_at,
       pendingTransactions: (pendingTransactions ?? []).length,
     };
 
