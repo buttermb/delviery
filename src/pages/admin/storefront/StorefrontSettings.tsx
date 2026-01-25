@@ -855,7 +855,7 @@ export default function StorefrontSettings() {
                             zones[index] = { ...zones[index], fee: parseFloat(e.target.value) };
                             updateField('delivery_zones', zones);
                           }}
-                          className="w-24"
+                          className="w-full sm:w-24"
                         />
                       </div>
                       <div className="flex items-center gap-2">
