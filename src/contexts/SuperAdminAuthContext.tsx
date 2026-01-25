@@ -140,19 +140,24 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
         // Restore Supabase session if available
         if (storedSupabaseSession) {
-          const session = JSON.parse(storedSupabaseSession);
-          setSupabaseSession(session);
-          // Set the session in Supabase client for RLS access
-          supabase.auth.setSession({
-            access_token: session.access_token,
-            refresh_token: session.refresh_token || '',
-          }).then(({ data, error }) => {
-            if (error) {
-              logger.error('Failed to restore Supabase session', error, { component: 'SuperAdminAuth' });
-            } else {
-              logger.info('Supabase session restored successfully', { component: 'SuperAdminAuth' });
-            }
-          });
+          try {
+            const session = JSON.parse(storedSupabaseSession);
+            setSupabaseSession(session);
+            // Set the session in Supabase client for RLS access
+            supabase.auth.setSession({
+              access_token: session.access_token,
+              refresh_token: session.refresh_token || '',
+            }).then(({ data, error }) => {
+              if (error) {
+                logger.error('Failed to restore Supabase session', error, { component: 'SuperAdminAuth' });
+              } else {
+                logger.info('Supabase session restored successfully', { component: 'SuperAdminAuth' });
+              }
+            });
+          } catch (sessionParseError) {
+            logger.error('Failed to parse stored Supabase session', sessionParseError instanceof Error ? sessionParseError : new Error(String(sessionParseError)), { component: 'SuperAdminAuth' });
+            safeStorage.removeItem(SUPABASE_SESSION_KEY);
+          }
         }
 
         // Verify token is still valid
