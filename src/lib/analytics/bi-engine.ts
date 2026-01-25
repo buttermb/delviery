@@ -123,12 +123,11 @@ export class BusinessIntelligenceEngine {
         }
 
         // 3. Security Analysis - Check real security events
-        // @ts-ignore - Avoid deep type instantiation
         const { data: securityEvents } = await supabase
             .from('security_events')
             .select('id, event_type')
             .gte('created_at', thirtyDaysAgo.toISOString())
-            .in('event_type', ['failed_login', 'unauthorized_access']);
+            .in('event_type', ['failed_login', 'unauthorized_access']) as { data: { id: string; event_type: string }[] | null };
 
         if (securityEvents && securityEvents.length > 5) {
             insights.push({

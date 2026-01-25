@@ -7690,3 +7690,39 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+
+---
+
+## Task: Remove ts-ignore in bi-engine.ts line 126 and add explicit type annotation
+
+### Change Made:
+- **File**: `src/lib/analytics/bi-engine.ts`
+- **Line**: 126
+- **Before**: 
+  ```typescript
+  // @ts-ignore - Avoid deep type instantiation
+  const { data: securityEvents } = await supabase
+      .from('security_events')
+      .select('id, event_type')
+      .gte('created_at', thirtyDaysAgo.toISOString())
+      .in('event_type', ['failed_login', 'unauthorized_access']);
+  ```
+- **After**:
+  ```typescript
+  const { data: securityEvents } = await supabase
+      .from('security_events')
+      .select('id, event_type')
+      .gte('created_at', thirtyDaysAgo.toISOString())
+      .in('event_type', ['failed_login', 'unauthorized_access']) as { data: { id: string; event_type: string }[] | null };
+  ```
+
+### Verification:
+- `npm run build` - PASSES (exit code 0)
+- TypeScript compiles cleanly with the explicit type assertion
+- The type annotation matches the actual row structure from the Supabase types:
+  - `id: string`
+  - `event_type: string`
+
+### Rationale:
+The `@ts-ignore` was used to bypass Supabase's deep type instantiation issue with complex chained queries. By adding an explicit type assertion at the end of the query chain, we tell TypeScript exactly what type to expect, avoiding the deep type resolution while maintaining type safety for the consuming code.
