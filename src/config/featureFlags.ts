@@ -9,6 +9,19 @@ function toBool(v: unknown, fallback = false): boolean {
   return fallback;
 }
 
+// Check if we're in development mode - these dangerous flags should NEVER be enabled in production
+const isDevelopment = (import.meta as any).env?.MODE === 'development' ||
+  (import.meta as any).env?.DEV === true ||
+  (import.meta as any).env?.NODE_ENV === 'development';
+
+// Helper that only allows dangerous flag values in development
+function toBoolDevOnly(v: unknown): boolean {
+  if (!isDevelopment) {
+    return false; // Always return false in production for security
+  }
+  return toBool(v, false);
+}
+
 export type FeatureFlags = {
   AUTO_APPROVE_ALL: boolean;
   AUTO_APPROVE_ORDERS: boolean;
@@ -19,14 +32,16 @@ export type FeatureFlags = {
   AUTO_BYPASS_EMAIL_VERIFICATION: boolean;
 };
 
+// SECURITY: AUTO_APPROVE_* and AUTO_BYPASS_* flags are only allowed in development mode.
+// These flags bypass critical security checks and must never be enabled in production.
 const envDefaults: FeatureFlags = {
-  AUTO_APPROVE_ALL: toBool((import.meta as any).env?.VITE_AUTO_APPROVE_ALL),
-  AUTO_APPROVE_ORDERS: toBool((import.meta as any).env?.VITE_AUTO_APPROVE_ORDERS),
-  AUTO_APPROVE_LISTINGS: toBool((import.meta as any).env?.VITE_AUTO_APPROVE_LISTINGS),
-  AUTO_APPROVE_SIGNUPS: toBool((import.meta as any).env?.VITE_AUTO_APPROVE_SIGNUPS),
-  AUTO_APPROVE_COURIERS: toBool((import.meta as any).env?.VITE_AUTO_APPROVE_COURIERS),
-  AUTO_APPROVE_REVIEWS: toBool((import.meta as any).env?.VITE_AUTO_APPROVE_REVIEWS),
-  AUTO_BYPASS_EMAIL_VERIFICATION: toBool((import.meta as any).env?.VITE_AUTO_BYPASS_EMAIL_VERIFICATION),
+  AUTO_APPROVE_ALL: toBoolDevOnly((import.meta as any).env?.VITE_AUTO_APPROVE_ALL),
+  AUTO_APPROVE_ORDERS: toBoolDevOnly((import.meta as any).env?.VITE_AUTO_APPROVE_ORDERS),
+  AUTO_APPROVE_LISTINGS: toBoolDevOnly((import.meta as any).env?.VITE_AUTO_APPROVE_LISTINGS),
+  AUTO_APPROVE_SIGNUPS: toBoolDevOnly((import.meta as any).env?.VITE_AUTO_APPROVE_SIGNUPS),
+  AUTO_APPROVE_COURIERS: toBoolDevOnly((import.meta as any).env?.VITE_AUTO_APPROVE_COURIERS),
+  AUTO_APPROVE_REVIEWS: toBoolDevOnly((import.meta as any).env?.VITE_AUTO_APPROVE_REVIEWS),
+  AUTO_BYPASS_EMAIL_VERIFICATION: toBoolDevOnly((import.meta as any).env?.VITE_AUTO_BYPASS_EMAIL_VERIFICATION),
 };
 
 type FeatureFlagsContextValue = {
@@ -37,13 +52,41 @@ type FeatureFlagsContextValue = {
 
 const FeatureFlagsContext = createContext<FeatureFlagsContextValue | null>(null);
 
+// List of dangerous flag keys that must only be enabled in development
+const DANGEROUS_FLAG_KEYS: (keyof FeatureFlags)[] = [
+  'AUTO_APPROVE_ALL',
+  'AUTO_APPROVE_ORDERS',
+  'AUTO_APPROVE_LISTINGS',
+  'AUTO_APPROVE_SIGNUPS',
+  'AUTO_APPROVE_COURIERS',
+  'AUTO_APPROVE_REVIEWS',
+  'AUTO_BYPASS_EMAIL_VERIFICATION',
+];
+
+// Sanitize runtime flags to prevent dangerous flags from being enabled in production
+function sanitizeRuntimeFlags(flags: Partial<FeatureFlags>): Partial<FeatureFlags> {
+  if (isDevelopment) {
+    return flags; // Allow all flags in development
+  }
+
+  // In production, force all dangerous flags to false
+  const sanitized = { ...flags };
+  for (const key of DANGEROUS_FLAG_KEYS) {
+    if (key in sanitized) {
+      sanitized[key] = false;
+    }
+  }
+  return sanitized;
+}
+
 async function fetchRuntimeFlags(): Promise<Partial<FeatureFlags>> {
   try {
     const url = `/runtime-flags.json?ts=${Date.now()}`;
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = (await res.json()) as Partial<FeatureFlags>;
-    return json;
+    // SECURITY: Sanitize dangerous flags in production
+    return sanitizeRuntimeFlags(json);
   } catch (_e) {
     return {};
   }

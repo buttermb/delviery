@@ -7632,3 +7632,44 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/auth/__tests__/ProtectedRoutes.test.tsx` (new - 22 tests)
+
+
+---
+
+## Security Fix: Feature Flag Bypass Risk
+
+### Date: 2026-01-24
+
+### Task: Fix feature flag bypass risk in featureFlags.ts by adding NODE_ENV check for AUTO_APPROVE and AUTO_BYPASS flags
+
+### Problem:
+The `AUTO_APPROVE_*` and `AUTO_BYPASS_EMAIL_VERIFICATION` flags in `src/config/featureFlags.ts` could potentially be enabled in production environments via:
+1. Environment variables (VITE_AUTO_APPROVE_*)
+2. Runtime flags from `/runtime-flags.json`
+
+These flags bypass critical security checks (email verification, approval workflows) and should NEVER be enabled in production.
+
+### Solution:
+Added a multi-layer NODE_ENV check to prevent these dangerous flags from being enabled in production:
+
+1. **Added `isDevelopment` check**: Uses Vite's `import.meta.env.MODE`, `import.meta.env.DEV`, and `import.meta.env.NODE_ENV` to determine if running in development mode.
+
+2. **Created `toBoolDevOnly()` helper**: A wrapper around `toBool()` that always returns `false` in production, regardless of the environment variable value.
+
+3. **Created `sanitizeRuntimeFlags()` function**: Sanitizes runtime flags fetched from `/runtime-flags.json` to force all dangerous flags to `false` in production.
+
+4. **Defined `DANGEROUS_FLAG_KEYS` array**: Lists all flags that must be restricted to development mode only:
+   - AUTO_APPROVE_ALL
+   - AUTO_APPROVE_ORDERS
+   - AUTO_APPROVE_LISTINGS
+   - AUTO_APPROVE_SIGNUPS
+   - AUTO_APPROVE_COURIERS
+   - AUTO_APPROVE_REVIEWS
+   - AUTO_BYPASS_EMAIL_VERIFICATION
+
+### Files Changed:
+- `src/config/featureFlags.ts` - Added NODE_ENV checks for dangerous flags
+
+### Verification:
+- [x] Build passes (`npm run build`)
+- [x] No new ESLint errors introduced
