@@ -7690,3 +7690,24 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: In App.tsx add Route for live-map path
+
+### What was done:
+
+**Verification completed - route already exists.**
+
+The route for `live-map` was already present in `src/App.tsx`:
+- Line 206: `const LiveMap = lazy(() => import("./pages/admin/LiveMap"));` - lazy import
+- Line 961: `<Route path="live-map" element={<FeatureProtectedRoute featureId="live-map"><LiveMap /></FeatureProtectedRoute>} />` - route definition
+
+The route is properly configured with:
+- Feature protection via `FeatureProtectedRoute` with `featureId="live-map"`
+- Lazy loading for optimal bundle splitting
+- Correct component reference to `LiveMap` from `src/pages/admin/LiveMap.tsx`
+
+### Files Changed:
+- No changes required - route was already implemented
+- `progress.txt` (this update)
