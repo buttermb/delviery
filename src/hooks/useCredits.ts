@@ -174,8 +174,19 @@ function getWarningMessage(threshold: number, balance: number): { title: string;
 // Hook Implementation
 // ============================================================================
 
+// Safe wrapper to get tenant without throwing
+function useTenantSafe() {
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const context = useTenantAdminAuth();
+    return context.tenant;
+  } catch {
+    return null;
+  }
+}
+
 export function useCredits(): UseCreditsReturn {
-  const { tenant } = useTenantAdminAuth();
+  const tenant = useTenantSafe();
   const queryClient = useQueryClient();
   const [showWarning, setShowWarning] = useState(false);
   const [shownWarningThresholds, setShownWarningThresholds] = useState<Set<number>>(new Set());
