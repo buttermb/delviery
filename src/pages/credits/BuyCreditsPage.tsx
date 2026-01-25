@@ -5,7 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Coins, ArrowLeft, Loader2, Tag, Check, Sparkles } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useCreditPackages } from '@/hooks/useCreditPackages';
+import { useCreditPackages, type CreditPackage } from '@/hooks/useCreditPackages';
+
+// Alias for backwards compatibility
+type CreditPackageDisplay = CreditPackage;
 import { useCredits } from '@/hooks/useCredits';
 import { validatePromoCode } from '@/lib/credits';
 import { supabase } from '@/integrations/supabase/client';
@@ -265,14 +268,14 @@ function PackageCard({
       className={`relative cursor-pointer transition-all hover:shadow-md ${
         isSelected
           ? 'border-primary ring-2 ring-primary/20'
-          : pkg.featured
+          : pkg.isFeatured
           ? 'border-primary/50'
           : ''
       }`}
       onClick={onSelect}
     >
       {/* Featured Badge */}
-      {pkg.featured && pkg.badge && (
+      {pkg.isFeatured && pkg.badge && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <Badge variant="default" className="gap-1">
             <Sparkles className="h-3 w-3" />
@@ -305,20 +308,20 @@ function PackageCard({
         </div>
 
         {/* Bonus Credits */}
-        {pkg.bonusCredits > 0 && (
-          <div className="text-sm text-green-600 font-medium">
-            +{pkg.bonusCredits.toLocaleString()} bonus
+        {(pkg.bonus_credits ?? 0) > 0 && (
+          <div className="text-sm text-accent-foreground font-medium">
+            +{(pkg.bonus_credits ?? 0).toLocaleString()} bonus
           </div>
         )}
 
         {/* Price */}
         <div className="text-2xl font-semibold">
-          {formatCents(pkg.priceCents)}
+          {formatCents(pkg.price_cents)}
         </div>
 
         {/* Savings */}
         {pkg.savingsPercent > 0 && (
-          <Badge variant="secondary" className="text-green-600">
+          <Badge variant="secondary" className="text-accent-foreground">
             Save {pkg.savingsPercent}%
           </Badge>
         )}
