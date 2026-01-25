@@ -99,6 +99,20 @@ export const navigationSections: NavSection[] = [
     ]
   },
 
+  // 🎛️ COMMAND CENTER
+  {
+    title: 'Command Center',
+    items: [
+      {
+        title: 'Live Map',
+        href: '/admin/live-map',
+        icon: Map,
+        badge: 'LIVE',
+        tier: 'enterprise'
+      }
+    ]
+  },
+
   // 📦 OPERATIONS
   {
     title: 'Operations',
