@@ -7690,3 +7690,19 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Change no-explicit-any from warn to error
+
+**Date:** 2026-01-25
+
+### Summary
+Updated ESLint configuration to treat `@typescript-eslint/no-explicit-any` as an error instead of a warning, enforcing stricter TypeScript type safety.
+
+### Changes Made
+- **File:** `eslint.config.js`
+- **Line 25:** Changed `"@typescript-eslint/no-explicit-any": "warn"` to `"@typescript-eslint/no-explicit-any": "error"`
+
+### Impact
+This change will now cause builds and linting to fail if any `any` type is explicitly used in the codebase, enforcing the project's strict TypeScript policy documented in CLAUDE.md.
