@@ -1,3 +1,17 @@
+## Task: Add Vendors and Purchase Orders to sidebar navigation
+
+### What was done:
+
+1. **Updated `src/components/admin/sidebar-navigation.ts`**:
+   - Added "Vendors" navigation item to Operations section with route `/admin/vendors` and `Building2` icon
+   - Added "Purchase Orders" navigation item to Operations section with route `/admin/purchase-orders` and `FileText` icon
+   - Both items added after "Receiving & Packaging" in the Operations section
+
+### Files Changed:
+- `src/components/admin/sidebar-navigation.ts` (modified - added 2 nav items)
+
+---
+
 ﻿## Task: Test Credit Consumption Flow
 
 ### What was done:
