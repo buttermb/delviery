@@ -62,7 +62,8 @@ import {
   BarChart4,
   UserCheck,
   Flame,
-  Brain
+  Brain,
+  Barcode
 } from 'lucide-react';
 
 export interface NavItem {
@@ -125,6 +126,16 @@ export const navigationSections: NavSection[] = [
         href: '/admin/advanced-inventory',
         icon: Database,
         tier: 'professional'
+      },
+      {
+        title: 'Transfers',
+        href: '/admin/inventory-transfers',
+        icon: ArrowLeftRight
+      },
+      {
+        title: 'Barcodes',
+        href: '/admin/generate-barcodes',
+        icon: Barcode
       },
       {
         title: 'Transfers & Delivery',
