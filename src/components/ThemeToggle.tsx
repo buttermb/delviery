@@ -7,7 +7,7 @@ interface ThemeToggleProps {
   className?: string;
 }
 
-const ThemeToggle = ({ className }: ThemeToggleProps) => {
+export const ThemeToggle = ({ className }: ThemeToggleProps) => {
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -23,4 +23,4 @@ const ThemeToggle = ({ className }: ThemeToggleProps) => {
   );
 };
 
-export default ThemeToggle;
+// Named export only per project conventions

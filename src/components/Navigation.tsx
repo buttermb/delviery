@@ -18,7 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import AuthModal from "./AuthModal";
 import CartDrawer from "./CartDrawer";
-import ThemeToggle from "./ThemeToggle";
+import { ThemeToggle } from "./ThemeToggle";
 import NYMLogo from "./NYMLogo";
 import MobileBottomNav from "./MobileBottomNav";
 import { useGuestCart } from "@/hooks/useGuestCart";

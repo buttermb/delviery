@@ -7690,3 +7690,23 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Import ThemeToggle in AdminLayout.tsx
+
+**Status:** ✅ COMPLETED
+
+**What was done:**
+- ThemeToggle import was already present at line 20 in `src/pages/admin/AdminLayout.tsx`
+- Updated import from default export to named export per project conventions (`import { ThemeToggle }`)
+- Updated ThemeToggle component (`src/components/ThemeToggle.tsx`) to use named export
+- Updated all other files that imported ThemeToggle to use named import:
+  - `src/pages/saas/LoginPage.tsx`
+  - `src/components/Navigation.tsx`
+- Verified build passes with no TypeScript errors
+
+**Files Changed:**
+- `src/pages/admin/AdminLayout.tsx` - Changed to named import
+- `src/components/ThemeToggle.tsx` - Changed to named export
+- `src/pages/saas/LoginPage.tsx` - Changed to named import  
+- `src/components/Navigation.tsx` - Changed to named import
+
