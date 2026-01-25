@@ -565,7 +565,7 @@ export default function StorefrontSettings() {
                         type="number"
                         value={formData.minimum_age || 18}
                         onChange={(e) => updateField('minimum_age', parseInt(e.target.value))}
-                        className="w-24"
+                        className="w-full sm:w-24"
                       />
                     </div>
                   )}
