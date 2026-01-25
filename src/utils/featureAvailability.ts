@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Feature Availability Utility
  * Checks if features are available based on table existence
@@ -6,6 +5,26 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
+
+/** Known table names from the database schema */
+type TableName = keyof Database['public']['Tables'];
+
+/** PostgreSQL error with code property */
+interface PostgresError {
+  code: string;
+  message?: string;
+}
+
+/** Type guard to check if an error is a PostgreSQL error */
+function isPostgresError(error: unknown): error is PostgresError {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    'code' in error &&
+    typeof (error as PostgresError).code === 'string'
+  );
+}
 
 // Cache for table existence checks
 const tableExistenceCache = new Map<string, boolean>();
@@ -22,22 +41,22 @@ export async function checkTableExists(tableName: string): Promise<boolean> {
 
   try {
     // Try to query the table (with limit 0 to minimize data transfer)
-    // @ts-expect-error - Dynamic table name, types will regenerate after migration
+    // Cast to TableName since we're checking tables that may or may not exist in the schema
     const { error } = await supabase
-      .from(tableName as string)
+      .from(tableName as TableName)
       .select('id')
       .limit(0);
 
     // If error code is 42P01, table doesn't exist
     const exists = !error || error.code !== '42P01';
-    
+
     // Cache the result
     tableExistenceCache.set(tableName, exists);
-    
+
     return exists;
   } catch (error: unknown) {
     // If we get a 42P01 error, table doesn't exist
-    if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') {
+    if (isPostgresError(error) && error.code === '42P01') {
       tableExistenceCache.set(tableName, false);
       return false;
     }
@@ -87,7 +106,6 @@ export async function isFeatureAvailable(href: string): Promise<boolean> {
  * Clear the table existence cache
  * Useful when migrations are applied
  */
-export function clearTableExistenceCache() {
+export function clearTableExistenceCache(): void {
   tableExistenceCache.clear();
 }
-

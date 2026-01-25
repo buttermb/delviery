@@ -7690,3 +7690,32 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+
+---
+
+## Task: Remove ts-nocheck from src/utils/featureAvailability.ts
+
+### Changes Made:
+
+1. **Removed `@ts-nocheck` directive** from line 1 of the file
+
+2. **Added proper type annotations:**
+   - Imported `Database` type from `@/integrations/supabase/types`
+   - Created `TableName` type alias: `type TableName = keyof Database["public"]["Tables"]`
+   - Created `PostgresError` interface for typing PostgreSQL errors
+   - Created `isPostgresError()` type guard function for safe error handling
+   - Added explicit `void` return type to `clearTableExistenceCache()` function
+
+3. **Replaced inline type assertions:**
+   - Changed `@ts-expect-error` comment with proper type casting `tableName as TableName`
+   - Replaced inline type checking with `isPostgresError()` type guard
+
+4. **Build verification:**
+   - `npm run build` passes with 0 TypeScript errors
+   - No new warnings introduced
+
+### Files Changed:
+- `src/utils/featureAvailability.ts`
+- `progress.txt` (this update)
+
