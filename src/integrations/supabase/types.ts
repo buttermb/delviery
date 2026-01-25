@@ -12629,6 +12629,57 @@ export type Database = {
         }
         Relationships: []
       }
+      user_known_devices: {
+        Row: {
+          browser: string | null
+          device_fingerprint: string
+          device_name: string | null
+          device_type: string | null
+          first_seen_at: string
+          geo_city: string | null
+          geo_country: string | null
+          id: string
+          ip_address: string | null
+          is_trusted: boolean | null
+          last_seen_at: string
+          os: string | null
+          trust_confirmed_at: string | null
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          device_fingerprint: string
+          device_name?: string | null
+          device_type?: string | null
+          first_seen_at?: string
+          geo_city?: string | null
+          geo_country?: string | null
+          id?: string
+          ip_address?: string | null
+          is_trusted?: boolean | null
+          last_seen_at?: string
+          os?: string | null
+          trust_confirmed_at?: string | null
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          device_fingerprint?: string
+          device_name?: string | null
+          device_type?: string | null
+          first_seen_at?: string
+          geo_city?: string | null
+          geo_country?: string | null
+          id?: string
+          ip_address?: string | null
+          is_trusted?: boolean | null
+          last_seen_at?: string
+          os?: string | null
+          trust_confirmed_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_reputation: {
         Row: {
           comment_karma: number
