@@ -5,7 +5,7 @@ import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shield, Loader2, Lock, ArrowLeft } from "lucide-react";
+import { Shield, Loader2, Lock, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
@@ -21,6 +21,7 @@ export default function SuperAdminLoginPage() {
   const { login } = useSuperAdminAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { validateToken } = useCsrfToken();
 
@@ -164,18 +165,29 @@ export default function SuperAdminLoginPage() {
               <Label htmlFor="password" className="text-[hsl(var(--super-admin-text))]/90">
                 Password
               </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-                autoComplete="current-password"
-                enterKeyHint="done"
-                className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-[hsl(var(--super-admin-primary))] focus:ring-[hsl(var(--super-admin-primary))]/20 transition-all"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  autoComplete="current-password"
+                  enterKeyHint="done"
+                  className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-[hsl(var(--super-admin-primary))] focus:ring-[hsl(var(--super-admin-primary))]/20 transition-all pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  tabIndex={-1}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
 
             <Button

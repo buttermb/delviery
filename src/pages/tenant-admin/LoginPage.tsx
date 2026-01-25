@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, Loader2, ArrowLeft } from "lucide-react";
+import { Building2, Loader2, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Link } from "react-router-dom";
@@ -29,6 +29,7 @@ export default function TenantAdminLoginPage() {
   useAuthRedirect(); // Redirect if already logged in
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
@@ -304,18 +305,29 @@ export default function TenantAdminLoginPage() {
               <Label htmlFor="password" className="text-sm sm:text-base font-medium">
                 Password
               </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-                autoComplete="current-password"
-                enterKeyHint="done"
-                className="min-h-[44px] sm:h-12 bg-white border-gray-200 transition-all text-sm sm:text-base touch-manipulation focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  autoComplete="current-password"
+                  enterKeyHint="done"
+                  className="min-h-[44px] sm:h-12 bg-white border-gray-200 transition-all text-sm sm:text-base touch-manipulation focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))] pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  tabIndex={-1}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
 
             <Button

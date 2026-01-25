@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShoppingBag, Loader2, Sparkles } from "lucide-react";
+import { ShoppingBag, Loader2, Sparkles, Eye, EyeOff } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Link } from "react-router-dom";
@@ -31,6 +31,7 @@ export default function CustomerLoginPage() {
   // State declarations (RAMS fix: missing state)
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<any>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
@@ -308,16 +309,27 @@ export default function CustomerLoginPage() {
                   <Label htmlFor="password" className="text-sm font-medium text-slate-200">
                     Password
                   </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    autoComplete="current-password"
-                    enterKeyHint="done"
-                    className="h-12 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      autoComplete="current-password"
+                      enterKeyHint="done"
+                      className="h-12 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                      tabIndex={-1}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
 
                 <Button
