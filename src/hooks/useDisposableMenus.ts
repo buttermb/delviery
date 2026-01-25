@@ -286,7 +286,7 @@ export const useUpdateOrderStatus = () => {
 
   return useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('menu_orders')
         .update({ status, updated_at: new Date().toISOString() })
         .eq('id', orderId)

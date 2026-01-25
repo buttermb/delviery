@@ -44,7 +44,7 @@ import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog
 import { generateUrlToken } from '@/utils/menuHelpers';
 import { StorefrontSettingsLivePreview } from '@/components/admin/storefront/StorefrontSettingsLivePreview';
 import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedProductsManager';
-import { Skeleton } from '@/components/ui/skeleton';
+// Skeleton already imported above
 
 interface DeliveryZone {
   zip_code: string;
