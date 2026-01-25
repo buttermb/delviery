@@ -59,7 +59,7 @@ export function StorefrontSettingsLivePreview({
   const containerWidth = useMemo(() => {
     switch (deviceMode) {
       case 'mobile':
-        return orientation === 'portrait' ? 'max-w-[320px]' : 'max-w-[568px]';
+        return orientation === 'portrait' ? 'max-w-[375px]' : 'max-w-[568px]';
       case 'tablet':
         return orientation === 'portrait' ? 'max-w-[600px]' : 'max-w-[900px]';
       default:
