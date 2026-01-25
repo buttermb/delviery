@@ -143,7 +143,6 @@ export function SuperAdminLayout() {
     queryKey: ['super-admin-system-status'],
     queryFn: async () => {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-      // @ts-ignore - Table exists in DB but types not yet regenerated
       const { data: metrics } = await supabase
         .from('system_metrics')
         .select('metric_type, value')
@@ -153,8 +152,7 @@ export function SuperAdminLayout() {
       if (!metrics || metrics.length === 0) return 'healthy';
 
       // Check if any critical thresholds exceeded
-      const metricsArray = metrics as any[];
-      const hasCritical = metricsArray.some((m: any) => {
+      const hasCritical = metrics.some((m) => {
         const value = Number(m.value);
         if (m.metric_type === 'api_latency' && value > 500) return true;
         if (m.metric_type === 'error_rate' && value > 5) return true;
@@ -162,7 +160,7 @@ export function SuperAdminLayout() {
         return false;
       });
 
-      const hasWarning = metricsArray.some((m: any) => {
+      const hasWarning = metrics.some((m) => {
         const value = Number(m.value);
         if (m.metric_type === 'api_latency' && value > 200) return true;
         if (m.metric_type === 'error_rate' && value > 1) return true;
