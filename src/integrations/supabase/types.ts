@@ -11643,6 +11643,69 @@ export type Database = {
           },
         ]
       }
+      suspicious_login_alerts: {
+        Row: {
+          account_secured: boolean | null
+          alert_type: string
+          browser: string | null
+          created_at: string
+          device_fingerprint: string
+          device_type: string | null
+          email_sent: boolean | null
+          email_sent_at: string | null
+          geo_city: string | null
+          geo_country: string | null
+          id: string
+          ip_address: string | null
+          os: string | null
+          responded_at: string | null
+          secure_token: string | null
+          severity: string | null
+          user_id: string
+          user_response: string | null
+        }
+        Insert: {
+          account_secured?: boolean | null
+          alert_type: string
+          browser?: string | null
+          created_at?: string
+          device_fingerprint: string
+          device_type?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          geo_city?: string | null
+          geo_country?: string | null
+          id?: string
+          ip_address?: string | null
+          os?: string | null
+          responded_at?: string | null
+          secure_token?: string | null
+          severity?: string | null
+          user_id: string
+          user_response?: string | null
+        }
+        Update: {
+          account_secured?: boolean | null
+          alert_type?: string
+          browser?: string | null
+          created_at?: string
+          device_fingerprint?: string
+          device_type?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          geo_city?: string | null
+          geo_country?: string | null
+          id?: string
+          ip_address?: string | null
+          os?: string | null
+          responded_at?: string | null
+          secure_token?: string | null
+          severity?: string | null
+          user_id?: string
+          user_response?: string | null
+        }
+        Relationships: []
+      }
       system_metrics: {
         Row: {
           created_at: string | null
@@ -14827,6 +14890,20 @@ export type Database = {
       }
       check_credits: {
         Args: { p_action_key: string; p_tenant_id: string }
+        Returns: Json
+      }
+      check_device_suspicious_login: {
+        Args: {
+          p_browser?: string
+          p_device_fingerprint: string
+          p_device_type?: string
+          p_geo_city?: string
+          p_geo_country?: string
+          p_ip_address?: string
+          p_os?: string
+          p_user_agent?: string
+          p_user_id: string
+        }
         Returns: Json
       }
       check_is_admin: { Args: { _user_id: string }; Returns: boolean }
