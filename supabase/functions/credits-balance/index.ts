@@ -67,20 +67,23 @@ serve(async (req: Request) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    // Extract user from JWT - never trust client data
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    // Validate JWT and extract claims
+    const token = authHeader.replace('Bearer ', '');
+    const { data, error: authError } = await supabase.auth.getClaims(token);
+    if (authError || !data?.claims) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    const userId = data.claims.sub;
+
     // Get user's tenant from tenant_users
     const { data: tenantUser, error: tenantError } = await supabase
       .from('tenant_users')
       .select('tenant_id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .maybeSingle();
 
     if (tenantError) {
@@ -164,7 +167,7 @@ serve(async (req: Request) => {
     const { data: pendingTransactions, error: pendingError } = await supabase
       .from('credit_transactions')
       .select('id, type, amount, description, reference_type, reference_id, created_at')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('tenant_id', tenantId)
       .eq('type', 'pending')
       .order('created_at', { ascending: false })
@@ -179,7 +182,7 @@ serve(async (req: Request) => {
     const { data: subscription, error: subscriptionError } = await supabase
       .from('credit_subscriptions')
       .select('id, status, credits_per_period, period_type, current_period_start, current_period_end, credits_remaining_this_period, cancel_at_period_end')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('tenant_id', tenantId)
       .in('status', ['active', 'trialing', 'past_due'])
       .order('created_at', { ascending: false })
