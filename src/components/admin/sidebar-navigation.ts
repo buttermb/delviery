@@ -479,6 +479,12 @@ export const navigationSections: NavSection[] = [
         href: '/admin/collection-mode',
         icon: Wallet,
         tier: 'professional'
+      },
+      {
+        title: 'Payouts',
+        href: '/admin/payouts',
+        icon: CreditCard,
+        tier: 'professional'
       }
     ]
   },
