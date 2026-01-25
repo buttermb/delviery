@@ -242,7 +242,7 @@ const ComplianceVaultPage = lazy(() => import("./pages/admin/ComplianceVaultPage
 const AdvancedReportingPage = lazy(() => import("./pages/admin/AdvancedReportingPage"));
 const VendorLoginPage = lazy(() => import("./pages/vendor/VendorLoginPage"));
 const VendorDashboardPage = lazy(() => import("./pages/vendor/VendorDashboardPage"));
-const VendorOrderDetailPage = lazy(() => import("./pages/vendor/VendorOrderDetailPage"));
+const VendorOrderDetailPage = lazy(() => import("./pages/vendor/VendorOrderDetailPage").then(m => ({ default: m.VendorOrderDetailPage })));
 const ProtectedVendorRoute = lazy(() => import("./components/vendor/ProtectedVendorRoute"));
 const PredictiveAnalyticsPage = lazy(() => import("./pages/admin/PredictiveAnalyticsPage"));
 const GlobalSearch = lazy(() => import("./pages/admin/GlobalSearch"));

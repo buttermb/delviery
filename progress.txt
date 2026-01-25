@@ -7690,3 +7690,47 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Remove @ts-nocheck from src/pages/vendor/VendorOrderDetailPage.tsx
+
+**Status:** ✅ Completed
+
+### Changes Made:
+
+1. **Removed `@ts-nocheck` directive**
+   - Deleted the `// @ts-nocheck` comment at the top of the file
+
+2. **Added proper TypeScript types**
+   - Imported `Tables` type from `@/integrations/supabase/types`
+   - Created `ShippingAddress` interface for the JSON shipping_address field
+   - Created `MarketplaceOrder` type extending `Tables<'marketplace_orders'>` with:
+     - `buyer_business_name` field (exists in DB but not in generated types)
+     - `marketplace_order_items` array properly typed
+
+3. **Fixed type safety issues**
+   - Cast query result as `MarketplaceOrder` type
+   - Added type assertions for `orderId` and `vendor?.tenant_id` in query
+   - Fixed nullable `status` field with nullish coalescing (`order.status ?? 'unknown'`)
+   - Fixed nullable `created_at` field with conditional rendering
+   - Removed `any` type from order items map callback
+   - Fixed nullable `product_type` with nullish coalescing
+   - Properly cast `shipping_address` as `ShippingAddress` interface
+   - Added fallback for nullable `buyer_business_name`
+
+4. **Updated component export**
+   - Changed from `export default function` to `export function` (named export per codebase guidelines)
+
+5. **Updated App.tsx import**
+   - Changed lazy import to use named export pattern:
+     `lazy(() => import("...").then(m => ({ default: m.VendorOrderDetailPage })))`
+
+### Files Changed:
+- `src/pages/vendor/VendorOrderDetailPage.tsx` - Type-safe implementation
+- `src/App.tsx` - Updated lazy import for named export
+
+### Verification:
+- Build passes with no TypeScript errors
+- All nullable fields properly handled
+- Component follows codebase conventions (named exports, proper typing)
