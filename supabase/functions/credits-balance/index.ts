@@ -163,10 +163,9 @@ serve(async (req: Request) => {
     // Fetch pending transactions (transactions not yet fully processed)
     const { data: pendingTransactions, error: pendingError } = await supabase
       .from('credit_transactions')
-      .select('id, type, amount, description, reference_type, reference_id, created_at')
-      .eq('user_id', user.id)
+      .select('id, transaction_type, amount, description, reference_type, reference_id, created_at')
       .eq('tenant_id', tenantId)
-      .eq('type', 'pending')
+      .eq('transaction_type', 'debit')
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -175,37 +174,14 @@ serve(async (req: Request) => {
       // Non-fatal: continue with empty pending list
     }
 
-    // Fetch active subscription if any
-    const { data: subscription, error: subscriptionError } = await supabase
-      .from('credit_subscriptions')
-      .select('id, status, credits_per_period, period_type, current_period_start, current_period_end, credits_remaining_this_period, cancel_at_period_end')
-      .eq('user_id', user.id)
-      .eq('tenant_id', tenantId)
-      .in('status', ['active', 'trialing', 'past_due'])
-      .order('created_at', { ascending: false })
-      .maybeSingle();
-
-    if (subscriptionError) {
-      console.error('Error fetching subscription:', subscriptionError);
-      // Non-fatal: continue with null subscription
-    }
-
     // Build subscription response in frontend-expected format (camelCase)
-    const subscriptionResponse: SubscriptionInfo = subscription
-      ? {
-          status: subscription.status as SubscriptionInfo['status'],
-          isFreeTier,
-          creditsPerPeriod: subscription.credits_per_period ?? 0,
-          currentPeriodEnd: subscription.current_period_end,
-          cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
-        }
-      : {
-          status: 'none',
-          isFreeTier,
-          creditsPerPeriod: 0,
-          currentPeriodEnd: null,
-          cancelAtPeriodEnd: false,
-        };
+    const subscriptionResponse: SubscriptionInfo = {
+      status: 'none',
+      isFreeTier,
+      creditsPerPeriod: 0,
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
+    };
 
     // Build response in frontend-expected format (camelCase)
     const response: CreditsBalanceResponse = {
