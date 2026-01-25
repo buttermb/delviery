@@ -7690,3 +7690,29 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: StorefrontBuilder width calc to w-full
+
+### What was done:
+
+1. **Modified \ line 31**:
+   - Changed inline style \ to Tailwind class " >> progress.txt && echo  - Before: "
+   - After: " >> progress.txt && echo  >> progress.txt && echo ### Files Changed: >> progress.txt && echo - "
+
+
+---
+
+## Task: StorefrontBuilder width calc to w-full
+
+### What was done:
+
+1. **Modified `src/pages/admin/storefront/StorefrontBuilder.tsx` line 31**:
+   - Changed inline style `width: 'calc(100% + 1.5rem)'` to Tailwind class `w-full`
+   - Before: `style={{ height: 'calc(100vh - 56px)', width: 'calc(100% + 1.5rem)' }}`
+   - After: `className="... w-full" style={{ height: 'calc(100vh - 56px)' }}`
+
+### Files Changed:
+- `src/pages/admin/storefront/StorefrontBuilder.tsx`
+
