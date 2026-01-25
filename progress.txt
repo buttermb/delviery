@@ -7690,3 +7690,34 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Wrap CollapsibleContent in motion.div with height animation
+
+### Date: 2026-01-25
+
+### What was implemented:
+
+Enhanced the `CollapsibleContent` component in `src/components/ui/collapsible.tsx` to include smooth height animation using Framer Motion.
+
+### Changes:
+- Added `React`, `motion`, and `AnimatePresence` imports from framer-motion
+- Converted `CollapsibleContent` from a simple re-export to a proper React.forwardRef component
+- Wrapped content in `AnimatePresence` and `motion.div` with:
+  - Initial state: `height: 0, opacity: 0`
+  - Animate state: `height: "auto", opacity: 1`
+  - Exit state: `height: 0, opacity: 0`
+  - Transition: 200ms ease-in-out for height, 150ms for opacity
+  - `overflow: hidden` to prevent content from showing during animation
+- Used `asChild` on `CollapsiblePrimitive.Content` to pass through motion.div properly
+
+### Benefits:
+- Smooth expand/collapse animation for all collapsible sections in the sidebar
+- Consistent animation timing across the application
+- No breaking changes to existing component API
+
+### Files Changed:
+- `src/components/ui/collapsible.tsx` - Added Framer Motion height animation
+
+### Verification:
+- `npm run build` - PASSES
+- `npm run lint` - PASSES (no new errors)
