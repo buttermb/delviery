@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,43 @@ import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { usePasswordBreachCheck } from "@/hooks/usePasswordBreachCheck";
 import { PasswordBreachWarning } from "@/components/auth/PasswordBreachWarning";
 
-export default function PasswordResetPage() {
+interface PasswordStrength {
+  score: 0 | 1 | 2 | 3 | 4;
+  label: string;
+  color: string;
+}
+
+function calculatePasswordStrength(password: string): PasswordStrength {
+  if (!password) {
+    return { score: 0, label: "", color: "" };
+  }
+
+  let score = 0;
+
+  // Length checks
+  if (password.length >= 8) score++;
+  if (password.length >= 12) score++;
+
+  // Character variety checks
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+  if (/\d/.test(password)) score++;
+  if (/[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/`~]/.test(password)) score++;
+
+  // Cap score at 4
+  const finalScore = Math.min(score, 4) as 0 | 1 | 2 | 3 | 4;
+
+  const strengthMap: Record<0 | 1 | 2 | 3 | 4, { label: string; color: string }> = {
+    0: { label: "", color: "" },
+    1: { label: "Weak", color: "bg-red-500" },
+    2: { label: "Fair", color: "bg-orange-500" },
+    3: { label: "Good", color: "bg-yellow-500" },
+    4: { label: "Strong", color: "bg-green-500" },
+  };
+
+  return { score: finalScore, ...strengthMap[finalScore] };
+}
+
+export function PasswordResetPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
@@ -27,6 +63,9 @@ export default function PasswordResetPage() {
 
   // Password breach checking
   const { checking: breachChecking, result: breachResult, suggestPassword } = usePasswordBreachCheck(password);
+
+  // Password strength calculation
+  const passwordStrength = useMemo(() => calculatePasswordStrength(password), [password]);
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -303,6 +342,32 @@ export default function PasswordResetPage() {
               <p className={`text-xs ${theme.textLight}`}>
                 Must be at least 8 characters
               </p>
+              {password.length > 0 && (
+                <div className="space-y-1">
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4].map((level) => (
+                      <div
+                        key={level}
+                        className={`h-1.5 flex-1 rounded-full transition-colors duration-200 ${
+                          level <= passwordStrength.score
+                            ? passwordStrength.color
+                            : "bg-gray-200"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  {passwordStrength.label && (
+                    <p className={`text-xs font-medium ${
+                      passwordStrength.score === 1 ? "text-red-600" :
+                      passwordStrength.score === 2 ? "text-orange-600" :
+                      passwordStrength.score === 3 ? "text-yellow-600" :
+                      "text-green-600"
+                    }`}>
+                      Password strength: {passwordStrength.label}
+                    </p>
+                  )}
+                </div>
+              )}
               {password.length >= 8 && (
                 <PasswordBreachWarning
                   checking={breachChecking}
