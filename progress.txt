@@ -7690,3 +7690,11 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Update BuilderPreview.tsx tablet preview width
+
+### Change Made:
+- Modified `src/pages/admin/storefront/builder/BuilderPreview.tsx` line 37
+- Changed tablet preview from `width: '768px'` to `width: '100%', maxWidth: '768px'`
+
+This allows the tablet preview to be responsive (using 100% width) while still capping at 768px maximum width, improving the preview behavior on various screen sizes.
