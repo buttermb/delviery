@@ -1,5 +1,10 @@
 import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
+
+interface MenuOrderData {
+    order_data: Json;
+}
 
 export interface BusinessInsight {
     type: 'opportunity' | 'risk' | 'trend' | 'anomaly';
@@ -83,12 +88,11 @@ export class BusinessIntelligenceEngine {
         if (products && products.length > 0) {
             const slowMovers = [];
 
-            // @ts-ignore - Avoid deep type instantiation
             const { data: recentOrders } = await supabase
                 .from('menu_orders')
                 .select('order_data')
                 .eq('tenant_id', tenantId)
-                .gte('created_at', fourteenDaysAgo.toISOString());
+                .gte('created_at', fourteenDaysAgo.toISOString()) as { data: MenuOrderData[] | null };
 
             // Simple check - if product hasn't appeared in recent orders
             const productsSold = new Set();
