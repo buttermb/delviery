@@ -80,9 +80,9 @@ export interface NavSection {
 }
 
 export const navigationSections: NavSection[] = [
-  // 🎯 DASHBOARD
+  // 🎯 COMMAND CENTER
   {
-    title: 'Dashboard',
+    title: 'Command Center',
     items: [
       {
         title: 'Overview',
@@ -94,6 +94,12 @@ export const navigationSections: NavSection[] = [
         href: '/admin/realtime-dashboard',
         icon: Activity,
         badge: 'LIVE',
+        tier: 'enterprise'
+      },
+      {
+        title: 'POS',
+        href: '/admin/pos-system',
+        icon: Store,
         tier: 'enterprise'
       }
     ]
