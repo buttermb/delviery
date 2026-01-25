@@ -86,6 +86,13 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       } else {
         setLoading(false);
       }
+    }).catch((error) => {
+      handleError(error, {
+        component: 'AdminContext',
+        context: { action: 'getSession' },
+        showToast: false
+      });
+      setLoading(false);
     });
 
     // Listen for auth changes
@@ -148,6 +155,10 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         event_type: "admin_login",
         user_id: authData.user.id,
         details: { email, timestamp: new Date().toISOString() }
+      }).then(() => {
+        // Successfully logged
+      }).catch((error) => {
+        logger.warn('[AdminContext] Failed to log admin_login event', { error });
       });
 
       toast({

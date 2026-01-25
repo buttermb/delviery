@@ -7632,3 +7632,52 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/auth/__tests__/ProtectedRoutes.test.tsx` (new - 22 tests)
+
+
+---
+
+## Task: Add catch error handlers to all then Promise chains in AuthContext, AdminContext, TenantContext, CartDrawer
+
+### What was done:
+
+Added `.catch()` error handlers to all unhandled `.then()` Promise chains to prevent uncaught Promise rejections.
+
+#### 1. AuthContext.tsx (line 95-110)
+- **Before**: `supabase.auth.getSession().then(...)` - no catch handler
+- **After**: Added `.catch()` that:
+  - Logs the error using `logAuthError` and `logger.error`
+  - Sets `isLoading` to false and marks initialization complete to prevent UI hanging
+
+#### 2. AdminContext.tsx (line 83-89)
+- **Before**: `supabase.auth.getSession().then(...)` - no catch handler
+- **After**: Added `.catch()` that:
+  - Uses `handleError()` with component context for consistent error handling
+  - Sets `loading` to false to prevent UI hanging
+
+#### 3. AdminContext.tsx (line 147-151)
+- **Before**: Fire-and-forget `supabase.from("security_events").insert(...)` - no error handling
+- **After**: Added `.then().catch()` that:
+  - Logs warning via `logger.warn` if security event logging fails
+  - Does not block login flow (fire-and-forget behavior preserved)
+
+#### 4. CartDrawer.tsx (line 31-34)
+- **Before**: `supabase.auth.getSession().then(...)` - no catch handler
+- **After**: Added `.catch()` that:
+  - Shows error toast to user
+  - User remains in guest mode (null) which is safe fallback
+
+#### 5. TenantContext.tsx
+- **Status**: Already had proper error handling
+- The `.then().catch()` chain at line 90-93 for tenant activity updates was already properly implemented
+- TanStack Query handles errors internally for the other queries
+
+### Files Changed:
+- `src/contexts/AuthContext.tsx`
+- `src/contexts/AdminContext.tsx`
+- `src/components/CartDrawer.tsx`
+
+### Technical Notes:
+- All catch handlers ensure proper state cleanup (loading flags reset)
+- Errors are logged for debugging/monitoring
+- User-facing errors show appropriate toast messages
+- Fire-and-forget operations log warnings without blocking user flows

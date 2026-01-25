@@ -30,6 +30,9 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+    }).catch((error) => {
+      // Session fetch failed, user remains null (guest mode)
+      toast.error("Failed to load session");
     });
   }, []);
 
