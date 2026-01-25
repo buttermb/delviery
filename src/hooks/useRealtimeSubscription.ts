@@ -152,13 +152,13 @@ export function useRealtimeSubscription(
     const channel = supabase
       .channel(resolvedChannelName)
       .on(
-        'postgres_changes',
+        'postgres_changes' as any,
         {
           event: eventFilter,
           schema,
           table,
           filter,
-        },
+        } as any,
         (payload: RealtimePostgresChangesPayload<RealtimeRecord>) => {
           const eventType = payload.eventType as PostgresChangeEvent;
 

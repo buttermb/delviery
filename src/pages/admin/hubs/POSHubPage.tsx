@@ -70,7 +70,7 @@ export default function POSHubPage() {
     }, [handleTabChange]);
 
     return (
-        <div className="min-h-dvh bg-background">
+        <div className="space-y-0">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Tab Header - Only show when NOT on register (register is fullscreen) */}
                 {activeTab !== 'register' && (

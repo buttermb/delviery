@@ -65,7 +65,7 @@ export function CustomerOrderHistory({ customerId, storeId }: CustomerOrderHisto
     queryFn: async (): Promise<CustomerOrder[]> => {
       if (!storeId || !customerId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('marketplace_orders')
         .select('id, order_number, status, total_amount, total, items, created_at, tracking_token')
         .eq('store_id', storeId)

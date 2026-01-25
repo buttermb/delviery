@@ -287,7 +287,7 @@ export const useMenuSecurityEvents = (menuId?: string, tenantId?: string) => {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      let query = supabase
+      let query = (supabase as any)
         .from('menu_security_events')
         .select(`
           *,

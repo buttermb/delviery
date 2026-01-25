@@ -84,14 +84,14 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
   const { data: giftCards = [], isLoading } = useQuery({
     queryKey: ['gift-cards', storeId],
     queryFn: async () => {
-      const { data, error } = await (supabase
-        .from as unknown as (table: string) => ReturnType<typeof supabase.from>)('marketplace_gift_cards')
+      const { data, error } = await (supabase as any)
+        .from('marketplace_gift_cards')
         .select('*')
         .eq('store_id', storeId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as GiftCard[];
+      return (data || []) as unknown as GiftCard[];
     },
     enabled: !!storeId,
   });
@@ -125,8 +125,8 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
 
   const bulkStatusMutation = useMutation({
     mutationFn: async ({ ids, newStatus }: { ids: string[]; newStatus: 'active' | 'disabled' }) => {
-      const { error } = await (supabase
-        .from as unknown as (table: string) => ReturnType<typeof supabase.from>)('marketplace_gift_cards')
+      const { error } = await (supabase as any)
+        .from('marketplace_gift_cards')
         .update({ status: newStatus })
         .in('id', ids)
         .eq('store_id', storeId);

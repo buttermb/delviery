@@ -130,7 +130,7 @@ const AdminLayout = () => {
                 )}
               </LiveBadgeProvider>
             </SidebarErrorBoundary>
-            <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex-1 flex flex-col min-w-0 h-dvh overflow-hidden">
               <AccountSwitcher />
               <header className="glass-floating h-14 sm:h-14 flex items-center px-2 sm:px-3 md:px-4 lg:px-6 gap-2 sm:gap-3 md:gap-4 flex-shrink-0 pt-safe safe-area-top transition-all duration-200">
                 {/* Sidebar trigger - 48px minimum touch target */}

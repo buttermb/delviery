@@ -144,7 +144,7 @@ export function useConvertPreOrderToInvoice() {
 
             queryClient.setQueryData<CRMPreOrder[]>(
                 crmPreOrderKeys.lists(),
-                (old) => old?.map(po => po.id === preOrderId ? { ...po, status: 'converting' } : po)
+                (old) => old?.map(po => po.id === preOrderId ? { ...po, status: 'converting' as const } : po) as CRMPreOrder[]
             );
 
             return { previousPreOrders };

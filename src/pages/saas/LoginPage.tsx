@@ -37,6 +37,13 @@ import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import { motion, AnimatePresence } from 'framer-motion';
 import FloraIQLogo from '@/components/FloraIQLogo';
 import { useCsrfToken } from '@/hooks/useCsrfToken';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -60,6 +67,12 @@ export default function LoginPage() {
     storageKey: 'floraiq_saas_login_rate_limit',
   });
   const { validateToken } = useCsrfToken();
+
+  // Forgot password state
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [isSendingReset, setIsSendingReset] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
 
   // Monitor connection status
   useEffect(() => {
@@ -92,6 +105,41 @@ export default function LoginPage() {
       password: '',
     },
   });
+
+  const handleForgotPassword = async () => {
+    if (!forgotPasswordEmail || !forgotPasswordEmail.includes('@')) {
+      toast({
+        title: 'Invalid Email',
+        description: 'Please enter a valid email address.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSendingReset(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail.toLowerCase().trim(), {
+        redirectTo: `${window.location.origin}/saas/reset-password`,
+      });
+
+      if (error) throw error;
+
+      setResetEmailSent(true);
+      toast({
+        title: 'Reset Email Sent',
+        description: 'Check your inbox for password reset instructions.',
+      });
+    } catch (error: any) {
+      logger.error('Password reset error', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to send reset email. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSendingReset(false);
+    }
+  };
 
   const onSubmit = async (data: LoginFormData) => {
     if (!validateToken()) {
@@ -144,7 +192,7 @@ export default function LoginPage() {
     document.cookie.split(';').forEach((c) => {
       const cookieName = c.split('=')[0].trim();
       if (cookieName.startsWith('sb-') || cookieName.startsWith('tenant_') ||
-          cookieName.includes('access') || cookieName.includes('refresh')) {
+        cookieName.includes('access') || cookieName.includes('refresh')) {
         // Clear cookie for current path
         document.cookie = `${cookieName}=;expires=${new Date(0).toUTCString()};path=/`;
         // Also try clearing with domain for cross-subdomain cookies
@@ -187,7 +235,7 @@ export default function LoginPage() {
       if (tenantError || !tenant) throw new Error('Invalid tenant configuration');
 
       // 3. Tenant Auth Edge Function
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const url = `${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`;
 
       const { response } = await resilientFetch(url, {
@@ -363,7 +411,17 @@ export default function LoginPage() {
                       <div className="w-4 h-4 rounded border border-slate-300 group-hover:border-[#1B4332] transition-colors" />
                       <span className="text-sm text-foreground/80 group-hover:text-primary">Remember me</span>
                     </label>
-                    <a href="#" className="text-sm font-medium text-primary hover:underline">Forgot password?</a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowForgotPassword(true);
+                        setResetEmailSent(false);
+                        setForgotPasswordEmail(form.getValues('email') || '');
+                      }}
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
                   </div>
 
                   <Button
@@ -491,6 +549,75 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      {/* Forgot Password Dialog */}
+      <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Reset Password</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              {resetEmailSent
+                ? "We've sent a password reset link to your email."
+                : "Enter your email address and we'll send you a link to reset your password."
+              }
+            </DialogDescription>
+          </DialogHeader>
+
+          {resetEmailSent ? (
+            <div className="flex flex-col items-center gap-4 py-4">
+              <CheckCircle2 className="h-12 w-12 text-primary" />
+              <p className="text-center text-sm text-muted-foreground">
+                Check your inbox at <strong>{forgotPasswordEmail}</strong> for the reset link.
+              </p>
+              <Button
+                onClick={() => setShowForgotPassword(false)}
+                className="w-full"
+              >
+                Back to Login
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div className="space-y-2">
+                <label htmlFor="reset-email" className="text-sm font-medium">
+                  Email Address
+                </label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="you@company.com"
+                  value={forgotPasswordEmail}
+                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                  className="h-11"
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowForgotPassword(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleForgotPassword}
+                  disabled={isSendingReset}
+                  className="flex-1"
+                >
+                  {isSendingReset ? (
+                    <span className="flex items-center gap-2">
+                      <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                      Sending...
+                    </span>
+                  ) : (
+                    'Send Reset Link'
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </ForceLightMode>
   );
 }

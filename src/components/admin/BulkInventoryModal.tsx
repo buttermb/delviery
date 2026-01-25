@@ -127,7 +127,7 @@ export function BulkInventoryModal({
 
           // Record inventory movement history entry
           // @ts-ignore - tenant_id column added via migration after types were generated
-          const { error: historyError } = await supabase
+          const { error: historyError } = await (supabase as any)
             .from("wholesale_inventory_movements")
             .insert({
               tenant_id: tenant.id,
@@ -141,7 +141,7 @@ export function BulkInventoryModal({
                 `Previous: ${item.currentQty.toFixed(2)} lbs -> New: ${item.newQty.toFixed(2)} lbs`,
               ].filter(Boolean).join(" | "),
               from_location: item.warehouse,
-            } as Record<string, unknown>);
+            });
 
           if (historyError) {
             logger.error("Failed to record inventory history", historyError, {

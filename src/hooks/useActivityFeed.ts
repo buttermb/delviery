@@ -78,8 +78,8 @@ export function useActivityFeed(initialFilters?: Partial<ActivityFeedFilters>) {
       if (!tenantId) return { entries: [], totalCount: 0 };
 
       try {
-        let query = supabase
-          .from('activity_logs' as unknown as string)
+        let query = (supabase as any)
+          .from('activity_logs')
           .select('*', { count: 'exact' })
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -151,8 +151,8 @@ export function useActivityFeed(initialFilters?: Partial<ActivityFeedFilters>) {
     mutationFn: async (params: LogActivityParams) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data: result, error: rpcError } = await supabase.rpc(
-        'log_unified_activity' as unknown as string,
+      const { data: result, error: rpcError } = await (supabase as any).rpc(
+        'log_unified_activity',
         {
           p_tenant_id: tenantId,
           p_action: params.action,
