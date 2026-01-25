@@ -879,6 +879,10 @@ describe('Complete Flow: Feature -> Block -> Modal -> Purchase', () => {
       canPerformAction: mockCanPerformAction,
       performAction: mockPerformAction,
       refetch: vi.fn(),
+      lifetimeStats: { earned: 500, spent: 475, purchased: 0, expired: 0, refunded: 0 },
+      subscription: { status: 'active', isFreeTier: true, creditsPerPeriod: 500, currentPeriodEnd: null, cancelAtPeriodEnd: false },
+      hasCredits: vi.fn(() => false),
+      invalidate: vi.fn(),
     });
 
     const { result } = renderHook(() => useCreditGatedAction(), {

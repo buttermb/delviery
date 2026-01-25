@@ -162,7 +162,7 @@ describe('SessionManagement', () => {
         screen.getByText('192.168.1.100').closest('div[class*="flex items-center justify-between"]');
       expect(currentSessionRow).toBeTruthy();
       if (currentSessionRow) {
-        expect(within(currentSessionRow).getByText('Current')).toBeInTheDocument();
+        expect(within(currentSessionRow as HTMLElement).getByText('Current')).toBeInTheDocument();
       }
     });
 
@@ -201,7 +201,7 @@ describe('SessionManagement', () => {
       const currentSessionRow = screen.getByText('192.168.1.100').closest('[class*="border rounded"]') ||
         screen.getByText('192.168.1.100').closest('div[class*="flex items-center justify-between"]');
       if (currentSessionRow) {
-        const buttons = within(currentSessionRow).queryAllByRole('button');
+        const buttons = within(currentSessionRow as HTMLElement).queryAllByRole('button');
         // Current session should have no LogOut button
         expect(buttons).toHaveLength(0);
       }
@@ -219,7 +219,7 @@ describe('SessionManagement', () => {
       const otherSessionRow = screen.getByText('10.0.0.55').closest('[class*="border rounded"]') ||
         screen.getByText('10.0.0.55').closest('div[class*="flex items-center justify-between"]');
       if (otherSessionRow) {
-        const buttons = within(otherSessionRow).queryAllByRole('button');
+        const buttons = within(otherSessionRow as HTMLElement).queryAllByRole('button');
         expect(buttons.length).toBeGreaterThan(0);
       }
     });
@@ -323,7 +323,7 @@ describe('SessionManagement', () => {
 
       // Find and click revoke button for second session (10.0.0.55)
       const otherSessionRow = screen.getByText('10.0.0.55').closest('[class*="flex items-center justify-between"]');
-      const revokeButton = otherSessionRow ? within(otherSessionRow).getByRole('button') : screen.getAllByRole('button').find(
+      const revokeButton = otherSessionRow ? within(otherSessionRow as HTMLElement).getByRole('button') : screen.getAllByRole('button').find(
         btn => btn.closest('[class*="flex items-center justify-between"]')?.textContent?.includes('10.0.0.55')
       );
 
@@ -428,7 +428,7 @@ describe('SessionManagement', () => {
       // Current session should not have a revoke button at all
       const currentSessionRow = screen.getByText('192.168.1.100').closest('[class*="flex items-center justify-between"]');
       if (currentSessionRow) {
-        const buttons = within(currentSessionRow).queryAllByRole('button');
+        const buttons = within(currentSessionRow as HTMLElement).queryAllByRole('button');
         expect(buttons).toHaveLength(0);
       }
     });
