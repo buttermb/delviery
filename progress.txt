@@ -7690,3 +7690,13 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Add All Orders and B2B Orders to Orders section in sidebar-navigation.ts
+
+### Completed:
+- Added new 'Orders' section to sidebar-navigation.ts after Dashboard section
+- Added 'All Orders' nav item with href '/admin/orders' and ShoppingCart icon
+- Added 'B2B Orders' nav item with href '/admin/orders/b2b' and Building2 icon
+
+### Files Changed:
+- src/components/admin/sidebar-navigation.ts
