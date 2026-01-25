@@ -201,16 +201,10 @@ export const navigationSections: NavSection[] = [
     ]
   },
 
-  // 🛍️ SALES & MENU
+  // 👥 CUSTOMERS
   {
-    title: 'Sales & Menu',
+    title: 'Customers',
     items: [
-      {
-        title: 'Disposable Menus',
-        href: '/admin/disposable-menus',
-        icon: FileText,
-        badge: '🔥'
-      },
       {
         title: 'Customers',
         href: '/admin/customers',
@@ -220,6 +214,18 @@ export const navigationSections: NavSection[] = [
         title: 'Customer Details',
         href: '/admin/customer-details',
         icon: UserCheck
+      },
+      {
+        title: 'CRM',
+        href: '/admin/crm/clients',
+        icon: UsersRound,
+        tier: 'professional'
+      },
+      {
+        title: 'Invoices',
+        href: '/admin/crm/invoices',
+        icon: Receipt,
+        tier: 'professional'
       },
       {
         title: 'Customer Insights',
@@ -232,6 +238,19 @@ export const navigationSections: NavSection[] = [
         href: '/admin/customer-reports',
         icon: FileSpreadsheet,
         tier: 'professional'
+      }
+    ]
+  },
+
+  // 🛍️ SALES & MENU
+  {
+    title: 'Sales & Menu',
+    items: [
+      {
+        title: 'Disposable Menus',
+        href: '/admin/disposable-menus',
+        icon: FileText,
+        badge: '🔥'
       },
       {
         title: 'Pricing & Deals',
