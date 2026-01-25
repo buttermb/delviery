@@ -62,7 +62,9 @@ import {
   BarChart4,
   UserCheck,
   Flame,
-  Brain
+  Brain,
+  HelpCircle,
+  Headphones
 } from 'lucide-react';
 
 export interface NavItem {
@@ -655,6 +657,17 @@ export const navigationSections: NavSection[] = [
         href: '/admin/vendor-management',
         icon: Building2,
         tier: 'enterprise'
+      },
+      {
+        title: 'Help Center',
+        href: '/admin/help-center',
+        icon: HelpCircle
+      },
+      {
+        title: 'Priority Support',
+        href: '/admin/priority-support',
+        icon: Headphones,
+        tier: 'professional'
       }
     ]
   },
