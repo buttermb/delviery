@@ -201,6 +201,7 @@ const ExpansionAnalysisPage = lazy(() => import("./pages/admin/ExpansionAnalysis
 // Built pages missing routes (currently locked in sidebar)
 const TeamManagement = lazy(() => import("./pages/admin/TeamManagement"));
 const FrontedInventory = lazy(() => import("./pages/admin/FrontedInventory"));
+const FrontedInventoryDetails = lazy(() => import("./pages/admin/FrontedInventoryDetails"));
 const CustomerInvoices = lazy(() => import("./pages/admin/CustomerInvoices"));
 const RunnerLocationTracking = lazy(() => import("./pages/admin/RunnerLocationTracking"));
 const LiveMap = lazy(() => import("./pages/admin/LiveMap"));
@@ -945,6 +946,7 @@ const App = () => {
                                         <Route path="team-members" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute></RoleProtectedRoute>} />
                                         <Route path="advanced-inventory" element={<Navigate to="inventory-hub?tab=adjustments" replace />} />
                                         <Route path="fronted-inventory" element={<FeatureProtectedRoute featureId="fronted-inventory"><FrontedInventory /></FeatureProtectedRoute>} />
+                                        <Route path="fronted-inventory/:id" element={<FeatureProtectedRoute featureId="fronted-inventory"><FrontedInventoryDetails /></FeatureProtectedRoute>} />
                                         <Route path="invoice-management" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
                                         <Route path="fleet-management" element={<Navigate to="fulfillment-hub?tab=fleet" replace />} />
                                         <Route path="delivery-hub" element={<Navigate to="fulfillment-hub" replace />} />
