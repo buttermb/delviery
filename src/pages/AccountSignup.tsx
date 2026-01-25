@@ -328,6 +328,7 @@ export default function AccountSignup() {
 
                   <Button
                     type="submit"
+                    disabled={loading}
                     className="w-full bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white h-14 text-lg font-semibold mt-6"
                   >
                     Continue

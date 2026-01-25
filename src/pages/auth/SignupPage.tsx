@@ -333,6 +333,7 @@ export function SignupPage() {
                               className="pl-9 h-11"
                               autoComplete="email"
                               autoFocus
+                              disabled={isSubmitting}
                             />
                           </div>
                         </FormControl>
@@ -355,6 +356,7 @@ export function SignupPage() {
                               placeholder="Create a strong password"
                               className="pr-9 h-11"
                               autoComplete="new-password"
+                              disabled={isSubmitting}
                             />
                             <button
                               type="button"
@@ -391,6 +393,7 @@ export function SignupPage() {
                               placeholder="Confirm your password"
                               className="pr-9 h-11"
                               autoComplete="new-password"
+                              disabled={isSubmitting}
                             />
                             <button
                               type="button"
@@ -412,7 +415,7 @@ export function SignupPage() {
                     )}
                   />
 
-                  <Button type="submit" className="w-full h-11 mt-2">
+                  <Button type="submit" className="w-full h-11 mt-2" disabled={isSubmitting}>
                     Continue
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -440,6 +443,7 @@ export function SignupPage() {
                               className="pl-9 h-11"
                               autoComplete="name"
                               autoFocus
+                              disabled={isSubmitting}
                             />
                           </div>
                         </FormControl>
@@ -467,6 +471,7 @@ export function SignupPage() {
                               className="pl-9 h-11"
                               autoComplete="tel"
                               inputMode="tel"
+                              disabled={isSubmitting}
                             />
                           </div>
                         </FormControl>
@@ -480,12 +485,13 @@ export function SignupPage() {
                       type="button"
                       variant="outline"
                       onClick={goBack}
+                      disabled={isSubmitting}
                       className="flex-1 h-11"
                     >
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       Back
                     </Button>
-                    <Button type="submit" className="flex-[2] h-11">
+                    <Button type="submit" className="flex-[2] h-11" disabled={isSubmitting}>
                       Continue
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
@@ -507,7 +513,8 @@ export function SignupPage() {
                           <button
                             type="button"
                             onClick={() => field.onChange('create')}
-                            className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                            disabled={isSubmitting}
+                            className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                               field.value === 'create'
                                 ? 'border-primary bg-primary/5'
                                 : 'border-muted hover:border-primary/50'
@@ -519,7 +526,8 @@ export function SignupPage() {
                           <button
                             type="button"
                             onClick={() => field.onChange('join')}
-                            className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                            disabled={isSubmitting}
+                            className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                               field.value === 'join'
                                 ? 'border-primary bg-primary/5'
                                 : 'border-muted hover:border-primary/50'
@@ -550,6 +558,7 @@ export function SignupPage() {
                                 placeholder="Your Company Name"
                                 className="pl-9 h-11"
                                 autoFocus
+                                disabled={isSubmitting}
                               />
                             </div>
                           </FormControl>
@@ -580,6 +589,7 @@ export function SignupPage() {
                                 placeholder="your-organization"
                                 className="pl-9 h-11"
                                 autoFocus
+                                disabled={isSubmitting}
                               />
                             </div>
                           </FormControl>
