@@ -62,7 +62,9 @@ import {
   BarChart4,
   UserCheck,
   Flame,
-  Brain
+  Brain,
+  HeadphonesIcon,
+  Award
 } from 'lucide-react';
 
 export interface NavItem {
@@ -231,6 +233,18 @@ export const navigationSections: NavSection[] = [
         title: 'Customer Reports',
         href: '/admin/customer-reports',
         icon: FileSpreadsheet,
+        tier: 'professional'
+      },
+      {
+        title: 'Support',
+        href: '/admin/customer-support',
+        icon: HeadphonesIcon,
+        tier: 'professional'
+      },
+      {
+        title: 'Loyalty',
+        href: '/admin/loyalty-program',
+        icon: Award,
         tier: 'professional'
       },
       {
