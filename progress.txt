@@ -7690,3 +7690,29 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Remove ts-nocheck from src/pages/UserAccount.tsx and fix types
+
+### Date: 2026-01-25
+
+### Changes Made:
+
+1. **Removed @ts-nocheck directive**
+   - Deleted the // @ts-nocheck comment at the top of the file
+
+2. **Added proper TypeScript types**
+   - Imported Tables type from @/integrations/supabase/types
+   - Changed profile state from any to Tables<'profiles'> | null
+   - Changed orders state from any[] to Tables<'orders'>[]
+
+3. **Fixed export style**
+   - Changed from export default function UserAccount() to export function UserAccount()
+   - Follows project code style guideline: "Named exports only - Never use default exports"
+
+### Build Verification:
+- npm run build - PASSES (0 TypeScript errors)
+- Production build completes successfully with all types resolved
+
+### Files Changed:
+- src/pages/UserAccount.tsx - Removed ts-nocheck, added proper types, changed to named export
+
