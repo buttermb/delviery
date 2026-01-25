@@ -45,7 +45,7 @@ export function BuilderPreview({
                 className="bg-background shadow-2xl overflow-visible transition-all duration-300 relative"
                 style={{
                     ...getPreviewStyle(),
-                    minHeight: '800px',
+                    minHeight: 'calc(100vh - 200px)',
                 }}
             >
                 {/* Simulated Header */}

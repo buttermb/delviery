@@ -6,7 +6,7 @@
 import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Monitor, Smartphone, Tablet } from 'lucide-react';
+import { Monitor, Smartphone, Tablet, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
@@ -42,12 +42,14 @@ interface StorefrontSettingsLivePreviewProps {
 }
 
 type DeviceMode = 'desktop' | 'tablet' | 'mobile';
+type Orientation = 'portrait' | 'landscape';
 
 export function StorefrontSettingsLivePreview({
   settings,
   featuredProducts = [],
 }: StorefrontSettingsLivePreviewProps) {
   const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
+  const [orientation, setOrientation] = useState<Orientation>('portrait');
 
   const isLuxury = settings.theme_config?.theme === 'luxury';
   const primaryColor = settings.primary_color || '#10b981';
@@ -57,13 +59,13 @@ export function StorefrontSettingsLivePreview({
   const containerWidth = useMemo(() => {
     switch (deviceMode) {
       case 'mobile':
-        return 'max-w-[320px]';
+        return orientation === 'portrait' ? 'max-w-[320px]' : 'max-w-[568px]';
       case 'tablet':
-        return 'max-w-[600px]';
+        return orientation === 'portrait' ? 'max-w-[600px]' : 'max-w-[900px]';
       default:
         return 'w-full';
     }
-  }, [deviceMode]);
+  }, [deviceMode, orientation]);
 
   return (
     <div className="space-y-3">
@@ -72,10 +74,20 @@ export function StorefrontSettingsLivePreview({
         <span className="text-sm font-medium text-muted-foreground">Live Preview</span>
         <div className="flex gap-1">
           <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 mr-1"
+            onClick={() => setOrientation(prev => prev === 'portrait' ? 'landscape' : 'portrait')}
+            disabled={deviceMode === 'desktop'}
+            title="Rotate Orientation"
+          >
+            <RotateCcw className={`h-3.5 w-3.5 transition-transform ${orientation === 'landscape' ? 'rotate-90' : ''}`} />
+          </Button>
+          <Button
             variant={deviceMode === 'desktop' ? 'secondary' : 'ghost'}
             size="icon"
             className="h-7 w-7"
-            onClick={() => setDeviceMode('desktop')}
+            onClick={() => { setDeviceMode('desktop'); setOrientation('portrait'); }}
           >
             <Monitor className="h-3.5 w-3.5" />
           </Button>
@@ -212,9 +224,8 @@ export function StorefrontSettingsLivePreview({
                     Featured Products
                   </h4>
                   <div
-                    className={`grid gap-2 ${
-                      deviceMode === 'mobile' ? 'grid-cols-2' : 'grid-cols-3'
-                    }`}
+                    className={`grid gap-2 ${deviceMode === 'mobile' ? 'grid-cols-2' : 'grid-cols-3'
+                      }`}
                   >
                     {featuredProducts.slice(0, deviceMode === 'mobile' ? 2 : 3).map((product) => (
                       <div
@@ -269,9 +280,8 @@ export function StorefrontSettingsLivePreview({
                     Featured Products
                   </h4>
                   <div
-                    className={`grid gap-2 ${
-                      deviceMode === 'mobile' ? 'grid-cols-2' : 'grid-cols-3'
-                    }`}
+                    className={`grid gap-2 ${deviceMode === 'mobile' ? 'grid-cols-2' : 'grid-cols-3'
+                      }`}
                   >
                     {Array.from({ length: deviceMode === 'mobile' ? 2 : 3 }).map((_, i) => (
                       <div
