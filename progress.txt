@@ -7690,3 +7690,35 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+
+---
+
+## Task: Add useMutation for status update in SmartDashboard.tsx line 284
+
+### Changes Made:
+
+1. **Added `useUpdateOrderStatus` mutation hook** (`src/hooks/useDisposableMenus.ts`)
+   - New mutation hook that updates order status in the `menu_orders` table
+   - Uses Supabase client to update `status` and `updated_at` fields
+   - Invalidates `['menu-orders']` query on success to refresh the orders list
+   - Shows success/error toasts using existing helper functions
+   - Follows existing codebase patterns for mutations
+
+2. **Updated `OrdersTab` component** (`src/components/admin/disposable-menus/SmartDashboard.tsx`)
+   - Imported the new `useUpdateOrderStatus` hook
+   - Added mutation instance in the `OrdersTab` component
+   - Replaced the TODO placeholder at line 284 with actual mutation call
+   - Removed unused `showSuccessToast` import (now handled by the mutation hook)
+
+### Implementation Details:
+- The mutation follows the TanStack Query pattern established in the codebase
+- Status updates are persisted to the database via direct Supabase update
+- Query invalidation ensures the Kanban board reflects changes immediately
+- Error handling logs to the centralized logger and shows user-friendly error messages
+
+### Files Changed:
+- `src/hooks/useDisposableMenus.ts` - Added `useUpdateOrderStatus` mutation export
+- `src/components/admin/disposable-menus/SmartDashboard.tsx` - Updated import and wired up mutation
+
+### Build Status: PASSED

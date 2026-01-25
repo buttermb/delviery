@@ -19,13 +19,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MenuCreationWizard } from './MenuCreationWizard';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useDisposableMenus, useMenuOrders } from '@/hooks/useDisposableMenus';
+import { useDisposableMenus, useMenuOrders, useUpdateOrderStatus } from '@/hooks/useDisposableMenus';
 import { MenuCard } from './MenuCard';
 import { PanicModeButton } from './PanicModeButton';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { format, formatDistanceToNow } from 'date-fns';
-import { showSuccessToast } from '@/utils/toastHelpers';
 import { ResponsiveGrid } from '@/components/shared/ResponsiveGrid';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
@@ -122,6 +121,7 @@ function OrderCard({ order, onStatusChange }: { order: any; onStatusChange?: (id
 // Enhanced Orders Tab with better Kanban
 function OrdersTab() {
   const { data: orders = [], isLoading, refetch } = useMenuOrders();
+  const updateOrderStatus = useUpdateOrderStatus();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [listLimit, setListLimit] = useState(20);
 
@@ -281,9 +281,7 @@ function OrdersTab() {
                     key={order.id}
                     order={order}
                     onStatusChange={(id, status) => {
-                      // TODO: Implement actual status update via mutation
-                      showSuccessToast(`Order marked as ${status}`);
-                      refetch();
+                      updateOrderStatus.mutate({ orderId: id, status });
                     }}
                   />
                 ))
