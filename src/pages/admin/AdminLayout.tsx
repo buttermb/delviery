@@ -17,7 +17,7 @@ import { LoadingFallback } from "@/components/LoadingFallback";
 
 import { AdminNotificationCenter } from "@/components/admin/AdminNotificationCenter";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
-import ThemeToggle from "@/components/ThemeToggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { AdminKeyboardShortcutsDialog } from "@/components/admin/AdminKeyboardShortcutsDialog";
 import { useCommandPaletteStore } from "@/components/tenant-admin/CommandPalette";
@@ -218,7 +218,8 @@ const AdminLayout = () => {
                     <AdminNotificationCenter />
                   </div>
 
-                  {/* Theme toggle removed - ForceLightMode enforces light mode */}
+                  {/* Theme Toggle */}
+                  <ThemeToggle className="h-10 w-10 min-h-[44px] min-w-[44px]" />
 
                   {/* Offline Status Indicator */}
                   <div className="hidden sm:block">

@@ -7,14 +7,14 @@ interface ThemeToggleProps {
   className?: string;
 }
 
-const ThemeToggle = ({ className }: ThemeToggleProps) => {
+export const ThemeToggle = ({ className }: ThemeToggleProps) => {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <Button 
-      variant="ghost" 
-      size="icon" 
-      onClick={toggleTheme} 
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
       aria-label="Toggle theme"
       className={cn(className)}
     >
@@ -22,5 +22,3 @@ const ThemeToggle = ({ className }: ThemeToggleProps) => {
     </Button>
   );
 };
-
-export default ThemeToggle;

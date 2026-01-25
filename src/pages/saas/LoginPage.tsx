@@ -32,7 +32,7 @@ import { ArrowRight, CheckCircle2, Lock, Mail, WifiOff, AlertCircle, Eye, EyeOff
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RateLimitWarning } from '@/components/auth/RateLimitWarning';
 import { useAuthRateLimit } from '@/hooks/useAuthRateLimit';
-import ThemeToggle from '@/components/ThemeToggle';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import { motion, AnimatePresence } from 'framer-motion';
 import FloraIQLogo from '@/components/FloraIQLogo';
