@@ -38,7 +38,7 @@ import { SidebarHotItems } from './SidebarHotItems';
 import { SidebarFavorites } from './SidebarFavorites';
 import { SidebarRecentlyUsed } from './SidebarRecentlyUsed';
 import { UpgradeModal } from '@/components/tenant-admin/UpgradeModal';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useMemo, useCallback } from 'react';
 import type { FeatureId } from '@/lib/featureConfig';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CreditBalance } from '@/components/credits';
@@ -64,14 +64,21 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   useSidebarMigration();
 
   const currentPreset = preferences?.layoutPreset || 'default';
-  const presetNames: Record<string, string> = {
+  const presetNames: Record<string, string> = useMemo(() => ({
     default: 'Default',
     minimal: 'Minimal',
     sales_focus: 'Sales',
     operations_focus: 'Operations',
     financial_focus: 'Financial',
     full_featured: 'Full'
-  };
+  }), []);
+
+  // Memoize navigation items to prevent unnecessary re-renders
+  const navItems = useMemo(() => ({
+    sidebarConfig,
+    hotItems: Array.isArray(hotItems) ? hotItems : [],
+    favorites: Array.isArray(favorites) ? favorites : [],
+  }), [sidebarConfig, hotItems, favorites]);
 
   // Guard against missing tenant slug
   if (!tenantSlug) {
@@ -79,24 +86,24 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
     return null;
   }
 
-  const isActive = (url: string) => {
+  const isActive = useCallback((url: string) => {
     const fullPath = `/${tenantSlug}${url}`;
     return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
-  };
+  }, [tenantSlug, location.pathname]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await logout();
-  };
+  }, [logout]);
 
-  const handleLockedItemClick = (featureId: FeatureId) => {
+  const handleLockedItemClick = useCallback((featureId: FeatureId) => {
     setUpgradeFeatureId(featureId);
-  };
+  }, []);
 
-  const handleItemClick = (itemId: string, featureId?: string) => {
+  const handleItemClick = useCallback((itemId: string, featureId?: string) => {
     if (featureId) {
       trackFeatureClick(featureId);
     }
-  };
+  }, [trackFeatureClick]);
 
   return (
     <>
@@ -204,18 +211,18 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
             <SidebarRecentlyUsed />
 
             {/* Hot Items Section */}
-            {Array.isArray(hotItems) && hotItems.length > 0 && (
+            {navItems.hotItems.length > 0 && (
               <SidebarHotItems />
             )}
 
             {/* Favorites Section */}
-            {Array.isArray(favorites) && favorites.length > 0 && (
+            {navItems.favorites.length > 0 && (
               <SidebarFavorites />
             )}
 
             {/* Main Sections */}
-            {Array.isArray(sidebarConfig) && sidebarConfig.length > 0 ? (
-              sidebarConfig.map((section) => (
+            {Array.isArray(navItems.sidebarConfig) && navItems.sidebarConfig.length > 0 ? (
+              navItems.sidebarConfig.map((section) => (
                 <SidebarSection
                   key={section.section}
                   section={section}
