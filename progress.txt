@@ -7690,3 +7690,32 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Add Route for team-management path in App.tsx
+
+**Date:** 2026-01-25
+**Status:** COMPLETED
+
+### Implementation Summary:
+Added a new route for `team-management` path in App.tsx that renders the `TeamManagement` component with proper role and feature protection.
+
+### Changes Made:
+- **File:** `src/App.tsx` (line 946)
+- **Added Route:**
+  ```tsx
+  <Route path="team-management" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute></RoleProtectedRoute>} />
+  ```
+
+### Route Details:
+- **Path:** `team-management`
+- **Component:** `TeamManagement` (already imported at line 202)
+- **Protection:** 
+  - `RoleProtectedRoute` - restricts to `owner` and `admin` roles
+  - `FeatureProtectedRoute` - requires `team-members` feature flag
+- **Pattern:** Follows existing conventions used by `staff-management` and `team-members` routes
+
+### Verification:
+- `npm run build` - PASSES (6598 modules transformed, no TypeScript errors)
+- Route properly placed alongside related team routes (staff-management, team-members)
