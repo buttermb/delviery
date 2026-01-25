@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { safeStorage } from "@/utils/safeStorage";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 type Theme = "light" | "dark";
 
@@ -14,7 +15,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     // Get stored theme or determine default
-    const stored = safeStorage.getItem("theme");
+    const stored = safeStorage.getItem(STORAGE_KEYS.THEME);
     let initialTheme: Theme = "light"; // Default to light mode
 
     if (stored === "light" || stored === "dark") {
@@ -36,7 +37,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const root = document.documentElement;
     root.classList.remove("light", "dark");
     root.classList.add(theme);
-    safeStorage.setItem("theme", theme);
+    safeStorage.setItem(STORAGE_KEYS.THEME, theme);
     logger.debug('Theme applied', { theme, component: 'ThemeContext' });
   }, [theme]);
 
