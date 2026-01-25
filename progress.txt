@@ -7632,3 +7632,28 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/auth/__tests__/ProtectedRoutes.test.tsx` (new - 22 tests)
+
+---
+
+## Task: Remove exposed Aikido security token from src/main.tsx
+
+### What was done:
+
+1. **Removed hardcoded Aikido token from `src/main.tsx`**:
+   - Removed the exposed token `AIK_RUNTIME_47083_33691_EU_...` from line 14
+   - Updated the comment to reference the AIKIDO_TOKEN environment variable instead
+   - The token was exposed in a code comment, which is a security risk as it gets committed to version control
+
+2. **Updated `.env.example` with placeholder**:
+   - Replaced the actual token with a placeholder `your_aikido_token_here`
+   - Added helpful comment with link to Aikido dashboard for obtaining tokens
+   - Environment variable files should never contain real secrets, only placeholders
+
+### Security Impact:
+- The Aikido token was exposed in source code, which could allow unauthorized access to Aikido security monitoring
+- Moving to environment variables follows security best practices (12-factor app methodology)
+- The actual token should be rotated since it was exposed in version control history
+
+### Files Changed:
+- `src/main.tsx` - Removed hardcoded token from comment
+- `.env.example` - Replaced real token with placeholder and added documentation
