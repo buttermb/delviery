@@ -686,6 +686,26 @@ export const navigationSections: NavSection[] = [
     ]
   },
 
+  // 🔌 INTEGRATIONS
+  {
+    title: 'Integrations',
+    items: [
+      {
+        title: 'Local AI',
+        href: '/admin/local-ai',
+        icon: Brain,
+        tier: 'professional',
+        badge: 'FREE'
+      },
+      {
+        title: 'Custom Integrations',
+        href: '/admin/custom-integrations',
+        icon: Puzzle,
+        tier: 'ultimate'
+      }
+    ]
+  },
+
   // 🚀 ENTERPRISE
   {
     title: 'Enterprise',
@@ -700,12 +720,6 @@ export const navigationSections: NavSection[] = [
         title: 'Webhooks',
         href: '/admin/webhooks',
         icon: Webhook,
-        tier: 'ultimate'
-      },
-      {
-        title: 'Integrations',
-        href: '/admin/custom-integrations',
-        icon: Puzzle,
         tier: 'ultimate'
       },
       {
