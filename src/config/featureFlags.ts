@@ -82,6 +82,10 @@ export const FeatureFlagsProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const shouldAutoApprove = useMemo(() => {
     return (entity?: 'ORDERS' | 'LISTINGS' | 'SIGNUPS' | 'COURIERS' | 'REVIEWS') => {
+      // Never auto-approve in production environment
+      if ((import.meta as any).env?.MODE === 'production') {
+        return false;
+      }
       if (flags.AUTO_APPROVE_ALL) return true;
       switch (entity) {
         case 'ORDERS': return flags.AUTO_APPROVE_ORDERS;
