@@ -28,10 +28,8 @@ export async function logAuditEvent(event: AuditLogEvent): Promise<void> {
     }
 
     // Check if user is super admin
-    // @ts-ignore - super_admins table not in types yet
     const { data: superAdmin } = await supabase
-      // @ts-ignore
-      .from('super_admins')
+      .from('super_admin_users')
       .select('id')
       .eq('id', user.id)
       .maybeSingle();
@@ -42,18 +40,17 @@ export async function logAuditEvent(event: AuditLogEvent): Promise<void> {
     const ipAddress = await getClientIP();
     const userAgent = navigator.userAgent;
 
-    // @ts-ignore - audit_logs schema has different fields than types suggest
     const { error } = await supabase.from('audit_logs').insert({
-      // @ts-ignore - using custom fields not in generated types
-      actor_id: user.id,
+      user_id: user.id,
       actor_type: actorType,
       action: event.action,
-      resource_type: event.resourceType,
-      resource_id: event.resourceId,
+      resource_type: event.resourceType ?? null,
+      entity_type: event.resourceType ?? 'unknown',
+      entity_id: event.resourceId ?? 'system',
       tenant_id: event.tenantId,
-      changes: event.changes || {},
+      details: event.changes ?? null,
+      metadata: event.metadata ?? null,
       ip_address: ipAddress,
-      user_agent: userAgent,
       timestamp: new Date().toISOString(),
     });
 
