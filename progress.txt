@@ -1,4 +1,19 @@
-﻿## Task: Test Credit Consumption Flow
+﻿## Task: Delete hardcoded Aikido token from src/main.tsx
+
+### What was done:
+
+1. **Removed hardcoded Aikido token from `src/main.tsx`**:
+   - Deleted line 14 which contained the hardcoded Aikido runtime token
+   - Token string `AIK_RUNTIME_47083_33691_EU_...` was exposed in the source code (security vulnerability)
+   - Kept the comment referencing the AIKIDO_TOKEN environment variable for proper configuration
+   - The Zen Firewall setup comment block now only references the setup docs and environment variable
+
+### Files Changed:
+- `src/main.tsx` (edited - removed hardcoded token on line 14)
+
+---
+
+## Task: Test Credit Consumption Flow
 
 ### What was done:
 

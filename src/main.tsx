@@ -11,7 +11,6 @@ import { logger } from '@/lib/logger';
  * This is a React frontend application. Zen should be set up on your backend server.
  * 
  * See ZEN_FIREWALL_SETUP.md for backend setup instructions.
- * Token: AIK_RUNTIME_47083_33691_EU_KrqJRDttFaBxkqLrrBUGDX6ymBMotvI4NF6URVLOxuhHovJN
  * Environment variable: AIKIDO_TOKEN
  */
 
