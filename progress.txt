@@ -7690,3 +7690,28 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+
+---
+
+## Task: In sidebar-navigation.ts add Live Orders item to Command Center section
+
+### What was done:
+
+1. **Modified `src/components/admin/sidebar-navigation.ts`**:
+   - Renamed the "Dashboard" section to "Command Center" to align with featureRegistry.ts categorization
+   - Added "Live Orders" navigation item to the Command Center section with:
+     - `title: 'Live Orders'`
+     - `href: '/admin/orders?tab=live'`
+     - `icon: Activity`
+     - `badge: 'LIVE'`
+     - `tier: 'professional'`
+   - Removed duplicate "Live Orders" entry from the Operations section to avoid redundancy
+
+### Changes align with:
+- `src/lib/sidebar/featureRegistry.ts` which defines Live Orders in the Command Center category
+- The parallel task group restructuring the sidebar navigation
+
+### Files Changed:
+- `src/components/admin/sidebar-navigation.ts`
+
