@@ -7690,3 +7690,17 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Make Zip Code Input Responsive in Delivery Zones
+
+### What was done:
+
+1. **Updated `src/pages/admin/storefront/StorefrontSettings.tsx` line 845:**
+   - Changed `className="w-32"` to `className="w-full sm:w-32"` on the Zip code Input field
+   - This makes the input full-width on mobile devices (xs breakpoint) and 32 units (128px) on small screens and above
+   - Improves mobile responsiveness for the delivery zones section
+
+### Files Changed:
+- `src/pages/admin/storefront/StorefrontSettings.tsx` (line 845)

@@ -842,7 +842,7 @@ export default function StorefrontSettings() {
                           zones[index] = { ...zones[index], zip_code: e.target.value };
                           updateField('delivery_zones', zones);
                         }}
-                        className="w-32"
+                        className="w-full sm:w-32"
                       />
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">Fee: $</span>
