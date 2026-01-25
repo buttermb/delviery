@@ -38,8 +38,10 @@ interface UseSessionsReturn {
   otherSessions: SessionInfo[];
   revokeSession: (sessionId: string) => void;
   revokeAllOtherSessions: () => void;
+  revokeAllOthers: () => void; // Alias for backwards compatibility
   isRevoking: boolean;
   isRevokingAll: boolean;
+  revokingSessionId: string | null; // Track which session is being revoked
   refetch: () => void;
 }
 
@@ -154,8 +156,8 @@ export function useSessions(): UseSessionsReturn {
 
   const revokeSessionMutation = useMutation({
     mutationFn: async (sessionId: string) => {
-      const { error: revokeError } = await supabase
-        .from('customer_sessions' as unknown as string)
+      const { error: revokeError } = await (supabase as any)
+        .from('customer_sessions')
         .update({ expires_at: new Date().toISOString() })
         .eq('id', sessionId);
 
@@ -209,8 +211,10 @@ export function useSessions(): UseSessionsReturn {
     otherSessions,
     revokeSession: (sessionId: string) => revokeSessionMutation.mutate(sessionId),
     revokeAllOtherSessions: () => revokeAllOtherSessionsMutation.mutate(),
+    revokeAllOthers: () => revokeAllOtherSessionsMutation.mutate(), // Alias
     isRevoking: revokeSessionMutation.isPending,
     isRevokingAll: revokeAllOtherSessionsMutation.isPending,
+    revokingSessionId: revokeSessionMutation.isPending ? (revokeSessionMutation.variables as string | null) ?? null : null,
     refetch,
   };
 }

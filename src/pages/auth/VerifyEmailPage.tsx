@@ -119,14 +119,7 @@ export function VerifyEmailPage() {
     setIsResending(true);
 
     try {
-      // Validate email format using the useEmailVerification hook
-      const validationResult = await verifyEmail(resendEmail);
-      if (validationResult && !validationResult.isValid) {
-        toast.error(validationResult.reason || 'This email address appears to be invalid');
-        setIsResending(false);
-        return;
-      }
-
+      // Just proceed with resend - the hook handles validation internally
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: resendEmail,

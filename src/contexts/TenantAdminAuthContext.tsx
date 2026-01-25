@@ -83,6 +83,7 @@ interface AuthError extends Error {
 interface TenantAdminAuthContextType {
   admin: TenantAdmin | null;
   tenant: Tenant | null;
+  tenantSlug: string | null; // Current tenant slug for navigation
   token: string | null; // For backwards compatibility
   accessToken: string | null; // For backwards compatibility
   refreshToken: string | null; // For backwards compatibility
@@ -97,6 +98,8 @@ interface TenantAdminAuthContextType {
   mfaRequired: boolean;
   verifyMfa: (code: string) => Promise<void>;
 }
+
+export type { TenantAdminAuthContextType };
 
 const TenantAdminAuthContext = createContext<TenantAdminAuthContextType | undefined>(undefined);
 
@@ -1705,6 +1708,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     <TenantAdminAuthContext.Provider value={{
       admin,
       tenant,
+      tenantSlug: tenant?.slug || null,
       token,
       accessToken,
       refreshToken: refreshToken,
