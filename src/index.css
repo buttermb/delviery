@@ -87,7 +87,7 @@ section[id] {
 /* Mobile bottom navigation spacing */
 @media (max-width: 1024px) {
   main:not(.custom-mobile-padding) {
-    padding-bottom: max(100px, calc(80px + env(safe-area-inset-bottom))) !important;
+    padding-bottom: max(100px, calc(80px + env(safe-area-inset-bottom)));
   }
 
   /* Prevent horizontal scrolling on mobile */
