@@ -421,6 +421,18 @@ export const navigationSections: NavSection[] = [
     ]
   },
 
+  // 🚚 FULFILLMENT
+  {
+    title: 'Fulfillment',
+    items: [
+      {
+        title: 'Drivers',
+        href: '/admin/drivers',
+        icon: Car
+      }
+    ]
+  },
+
   // 💵 FINANCE
   {
     title: 'Finance',
