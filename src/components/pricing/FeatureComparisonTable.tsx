@@ -53,13 +53,13 @@ export function FeatureComparisonTable() {
     <div className="w-full overflow-x-auto">
       <Card className="min-w-[800px]">
         {/* Table Header */}
-        <div className="grid grid-cols-4 border-b bg-muted/50 sticky top-0 z-10">
-          <div className="p-4 font-semibold text-[hsl(var(--marketing-text))]">
+        <div className="grid grid-cols-4 border-b bg-muted/50 sticky top-0 z-10 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
+          <div className="p-4 font-semibold text-[hsl(var(--marketing-text))] dark:text-gray-100">
             Feature
           </div>
           {tiers.map((tier) => (
-            <div key={tier} className="p-4 text-center border-l">
-              <div className="font-bold text-lg text-[hsl(var(--marketing-text))] mb-1">
+            <div key={tier} className="p-4 text-center border-l dark:border-gray-700">
+              <div className="font-bold text-lg text-[hsl(var(--marketing-text))] mb-1 dark:text-gray-100">
                 {TIER_NAMES[tier]}
               </div>
               <Badge variant="outline" className="text-xs">
@@ -75,8 +75,8 @@ export function FeatureComparisonTable() {
         {sortedCategories.map((category) => (
           <div key={category}>
             {/* Category Header */}
-            <div className="bg-[hsl(var(--marketing-bg-subtle))] border-b">
-              <div className="p-3 font-semibold text-sm text-[hsl(var(--marketing-primary))]">
+            <div className="bg-[hsl(var(--marketing-bg-subtle))] border-b dark:bg-gray-700 dark:border-gray-600">
+              <div className="p-3 font-semibold text-sm text-[hsl(var(--marketing-primary))] dark:text-gray-100">
                 {category}
               </div>
             </div>
@@ -94,14 +94,14 @@ export function FeatureComparisonTable() {
               .map((feature, idx) => (
                 <div
                   key={feature.id}
-                  className={`grid grid-cols-4 border-b hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? 'bg-background' : 'bg-muted/10'
+                  className={`grid grid-cols-4 border-b hover:bg-muted/30 transition-colors dark:border-gray-700 ${idx % 2 === 0 ? 'bg-background dark:bg-gray-800' : 'bg-muted/10 dark:bg-gray-750'
                     }`}
                 >
                   <div className="p-3">
-                    <div className="font-medium text-sm text-[hsl(var(--marketing-text))]">
+                    <div className="font-medium text-sm text-[hsl(var(--marketing-text))] dark:text-gray-100">
                       {feature.name}
                     </div>
-                    <div className="text-xs text-[hsl(var(--marketing-text-light))] mt-1">
+                    <div className="text-xs text-[hsl(var(--marketing-text-light))] mt-1 dark:text-gray-300">
                       {feature.description}
                     </div>
                   </div>
@@ -109,7 +109,7 @@ export function FeatureComparisonTable() {
                   {tiers.map((tier) => (
                     <div
                       key={tier}
-                      className="p-3 border-l flex items-center justify-center"
+                      className="p-3 border-l flex items-center justify-center dark:border-gray-700"
                     >
                       {hasFeatureAccess(tier, feature.tier) ? (
                         <CheckCircle className="h-5 w-5 text-[hsl(var(--marketing-primary))]" />
@@ -124,12 +124,12 @@ export function FeatureComparisonTable() {
         ))}
 
         {/* Summary Row */}
-        <div className="grid grid-cols-4 bg-muted/50 border-t-2">
-          <div className="p-4 font-bold text-[hsl(var(--marketing-text))]">
+        <div className="grid grid-cols-4 bg-muted/50 border-t-2 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600">
+          <div className="p-4 font-bold text-[hsl(var(--marketing-text))] dark:text-gray-100">
             Total Features
           </div>
           {tiers.map((tier) => (
-            <div key={tier} className="p-4 text-center border-l font-bold text-lg text-[hsl(var(--marketing-primary))]">
+            <div key={tier} className="p-4 text-center border-l font-bold text-lg text-[hsl(var(--marketing-primary))] dark:border-gray-700 dark:text-gray-100">
               {tier === 'starter' && '28'}
               {tier === 'professional' && '55'}
               {tier === 'enterprise' && '87'}

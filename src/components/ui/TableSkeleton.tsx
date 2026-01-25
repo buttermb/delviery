@@ -23,7 +23,7 @@ export function TableSkeleton({
   className,
 }: TableSkeletonProps) {
   return (
-    <div className={cn("rounded-md border", className)}>
+    <div className={cn("rounded-md border dark:bg-gray-800 dark:text-gray-100", className)}>
       <Table>
         {showHeader && (
           <TableHeader>
