@@ -191,7 +191,7 @@ export function SignupPage() {
 
       // If creating a new tenant
       if (data.tenantMode === 'create' && data.businessName) {
-        const { error: tenantError } = await supabase
+        const { error: tenantError } = await (supabase as any)
           .from('tenants')
           .insert({
             business_name: data.businessName,
@@ -201,7 +201,7 @@ export function SignupPage() {
             subscription_plan: 'free',
             subscription_status: 'trial',
             created_at: new Date().toISOString(),
-          } as Record<string, unknown>)
+          })
           .select()
           .maybeSingle();
 
@@ -210,12 +210,12 @@ export function SignupPage() {
         }
 
         // Create tenant_users record
-        const { error: tenantUserError } = await supabase
+        const { error: tenantUserError } = await (supabase as any)
           .from('tenant_users')
           .insert({
             email: step1Data.email,
             name: step2Data.fullName,
-          } as Record<string, unknown>);
+          });
 
         if (tenantUserError) {
           logger.warn('Tenant user creation error', tenantUserError, { component: 'SignupPage' });

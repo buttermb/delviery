@@ -12,6 +12,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/logger';
 import {
   generateCsrfToken,
+  getCsrfToken,
   validateCsrfToken,
   regenerateCsrfToken,
 } from '@/lib/csrf';
@@ -28,10 +29,18 @@ interface UseCsrfTokenReturn {
 export function useCsrfToken(): UseCsrfTokenReturn {
   const [csrfToken, setCsrfToken] = useState<string>('');
 
-  // Generate token on mount (page load)
+  // Generate token on mount - but check for existing valid token first
   useEffect(() => {
-    const token = generateCsrfToken();
-    setCsrfToken(token);
+    // Check if there's already a valid token in sessionStorage
+    const existingToken = getCsrfToken();
+    if (existingToken) {
+      // Use existing token instead of generating new one
+      setCsrfToken(existingToken);
+    } else {
+      // No valid token exists, generate a new one
+      const token = generateCsrfToken();
+      setCsrfToken(token);
+    }
   }, []);
 
   // Validate the current token

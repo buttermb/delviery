@@ -113,42 +113,19 @@ export function SessionsPage() {
     if (!revokeTarget) return;
 
     if (revokeTarget.type === 'single') {
-      revokeSession(revokeTarget.sessionId, {
-        onSuccess: () => {
-          toast({
-            title: 'Session Revoked',
-            description: 'The session has been revoked successfully.',
-          });
-          setRevokeTarget(null);
-        },
-        onError: () => {
-          toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Failed to revoke session. Please try again.',
-          });
-          setRevokeTarget(null);
-        },
+      revokeSession(revokeTarget.sessionId);
+      toast({
+        title: 'Session Revoked',
+        description: 'The session has been revoked successfully.',
       });
     } else {
-      revokeAllOthers(undefined, {
-        onSuccess: () => {
-          toast({
-            title: 'All Sessions Revoked',
-            description: 'All other sessions have been revoked. You remain logged in on this device.',
-          });
-          setRevokeTarget(null);
-        },
-        onError: () => {
-          toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Failed to revoke sessions. Please try again.',
-          });
-          setRevokeTarget(null);
-        },
+      revokeAllOthers();
+      toast({
+        title: 'All Sessions Revoked',
+        description: 'All other sessions have been revoked. You remain logged in on this device.',
       });
     }
+    setRevokeTarget(null);
   };
 
   // Auth loading state
@@ -166,7 +143,7 @@ export function SessionsPage() {
     return null;
   }
 
-  const otherSessionsCount = sessions.filter((s) => !s.is_current).length;
+  const otherSessionsCount = sessions.filter((s) => !s.isCurrent).length;
 
   return (
     <div className="min-h-dvh bg-background">
@@ -243,15 +220,15 @@ export function SessionsPage() {
                 {sessions
                   .sort((a, b) => {
                     // Current session first
-                    if (a.is_current) return -1;
-                    if (b.is_current) return 1;
-                    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                    if (a.isCurrent) return -1;
+                    if (b.isCurrent) return 1;
+                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
                   })
                   .map((session) => (
                     <div
                       key={session.id}
                       className={`flex items-center justify-between p-4 border rounded-lg transition-colors ${
-                        session.is_current
+                        session.isCurrent
                           ? 'border-primary/50 bg-primary/5'
                           : 'hover:bg-muted/50'
                       }`}
@@ -259,42 +236,42 @@ export function SessionsPage() {
                       <div className="flex items-center gap-4 flex-1 min-w-0">
                         <div
                           className={`flex items-center justify-center w-10 h-10 rounded-lg ${
-                            session.is_current
+                            session.isCurrent
                               ? 'bg-primary/10 text-primary'
                               : 'bg-muted text-muted-foreground'
                           }`}
                         >
-                          {getDeviceIcon(session.user_agent)}
+                          {getDeviceIcon(session.displayName)}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="font-medium truncate">
-                              {getBrowserName(session.user_agent)}
+                              {session.browserName}
                             </p>
-                            {session.is_current && (
+                            {session.isCurrent && (
                               <Badge variant="default" className="text-xs shrink-0">
                                 Current
                               </Badge>
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground truncate">
-                            {getDeviceType(session.user_agent)}
+                            {session.deviceType}
                           </p>
                           <div className="flex items-center gap-3 mt-1">
-                            {session.ip_address && (
+                            {session.ipAddress && (
                               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <MapPin className="h-3 w-3" />
-                                {session.ip_address}
+                                {session.ipAddress}
                               </span>
                             )}
                             <span className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Clock className="h-3 w-3" />
-                              {formatTimeAgo(session.created_at)}
+                              {formatTimeAgo(session.createdAt)}
                             </span>
                           </div>
                         </div>
                       </div>
-                      {!session.is_current && (
+                      {!session.isCurrent && (
                         <Button
                           variant="ghost"
                           size="sm"

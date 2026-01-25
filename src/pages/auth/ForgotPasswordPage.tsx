@@ -34,7 +34,7 @@ export function ForgotPasswordPage() {
   const requestTimestamps = useRef<number[]>([]);
   const cooldownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const { requestReset } = usePasswordReset();
+  const { requestReset, isRequestingReset } = usePasswordReset();
 
   const startCooldown = useCallback(() => {
     setRateLimited(true);
@@ -104,16 +104,14 @@ export function ForgotPasswordPage() {
 
     // Always show success for security (don't reveal if email exists)
     // Fire and forget the actual request
-    requestReset.mutate(
-      { email: email.trim() },
-      {
-        onSettled: () => {
-          // Whether it succeeds or fails, we show the same success message
-          // to prevent email enumeration attacks
-          logger.debug("Password reset request settled");
-        },
-      }
-    );
+    requestReset({ email: email.trim() })
+      .then(() => {
+        logger.debug("Password reset request settled");
+      })
+      .catch(() => {
+        // Silently fail - don't reveal if email exists
+        logger.debug("Password reset request failed silently");
+      });
 
     // Immediately show success regardless of API result
     setSubmitted(true);
@@ -194,7 +192,7 @@ export function ForgotPasswordPage() {
                 onBlur={() => {
                   if (email) validateEmail(email);
                 }}
-                disabled={requestReset.isPending || rateLimited}
+                disabled={isRequestingReset || rateLimited}
                 aria-invalid={!!emailError}
                 aria-describedby={emailError ? "email-error" : undefined}
                 inputMode="email"
@@ -219,9 +217,9 @@ export function ForgotPasswordPage() {
             <Button
               type="submit"
               className="w-full min-h-[44px]"
-              disabled={requestReset.isPending || rateLimited}
+              disabled={isRequestingReset || rateLimited}
             >
-              {requestReset.isPending ? (
+              {isRequestingReset ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                   Sending...

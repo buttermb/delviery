@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Coins, ArrowLeft, Loader2, Tag, Check, Sparkles } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useCreditPackages, type CreditPackageDisplay } from '@/hooks/useCreditPackages';
+import { useCreditPackages } from '@/hooks/useCreditPackages';
 import { useCredits } from '@/hooks/useCredits';
 import { validatePromoCode } from '@/lib/credits';
 import { supabase } from '@/integrations/supabase/client';
