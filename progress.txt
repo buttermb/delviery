@@ -7690,3 +7690,27 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Add Tooltip wrapper when sidebar is collapsed
+
+Date: 2026-01-25
+
+### Summary
+Added tooltip support to SidebarMenuItem component. When the sidebar is collapsed, hovering over a menu item now displays a tooltip showing the item name.
+
+### Implementation Details
+The `SidebarMenuButton` component from `@/components/ui/sidebar` already has built-in tooltip support via a `tooltip` prop. When provided, it wraps the button in a Tooltip that only displays when the sidebar state is "collapsed" (not expanded or on mobile).
+
+### Changes Made
+- **File**: `src/components/admin/sidebar/SidebarMenuItem.tsx`
+  - Added `tooltip={item.name}` prop to the `SidebarMenuButton` for locked items (lines 77-80)
+  - Added `tooltip={item.name}` prop to the `SidebarMenuButton` for regular items (lines 97-101)
+
+### How It Works
+- The `SidebarMenuButton` in `@/components/ui/sidebar.tsx` checks `state !== "collapsed" || isMobile` to conditionally hide the tooltip
+- When sidebar is collapsed (icon-only mode), the tooltip appears on the right side of the menu item
+- When sidebar is expanded or on mobile, the tooltip is hidden (since the text is already visible)
+
+### Verification
+- Build passes with no TypeScript errors
+- No lint errors introduced

@@ -77,6 +77,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
         <SidebarMenuButton
           onClick={() => onLockedItemClick(item.featureId!)}
           className="cursor-pointer opacity-60 hover:opacity-100"
+          tooltip={item.name}
         >
           {IconComponent && <IconComponent className="h-5 w-5 flex-shrink-0" />}
           <span className="flex-1 truncate text-sm">{item.name}</span>
@@ -97,6 +98,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
         asChild
         isActive={isActive}
         onMouseEnter={handleMouseEnter}
+        tooltip={item.name}
       >
         <NavLink
           to={`/${tenantSlug}${item.path}`}
