@@ -7690,3 +7690,23 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Add Stock Levels and Alerts to Inventory Section in sidebar-navigation.ts
+
+### Implementation Details:
+- Created new dedicated 'Inventory' section in sidebar-navigation.ts
+- Added the following navigation items to the Inventory section:
+  - Inventory Hub (/admin/inventory-hub) - Main inventory page
+  - Stock Levels (/admin/inventory-hub?tab=stock) - Stock levels view
+  - Stock Alerts (/admin/stock-alerts) - Stock alert notifications (professional tier)
+  - Inventory Transfers (/admin/inventory-transfers) - Transfer management (professional tier)
+  - Advanced Inventory (/admin/advanced-inventory) - Advanced features (professional tier)
+
+- Moved inventory-related items from Operations section to the new Inventory section
+- Operations section now focuses on orders, delivery, and receiving operations
+
+### Files Changed:
+- src/components/admin/sidebar-navigation.ts
+
+### Verification:
+- npm run build PASSES (0 TypeScript errors)
