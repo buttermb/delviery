@@ -7690,3 +7690,44 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Create exportToCSV function in OrdersHubPage.tsx using papaparse
+
+### What was done:
+
+1. **Installed papaparse dependency**
+   - Added `papaparse` and `@types/papaparse` to package.json
+
+2. **Created `exportToCSV` function in `src/pages/admin/hubs/OrdersHubPage.tsx`**
+   - Function takes `UnifiedOrder[]` and optional filename parameter
+   - Transforms order data into flat CSV-friendly rows with fields:
+     - order_number, order_type, source, status
+     - payment_status, payment_method
+     - subtotal, tax_amount, discount_amount, total_amount
+     - customer_name (from customer, client, or contact_name)
+     - customer_email, contact_phone
+     - delivery_address, delivery_notes
+     - courier_name, items_count
+     - created_at, updated_at, cancelled_at, cancellation_reason
+   - Uses `Papa.unparse()` with quotes enabled for safe CSV generation
+   - Creates blob and triggers browser download with timestamped filename
+   - Shows toast notifications for success/error states
+
+3. **Connected export button to the function**
+   - Added `useUnifiedOrders` hook with `enabled: false` for on-demand fetching
+   - Added `isExporting` state for loading feedback
+   - Created `handleExport` callback that fetches orders and calls `exportToCSV`
+   - Updated Export quick action with loading state and disabled prop
+
+### Acceptance Criteria Met:
+- [x] exportToCSV function created using papaparse
+- [x] Function properly transforms UnifiedOrder data to CSV format
+- [x] Export button triggers CSV download
+- [x] Loading state shown during export
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `package.json` (added papaparse and @types/papaparse)
+- `src/pages/admin/hubs/OrdersHubPage.tsx` (added exportToCSV function and wired up export button)
