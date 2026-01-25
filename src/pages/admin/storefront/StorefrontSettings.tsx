@@ -869,7 +869,7 @@ export default function StorefrontSettings() {
                             zones[index] = { ...zones[index], min_order: parseFloat(e.target.value) };
                             updateField('delivery_zones', zones);
                           }}
-                          className="w-24"
+                          className="w-full sm:w-24"
                         />
                       </div>
                       <Button
