@@ -7690,3 +7690,14 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Change grid-cols preview width from 320px to 400px
+
+**File:** `src/pages/admin/storefront/StorefrontSettings.tsx` (line 444)
+
+**Change:** Updated the grid column width for the preview panel at lg breakpoint from 320px to 400px.
+
+- Before: `lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_400px]`
+- After: `lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_400px]`
+
+This gives the live preview panel more horizontal space at the lg breakpoint, making it consistent with the xl breakpoint width.

@@ -441,7 +441,7 @@ export default function StorefrontSettings() {
       )}
 
       {/* Main Content: Settings + Preview */}
-      <div className={`grid gap-6 transition-all duration-300 ${showPreview ? 'lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_400px]' : 'grid-cols-1'}`}>
+      <div className={`grid gap-6 transition-all duration-300 ${showPreview ? 'lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_400px]' : 'grid-cols-1'}`}>
         {/* Settings Tabs */}
         <Tabs defaultValue="general" className="space-y-6 min-w-0">
           <TabsList className="inline-flex w-full overflow-x-auto justify-start snap-x scrollbar-hide p-1">
