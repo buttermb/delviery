@@ -7690,3 +7690,52 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Add .catch to Promise chain in AdminContext.tsx (line 83)
+
+### What was done:
+
+1. **Added .catch() handler to the getSession Promise chain in AdminContext.tsx**
+
+   The `supabase.auth.getSession().then(...)` call on line 83 previously had no error handling for the Promise. Added a `.catch()` handler that:
+   
+   - Uses the existing `handleError` utility for consistent error handling across the codebase
+   - Logs the error with component context (AdminContext, action: getSession)
+   - Sets `showToast: false` to avoid disrupting the user during session initialization
+   - Ensures `setLoading(false)` is called so the UI does not hang in a loading state on error
+
+### Code Change:
+```typescript
+// Before:
+supabase.auth.getSession().then(({ data: { session } }) => {
+  if (session) {
+    verifyAdmin(session);
+  } else {
+    setLoading(false);
+  }
+});
+
+// After:
+supabase.auth.getSession().then(({ data: { session } }) => {
+  if (session) {
+    verifyAdmin(session);
+  } else {
+    setLoading(false);
+  }
+}).catch((error) => {
+  handleError(error, {
+    component: 'AdminContext',
+    context: { action: 'getSession' },
+    showToast: false
+  });
+  setLoading(false);
+});
+```
+
+### Files Changed:
+- `src/contexts/AdminContext.tsx` (lines 89-96 added)
+
+### Verification:
+- Build passed successfully with `npm run build`
