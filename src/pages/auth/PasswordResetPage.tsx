@@ -48,7 +48,7 @@ function calculatePasswordStrength(password: string): PasswordStrength {
   return { score: finalScore, ...strengthMap[finalScore] };
 }
 
-export function PasswordResetPage() {
+export default function PasswordResetPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [password, setPassword] = useState("");

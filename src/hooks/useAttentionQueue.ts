@@ -97,7 +97,7 @@ export function useAttentionQueue() {
 
       const fetchLateDeliveries = async (): Promise<DeliveryRow[]> => {
         try {
-          const { data } = await supabase
+          const { data } = await (supabase as any)
             .from('deliveries')
             .select('id, created_at')
             .eq('tenant_id', tenant.id)
@@ -108,7 +108,7 @@ export function useAttentionQueue() {
 
       const fetchActiveDeliveries = async (): Promise<DeliveryRow[]> => {
         try {
-          const { data } = await supabase
+          const { data } = await (supabase as any)
             .from('deliveries')
             .select('id, created_at')
             .eq('tenant_id', tenant.id)

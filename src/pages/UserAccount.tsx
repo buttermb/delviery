@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import CopyButton from "@/components/CopyButton";
 import { BetterEmptyState } from "@/components/BetterEmptyState";
-import PurchaseGiveawayEntries from "@/components/account/PurchaseGiveawayEntries";
+// PurchaseGiveawayEntries component removed - not implemented yet
 import LoyaltyPoints from "@/components/LoyaltyPoints";
 import IDVerificationUpload from "@/components/IDVerificationUpload";
 import CustomerLayout from "@/layouts/CustomerLayout";
@@ -355,7 +355,7 @@ export function UserAccount() {
                             </div>
                             <div>
                               <p className="text-sm text-muted-foreground">Saved</p>
-                              <p className="text-2xl font-bold">${profile.total_discounts?.toFixed(2) || "0.00"}</p>
+                              <p className="text-2xl font-bold">${((profile as any).total_discounts ?? 0).toFixed(2)}</p>
                               <p className="text-xs text-muted-foreground">in discounts</p>
                             </div>
                           </div>
@@ -539,7 +539,7 @@ export function UserAccount() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <PurchaseGiveawayEntries />
+                      <p className="text-muted-foreground text-sm">Coming soon</p>
                     </CardContent>
                   </Card>
                 </div>
