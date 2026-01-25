@@ -23,6 +23,7 @@ export function PhoneInput({ value, onChange, placeholder, className, error }: P
           'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm',
           'ring-offset-background placeholder:text-muted-foreground',
           'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+          'dark:bg-gray-700 dark:border-gray-600 dark:text-white',
           error && 'border-destructive',
           className
         )}
