@@ -7690,3 +7690,11 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Make time slot input responsive (w-28 to w-full sm:w-28)
+
+Changed the start time Input className in StorefrontSettings.tsx from 'w-28' to 'w-full sm:w-28'
+This makes the input take full width on mobile and 7rem (w-28) on sm+ screens.
+
+### Files Changed:
+- src/pages/admin/storefront/StorefrontSettings.tsx (line 962)
