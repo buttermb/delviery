@@ -686,28 +686,35 @@ export const navigationSections: NavSection[] = [
     ]
   },
 
-  // 🚀 ENTERPRISE
+  // 🔌 INTEGRATIONS
   {
-    title: 'Enterprise',
+    title: 'Integrations',
     items: [
       {
-        title: 'API Access',
-        href: '/admin/api-access',
-        icon: Code,
-        tier: 'ultimate'
+        title: 'Integrations',
+        href: '/admin/custom-integrations',
+        icon: Puzzle,
+        tier: 'professional'
       },
       {
         title: 'Webhooks',
         href: '/admin/webhooks',
         icon: Webhook,
-        tier: 'ultimate'
+        tier: 'professional'
       },
       {
-        title: 'Integrations',
-        href: '/admin/custom-integrations',
-        icon: Puzzle,
+        title: 'API Access',
+        href: '/admin/api-access',
+        icon: Code,
         tier: 'ultimate'
-      },
+      }
+    ]
+  },
+
+  // 🚀 ENTERPRISE
+  {
+    title: 'Enterprise',
+    items: [
       {
         title: 'Compliance',
         href: '/admin/compliance',
