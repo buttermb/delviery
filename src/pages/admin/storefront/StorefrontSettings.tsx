@@ -1237,7 +1237,7 @@ export default function StorefrontSettings() {
                 <div className="space-y-4">
                   {DAYS.map((day) => (
                     <div key={day} className="flex items-center gap-4">
-                      <div className="w-28 capitalize font-medium">{day}</div>
+                      <div className="w-full sm:w-28 capitalize font-medium">{day}</div>
                       <Switch
                         checked={!formData.operating_hours?.[day]?.closed}
                         onCheckedChange={(checked) => updateHours(day, 'closed', !checked)}
