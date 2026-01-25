@@ -13,6 +13,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { clientEncryption } from '@/lib/encryption/clientEncryption';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
@@ -48,6 +49,7 @@ import {
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
+  rememberMe: z.boolean().default(false),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -103,6 +105,7 @@ export default function LoginPage() {
     defaultValues: {
       email: '',
       password: '',
+      rememberMe: false,
     },
   });
 
@@ -407,10 +410,24 @@ export default function LoginPage() {
                   />
 
                   <div className="flex items-center justify-between pt-1">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                      <div className="w-4 h-4 rounded border border-slate-300 group-hover:border-[#1B4332] transition-colors" />
-                      <span className="text-sm text-foreground/80 group-hover:text-primary">Remember me</span>
-                    </label>
+                    <FormField
+                      control={form.control}
+                      name="rememberMe"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              disabled={isSubmitting}
+                            />
+                          </FormControl>
+                          <FormLabel className="text-sm font-normal text-foreground/80 hover:text-primary cursor-pointer transition-colors">
+                            Remember me
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
                     <button
                       type="button"
                       onClick={() => {
