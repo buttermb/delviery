@@ -7690,3 +7690,26 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Remove ForceLightMode wrapper from AdminLayout.tsx
+
+### What was done:
+
+1. **Removed ForceLightMode import** from line 45 in `src/pages/admin/AdminLayout.tsx`
+
+2. **Removed ForceLightMode wrapper** that was wrapping the entire AdminLayout component (lines 96 and 260)
+
+3. **Restored ThemeToggle component** in the header actions section (was previously disabled with a comment saying "Theme toggle removed - ForceLightMode enforces light mode")
+
+### Changes made:
+- Removed `import { ForceLightMode } from '@/components/marketing/ForceLightMode';`
+- Removed `<ForceLightMode>` opening tag and `</ForceLightMode>` closing tag
+- Changed comment from "Theme toggle removed - ForceLightMode enforces light mode" to "Theme Toggle" and added `<ThemeToggle />` component back
+
+### Files Changed:
+- `src/pages/admin/AdminLayout.tsx`
+
+### Build Status:
+- TypeScript build passes successfully

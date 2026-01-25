@@ -42,8 +42,6 @@ import { useCredits } from "@/contexts/CreditContext";
 import { CreditPurchaseModal } from "@/components/credits/CreditPurchaseModal";
 import { CreditBalance } from '@/components/credits/CreditBalance';
 import { OfflineStatusIndicator } from '@/components/offline/OfflineStatus';
-import { ForceLightMode } from '@/components/marketing/ForceLightMode';
-
 /**
  * Admin Layout Component - v2.1.1
  * Provides the main layout structure for all admin pages
@@ -93,8 +91,7 @@ const AdminLayout = () => {
   };
 
   return (
-    <ForceLightMode>
-      <TutorialProvider>
+    <TutorialProvider>
         {/* Impersonation Banner */}
         <ImpersonationBanner />
 
@@ -218,7 +215,8 @@ const AdminLayout = () => {
                     <AdminNotificationCenter />
                   </div>
 
-                  {/* Theme toggle removed - ForceLightMode enforces light mode */}
+                  {/* Theme Toggle */}
+                  <ThemeToggle />
 
                   {/* Offline Status Indicator */}
                   <div className="hidden sm:block">
@@ -257,7 +255,6 @@ const AdminLayout = () => {
         {/* Credit deduction toasts */}
         <CreditToastContainer />
       </TutorialProvider>
-    </ForceLightMode>
   );
 };
 
