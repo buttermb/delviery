@@ -281,6 +281,33 @@ export const useMenuOrders = (menuId?: string, tenantId?: string) => {
   });
 };
 
+export const useUpdateOrderStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
+      const { data, error } = await supabase
+        .from('menu_orders')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', orderId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
+      showSuccessToast('Order Updated', `Order marked as ${variables.status}`);
+    },
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Order status update failed', { error, errorMessage, component: 'useDisposableMenus' });
+      showErrorToast('Update Failed', errorMessage);
+    }
+  });
+};
+
 export const useMenuSecurityEvents = (menuId?: string, tenantId?: string) => {
   return useQuery({
     queryKey: ['menu-security-events', menuId, tenantId],

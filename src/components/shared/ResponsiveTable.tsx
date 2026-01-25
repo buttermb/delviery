@@ -170,7 +170,7 @@ export function ResponsiveTable<T>({
                         getRowId={(row: T, index: number) => keyExtractor(row)}
                     />
                 ) : (
-                    <div className="rounded-md border">
+                    <div className="rounded-md border dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
                         <Table>
                             <TableHeader>
                                 <TableRow>

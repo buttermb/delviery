@@ -157,16 +157,32 @@ export const safeStorage = {
 };
 
 /**
- * Safe JSON parse with error handling
- * 
+ * Safe JSON parse with error handling - returns null on error
+ *
+ * CRITICAL: Always parse JSON safely
+ */
+export const safeJsonParseOrNull = <T>(json: string | null): T | null => {
+  if (!json) return null;
+
+  try {
+    return JSON.parse(json) as T;
+  } catch {
+    // Invalid JSON, return null
+    return null;
+  }
+};
+
+/**
+ * Safe JSON parse with error handling - returns defaultValue on error
+ *
  * CRITICAL: Always parse JSON safely
  */
 export const safeJsonParse = <T>(json: string | null, defaultValue: T): T => {
   if (!json) return defaultValue;
-  
+
   try {
     return JSON.parse(json) as T;
-  } catch (error) {
+  } catch {
     // Invalid JSON, return default
     return defaultValue;
   }

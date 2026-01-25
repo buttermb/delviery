@@ -12,7 +12,7 @@ const defaultFlags: Record<string, boolean> = {
 };
 
 // Cache for feature flags to avoid repeated DB calls
-let flagsCache: Map<string, { enabled: boolean; cachedAt: number }> = new Map();
+const flagsCache: Map<string, { enabled: boolean; cachedAt: number }> = new Map();
 const CACHE_TTL = 60000; // 1 minute cache
 
 export async function isFeatureEnabled(flagKey: string, tenantId?: string): Promise<boolean> {

@@ -266,6 +266,7 @@ export default function AccountSignup() {
                         onChange={(e) => setEmail(e.target.value.toLowerCase().trim())}
                         className="pl-10 h-12"
                         required
+                        autoComplete="email"
                       />
                     </div>
                   </div>
@@ -282,6 +283,7 @@ export default function AccountSignup() {
                         className="pr-10 h-12"
                         required
                         minLength={8}
+                        autoComplete="new-password"
                       />
                       <button
                         type="button"
@@ -328,6 +330,7 @@ export default function AccountSignup() {
 
                   <Button
                     type="submit"
+                    disabled={loading}
                     className="w-full bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white h-14 text-lg font-semibold mt-6"
                   >
                     Continue

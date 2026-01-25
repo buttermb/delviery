@@ -1,6 +1,6 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from "react";
+import type { Tables } from '@/integrations/supabase/types';
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,10 +32,10 @@ import PaymentMethods from "@/components/account/PaymentMethods";
 import NotificationPreferences from "@/components/account/NotificationPreferences";
 import { handleError } from "@/utils/errorHandling/handlers";
 
-export default function UserAccount() {
+export function UserAccount() {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<any>(null);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [profile, setProfile] = useState<Tables<'profiles'> | null>(null);
+  const [orders, setOrders] = useState<Tables<'orders'>[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

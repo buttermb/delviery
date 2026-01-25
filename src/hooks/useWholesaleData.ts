@@ -496,7 +496,7 @@ export const useClientPayments = (clientId: string) => {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error } = await (supabase
         .from("wholesale_payments")
         .select("*")

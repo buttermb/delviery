@@ -8,6 +8,7 @@
  * - Live: Real-time order tracking
  */
 
+import Papa from 'papaparse';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -21,12 +22,13 @@ import {
     FileText,
 } from 'lucide-react';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { lazy, Suspense, useMemo } from 'react';
+import { lazy, Suspense, useMemo, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { QuickActions } from '@/components/admin/ui/QuickActions';
 import { AlertBadge } from '@/components/admin/ui/AlertBadge';
 import { useAdminBadgeCounts } from '@/hooks/useAdminBadgeCounts';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { toast } from 'sonner';
 
 // Lazy load tab content for performance
 const WholesaleOrdersPage = lazy(() => import('@/pages/admin/WholesaleOrdersPage'));
@@ -67,6 +69,14 @@ export default function OrdersHubPage() {
         setSearchParams({ tab });
     };
 
+    const handleExport = useCallback(() => {
+        // Navigate to the data export page for comprehensive export options
+        navigateToAdmin('/data-export');
+        toast.info('Opening Data Export', {
+            description: 'Select "Orders" to export order data with custom options.',
+        });
+    }, [navigateToAdmin]);
+
     const quickActions = useMemo(() => {
         const actions = [];
         if (activeTab === 'wholesale') {
@@ -89,13 +99,11 @@ export default function OrdersHubPage() {
             id: 'export',
             label: 'Export',
             icon: FileText,
-            onClick: () => {
-                // TODO: Implement export functionality
-            },
+            onClick: handleExport,
             variant: 'outline' as const,
         });
         return actions;
-    }, [activeTab, navigateToAdmin]);
+    }, [activeTab, navigateToAdmin, handleExport]);
 
     return (
         <div className="space-y-0">

@@ -1015,6 +1015,12 @@
       <priority>0.8</priority>
     </url>
     <url>
+      <loc>https://floraiqcrm.com/team-management</loc>
+      <lastmod>2026-01-25</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>0.8</priority>
+    </url>
+    <url>
       <loc>https://floraiqcrm.com/advanced-inventory</loc>
       <lastmod>2026-01-25</lastmod>
       <changefreq>weekly</changefreq>
@@ -1028,6 +1034,12 @@
     </url>
     <url>
       <loc>https://floraiqcrm.com/invoice-management</loc>
+      <lastmod>2026-01-25</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>0.8</priority>
+    </url>
+    <url>
+      <loc>https://floraiqcrm.com/customer-invoices</loc>
       <lastmod>2026-01-25</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>

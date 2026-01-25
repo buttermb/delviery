@@ -127,10 +127,10 @@ export function ContextAwareSupportButton({
   const context = gatherContext(userId, userEmail, userName);
 
   const ticketTypes = [
-    { type: 'question' as const, label: 'Question', icon: HelpCircle, color: 'text-blue-500' },
-    { type: 'bug' as const, label: 'Report Bug', icon: Bug, color: 'text-red-500' },
-    { type: 'feature' as const, label: 'Feature Request', icon: Lightbulb, color: 'text-amber-500' },
-    { type: 'feedback' as const, label: 'Feedback', icon: MessageSquare, color: 'text-green-500' },
+    { type: 'question' as const, label: 'Question', icon: HelpCircle, color: 'text-blue-500 dark:text-blue-400' },
+    { type: 'bug' as const, label: 'Report Bug', icon: Bug, color: 'text-red-500 dark:text-red-400' },
+    { type: 'feature' as const, label: 'Feature Request', icon: Lightbulb, color: 'text-amber-500 dark:text-amber-400' },
+    { type: 'feedback' as const, label: 'Feedback', icon: MessageSquare, color: 'text-green-500 dark:text-green-400' },
   ];
 
   const handleTypeSelect = (type: SupportTicket['type']) => {

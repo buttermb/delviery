@@ -274,7 +274,7 @@ export function DataTable<TData, TValue>({
           getRowId={getRowId}
         />
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto dark:bg-gray-800 dark:text-gray-100">
           <Table>
           <TableHeader>
             <TableRow>

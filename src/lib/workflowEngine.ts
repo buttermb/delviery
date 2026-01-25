@@ -8,17 +8,82 @@ import { supabase } from '@/integrations/supabase/client';
 import { auditActions } from './auditLog';
 import { safeFetch } from '@/utils/safeFetch';
 
+// Type definitions for workflow tables (not yet in generated types)
 export interface WorkflowAction {
   id: string;
   type: string;
-  config: Record<string, any>;
+  config: WorkflowActionConfig;
+}
+
+export interface WorkflowActionConfig {
+  table?: string;
+  data?: Record<string, unknown>;
+  id?: string;
+  url?: string;
+  method?: string;
+  headers?: Record<string, string>;
+  body?: Record<string, unknown>;
+  duration?: number;
+  condition?: WorkflowCondition;
+  thenActions?: WorkflowAction[];
+  elseActions?: WorkflowAction[];
+}
+
+export interface WorkflowCondition {
+  type: 'equals' | 'greater_than' | 'less_than';
+  field: string;
+  value: unknown;
 }
 
 export interface WorkflowExecution {
   workflowId: string;
   tenantId?: string;
   status: 'running' | 'completed' | 'failed';
-  executionLog: any[];
+  executionLog: WorkflowExecutionLogEntry[];
+}
+
+export interface WorkflowExecutionLogEntry {
+  actionId: string;
+  actionType: string;
+  status: 'running' | 'completed' | 'failed';
+  timestamp: string;
+  completedAt?: string;
+}
+
+// Database row types for workflow tables (not yet in generated Supabase types)
+interface WorkflowRow {
+  id: string;
+  name: string;
+  enabled: boolean;
+  actions: WorkflowAction[];
+  tenant_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface WorkflowExecutionRow {
+  id: string;
+  workflow_id: string;
+  tenant_id?: string;
+  status: 'running' | 'completed' | 'failed';
+  execution_log: WorkflowExecutionLogEntry[];
+  error_message?: string;
+  completed_at?: string;
+  created_at: string;
+}
+
+interface WorkflowExecutionInsert {
+  workflow_id: string;
+  tenant_id?: string;
+  status: 'running' | 'completed' | 'failed';
+  execution_log: WorkflowExecutionLogEntry[];
+}
+
+interface WorkflowExecutionUpdate {
+  status?: 'running' | 'completed' | 'failed';
+  completed_at?: string;
+  error_message?: string;
+  execution_log?: WorkflowExecutionLogEntry[];
 }
 
 /**
@@ -27,52 +92,50 @@ export interface WorkflowExecution {
 export async function executeWorkflow(
   workflowId: string,
   tenantId?: string,
-  triggerData?: Record<string, any>
+  triggerData?: Record<string, unknown>
 ): Promise<void> {
   try {
     // Get workflow definition
-    // @ts-ignore - workflows table not in types yet
+    // Note: 'workflows' table is not yet in generated types
     const { data: workflow, error: fetchError } = await supabase
-      // @ts-ignore
-      .from('workflows')
+      .from('workflows' as 'accounts') // Type assertion for table not in types
       .select('*')
       .eq('id', workflowId)
-      .maybeSingle();
+      .maybeSingle() as unknown as { data: WorkflowRow | null; error: Error | null };
 
     if (fetchError || !workflow) {
       throw new Error('Workflow not found');
     }
 
-    // @ts-ignore - workflow object from non-existent table
     if (!workflow.enabled) {
       throw new Error('Workflow is disabled');
     }
 
     // Create execution record
-    // @ts-ignore - workflow_executions table not in types yet
+    // Note: 'workflow_executions' table is not yet in generated types
+    const insertPayload: WorkflowExecutionInsert = {
+      workflow_id: workflowId,
+      tenant_id: tenantId,
+      status: 'running',
+      execution_log: [],
+    };
+
     const { data: execution, error: execError } = await supabase
-      // @ts-ignore
-      .from('workflow_executions')
-      .insert({
-        workflow_id: workflowId,
-        tenant_id: tenantId,
-        status: 'running',
-        execution_log: [],
-      })
+      .from('workflow_executions' as 'accounts') // Type assertion for table not in types
+      .insert(insertPayload as unknown as Record<string, unknown>)
       .select()
-      .maybeSingle();
+      .maybeSingle() as unknown as { data: WorkflowExecutionRow | null; error: Error | null };
 
     if (execError || !execution) {
       throw new Error('Failed to create execution record');
     }
 
-    const executionLog: any[] = [];
+    const executionLog: WorkflowExecutionLogEntry[] = [];
 
     try {
       // Execute each action
-      // @ts-ignore - workflow object from non-existent table
-      const actions = workflow.actions as WorkflowAction[];
-      
+      const actions = workflow.actions;
+
       for (const action of actions) {
         executionLog.push({
           actionId: action.id,
@@ -88,15 +151,15 @@ export async function executeWorkflow(
       }
 
       // Mark execution as completed
-      // @ts-ignore - workflow_executions table not in types yet
+      const completedUpdate: WorkflowExecutionUpdate = {
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+        execution_log: executionLog,
+      };
+
       await supabase
-        // @ts-ignore
-        .from('workflow_executions')
-        .update({
-          status: 'completed',
-          completed_at: new Date().toISOString(),
-          execution_log: executionLog,
-        })
+        .from('workflow_executions' as 'accounts')
+        .update(completedUpdate as unknown as Record<string, unknown>)
         .eq('id', execution.id);
 
       // Log audit event
@@ -104,16 +167,17 @@ export async function executeWorkflow(
     } catch (actionError: unknown) {
       // Mark execution as failed
       const errorMessage = actionError instanceof Error ? actionError.message : String(actionError);
-      // @ts-ignore - workflow_executions table not in types yet
+
+      const failedUpdate: WorkflowExecutionUpdate = {
+        status: 'failed',
+        completed_at: new Date().toISOString(),
+        error_message: errorMessage,
+        execution_log: executionLog,
+      };
+
       await supabase
-        // @ts-ignore
-        .from('workflow_executions')
-        .update({
-          status: 'failed',
-          completed_at: new Date().toISOString(),
-          error_message: errorMessage,
-          execution_log: executionLog,
-        })
+        .from('workflow_executions' as 'accounts')
+        .update(failedUpdate as unknown as Record<string, unknown>)
         .eq('id', execution.id);
 
       throw actionError;
@@ -130,7 +194,7 @@ export async function executeWorkflow(
 async function executeAction(
   action: WorkflowAction,
   tenantId?: string,
-  triggerData?: Record<string, any>
+  triggerData?: Record<string, unknown>
 ): Promise<void> {
   switch (action.type) {
     case 'send_email':
@@ -142,8 +206,8 @@ async function executeAction(
       // Create database record
       if (action.config.table && action.config.data) {
         const { error } = await supabase
-          .from(action.config.table)
-          .insert(action.config.data);
+          .from(action.config.table as 'accounts') // Dynamic table access
+          .insert(action.config.data as Record<string, unknown>);
         if (error) throw error;
       }
       break;
@@ -152,8 +216,8 @@ async function executeAction(
       // Update database record
       if (action.config.table && action.config.id && action.config.data) {
         const { error } = await supabase
-          .from(action.config.table)
-          .update(action.config.data)
+          .from(action.config.table as 'accounts') // Dynamic table access
+          .update(action.config.data as Record<string, unknown>)
           .eq('id', action.config.id);
         if (error) throw error;
       }
@@ -204,18 +268,24 @@ async function executeAction(
 /**
  * Evaluate a condition
  */
-function evaluateCondition(condition: any, data?: Record<string, any>): boolean {
+function evaluateCondition(
+  condition: WorkflowCondition,
+  data?: Record<string, unknown>
+): boolean {
   // Simple condition evaluation
   // In production, use a proper expression evaluator
   if (condition.type === 'equals') {
     return data?.[condition.field] === condition.value;
   }
   if (condition.type === 'greater_than') {
-    return (data?.[condition.field] || 0) > condition.value;
+    const fieldValue = data?.[condition.field];
+    const numericValue = typeof fieldValue === 'number' ? fieldValue : 0;
+    return numericValue > (condition.value as number);
   }
   if (condition.type === 'less_than') {
-    return (data?.[condition.field] || 0) < condition.value;
+    const fieldValue = data?.[condition.field];
+    const numericValue = typeof fieldValue === 'number' ? fieldValue : 0;
+    return numericValue < (condition.value as number);
   }
   return false;
 }
-

@@ -71,17 +71,16 @@ export function SuperAdminLayout() {
   const { data: notifications = [] } = useQuery({
     queryKey: ['super-admin-notifications'],
     queryFn: async () => {
-      // @ts-ignore - Columns exist in DB but types not yet regenerated
       const { data: logs, error } = await supabase
         .from('audit_logs')
-        .select('id, action, resource_type, tenant_id, timestamp, actor_type')
+        .select('id, action, resource_type, tenant_id, timestamp, created_at, actor_type')
         .in('action', ['tenant_suspended', 'tenant_cancelled', 'payment_failed', 'security_alert'])
         .order('timestamp', { ascending: false })
         .limit(50);
 
       if (error || !logs) return [];
 
-      return logs.map((log: any) => ({
+      return logs.map((log) => ({
         id: log.id,
         type: log.action === 'tenant_suspended' || log.action === 'security_alert' 
           ? 'urgent' as const
@@ -143,7 +142,6 @@ export function SuperAdminLayout() {
     queryKey: ['super-admin-system-status'],
     queryFn: async () => {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-      // @ts-ignore - Table exists in DB but types not yet regenerated
       const { data: metrics } = await supabase
         .from('system_metrics')
         .select('metric_type, value')
@@ -153,8 +151,7 @@ export function SuperAdminLayout() {
       if (!metrics || metrics.length === 0) return 'healthy';
 
       // Check if any critical thresholds exceeded
-      const metricsArray = metrics as any[];
-      const hasCritical = metricsArray.some((m: any) => {
+      const hasCritical = metrics.some((m) => {
         const value = Number(m.value);
         if (m.metric_type === 'api_latency' && value > 500) return true;
         if (m.metric_type === 'error_rate' && value > 5) return true;
@@ -162,7 +159,7 @@ export function SuperAdminLayout() {
         return false;
       });
 
-      const hasWarning = metricsArray.some((m: any) => {
+      const hasWarning = metrics.some((m) => {
         const value = Number(m.value);
         if (m.metric_type === 'api_latency' && value > 200) return true;
         if (m.metric_type === 'error_rate' && value > 1) return true;

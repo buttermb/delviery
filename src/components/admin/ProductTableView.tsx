@@ -164,7 +164,7 @@ export function ProductTableView({
   };
 
   return (
-    <div className="border rounded-lg">
+    <div className="border rounded-lg dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
       <Table>
         <TableHeader>
           <TableRow>

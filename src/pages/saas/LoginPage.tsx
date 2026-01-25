@@ -13,6 +13,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { clientEncryption } from '@/lib/encryption/clientEncryption';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
@@ -32,7 +33,7 @@ import { ArrowRight, CheckCircle2, Lock, Mail, WifiOff, AlertCircle, Eye, EyeOff
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RateLimitWarning } from '@/components/auth/RateLimitWarning';
 import { useAuthRateLimit } from '@/hooks/useAuthRateLimit';
-import ThemeToggle from '@/components/ThemeToggle';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import { motion, AnimatePresence } from 'framer-motion';
 import FloraIQLogo from '@/components/FloraIQLogo';
@@ -48,6 +49,7 @@ import {
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
+  rememberMe: z.boolean().default(false),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -103,6 +105,7 @@ export default function LoginPage() {
     defaultValues: {
       email: '',
       password: '',
+      rememberMe: false,
     },
   });
 
@@ -391,6 +394,7 @@ export default function LoginPage() {
                               type={showPassword ? "text" : "password"}
                               className="h-12 bg-white border-slate-200 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]/20 rounded-xl pl-4 pr-10 transition-all duration-200 shadow-sm group-hover:shadow-md"
                               placeholder="••••••••"
+                              autoComplete="current-password"
                             />
                             <button
                               type="button"
@@ -407,10 +411,24 @@ export default function LoginPage() {
                   />
 
                   <div className="flex items-center justify-between pt-1">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                      <div className="w-4 h-4 rounded border border-slate-300 group-hover:border-[#1B4332] transition-colors" />
-                      <span className="text-sm text-foreground/80 group-hover:text-primary">Remember me</span>
-                    </label>
+                    <FormField
+                      control={form.control}
+                      name="rememberMe"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              disabled={isSubmitting}
+                            />
+                          </FormControl>
+                          <FormLabel className="text-sm font-normal text-foreground/80 hover:text-primary cursor-pointer transition-colors">
+                            Remember me
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
                     <button
                       type="button"
                       onClick={() => {
@@ -589,6 +607,7 @@ export default function LoginPage() {
                   value={forgotPasswordEmail}
                   onChange={(e) => setForgotPasswordEmail(e.target.value)}
                   className="h-11"
+                  autoComplete="email"
                 />
               </div>
               <div className="flex gap-3">

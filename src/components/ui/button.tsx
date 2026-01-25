@@ -10,14 +10,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-strong hover:shadow-elegant hover:scale-105 hover:brightness-110 font-semibold relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:translate-x-[-200%] hover:before:translate-x-[200%] before:transition-transform before:duration-700",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:scale-105 hover:shadow-lg transition-all",
-        outline: "border-2 border-border bg-transparent hover:bg-accent hover:text-accent-foreground hover:border-primary hover:shadow-md font-medium hover:scale-105",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-md hover:scale-105",
-        ghost: "hover:bg-accent hover:text-accent-foreground hover:scale-105",
-        link: "text-primary underline-offset-4 hover:underline hover:brightness-110",
-        hero: "bg-gradient-to-r from-primary via-primary to-primary bg-[length:200%_100%] text-primary-foreground hover:bg-[position:100%_0] shadow-strong hover:shadow-elegant hover:scale-105 hover:brightness-110 font-semibold relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent before:translate-x-[-200%] hover:before:translate-x-[200%] before:transition-transform before:duration-700",
-        mobile: "w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-lg active:scale-95 md:w-auto md:shadow-none md:active:scale-100", // Mobile-optimized variant
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-strong hover:shadow-elegant hover:scale-105 hover:brightness-110 font-semibold relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:translate-x-[-200%] hover:before:translate-x-[200%] before:transition-transform before:duration-700 dark:shadow-md dark:hover:shadow-lg",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:scale-105 hover:shadow-lg transition-all dark:bg-destructive dark:text-destructive-foreground dark:hover:bg-destructive/80",
+        outline: "border-2 border-border bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground hover:border-primary hover:shadow-md font-medium hover:scale-105 dark:border-border dark:text-foreground dark:hover:bg-accent dark:hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-md hover:scale-105 dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/70",
+        ghost: "text-foreground hover:bg-accent hover:text-accent-foreground hover:scale-105 dark:text-foreground dark:hover:bg-accent dark:hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline hover:brightness-110 dark:text-primary",
+        hero: "bg-gradient-to-r from-primary via-primary to-primary bg-[length:200%_100%] text-primary-foreground hover:bg-[position:100%_0] shadow-strong hover:shadow-elegant hover:scale-105 hover:brightness-110 font-semibold relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent before:translate-x-[-200%] hover:before:translate-x-[200%] before:transition-transform before:duration-700 dark:shadow-md dark:hover:shadow-lg",
+        mobile: "w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-lg active:scale-95 md:w-auto md:shadow-none md:active:scale-100 dark:bg-primary dark:text-primary-foreground", // Mobile-optimized variant
       },
       size: {
         default: "h-11 px-4 py-2 rounded-lg", // Use rounded-lg for button shape

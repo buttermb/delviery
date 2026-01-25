@@ -107,6 +107,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         initializedRef.current = true;
         setIsLoading(false);
       }
+    }).catch((error) => {
+      logAuthError('Failed to get initial session', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        source: 'AuthContext'
+      });
+      logger.error('[AuthContext] getSession error', error instanceof Error ? error : new Error(String(error)));
+      if (mounted && !initializedRef.current) {
+        initializedRef.current = true;
+        setIsLoading(false);
+      }
     });
 
     return () => {
