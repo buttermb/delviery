@@ -7690,3 +7690,32 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Remove ts-nocheck from src/hooks/crm/useInvites.ts
+
+### Completed: 2026-01-25
+
+### Changes Made:
+- Removed `// @ts-nocheck` directive from line 1 of `src/hooks/crm/useInvites.ts`
+
+### Verification:
+1. **TypeScript compilation** - PASSES
+   - `npx tsc --noEmit` completes with no errors
+   
+2. **Production build** - PASSES
+   - `npm run build` completes successfully
+   - All modules compiled without TypeScript errors
+
+### Notes:
+- The file already had proper type annotations in place:
+  - Function parameters are properly typed (e.g., `status?: 'pending' | 'accepted' | 'archived'`)
+  - Return types are inferred correctly from TanStack Query hooks
+  - Error handlers use `error: unknown` with proper type narrowing
+  - Supabase query results are cast to the proper `CRMInvite` type
+- The `@ts-nocheck` was likely added as a temporary measure during initial development
+- No additional type annotations were required
+
+### Files Changed:
+- `src/hooks/crm/useInvites.ts` - Removed `// @ts-nocheck` directive
