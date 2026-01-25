@@ -7690,3 +7690,27 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+
+---
+
+## Task: Add toast.error() call in StorefrontSettings.tsx save mutation onError
+
+**Date:** 2026-01-25T22:37:45Z
+
+### Summary:
+Updated StorefrontSettings.tsx to use sonner's toast.error() instead of the shadcn useToast hook with variant: 'destructive', following the project's established convention.
+
+### Changes Made:
+1. Changed import from `import { useToast } from '@/hooks/use-toast'` to `import { toast } from 'sonner'`
+2. Removed `const { toast } = useToast();` line since toast is now imported directly
+3. Updated saveMutation onSuccess to use `toast.success()` for consistency
+4. Updated saveMutation onError to use `toast.error('Failed to save settings. Please try again.')`
+5. Updated regenerateTokenMutation onError to use `toast.error('Failed to generate new link.')`
+
+### Files Changed:
+- `src/pages/admin/storefront/StorefrontSettings.tsx`
+
+### Verification:
+- `npm run build` passes with exit code 0 (no TypeScript errors)
+
