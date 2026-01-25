@@ -7690,3 +7690,39 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Remove ts-nocheck from VendorDashboardPage.tsx and fix types
+
+### Date: 2026-01-25
+
+### What was done:
+
+1. **Removed `@ts-nocheck` directive**
+   - File was using `// @ts-nocheck` to bypass TypeScript checking entirely
+
+2. **Added proper type imports**
+   - Imported `Database` type from `@/integrations/supabase/types`
+   - Created `MarketplaceOrderRow` type alias from the Supabase generated types
+
+3. **Fixed `MarketplaceOrder` interface**
+   - Extended the base Supabase type instead of defining all fields manually
+   - Used `Pick<>` to select only the fields being used: `id`, `order_number`, `total_amount`, `created_at`
+   - Properly typed nullable fields (`status: string | null`, `payment_status: string | null`)
+   - Added `buyer_business_name` as optional field (exists in DB but not in generated types)
+
+4. **Fixed null safety issues**
+   - Line 60: Fixed `activeStatuses.includes(o.status)` by checking `o.status` truthiness first
+   - Line 169: Changed `order.status.toUpperCase()` to `(order.status ?? 'unknown').toUpperCase()`
+   - Line 173: Changed `new Date(order.created_at)` to include null check with ternary
+
+### Technical Details:
+- The `marketplace_orders` table has `buyer_business_name` column in the database (per migrations)
+- The auto-generated `types.ts` doesn't include this field (likely out of sync)
+- Used type extension pattern to add the missing field without editing auto-generated types
+
+### Verification:
+- `npx tsc --noEmit --skipLibCheck` - PASSES (0 errors)
+- `npm run build` - PASSES (0 errors)
+
+### Files Changed:
+- `src/pages/vendor/VendorDashboardPage.tsx` (removed ts-nocheck, added proper types, fixed null safety)

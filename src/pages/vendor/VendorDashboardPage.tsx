@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -15,15 +14,15 @@ import {
   LogOut,
 } from "lucide-react";
 import { useVendorAuth } from '@/contexts/VendorAuthContext';
+import type { Database } from '@/integrations/supabase/types';
 
-interface MarketplaceOrder {
-  id: string;
-  order_number: string;
-  buyer_business_name: string | null;
-  status: string;
-  total_amount: number;
-  payment_status: string;
-  created_at: string;
+type MarketplaceOrderRow = Database['public']['Tables']['marketplace_orders']['Row'];
+
+// Extend the generated type with buyer_business_name which exists in DB but may not be in generated types
+interface MarketplaceOrder extends Pick<MarketplaceOrderRow, 'id' | 'order_number' | 'total_amount' | 'created_at'> {
+  status: string | null;
+  payment_status: string | null;
+  buyer_business_name?: string | null;
 }
 
 export default function VendorDashboardPage() {
@@ -58,7 +57,8 @@ export default function VendorDashboardPage() {
   });
 
   // Calculate stats
-  const activeOrders = orders?.filter(o => ['pending', 'accepted', 'processing', 'shipped'].includes(o.status)).length || 0;
+  const activeStatuses = ['pending', 'accepted', 'processing', 'shipped'];
+  const activeOrders = orders?.filter(o => o.status && activeStatuses.includes(o.status)).length || 0;
 
   // Pending payment: delivered but not paid
   const pendingPayment = orders?.filter(o => o.payment_status !== 'paid' && o.status !== 'cancelled').reduce((sum, o) => sum + Number(o.total_amount), 0) || 0;
@@ -167,11 +167,11 @@ export default function VendorDashboardPage() {
                             order.status === 'delivered' ? 'bg-green-50 text-green-700 border-green-200' :
                               'bg-gray-50 text-gray-700 border-gray-200'
                           }`}>
-                          {order.status.toUpperCase()}
+                          {(order.status ?? 'unknown').toUpperCase()}
                         </span>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {order.buyer_business_name || 'Unknown Buyer'} • {new Date(order.created_at).toLocaleDateString()}
+                        {order.buyer_business_name || 'Unknown Buyer'} • {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'}
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
