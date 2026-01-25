@@ -833,7 +833,7 @@ export default function StorefrontSettings() {
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   {(formData.delivery_zones || []).map((zone, index) => (
-                    <div key={index} className="flex items-center gap-4">
+                    <div key={index} className="flex flex-col sm:flex-row gap-4">
                       <Input
                         placeholder="Zip code"
                         value={zone.zip_code || ''}
