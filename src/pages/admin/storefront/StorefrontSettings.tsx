@@ -43,6 +43,7 @@ import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog
 import { generateUrlToken } from '@/utils/menuHelpers';
 import { StorefrontSettingsLivePreview } from '@/components/admin/storefront/StorefrontSettingsLivePreview';
 import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedProductsManager';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface DeliveryZone {
   zip_code: string;
@@ -347,10 +348,84 @@ export default function StorefrontSettings() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 bg-muted rounded" />
-          <div className="h-64 bg-muted rounded" />
+      <div className="container mx-auto p-6 max-w-7xl space-y-6">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-4 w-56" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-9 w-20" />
+            <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-9 w-32" />
+          </div>
+        </div>
+
+        {/* Content skeleton */}
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_400px]">
+          {/* Settings skeleton */}
+          <div className="space-y-6">
+            {/* Tabs skeleton */}
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <Skeleton key={i} className="h-9 w-20 shrink-0" />
+              ))}
+            </div>
+
+            {/* Card skeleton */}
+            <div className="rounded-lg border bg-card">
+              <div className="p-6 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-5" />
+                  <Skeleton className="h-6 w-40" />
+                </div>
+                <Skeleton className="h-4 w-48" />
+              </div>
+              <div className="p-6 pt-0 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-24 w-full" />
+                </div>
+                <Skeleton className="h-px w-full" />
+                <div className="space-y-4">
+                  <Skeleton className="h-5 w-32" />
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-3 w-48" />
+                      </div>
+                      <Skeleton className="h-6 w-11 rounded-full" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Preview skeleton */}
+          <div className="hidden lg:block">
+            <div className="rounded-lg border bg-card p-4 space-y-4">
+              <Skeleton className="h-5 w-28" />
+              <Skeleton className="h-[400px] w-full rounded-md" />
+            </div>
+          </div>
         </div>
       </div>
     );

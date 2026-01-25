@@ -7690,3 +7690,42 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Agent-127: StorefrontSettings Loading Skeleton
+**Date:** 2026-01-25 14:37:20
+
+### Task: Add isLoading check with Skeleton component
+
+**Changes Made:**
+- Updated " >> progress.txt && echo  - Added import for  component from "
+  - Replaced simple animate-pulse loading state with proper Skeleton-based loading UI
+  - Loading skeleton mirrors actual page structure:
+    - Header with title and action buttons
+    - Tab navigation row
+    - Settings card with input fields and toggle switches
+    - Preview panel (hidden on small screens)
+
+**Verification:**
+- \ - PASSES (exit code 0)
+- 6598 modules transformed successfully
+- No TypeScript errors introduced
+
+## Agent-127: StorefrontSettings Loading Skeleton
+**Date:** 2026-01-25
+
+### Task: Add isLoading check with Skeleton component
+
+**Changes Made:**
+- Updated `src/pages/admin/storefront/StorefrontSettings.tsx`
+  - Added import for `Skeleton` component from `@/components/ui/skeleton`
+  - Replaced simple animate-pulse loading state with proper Skeleton-based loading UI
+  - Loading skeleton mirrors actual page structure:
+    - Header with title and action buttons
+    - Tab navigation row
+    - Settings card with input fields and toggle switches
+    - Preview panel (hidden on small screens)
+
+**Verification:**
+- `npm run build` - PASSES (exit code 0)
+- 6598 modules transformed successfully
+- No TypeScript errors introduced
