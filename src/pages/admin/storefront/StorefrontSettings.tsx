@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import {
   Store,
@@ -135,7 +135,6 @@ const PAYMENT_METHOD_OPTIONS = [
 export default function StorefrontSettings() {
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
@@ -302,17 +301,14 @@ export default function StorefrontSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
       setIsDirty(false);
-      toast({
-        title: 'Settings saved!',
+      toast.success('Settings saved!', {
         description: 'Your store settings have been updated.',
       });
     },
     onError: (error) => {
       logger.error('Failed to save settings', error, { component: 'StorefrontSettings' });
-      toast({
-        title: 'Error',
-        description: 'Failed to save settings. Please try again.',
-        variant: 'destructive',
+      toast.error('Failed to save settings', {
+        description: 'Please try again.',
       });
     },
   });
@@ -337,11 +333,7 @@ export default function StorefrontSettings() {
     },
     onError: (error) => {
       logger.error('Failed to regenerate token', error, { component: 'StorefrontSettings' });
-      toast({
-        title: 'Error',
-        description: 'Failed to generate new link.',
-        variant: 'destructive',
-      });
+      toast.error('Failed to generate new link');
     },
   });
 

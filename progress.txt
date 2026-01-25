@@ -7690,3 +7690,106 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Add toast.success call in StorefrontSettings.tsx save mutation onSuccess
+
+### What was done:
+
+1. **Updated `src/pages/admin/storefront/StorefrontSettings.tsx`:**
+   - Changed import from `useToast` hook to direct `toast` import from `sonner`
+   - Updated `saveMutation.onSuccess` to use `toast.success()` for success notification
+   - Updated `saveMutation.onError` to use `toast.error()` for error notification
+   - Updated `regenerateTokenMutation.onError` to use `toast.error()` for consistency
+
+### Changes Made:
+
+**Import change (line 20):**
+```typescript
+// Before:
+import { useToast } from '@/hooks/use-toast';
+
+// After:
+import { toast } from 'sonner';
+```
+
+**Hook usage removed (line 138):**
+```typescript
+// Before:
+const { toast } = useToast();
+
+// After:
+// Removed - using direct import from sonner
+```
+
+**Save mutation onSuccess (lines 302-308):**
+```typescript
+// Before:
+onSuccess: () => {
+  queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
+  setIsDirty(false);
+  toast({
+    title: 'Settings saved!',
+    description: 'Your store settings have been updated.',
+  });
+},
+
+// After:
+onSuccess: () => {
+  queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
+  setIsDirty(false);
+  toast.success('Settings saved!', {
+    description: 'Your store settings have been updated.',
+  });
+},
+```
+
+**Save mutation onError:**
+```typescript
+// Before:
+onError: (error) => {
+  logger.error('Failed to save settings', error, { component: 'StorefrontSettings' });
+  toast({
+    title: 'Error',
+    description: 'Failed to save settings. Please try again.',
+    variant: 'destructive',
+  });
+},
+
+// After:
+onError: (error) => {
+  logger.error('Failed to save settings', error, { component: 'StorefrontSettings' });
+  toast.error('Failed to save settings', {
+    description: 'Please try again.',
+  });
+},
+```
+
+**Regenerate token mutation onError:**
+```typescript
+// Before:
+onError: (error) => {
+  logger.error('Failed to regenerate token', error, { component: 'StorefrontSettings' });
+  toast({
+    title: 'Error',
+    description: 'Failed to generate new link.',
+    variant: 'destructive',
+  });
+},
+
+// After:
+onError: (error) => {
+  logger.error('Failed to regenerate token', error, { component: 'StorefrontSettings' });
+  toast.error('Failed to generate new link');
+},
+```
+
+### Verification:
+
+- Build passes with no TypeScript errors (`npm run build` exit code 0)
+- Follows codebase pattern of using `toast` directly from `sonner` (consistent with 50+ other files)
+- Uses `toast.success()` for success notifications as per codebase conventions
+
+### Files Changed:
+- `src/pages/admin/storefront/StorefrontSettings.tsx`
