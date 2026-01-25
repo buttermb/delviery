@@ -7690,3 +7690,17 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Agent 101: Add Locations and Activity Logs to Operations Section
+
+### Task Completed: Sun, Jan 25, 2026  2:14:03 PM
+
+Added two new navigation items to the Operations section in sidebar-navigation.ts:
+
+1. **Locations** - href: /admin/locations, icon: Building2, tier: professional
+2. **Activity Logs** - href: /admin/activity-logs, icon: History, tier: professional
+
+These items were added after 'Receiving & Packaging' in the Operations section, matching the existing pattern and reusing icons already imported (Building2 and History).
+
+### Files Changed:
+- src/components/admin/sidebar-navigation.ts
