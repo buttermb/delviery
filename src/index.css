@@ -44,7 +44,7 @@ html {
 }
 
 body {
-  overflow-y: auto !important;
+  overflow-y: auto;
   will-change: scroll-position;
   -webkit-overflow-scrolling: touch;
 }
