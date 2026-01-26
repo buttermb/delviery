@@ -7690,3 +7690,34 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Update tablet preview from max-w-600px to max-w-768px
+
+### Date: 2026-01-25
+
+### Status: ALREADY COMPLETED
+
+The tablet preview width in StorefrontSettingsLivePreview.tsx has already been updated from 600px to 768px.
+
+### Verification:
+- Original value (commit 2b60c097): `max-w-[600px]` for tablet
+- Current value (line 64): `max-w-[768px]` for portrait, `max-w-[900px]` for landscape
+- The change was made in commit e843130a with additional orientation support
+
+### Current Implementation (line 59-68):
+```typescript
+const containerWidth = useMemo(() => {
+  switch (deviceMode) {
+    case 'mobile':
+      return orientation === 'portrait' ? 'max-w-[375px]' : 'max-w-[568px]';
+    case 'tablet':
+      return orientation === 'portrait' ? 'max-w-[768px]' : 'max-w-[900px]';
+    default:
+      return 'w-full';
+  }
+}, [deviceMode, orientation]);
+```
+
+### Files Verified:
+- `src/components/admin/storefront/StorefrontSettingsLivePreview.tsx` (no changes needed - already at 768px)
+
