@@ -31,11 +31,11 @@ interface Product {
   id: string;
   name: string;
   price: number;
-  stock_quantity: number;
+  stock_quantity: number | null;
   image_url: string | null;
   sku: string | null;
   barcode: string | null;
-  category: string | null;
+  category: string;
   category_id: string | null;
 }
 
@@ -46,7 +46,8 @@ interface Category {
 
 interface Customer {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string | null;
   phone: string | null;
 }
@@ -55,8 +56,8 @@ interface POSTransaction {
   id: string;
   created_at: string;
   total_amount: number;
-  payment_status: string | null;
-  payment_method: string | null;
+  payment_status: string;
+  payment_method: string;
 }
 
 interface CartItem extends Product {
@@ -154,7 +155,7 @@ function CashRegisterContent() {
         if (error) throw error;
         return (data || []) as Category[];
       } catch (error: unknown) {
-        if (error instanceof Error && 'code' in error && (error as { code: string }).code === '42P01') return [];
+        if (error !== null && typeof error === 'object' && 'code' in error && (error as Record<string, unknown>).code === '42P01') return [];
         throw error;
       }
     },
@@ -169,16 +170,16 @@ function CashRegisterContent() {
       try {
         const { data, error } = await (supabase as any)
           .from('customers')
-          .select('id, name, email, phone')
+          .select('id, first_name, last_name, email, phone')
           .eq('tenant_id', tenantId)
-          .order('name', { ascending: true })
+          .order('first_name', { ascending: true })
           .limit(100);
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return (data || []) as unknown as Customer[];
       } catch (error: unknown) {
-        if (error instanceof Error && 'code' in error && (error as { code: string }).code === '42P01') return [];
+        if (error !== null && typeof error === 'object' && 'code' in error && (error as Record<string, unknown>).code === '42P01') return [];
         throw error;
       }
     },
@@ -192,7 +193,7 @@ function CashRegisterContent() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('pos_transactions')
           .select('*')
           .eq('tenant_id', tenantId)
@@ -203,7 +204,7 @@ function CashRegisterContent() {
         if (error) throw error;
         return data || [];
       } catch (error: unknown) {
-        if (error instanceof Error && 'code' in error && error.code === '42P01') return [];
+        if (error !== null && typeof error === 'object' && 'code' in error && (error as Record<string, unknown>).code === '42P01') return [];
         throw error;
       }
     },
@@ -273,7 +274,7 @@ function CashRegisterContent() {
 
     const matchesCategory = selectedCategory === 'all' ||
       p.category_id === selectedCategory ||
-      (p.category && p.category.toLowerCase() === selectedCategory.toLowerCase());
+      p.category.toLowerCase() === selectedCategory.toLowerCase();
 
     return matchesSearch && matchesCategory;
   });
@@ -281,8 +282,9 @@ function CashRegisterContent() {
   // Filter customers by search
   const filteredCustomers = customers.filter(c => {
     const searchLower = customerSearchQuery.toLowerCase();
+    const fullName = `${c.first_name} ${c.last_name}`.toLowerCase();
     return customerSearchQuery === '' ||
-      c.name.toLowerCase().includes(searchLower) ||
+      fullName.includes(searchLower) ||
       (c.email && c.email.toLowerCase().includes(searchLower)) ||
       (c.phone && c.phone.includes(customerSearchQuery));
   });
@@ -300,7 +302,7 @@ function CashRegisterContent() {
         unit_price: item.price,
         price_at_order_time: item.price,
         total_price: item.subtotal,
-        stock_quantity: item.stock_quantity
+        stock_quantity: item.stock_quantity ?? 0
       })),
       p_payment_method: paymentMethod,
       p_subtotal: finalTotal,
@@ -360,7 +362,7 @@ function CashRegisterContent() {
         unit_price: item.price,
         price_at_order_time: item.price,
         total_price: item.subtotal,
-        stock_quantity: item.stock_quantity
+        stock_quantity: item.stock_quantity ?? 0
       }));
 
       // Use atomic RPC - prevents race conditions on inventory
@@ -431,12 +433,13 @@ function CashRegisterContent() {
 
   const addToCart = useCallback((product: Product) => {
     setIsAddingToCart(product.id);
+    const stock = product.stock_quantity ?? 0;
 
     try {
       const existingItem = cart.find(item => item.id === product.id);
 
       if (existingItem) {
-        if (existingItem.quantity >= product.stock_quantity) {
+        if (existingItem.quantity >= stock) {
           triggerError();
           toast({ title: 'Not enough stock', variant: 'destructive' });
           return;
@@ -448,7 +451,7 @@ function CashRegisterContent() {
             : item
         ));
       } else {
-        if (product.stock_quantity <= 0) {
+        if (stock <= 0) {
           triggerError();
           toast({ title: 'Product out of stock', variant: 'destructive' });
           return;
@@ -466,7 +469,8 @@ function CashRegisterContent() {
   const updateQuantity = (productId: string, change: number) => {
     setCart(cart.map(item => {
       if (item.id === productId) {
-        const newQuantity = Math.max(1, Math.min(item.stock_quantity, item.quantity + change));
+        const stock = item.stock_quantity ?? 0;
+        const newQuantity = Math.max(1, Math.min(stock, item.quantity + change));
         return { ...item, quantity: newQuantity, subtotal: newQuantity * item.price };
       }
       return item;
@@ -786,7 +790,7 @@ function CashRegisterContent() {
                   variant="outline"
                   size="sm"
                   onClick={() => addToCart(product)}
-                  disabled={product.stock_quantity <= 0 || isAddingToCart === product.id}
+                  disabled={(product.stock_quantity ?? 0) <= 0 || isAddingToCart === product.id}
                   className="h-auto py-2 px-3 flex flex-col items-start gap-0.5 min-w-[100px] hover:border-primary hover:bg-primary/5"
                 >
                   {isAddingToCart === product.id ? (
@@ -841,7 +845,7 @@ function CashRegisterContent() {
                 <User className="h-4 w-4 text-muted-foreground" />
                 {selectedCustomer ? (
                   <div>
-                    <span className="font-medium text-sm">{selectedCustomer.name}</span>
+                    <span className="font-medium text-sm">{selectedCustomer.first_name} {selectedCustomer.last_name}</span>
                     {selectedCustomer.phone && (
                       <span className="text-xs text-muted-foreground ml-2">{selectedCustomer.phone}</span>
                     )}
@@ -898,7 +902,7 @@ function CashRegisterContent() {
                         variant="ghost"
                         className="h-6 w-6"
                         onClick={() => updateQuantity(item.id, 1)}
-                        disabled={item.quantity >= item.stock_quantity}
+                        disabled={item.quantity >= (item.stock_quantity ?? 0)}
                       >
                         <Plus className="h-3 w-3" />
                       </Button>
@@ -1036,9 +1040,9 @@ function CashRegisterContent() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <div className="text-lg font-bold">${(transaction.total_amount || 0).toFixed(2)}</div>
+                      <div className="text-lg font-bold">${transaction.total_amount.toFixed(2)}</div>
                       <Badge variant={transaction.payment_status === 'completed' ? 'default' : 'secondary'}>
-                        {transaction.payment_status || 'pending'}
+                        {transaction.payment_status}
                       </Badge>
                     </div>
                   </div>
@@ -1108,7 +1112,7 @@ function CashRegisterContent() {
                 filteredProducts.map(product => (
                   <Card
                     key={product.id}
-                    className={`cursor-pointer hover:border-primary transition-colors ${product.stock_quantity <= 0 ? 'opacity-50' : ''}`}
+                    className={`cursor-pointer hover:border-primary transition-colors ${(product.stock_quantity ?? 0) <= 0 ? 'opacity-50' : ''}`}
                     onClick={() => addToCart(product)}
                   >
                     <CardContent className="p-3">
@@ -1118,7 +1122,7 @@ function CashRegisterContent() {
                         ) : (
                           <ShoppingCart className="w-8 h-8 text-muted-foreground" />
                         )}
-                        {product.stock_quantity <= 0 && (
+                        {(product.stock_quantity ?? 0) <= 0 && (
                           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                             <Badge variant="destructive">Out of Stock</Badge>
                           </div>
@@ -1130,7 +1134,7 @@ function CashRegisterContent() {
                       )}
                       <div className="flex items-center justify-between">
                         <span className="text-lg font-bold">${product.price.toFixed(2)}</span>
-                        <span className="text-xs text-muted-foreground">Stock: {product.stock_quantity}</span>
+                        <span className="text-xs text-muted-foreground">Stock: {product.stock_quantity ?? 0}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -1175,7 +1179,7 @@ function CashRegisterContent() {
                     }}
                   >
                     <div>
-                      <div className="font-medium">{customer.name}</div>
+                      <div className="font-medium">{customer.first_name} {customer.last_name}</div>
                       <div className="text-xs text-muted-foreground">
                         {customer.email || customer.phone || 'No contact info'}
                       </div>

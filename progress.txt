@@ -1,116 +1,45 @@
-# Security Audit: XSS and Injection Vulnerabilities
+# Fix CashRegister Type Mismatches - Progress
 
-## Task: Check XSS and Injection Vulnerabilities
+## Task: Fix CashRegister Type Mismatches
 
-### Completed: 2026-01-21
+## Status: COMPLETED
 
----
+## Changes Made
 
-## Summary
+### src/pages/admin/CashRegister.tsx
 
-Conducted a comprehensive security audit to identify and fix XSS (Cross-Site Scripting) and injection vulnerabilities in the FloraIQ codebase.
+1. **Product.category**: Changed from `string | null` to `string` to match DB schema (non-nullable)
+2. **Product.stock_quantity**: Changed from `number` to `number | null` to match DB schema (nullable)
+   - Added `?? 0` null-coalescing throughout the component where stock_quantity is used:
+     - `addToCart`: stock comparison
+     - `updateQuantity`: min/max bounds
+     - Quick Add button disabled state
+     - Cart item quantity increase button disabled state
+     - Product dialog opacity class
+     - Product dialog "Out of Stock" overlay
+     - Product dialog stock display
+     - Offline queue payload
+     - RPC transaction payload
+3. **Customer interface**: Changed from `name: string` to `first_name: string` + `last_name: string` to match DB schema
+   - Updated customer query to select `first_name, last_name` instead of `name`
+   - Updated customer query ordering from `name` to `first_name`
+   - Updated customer filter logic to use full name (`${c.first_name} ${c.last_name}`)
+   - Updated customer display in cart section
+   - Updated customer display in selection dialog
+4. **POSTransaction.payment_status**: Changed from `string | null` to `string` to match DB schema (non-nullable)
+   - Removed `|| 'pending'` fallback in transaction display
+5. **POSTransaction.payment_method**: Changed from `string | null` to `string` to match DB schema (non-nullable)
+6. **Removed unnecessary `@ts-expect-error`**: The `pos_transactions` table exists in the auto-generated Supabase types
+7. **Fixed error type narrowing**: Updated catch blocks to use proper `unknown` type narrowing pattern (`typeof error === 'object'` + `'code' in error`) instead of incorrect `instanceof Error` pattern (PostgrestError is not an Error subclass)
+8. **Removed unnecessary null check on `product.category`**: Since category is non-nullable, simplified the category filter comparison
 
----
+### src/pages/admin/__tests__/CashRegister.test.tsx
 
-## Vulnerabilities Found and Fixed
+- Updated all mock customer data from `name` to `first_name`/`last_name` fields
+- Updated customer filtering test assertions to use `first_name` instead of `name`
+- Updated customer filter test logic to use full name matching pattern
 
-### 1. HIGH SEVERITY - ProductDetailPage.tsx (Line 935)
-**Issue:** Product descriptions were rendered using `dangerouslySetInnerHTML` without sanitization.
-**Risk:** Stored XSS - malicious scripts in product descriptions could execute for all users viewing the product.
-**Fix:** Added DOMPurify sanitization via new `sanitizeHtml()` function.
+## Verification
 
-### 2. HIGH SEVERITY - HeroSection.tsx (Line 173)
-**Issue:** Subheading content rendered with `dangerouslySetInnerHTML` allowing arbitrary HTML.
-**Risk:** XSS through CMS or storefront configuration data.
-**Fix:** Created `sanitizeWithLineBreaks()` function that only allows `<br>` tags.
-
-### 3. MEDIUM SEVERITY - chart.tsx (Line 70)
-**Issue:** CSS variables generated dynamically from chart config without validation.
-**Risk:** CSS injection if config values come from untrusted sources.
-**Fix:** Added `sanitizeColor()` and CSS key sanitization to prevent injection.
-
-### 4. MEDIUM SEVERITY - main.tsx (Multiple locations)
-**Issue:** Error messages rendered via `innerHTML` with inline onclick handlers.
-**Risk:** Potential XSS through error message manipulation, CSP violations.
-**Fix:** Replaced all `innerHTML` with DOM API methods using `textContent` and `addEventListener`.
-
-### 5. MEDIUM SEVERITY - ProductDetailPage.tsx (Line 325)
-**Issue:** `JSON.parse()` on localStorage without error handling.
-**Risk:** Application crash if localStorage is corrupted; potential exploitation after XSS.
-**Fix:** Created `safeJsonParse()` helper with try-catch and default value fallback.
-
----
-
-## New Files Created
-
-### src/lib/utils/sanitize.ts
-Comprehensive HTML sanitization utilities using DOMPurify:
-- `sanitizeHtml()` - Full HTML sanitization with configurable allowed tags
-- `sanitizeText()` - Strips all HTML, limits length
-- `sanitizeWithLineBreaks()` - Only allows `<br>` tags
-- `sanitizeUrl()` - Validates URLs, blocks javascript:/data:/vbscript:
-- `escapeHtml()` - Escapes HTML entities for display
-- `sanitizeColor()` - Validates CSS color values
-- `safeJsonParse()` - Safe JSON parsing with error handling
-
-### src/lib/utils/sanitize.test.ts
-84 security tests covering:
-- Safe tag allowlisting
-- Dangerous tag removal (script, iframe, object, embed, form)
-- Event handler stripping (onerror, onclick, onload, etc.)
-- JavaScript URL blocking
-- CSS injection prevention
-- Common OWASP XSS attack vectors
-- URL sanitization edge cases
-- Color validation patterns
-
----
-
-## Files Modified
-
-1. **src/pages/shop/ProductDetailPage.tsx**
-   - Added import for sanitize utilities
-   - Wrapped product.description in `sanitizeHtml()`
-   - Changed localStorage JSON.parse to `safeJsonParse()`
-
-2. **src/components/shop/sections/HeroSection.tsx**
-   - Added import for `sanitizeWithLineBreaks`
-   - Sanitized subheading before rendering
-
-3. **src/components/ui/chart.tsx**
-   - Added import for `sanitizeColor`
-   - Sanitized chart ID, color values, and CSS variable keys
-
-4. **src/main.tsx**
-   - Replaced all `innerHTML` with DOM API methods
-   - Removed inline onclick handlers, replaced with addEventListener
-   - Error messages now use `textContent` to prevent XSS
-
----
-
-## Security Patterns Validated as Safe
-
-- Supabase queries use parameterized queries (no raw SQL injection risk)
-- RLS policies properly filter by tenant_id/store_id
-- Edge Functions use Zod validation for input
-- No use of `eval()` or `Function()` constructor
-- React Router handles URL parameters safely
-
----
-
-## Testing
-
-- All 84 new security tests pass
-- TypeScript compilation successful
-- Production build successful
-- Tests cover 19 common OWASP XSS attack vectors
-
----
-
-## Recommendations for Future Development
-
-1. Consider implementing Content Security Policy (CSP) headers
-2. Add DOMPurify sanitization to any new `dangerouslySetInnerHTML` usage
-3. Always use `safeJsonParse()` when parsing JSON from localStorage/sessionStorage
-4. Avoid inline event handlers in error UIs
-5. Review any new user-controllable data that renders HTML
+- TypeScript compilation (`tsc --noEmit`): PASSES with zero errors
+- Unit tests: 43/44 pass (1 pre-existing failure unrelated to type changes - tests for `$0.00` text which is only rendered when cart has items)
