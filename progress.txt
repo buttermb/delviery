@@ -7690,3 +7690,32 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Fix BuilderPreview minHeight to calc(100vh - 200px)
+
+### Date: 2026-01-25
+
+### What was done:
+
+1. **Verified BuilderPreview.tsx at line 48** - The minHeight is already correctly set to `calc(100vh - 200px)`
+
+   Located at: `src/pages/admin/storefront/builder/BuilderPreview.tsx:48`
+   
+   Current code:
+   ```typescript
+   style={{
+       ...getPreviewStyle(),
+       minHeight: 'calc(100vh - 200px)',
+   }}
+   ```
+
+2. **No changes required** - The fix was already implemented in a previous commit (e843130a: feat: batch improvements - security, UI, TypeScript, dark mode, auth, navigation)
+
+### Status: Already Complete
+- The minHeight value `calc(100vh - 200px)` is present and correct
+- No code changes needed
+
+### Files Changed:
+- None (fix was already in place)
