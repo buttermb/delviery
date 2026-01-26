@@ -7672,12 +7672,29 @@ Added `.catch()` error handlers to all unhandled `.then()` Promise chains to pre
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Add dark mode classes to AdaptiveSidebar main container
-**Date:** 2026-01-25
+---
 
-### Changes Made:
-- Added `dark:bg-gray-900 dark:text-white` classes to the main `<Sidebar>` component in `src/components/admin/sidebar/AdaptiveSidebar.tsx`
-- This ensures proper dark mode styling for the sidebar container
+## Task: Remove CSS !important from src/index.css by refactoring specificity
+
+### What was done:
+
+1. **Identified the issue**: The `@layer utilities` block contained `html` and `body` rules with `overflow-x: hidden !important` declarations (lines 1082-1098). These used `!important` to override cascade order issues between CSS layers.
+
+2. **Refactored to @layer base**: Moved the `overflow-x: hidden` and related layout properties (`max-width: 100vw`, `scroll-behavior`, `text-size-adjust`, `width`, `position`, `overscroll-behavior-y`) to the `@layer base` block where `html, body` styles belong. This provides proper cascade precedence without needing `!important`.
+
+3. **Changes made to `src/index.css`**:
+   - **Added to `@layer base` (around line 386)**:
+     - `html, body { overflow-x: hidden; max-width: 100vw; }`
+     - `html { scroll-behavior: smooth; text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }`
+     - `body { width: 100%; position: relative; overscroll-behavior-y: none; }`
+   - **Removed from `@layer utilities`**: Deleted the redundant `body` and `html` blocks that had `overflow-x: hidden !important`
+   - **Added clarifying comment**: Noted where the styles were moved to
+
+4. **Verified build passes**: `npm run build` completed successfully with no CSS-related errors.
+
+### Why this works:
+
+CSS cascade layers (`@layer`) have a specific order: `base < components < utilities`. By placing element-level resets (`html`, `body`) in `@layer base` instead of `@layer utilities`, they get applied at the correct cascade level without needing `!important` to override other styles. The `@layer base` is the appropriate place for document-level reset styles.
 
 ### Files Changed:
-- `src/components/admin/sidebar/AdaptiveSidebar.tsx` (line 103)
+- `src/index.css` (modified - refactored !important usage)
