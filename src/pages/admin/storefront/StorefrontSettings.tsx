@@ -1324,14 +1324,14 @@ export default function StorefrontSettings() {
                             type="time"
                             value={formData.operating_hours?.[day]?.open || '09:00'}
                             onChange={(e) => updateHours(day, 'open', e.target.value)}
-                            className="w-32"
+                            className="w-full sm:w-28"
                           />
                           <span className="text-muted-foreground">to</span>
                           <Input
                             type="time"
                             value={formData.operating_hours?.[day]?.close || '21:00'}
                             onChange={(e) => updateHours(day, 'close', e.target.value)}
-                            className="w-32"
+                            className="w-full sm:w-28"
                           />
                         </>
                       )}
