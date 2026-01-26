@@ -6699,19 +6699,10 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Add sm breakpoint grid-cols-1 sm:grid-cols-2 md:grid-cols-4 in StorefrontDashboard.tsx line 573
+## Task: Make time slot input responsive (w-28 to w-full sm:w-28)
 
-**Status: Already Complete**
+Changed the start time Input className in StorefrontSettings.tsx from 'w-28' to 'w-full sm:w-28'
+This makes the input take full width on mobile and 7rem (w-28) on sm+ screens.
 
-Verified that line 573 in `src/pages/admin/storefront/StorefrontDashboard.tsx` already has the correct responsive grid classes:
-
-```tsx
-<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-```
-
-This provides:
-- Mobile (default): 1 column
-- Small screens (sm: 640px+): 2 columns
-- Medium screens (md: 768px+): 4 columns
-
-No changes needed - responsive breakpoints were already implemented.
+### Files Changed:
+- src/pages/admin/storefront/StorefrontSettings.tsx (line 962)
