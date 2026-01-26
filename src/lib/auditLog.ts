@@ -36,20 +36,19 @@ export async function logAuditEvent(event: AuditLogEvent): Promise<void> {
 
     const actorType = superAdmin ? 'super_admin' : 'tenant_admin';
 
-    // Get IP address and user agent from browser
+    // Get IP address from browser
     const ipAddress = await getClientIP();
-    const userAgent = navigator.userAgent;
 
     const { error } = await supabase.from('audit_logs').insert({
       user_id: user.id,
       actor_type: actorType,
       action: event.action,
-      resource_type: event.resourceType ?? null,
-      entity_type: event.resourceType ?? 'unknown',
-      entity_id: event.resourceId ?? 'system',
+      resource_type: event.resourceType,
+      entity_type: event.resourceType || 'unknown',
+      entity_id: event.resourceId || user.id,
       tenant_id: event.tenantId,
-      details: event.changes ?? null,
-      metadata: event.metadata ?? null,
+      details: event.changes || {},
+      metadata: event.metadata || {},
       ip_address: ipAddress,
       timestamp: new Date().toISOString(),
     });
