@@ -9,6 +9,16 @@ function toBool(v: unknown, fallback = false): boolean {
   return fallback;
 }
 
+// Production environment check - NEVER allow AUTO_APPROVE or AUTO_BYPASS flags in production
+const isProduction = (import.meta as any).env?.MODE === 'production' ||
+                     (import.meta as any).env?.PROD === true;
+
+// Safe toBool that always returns false in production for dangerous flags
+function toBoolSafe(v: unknown, fallback = false): boolean {
+  if (isProduction) return false;
+  return toBool(v, fallback);
+}
+
 export type FeatureFlags = {
   AUTO_APPROVE_ALL: boolean;
   AUTO_APPROVE_ORDERS: boolean;
@@ -20,13 +30,14 @@ export type FeatureFlags = {
 };
 
 const envDefaults: FeatureFlags = {
-  AUTO_APPROVE_ALL: toBool((import.meta as any).env?.VITE_AUTO_APPROVE_ALL),
-  AUTO_APPROVE_ORDERS: toBool((import.meta as any).env?.VITE_AUTO_APPROVE_ORDERS),
-  AUTO_APPROVE_LISTINGS: toBool((import.meta as any).env?.VITE_AUTO_APPROVE_LISTINGS),
-  AUTO_APPROVE_SIGNUPS: toBool((import.meta as any).env?.VITE_AUTO_APPROVE_SIGNUPS),
-  AUTO_APPROVE_COURIERS: toBool((import.meta as any).env?.VITE_AUTO_APPROVE_COURIERS),
-  AUTO_APPROVE_REVIEWS: toBool((import.meta as any).env?.VITE_AUTO_APPROVE_REVIEWS),
-  AUTO_BYPASS_EMAIL_VERIFICATION: toBool((import.meta as any).env?.VITE_AUTO_BYPASS_EMAIL_VERIFICATION),
+  // All AUTO_APPROVE and AUTO_BYPASS flags use toBoolSafe to ensure they are ALWAYS false in production
+  AUTO_APPROVE_ALL: toBoolSafe((import.meta as any).env?.VITE_AUTO_APPROVE_ALL),
+  AUTO_APPROVE_ORDERS: toBoolSafe((import.meta as any).env?.VITE_AUTO_APPROVE_ORDERS),
+  AUTO_APPROVE_LISTINGS: toBoolSafe((import.meta as any).env?.VITE_AUTO_APPROVE_LISTINGS),
+  AUTO_APPROVE_SIGNUPS: toBoolSafe((import.meta as any).env?.VITE_AUTO_APPROVE_SIGNUPS),
+  AUTO_APPROVE_COURIERS: toBoolSafe((import.meta as any).env?.VITE_AUTO_APPROVE_COURIERS),
+  AUTO_APPROVE_REVIEWS: toBoolSafe((import.meta as any).env?.VITE_AUTO_APPROVE_REVIEWS),
+  AUTO_BYPASS_EMAIL_VERIFICATION: toBoolSafe((import.meta as any).env?.VITE_AUTO_BYPASS_EMAIL_VERIFICATION),
 };
 
 type FeatureFlagsContextValue = {
