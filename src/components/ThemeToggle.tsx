@@ -11,10 +11,10 @@ export const ThemeToggle = ({ className }: ThemeToggleProps) => {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <Button 
-      variant="ghost" 
-      size="icon" 
-      onClick={toggleTheme} 
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
       aria-label="Toggle theme"
       className={cn(className)}
     >
@@ -22,5 +22,3 @@ export const ThemeToggle = ({ className }: ThemeToggleProps) => {
     </Button>
   );
 };
-
-// Named export only per project conventions

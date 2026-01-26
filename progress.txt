@@ -7727,55 +7727,18 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
----
+## Task: Add ThemeToggle component to AdminLayout header
+**Status: COMPLETE**
 
-## Task: Preserve scroll position saving scrollTop before navigation and restoring after
+### Changes Made:
+1. Added ThemeToggle component next to the notification bell in AdminLayout.tsx header
+2. Fixed ThemeToggle.tsx to use named export (was using default export)
+3. Updated LoginPage.tsx import to use named import for ThemeToggle
 
-### What was done:
+### Files Modified:
+- src/pages/admin/AdminLayout.tsx - Added ThemeToggle next to AdminNotificationCenter
+- src/components/ThemeToggle.tsx - Changed to named export
+- src/pages/saas/LoginPage.tsx - Updated import to use named export
 
-1. **Added `SCROLL_POSITIONS` storage key to `src/constants/storageKeys.ts`**
-   - New constant for storing scroll positions in sessionStorage
-   - Following the existing pattern for storage keys
-
-2. **Created `src/hooks/useScrollRestoration.ts`** - Custom hook for scroll position management:
-   - **`useScrollRestoration(options?)`**: Main hook that:
-     - Saves current scroll position (`scrollTop`) before navigating away from a page
-     - Restores saved scroll position when returning to a previously visited page
-     - Scrolls to top for pages that haven't been visited before
-     - Uses `sessionStorage` for transient storage (positions don't persist across browser sessions)
-     - Limits cache to 50 entries to prevent unbounded memory growth
-     - Supports configurable `scrollBehavior` ('instant' or 'smooth')
-     - Supports `restoreDelay` for pages with async content
-     - Handles `beforeunload` to save scroll position when leaving the tab/window
-   
-   - **`useSaveScrollPosition()`**: Helper hook for programmatic scroll position saving
-     - Returns a function to manually save scroll position for a given path
-     - Useful for custom navigation scenarios
-   
-   - **`clearScrollPositions()`**: Utility function to clear all saved positions
-     - Useful for logout or state reset scenarios
-
-3. **Updated `src/components/ScrollToTop.tsx`**
-   - Replaced simple "scroll to top on every navigation" behavior
-   - Now uses `useScrollRestoration` hook for intelligent scroll position handling
-   - Component still returns null (no UI rendering)
-
-4. **Exported new hooks from `src/hooks/index.ts`**
-   - Added `useScrollRestoration`, `useSaveScrollPosition`, and `clearScrollPositions` to barrel exports
-
-### Technical Details:
-- Uses `sessionStorage` instead of `localStorage` because scroll positions are session-specific
-- Caches positions keyed by pathname (ignores search params and hash)
-- Uses refs to track previous pathname and avoid saving on initial mount
-- Safe storage operations with try-catch for private browsing mode compatibility
-- Uses logger for warning messages instead of console.log
-
-### Files Changed:
-- `src/constants/storageKeys.ts` (added SCROLL_POSITIONS key)
-- `src/hooks/useScrollRestoration.ts` (new file)
-- `src/components/ScrollToTop.tsx` (updated to use useScrollRestoration)
-- `src/hooks/index.ts` (added exports)
-
-### Build Status:
-- TypeScript build passes
-- ESLint passes for new/modified files
+### Verification:
+- npm run build: PASSES (0 TypeScript errors)
