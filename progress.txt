@@ -7690,3 +7690,36 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Wrap JSON.parse in try-catch in src/constants/storageKeys.ts line 168 returning null on error
+
+### What was done:
+
+1. **Verified existing implementation** - The code at line 168 already has `JSON.parse` wrapped in a try-catch block:
+   - `safeJsonParseOrNull<T>` function (lines 164-173) wraps `JSON.parse` at line 168 in a try-catch
+   - On parse error, the function returns `null` as specified
+   - Additionally, line 184 has another `JSON.parse` in `safeJsonParse<T>` which returns `defaultValue` on error
+
+2. **No code changes needed** - The implementation already follows the required pattern:
+   ```typescript
+   export const safeJsonParseOrNull = <T>(json: string | null): T | null => {
+     if (!json) return null;
+   
+     try {
+       return JSON.parse(json) as T;  // Line 168
+     } catch {
+       // Invalid JSON, return null
+       return null;
+     }
+   };
+   ```
+
+### Acceptance Criteria Met:
+- [x] JSON.parse at line 168 is wrapped in try-catch
+- [x] Returns null on error
+- [x] Both JSON.parse calls in the file have proper error handling
+
+### Files Changed:
+- None (implementation already complete)
