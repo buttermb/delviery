@@ -52,3 +52,124 @@ export function sanitizeHtml(html: string): string {
  * Alias for sanitizeHtml - sanitizes basic HTML content.
  */
 export const sanitizeBasicHtml = sanitizeHtml;
+
+/**
+ * Strips all HTML tags from a string, returning plain text.
+ */
+export function stripHtml(html: string): string {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '').trim();
+}
+
+/**
+ * Sanitizes a general form input string.
+ * Trims whitespace and removes potentially dangerous characters.
+ * @param input - The input string to sanitize
+ * @param maxLength - Optional maximum length to truncate to
+ */
+export function sanitizeFormInput(input: string, maxLength?: number): string {
+  if (!input) return '';
+  let sanitized = input
+    .trim()
+    .replace(/[<>]/g, '') // Remove angle brackets
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/on\w+=/gi, ''); // Remove event handlers
+  
+  if (maxLength && sanitized.length > maxLength) {
+    sanitized = sanitized.substring(0, maxLength);
+  }
+  return sanitized;
+}
+
+/**
+ * Sanitizes an email address.
+ * Trims whitespace and converts to lowercase.
+ * @param email - The email string to sanitize
+ * @param maxLength - Optional maximum length to truncate to
+ */
+export function sanitizeEmail(email: string, maxLength?: number): string {
+  if (!email) return '';
+  let sanitized = email.trim().toLowerCase();
+  if (maxLength && sanitized.length > maxLength) {
+    sanitized = sanitized.substring(0, maxLength);
+  }
+  return sanitized;
+}
+
+/**
+ * Sanitizes a phone number input.
+ * Keeps only digits, plus sign, parentheses, hyphens, and spaces.
+ * @param phone - The phone string to sanitize
+ * @param maxLength - Optional maximum length to truncate to
+ */
+export function sanitizePhoneInput(phone: string, maxLength?: number): string {
+  if (!phone) return '';
+  let sanitized = phone.trim().replace(/[^\d+\-() ]/g, '');
+  if (maxLength && sanitized.length > maxLength) {
+    sanitized = sanitized.substring(0, maxLength);
+  }
+  return sanitized;
+}
+
+/**
+ * Sanitizes a textarea input.
+ * Trims whitespace and removes dangerous HTML/script patterns.
+ * @param text - The textarea content to sanitize
+ * @param maxLength - Optional maximum length to truncate to
+ */
+export function sanitizeTextareaInput(text: string, maxLength?: number): string {
+  if (!text) return '';
+  let sanitized = text
+    .trim()
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/on\w+\s*=\s*(['"])[^'"]*\1/gi, '');
+  
+  if (maxLength && sanitized.length > maxLength) {
+    sanitized = sanitized.substring(0, maxLength);
+  }
+  return sanitized;
+}
+
+/**
+ * Sanitizes a URL slug input.
+ * Converts to lowercase, replaces spaces with hyphens, removes special characters.
+ * @param slug - The slug string to sanitize
+ * @param maxLength - Optional maximum length to truncate to
+ */
+export function sanitizeSlugInput(slug: string, maxLength?: number): string {
+  if (!slug) return '';
+  let sanitized = slug
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+  
+  if (maxLength && sanitized.length > maxLength) {
+    sanitized = sanitized.substring(0, maxLength);
+  }
+  return sanitized;
+}
+
+/**
+ * Sanitizes a coupon code input.
+ * Converts to uppercase, removes special characters except hyphens.
+ * @param code - The coupon code to sanitize
+ * @param maxLength - Optional maximum length to truncate to
+ */
+export function sanitizeCouponCode(code: string, maxLength?: number): string {
+  if (!code) return '';
+  let sanitized = code
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+  
+  if (maxLength && sanitized.length > maxLength) {
+    sanitized = sanitized.substring(0, maxLength);
+  }
+  return sanitized;
+}

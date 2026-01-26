@@ -8,10 +8,10 @@ export const useDisposableMenus = (tenantId?: string) => {
     queryKey: ['disposable-menus', tenantId],
     queryFn: async () => {
       // Optimized query - select specific columns, use count for orders
-      let query = supabase
+      let query = (supabase as any)
         .from('disposable_menus')
         .select(`
-          id, tenant_id, name, description, access_code, token, status, expiration_date, never_expires, security_settings, appearance_settings, min_order_quantity, max_order_quantity, encrypted, created_at, updated_at,
+          *,
           disposable_menu_products(id, product_id, custom_price, display_order),
           menu_access_whitelist(count),
           menu_access_logs(count),
