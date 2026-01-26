@@ -36,7 +36,7 @@ const StorefrontOrders = lazy(() => import('@/pages/admin/storefront/StorefrontO
 const StorefrontCustomers = lazy(() => import('@/pages/admin/storefront/StorefrontCustomers'));
 const StorefrontCoupons = lazy(() => import('@/pages/admin/storefront/StorefrontCoupons'));
 const StorefrontSettings = lazy(() => import('@/pages/admin/storefront/StorefrontSettings'));
-const StorefrontBuilder = lazy(() => import('@/pages/admin/storefront/StorefrontBuilder'));
+const StorefrontDesignPage = lazy(() => import('@/pages/admin/storefront/StorefrontDesignPage').then(m => ({ default: m.StorefrontDesignPage })));
 const StorefrontBundles = lazy(() => import('@/pages/admin/storefront/StorefrontBundles'));
 const StorefrontLiveOrders = lazy(() => import('@/pages/admin/storefront/StorefrontLiveOrders'));
 const StorefrontAnalytics = lazy(() => import('@/pages/admin/storefront/StorefrontAnalytics'));
@@ -148,7 +148,7 @@ export default function StorefrontHubPage() {
                         <Suspense fallback={<TabSkeleton />}><StorefrontCoupons /></Suspense>
                     </TabsContent>
                     <TabsContent value="builder" className="m-0 h-full overflow-hidden">
-                        <Suspense fallback={<TabSkeleton />}><StorefrontBuilder /></Suspense>
+                        <Suspense fallback={<TabSkeleton />}><StorefrontDesignPage /></Suspense>
                     </TabsContent>
                     <TabsContent value="bundles" className="m-0 h-full">
                         <Suspense fallback={<TabSkeleton />}><StorefrontBundles /></Suspense>

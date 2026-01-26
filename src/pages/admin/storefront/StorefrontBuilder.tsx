@@ -173,7 +173,17 @@ function SortableSectionItem({
     );
 }
 
-export function StorefrontBuilder() {
+interface StorefrontBuilderProps {
+    isFullScreen?: boolean;
+    onRequestClose?: () => void;
+    onDirtyChange?: (isDirty: boolean) => void;
+}
+
+export function StorefrontBuilder({
+    isFullScreen = false,
+    onRequestClose,
+    onDirtyChange,
+}: StorefrontBuilderProps) {
     const { tenant } = useTenantAdminAuth();
     const { toast } = useToast();
     const queryClient = useQueryClient();
@@ -758,15 +768,37 @@ export function StorefrontBuilder() {
     const previewConfig = builderMode === 'simple' ? easyModeBuilder.derivedLayoutConfig : layoutConfig;
     const previewTheme = builderMode === 'simple' ? easyModeBuilder.derivedThemeConfig : themeConfig;
 
+    // Notify parent of dirty state changes
+    useEffect(() => {
+        if (onDirtyChange) {
+            onDirtyChange(easyModeBuilder.isDirty);
+        }
+    }, [easyModeBuilder.isDirty, onDirtyChange]);
+
+    // Handle close/back
+    const handleClose = useCallback(() => {
+        if (onRequestClose) {
+            onRequestClose();
+        } else {
+            window.history.back();
+        }
+    }, [onRequestClose]);
+
     return (
-        <div className="flex flex-col bg-muted overflow-hidden -m-3 sm:-m-4 md:-m-6" style={{ height: 'calc(100vh - 56px)', width: 'calc(100% + 1.5rem)' }}>
+        <div
+            className={`flex flex-col bg-muted overflow-hidden ${isFullScreen ? '' : '-m-3 sm:-m-4 md:-m-6'}`}
+            style={{
+                height: isFullScreen ? '100vh' : 'calc(100vh - 56px)',
+                width: isFullScreen ? '100%' : 'calc(100% + 1.5rem)'
+            }}
+        >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-3 bg-background border-b shrink-0 z-20">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
-                        <ArrowLeft className="w-4 h-4" />
+            <div className="flex items-center justify-between px-4 py-3 bg-background border-b shrink-0 z-20">
+                <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" onClick={handleClose}>
+                        {isFullScreen ? <X className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
                     </Button>
-                    <span className="font-semibold">Store Builder</span>
+                    <span className="font-semibold">{isFullScreen ? 'Storefront Editor' : 'Store Builder'}</span>
                     <div className="flex rounded-md bg-muted p-1">
                         <Button
                             variant={devicePreview === 'desktop' ? 'secondary' : 'ghost'}
