@@ -6699,22 +6699,13 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
----
+## Task: Time slot inputs responsive width fix
 
-## Task: Add sm breakpoint grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 in StorefrontDashboard.tsx line 675
+Changed time slot input widths in StorefrontSettings.tsx to be responsive:
+- Updated start time input from `w-28` to `w-full sm:w-28`
+- Updated end time input from `w-28` to `w-full sm:w-28`
 
-### What was done:
+This makes the time inputs full-width on mobile and maintains the fixed width on larger screens.
 
-1. **Verified responsive grid classes already present** in `src/pages/admin/storefront/StorefrontDashboard.tsx`:
-   - Line 675 already contains: `<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">`
-   - The responsive breakpoints were already implemented:
-     - `grid-cols-1` - 1 column on mobile (default)
-     - `sm:grid-cols-2` - 2 columns at small breakpoint (640px+)
-     - `lg:grid-cols-3` - 3 columns at large breakpoint (1024px+)
-
-### Result:
-- Task already complete - no changes needed
-- The Quick Actions + Recent Orders grid section properly responds to screen size changes
-
-### Files Changed:
-- None (code already in place)
+### File Changed:
+- `src/pages/admin/storefront/StorefrontSettings.tsx` (lines 962 and 973)
