@@ -29,12 +29,13 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    }).catch((error) => {
-      // Session fetch failed, user remains null (guest mode)
-      toast.error("Failed to load session");
-    });
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        setUser(session?.user ?? null);
+      })
+      .catch((error: unknown) => {
+        logger.error("Failed to get auth session in CartDrawer", error);
+      });
   }, []);
 
   const { data: dbCartItems = [] } = useQuery<DbCartItem[]>({
