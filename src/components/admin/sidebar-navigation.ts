@@ -63,8 +63,7 @@ import {
   UserCheck,
   Flame,
   Brain,
-  Star,
-  Ticket
+  Star
 } from 'lucide-react';
 
 export interface NavItem {
@@ -425,14 +424,37 @@ export const navigationSections: NavSection[] = [
     title: 'Marketing',
     items: [
       {
-        title: 'Reviews',
-        href: '/admin/marketing/reviews',
+        title: 'Marketing Hub',
+        href: '/admin/marketing-hub',
+        icon: Target,
+        badge: 'NEW'
+      },
+      {
+        title: 'Loyalty Program',
+        href: '/admin/marketing-hub?tab=loyalty',
         icon: Star
       },
       {
         title: 'Coupons',
-        href: '/admin/marketing/coupons',
-        icon: Ticket
+        href: '/admin/marketing-hub?tab=coupons',
+        icon: Tags
+      },
+      {
+        title: 'Campaigns',
+        href: '/admin/marketing-hub?tab=campaigns',
+        icon: Rocket,
+        tier: 'professional'
+      },
+      {
+        title: 'Live Chat',
+        href: '/admin/marketing-hub?tab=live-chat',
+        icon: MessageSquare,
+        tier: 'professional'
+      },
+      {
+        title: 'Reviews',
+        href: '/admin/marketing-hub?tab=reviews',
+        icon: TrendingUp
       }
     ]
   },
