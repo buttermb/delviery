@@ -811,23 +811,39 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     return () => clearInterval(interval);
   }, [isAuthenticated, token]);
 
+  // Track if a refresh is already in progress to prevent race conditions
+  const isRefreshingRef = useRef(false);
+  const refreshPromiseRef = useRef<Promise<boolean> | null>(null);
+
   const refreshAuthToken = async (): Promise<boolean> => {
-    const result = await tokenRefreshManager.refresh('tenant-admin', async () => {
-      // STEP 1: Get the current refresh token
-      const currentRefreshToken = refreshToken || safeStorage.getItem(REFRESH_TOKEN_KEY);
+    // STEP 1: Get the current refresh token
+    const currentRefreshToken = refreshToken || safeStorage.getItem(REFRESH_TOKEN_KEY);
 
-      // Guard against empty, undefined, null, or invalid refresh tokens
-      if (!currentRefreshToken || currentRefreshToken === 'undefined' || currentRefreshToken === 'null' || currentRefreshToken.trim() === '') {
-        logger.warn('[AUTH] Cannot refresh token - no valid refresh token available');
-        clearAuthState();
-        toast.error('Your session has expired. Please log in again.', { duration: 5000 });
-        return;
-      }
+    // STEP 2: Validate refresh token exists and is not empty/invalid
+    if (!currentRefreshToken ||
+        currentRefreshToken === 'undefined' ||
+        currentRefreshToken === 'null' ||
+        currentRefreshToken.trim() === '' ||
+        currentRefreshToken.length < 10) {
+      logger.warn('[AUTH] Cannot refresh token - no valid refresh token available');
+      clearAuthState();
+      toast.error('Your session has expired. Please log in again.', { duration: 5000 });
+      return false;
+    }
 
+    // STEP 3: Check if refresh is already in progress (prevent race conditions)
+    if (isRefreshingRef.current && refreshPromiseRef.current) {
+      logger.debug('[AUTH] Refresh already in progress, waiting for result');
+      return refreshPromiseRef.current;
+    }
+
+    isRefreshingRef.current = true;
+
+    const doRefresh = async (): Promise<boolean> => {
       try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
-        // STEP 3: Attempt to refresh the session via edge function
+        // STEP 4: Attempt to refresh the session via edge function
         const { response } = await resilientFetch(
           `${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`,
           {
@@ -846,7 +862,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         if (response.ok) {
           const data = await response.json();
 
-          // STEP 4: Update tokens on successful refresh
+          // STEP 5: Update tokens on successful refresh
           setAccessToken(data.access_token);
           setToken(data.access_token);
           setRefreshToken(data.refresh_token);
@@ -868,11 +884,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           setupRefreshTimer(data.access_token);
 
           logger.debug('[AUTH] Token refresh successful');
-          return {
-            success: true,
-            accessToken: data.access_token,
-            refreshToken: data.refresh_token,
-          };
+          return true;
         }
 
         // Handle specific error cases
@@ -898,11 +910,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
               setupRefreshTimer(supabaseRefreshData.session.access_token);
               logger.debug('[AUTH] Supabase native refresh successful');
-              return {
-                success: true,
-                accessToken: supabaseRefreshData.session.access_token,
-                refreshToken: supabaseRefreshData.session.refresh_token,
-              };
+              return true;
             }
           } catch (fallbackError) {
             logger.error('[AUTH] Supabase native refresh also failed', fallbackError);
@@ -911,17 +919,21 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           // All refresh attempts failed, clear auth state
           clearAuthState();
           toast.error('Your session has expired. Please log in again.', { duration: 5000 });
-          return { success: false, error: 'All refresh methods failed' };
+          return false;
         }
 
-        return { success: false, error: `Refresh failed with status ${response.status}` };
+        return false;
       } catch (error) {
         logger.error('[AUTH] Token refresh exception', error);
-        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+        return false;
+      } finally {
+        isRefreshingRef.current = false;
+        refreshPromiseRef.current = null;
       }
-    });
+    };
 
-    return result.success;
+    refreshPromiseRef.current = doRefresh();
+    return refreshPromiseRef.current;
   };
 
   // Helper function to clear auth state

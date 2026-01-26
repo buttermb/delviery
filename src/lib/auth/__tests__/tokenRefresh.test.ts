@@ -191,189 +191,95 @@ describe('Token Refresh - Stale State Cleanup', () => {
   });
 });
 
-describe('Token Refresh - Race Condition Prevention (TokenRefreshManager)', () => {
-  // Import the actual TokenRefreshManager class for isolated testing
-  // We test the pattern here; the actual import is tested via integration
-  class TestTokenRefreshManager {
-    private refreshPromises: Map<string, Promise<{ success: boolean }>> = new Map();
-    private lastRefreshTimes: Map<string, number> = new Map();
-    private static readonly MIN_REFRESH_INTERVAL_MS = 5000;
+describe('Token Refresh - Race Condition Prevention', () => {
+  let isRefreshing = false;
+  let refreshPromise: Promise<boolean> | null = null;
 
-    async refresh(scope: string, executor: () => Promise<{ success: boolean }>): Promise<{ success: boolean }> {
-      const existingPromise = this.refreshPromises.get(scope);
-      if (existingPromise) {
-        return existingPromise;
-      }
+  const simulateRefresh = async (): Promise<boolean> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return true;
+  };
 
-      const lastRefresh = this.lastRefreshTimes.get(scope) || 0;
-      const timeSinceLastRefresh = Date.now() - lastRefresh;
-      if (timeSinceLastRefresh < TestTokenRefreshManager.MIN_REFRESH_INTERVAL_MS) {
-        return { success: true };
-      }
-
-      const refreshPromise = this.executeRefresh(scope, executor);
-      this.refreshPromises.set(scope, refreshPromise);
+  const refreshWithRaceProtection = async (): Promise<boolean> => {
+    // If already refreshing, wait for the existing promise
+    if (isRefreshing && refreshPromise) {
       return refreshPromise;
     }
 
-    isRefreshing(scope: string): boolean {
-      return this.refreshPromises.has(scope);
-    }
+    isRefreshing = true;
+    refreshPromise = simulateRefresh();
 
-    reset(scope: string): void {
-      this.refreshPromises.delete(scope);
-      this.lastRefreshTimes.delete(scope);
+    try {
+      return await refreshPromise;
+    } finally {
+      isRefreshing = false;
+      refreshPromise = null;
     }
-
-    resetAll(): void {
-      this.refreshPromises.clear();
-      this.lastRefreshTimes.clear();
-    }
-
-    private async executeRefresh(scope: string, executor: () => Promise<{ success: boolean }>): Promise<{ success: boolean }> {
-      try {
-        const result = await executor();
-        if (result.success) {
-          this.lastRefreshTimes.set(scope, Date.now());
-        }
-        return result;
-      } catch {
-        return { success: false };
-      } finally {
-        this.refreshPromises.delete(scope);
-      }
-    }
-  }
-
-  let manager: TestTokenRefreshManager;
+  };
 
   beforeEach(() => {
-    manager = new TestTokenRefreshManager();
+    isRefreshing = false;
+    refreshPromise = null;
   });
 
   it('should prevent multiple simultaneous refresh calls', async () => {
-    const refreshSpy = vi.fn(async () => {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      return { success: true };
-    });
+    const refreshSpy = vi.fn(simulateRefresh);
+
+    // Replace the actual refresh with our spy
+    const mockRefresh = async (): Promise<boolean> => {
+      if (isRefreshing && refreshPromise) {
+        return refreshPromise;
+      }
+      isRefreshing = true;
+      refreshPromise = refreshSpy();
+      try {
+        return await refreshPromise;
+      } finally {
+        isRefreshing = false;
+        refreshPromise = null;
+      }
+    };
 
     // Start multiple refresh calls simultaneously
     const results = await Promise.all([
-      manager.refresh('test', refreshSpy),
-      manager.refresh('test', refreshSpy),
-      manager.refresh('test', refreshSpy),
+      mockRefresh(),
+      mockRefresh(),
+      mockRefresh(),
     ]);
 
     // All should succeed
-    expect(results.every(r => r.success)).toBe(true);
+    expect(results).toEqual([true, true, true]);
 
     // But the actual refresh should only be called once
     expect(refreshSpy).toHaveBeenCalledTimes(1);
   });
 
   it('should allow new refresh after previous completes', async () => {
-    const refreshSpy = vi.fn(async () => {
-      await new Promise(resolve => setTimeout(resolve, 50));
-      return { success: true };
-    });
+    const refreshSpy = vi.fn(simulateRefresh);
+
+    const mockRefresh = async (): Promise<boolean> => {
+      if (isRefreshing && refreshPromise) {
+        return refreshPromise;
+      }
+      isRefreshing = true;
+      refreshPromise = refreshSpy();
+      try {
+        return await refreshPromise;
+      } finally {
+        isRefreshing = false;
+        refreshPromise = null;
+      }
+    };
 
     // First refresh
-    await manager.refresh('test', refreshSpy);
-
-    // Reset minimum interval for testing
-    manager.reset('test');
+    await mockRefresh();
 
     // Second refresh (should be a new call)
-    await manager.refresh('test', refreshSpy);
+    await mockRefresh();
 
     // Should be called twice (once per independent refresh)
     expect(refreshSpy).toHaveBeenCalledTimes(2);
-  });
-
-  it('should isolate different scopes', async () => {
-    const tenantSpy = vi.fn(async () => {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      return { success: true };
-    });
-
-    const customerSpy = vi.fn(async () => {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      return { success: true };
-    });
-
-    // Start refreshes for different scopes simultaneously
-    await Promise.all([
-      manager.refresh('tenant-admin', tenantSpy),
-      manager.refresh('customer', customerSpy),
-    ]);
-
-    // Both should have been called (different scopes don't interfere)
-    expect(tenantSpy).toHaveBeenCalledTimes(1);
-    expect(customerSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('should handle failed refresh gracefully', async () => {
-    const failingSpy = vi.fn(async () => {
-      throw new Error('Network error');
-    });
-
-    const result = await manager.refresh('test', failingSpy);
-
-    expect(result.success).toBe(false);
-    expect(failingSpy).toHaveBeenCalledTimes(1);
-
-    // Should allow retry after failure (reset first to bypass min interval)
-    manager.reset('test');
-    const successSpy = vi.fn(async () => ({ success: true }));
-    const retryResult = await manager.refresh('test', successSpy);
-    expect(retryResult.success).toBe(true);
-  });
-
-  it('should report refreshing state correctly', async () => {
-    let resolveRefresh: (() => void) | null = null;
-    const blockingSpy = vi.fn(() => new Promise<{ success: boolean }>(resolve => {
-      resolveRefresh = () => resolve({ success: true });
-    }));
-
-    // Start a refresh that won't complete immediately
-    const refreshPromise = manager.refresh('test', blockingSpy);
-
-    // Should be refreshing now
-    expect(manager.isRefreshing('test')).toBe(true);
-    expect(manager.isRefreshing('other-scope')).toBe(false);
-
-    // Complete the refresh
-    resolveRefresh!();
-    await refreshPromise;
-
-    // Should no longer be refreshing
-    expect(manager.isRefreshing('test')).toBe(false);
-  });
-
-  it('should enforce minimum interval between refreshes', async () => {
-    const spy = vi.fn(async () => ({ success: true }));
-
-    // First refresh
-    await manager.refresh('test', spy);
-
-    // Immediate second refresh (within MIN_REFRESH_INTERVAL_MS)
-    const result = await manager.refresh('test', spy);
-
-    // Should skip second refresh and return success
-    expect(result.success).toBe(true);
-    expect(spy).toHaveBeenCalledTimes(1); // Only first call actually executes
-
-    // After reset, should work again
-    manager.reset('test');
-    await manager.refresh('test', spy);
-    expect(spy).toHaveBeenCalledTimes(2);
-  });
-
-  it('should reset all scopes', () => {
-    manager.resetAll();
-    // Just verifying it doesn't throw
-    expect(manager.isRefreshing('test')).toBe(false);
-    expect(manager.isRefreshing('customer')).toBe(false);
   });
 });
 
