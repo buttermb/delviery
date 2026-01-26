@@ -45,7 +45,7 @@ export function AdvancedProductFilters({
   const [filters, setFilters] = useState<FilterConfig>(activeFilters);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [filterName, setFilterName] = useState("");
-
+  
   // Use persistent saved filters hook
   const {
     savedFilters,
@@ -87,7 +87,7 @@ export function AdvancedProductFilters({
     onFilterChange(defaultFilters);
   };
 
-  const handleOpenSaveDialog = () => {
+  const openSaveDialog = () => {
     setFilterName("");
     setSaveDialogOpen(true);
   };
@@ -243,7 +243,7 @@ export function AdvancedProductFilters({
               <X className="mr-2 h-4 w-4" />
               Clear
             </Button>
-            <Button variant="outline" onClick={handleOpenSaveDialog} className="flex-1">
+            <Button variant="outline" onClick={openSaveDialog} className="flex-1">
               <Save className="mr-2 h-4 w-4" />
               Save
             </Button>
@@ -257,7 +257,7 @@ export function AdvancedProductFilters({
           <DialogHeader>
             <DialogTitle>Save Filter</DialogTitle>
             <DialogDescription>
-              Enter a name for this filter configuration to save it for later use.
+              Enter a name for this filter preset to save it for later use.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -266,7 +266,7 @@ export function AdvancedProductFilters({
               id="filter-name"
               value={filterName}
               onChange={(e) => setFilterName(e.target.value)}
-              placeholder="My custom filter"
+              placeholder="e.g., High THC Indica"
               className="mt-2"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -280,6 +280,7 @@ export function AdvancedProductFilters({
               Cancel
             </Button>
             <Button onClick={handleSaveFilter} disabled={!filterName.trim()}>
+              <Save className="mr-2 h-4 w-4" />
               Save Filter
             </Button>
           </DialogFooter>
