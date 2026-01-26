@@ -14,7 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Settings, Shield, Bell, Printer, Plug, Save,
-  Building, Layout, Sliders, Users, CreditCard, ArrowLeft
+  Building, Layout, Sliders, Users, CreditCard, ArrowLeft, Download
 } from 'lucide-react';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -219,6 +219,72 @@ export default function SettingsPage() {
     }
   };
 
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportSettings = () => {
+    if (!account) {
+      toast({ variant: "destructive", title: "Error", description: "No account data to export." });
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const generalValues = generalForm.getValues();
+      const securityValues = securityForm.getValues();
+      const notificationValues = notificationForm.getValues();
+
+      const exportData = {
+        exportedAt: new Date().toISOString(),
+        account: {
+          id: account.id,
+          companyName: generalValues.companyName,
+          email: generalValues.email,
+          phone: generalValues.phone,
+          address: generalValues.address,
+          slug: account.slug,
+          status: account.status,
+          planId: account.plan_id,
+        },
+        settings: {
+          general: {
+            timezone: "America/New_York",
+            currency: "USD",
+          },
+          security: securityValues,
+          notifications: notificationValues,
+        },
+        accountSettings: accountSettings ? {
+          businessLicense: accountSettings.business_license,
+          taxRate: accountSettings.tax_rate,
+          state: accountSettings.state,
+          operatingStates: accountSettings.operating_states,
+          branding: accountSettings.branding,
+          complianceSettings: accountSettings.compliance_settings,
+          integrationSettings: accountSettings.integration_settings,
+        } : null,
+      };
+
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${account.slug || 'settings'}-settings-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({ title: "Export Complete", description: "Settings exported to JSON file." });
+    } catch (err) {
+      logger.error("Error exporting settings", err);
+      toast({ variant: "destructive", title: "Error", description: "Failed to export settings." });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
 
   return (
     <div className="container mx-auto p-2 sm:p-6 space-y-6">
@@ -232,8 +298,21 @@ export default function SettingsPage() {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
-        <h1 className="text-3xl font-bold mb-2">🔧 Settings</h1>
-        <p className="text-muted-foreground">Manage your account and system preferences</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">🔧 Settings</h1>
+            <p className="text-muted-foreground">Manage your account and system preferences</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportSettings}
+            disabled={isExporting || !account}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            {isExporting ? 'Exporting...' : 'Export to JSON'}
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

@@ -7690,3 +7690,48 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+
+## Task: Add Settings Export to JSON Button with Download Functionality
+
+### Date: 2026-01-26
+
+### What was implemented:
+
+Added a "Export to JSON" button to the Settings page that exports all account settings to a downloadable JSON file.
+
+### Implementation Details:
+
+1. **Export Button UI**
+   - Added "Export to JSON" button in the Settings page header (top-right corner)
+   - Button shows "Exporting..." text with disabled state during export
+   - Uses the Download icon from lucide-react for visual clarity
+   - Button is disabled when no account data is loaded
+
+2. **Export Data Structure**
+   - `exportedAt`: ISO timestamp of when the export was created
+   - `account`: Account information (id, company name, email, phone, address, slug, status, plan)
+   - `settings.general`: General settings (timezone, currency)
+   - `settings.security`: Security settings (2FA, password requirements, session timeout)
+   - `settings.notifications`: Notification preferences (email, SMS, alerts)
+   - `accountSettings`: Additional account settings (business license, tax rate, states, branding, compliance, integrations)
+
+3. **Download Functionality**
+   - Creates a Blob with JSON content (formatted with 2-space indentation)
+   - Generates filename: `{account-slug}-settings-{YYYY-MM-DD}.json`
+   - Uses URL.createObjectURL for browser-native download
+   - Properly cleans up object URL after download
+   - Shows success/error toast notifications
+
+### Technical Notes:
+- Uses react-hook-form's `getValues()` to capture current form state (even unsaved changes)
+- Follows FloraIQ patterns: uses `logger` for error logging, `toast` for user feedback
+- No external dependencies added - uses native browser APIs (Blob, URL.createObjectURL)
+- Button follows existing patterns with loading/disabled states
+
+### Files Changed:
+- `src/pages/admin/SettingsPage.tsx` - Added export button and download functionality
+
+### Build Status:
+- `npm run build` - PASSES (0 TypeScript errors)
+- `npm run lint` - No new errors introduced (pre-existing warnings unchanged)
