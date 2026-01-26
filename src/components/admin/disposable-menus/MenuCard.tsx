@@ -34,9 +34,37 @@ import { jsonToString, extractSecuritySetting, jsonToBooleanSafe } from '@/utils
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 import type { DisposableMenu } from '@/types/admin';
+import type { Json } from '@/integrations/supabase/types';
+
+// Extended Menu type with computed/joined fields from queries
+// Simplified interface that accepts what the database actually returns
+interface Menu {
+  id: string;
+  tenant_id: string;
+  name: string;
+  status: string;
+  encrypted_url_token: string;
+  access_code: string | null;
+  description: Json;
+  is_encrypted: boolean;
+  device_locking_enabled: boolean;
+  security_settings: Json;
+  expiration_date: string | null;
+  never_expires: boolean;
+  created_at: string;
+  // Extended properties from joins/computed fields
+  view_count?: number;
+  customer_count?: number;
+  order_count?: number;
+  total_revenue?: number;
+  disposable_menu_products?: Array<unknown>;
+  max_views_per_period?: number;
+  // Allow any additional DB fields
+  [key: string]: unknown;
+}
 
 interface MenuCardProps {
-  menu: DisposableMenu;
+  menu: Menu;
   compact?: boolean;
 }
 
@@ -332,26 +360,26 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
 
       {/* Dialogs */}
       <BurnMenuDialog
-        menu={menu}
+        menu={menu as any}
         open={burnDialogOpen}
         onOpenChange={setBurnDialogOpen}
       />
 
       <ManageAccessDialog
-        menu={menu}
+        menu={menu as any}
         open={manageAccessOpen}
         onOpenChange={setManageAccessOpen}
       />
 
       <MenuShareDialogEnhanced
-        menu={menu}
+        menu={menu as any}
         open={shareDialogOpen}
         onOpenChange={setShareDialogOpen}
         whitelistEntry={undefined}
       />
 
       <MenuAnalyticsDialog
-        menu={menu}
+        menu={menu as any}
         open={analyticsOpen}
         onOpenChange={setAnalyticsOpen}
       />
@@ -367,7 +395,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
       <CloneMenuDialog
         open={cloneDialogOpen}
         onClose={() => setCloneDialogOpen(false)}
-        menu={menu}
+        menu={menu as any}
         onComplete={() => window.location.reload()}
       />
 
@@ -376,13 +404,13 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
         onOpenChange={setAccessDetailsOpen}
         accessCode={menu.access_code || 'N/A'}
         shareableUrl={menuUrl}
-        menuName={menu.name}
+        menuName={menu.name || 'Menu'}
       />
 
       <MenuPaymentSettingsDialog
         open={paymentSettingsOpen}
         onOpenChange={setPaymentSettingsOpen}
-        menu={menu}
+        menu={menu as any}
       />
     </>
   );
