@@ -117,6 +117,12 @@ export const navigationSections: NavSection[] = [
         icon: Map,
         badge: 'LIVE',
         tier: 'enterprise'
+      },
+      {
+        title: 'POS',
+        href: '/admin/pos-system',
+        icon: Store,
+        tier: 'enterprise'
       }
     ]
   },
