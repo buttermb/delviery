@@ -1958,29 +1958,20 @@ Added `.catch()` error handlers to all unhandled `.then()` Promise chains to pre
 
 ---
 
-## Task: Fix BuilderPreview minHeight to calc(100vh - 200px)
+## Task: Remove or comment out global max-width 100% rule in src/index.css line 109
 
-### Date: 2026-01-25
+**Status:** Already Complete (No Changes Needed)
 
-### What was done:
+**Verification:**
+Upon inspection of `src/index.css` lines 107-110, the global `max-width: 100%` rule is already commented out:
 
-1. **Verified BuilderPreview.tsx at line 48** - The minHeight is already correctly set to `calc(100vh - 200px)`
+```css
+/* Ensure all containers respect viewport width */
+/* * {
+  max-width: 100%;
+} REMOVED: Breaks sticky positioning and causes layout issues */
+```
 
-   Located at: `src/pages/admin/storefront/builder/BuilderPreview.tsx:48`
-   
-   Current code:
-   ```typescript
-   style={{
-       ...getPreviewStyle(),
-       minHeight: 'calc(100vh - 200px)',
-   }}
-   ```
+The rule was previously removed and properly commented with an explanation that it "Breaks sticky positioning and causes layout issues".
 
-2. **No changes required** - The fix was already implemented in a previous commit (e843130a: feat: batch improvements - security, UI, TypeScript, dark mode, auth, navigation)
-
-### Status: Already Complete
-- The minHeight value `calc(100vh - 200px)` is present and correct
-- No code changes needed
-
-### Files Changed:
-- None (fix was already in place)
+**Result:** No code changes required - the task was already completed in a prior commit.
