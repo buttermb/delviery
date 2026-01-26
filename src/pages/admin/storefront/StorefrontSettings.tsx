@@ -44,7 +44,8 @@ import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog
 import { generateUrlToken } from '@/utils/menuHelpers';
 import { StorefrontSettingsLivePreview } from '@/components/admin/storefront/StorefrontSettingsLivePreview';
 import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedProductsManager';
-import { DeliveryZoneMapPreview } from '@/components/admin/storefront/DeliveryZoneMapPreview';
+import { GoogleSearchPreview } from '@/components/admin/storefront/GoogleSearchPreview';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface DeliveryZone {
   zip_code: string;
@@ -1549,6 +1550,17 @@ export default function StorefrontSettings() {
                     rows={3}
                   />
                 </div>
+
+                {/* Google Search Preview */}
+                <GoogleSearchPreview
+                  title={formData.meta_title || formData.store_name || ''}
+                  description={formData.meta_description || ''}
+                  url={formData.custom_domain
+                    ? `https://${formData.custom_domain}`
+                    : storeUrl
+                  }
+                  faviconUrl={formData.favicon_url}
+                />
 
                 <div className="space-y-2">
                   <Label htmlFor="og_image_url">Social Sharing Image URL</Label>
