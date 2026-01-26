@@ -63,7 +63,8 @@ import {
   UserCheck,
   Flame,
   Brain,
-  MapPinned
+  Star,
+  Ticket
 } from 'lucide-react';
 
 export interface NavItem {
@@ -415,6 +416,23 @@ export const navigationSections: NavSection[] = [
         title: 'Pricing & Deals',
         href: '/admin/sales/pricing',
         icon: Tags
+      }
+    ]
+  },
+
+  // 📣 MARKETING
+  {
+    title: 'Marketing',
+    items: [
+      {
+        title: 'Reviews',
+        href: '/admin/marketing/reviews',
+        icon: Star
+      },
+      {
+        title: 'Coupons',
+        href: '/admin/marketing/coupons',
+        icon: Ticket
       }
     ]
   },
