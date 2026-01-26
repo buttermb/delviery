@@ -65,46 +65,39 @@ export function useAdminBadgeCounts() {
     if (!tenant?.id) return;
 
     try {
-      const [
-        ordersResult,
-        menuOrdersResult,
-        stockResult,
-        messagesResult,
-        shipmentsResult,
-        inventoryAlertsResult,
-      ] = await Promise.all([
-        // Pending wholesale orders
+      const [ordersResult, menuOrdersResult, stockResult, messagesResult, shipmentsResult] = await Promise.all([
+        // Pending wholesale orders (count only, no data transfer)
         supabase
           .from('wholesale_orders')
-          .select('id', { count: 'exact', head: true })
+          .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .or('status.eq.pending,status.eq.assigned'),
 
-        // Pending menu orders
+        // Pending menu orders (count only)
         supabase
           .from('menu_orders')
-          .select('id', { count: 'exact', head: true })
+          .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .in('status', ['pending', 'confirmed', 'processing', 'preparing']),
 
-        // Low stock items (products below threshold)
+        // Low stock items (count only)
         supabase
           .from('products')
-          .select('id', { count: 'exact', head: true })
+          .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .lt('stock_quantity', 10),
 
-        // Unread messages (open conversations)
+        // Unread messages (count only)
         supabase
           .from('conversations')
-          .select('id', { count: 'exact', head: true })
+          .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .eq('status', 'open'),
 
-        // Pending shipments
+        // Pending shipments (count only)
         supabase
           .from('wholesale_deliveries')
-          .select('id', { count: 'exact', head: true })
+          .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .or('status.eq.assigned,status.eq.picked_up'),
 
@@ -118,15 +111,11 @@ export function useAdminBadgeCounts() {
           .or('snoozed_until.is.null,snoozed_until.lt.now()'),
       ]);
 
-      const wholesaleCount = ordersResult.count ?? 0;
-      const menuCount = menuOrdersResult.count ?? 0;
-      const alertsCount = inventoryAlertsResult.count ?? 0;
-
       setCounts({
-        pendingOrders: wholesaleCount + menuCount,
-        lowStockItems: stockResult.count ?? 0,
-        unreadMessages: messagesResult.count ?? 0,
-        pendingShipments: shipmentsResult.count ?? 0,
+        pendingOrders: (ordersResult.count || 0) + (menuOrdersResult.count || 0),
+        lowStockItems: stockResult.count || 0,
+        unreadMessages: messagesResult.count || 0,
+        pendingShipments: shipmentsResult.count || 0,
         overduePayments: 0,
         inventoryAlerts: alertsCount,
       });

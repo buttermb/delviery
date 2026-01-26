@@ -7,19 +7,22 @@ export const useDisposableMenus = (tenantId?: string) => {
   return useQuery({
     queryKey: ['disposable-menus', tenantId],
     queryFn: async () => {
-      if (!tenantId) return [];
-
-      const { data, error } = await supabase
+      // Optimized query - select specific columns, use count for orders
+      let query = supabase
         .from('disposable_menus')
         .select(`
-          *,
-          disposable_menu_products(*),
+          id, tenant_id, name, description, access_code, token, status, expiration_date, never_expires, security_settings, appearance_settings, min_order_quantity, max_order_quantity, encrypted, created_at, updated_at,
+          disposable_menu_products(id, product_id, custom_price, display_order),
           menu_access_whitelist(count),
           menu_access_logs(count),
-          menu_orders(*)
-        `)
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false });
+          menu_orders(id, total_amount)
+        `);
+
+      if (tenantId) {
+        query = query.eq('tenant_id', tenantId);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) {
         // Log but don't throw - return empty array for graceful degradation
@@ -28,12 +31,14 @@ export const useDisposableMenus = (tenantId?: string) => {
       }
       
       // Add computed stats for each menu
-      return (data || []).map((menu: any) => ({
+      return (data || []).map((menu: Record<string, unknown>) => ({
         ...menu,
-        view_count: menu.menu_access_logs?.[0]?.count || 0,
-        customer_count: menu.menu_access_whitelist?.[0]?.count || 0,
-        order_count: menu.menu_orders?.length || 0,
-        total_revenue: menu.menu_orders?.reduce((sum: number, o: any) => sum + Number(o.total_amount || 0), 0) || 0,
+        view_count: (menu.menu_access_logs as Array<{ count: number }> | undefined)?.[0]?.count || 0,
+        customer_count: (menu.menu_access_whitelist as Array<{ count: number }> | undefined)?.[0]?.count || 0,
+        order_count: Array.isArray(menu.menu_orders) ? menu.menu_orders.length : 0,
+        total_revenue: Array.isArray(menu.menu_orders)
+          ? menu.menu_orders.reduce((sum: number, o: { total_amount?: number }) => sum + Number(o.total_amount || 0), 0)
+          : 0,
       }));
     },
     enabled: !!tenantId,
@@ -195,7 +200,7 @@ export const useMenuWhitelist = (menuId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('menu_access_whitelist')
-        .select('*, customer:wholesale_clients(*)')
+        .select('id, menu_id, client_id, access_token, invited_at, revoked_at, status, customer:wholesale_clients(id, business_name, contact_name, phone, email)')
         .eq('menu_id', menuId)
         .order('invited_at', { ascending: false });
 
@@ -260,11 +265,11 @@ export const useMenuOrders = (menuId?: string, tenantId?: string) => {
       let query = supabase
         .from('menu_orders')
         .select(`
-          *,
+          id, menu_id, tenant_id, customer_name, customer_phone, status, total_amount, items, notes, created_at, updated_at,
           menu:disposable_menus(name)
         `)
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (menuId) {
         query = query.eq('menu_id', menuId);

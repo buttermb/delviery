@@ -54,7 +54,7 @@ export default function InventoryManagement() {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('*')
+          .select('id, tenant_id, name, sku, batch_number, available_quantity, low_stock_alert, warehouse_location, category, cost_per_unit, wholesale_price, price_per_lb')
           .eq('tenant_id', tenant.id)
           .order('name');
 

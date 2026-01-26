@@ -144,9 +144,10 @@ export default function Orders() {
 
       let query = supabase
         .from('orders')
-        .select('*, order_items(*)')
+        .select('id, order_number, created_at, status, total_amount, delivery_method, user_id, courier_id, tenant_id, order_items(id, product_id, quantity, price)')
         .eq('tenant_id', tenant.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (statusFilter !== 'all') {
         query = query.eq('status', statusFilter);
@@ -196,6 +197,8 @@ export default function Orders() {
       })) as Order[];
     },
     enabled: !!tenant?.id,
+    staleTime: 15_000,
+    gcTime: 120_000,
   });
 
   // Mutations

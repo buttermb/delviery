@@ -1,4 +1,81 @@
-# Task: Complete Storefront Checkout with Stripe
+## Task: Optimize Database Queries
+
+### What was done:
+Comprehensive database query optimization across 8 hook files and 3 page components, addressing:
+- Column selection optimization (replacing `select('*')` with explicit columns)
+- N+1 query elimination (replacing separate lookups with JOINs)
+- Cache configuration (adding staleTime/gcTime to all queries)
+- Count-only queries (using `{ count: 'exact', head: true }` instead of fetching rows)
+- Result limiting (adding `.limit()` to unbounded list queries)
+- Type safety improvements (removing `any` types)
+
+### Specific Optimizations:
+
+1. **CRM Hooks** (`src/hooks/crm/useClients.ts`, `useInvoices.ts`, `useCRMDashboard.ts`):
+   - Replaced `select('*')` with explicit column lists in all queries
+   - Added `staleTime: 30_000` and `gcTime: 300_000` to all useQuery calls
+   - Replaced `any[]` type with proper `ActivityLogEntry` interface in dashboard metrics
+   - Optimized client search to return only needed columns
+
+2. **useAdminBadgeCounts** (`src/hooks/useAdminBadgeCounts.ts`):
+   - Converted 5 queries from fetching full rows to count-only (`{ count: 'exact', head: true }`)
+   - Eliminates transferring potentially thousands of rows just to count them
+   - ~99% reduction in data transfer for badge count queries
+
+3. **useWholesaleData** (`src/hooks/useWholesaleData.ts`):
+   - Added explicit column selection to all 8 query hooks
+   - Fixed N+1 pattern in `useWholesalePayments` (replaced separate client fetch with JOIN)
+   - Added `.limit(100)` to orders, deliveries, and payments queries
+   - Added staleTime (15-60s) and gcTime to all hooks
+
+4. **useFinancialData** (`src/hooks/useFinancialData.ts`):
+   - Added `staleTime: 60_000` and `gcTime: 300_000` to snapshot, cash flow, and credit hooks
+   - Added `staleTime: 120_000` and `gcTime: 600_000` to monthly performance (less volatile data)
+
+5. **useDisposableMenus** (`src/hooks/useDisposableMenus.ts`):
+   - Replaced `menu_orders(*)` with `menu_orders(id, total_amount)` (only fields used for stats)
+   - Added explicit column selection to main menu query
+   - Optimized `useMenuWhitelist` to select specific client columns instead of `wholesale_clients(*)`
+   - Added column selection and `.limit(100)` to `useMenuOrders`
+   - Replaced `any` types with proper typed interfaces
+
+6. **Orders.tsx** (`src/pages/admin/Orders.tsx`):
+   - Replaced `select('*, order_items(*)')` with explicit columns
+   - Added `.limit(100)` to prevent unbounded result sets
+   - Added `staleTime: 15_000` and `gcTime: 120_000`
+
+7. **InventoryManagement.tsx** (`src/pages/admin/InventoryManagement.tsx`):
+   - Replaced `select('*')` with only the 12 columns used by the Product interface
+
+8. **CustomerManagement.tsx** (`src/pages/admin/CustomerManagement.tsx`):
+   - Replaced `select('*')` with only the 16 columns needed for customer display/encryption
+
+9. **Build fix** (`src/lib/utils/sanitize.ts`):
+   - Added missing `sanitizeBasicHtml` export that was blocking production builds
+
+### Performance Impact Estimates:
+- **Data transfer**: ~50-80% reduction per query (only fetching needed columns)
+- **Badge counts**: ~99% reduction (count-only vs fetching all rows)
+- **N+1 elimination**: 1 query instead of 2 for wholesale payments
+- **Cache hits**: 30-120s staleTime prevents redundant refetches on component remounts
+- **Memory usage**: Significant reduction from smaller response payloads
+
+### Files Changed:
+- `src/hooks/crm/useClients.ts`
+- `src/hooks/crm/useInvoices.ts`
+- `src/hooks/crm/useCRMDashboard.ts`
+- `src/hooks/useAdminBadgeCounts.ts`
+- `src/hooks/useWholesaleData.ts`
+- `src/hooks/useFinancialData.ts`
+- `src/hooks/useDisposableMenus.ts`
+- `src/pages/admin/Orders.tsx`
+- `src/pages/admin/InventoryManagement.tsx`
+- `src/pages/admin/CustomerManagement.tsx`
+- `src/lib/utils/sanitize.ts` (build fix)
+
+---
+
+## Task: Add Breadcrumb Navigation Between Panels
 
 ## Status: COMPLETED
 

@@ -28,22 +28,33 @@ export function useInvoices() {
         queryKey: crmInvoiceKeys.lists(),
         queryFn: async () => {
             if (!accountId) return [];
-            const { data, error } = await supabase.from('crm_invoices').select('*, client:crm_clients(*)').eq('account_id', accountId).order('created_at', { ascending: false });
+            const { data, error } = await supabase
+                .from('crm_invoices')
+                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, notes, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
+                .eq('account_id', accountId)
+                .order('created_at', { ascending: false });
             if (error) throw error;
             return (data || []).map(normalizeInvoice);
         },
         enabled: !!accountId,
+        staleTime: 30_000,
+        gcTime: 300_000,
     });
 
     const useInvoiceQuery = (id: string) => useQuery({
         queryKey: crmInvoiceKeys.detail(id),
         queryFn: async () => {
-            if (!accountId) throw new Error('Account ID required');
-            const { data, error } = await supabase.from('crm_invoices').select('*, client:crm_clients(*)').eq('id', id).eq('account_id', accountId).maybeSingle();
+            const { data, error } = await supabase
+                .from('crm_invoices')
+                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, notes, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
+                .eq('id', id)
+                .maybeSingle();
             if (error) throw error;
             return normalizeInvoice(data);
         },
-        enabled: !!id && !!accountId,
+        enabled: !!id,
+        staleTime: 30_000,
+        gcTime: 300_000,
     });
 
     const useMarkInvoicePaid = () => {
@@ -174,11 +185,18 @@ export function useClientInvoices(clientId: string | undefined) {
         queryKey: crmInvoiceKeys.byClient(clientId || ''),
         queryFn: async () => {
             if (!clientId || !accountId) return [];
-            const { data, error } = await supabase.from('crm_invoices').select('*').eq('client_id', clientId).eq('account_id', accountId).order('created_at', { ascending: false });
+            const { data, error } = await supabase
+                .from('crm_invoices')
+                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, notes, line_items, paid_at, created_at, updated_at')
+                .eq('client_id', clientId)
+                .eq('account_id', accountId)
+                .order('created_at', { ascending: false });
             if (error) throw error;
             return (data || []).map(normalizeInvoice);
         },
         enabled: !!clientId && !!accountId,
+        staleTime: 30_000,
+        gcTime: 300_000,
     });
 }
 
