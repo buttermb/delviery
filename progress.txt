@@ -1,4 +1,38 @@
-## Enhance Disposable Menu Analytics Dashboard - COMPLETED
+## Task: Add font preview styling showing actual fonts in font selector dropdown
+
+### What was done:
+
+1. **Updated `index.html`** to load additional Google Fonts:
+   - Added `Space Grotesk` (weights 400, 500, 600, 700)
+   - Added `DM Sans` (weights 400, 500, 600, 700)
+   - Added `Montserrat` (weights 400, 500, 600, 700)
+   - Updated both the preload link and the main stylesheet link
+   - Updated the noscript fallback link
+
+2. **Updated `src/pages/admin/storefront/builder/BuilderLeftPanel.tsx`**:
+   - Added inline `style` attribute with `fontFamily` to each `SelectItem` in the font dropdown
+   - Each font option now displays in its actual font (e.g., "Playfair Display" shows in Playfair Display serif font)
+   - Added dynamic `fontFamily` style to the `SelectTrigger` so the selected value also shows in the actual font
+   - Fonts styled:
+     - Inter (sans-serif)
+     - Space Grotesk (sans-serif)
+     - DM Sans (sans-serif)
+     - Playfair Display (serif)
+     - Montserrat (sans-serif)
+
+### Acceptance Criteria Met:
+- [x] Font dropdown shows each font option in its actual font style
+- [x] Selected font trigger displays in the chosen font
+- [x] All fonts properly loaded via Google Fonts
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `index.html` - Added Space Grotesk, DM Sans, and Montserrat to Google Fonts links
+- `src/pages/admin/storefront/builder/BuilderLeftPanel.tsx` - Added inline font-family styles to SelectItem components and SelectTrigger
+
+---
+
+﻿## Task: Test Credit Consumption Flow
 
 ### What was done:
 
