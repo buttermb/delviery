@@ -174,34 +174,16 @@ export default function LoginPage() {
     safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
     safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_REFRESH_TOKEN);
 
-    // Clear Supabase-specific tokens that may cause conflicts
-    localStorage.removeItem('sb-access-token');
-    localStorage.removeItem('sb-refresh-token');
-    localStorage.removeItem('supabase.auth.token');
+    // Clear any other auth-related keys (pattern-based cleanup) - REMOVED to prevent Supabase session loss
+    // We only clear tenant-specific data above to ensure clean state for the new tenant
 
-    // Clear any other auth-related keys (pattern-based cleanup)
-    const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      if (key.startsWith('sb-') && key.includes('auth')) {
-        localStorage.removeItem(key);
-      }
-    });
 
     // Clear sessionStorage auth data
     sessionStorage.removeItem('floraiq_user_id');
 
-    // Clear stale cookies to prevent 401 errors during token refresh
-    // This includes Supabase cookies and tenant-specific cookies
-    document.cookie.split(';').forEach((c) => {
-      const cookieName = c.split('=')[0].trim();
-      if (cookieName.startsWith('sb-') || cookieName.startsWith('tenant_') ||
-          cookieName.includes('access') || cookieName.includes('refresh')) {
-        // Clear cookie for current path
-        document.cookie = `${cookieName}=;expires=${new Date(0).toUTCString()};path=/`;
-        // Also try clearing with domain for cross-subdomain cookies
-        document.cookie = `${cookieName}=;expires=${new Date(0).toUTCString()};path=/;domain=${window.location.hostname}`;
-      }
-    });
+    // Clear stale cookies - REMOVED to prevent session loss
+    // The previous aggressive cleanup was causing 401s on redirect
+
 
     // Small delay to ensure cleanup is complete before login attempt
     await new Promise(resolve => setTimeout(resolve, 50));

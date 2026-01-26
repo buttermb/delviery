@@ -50,11 +50,10 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
   const [accessDetailsOpen, setAccessDetailsOpen] = useState(false);
   const [paymentSettingsOpen, setPaymentSettingsOpen] = useState(false);
 
-  const viewCount = (menu as any).view_count || 0;
-  const customerCount = (menu as any).customer_count || 0;
-  const orderCount = (menu as any).order_count || 0;
-  const totalRevenue = (menu as any).total_revenue || 0;
-  // @ts-ignore - disposable_menu_products exists in DisposableMenu type
+  const viewCount = menu.view_count || 0;
+  const customerCount = menu.customer_count || 0;
+  const orderCount = menu.order_count || 0;
+  const totalRevenue = menu.total_revenue || 0;
   const productCount = menu.disposable_menu_products?.length || 0;
 
   const isActive = menu.status === 'active';
@@ -88,8 +87,8 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
     securityFeatures.push({ icon: MapPin, label: 'Geofenced' });
   }
   if (menu.device_locking_enabled) securityFeatures.push({ icon: Shield, label: 'Device Lock' });
-  if ((menu as any).max_views_per_period) {
-    securityFeatures.push({ icon: Clock, label: `${(menu as any).max_views_per_period} views` });
+  if (menu.max_views_per_period) {
+    securityFeatures.push({ icon: Clock, label: `${menu.max_views_per_period} views` });
   }
 
   return (
@@ -345,7 +344,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
       />
 
       <MenuShareDialogEnhanced
-        menu={menu as any}
+        menu={menu}
         open={shareDialogOpen}
         onOpenChange={setShareDialogOpen}
         whitelistEntry={undefined}

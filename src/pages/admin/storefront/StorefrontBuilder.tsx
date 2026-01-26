@@ -1,21 +1,14 @@
 /**
  * StorefrontBuilder - Orchestrator Component
- * Composes the modular builder sub-components with shared state from useStorefrontBuilder hook.
+ * Dual-mode builder: Simple (Easy Mode) and Advanced (Full Builder)
  *
- * Sub-modules in ./builder/:
- *  - storefront-builder.config.ts  → Section types, templates, defaults, shared types
- *  - useStorefrontBuilder.ts       → All state management, mutations, and actions
- *  - BuilderHeader.tsx             → Top toolbar (device preview, undo/redo, zoom, actions)
- *  - BuilderLeftPanel.tsx          → Left sidebar (sections, theme, templates tabs)
- *  - BuilderPreview.tsx            → Center preview area with device scaling
- *  - BuilderPropertyEditor.tsx     → Right sidebar (content/styles property editor)
- *  - BuilderCreateStoreDialog.tsx  → Store creation dialog with slug validation
- *  - SortableSectionItem.tsx       → Draggable section item for the section list
+ * Simple Mode: Preset packs, feature toggles, basic content editing
+ * Advanced Mode: Full drag-and-drop, custom sections, responsive settings
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { MarketplaceStore } from '@/types/marketplace-extended';
+import { MarketplaceStore, type SectionConfig, type ExtendedThemeConfig } from '@/types/marketplace-extended';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -29,9 +22,11 @@ import {
     Plus, GripVertical, Trash2, Save, ArrowLeft, Layout,
     Monitor, Smartphone, Tablet, Copy, Eye, EyeOff, Undo2, Redo2,
     FileText, Image, MessageSquare, HelpCircle, Mail, Sparkles, X, ZoomIn, ZoomOut,
-    Code, Globe, GlobeLock, AlertCircle, Store
+    Code, Globe, GlobeLock, AlertCircle, Store, Settings2, Wand2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { EasyModeEditor } from '@/components/admin/storefront/EasyModeEditor';
+import { ModeSwitchWarningDialog } from '@/components/admin/storefront/ModeSwitchWarningDialog';
 import { HeroSection } from '@/components/shop/sections/HeroSection';
 import { FeaturesSection } from '@/components/shop/sections/FeaturesSection';
 import { ProductGridSection } from '@/components/shop/sections/ProductGridSection';
@@ -48,6 +43,8 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from '@dnd-kit/utilities';
 import { ThemePresetStrip } from '@/components/admin/storefront/ThemePresetSelector';
 import { THEME_PRESETS, applyThemeToConfig, type ThemePreset } from '@/lib/storefrontThemes';
+import { useEasyModeBuilder } from '@/hooks/useEasyModeBuilder';
+import { detectAdvancedCustomizations, generateSectionsFromPreset, getPresetById, PRESET_PACKS } from '@/lib/storefrontPresets';
 import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
 import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -91,19 +88,6 @@ const TEMPLATES = {
         sections: ['hero', 'gallery', 'testimonials', 'newsletter']
     }
 };
-
-interface SectionConfig {
-    id: string;
-    type: string;
-    content: Record<string, unknown>;
-    styles: Record<string, unknown>;
-    visible?: boolean;
-    responsive?: {
-        mobile?: { padding_y?: string; hidden?: boolean };
-        tablet?: { padding_y?: string; hidden?: boolean };
-        desktop?: { padding_y?: string; hidden?: boolean };
-    };
-}
 
 // Sortable section item component
 function SortableSectionItem({
@@ -220,9 +204,15 @@ export function StorefrontBuilder() {
     }, [fromMenuId, menuName, toast]);
 
     const [activeTab, setActiveTab] = useState('sections');
+    const [builderMode, setBuilderMode] = useState<'simple' | 'advanced'>('simple');
     const [devicePreview, setDevicePreview] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
     const [rightPanelOpen, setRightPanelOpen] = useState(true);
     const [previewZoom, setPreviewZoom] = useState(0.85);
+
+    // Mode switch warning dialog
+    const [showModeSwitchWarning, setShowModeSwitchWarning] = useState(false);
+    const [pendingModeSwitch, setPendingModeSwitch] = useState<'simple' | 'advanced' | null>(null);
+    const [advancedCustomizations, setAdvancedCustomizations] = useState<string[]>([]);
 
     // Store Creation Dialog State
     const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -236,21 +226,17 @@ export function StorefrontBuilder() {
 
     // Builder State
     const [layoutConfig, setLayoutConfig] = useState<SectionConfig[]>([]);
-    const [themeConfig, setThemeConfig] = useState<{
-        colors: { primary: string; secondary: string; accent: string; background: string; text: string };
-        typography: { fontFamily: string };
-    }>({
+    const [themeConfig, setThemeConfig] = useState<ExtendedThemeConfig>({
         colors: { primary: '#000000', secondary: '#ffffff', accent: '#3b82f6', background: '#ffffff', text: '#000000' },
         typography: { fontFamily: 'Inter' }
     });
     const [selectedThemeId, setSelectedThemeId] = useState<string | undefined>(undefined);
     const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
 
-    // Handle theme selection
+    // Handle theme selection (for advanced mode)
     const handleThemeSelect = useCallback((theme: ThemePreset) => {
         logger.debug('Applying theme preset', { themeId: theme.id });
         setSelectedThemeId(theme.id);
-        // Apply theme colors to our config structure
         setThemeConfig(prevConfig => ({
             ...prevConfig,
             colors: {
@@ -289,10 +275,10 @@ export function StorefrontBuilder() {
         queryKey: ['marketplace-settings', tenant?.id],
         queryFn: async (): Promise<MarketplaceStore> => {
             try {
-                const { data, error } = await (supabase as any)
+                const { data, error } = await (supabase as unknown as { from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => { maybeSingle: () => Promise<{ data: unknown; error: unknown }> } } } })
                     .from('marketplace_stores')
                     .select('*')
-                    .eq('tenant_id', tenant?.id)
+                    .eq('tenant_id', tenant?.id || '')
                     .maybeSingle();
 
                 if (error) throw error;
@@ -312,19 +298,94 @@ export function StorefrontBuilder() {
         enabled: !!tenant?.id,
     });
 
+    // Easy Mode Builder Hook
+    const easyModeBuilder = useEasyModeBuilder({
+        initialThemeConfig: store?.theme_config as ExtendedThemeConfig | undefined,
+        initialLayoutConfig: layoutConfig,
+    });
+
     // Hydrate state from DB
     useEffect(() => {
         if (store) {
-            // Ensure layout_config is always an array
             const rawConfig = store.layout_config;
             const config: SectionConfig[] = Array.isArray(rawConfig) ? rawConfig : [];
             setLayoutConfig(config);
-            if (store.theme_config) setThemeConfig(store.theme_config);
+            if (store.theme_config) setThemeConfig(store.theme_config as ExtendedThemeConfig);
+
             // Initialize history
             setHistory([config]);
             setHistoryIndex(0);
+
+            // Determine initial mode based on existing config
+            const hasEasyMode = (store.theme_config as ExtendedThemeConfig)?.easy_mode?.enabled;
+            const { hasCustomizations } = detectAdvancedCustomizations(config);
+
+            if (hasEasyMode && !hasCustomizations) {
+                setBuilderMode('simple');
+            } else if (config.length > 0) {
+                // Has existing config but not easy mode - probably was built in advanced
+                setBuilderMode('advanced');
+            }
         }
     }, [store]);
+
+    // Handle mode switch with warning check
+    const handleModeSwitch = useCallback((targetMode: 'simple' | 'advanced') => {
+        if (targetMode === builderMode) return;
+
+        if (targetMode === 'simple') {
+            // Switching from advanced to simple - check for customizations
+            const { hasCustomizations, customizations } = detectAdvancedCustomizations(layoutConfig);
+
+            if (hasCustomizations) {
+                setAdvancedCustomizations(customizations);
+                setPendingModeSwitch('simple');
+                setShowModeSwitchWarning(true);
+                return;
+            }
+        }
+
+        // Safe to switch
+        if (targetMode === 'advanced') {
+            // Convert easy mode config to full layout config
+            if (easyModeBuilder.selectedPreset) {
+                const sections = easyModeBuilder.derivedLayoutConfig;
+                setLayoutConfig(sections);
+                setThemeConfig(easyModeBuilder.derivedThemeConfig);
+                saveToHistory(sections);
+            }
+            toast({
+                title: 'Advanced Mode',
+                description: 'You now have full control over all sections and styles.',
+            });
+        }
+
+        setBuilderMode(targetMode);
+    }, [builderMode, layoutConfig, easyModeBuilder, toast]);
+
+    // Confirm mode switch after warning
+    const confirmModeSwitch = useCallback(() => {
+        if (pendingModeSwitch === 'simple') {
+            // Reset to a preset
+            const preset = easyModeBuilder.selectedPreset || PRESET_PACKS[0];
+            easyModeBuilder.selectPreset(preset.id);
+
+            // Apply preset sections
+            const sections = generateSectionsFromPreset(preset);
+            setLayoutConfig(sections);
+            saveToHistory(sections);
+        }
+
+        setBuilderMode(pendingModeSwitch || 'simple');
+        setShowModeSwitchWarning(false);
+        setPendingModeSwitch(null);
+    }, [pendingModeSwitch, easyModeBuilder]);
+
+    // Cancel mode switch
+    const cancelModeSwitch = useCallback(() => {
+        setShowModeSwitchWarning(false);
+        setPendingModeSwitch(null);
+    }, []);
 
     // Save to history
     const saveToHistory = useCallback((newConfig: SectionConfig[]) => {
@@ -357,7 +418,6 @@ export function StorefrontBuilder() {
             return false;
         }
 
-        // Check for valid slug format (lowercase, alphanumeric, hyphens only)
         const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
         if (!slugRegex.test(slug)) {
             setSlugError('Slug can only contain lowercase letters, numbers, and hyphens');
@@ -366,7 +426,7 @@ export function StorefrontBuilder() {
 
         setIsValidatingSlug(true);
         try {
-            const { data, error } = await (supabase as any)
+            const { data, error } = await (supabase as unknown as { from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => { maybeSingle: () => Promise<{ data: unknown; error: unknown }> } } } })
                 .from('marketplace_stores')
                 .select('id')
                 .eq('slug', slug)
@@ -403,7 +463,7 @@ export function StorefrontBuilder() {
     // Create store mutation (deducts 500 credits)
     const createStoreMutation = useMutation({
         mutationFn: async (data: { storeName: string; slug: string }) => {
-            const { data: newStore, error } = await (supabase as any)
+            const { data: newStore, error } = await (supabase as unknown as { from: (table: string) => { insert: (obj: unknown) => { select: () => { single: () => Promise<{ data: unknown; error: unknown }> } } } })
                 .from('marketplace_stores')
                 .insert({
                     tenant_id: tenant?.id,
@@ -412,7 +472,7 @@ export function StorefrontBuilder() {
                     layout_config: [],
                     theme_config: themeConfig,
                     is_active: true,
-                    is_public: false, // Start as draft
+                    is_public: false,
                 })
                 .select()
                 .single();
@@ -420,10 +480,11 @@ export function StorefrontBuilder() {
             if (error) throw error;
             return newStore;
         },
-        onSuccess: (newStore) => {
+        onSuccess: (newStore: unknown) => {
+            const storeData = newStore as { store_name: string };
             toast({
                 title: "Store created!",
-                description: `Your storefront "${newStore.store_name}" has been created. 500 credits have been deducted.`
+                description: `Your storefront "${storeData.store_name}" has been created. 500 credits have been deducted.`
             });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
             setShowCreateDialog(false);
@@ -442,11 +503,9 @@ export function StorefrontBuilder() {
 
     // Handle store creation with credit deduction
     const handleCreateStore = async () => {
-        // Validate slug first
         const isValid = await validateSlug(newStoreSlug);
         if (!isValid) return;
 
-        // Execute with credit gating (500 credits for storefront_create)
         await executeCreditAction({
             actionKey: 'storefront_create',
             action: async () => {
@@ -464,23 +523,37 @@ export function StorefrontBuilder() {
         });
     };
 
-    // Save draft mutation (saves without publishing)
+    // Get the config to save (from easy mode or direct state)
+    const getConfigToSave = useCallback(() => {
+        if (builderMode === 'simple') {
+            return {
+                layoutConfig: easyModeBuilder.derivedLayoutConfig,
+                themeConfig: easyModeBuilder.derivedThemeConfig,
+            };
+        }
+        return { layoutConfig, themeConfig };
+    }, [builderMode, easyModeBuilder, layoutConfig, themeConfig]);
+
+    // Save draft mutation
     const saveDraftMutation = useMutation({
         mutationFn: async () => {
-            const { error } = await (supabase as any)
+            const { layoutConfig: configToSave, themeConfig: themeToSave } = getConfigToSave();
+
+            const { error } = await (supabase as unknown as { from: (table: string) => { update: (obj: unknown) => { eq: (col: string, val: string) => Promise<{ error: unknown }> } } })
                 .from('marketplace_stores')
                 .update({
-                    layout_config: JSON.parse(JSON.stringify(layoutConfig)),
-                    theme_config: themeConfig,
+                    layout_config: JSON.parse(JSON.stringify(configToSave)),
+                    theme_config: themeToSave,
                     updated_at: new Date().toISOString()
                 })
-                .eq('tenant_id', tenant?.id);
+                .eq('tenant_id', tenant?.id || '');
 
             if (error) throw error;
         },
         onSuccess: () => {
             toast({ title: "Draft saved", description: "Your changes have been saved as a draft." });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            easyModeBuilder.markClean();
         },
         onError: (err) => {
             toast({
@@ -492,24 +565,27 @@ export function StorefrontBuilder() {
         }
     });
 
-    // Publish mutation (makes store public)
+    // Publish mutation
     const publishMutation = useMutation({
         mutationFn: async () => {
-            const { error } = await (supabase as any)
+            const { layoutConfig: configToSave, themeConfig: themeToSave } = getConfigToSave();
+
+            const { error } = await (supabase as unknown as { from: (table: string) => { update: (obj: unknown) => { eq: (col: string, val: string) => Promise<{ error: unknown }> } } })
                 .from('marketplace_stores')
                 .update({
-                    layout_config: JSON.parse(JSON.stringify(layoutConfig)),
-                    theme_config: themeConfig,
+                    layout_config: JSON.parse(JSON.stringify(configToSave)),
+                    theme_config: themeToSave,
                     is_public: true,
                     updated_at: new Date().toISOString()
                 })
-                .eq('tenant_id', tenant?.id);
+                .eq('tenant_id', tenant?.id || '');
 
             if (error) throw error;
         },
         onSuccess: () => {
             toast({ title: "Store published!", description: "Your storefront is now live and visible to customers." });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            easyModeBuilder.markClean();
         },
         onError: (err) => {
             toast({
@@ -521,16 +597,16 @@ export function StorefrontBuilder() {
         }
     });
 
-    // Unpublish mutation (returns store to draft)
+    // Unpublish mutation
     const unpublishMutation = useMutation({
         mutationFn: async () => {
-            const { error } = await (supabase as any)
+            const { error } = await (supabase as unknown as { from: (table: string) => { update: (obj: unknown) => { eq: (col: string, val: string) => Promise<{ error: unknown }> } } })
                 .from('marketplace_stores')
                 .update({
                     is_public: false,
                     updated_at: new Date().toISOString()
                 })
-                .eq('tenant_id', tenant?.id);
+                .eq('tenant_id', tenant?.id || '');
 
             if (error) throw error;
         },
@@ -548,34 +624,6 @@ export function StorefrontBuilder() {
         }
     });
 
-    // Deprecated - use saveDraftMutation or publishMutation instead
-    const saveMutation = useMutation({
-        mutationFn: async () => {
-            const { error } = await (supabase as any)
-                .from('marketplace_stores')
-                .update({
-                    layout_config: JSON.parse(JSON.stringify(layoutConfig)),
-                    theme_config: themeConfig,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('tenant_id', tenant?.id);
-
-            if (error) throw error;
-        },
-        onSuccess: () => {
-            toast({ title: "Store saved", description: "Your storefront changes have been saved." });
-            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
-        },
-        onError: (err) => {
-            toast({
-                title: "Save failed",
-                description: "Could not save changes. Is the database migration applied?",
-                variant: "destructive"
-            });
-            logger.error('Failed to save storefront', err);
-        }
-    });
-
     const addSection = (type: keyof typeof SECTION_TYPES) => {
         const newSection: SectionConfig = {
             id: crypto.randomUUID(),
@@ -590,13 +638,11 @@ export function StorefrontBuilder() {
         setSelectedSectionId(newSection.id);
     };
 
-    // Request section deletion (shows confirmation dialog)
     const requestRemoveSection = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
         setSectionToDelete(id);
     };
 
-    // Confirm and execute section deletion
     const confirmRemoveSection = () => {
         if (!sectionToDelete) return;
         const newConfig = layoutConfig.filter(s => s.id !== sectionToDelete);
@@ -607,7 +653,6 @@ export function StorefrontBuilder() {
         toast({ title: "Section deleted" });
     };
 
-    // Cancel section deletion
     const cancelRemoveSection = () => {
         setSectionToDelete(null);
     };
@@ -696,9 +741,7 @@ export function StorefrontBuilder() {
 
     const selectedSection = layoutConfig.find(s => s.id === selectedSectionId);
 
-    // Preview scale - use transform to fit content without breaking layout
     const getPreviewStyle = () => {
-        // Apply user-controlled zoom
         switch (devicePreview) {
             case 'mobile': return { width: '375px', transform: `scale(${previewZoom * 0.9})`, transformOrigin: 'top center' };
             case 'tablet': return { width: '768px', transform: `scale(${previewZoom * 0.85})`, transformOrigin: 'top center' };
@@ -706,11 +749,14 @@ export function StorefrontBuilder() {
         }
     };
 
-    // Auto-open right panel when selecting a section
     const handleSelectSection = (id: string) => {
         setSelectedSectionId(id);
         if (!rightPanelOpen) setRightPanelOpen(true);
     };
+
+    // Render the appropriate layout config for preview
+    const previewConfig = builderMode === 'simple' ? easyModeBuilder.derivedLayoutConfig : layoutConfig;
+    const previewTheme = builderMode === 'simple' ? easyModeBuilder.derivedThemeConfig : themeConfig;
 
     return (
         <div className="flex flex-col bg-muted overflow-hidden -m-3 sm:-m-4 md:-m-6" style={{ height: 'calc(100vh - 56px)', width: 'calc(100% + 1.5rem)' }}>
@@ -797,305 +843,327 @@ export function StorefrontBuilder() {
                             )}
                         </div>
                     )}
-                    {/* Toggle right panel button when closed */}
-                    {selectedSection && !rightPanelOpen && (
-                        <Button variant="outline" size="sm" onClick={() => setRightPanelOpen(true)}>
-                            <Eye className="w-4 h-4 mr-2" />
-                            Edit Section
-                        </Button>
-                    )}
-                    {/* Create Store button when no store exists */}
-                    {!store && !isLoading && (
-                        <Button onClick={() => setShowCreateDialog(true)}>
-                            <Store className="w-4 h-4 mr-2" />
-                            Create Store (500 credits)
-                        </Button>
-                    )}
-                    {/* Save Draft button */}
-                    {store && (
+
+                    {/* Mode Toggle */}
+                    <div className="flex bg-muted p-1 rounded-md">
                         <Button
-                            variant="outline"
-                            onClick={() => saveDraftMutation.mutate()}
-                            disabled={saveDraftMutation.isPending}
+                            variant={builderMode === 'simple' ? 'default' : 'ghost'}
+                            size="sm"
+                            className="h-7 text-xs gap-1"
+                            onClick={() => handleModeSwitch('simple')}
                         >
-                            <Save className="w-4 h-4 mr-2" />
-                            {saveDraftMutation.isPending ? 'Saving...' : 'Save Draft'}
+                            <Wand2 className="w-3 h-3" /> Simple
                         </Button>
-                    )}
-                    {/* Publish / Unpublish button */}
-                    {store && (
-                        store.is_public ? (
-                            <Button
-                                variant="outline"
-                                onClick={() => unpublishMutation.mutate()}
-                                disabled={unpublishMutation.isPending}
-                            >
-                                <GlobeLock className="w-4 h-4 mr-2" />
-                                {unpublishMutation.isPending ? 'Unpublishing...' : 'Unpublish'}
-                            </Button>
-                        ) : (
-                            <Button
-                                onClick={() => publishMutation.mutate()}
-                                disabled={publishMutation.isPending}
-                            >
-                                <Globe className="w-4 h-4 mr-2" />
-                                {publishMutation.isPending ? 'Publishing...' : 'Publish'}
-                            </Button>
-                        )
-                    )}
+                        <Button
+                            variant={builderMode === 'advanced' ? 'default' : 'ghost'}
+                            size="sm"
+                            className="h-7 text-xs gap-1"
+                            onClick={() => handleModeSwitch('advanced')}
+                        >
+                            <Settings2 className="w-3 h-3" /> Advanced
+                        </Button>
+                    </div>
+
+                    <Button
+                        disabled={saveDraftMutation.isPending || publishMutation.isPending}
+                        onClick={() => saveDraftMutation.mutate()}
+                        variant="outline"
+                        size="sm"
+                    >
+                        {saveDraftMutation.isPending ? 'Saving...' : 'Save Draft'}
+                    </Button>
+                    <Button
+                        disabled={publishMutation.isPending}
+                        onClick={() => publishMutation.mutate()}
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700"
+                    >
+                        Publish
+                    </Button>
                 </div>
             </div>
 
-            <div className="flex flex-1 min-h-0 overflow-hidden">
-                {/* Left Sidebar */}
-                <div className="w-64 bg-background border-r flex flex-col shrink-0 z-10">
-                    <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1">
-                        <TabsList className="mx-4 mt-4 mb-2 grid grid-cols-3">
-                            <TabsTrigger value="sections" className="text-xs">Sections</TabsTrigger>
-                            <TabsTrigger value="theme" className="text-xs">Theme</TabsTrigger>
-                            <TabsTrigger value="templates" className="text-xs">Templates</TabsTrigger>
-                        </TabsList>
+            {builderMode === 'simple' ? (
+                /* Simple Mode - Easy Mode Editor */
+                <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900/20">
+                    <EasyModeEditor
+                        storeId={store?.id || ''}
+                        storeSlug={store?.slug || ''}
+                        selectedPresetId={easyModeBuilder.selectedPreset?.id || null}
+                        onSelectPreset={easyModeBuilder.selectPreset}
+                        featureToggles={easyModeBuilder.featureToggles}
+                        onUpdateToggle={easyModeBuilder.updateFeatureToggle}
+                        simpleContent={easyModeBuilder.simpleContent}
+                        onUpdateContent={easyModeBuilder.updateSimpleContent}
+                        onResetToPreset={easyModeBuilder.resetToPreset}
+                        onSave={() => saveDraftMutation.mutate()}
+                        onPublish={() => publishMutation.mutate()}
+                        isSaving={saveDraftMutation.isPending || publishMutation.isPending}
+                        isDirty={easyModeBuilder.isDirty}
+                    />
+                </div>
+            ) : (
+                /* Advanced Builder Layout */
+                <div className="flex flex-1 min-h-0 overflow-hidden">
+                    {/* Left Sidebar */}
+                    <div className="w-64 bg-background border-r flex flex-col shrink-0 z-10">
+                        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1">
+                            <TabsList className="mx-4 mt-4 mb-2 grid grid-cols-3">
+                                <TabsTrigger value="sections" className="text-xs">Sections</TabsTrigger>
+                                <TabsTrigger value="theme" className="text-xs">Theme</TabsTrigger>
+                                <TabsTrigger value="templates" className="text-xs">Templates</TabsTrigger>
+                            </TabsList>
 
-                        <TabsContent value="sections" className="flex-1 overflow-hidden flex flex-col m-0 p-4">
-                            <ScrollArea className="flex-1">
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label>Add Section</Label>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {Object.entries(SECTION_TYPES).map(([key, { label, icon: Icon }]) => (
-                                                <Button
-                                                    key={key}
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="justify-start text-xs h-auto py-2"
-                                                    onClick={() => addSection(key as keyof typeof SECTION_TYPES)}
-                                                >
-                                                    <Icon className="w-3 h-3 mr-1" />
-                                                    {label.split(' ')[0]}
-                                                </Button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <Separator />
-
-                                    <div className="space-y-2">
-                                        <Label>Page Sections</Label>
-                                        <DndContext
-                                            sensors={sensors}
-                                            collisionDetection={closestCenter}
-                                            onDragEnd={handleDragEnd}
-                                        >
-                                            <SortableContext
-                                                items={layoutConfig.map(s => s.id)}
-                                                strategy={verticalListSortingStrategy}
-                                            >
-                                                <div className="space-y-2">
-                                                    {layoutConfig.map((section) => (
-                                                        <SortableSectionItem
-                                                            key={section.id}
-                                                            section={section}
-                                                            isSelected={selectedSectionId === section.id}
-                                                            onSelect={() => handleSelectSection(section.id)}
-                                                            onRemove={(e) => requestRemoveSection(section.id, e)}
-                                                            onDuplicate={(e) => duplicateSection(section.id, e)}
-                                                            onToggleVisibility={(e) => toggleVisibility(section.id, e)}
-                                                            sectionLabel={SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.label || section.type}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </SortableContext>
-                                        </DndContext>
-                                        {layoutConfig.length === 0 && (
-                                            <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg">
-                                                No sections added
+                            <TabsContent value="sections" className="flex-1 overflow-hidden flex flex-col m-0 p-4">
+                                <ScrollArea className="flex-1">
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label>Add Section</Label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {Object.entries(SECTION_TYPES).map(([key, { label, icon: Icon }]) => (
+                                                    <Button
+                                                        key={key}
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="justify-start text-xs h-auto py-2"
+                                                        onClick={() => addSection(key as keyof typeof SECTION_TYPES)}
+                                                    >
+                                                        <Icon className="w-3 h-3 mr-1" />
+                                                        {label.split(' ')[0]}
+                                                    </Button>
+                                                ))}
                                             </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </ScrollArea>
-                        </TabsContent>
-
-                        <TabsContent value="theme" className="flex-1 overflow-hidden flex flex-col m-0 p-4">
-                            <ScrollArea className="flex-1">
-                                <div className="space-y-6">
-                                    <div className="space-y-3">
-                                        <Label>Global Colors</Label>
-                                        <div className="grid gap-3">
-                                            {['primary', 'secondary', 'accent', 'background', 'text'].map(colorKey => (
-                                                <div key={colorKey} className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground capitalize">{colorKey}</span>
-                                                    <div className="flex items-center gap-2">
-                                                        <Input
-                                                            type="color"
-                                                            className="w-8 h-8 p-0 border-0 cursor-pointer"
-                                                            value={themeConfig.colors?.[colorKey] || '#000000'}
-                                                            onChange={(e) => setThemeConfig({
-                                                                ...themeConfig,
-                                                                colors: { ...themeConfig.colors, [colorKey]: e.target.value }
-                                                            })}
-                                                        />
-                                                        <Input
-                                                            className="w-24 h-8 text-xs"
-                                                            value={themeConfig.colors?.[colorKey] || '#000000'}
-                                                            onChange={(e) => setThemeConfig({
-                                                                ...themeConfig,
-                                                                colors: { ...themeConfig.colors, [colorKey]: e.target.value }
-                                                            })}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            ))}
                                         </div>
-                                    </div>
 
-                                    <Separator />
+                                        <Separator />
 
-                                    <div className="space-y-3">
-                                        <Label>Typography</Label>
-                                        <Select
-                                            value={themeConfig.typography?.fontFamily || 'Inter'}
-                                            onValueChange={(value) => setThemeConfig({
-                                                ...themeConfig,
-                                                typography: { ...themeConfig.typography, fontFamily: value }
-                                            })}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="Inter">Inter</SelectItem>
-                                                <SelectItem value="Space Grotesk">Space Grotesk</SelectItem>
-                                                <SelectItem value="DM Sans">DM Sans</SelectItem>
-                                                <SelectItem value="Playfair Display">Playfair Display</SelectItem>
-                                                <SelectItem value="Montserrat">Montserrat</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                            </ScrollArea>
-                        </TabsContent>
-
-                        <TabsContent value="templates" className="flex-1 overflow-hidden flex flex-col m-0 p-4">
-                            <ScrollArea className="flex-1">
-                                <div className="space-y-3">
-                                    <Label>Quick Templates</Label>
-                                    <p className="text-xs text-muted-foreground">Start with a pre-built layout</p>
-                                    <div className="space-y-2">
-                                        {Object.entries(TEMPLATES).map(([key, template]) => (
-                                            <Card
-                                                key={key}
-                                                className="cursor-pointer hover:border-primary transition-colors"
-                                                onClick={() => applyTemplate(key as keyof typeof TEMPLATES)}
+                                        <div className="space-y-2">
+                                            <Label>Page Sections</Label>
+                                            <DndContext
+                                                sensors={sensors}
+                                                collisionDetection={closestCenter}
+                                                onDragEnd={handleDragEnd}
                                             >
-                                                <CardContent className="p-4">
-                                                    <div className="flex items-center justify-between">
-                                                        <div>
-                                                            <p className="font-medium text-sm">{template.name}</p>
-                                                            <p className="text-xs text-muted-foreground">{template.description}</p>
-                                                        </div>
-                                                        <FileText className="w-4 h-4 text-muted-foreground" />
-                                                    </div>
-                                                    <div className="flex gap-1 mt-2 flex-wrap">
-                                                        {template.sections.map((s, i) => (
-                                                            <span key={i} className="text-xs bg-muted px-2 py-0.5 rounded">
-                                                                {SECTION_TYPES[s as keyof typeof SECTION_TYPES]?.label.split(' ')[0]}
-                                                            </span>
+                                                <SortableContext
+                                                    items={layoutConfig.map(s => s.id)}
+                                                    strategy={verticalListSortingStrategy}
+                                                >
+                                                    <div className="space-y-2">
+                                                        {layoutConfig.map((section) => (
+                                                            <SortableSectionItem
+                                                                key={section.id}
+                                                                section={section}
+                                                                isSelected={selectedSectionId === section.id}
+                                                                onSelect={() => handleSelectSection(section.id)}
+                                                                onRemove={(e) => requestRemoveSection(section.id, e)}
+                                                                onDuplicate={(e) => duplicateSection(section.id, e)}
+                                                                onToggleVisibility={(e) => toggleVisibility(section.id, e)}
+                                                                sectionLabel={SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.label || section.type}
+                                                            />
                                                         ))}
                                                     </div>
-                                                </CardContent>
-                                            </Card>
-                                        ))}
+                                                </SortableContext>
+                                            </DndContext>
+                                            {layoutConfig.length === 0 && (
+                                                <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg">
+                                                    No sections added
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
+                                </ScrollArea>
+                            </TabsContent>
+
+                            <TabsContent value="theme" className="flex-1 overflow-hidden flex flex-col m-0 p-4">
+                                <ScrollArea className="flex-1">
+                                    <div className="space-y-6">
+                                        <div className="space-y-3">
+                                            <Label>Global Colors</Label>
+                                            <div className="grid gap-3">
+                                                {['primary', 'secondary', 'accent', 'background', 'text'].map(colorKey => (
+                                                    <div key={colorKey} className="flex items-center justify-between">
+                                                        <span className="text-sm text-muted-foreground capitalize">{colorKey}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <Input
+                                                                type="color"
+                                                                className="w-8 h-8 p-0 border-0 cursor-pointer"
+                                                                value={themeConfig.colors?.[colorKey as keyof typeof themeConfig.colors] || '#000000'}
+                                                                onChange={(e) => setThemeConfig({
+                                                                    ...themeConfig,
+                                                                    colors: { ...themeConfig.colors, [colorKey]: e.target.value }
+                                                                })}
+                                                            />
+                                                            <Input
+                                                                className="w-24 h-8 text-xs"
+                                                                value={themeConfig.colors?.[colorKey as keyof typeof themeConfig.colors] || '#000000'}
+                                                                onChange={(e) => setThemeConfig({
+                                                                    ...themeConfig,
+                                                                    colors: { ...themeConfig.colors, [colorKey]: e.target.value }
+                                                                })}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <Separator />
+
+                                        <div className="space-y-3">
+                                            <Label>Typography</Label>
+                                            <Select
+                                                value={themeConfig.typography?.fontFamily || 'Inter'}
+                                                onValueChange={(value) => setThemeConfig({
+                                                    ...themeConfig,
+                                                    typography: { ...themeConfig.typography, fontFamily: value }
+                                                })}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Inter">Inter</SelectItem>
+                                                    <SelectItem value="Space Grotesk">Space Grotesk</SelectItem>
+                                                    <SelectItem value="DM Sans">DM Sans</SelectItem>
+                                                    <SelectItem value="Playfair Display">Playfair Display</SelectItem>
+                                                    <SelectItem value="Montserrat">Montserrat</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </ScrollArea>
+                            </TabsContent>
+
+                            <TabsContent value="templates" className="flex-1 overflow-hidden flex flex-col m-0 p-4">
+                                <ScrollArea className="flex-1">
+                                    <div className="space-y-3">
+                                        <Label>Quick Templates</Label>
+                                        <p className="text-xs text-muted-foreground">Start with a pre-built layout</p>
+                                        <div className="space-y-2">
+                                            {Object.entries(TEMPLATES).map(([key, template]) => (
+                                                <Card
+                                                    key={key}
+                                                    className="cursor-pointer hover:border-primary transition-colors"
+                                                    onClick={() => applyTemplate(key as keyof typeof TEMPLATES)}
+                                                >
+                                                    <CardContent className="p-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <div>
+                                                                <p className="font-medium text-sm">{template.name}</p>
+                                                                <p className="text-xs text-muted-foreground">{template.description}</p>
+                                                            </div>
+                                                            <FileText className="w-4 h-4 text-muted-foreground" />
+                                                        </div>
+                                                        <div className="flex gap-1 mt-2 flex-wrap">
+                                                            {template.sections.map((s, i) => (
+                                                                <span key={i} className="text-xs bg-muted px-2 py-0.5 rounded">
+                                                                    {SECTION_TYPES[s as keyof typeof SECTION_TYPES]?.label.split(' ')[0]}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </ScrollArea>
+                            </TabsContent>
+                        </Tabs>
+                    </div>
+
+                    {/* Center: Live Preview */}
+                    <div className="flex-1 bg-muted flex items-start justify-center p-4 overflow-auto relative min-w-0 min-h-0">
+                        <div
+                            className="bg-background shadow-2xl overflow-visible transition-all duration-300 relative"
+                            style={{
+                                ...getPreviewStyle(),
+                                minHeight: '800px',
+                            }}
+                        >
+                            {/* Simulated Header */}
+                            <div className="h-16 border-b flex items-center px-6 justify-between sticky top-0 bg-background/80 backdrop-blur-md z-50">
+                                <span className="font-bold text-lg">{store?.store_name || 'Store Name'}</span>
+                                <div className="hidden md:flex gap-6 text-sm">
+                                    <span>Home</span>
+                                    <span>Shop</span>
+                                    <span>Contact</span>
                                 </div>
+                            </div>
+
+                            {/* Sections Render */}
+                            <div className="min-h-[calc(100%-4rem)] bg-background" style={{ backgroundColor: previewTheme.colors?.background }}>
+                                {previewConfig.filter(s => s.visible !== false).map((section) => {
+                                    const Component = SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.component as React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string }>;
+                                    if (!Component) return <div key={section.id} className="p-4 text-destructive">Unknown: {section.type}</div>;
+
+                                    return (
+                                        <div
+                                            key={section.id}
+                                            className={`relative group ${selectedSectionId === section.id ? 'ring-2 ring-primary ring-inset z-10' : ''}`}
+                                            onClick={() => handleSelectSection(section.id)}
+                                        >
+                                            <Component content={section.content} styles={section.styles} storeId={store?.id} />
+
+                                            {selectedSectionId !== section.id && (
+                                                <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors cursor-pointer" />
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                                {previewConfig.length === 0 && (
+                                    <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+                                        <Layout className="w-16 h-16 mb-4 opacity-50" />
+                                        <p className="text-lg font-medium mb-2">Your store canvas is empty</p>
+                                        <p className="text-sm mb-6">Get started with a template or add sections manually</p>
+                                        <div className="flex gap-3">
+                                            <Button variant="default" onClick={() => applyTemplate('standard')}>
+                                                <Sparkles className="w-4 h-4 mr-2" />
+                                                Quick Start (Standard)
+                                            </Button>
+                                            <Button variant="outline" onClick={() => setActiveTab('templates')}>
+                                                Browse Templates
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Sidebar: Property Editor */}
+                    {selectedSection && rightPanelOpen && (
+                        <div className="w-72 bg-background border-l flex flex-col shrink-0 z-10 animate-in slide-in-from-right-10 duration-200">
+                            <div className="p-4 border-b flex items-center justify-between">
+                                <div>
+                                    <h3 className="font-semibold text-xs uppercase text-muted-foreground mb-1">Editing</h3>
+                                    <p className="font-medium text-sm">{SECTION_TYPES[selectedSection.type as keyof typeof SECTION_TYPES]?.label}</p>
+                                </div>
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setRightPanelOpen(false)}>
+                                    <X className="w-4 h-4" />
+                                </Button>
+                            </div>
+                            <ScrollArea className="flex-1 p-4">
+                                <SectionEditor
+                                    section={selectedSection}
+                                    onUpdateContent={(key, value) => updateSection(selectedSection.id, 'content', key, value)}
+                                    onUpdateStyles={(key, value) => updateSection(selectedSection.id, 'styles', key, value)}
+                                    onUpdateResponsive={(device, key, value) => updateSectionResponsive(selectedSection.id, device, key, value)}
+                                />
                             </ScrollArea>
-                        </TabsContent>
-                    </Tabs>
+                        </div>
+                    )}
                 </div>
+            )}
 
-                {/* Center: Live Preview - uses transform scaling */}
-                <div className="flex-1 bg-muted flex items-start justify-center p-4 overflow-auto relative min-w-0 min-h-0">
-                    <div
-                        className="bg-background shadow-2xl overflow-visible transition-all duration-300 relative"
-                        style={{
-                            ...getPreviewStyle(),
-                            minHeight: '800px',
-                        }}
-                    >
-                        {/* Simulated Header */}
-                        <div className="h-16 border-b flex items-center px-6 justify-between sticky top-0 bg-background/80 backdrop-blur-md z-50">
-                            <span className="font-bold text-lg">{store?.store_name || 'Store Name'}</span>
-                            <div className="hidden md:flex gap-6 text-sm">
-                                <span>Home</span>
-                                <span>Shop</span>
-                                <span>Contact</span>
-                            </div>
-                        </div>
-
-                        {/* Sections Render */}
-                        <div className="min-h-[calc(100%-4rem)] bg-background" style={{ backgroundColor: themeConfig.colors?.background }}>
-                            {layoutConfig.filter(s => s.visible !== false).map((section) => {
-                                const Component = SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.component as React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string }>;
-                                if (!Component) return <div key={section.id} className="p-4 text-destructive">Unknown: {section.type}</div>;
-
-                                return (
-                                    <div
-                                        key={section.id}
-                                        className={`relative group ${selectedSectionId === section.id ? 'ring-2 ring-primary ring-inset z-10' : ''}`}
-                                        onClick={() => handleSelectSection(section.id)}
-                                    >
-                                        <Component content={section.content} styles={section.styles} storeId={store?.id} />
-
-                                        {/* Hover overlay for selection */}
-                                        {selectedSectionId !== section.id && (
-                                            <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors cursor-pointer" />
-                                        )}
-                                    </div>
-                                );
-                            })}
-                            {layoutConfig.length === 0 && (
-                                <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
-                                    <Layout className="w-16 h-16 mb-4 opacity-50" />
-                                    <p className="text-lg font-medium mb-2">Your store canvas is empty</p>
-                                    <p className="text-sm mb-6">Get started with a template or add sections manually</p>
-                                    <div className="flex gap-3">
-                                        <Button variant="default" onClick={() => applyTemplate('standard')}>
-                                            <Sparkles className="w-4 h-4 mr-2" />
-                                            Quick Start (Standard)
-                                        </Button>
-                                        <Button variant="outline" onClick={() => setActiveTab('templates')}>
-                                            Browse Templates
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Sidebar: Property Editor - collapsible */}
-                {selectedSection && rightPanelOpen && (
-                    <div className="w-72 bg-background border-l flex flex-col shrink-0 z-10 animate-in slide-in-from-right-10 duration-200">
-                        <div className="p-4 border-b flex items-center justify-between">
-                            <div>
-                                <h3 className="font-semibold text-xs uppercase text-muted-foreground mb-1">Editing</h3>
-                                <p className="font-medium text-sm">{SECTION_TYPES[selectedSection.type as keyof typeof SECTION_TYPES]?.label}</p>
-                            </div>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setRightPanelOpen(false)}>
-                                <X className="w-4 h-4" />
-                            </Button>
-                        </div>
-                        <ScrollArea className="flex-1 p-4">
-                            <SectionEditor
-                                section={selectedSection}
-                                onUpdateContent={(key, value) => updateSection(selectedSection.id, 'content', key, value)}
-                                onUpdateStyles={(key, value) => updateSection(selectedSection.id, 'styles', key, value)}
-                                onUpdateResponsive={(device, key, value) => updateSectionResponsive(selectedSection.id, device, key, value)}
-                            />
-                        </ScrollArea>
-                    </div>
-                )}
-            </div>
+            {/* Mode Switch Warning Dialog */}
+            <ModeSwitchWarningDialog
+                open={showModeSwitchWarning}
+                onOpenChange={setShowModeSwitchWarning}
+                direction={pendingModeSwitch === 'simple' ? 'advanced-to-simple' : 'simple-to-advanced'}
+                customizations={advancedCustomizations}
+                onConfirm={confirmModeSwitch}
+                onCancel={cancelModeSwitch}
+            />
 
             {/* Create Store Dialog */}
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -1193,7 +1261,7 @@ export function StorefrontBuilder() {
     );
 }
 
-// Helper to get defaults dynamically so we don't crash on new props
+// Helper to get defaults dynamically
 function sectionDefaults(type: string) {
     if (type === 'hero') return {
         content: {

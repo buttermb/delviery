@@ -10,6 +10,13 @@ import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
 import { StorefrontProductCard, type MarketplaceProduct } from "@/components/shop/StorefrontProductCard";
 
+interface Product extends MarketplaceProduct {
+    quantity_available?: number;
+    base_price?: number;
+    product_id?: string;
+    product_name?: string;
+}
+
 export interface ProductGridSectionProps {
     content: {
         heading: string;
@@ -18,6 +25,11 @@ export interface ProductGridSectionProps {
         show_categories: boolean;
         initial_categories_shown: number;
         show_premium_filter: boolean;
+        // Feature toggles from Easy Mode
+        show_sale_badges?: boolean;
+        show_new_badges?: boolean;
+        show_strain_badges?: boolean;
+        show_stock_warnings?: boolean;
     };
     styles: {
         background_color: string;
@@ -34,7 +46,12 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         show_search = true,
         show_categories = true,
         initial_categories_shown = 2,
-        show_premium_filter = true
+        show_premium_filter = true,
+        // Feature toggles - default to true if not specified
+        show_sale_badges = true,
+        show_new_badges = true,
+        show_strain_badges = true,
+        show_stock_warnings = true,
     } = content || {};
 
     const {
@@ -74,7 +91,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
     };
 
     // Fetch products
-    const { data: allProducts = [], isLoading, error } = useQuery<any[]>({
+    const { data: allProducts = [], isLoading, error } = useQuery<MarketplaceProduct[]>({
         queryKey: ["products", storeId],
         queryFn: async () => {
             if (storeId) {
@@ -133,7 +150,17 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                     .eq("in_stock", true)
                     .limit(20);
                 if (error) throw error;
-                return (data || []) as any[];
+                // Map generic products to MarketplaceProduct shape
+                return (data || []).map(p => ({
+                    ...p,
+                    product_id: p.id,
+                    product_name: p.name,
+                    image_url: p.images?.[0] || null,
+                    stock_quantity: p.quantity_available || 100,
+                    is_visible: true,
+                    display_order: 0,
+                    strain_type: p.strain_type || '',
+                })) as MarketplaceProduct[];
             }
         },
         retry: 1,
@@ -307,6 +334,10 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                                             onQuickView={() => { }}
                                                             index={index}
                                                             accentColor={accent_color}
+                                                            showSaleBadge={show_sale_badges}
+                                                            showNewBadge={show_new_badges}
+                                                            showStrainBadge={show_strain_badges}
+                                                            showStockWarning={show_stock_warnings}
                                                         />
                                                     </div>
                                                 ))}

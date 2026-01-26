@@ -74,7 +74,13 @@ import CopyButton from "@/components/CopyButton";
 import { ExportButton } from "@/components/ui/ExportButton";
 import { InlineEditableCell } from "@/components/admin/products/InlineEditableCell";
 
-type Product = Database['public']['Tables']['products']['Row'];
+type Product = Database['public']['Tables']['products']['Row'] & {
+  // Add fields that might be missing from generated types or are dynamic
+  metrc_retail_id?: string | null;
+  exclude_from_discounts?: boolean;
+  minimum_price?: number;
+  version?: number;
+};
 type ProductUpdate = Database['public']['Tables']['products']['Update'];
 
 const mapProductToForm = (product: Product): ProductFormData => ({
@@ -95,10 +101,10 @@ const mapProductToForm = (product: Product): ProductFormData => ({
   image_url: product.image_url || "",
 
   low_stock_alert: product.low_stock_alert?.toString() || "10",
-  metrc_retail_id: (product as any).metrc_retail_id || "",
+  metrc_retail_id: product.metrc_retail_id || "",
 
-  exclude_from_discounts: (product as any).exclude_from_discounts || false,
-  minimum_price: (product as any).minimum_price?.toString() || "",
+  exclude_from_discounts: product.exclude_from_discounts || false,
+  minimum_price: product.minimum_price?.toString() || "",
 });
 
 export default function ProductManagement() {
@@ -438,7 +444,7 @@ export default function ProductManagement() {
         if (!tenant?.id) throw new Error('No tenant context');
 
         // Use optimistic locking to prevent concurrent edit conflicts
-        const expectedVersion = (editingProduct as any).version || 1;
+        const expectedVersion = editingProduct.version || 1;
         const result = await updateWithLock(editingProduct.id, productData, expectedVersion);
 
         if (!result.success) {

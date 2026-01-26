@@ -25,11 +25,14 @@ interface Product {
   category?: string;
   price?: number;
   stock_quantity?: number;
+  available_quantity?: number;
   in_stock?: boolean;
   image_url?: string;
   sku?: string;
   low_stock_alert?: number;
-  [key: string]: unknown; // Allow additional properties
+  strain_name?: string;
+  cost_per_unit?: number;
+  wholesale_price?: number;
 }
 
 interface ProductCardProps {

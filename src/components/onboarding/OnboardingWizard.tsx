@@ -119,6 +119,43 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
         }
     };
 
+    const handleShortcut = async (path: string) => {
+        if (!tenant?.id) return;
+        setLoading(true);
+        try {
+            // Mark onboarding as complete
+            const { error } = await supabase
+                .from("tenants")
+                .update({
+                    onboarding_completed: true,
+                    onboarding_completed_at: new Date().toISOString(),
+                })
+                .eq("id", tenant.id);
+
+            if (error) throw error;
+
+            toast({
+                title: "Setup Saved",
+                description: "Redirecting you now...",
+            });
+
+            onOpenChange(false);
+
+            // Short delay to ensure dialog closes smoothly
+            setTimeout(() => {
+                navigate(path);
+            }, 300);
+
+        } catch (error: any) {
+            logger.error("Failed to save shortcut progress", error, { component: "OnboardingWizard" });
+            // Navigate anyway so user isn't stuck
+            onOpenChange(false);
+            navigate(path);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const nextStep = () => {
         if (step < totalSteps) {
             setStep(step + 1);
@@ -168,15 +205,11 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                                     className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
                                     role="button"
                                     tabIndex={0}
-                                    onClick={() => {
-                                        onOpenChange(false);
-                                        navigate(`/${tenant?.slug}/admin/settings`);
-                                    }}
+                                    onClick={() => handleShortcut(`/${tenant?.slug}/admin/settings`)}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' || e.key === ' ') {
                                             e.preventDefault();
-                                            onOpenChange(false);
-                                            navigate(`/${tenant?.slug}/admin/settings`);
+                                            handleShortcut(`/${tenant?.slug}/admin/settings`);
                                         }
                                     }}
                                 >
@@ -187,15 +220,11 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                                     className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
                                     role="button"
                                     tabIndex={0}
-                                    onClick={() => {
-                                        onOpenChange(false);
-                                        navigate(`/${tenant?.slug}/admin/settings`);
-                                    }}
+                                    onClick={() => handleShortcut(`/${tenant?.slug}/admin/settings`)}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' || e.key === ' ') {
                                             e.preventDefault();
-                                            onOpenChange(false);
-                                            navigate(`/${tenant?.slug}/admin/settings`);
+                                            handleShortcut(`/${tenant?.slug}/admin/settings`);
                                         }
                                     }}
                                 >
@@ -223,15 +252,11 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                                     className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
                                     role="button"
                                     tabIndex={0}
-                                    onClick={() => {
-                                        onOpenChange(false);
-                                        navigate(`/${tenant?.slug}/admin/settings`);
-                                    }}
+                                    onClick={() => handleShortcut(`/${tenant?.slug}/admin/settings`)}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' || e.key === ' ') {
                                             e.preventDefault();
-                                            onOpenChange(false);
-                                            navigate(`/${tenant?.slug}/admin/settings`);
+                                            handleShortcut(`/${tenant?.slug}/admin/settings`);
                                         }
                                     }}
                                 >
@@ -242,15 +267,11 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                                     className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
                                     role="button"
                                     tabIndex={0}
-                                    onClick={() => {
-                                        onOpenChange(false);
-                                        navigate(`/${tenant?.slug}/admin/team`);
-                                    }}
+                                    onClick={() => handleShortcut(`/${tenant?.slug}/admin/team`)}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' || e.key === ' ') {
                                             e.preventDefault();
-                                            onOpenChange(false);
-                                            navigate(`/${tenant?.slug}/admin/team`);
+                                            handleShortcut(`/${tenant?.slug}/admin/team`);
                                         }
                                     }}
                                 >

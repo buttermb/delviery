@@ -55,7 +55,7 @@ serve(
       let targetUserId = user_id || user.id;
 
       if (email && email !== user.email) {
-        // Only allow users to delete their own data unless super admin
+        // Super Admin check
         const { data: superAdmin } = await supabase
           .from('super_admin_users')
           .select('id')
@@ -70,12 +70,28 @@ serve(
           );
         }
 
-        // Get user by email
-        const { data: targetUser } = await supabase.auth.admin.listUsers();
-        const foundUser = targetUser?.users.find((u: { email?: string }) => u.email === email);
-        if (foundUser) {
-          targetUserId = foundUser.id;
+        // Require ID for safety when deleting others
+        if (!user_id) {
+          return new Response(
+            JSON.stringify({ error: 'User ID is required when deleting another user' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
         }
+        targetUserId = user_id;
+      }
+
+      // Safety Check: Prevent deleting a Super Admin via this API
+      const { data: isTargetSuperAdmin } = await supabase
+        .from('super_admin_users')
+        .select('id')
+        .eq('user_id', targetUserId)
+        .maybeSingle();
+
+      if (isTargetSuperAdmin) {
+        return new Response(
+          JSON.stringify({ error: 'Cannot delete a Super Admin account via GDPR endpoint' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
       // Anonymize or delete user data
