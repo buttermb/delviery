@@ -904,18 +904,21 @@ export default function StorefrontSettings() {
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   {(formData.delivery_zones || []).map((zone, index) => (
-                    <div key={index} className="flex flex-col sm:flex-row gap-4">
-                      <Input
-                        placeholder="Zip code"
-                        value={zone.zip_code || ''}
-                        onChange={(e) => {
-                          const zones = [...(formData.delivery_zones || [])];
-                          zones[index] = { ...zones[index], zip_code: e.target.value };
-                          updateField('delivery_zones', zones);
-                        }}
-                        className="w-full sm:w-32"
-                      />
-                      <div className="flex items-center gap-2">
+                    <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-0 border sm:border-0 rounded-lg sm:rounded-none">
+                      <div className="flex flex-col gap-1 sm:gap-0">
+                        <span className="text-sm text-muted-foreground sm:hidden">Zip Code</span>
+                        <Input
+                          placeholder="Zip code"
+                          value={zone.zip_code || ''}
+                          onChange={(e) => {
+                            const zones = [...(formData.delivery_zones || [])];
+                            zones[index] = { ...zones[index], zip_code: e.target.value };
+                            updateField('delivery_zones', zones);
+                          }}
+                          className="w-full sm:w-32"
+                        />
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                         <span className="text-sm text-muted-foreground">Fee: $</span>
                         <Input
                           type="number"
@@ -929,7 +932,7 @@ export default function StorefrontSettings() {
                           className="w-full sm:w-24"
                         />
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                         <span className="text-sm text-muted-foreground">Min: $</span>
                         <Input
                           type="number"
@@ -946,6 +949,7 @@ export default function StorefrontSettings() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="self-end sm:self-auto"
                         onClick={() => {
                           const zones = (formData.delivery_zones || []).filter((_, i) => i !== index);
                           updateField('delivery_zones', zones);
