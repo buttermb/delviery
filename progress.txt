@@ -7690,3 +7690,51 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Add .catch error handler to Promise .then chains in AdminContext.tsx
+
+### Completed: 2026-01-25
+
+### Analysis:
+Reviewed `src/contexts/AdminContext.tsx` for Promise .then chains without .catch handlers:
+
+1. **Line 83-96**: `supabase.auth.getSession().then(...).catch(...)` - Already had proper .catch handler ✓
+2. **Line 154-158**: `supabase.from("security_events").insert({...})` - Fire-and-forget promise without error handling
+
+### Changes Made:
+Added .catch error handler to the security_events insert operation in the `signIn` function:
+
+**Before:**
+```typescript
+supabase.from("security_events").insert({
+  event_type: "admin_login",
+  user_id: authData.user.id,
+  details: { email, timestamp: new Date().toISOString() }
+});
+```
+
+**After:**
+```typescript
+supabase.from("security_events").insert({
+  event_type: "admin_login",
+  user_id: authData.user.id,
+  details: { email, timestamp: new Date().toISOString() }
+}).then(() => {
+  // Security event logged successfully
+}).catch((error) => {
+  handleError(error, {
+    component: 'AdminContext',
+    context: { action: 'logAdminLogin' },
+    showToast: false
+  });
+});
+```
+
+### Verification:
+- `npm run build` - PASSES (0 TypeScript errors)
+- Build completes successfully with 6599 modules transformed
+
+### Files Changed:
+- `src/contexts/AdminContext.tsx` - Added .catch handler to fire-and-forget security_events insert
