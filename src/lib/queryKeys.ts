@@ -601,4 +601,13 @@ export const queryKeys = {
       [...queryKeys.subscriptions.all, 'tenant', tenantId] as const,
     plans: () => ['subscription-plans'] as const,
   },
+
+  // Settings Versions
+  settingsVersions: {
+    all: ['settings-versions'] as const,
+    byTenant: (tenantId: string) =>
+      [...queryKeys.settingsVersions.all, 'tenant', tenantId] as const,
+    byKey: (tenantId: string, settingsKey: string) =>
+      [...queryKeys.settingsVersions.byTenant(tenantId), settingsKey] as const,
+  },
 } as const;

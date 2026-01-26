@@ -7690,3 +7690,65 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Add settings version history showing last 10 saves with restore option
+
+### What was done:
+
+1. **Created database migration `supabase/migrations/20260125000001_add_tenant_settings_versions.sql`**:
+   - `tenant_settings_versions` table for storing version history
+   - Fields: id, tenant_id, settings_key, snapshot (JSONB), changed_fields (JSONB), changed_by, changed_by_email, version_number, description, created_at
+   - Indexes for efficient lookups and cleanup
+   - RLS policies for tenant isolation
+   - `save_settings_version()` function that saves a new version and maintains only the last 10 versions per category
+   - `get_settings_versions()` function to retrieve version history
+
+2. **Added query keys to `src/lib/queryKeys.ts`**:
+   - `settingsVersions.all` - Base key for settings versions
+   - `settingsVersions.byTenant(tenantId)` - Versions for a specific tenant
+   - `settingsVersions.byKey(tenantId, settingsKey)` - Versions for a specific settings category
+
+3. **Created `src/hooks/useSettingsVersions.ts`**:
+   - `useSettingsVersions` hook for fetching version history with TanStack Query
+   - `saveVersion` mutation for manually saving versions
+   - `getChangedFields` utility function to calculate which fields changed between saves
+
+4. **Created `src/components/settings/SettingsVersionHistory.tsx`**:
+   - Collapsible version history list showing last 10 saves
+   - Each version shows: version number, time ago, user email, changed fields badges
+   - Preview dialog to view full snapshot as formatted JSON
+   - Restore confirmation dialog with warning about replacing current settings
+   - Loading skeleton and empty state
+   - Mobile-responsive design
+
+5. **Enhanced `src/hooks/useAutoSave.ts`**:
+   - Added optional `versionTracking` configuration
+   - Automatically saves settings version after successful save
+   - Tracks changed fields between saves
+   - Non-blocking - version save failures don't affect main save
+
+6. **Updated `src/pages/tenant-admin/settings/BusinessSettings.tsx`**:
+   - Integrated `useSettingsVersions` hook
+   - Added version tracking to business info and business hours auto-save hooks
+   - Added `handleRestoreVersion` function for restoring previous versions
+   - Added Version History section with `SettingsVersionHistory` component
+   - Custom field name formatter for human-readable labels
+
+### Acceptance Criteria Met:
+- [x] Last 10 saves tracked per settings category (enforced at database level)
+- [x] Version history displayed with version number, timestamp, user, and changed fields
+- [x] Restore option with confirmation dialog
+- [x] Current settings backed up before restore
+- [x] Auto-save integration to track changes automatically
+- [x] Build compiles successfully
+
+### Files Changed:
+- `supabase/migrations/20260125000001_add_tenant_settings_versions.sql` (new)
+- `src/lib/queryKeys.ts` (modified - added settingsVersions keys)
+- `src/hooks/useSettingsVersions.ts` (new)
+- `src/components/settings/SettingsVersionHistory.tsx` (new)
+- `src/hooks/useAutoSave.ts` (modified - added version tracking)
+- `src/pages/tenant-admin/settings/BusinessSettings.tsx` (modified - added version history section)
+
