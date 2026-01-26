@@ -121,7 +121,7 @@ export function VendorManagement() {
 
         const { error } = await (supabase as any)
           .from('vendors')
-          .update(vendorData as Record<string, unknown>)
+          .update(formData as Record<string, unknown>)
           .eq('id', editingVendor.id)
           .eq('account_id', tenant.id);
 
@@ -135,9 +135,9 @@ export function VendorManagement() {
         const { error } = await (supabase as any)
           .from('vendors')
           .insert({
-            ...vendorData,
-            account_id: tenant.id
-          });
+            ...formData,
+            tenant_id: tenant.id
+          } as Record<string, unknown>);
 
         if (error) throw error;
 

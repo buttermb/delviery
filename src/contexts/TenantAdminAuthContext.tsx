@@ -816,16 +816,12 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       // STEP 1: Get the current refresh token
       const currentRefreshToken = refreshToken || safeStorage.getItem(REFRESH_TOKEN_KEY);
 
-      // STEP 2: Validate refresh token exists and is not empty/invalid
-      if (!currentRefreshToken ||
-        currentRefreshToken === 'undefined' ||
-        currentRefreshToken === 'null' ||
-        currentRefreshToken.trim() === '' ||
-        currentRefreshToken.length < 10) {
+      // Guard against empty, undefined, null, or invalid refresh tokens
+      if (!currentRefreshToken || currentRefreshToken === 'undefined' || currentRefreshToken === 'null' || currentRefreshToken.trim() === '') {
         logger.warn('[AUTH] Cannot refresh token - no valid refresh token available');
         clearAuthState();
         toast.error('Your session has expired. Please log in again.', { duration: 5000 });
-        return { success: false, error: 'No valid refresh token' };
+        return;
       }
 
       try {

@@ -60,7 +60,7 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 // Import after mocks
-import { VendorManagement } from '../VendorManagement';
+import VendorManagement from '../VendorManagement';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -125,19 +125,16 @@ describe('VendorManagement', () => {
           id: 'vendor-1',
           name: 'Test Vendor 1',
           contact_name: 'John Doe',
-          contact_email: 'john@vendor.com',
-          contact_phone: '555-1234',
+          email: 'john@vendor.com',
+          phone: '555-1234',
           status: 'active',
-          account_id: 'tenant-123',
         },
         {
           id: 'vendor-2',
           name: 'Test Vendor 2',
           contact_name: 'Jane Smith',
-          contact_email: 'jane@vendor.com',
-          contact_phone: null,
+          email: 'jane@vendor.com',
           status: 'inactive',
-          account_id: 'tenant-123',
         },
       ];
 
@@ -249,7 +246,7 @@ describe('VendorManagement', () => {
         expect(insertMock).toHaveBeenCalledWith(
           expect.objectContaining({
             name: 'Type Safe Vendor',
-            account_id: 'tenant-123',
+            tenant_id: 'tenant-123',
           })
         );
       });
@@ -300,7 +297,7 @@ describe('VendorManagement', () => {
   });
 
   describe('Tenant Context', () => {
-    it('should filter vendors by account_id', async () => {
+    it('should filter vendors by tenant_id', async () => {
       const selectMock = vi.fn().mockReturnThis();
       const eqMock = vi.fn().mockReturnThis();
       const orderMock = vi.fn().mockResolvedValue({ data: [], error: null });
@@ -314,7 +311,7 @@ describe('VendorManagement', () => {
       render(<VendorManagement />, { wrapper });
 
       await waitFor(() => {
-        expect(eqMock).toHaveBeenCalledWith('account_id', 'tenant-123');
+        expect(eqMock).toHaveBeenCalledWith('tenant_id', 'tenant-123');
       });
     });
   });
