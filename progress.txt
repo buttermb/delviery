@@ -6699,27 +6699,10 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
----
+## Task: Responsive width fix for min order input
+**Completed:** Sun, Jan 25, 2026  1:17:30 PM
 
-## Task: Fix Tab Overflow in StorefrontSettings.tsx
+Changed `w-24` to `w-full sm:w-24` in StorefrontSettings.tsx (line ~872) for the minimum order input in delivery zones section. This makes the input responsive - full width on mobile, 24 units wide on small screens and above.
 
-**Date:** 2026-01-25
-
-### Problem:
-The TabsList in StorefrontSettings.tsx was overflowing on smaller screens, causing layout issues with the 10 tab triggers (General, Branding, Featured, Delivery, Zones, Time Slots, Payments, Checkout, Hours, SEO).
-
-### Solution:
-Wrapped the TabsList in a horizontal ScrollArea component from shadcn/ui to enable smooth horizontal scrolling for tab navigation.
-
-### Changes Made:
-
-1. **Added import for ScrollArea and ScrollBar** (`src/pages/admin/storefront/StorefrontSettings.tsx`):
-   - Added: `import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';`
-
-2. **Wrapped TabsList in ScrollArea** (around line 524):
-   - Before: `<TabsList className="inline-flex w-full overflow-x-auto justify-start snap-x scrollbar-hide p-1">`
-   - After: Wrapped with `<ScrollArea className="w-full whitespace-nowrap">` and added `<ScrollBar orientation="horizontal" />`
-   - Changed TabsList class to `className="inline-flex w-max justify-start p-1"` for proper scrolling behavior
-
-### Verification:
-- Build passes successfully: `npm run build` completes without TypeScript errors
+### Files Changed:
+- `src/pages/admin/storefront/StorefrontSettings.tsx`
