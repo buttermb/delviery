@@ -6,6 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import {
+  validateImageDimensions,
+  IMAGE_DIMENSION_CONSTRAINTS,
+} from "@/lib/utils/validation";
 
 interface ProductFormData {
   images?: string[];
@@ -35,13 +39,35 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
   const uploadImage = async (file: File, isMain = false) => {
     try {
       setUploading(true);
+
+      // Validate image dimensions before upload
+      const dimensionResult = await validateImageDimensions(
+        file,
+        IMAGE_DIMENSION_CONSTRAINTS.productImage
+      );
+
+      if (!dimensionResult.valid) {
+        toast({
+          title: "Invalid image dimensions",
+          description: dimensionResult.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      logger.debug("Image dimensions validated", {
+        width: dimensionResult.width,
+        height: dimensionResult.height,
+        component: 'ImagesStep'
+      });
+
       const fileExt = file.name.split(".").pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `product-images/${fileName}`;
 
       logger.debug("Uploading product image", { fileName, filePath, isMain, component: 'ImagesStep' });
 
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("product-images")
         .upload(filePath, file);
 
@@ -63,7 +89,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
         updateFormData({ images: newImages });
       }
 
-      toast({ title: "✓ Image uploaded successfully" });
+      toast({ title: "Image uploaded successfully" });
     } catch (error: unknown) {
       logger.error("Product image upload error", error instanceof Error ? error : new Error(String(error)), { component: 'ImagesStep' });
       toast({
@@ -162,7 +188,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
                 onChange={(e) => handleFileSelect(e, true)}
               />
               <p className="text-xs text-muted-foreground mt-4">
-                Recommended: 1000x1000px, JPG/PNG, Max 5MB
+                Min: 400x400px, Max: 4096x4096px, JPG/PNG/WebP, Max 5MB
               </p>
             </div>
           )}

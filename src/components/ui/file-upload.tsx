@@ -15,6 +15,11 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
+import {
+  validateImageDimensions,
+  formatDimensionConstraints,
+  type ImageDimensionConstraints,
+} from "@/lib/utils/validation";
 
 /**
  * File type icons mapping
@@ -104,6 +109,11 @@ interface FileUploadProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "on
    * Whether to show file previews for images
    */
   showPreview?: boolean;
+  /**
+   * Image dimension constraints (only applies to image files)
+   * Set minWidth, minHeight, maxWidth, maxHeight to validate image dimensions
+   */
+  imageDimensions?: ImageDimensionConstraints;
 }
 
 /**
@@ -135,6 +145,7 @@ function FileUpload({
   value,
   variant = "default",
   showPreview = true,
+  imageDimensions,
   className,
   ...props
 }: FileUploadProps) {
@@ -171,7 +182,7 @@ function FileUpload({
     };
   }, []);
 
-  const validateFile = (file: File): string | null => {
+  const validateFileBasic = (file: File): string | null => {
     if (maxSize && file.size > maxSize) {
       return `File "${file.name}" exceeds maximum size of ${formatFileSize(maxSize)}`;
     }
@@ -193,6 +204,22 @@ function FileUpload({
     return null;
   };
 
+  const validateFile = async (file: File): Promise<string | null> => {
+    // Basic validation (sync)
+    const basicError = validateFileBasic(file);
+    if (basicError) return basicError;
+
+    // Image dimension validation (async)
+    if (imageDimensions && file.type.startsWith("image/")) {
+      const result = await validateImageDimensions(file, imageDimensions);
+      if (!result.valid) {
+        return `File "${file.name}": ${result.error}`;
+      }
+    }
+
+    return null;
+  };
+
   const handleFiles = async (newFiles: FileList | null) => {
     if (!newFiles || disabled) return;
 
@@ -205,10 +232,10 @@ function FileUpload({
       return;
     }
 
-    // Validate each file
+    // Validate each file (including async dimension checks for images)
     const validFiles: File[] = [];
     for (const file of fileArray) {
-      const validationError = validateFile(file);
+      const validationError = await validateFile(file);
       if (validationError) {
         setError(validationError);
         return;
@@ -422,6 +449,7 @@ function FileUpload({
           <p className="text-xs text-muted-foreground">
             {accept ? `Accepted: ${accept}` : "All file types accepted"}
             {maxSize && ` • Max ${formatFileSize(maxSize)}`}
+            {imageDimensions && ` • ${formatDimensionConstraints(imageDimensions)}`}
           </p>
         </div>
       </div>

@@ -6,6 +6,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import {
+  validateImageDimensions,
+  IMAGE_DIMENSION_CONSTRAINTS,
+} from '@/lib/utils/validation';
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const MAX_FILE_SIZE_MB = 5;
@@ -86,12 +90,27 @@ export function AvatarUpload({
     // Reset file input so the same file can be re-selected
     e.target.value = '';
 
-    // Validate file
+    // Validate file type and size
     const validationError = validateFile(file);
     if (validationError) {
       toast({
         title: 'Invalid file',
         description: validationError,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate image dimensions
+    const dimensionResult = await validateImageDimensions(
+      file,
+      IMAGE_DIMENSION_CONSTRAINTS.avatar
+    );
+
+    if (!dimensionResult.valid) {
+      toast({
+        title: 'Invalid image dimensions',
+        description: dimensionResult.error,
         variant: 'destructive',
       });
       return;

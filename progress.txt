@@ -7690,3 +7690,54 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Add image dimension validation checking min max dimensions before upload
+
+### What was done:
+
+1. **Enhanced `src/lib/utils/validation.ts`** with comprehensive image validation utilities:
+   - Added `ImageDimensionConstraints` interface for specifying min/max width and height
+   - Added `ImageValidationResult` interface for returning validation status with dimensions and errors
+   - Created `IMAGE_DIMENSION_CONSTRAINTS` constant with predefined constraints for:
+     - `productImage`: 400x400 min, 4096x4096 max
+     - `avatar`: 100x100 min, 2048x2048 max
+     - `thumbnail`: 150x150 min, 1024x1024 max
+     - `banner`: 800x200 min, 4096x2048 max
+   - Added `getImageDimensions(file)` function to extract width/height from an image File using Image API
+   - Added `validateImageDimensions(file, constraints)` async function that validates against min/max constraints
+   - Added `formatDimensionConstraints(constraints)` utility for human-readable constraint display
+
+2. **Updated `src/components/ui/file-upload.tsx`** to support dimension validation:
+   - Added `imageDimensions` prop (optional `ImageDimensionConstraints`)
+   - Split validation into sync `validateFileBasic()` for size/type and async `validateFile()` that includes dimension checks
+   - Updated `handleFiles()` to await the async validation
+   - Enhanced the default variant's help text to display dimension constraints when provided
+
+3. **Updated `src/components/admin/product-form/ImagesStep.tsx`** to enforce product image dimensions:
+   - Integrated `validateImageDimensions` and `IMAGE_DIMENSION_CONSTRAINTS.productImage`
+   - Added dimension validation before upload in `uploadImage()` function
+   - Shows toast error with dimension-specific message if validation fails
+   - Logs validated dimensions for debugging
+   - Updated UI hint text to show actual constraints: "Min: 400x400px, Max: 4096x4096px"
+
+4. **Updated `src/components/auth/AvatarUpload.tsx`** to enforce avatar image dimensions:
+   - Integrated `validateImageDimensions` and `IMAGE_DIMENSION_CONSTRAINTS.avatar`
+   - Added dimension validation in `handleFileChange()` before file preview and upload
+   - Shows toast error with specific dimension error message if validation fails
+
+### Acceptance Criteria Met:
+- [x] Image dimension validation utility created with min/max width and height checks
+- [x] Predefined dimension constraints for common image types (product, avatar, thumbnail, banner)
+- [x] FileUpload component supports optional `imageDimensions` prop
+- [x] Product images validated against 400x400 minimum, 4096x4096 maximum
+- [x] Avatar images validated against 100x100 minimum, 2048x2048 maximum
+- [x] User-friendly error messages display specific dimension issues
+- [x] TypeScript build passes with no errors
+
+### Files Changed:
+- `src/lib/utils/validation.ts` - Added image dimension validation utilities
+- `src/components/ui/file-upload.tsx` - Added imageDimensions prop with async validation
+- `src/components/admin/product-form/ImagesStep.tsx` - Integrated product image dimension validation
+- `src/components/auth/AvatarUpload.tsx` - Integrated avatar dimension validation
