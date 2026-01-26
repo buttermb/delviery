@@ -44,7 +44,7 @@ import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog
 import { generateUrlToken } from '@/utils/menuHelpers';
 import { StorefrontSettingsLivePreview } from '@/components/admin/storefront/StorefrontSettingsLivePreview';
 import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedProductsManager';
-import { Skeleton } from '@/components/ui/skeleton';
+import { OGImagePreview } from '@/components/admin/storefront/OGImagePreview';
 
 interface DeliveryZone {
   zip_code: string;
@@ -1389,6 +1389,15 @@ export default function StorefrontSettings() {
                     Recommended size: 1200x630 pixels
                   </p>
                 </div>
+
+                {/* Social Share Preview */}
+                <OGImagePreview
+                  title={formData.meta_title || formData.store_name || ''}
+                  description={formData.meta_description || formData.tagline || ''}
+                  imageUrl={formData.og_image_url || null}
+                  siteUrl={`${window.location.origin}/shop/${formData.slug || ''}`}
+                  siteName={formData.store_name || ''}
+                />
 
                 <Separator />
 
