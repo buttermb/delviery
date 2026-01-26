@@ -267,6 +267,43 @@ export const navigationSections: NavSection[] = [
     ]
   },
 
+  // 🚚 FULFILLMENT
+  {
+    title: 'Fulfillment',
+    items: [
+      {
+        title: 'Overview',
+        href: '/admin/fulfillment-hub',
+        icon: Truck
+      },
+      {
+        title: 'Fleet',
+        href: '/admin/fulfillment-hub?tab=fleet',
+        icon: Car,
+        tier: 'professional'
+      },
+      {
+        title: 'Couriers',
+        href: '/admin/fulfillment-hub?tab=couriers',
+        icon: UserCog,
+        tier: 'professional'
+      },
+      {
+        title: 'Live Tracking',
+        href: '/admin/fulfillment-hub?tab=map',
+        icon: Map,
+        badge: 'LIVE',
+        tier: 'professional'
+      },
+      {
+        title: 'Route Optimization',
+        href: '/admin/route-optimizer',
+        icon: Route,
+        tier: 'enterprise'
+      }
+    ]
+  },
+
   // 💰 FRONTED INVENTORY (Critical for plugs)
   {
     title: 'Fronted Inventory',
