@@ -7690,3 +7690,49 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Wrap all JSON.parse calls in try-catch in src/contexts/CustomerAuthContext.tsx
+
+### What was done:
+
+1. **Analyzed existing JSON.parse calls** in `src/contexts/CustomerAuthContext.tsx`:
+   - Lines 127-128: `JSON.parse(storedCustomer)` and `JSON.parse(storedTenant)` 
+   - These were already wrapped in a try-catch block (lines 126-137)
+
+2. **Enhanced error handling** in the existing try-catch block:
+   - Added proper error logging using `logger.warn()` per project standards
+   - Log message includes context about which data failed to parse
+   - Error is properly converted to Error object for consistent logging
+   - Includes metadata: component name, boolean flags for stored data presence
+
+### Code change:
+```typescript
+// Before:
+} catch (e) {
+  // Invalid stored data, clear it
+  safeStorage.removeItem(TOKEN_KEY);
+  ...
+}
+
+// After:
+} catch (e) {
+  // Invalid stored data (e.g., corrupted JSON), clear it
+  logger.warn('Failed to parse stored customer auth data, clearing storage', e instanceof Error ? e : new Error(String(e)), {
+    component: 'CustomerAuthContext',
+    hasStoredCustomer: !!storedCustomer,
+    hasStoredTenant: !!storedTenant,
+  });
+  safeStorage.removeItem(TOKEN_KEY);
+  ...
+}
+```
+
+### Summary:
+- The JSON.parse calls were already protected by try-catch
+- Added proper error logging to improve debuggability when corrupted data is encountered
+- Follows project conventions for logging (`logger` from `@/lib/logger`)
+
+### Files Changed:
+- `src/contexts/CustomerAuthContext.tsx` (enhanced error logging in try-catch block)
