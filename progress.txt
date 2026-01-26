@@ -7690,3 +7690,22 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Fix BuilderPreview desktop width to 100% maxWidth 1200px
+
+### Verification:
+
+Verified that BuilderPreview.tsx line 38 already has the correct desktop width settings:
+
+```typescript
+default: return { width: '100%', maxWidth: '1200px', transform: `scale(${previewZoom})`, transformOrigin: 'top center' };
+```
+
+The fix was already applied in commit e843130a (feat: batch improvements). No changes needed.
+
+### Files:
+- `src/pages/admin/storefront/builder/BuilderPreview.tsx:38` - Already correct
+
+### Status: ALREADY COMPLETE
