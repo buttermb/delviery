@@ -1956,34 +1956,48 @@ Added `.catch()` error handlers to all unhandled `.then()` Promise chains to pre
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Agent 3 - Task: Wrap JSON.parse calls in try-catch in CustomerAuthContext.tsx
+---
 
-### Status: ALREADY COMPLETE - No changes needed
+## Task: Wrap all JSON.parse calls in try-catch in src/contexts/CustomerAuthContext.tsx
 
-### Analysis:
-Reviewed src/contexts/CustomerAuthContext.tsx for JSON.parse calls.
+### What was done:
 
-Found 2 JSON.parse calls (lines 127-128):
-- Line 127: JSON.parse(storedCustomer)
-- Line 128: JSON.parse(storedTenant)
+1. **Analyzed existing JSON.parse calls** in `src/contexts/CustomerAuthContext.tsx`:
+   - Lines 127-128: `JSON.parse(storedCustomer)` and `JSON.parse(storedTenant)` 
+   - These were already wrapped in a try-catch block (lines 126-137)
 
-Both JSON.parse calls are ALREADY wrapped in a try-catch block (lines 126-137):
+2. **Enhanced error handling** in the existing try-catch block:
+   - Added proper error logging using `logger.warn()` per project standards
+   - Log message includes context about which data failed to parse
+   - Error is properly converted to Error object for consistent logging
+   - Includes metadata: component name, boolean flags for stored data presence
+
+### Code change:
 ```typescript
-try {
-  setCustomer(JSON.parse(storedCustomer));
-  setTenant(JSON.parse(storedTenant));
-  // Verify token is still valid
-  verifyToken(storedToken);
+// Before:
 } catch (e) {
   // Invalid stored data, clear it
   safeStorage.removeItem(TOKEN_KEY);
-  safeStorage.removeItem(CUSTOMER_KEY);
-  safeStorage.removeItem(TENANT_KEY);
-  setLoading(false);
+  ...
+}
+
+// After:
+} catch (e) {
+  // Invalid stored data (e.g., corrupted JSON), clear it
+  logger.warn('Failed to parse stored customer auth data, clearing storage', e instanceof Error ? e : new Error(String(e)), {
+    component: 'CustomerAuthContext',
+    hasStoredCustomer: !!storedCustomer,
+    hasStoredTenant: !!storedTenant,
+  });
+  safeStorage.removeItem(TOKEN_KEY);
+  ...
 }
 ```
 
-The error handling properly clears corrupted storage data when JSON parsing fails.
+### Summary:
+- The JSON.parse calls were already protected by try-catch
+- Added proper error logging to improve debuggability when corrupted data is encountered
+- Follows project conventions for logging (`logger` from `@/lib/logger`)
 
-### Conclusion:
-No code changes required - the file already has proper try-catch protection for all JSON.parse calls.
+### Files Changed:
+- `src/contexts/CustomerAuthContext.tsx` (enhanced error logging in try-catch block)

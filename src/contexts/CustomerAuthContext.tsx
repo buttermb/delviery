@@ -129,7 +129,12 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         // Verify token is still valid
         verifyToken(storedToken);
       } catch (e) {
-        // Invalid stored data, clear it
+        // Invalid stored data (e.g., corrupted JSON), clear it
+        logger.warn('Failed to parse stored customer auth data, clearing storage', e instanceof Error ? e : new Error(String(e)), {
+          component: 'CustomerAuthContext',
+          hasStoredCustomer: !!storedCustomer,
+          hasStoredTenant: !!storedTenant,
+        });
         safeStorage.removeItem(TOKEN_KEY);
         safeStorage.removeItem(CUSTOMER_KEY);
         safeStorage.removeItem(TENANT_KEY);
