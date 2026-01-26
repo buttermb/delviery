@@ -63,7 +63,8 @@ import {
   UserCheck,
   Flame,
   Brain,
-  Barcode
+  HeadphonesIcon,
+  Award
 } from 'lucide-react';
 
 export interface NavItem {
@@ -342,6 +343,18 @@ export const navigationSections: NavSection[] = [
         href: '/admin/disposable-menus',
         icon: FileText,
         badge: '🔥'
+      },
+      {
+        title: 'Support',
+        href: '/admin/customer-support',
+        icon: HeadphonesIcon,
+        tier: 'professional'
+      },
+      {
+        title: 'Loyalty',
+        href: '/admin/loyalty-program',
+        icon: Award,
+        tier: 'professional'
       },
       {
         title: 'Pricing & Deals',
