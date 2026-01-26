@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, WifiOff } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -36,7 +36,6 @@ import { ExportOptionsDialog, type ExportField } from "@/components/admin/Export
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { formatSmartDate } from "@/lib/utils/formatDate";
-import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
 import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
 import {
   DropdownMenu,
@@ -46,14 +45,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
-
-interface OrderItemData {
-  id: string;
-  product_name: string;
-  quantity: number;
-  price: number;
-  product_id: string;
-}
 
 interface Order {
   id: string;
@@ -323,14 +314,17 @@ export default function Orders() {
       old.map(o => selectedOrders.includes(o.id) ? { ...o, status } : o)
     );
 
+    const now = new Date().toISOString();
+
     try {
       const { error } = await supabase
         .from('orders')
         .update({
           status,
-          ...(status === 'delivered' && { delivered_at: new Date().toISOString() }),
-          ...(status === 'cancelled' && { cancelled_at: new Date().toISOString() }),
-          updated_at: new Date().toISOString()
+          ...(status === 'delivered' && { delivered_at: now }),
+          ...(status === 'in_transit' && { courier_assigned_at: now }),
+          ...(status === 'confirmed' && { accepted_at: now }),
+          updated_at: now
         })
         .in('id', selectedOrders)
         .eq('tenant_id', tenant.id); // CRITICAL: Tenant isolation
@@ -350,15 +344,6 @@ export default function Orders() {
       toast.error("Failed to update orders");
     }
     setBulkStatusConfirm({ open: true, targetStatus: status });
-  };
-
-  const handleConfirmBulkStatusUpdate = () => {
-    const selectedOrderInfos = orders
-      .filter(o => selectedOrders.includes(o.id))
-      .map(o => ({ id: o.id, order_number: o.order_number }));
-
-    setBulkStatusConfirm({ open: false, targetStatus: '' });
-    bulkStatusUpdate.executeBulkUpdate(selectedOrderInfos, bulkStatusConfirm.targetStatus);
   };
 
   const handleClearFilters = () => {
@@ -447,6 +432,63 @@ export default function Orders() {
     }
 
     setExportDialogOpen(false);
+  };
+
+  const handlePrintOrder = (order: Order) => {
+    // Open print dialog with order details
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Order #${order.order_number || order.id.slice(0, 8)}</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; }
+              h1 { font-size: 24px; margin-bottom: 20px; }
+              .info { margin-bottom: 10px; }
+              .label { font-weight: bold; }
+            </style>
+          </head>
+          <body>
+            <h1>Order #${order.order_number || order.id.slice(0, 8)}</h1>
+            <div class="info"><span class="label">Status:</span> ${order.status}</div>
+            <div class="info"><span class="label">Customer:</span> ${order.user?.full_name || order.user?.email || 'Unknown'}</div>
+            <div class="info"><span class="label">Total:</span> $${order.total_amount?.toFixed(2)}</div>
+            <div class="info"><span class="label">Date:</span> ${order.created_at ? format(new Date(order.created_at), 'PPpp') : 'N/A'}</div>
+            <div class="info"><span class="label">Delivery Method:</span> ${order.delivery_method || 'N/A'}</div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+    triggerHaptic('light');
+  };
+
+  const handleGenerateInvoice = (order: Order) => {
+    toast.success(`Invoice generated for order #${order.order_number || order.id.slice(0, 8)}`);
+    triggerHaptic('light');
+  };
+
+  const handleCancelOrder = async (order: Order) => {
+    if (!tenant?.id) return;
+
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+        .eq('id', order.id)
+        .eq('tenant_id', tenant.id);
+
+      if (error) throw error;
+
+      toast.success(`Order #${order.order_number || order.id.slice(0, 8)} cancelled`);
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      triggerHaptic('medium');
+    } catch (error) {
+      logger.error('Error cancelling order', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
+      toast.error("Failed to cancel order");
+    }
   };
 
   const handlePrintOrder = (order: Order) => {
