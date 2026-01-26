@@ -28,13 +28,13 @@ export function useInvoices() {
         queryKey: crmInvoiceKeys.lists(),
         queryFn: async () => {
             if (!accountId) return [];
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('crm_invoices')
-                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, notes, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
+                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                 .eq('account_id', accountId)
                 .order('created_at', { ascending: false });
             if (error) throw error;
-            return (data || []).map(normalizeInvoice);
+            return (data || []).map((row: Record<string, unknown>) => normalizeInvoice(row));
         },
         enabled: !!accountId,
         staleTime: 30_000,
@@ -44,13 +44,13 @@ export function useInvoices() {
     const useInvoiceQuery = (id: string) => useQuery({
         queryKey: crmInvoiceKeys.detail(id),
         queryFn: async () => {
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('crm_invoices')
-                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, notes, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
+                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                 .eq('id', id)
                 .maybeSingle();
             if (error) throw error;
-            return normalizeInvoice(data);
+            return data ? normalizeInvoice(data as Record<string, unknown>) : null;
         },
         enabled: !!id,
         staleTime: 30_000,
