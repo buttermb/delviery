@@ -7701,44 +7701,52 @@ Added a multi-layer NODE_ENV check to prevent these dangerous flags from being e
 
 ---
 
-## Task: Remove @ts-nocheck from src/pages/vendor/VendorOrderDetailPage.tsx
+## Task: Add Skeleton loader components for each settings tab while data loads
 
-**Status:** ✅ Completed
+### Implementation Summary
 
-### Changes Made:
+Added comprehensive skeleton loading states for all 8 settings tabs in the admin panel Settings page. This provides a smoother user experience by showing animated placeholder content while data loads.
 
-1. **Removed `@ts-nocheck` directive**
-   - Deleted the `// @ts-nocheck` comment at the top of the file
+### Files Created
 
-2. **Added proper TypeScript types**
-   - Imported `Tables` type from `@/integrations/supabase/types`
-   - Created `ShippingAddress` interface for the JSON shipping_address field
-   - Created `MarketplaceOrder` type extending `Tables<'marketplace_orders'>` with:
-     - `buyer_business_name` field (exists in DB but not in generated types)
-     - `marketplace_order_items` array properly typed
+1. **`src/components/settings/SettingsSkeletons.tsx`** - New component file containing:
+   - `GeneralSettingsSkeleton` - Form fields skeleton for company info (inputs, textareas, buttons)
+   - `SecuritySettingsSkeleton` - Toggle switches and input fields skeleton
+   - `NotificationSettingsSkeleton` - Toggle switches with divider skeleton
+   - `PrintingSettingsSkeleton` - Placeholder card skeleton
+   - `IntegrationsSettingsSkeleton` - Integration cards and Stripe connect skeleton
+   - `SidebarSettingsSkeleton` - Radio group options and badge skeleton
+   - `SidebarCustomizationSkeleton` - Nested tabs with feature toggles skeleton
+   - `PaymentSettingsSkeleton` - Payment method cards with tabs skeleton
+   - Helper components: `SkeletonSwitchRow`, `SkeletonIntegrationCard`, `SkeletonPaymentCard`
 
-3. **Fixed type safety issues**
-   - Cast query result as `MarketplaceOrder` type
-   - Added type assertions for `orderId` and `vendor?.tenant_id` in query
-   - Fixed nullable `status` field with nullish coalescing (`order.status ?? 'unknown'`)
-   - Fixed nullable `created_at` field with conditional rendering
-   - Removed `any` type from order items map callback
-   - Fixed nullable `product_type` with nullish coalescing
-   - Properly cast `shipping_address` as `ShippingAddress` interface
-   - Added fallback for nullable `buyer_business_name`
+### Files Modified
 
-4. **Updated component export**
-   - Changed from `export default function` to `export function` (named export per codebase guidelines)
+1. **`src/pages/admin/SettingsPage.tsx`**:
+   - Added imports for all skeleton components
+   - Added `formsInitialized` state to track when form data is loaded
+   - Added `showSkeletons` computed value based on `accountLoading` and `formsInitialized`
+   - Updated all 8 TabsContent components to conditionally render skeletons when loading
 
-5. **Updated App.tsx import**
-   - Changed lazy import to use named export pattern:
-     `lazy(() => import("...").then(m => ({ default: m.VendorOrderDetailPage })))`
+### Key Design Decisions
 
-### Files Changed:
-- `src/pages/vendor/VendorOrderDetailPage.tsx` - Type-safe implementation
-- `src/App.tsx` - Updated lazy import for named export
+1. **Reused existing skeleton primitives** from `@/components/ui/skeleton.tsx`:
+   - `Skeleton` - Base animated placeholder
+   - `SkeletonInput` - Input field with optional label
+   - `SkeletonButton` - Button-shaped placeholder
 
-### Verification:
-- Build passes with no TypeScript errors
-- All nullable fields properly handled
-- Component follows codebase conventions (named exports, proper typing)
+2. **Loading state detection**:
+   - Uses `loading` from `useAccount()` context for initial data load
+   - Uses `formsInitialized` state to ensure forms are populated before showing content
+   - Combined as `showSkeletons = accountLoading || !formsInitialized`
+
+3. **Skeleton design matches actual content structure**:
+   - Each skeleton matches the layout and spacing of its corresponding tab
+   - Switch rows, input fields, cards, and buttons all have matching placeholders
+   - Proper spacing and hierarchy preserved
+
+### Verification
+
+- **Build passes**: `npm run build` completes with 0 TypeScript errors
+- Skeletons use proper pulse animation via `animate-pulse` class
+- All skeletons have proper `role="status"` and `aria-label` for accessibility
