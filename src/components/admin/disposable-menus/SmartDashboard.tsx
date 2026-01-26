@@ -119,8 +119,8 @@ function OrderCard({ order, onStatusChange }: { order: any; onStatusChange?: (id
 }
 
 // Enhanced Orders Tab with better Kanban
-function OrdersTab() {
-  const { data: orders = [], isLoading, refetch } = useMenuOrders();
+function OrdersTab({ tenantId }: { tenantId?: string }) {
+  const { data: orders = [], isLoading, refetch } = useMenuOrders(undefined, tenantId);
   const updateOrderStatus = useUpdateOrderStatus();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [listLimit, setListLimit] = useState(20);
@@ -500,7 +500,7 @@ export function SmartDashboard() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'burned'>('all');
 
   const { data: menus = [], isLoading, refetch } = useDisposableMenus(tenant?.id);
-  const { data: orders = [] } = useMenuOrders();
+  const { data: orders = [] } = useMenuOrders(undefined, tenant?.id);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -762,7 +762,7 @@ export function SmartDashboard() {
 
           {/* Orders Tab */}
           <TabsContent value="orders" className="mt-0">
-            <OrdersTab />
+            <OrdersTab tenantId={tenant?.id} />
           </TabsContent>
 
           {/* Setup Tab */}
