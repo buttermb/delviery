@@ -3070,13 +3070,20 @@ verifying all 5 stat cards load with real data and their navigation links work c
 ### Files Changed:
 - `progress.txt` (this verification report)
 
----
+## Task: Set light mode as default theme and persist to localStorage
+**Date:** 2026-01-25
 
-## Task: Update mobile preview width in StorefrontSettingsLivePreview
+### Changes Made:
+- Updated `src/contexts/ThemeContext.tsx` to use `STORAGE_KEYS.THEME` constant from `@/constants/storageKeys` instead of hardcoded "theme" string
+- ThemeContext already had light mode as default and localStorage persistence - this change ensures compliance with project code style rules
 
-### Change Made:
-- Changed mobile portrait preview width from `max-w-[320px]` to `max-w-[375px]` in `src/components/admin/storefront/StorefrontSettingsLivePreview.tsx` at line 62
-- This updates the live preview to better represent modern smartphone widths (375px matches iPhone viewport width)
+### Implementation Details:
+1. Added import for `STORAGE_KEYS` from `@/constants/storageKeys`
+2. Replaced `safeStorage.getItem("theme")` with `safeStorage.getItem(STORAGE_KEYS.THEME)`
+3. Replaced `safeStorage.setItem("theme", theme)` with `safeStorage.setItem(STORAGE_KEYS.THEME, theme)`
+
+### Verification:
+- Build passes without TypeScript errors
 
 ### Files Changed:
-- `src/components/admin/storefront/StorefrontSettingsLivePreview.tsx`
+- `src/contexts/ThemeContext.tsx`
