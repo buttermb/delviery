@@ -7695,62 +7695,15 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
+## Task: Remove ts-ignore in useAttentionQueue.ts line 100
 
-## Task: Add Delivery Zone Map Preview Component
+### Completed: 2026-01-25T13:43:07-08:00
 
-### Date: 2026-01-25
+**Issue:** Line 100 had an unnecessary `@ts-expect-error` comment for a "Deep type instantiation issue with Supabase".
 
-### Summary:
-Implemented a mini map component that displays delivery zones visually on a Leaflet map within the Storefront Settings page. The map shows zone markers color-coded by delivery fee, with interactive popups showing zone details.
+**Solution:** Removed the `@ts-expect-error` comment. The type casting `(data as unknown as DeliveryRow[])` at the return statement (line 106) already properly handles the type conversion, making the suppression comment unnecessary.
 
-### Implementation Details:
-
-#### 1. Created DeliveryZoneMapPreview Component
-**File:** `src/components/admin/storefront/DeliveryZoneMapPreview.tsx`
-
-**Features:**
-- Uses Leaflet with OpenStreetMap tiles (free, no API key required)
-- Displays delivery zones as markers on an interactive map
-- Color-coded markers based on delivery fee (green=low, amber=medium, red=high)
-- Custom styled markers showing ZIP code and fee
-- Clickable popups with zone details (ZIP, fee, minimum order)
-- Auto-fits map bounds to show all zones
-- Shows legend explaining fee color coding
-- Handles unmapped ZIP codes with warning message
-- Empty state when no zones configured
-- Uses ZIP code prefix mapping for approximate geographic locations
-
-**Technical Implementation:**
-- Reusable component with configurable height and className
-- Uses `useMemo` for zone location calculations
-- Uses `useCallback` for marker updates
-- Proper cleanup of map instance on unmount
-- ZIP prefix to lat/lng mapping for major US regions
-
-#### 2. Integrated into StorefrontSettings
-**File:** `src/pages/admin/storefront/StorefrontSettings.tsx`
-
-**Changes:**
-- Added import for `DeliveryZoneMapPreview` component
-- Modified Zones tab to use side-by-side layout (form + map)
-- Map preview is sticky on desktop for visibility while scrolling
-- Responsive layout: stacked on mobile, side-by-side on lg+ screens
-
-### Technical Decisions:
-
-1. **Leaflet over Mapbox** - Used Leaflet with OpenStreetMap tiles instead of Mapbox to avoid API key requirements for this preview feature
-
-2. **ZIP Prefix Mapping** - Since full ZIP-to-coordinate geocoding would require an external API, used a comprehensive ZIP prefix mapping for major US metropolitan areas to provide approximate zone visualization
-
-3. **Color Gradient** - Implemented fee-based color coding (green → amber → red) to quickly visualize delivery fee tiers across zones
-
-4. **Marker Jitter** - Added slight position randomization to prevent overlapping markers for zones in the same region
-
-### Build Verification:
-- `npm run build` - PASSES (0 TypeScript errors)
-- All 6600+ modules transformed successfully
-- No new warnings introduced
+**Verification:** Ran `npx tsc --noEmit` - TypeScript compiles successfully with no errors.
 
 ### Files Changed:
-- `src/components/admin/storefront/DeliveryZoneMapPreview.tsx` (new - 315 lines)
-- `src/pages/admin/storefront/StorefrontSettings.tsx` (modified - added import and map preview to zones tab)
+- `src/hooks/useAttentionQueue.ts` - Removed unnecessary @ts-expect-error on line 100
