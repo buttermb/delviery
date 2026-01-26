@@ -3070,26 +3070,58 @@ verifying all 5 stat cards load with real data and their navigation links work c
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-
 ---
 
-## Task: Add toast.error() call in StorefrontSettings.tsx save mutation onError
+## Task: Replace browser prompt with shadcn Dialog component in AdvancedProductFilters.tsx
 
-**Date:** 2026-01-25T22:37:45Z
+### What was done:
 
-### Summary:
-Updated StorefrontSettings.tsx to use sonner's toast.error() instead of the shadcn useToast hook with variant: 'destructive', following the project's established convention.
+**Verification of existing implementation** - This task was already completed in previous commits:
+- Commit `6421e469`: "refactor: replace browser prompt with Dialog component in AdvancedProductFilters"
+- Commit `86640c16`: "feat: replace browser prompt with Dialog for saving filters"
 
-### Changes Made:
-1. Changed import from `import { useToast } from '@/hooks/use-toast'` to `import { toast } from 'sonner'`
-2. Removed `const { toast } = useToast();` line since toast is now imported directly
-3. Updated saveMutation onSuccess to use `toast.success()` for consistency
-4. Updated saveMutation onError to use `toast.error('Failed to save settings. Please try again.')`
-5. Updated regenerateTokenMutation onError to use `toast.error('Failed to generate new link.')`
+### Implementation details:
 
-### Files Changed:
-- `src/pages/admin/storefront/StorefrontSettings.tsx`
+The original implementation used a browser `prompt()` call:
+```typescript
+const saveCurrentFilter = () => {
+  const name = prompt("Enter filter name:");
+  if (name) {
+    setSavedFilters([...savedFilters, { name, config: filters }]);
+  }
+};
+```
 
-### Verification:
-- `npm run build` passes with exit code 0 (no TypeScript errors)
+This was replaced with a proper shadcn Dialog component that includes:
 
+1. **Dialog state management** (lines 46-47):
+   - `saveDialogOpen` - controls dialog visibility
+   - `filterName` - stores the input value
+
+2. **Dialog trigger handler** (`handleOpenSaveDialog`, lines 90-93):
+   - Resets filter name
+   - Opens the dialog
+
+3. **Save handler** (`handleSaveFilter`, lines 95-102):
+   - Validates input is not empty
+   - Calls `saveFilter` from `useSavedFilters` hook
+   - Shows success toast
+   - Closes dialog and resets state
+
+4. **Dialog component** (lines 255-287):
+   - `DialogHeader` with title "Save Filter" and description
+   - `Input` field with label for filter name
+   - Keyboard support (Enter key triggers save)
+   - `DialogFooter` with Cancel and Save buttons
+   - Save button disabled when filter name is empty
+
+### Acceptance Criteria Met:
+- [x] Browser `prompt()` removed
+- [x] shadcn Dialog component implemented
+- [x] Form with proper validation
+- [x] Keyboard accessibility (Enter to save)
+- [x] Proper button states (disabled when empty)
+- [x] Build passes with no TypeScript errors
+
+### Files:
+- `src/components/admin/AdvancedProductFilters.tsx` (already updated in previous commits)
