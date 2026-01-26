@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -8,10 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import {
-  ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2,
-  User, Percent, Receipt, Printer, X, Keyboard, Tag
-} from 'lucide-react';
+import { ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -29,18 +26,6 @@ import { AdminErrorBoundary } from '@/components/admin/AdminErrorBoundary';
 import { useOfflineQueue } from '@/hooks/useOfflineQueue';
 import { queueAction } from '@/lib/offlineQueue';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 
 interface Product {
   id: string;
@@ -79,31 +64,16 @@ interface CartItem extends Product {
   subtotal: number;
 }
 
-interface InsufficientStockItem {
-  product_id: string;
-  product_name: string;
-  requested: number;
-  available: number;
-}
-
 interface POSTransactionResult {
   success: boolean;
   transaction_id?: string;
   transaction_number?: string;
   total?: number;
-  items_count?: number;
-  payment_method?: string;
-  created_at?: string;
   error?: string;
-  error_code?: 'NEGATIVE_TOTAL' | 'EMPTY_CART' | 'INVALID_QUANTITY' | 'PRODUCT_NOT_FOUND' | 'INSUFFICIENT_STOCK' | 'TRANSACTION_FAILED';
-  insufficient_items?: InsufficientStockItem[];
 }
 
-// Default tax rate (can be configured per tenant)
-const DEFAULT_TAX_RATE = 0.0825; // 8.25%
-
 function CashRegisterContent() {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, tenantSlug } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const tenantSlug = tenant?.slug || '';
   const { toast } = useToast();
@@ -240,14 +210,58 @@ function CashRegisterContent() {
     enabled: !!tenantId,
   });
 
-  // Calculate totals with discount and tax
-  const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
-  const discountAmount = discountType === 'percentage'
-    ? subtotal * (discountValue / 100)
-    : Math.min(discountValue, subtotal);
-  const taxableAmount = subtotal - discountAmount;
-  const taxAmount = taxEnabled ? taxableAmount * taxRate : 0;
-  const total = taxableAmount + taxAmount;
+  // Queue transaction for offline processing
+  const queueOfflineTransaction = useCallback(async (items: CartItem[], total: number) => {
+    if (!tenantId) return;
+
+    const payload = {
+      p_tenant_id: tenantId,
+      p_items: items.map(item => ({
+        product_id: item.id,
+        product_name: item.name,
+        quantity: item.quantity,
+        unit_price: item.price,
+        price_at_order_time: item.price,
+        total_price: item.subtotal,
+        stock_quantity: item.stock_quantity
+      })),
+      p_payment_method: paymentMethod,
+      p_subtotal: total,
+      p_tax_amount: 0,
+      p_discount_amount: 0,
+      p_customer_id: null,
+      p_shift_id: null
+    };
+
+    await queueAction(
+      'generic',
+      `/api/pos/transaction`, // This would be the edge function endpoint
+      'POST',
+      payload,
+      3
+    );
+
+    toast({
+      title: 'Transaction queued',
+      description: 'Will be processed when connection is restored.'
+    });
+    setCart([]);
+    setPaymentMethod('cash');
+  }, [tenantId, paymentMethod, toast]);
+
+  // Process payment mutation - uses atomic RPC only
+  const processPayment = useMutation({
+    mutationFn: async (): Promise<POSTransactionResult> => {
+      if (!tenantId || cart.length === 0) {
+        throw new Error('Invalid transaction: No items in cart');
+      }
+
+      // Check online status - queue if offline
+      if (!isOnline) {
+        const total = cart.reduce((sum, item) => sum + item.subtotal, 0);
+        await queueOfflineTransaction(cart, total);
+        return { success: true, transaction_number: 'QUEUED' };
+      }
 
   // Filter products by search and category
   const filteredProducts = products.filter(p => {
@@ -350,7 +364,8 @@ function CashRegisterContent() {
       }));
 
       // Use atomic RPC - prevents race conditions on inventory
-      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('create_pos_transaction_atomic', {
+      // @ts-expect-error RPC function not in auto-generated types
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic', {
         p_tenant_id: tenantId,
         p_items: items,
         p_payment_method: paymentMethod,
@@ -377,16 +392,9 @@ function CashRegisterContent() {
         throw new Error(errorMessage);
       }
 
-      const result = rpcResult as unknown as POSTransactionResult;
+      const result = rpcResult as POSTransactionResult;
 
       if (!result.success) {
-        // Handle specific error codes with user-friendly messages
-        if (result.error_code === 'INSUFFICIENT_STOCK' && result.insufficient_items) {
-          const stockDetails = result.insufficient_items.map((item: InsufficientStockItem) =>
-            `${item.product_name}: need ${item.requested}, have ${item.available}`
-          ).join('\n');
-          throw new Error(`Insufficient stock:\n${stockDetails}`);
-        }
         throw new Error(result.error || 'Transaction failed');
       }
 
@@ -400,22 +408,12 @@ function CashRegisterContent() {
         return;
       }
 
-      // Store transaction for receipt
-      setLastTransaction({
-        ...result,
-        total,
-        items_count: cart.length,
-      });
-
       toast({
         title: 'Payment processed successfully!',
         description: `Transaction ${result.transaction_number}`
       });
-
-      // Show receipt dialog
-      setReceiptDialogOpen(true);
-
-      resetTransaction();
+      setCart([]);
+      setPaymentMethod('cash');
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.transactions(tenantId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.products(tenantId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
