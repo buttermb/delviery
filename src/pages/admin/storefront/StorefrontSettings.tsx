@@ -39,12 +39,25 @@ import {
   Star,
   PanelRightClose,
   PanelRightOpen,
-  Loader2
+  Loader2,
+  RotateCcw
 } from 'lucide-react';
 import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog';
 import { generateUrlToken } from '@/utils/menuHelpers';
 import { StorefrontSettingsLivePreview } from '@/components/admin/storefront/StorefrontSettingsLivePreview';
 import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedProductsManager';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface DeliveryZone {
   zip_code: string;
@@ -134,6 +147,42 @@ const PAYMENT_METHOD_OPTIONS = [
   { id: 'zelle', label: 'Zelle', icon: '🏦' },
 ];
 
+const DEFAULT_STORE_SETTINGS: Partial<StoreSettings> = {
+  primary_color: '#10b981',
+  secondary_color: '#059669',
+  accent_color: '#34d399',
+  font_family: 'Inter',
+  theme_config: { theme: 'standard' },
+  is_public: true,
+  require_account: false,
+  require_age_verification: false,
+  minimum_age: 21,
+  default_delivery_fee: 5,
+  free_delivery_threshold: 100,
+  delivery_zones: [],
+  time_slots: DEFAULT_TIME_SLOTS,
+  payment_methods: ['cash', 'card'],
+  checkout_settings: {
+    allow_guest_checkout: true,
+    require_phone: true,
+    require_address: true,
+    show_delivery_notes: true,
+    enable_coupons: true,
+    enable_tips: false,
+  },
+  operating_hours: DAYS.reduce((acc, day) => ({
+    ...acc,
+    [day]: { open: '09:00', close: '21:00', closed: day === 'sunday' },
+  }), {}),
+  purchase_limits: {
+    enabled: false,
+    max_per_order: null,
+    max_daily: null,
+    max_weekly: null,
+  },
+  featured_product_ids: [],
+};
+
 export default function StorefrontSettings() {
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams();
@@ -145,6 +194,7 @@ export default function StorefrontSettings() {
   const [isDirty, setIsDirty] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
   // Fetch store data
   const { data: store, isLoading } = useQuery({
@@ -337,6 +387,56 @@ export default function StorefrontSettings() {
     },
   });
 
+  // Reset to defaults mutation
+  const resetToDefaultsMutation = useMutation({
+    mutationFn: async () => {
+      if (!store?.id) throw new Error('No store');
+
+      const { error } = await (supabase as unknown as { from: (table: string) => { update: (data: Record<string, unknown>) => { eq: (col: string, val: string) => Promise<{ error: unknown }> } } })
+        .from('marketplace_stores')
+        .update({
+          primary_color: DEFAULT_STORE_SETTINGS.primary_color,
+          secondary_color: DEFAULT_STORE_SETTINGS.secondary_color,
+          accent_color: DEFAULT_STORE_SETTINGS.accent_color,
+          font_family: DEFAULT_STORE_SETTINGS.font_family,
+          theme_config: DEFAULT_STORE_SETTINGS.theme_config,
+          is_public: DEFAULT_STORE_SETTINGS.is_public,
+          require_account: DEFAULT_STORE_SETTINGS.require_account,
+          require_age_verification: DEFAULT_STORE_SETTINGS.require_age_verification,
+          minimum_age: DEFAULT_STORE_SETTINGS.minimum_age,
+          default_delivery_fee: DEFAULT_STORE_SETTINGS.default_delivery_fee,
+          free_delivery_threshold: DEFAULT_STORE_SETTINGS.free_delivery_threshold,
+          delivery_zones: DEFAULT_STORE_SETTINGS.delivery_zones,
+          time_slots: DEFAULT_STORE_SETTINGS.time_slots,
+          payment_methods: DEFAULT_STORE_SETTINGS.payment_methods,
+          checkout_settings: DEFAULT_STORE_SETTINGS.checkout_settings,
+          operating_hours: DEFAULT_STORE_SETTINGS.operating_hours,
+          purchase_limits: DEFAULT_STORE_SETTINGS.purchase_limits,
+          featured_product_ids: DEFAULT_STORE_SETTINGS.featured_product_ids,
+        })
+        .eq('id', store.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
+      setIsDirty(false);
+      setResetDialogOpen(false);
+      toast({
+        title: 'Settings reset',
+        description: 'Your store settings have been reset to defaults.',
+      });
+    },
+    onError: (error) => {
+      logger.error('Failed to reset settings', error, { component: 'StorefrontSettings' });
+      toast({
+        title: 'Error',
+        description: 'Failed to reset settings. Please try again.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="container mx-auto p-6 max-w-7xl space-y-6">
@@ -468,6 +568,46 @@ export default function StorefrontSettings() {
             <Share2 className="w-4 h-4 mr-2" />
             Share
           </Button>
+          <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Reset to Defaults
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reset to Default Settings?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will reset all store settings to their default values, including colors,
+                  delivery settings, checkout options, and operating hours. Your store name,
+                  slug, and URLs will not be changed. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={resetToDefaultsMutation.isPending}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={(e) => {
+                    e.preventDefault();
+                    resetToDefaultsMutation.mutate();
+                  }}
+                  disabled={resetToDefaultsMutation.isPending}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {resetToDefaultsMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Resetting...
+                    </>
+                  ) : (
+                    'Reset Settings'
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Button variant="outline" size="sm" asChild>
             <a href={storeUrl} target="_blank" rel="noopener noreferrer">
               <Eye className="w-4 h-4 mr-2" />
