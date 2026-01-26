@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 
 export interface KnownDevice {
   id: string;
@@ -91,9 +92,12 @@ export function useKnownDevices(userId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: DEVICES_QUERY_KEY });
+      toast.success('Device trusted successfully');
     },
     onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Failed to trust device:', error);
+      toast.error('Failed to trust device', { description: errorMessage });
     },
   });
 
@@ -108,9 +112,12 @@ export function useKnownDevices(userId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: DEVICES_QUERY_KEY });
+      toast.success('Device untrusted successfully');
     },
     onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Failed to untrust device:', error);
+      toast.error('Failed to untrust device', { description: errorMessage });
     },
   });
 
@@ -125,9 +132,12 @@ export function useKnownDevices(userId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: DEVICES_QUERY_KEY });
+      toast.success('Device removed successfully');
     },
     onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Failed to remove device:', error);
+      toast.error('Failed to remove device', { description: errorMessage });
     },
   });
 
@@ -144,9 +154,12 @@ export function useKnownDevices(userId?: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ALERTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: DEVICES_QUERY_KEY });
+      toast.success('Login confirmed successfully');
     },
     onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Failed to confirm login alert:', error);
+      toast.error('Failed to confirm login', { description: errorMessage });
     },
   });
 

@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import * as forumApi from '@/lib/api/forum';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -19,7 +20,9 @@ export function useVote() {
       queryClient.invalidateQueries({ queryKey: queryKeys.forum.comments.all() });
     },
     onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Failed to vote', error, { component: 'useVote' });
+      toast.error('Failed to vote', { description: errorMessage });
     },
   });
 }

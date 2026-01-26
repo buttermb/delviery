@@ -202,6 +202,11 @@ export function useFreeTierLimits() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['free-tier-usage', tenantId] });
     },
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Failed to track usage', error, { component: 'useFreeTierLimits' });
+      toast.error('Failed to track usage', { description: errorMessage });
+    },
   });
 
   // Check if an action is allowed

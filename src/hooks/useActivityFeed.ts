@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 import { useState, useCallback, useMemo } from 'react';
 
 export type ActivityCategory = 'order' | 'inventory' | 'user' | 'system' | 'payment' | 'settings' | 'crm' | 'delivery';
@@ -174,9 +175,11 @@ export function useActivityFeed(initialFilters?: Partial<ActivityFeedFilters>) {
       });
     },
     onError: (err) => {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       logger.error('Failed to log activity', err as Error, {
         component: 'useActivityFeed',
       });
+      toast.error('Failed to log activity', { description: errorMessage });
     },
   });
 
