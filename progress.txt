@@ -6694,13 +6694,31 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: BuilderPreview desktop width change
+## Agent 27 - Task: Make time inputs responsive
+Date: 2026-01-25 18:17:25
 
-Changed BuilderPreview.tsx line 38 desktop preview width from fixed 1200px to responsive:
-- Before: width: '1200px'
-- After: width: '100%', maxWidth: '1200px'
+### Changes Made:
+Updated operating hours time inputs in StorefrontSettings.tsx to be responsive:
+- Line 1327: Changed \ to " >> progress.txt && echo - Line 1334: Changed  to "
 
-This allows the preview to be responsive while capping at 1200px max width.
+This makes the time inputs full-width on mobile and 7rem (28 * 0.25rem) on small screens and up,
+matching the pattern already used by the delivery time slots time inputs at lines 1038 and 1049.
 
-### File Changed:
-- src/pages/admin/storefront/builder/BuilderPreview.tsx
+### Verification:
+- Build passes: Yes (npm run build succeeded)
+
+---
+
+## Agent 27 - Task: Make time inputs responsive
+Date: 2026-01-25
+
+### Changes Made:
+Updated operating hours time inputs in StorefrontSettings.tsx to be responsive:
+- Line 1327: Changed `className="w-32"` to `className="w-full sm:w-28"`
+- Line 1334: Changed `className="w-32"` to `className="w-full sm:w-28"`
+
+This makes the time inputs full-width on mobile and 7rem (28 * 0.25rem) on small screens and up,
+matching the pattern already used by the delivery time slots time inputs at lines 1038 and 1049.
+
+### Verification:
+- Build passes: Yes (npm run build succeeded)
