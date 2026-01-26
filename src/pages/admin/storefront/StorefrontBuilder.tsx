@@ -28,7 +28,7 @@ export function StorefrontBuilder() {
     const builder = useStorefrontBuilder();
 
     return (
-        <div className="flex flex-col bg-muted overflow-hidden -m-3 sm:-m-4 md:-m-6" style={{ width: '100%', height: 'calc(100vh - 56px)' }}>
+        <div className="flex flex-col bg-muted overflow-hidden w-full" style={{ height: 'calc(100vh - 56px)' }}>
             {/* Header */}
             <BuilderHeader
                 store={builder.store}
