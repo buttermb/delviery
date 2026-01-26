@@ -3072,32 +3072,26 @@ verifying all 5 stat cards load with real data and their navigation links work c
 
 ---
 
-## Task: In App.tsx add Route for pos-system path
+## Task: StorefrontBuilder width calc to w-full
 
 ### What was done:
 
-Verified that the route for `pos-system` is already correctly implemented in `src/App.tsx`:
+1. **Modified \ line 31**:
+   - Changed inline style \ to Tailwind class " >> progress.txt && echo  - Before: "
+   - After: " >> progress.txt && echo  >> progress.txt && echo ### Files Changed: >> progress.txt && echo - "
 
-1. **Lazy import** (line 311):
-   ```typescript
-   const POSHubPage = lazy(() => import("./pages/admin/hubs/POSHubPage"));
-   ```
 
-2. **Route definition** (line 963):
-   ```typescript
-   <Route path="pos-system" element={<FeatureProtectedRoute featureId="pos-system"><POSHubPage /></FeatureProtectedRoute>} />
-   ```
+---
 
-3. **Legacy redirect** (line 839):
-   ```typescript
-   <Route path="pos-hub" element={<Navigate to="pos-system" replace />} />
-   ```
+## Task: StorefrontBuilder width calc to w-full
 
-### Implementation Details:
-- Route is nested under the `/:tenantSlug/admin/*` route structure
-- Uses `FeatureProtectedRoute` with `featureId="pos-system"` for tier-based access control
-- Renders `POSHubPage` component from `./pages/admin/hubs/POSHubPage`
-- Old `pos-hub` path redirects to `pos-system` for backwards compatibility
+### What was done:
+
+1. **Modified `src/pages/admin/storefront/StorefrontBuilder.tsx` line 31**:
+   - Changed inline style `width: 'calc(100% + 1.5rem)'` to Tailwind class `w-full`
+   - Before: `style={{ height: 'calc(100vh - 56px)', width: 'calc(100% + 1.5rem)' }}`
+   - After: `className="... w-full" style={{ height: 'calc(100vh - 56px)' }}`
 
 ### Files Changed:
-- None (route already exists and is correctly implemented)
+- `src/pages/admin/storefront/StorefrontBuilder.tsx`
+
