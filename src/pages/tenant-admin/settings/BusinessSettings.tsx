@@ -91,6 +91,42 @@ export default function BusinessSettings() {
     accent: '#3b82f6',
   });
 
+  // Color preset themes
+  const COLOR_PRESETS = [
+    {
+      name: 'Modern',
+      primary: '#10b981', // Emerald green
+      accent: '#3b82f6',  // Blue
+      description: 'Fresh and professional',
+    },
+    {
+      name: 'Classic',
+      primary: '#6366f1', // Indigo
+      accent: '#f59e0b',  // Amber
+      description: 'Timeless elegance',
+    },
+    {
+      name: 'Dark',
+      primary: '#1e293b', // Slate dark
+      accent: '#f43f5e',  // Rose
+      description: 'Bold and striking',
+    },
+    {
+      name: 'Nature',
+      primary: '#059669', // Emerald deeper
+      accent: '#84cc16',  // Lime
+      description: 'Organic and earthy',
+    },
+  ] as const;
+
+  const applyColorPreset = (preset: typeof COLOR_PRESETS[number]) => {
+    setBrandColors({
+      primary: preset.primary,
+      accent: preset.accent,
+    });
+    toast.success(`${preset.name} theme applied`);
+  };
+
   // Clear demo data mutation
   const clearDemoDataMutation = useMutation({
     mutationFn: async () => {
@@ -436,40 +472,94 @@ export default function BusinessSettings() {
         icon={Palette}
       >
         <SettingsCard>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Primary Color</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={brandColors.primary}
-                  onChange={(e) => setBrandColors({ ...brandColors, primary: e.target.value })}
-                  className="h-10 w-16 rounded cursor-pointer border p-1"
-                />
-                <Input
-                  value={brandColors.primary}
-                  onChange={(e) => setBrandColors({ ...brandColors, primary: e.target.value })}
-                  className="w-28 font-mono text-sm uppercase"
-                />
-              </div>
+          {/* Color Preset Themes */}
+          <div className="mb-6">
+            <label className="text-sm font-medium mb-3 block">Quick Presets</label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {COLOR_PRESETS.map((preset) => {
+                const isActive = brandColors.primary === preset.primary && brandColors.accent === preset.accent;
+                return (
+                  <button
+                    key={preset.name}
+                    onClick={() => applyColorPreset(preset)}
+                    className={cn(
+                      'group relative p-3 rounded-lg border-2 transition-all hover:shadow-md',
+                      isActive
+                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                        : 'border-muted hover:border-muted-foreground/30'
+                    )}
+                  >
+                    <div className="flex gap-1.5 mb-2">
+                      <div
+                        className="h-6 w-6 rounded-full shadow-sm ring-1 ring-black/10"
+                        style={{ backgroundColor: preset.primary }}
+                      />
+                      <div
+                        className="h-6 w-6 rounded-full shadow-sm ring-1 ring-black/10"
+                        style={{ backgroundColor: preset.accent }}
+                      />
+                    </div>
+                    <p className={cn(
+                      'text-sm font-medium text-left',
+                      isActive ? 'text-primary' : 'text-foreground'
+                    )}>
+                      {preset.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground text-left">
+                      {preset.description}
+                    </p>
+                    {isActive && (
+                      <Badge
+                        variant="secondary"
+                        className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0"
+                      >
+                        Active
+                      </Badge>
+                    )}
+                  </button>
+                );
+              })}
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Accent Color</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={brandColors.accent}
-                  onChange={(e) => setBrandColors({ ...brandColors, accent: e.target.value })}
-                  className="h-10 w-16 rounded cursor-pointer border p-1"
-                />
-                <Input
-                  value={brandColors.accent}
-                  onChange={(e) => setBrandColors({ ...brandColors, accent: e.target.value })}
-                  className="w-28 font-mono text-sm uppercase"
-                />
+          </div>
+
+          <div className="border-t pt-6">
+            <label className="text-sm font-medium mb-3 block">Custom Colors</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">Primary Color</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={brandColors.primary}
+                    onChange={(e) => setBrandColors({ ...brandColors, primary: e.target.value })}
+                    className="h-10 w-16 rounded cursor-pointer border p-1"
+                  />
+                  <Input
+                    value={brandColors.primary}
+                    onChange={(e) => setBrandColors({ ...brandColors, primary: e.target.value })}
+                    className="w-28 font-mono text-sm uppercase"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">Accent Color</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={brandColors.accent}
+                    onChange={(e) => setBrandColors({ ...brandColors, accent: e.target.value })}
+                    className="h-10 w-16 rounded cursor-pointer border p-1"
+                  />
+                  <Input
+                    value={brandColors.accent}
+                    onChange={(e) => setBrandColors({ ...brandColors, accent: e.target.value })}
+                    className="w-28 font-mono text-sm uppercase"
+                  />
+                </div>
               </div>
             </div>
           </div>
+
           <div className="mt-6 p-6 rounded-lg border shadow-sm" style={{ background: `linear-gradient(135deg, ${brandColors.primary}20, ${brandColors.accent}20)` }}>
             <p className="text-sm font-medium mb-3">Login Page Preview</p>
             <div className="flex gap-2">
