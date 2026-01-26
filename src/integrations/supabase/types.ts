@@ -12644,6 +12644,7 @@ export type Database = {
           last_seen_at: string
           os: string | null
           trust_confirmed_at: string | null
+          user_agent: string | null
           user_id: string
         }
         Insert: {
@@ -12660,6 +12661,7 @@ export type Database = {
           last_seen_at?: string
           os?: string | null
           trust_confirmed_at?: string | null
+          user_agent?: string | null
           user_id: string
         }
         Update: {
@@ -12676,6 +12678,7 @@ export type Database = {
           last_seen_at?: string
           os?: string | null
           trust_confirmed_at?: string | null
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: []
