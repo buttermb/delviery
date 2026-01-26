@@ -83,7 +83,7 @@ interface AuthError extends Error {
 interface TenantAdminAuthContextType {
   admin: TenantAdmin | null;
   tenant: Tenant | null;
-  tenantSlug: string | null; // Current tenant slug for navigation
+  tenantSlug: string | null;
   token: string | null; // For backwards compatibility
   accessToken: string | null; // For backwards compatibility
   refreshToken: string | null; // For backwards compatibility
@@ -181,21 +181,14 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { shouldAutoApprove, flags } = useFeatureFlags();
-
-  // Synchronously hydrate from localStorage to prevent flash of login screen on reload
-  const initialAdmin = getInitialAdminState();
-  const initialTenant = getInitialTenantState();
-  const initialToken = getInitialTokenState();
-  const initialRefreshToken = getInitialRefreshTokenState();
-  const hasStoredSession = !!(initialAdmin && initialTenant && initialToken);
-
-  const [admin, setAdmin] = useState<TenantAdmin | null>(initialAdmin);
-  const [tenant, setTenant] = useState<Tenant | null>(initialTenant);
-  const [token, setToken] = useState<string | null>(initialToken);
-  const [accessToken, setAccessToken] = useState<string | null>(initialToken);
-  const [refreshToken, setRefreshToken] = useState<string | null>(initialRefreshToken);
-  const [isAuthenticated, setIsAuthenticated] = useState(hasStoredSession); // Pre-authenticate from localStorage
-  const [loading, setLoading] = useState(!hasStoredSession); // If we have stored data, don't block UI
+  const [admin, setAdmin] = useState<TenantAdmin | null>(null);
+  const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [token, setToken] = useState<string | null>(null); // For backwards compatibility
+  const [accessToken, setAccessToken] = useState<string | null>(null); // For backwards compatibility
+  const [refreshToken, setRefreshToken] = useState<string | null>(null); // For backwards compatibility
+  const [tenantSlug, setTenantSlug] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Cookie-based auth state
+  const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unknown');
 
   // Track whether auth has been initialized to prevent re-running on route changes
@@ -206,6 +199,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const clearAuthState = useCallback(() => {
     setAdmin(null);
     setTenant(null);
+    setTenantSlug(null);
     setToken(null);
     setAccessToken(null);
     setRefreshToken(null);
@@ -213,7 +207,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     setLoading(false);
     safeStorage.removeItem(ADMIN_KEY);
     safeStorage.removeItem(TENANT_KEY);
-    safeStorage.removeItem('lastTenantSlug'); // Clear tenant slug cache
+    safeStorage.removeItem('lastTenantSlug');
     safeStorage.removeItem(ACCESS_TOKEN_KEY);
     safeStorage.removeItem(REFRESH_TOKEN_KEY);
     // Reset token refresh manager to prevent stale refresh attempts
@@ -228,6 +222,12 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     });
     return unsubscribe;
   }, []);
+
+  // Sync tenantSlug from tenant data
+  useEffect(() => {
+    setTenantSlug(tenant?.slug ?? null);
+  }, [tenant]);
+
   const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
   const [secondsUntilLogout, setSecondsUntilLogout] = useState(60);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -1295,14 +1295,9 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       safeStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
       safeStorage.setItem(TENANT_KEY, JSON.stringify(tenantWithDefaults));
 
-      // Session fixation protection: Establish a fresh session after successful auth
-      // This generates a new session nonce proving the session was legitimately created
-      establishFreshSession('tenant_admin');
-
-      // Store user ID for encryption with fallback
+      // Store user ID for encryption
       if (data.admin?.id) {
         safeStorage.setItem('floraiq_user_id', data.admin.id);
-        safeStorage.setItem('floraiq_user_id', data.admin.id); // Keep sessionStorage? No, use safeStorage for uniformity
       }
 
       // Initialize encryption with user's password
@@ -1710,7 +1705,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     <TenantAdminAuthContext.Provider value={{
       admin,
       tenant,
-      tenantSlug: tenant?.slug || null,
+      tenantSlug,
       token,
       accessToken,
       refreshToken: refreshToken,
