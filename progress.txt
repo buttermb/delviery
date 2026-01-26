@@ -7674,28 +7674,18 @@ Added `.catch()` error handlers to all unhandled `.then()` Promise chains to pre
 
 ---
 
-## Task: Add dark mode classes to Card components
+## Task: Remove CSS !important from src/index.css by refactoring specificity
 
-### What was done:
+### Problem
+The `overflow-x: hidden !important` declarations on lines 1083 and 1091 (in `@layer utilities`) were using `!important` to force the rule to win over other styles. This is a CSS anti-pattern that makes maintenance difficult.
 
-Modified the base Card component in `src/components/ui/card.tsx` to add dark mode styling classes.
+### Solution
+Moved the `overflow-x: hidden` rule to the `@layer base` section (line 386-389) where `html, body` already had `min-height: 100vh`. By placing it in the base layer alongside other foundational styles, it has proper CSS cascade priority without needing `!important`.
 
-**Change made:**
-- Added `dark:bg-gray-800 dark:border-gray-700` classes to the Card component's base className
+### Changes Made
+1. Added `overflow-x: hidden` to the `html, body` rule in `@layer base` (line 388)
+2. Removed `!important` from `body { overflow-x: hidden }` in `@layer utilities` (line 1083)
+3. Removed `!important` from `html { overflow-x: hidden }` in `@layer utilities` (line 1091)
 
-**Before:**
-```typescript
-className={cn("rounded-lg border bg-card text-card-foreground shadow-sm", className)}
-```
-
-**After:**
-```typescript
-className={cn("rounded-lg border bg-card text-card-foreground shadow-sm dark:bg-gray-800 dark:border-gray-700", className)}
-```
-
-**Impact:**
-- This single change automatically applies dark mode styling to all 757+ files using the Card component throughout the codebase
-- The dark mode classes ensure proper background and border colors when the application is in dark mode
-
-### Files Changed:
-- `src/components/ui/card.tsx`
+### Files Changed
+- `src/index.css` - Removed !important and refactored specificity
