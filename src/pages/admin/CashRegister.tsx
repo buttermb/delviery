@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -8,7 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2 } from 'lucide-react';
+import {
+  ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2,
+  User, Percent, Receipt, Printer, X, Keyboard, Tag
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -26,6 +29,18 @@ import { AdminErrorBoundary } from '@/components/admin/AdminErrorBoundary';
 import { useOfflineQueue } from '@/hooks/useOfflineQueue';
 import { queueAction } from '@/lib/offlineQueue';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Product {
   id: string;
@@ -35,7 +50,7 @@ interface Product {
   image_url: string | null;
   sku: string | null;
   barcode: string | null;
-  category: string;
+  category: string | null;
   category_id: string | null;
 }
 
@@ -46,8 +61,7 @@ interface Category {
 
 interface Customer {
   id: string;
-  first_name: string;
-  last_name: string;
+  name: string;
   email: string | null;
   phone: string | null;
 }
@@ -56,8 +70,8 @@ interface POSTransaction {
   id: string;
   created_at: string;
   total_amount: number;
-  payment_status: string;
-  payment_method: string;
+  payment_status: string | null;
+  payment_method: string | null;
 }
 
 interface CartItem extends Product {
@@ -84,6 +98,9 @@ interface POSTransactionResult {
   error_code?: 'NEGATIVE_TOTAL' | 'EMPTY_CART' | 'INVALID_QUANTITY' | 'PRODUCT_NOT_FOUND' | 'INSUFFICIENT_STOCK' | 'TRANSACTION_FAILED';
   insufficient_items?: InsufficientStockItem[];
 }
+
+// Default tax rate (can be configured per tenant)
+const DEFAULT_TAX_RATE = 0.0825; // 8.25%
 
 function CashRegisterContent() {
   const { tenant, tenantSlug } = useTenantAdminAuth();
@@ -167,7 +184,7 @@ function CashRegisterContent() {
         if (error) throw error;
         return (data || []) as Category[];
       } catch (error: unknown) {
-        if (error !== null && typeof error === 'object' && 'code' in error && (error as Record<string, unknown>).code === '42P01') return [];
+        if (error instanceof Error && 'code' in error && (error as { code: string }).code === '42P01') return [];
         throw error;
       }
     },
@@ -180,18 +197,18 @@ function CashRegisterContent() {
     queryFn: async () => {
       if (!tenantId) return [];
       try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('customers')
-          .select('id, first_name, last_name, email, phone')
+          .select('id, name, email, phone')
           .eq('tenant_id', tenantId)
-          .order('first_name', { ascending: true })
+          .order('name', { ascending: true })
           .limit(100);
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return (data || []) as unknown as Customer[];
+        return (data || []) as Customer[];
       } catch (error: unknown) {
-        if (error !== null && typeof error === 'object' && 'code' in error && (error as Record<string, unknown>).code === '42P01') return [];
+        if (error instanceof Error && 'code' in error && (error as { code: string }).code === '42P01') return [];
         throw error;
       }
     },
@@ -205,6 +222,7 @@ function CashRegisterContent() {
       if (!tenantId) return [];
 
       try {
+        // @ts-expect-error pos_transactions table may not exist in all environments
         const { data, error } = await supabase
           .from('pos_transactions')
           .select('*')
@@ -223,58 +241,14 @@ function CashRegisterContent() {
     enabled: !!tenantId,
   });
 
-  // Queue transaction for offline processing
-  const queueOfflineTransaction = useCallback(async (items: CartItem[], total: number) => {
-    if (!tenantId) return;
-
-    const payload = {
-      p_tenant_id: tenantId,
-      p_items: items.map(item => ({
-        product_id: item.id,
-        product_name: item.name,
-        quantity: item.quantity,
-        unit_price: item.price,
-        price_at_order_time: item.price,
-        total_price: item.subtotal,
-        stock_quantity: item.stock_quantity
-      })),
-      p_payment_method: paymentMethod,
-      p_subtotal: total,
-      p_tax_amount: 0,
-      p_discount_amount: 0,
-      p_customer_id: null,
-      p_shift_id: null
-    };
-
-    await queueAction(
-      'generic',
-      `/api/pos/transaction`, // This would be the edge function endpoint
-      'POST',
-      payload,
-      3
-    );
-
-    toast({
-      title: 'Transaction queued',
-      description: 'Will be processed when connection is restored.'
-    });
-    setCart([]);
-    setPaymentMethod('cash');
-  }, [tenantId, paymentMethod, toast]);
-
-  // Process payment mutation - uses atomic RPC only
-  const processPayment = useMutation({
-    mutationFn: async (): Promise<POSTransactionResult> => {
-      if (!tenantId || cart.length === 0) {
-        throw new Error('Invalid transaction: No items in cart');
-      }
-
-      // Check online status - queue if offline
-      if (!isOnline) {
-        const total = cart.reduce((sum, item) => sum + item.subtotal, 0);
-        await queueOfflineTransaction(cart, total);
-        return { success: true, transaction_number: 'QUEUED' };
-      }
+  // Calculate totals with discount and tax
+  const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
+  const discountAmount = discountType === 'percentage'
+    ? subtotal * (discountValue / 100)
+    : Math.min(discountValue, subtotal);
+  const taxableAmount = subtotal - discountAmount;
+  const taxAmount = taxEnabled ? taxableAmount * taxRate : 0;
+  const total = taxableAmount + taxAmount;
 
   // Filter products by search and category
   const filteredProducts = products.filter(p => {
@@ -286,7 +260,7 @@ function CashRegisterContent() {
 
     const matchesCategory = selectedCategory === 'all' ||
       p.category_id === selectedCategory ||
-      p.category.toLowerCase() === selectedCategory.toLowerCase();
+      (p.category && p.category.toLowerCase() === selectedCategory.toLowerCase());
 
     return matchesSearch && matchesCategory;
   });
@@ -294,9 +268,8 @@ function CashRegisterContent() {
   // Filter customers by search
   const filteredCustomers = customers.filter(c => {
     const searchLower = customerSearchQuery.toLowerCase();
-    const fullName = `${c.first_name} ${c.last_name}`.toLowerCase();
     return customerSearchQuery === '' ||
-      fullName.includes(searchLower) ||
+      c.name.toLowerCase().includes(searchLower) ||
       (c.email && c.email.toLowerCase().includes(searchLower)) ||
       (c.phone && c.phone.includes(customerSearchQuery));
   });
@@ -314,7 +287,7 @@ function CashRegisterContent() {
         unit_price: item.price,
         price_at_order_time: item.price,
         total_price: item.subtotal,
-        stock_quantity: item.stock_quantity ?? 0
+        stock_quantity: item.stock_quantity
       })),
       p_payment_method: paymentMethod,
       p_subtotal: finalTotal,
@@ -429,12 +402,22 @@ function CashRegisterContent() {
         return;
       }
 
+      // Store transaction for receipt
+      setLastTransaction({
+        ...result,
+        total,
+        items_count: cart.length,
+      });
+
       toast({
         title: 'Payment processed successfully!',
         description: `Transaction ${result.transaction_number}`
       });
-      setCart([]);
-      setPaymentMethod('cash');
+
+      // Show receipt dialog
+      setReceiptDialogOpen(true);
+
+      resetTransaction();
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.transactions(tenantId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.products(tenantId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
@@ -554,7 +537,7 @@ function CashRegisterContent() {
           </head>
           <body>
             <div class="header">
-              <h2>${(tenant as any)?.name || 'Store'}</h2>
+              <h2>${tenant?.name || 'Store'}</h2>
               <p>Transaction: ${lastTransaction.transaction_number}</p>
               <p>${new Date(lastTransaction.created_at || '').toLocaleString()}</p>
             </div>
@@ -864,7 +847,7 @@ function CashRegisterContent() {
                 <User className="h-4 w-4 text-muted-foreground" />
                 {selectedCustomer ? (
                   <div>
-                    <span className="font-medium text-sm">{selectedCustomer.first_name} {selectedCustomer.last_name}</span>
+                    <span className="font-medium text-sm">{selectedCustomer.name}</span>
                     {selectedCustomer.phone && (
                       <span className="text-xs text-muted-foreground ml-2">{selectedCustomer.phone}</span>
                     )}
@@ -921,7 +904,7 @@ function CashRegisterContent() {
                         variant="ghost"
                         className="h-6 w-6"
                         onClick={() => updateQuantity(item.id, 1)}
-                        disabled={item.quantity >= (item.stock_quantity ?? 0)}
+                        disabled={item.quantity >= item.stock_quantity}
                       >
                         <Plus className="h-3 w-3" />
                       </Button>
@@ -1131,7 +1114,7 @@ function CashRegisterContent() {
                 filteredProducts.map(product => (
                   <Card
                     key={product.id}
-                    className={`cursor-pointer hover:border-primary transition-colors ${(product.stock_quantity ?? 0) <= 0 ? 'opacity-50' : ''}`}
+                    className={`cursor-pointer hover:border-primary transition-colors ${product.stock_quantity <= 0 ? 'opacity-50' : ''}`}
                     onClick={() => addToCart(product)}
                   >
                     <CardContent className="p-3">
@@ -1141,7 +1124,7 @@ function CashRegisterContent() {
                         ) : (
                           <ShoppingCart className="w-8 h-8 text-muted-foreground" />
                         )}
-                        {(product.stock_quantity ?? 0) <= 0 && (
+                        {product.stock_quantity <= 0 && (
                           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                             <Badge variant="destructive">Out of Stock</Badge>
                           </div>
@@ -1153,7 +1136,7 @@ function CashRegisterContent() {
                       )}
                       <div className="flex items-center justify-between">
                         <span className="text-lg font-bold">${product.price.toFixed(2)}</span>
-                        <span className="text-xs text-muted-foreground">Stock: {product.stock_quantity ?? 0}</span>
+                        <span className="text-xs text-muted-foreground">Stock: {product.stock_quantity}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -1198,7 +1181,7 @@ function CashRegisterContent() {
                     }}
                   >
                     <div>
-                      <div className="font-medium">{customer.first_name} {customer.last_name}</div>
+                      <div className="font-medium">{customer.name}</div>
                       <div className="text-xs text-muted-foreground">
                         {customer.email || customer.phone || 'No contact info'}
                       </div>
