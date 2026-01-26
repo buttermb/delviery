@@ -223,10 +223,15 @@ export default function ProductManagement() {
     enabled: !!tenant?.id,
   });
 
-  // Load products via TanStack Query for cache-based instant sync
-  const { data: queryProducts, isLoading: productsLoading, error: productsError, refetch: refetchProducts } = useQuery({
-    queryKey: queryKeys.products.byTenant(tenant?.id || ''),
-    queryFn: async () => {
+  // Load products
+  const loadProducts = async () => {
+    if (!tenant?.id) {
+      toast.error('Tenant not found. Please refresh.');
+      setLoading(false);
+      return;
+    }
+    try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('products')
         .select('*')
@@ -234,10 +239,15 @@ export default function ProductManagement() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
-    },
-    enabled: !!tenant?.id,
-  });
+      setProducts(data || []);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      logger.error('Error loading products:', { error: errorMessage });
+      toast.error('Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Sync query data into optimistic list state
   useEffect(() => {
