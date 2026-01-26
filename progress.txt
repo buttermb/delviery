@@ -7672,20 +7672,47 @@ Added `.catch()` error handlers to all unhandled `.then()` Promise chains to pre
 ### Files Changed:
 - `progress.txt` (this verification report)
 
----
 
-## Task: Remove CSS !important from src/index.css by refactoring specificity
+## Task: Add dark mode classes to Table components
 
-### Problem
-The `overflow-x: hidden !important` declarations on lines 1083 and 1091 (in `@layer utilities`) were using `!important` to force the rule to win over other styles. This is a CSS anti-pattern that makes maintenance difficult.
+### Completed: 2026-01-25T13:27:30-08:00
 
-### Solution
-Moved the `overflow-x: hidden` rule to the `@layer base` section (line 386-389) where `html, body` already had `min-height: 100vh`. By placing it in the base layer alongside other foundational styles, it has proper CSS cascade priority without needing `!important`.
+**Changes Made:**
 
-### Changes Made
-1. Added `overflow-x: hidden` to the `html, body` rule in `@layer base` (line 388)
-2. Removed `!important` from `body { overflow-x: hidden }` in `@layer utilities` (line 1083)
-3. Removed `!important` from `html { overflow-x: hidden }` in `@layer utilities` (line 1091)
+1. **Base Table Component (src/components/ui/table.tsx)**
+   - Added `dark:bg-gray-800 dark:text-gray-100` to Table, TableHeader, TableBody, TableFooter, TableHead, TableCell, TableCaption
+   - Added `dark:border-gray-700` to TableRow for border visibility in dark mode
 
-### Files Changed
-- `src/index.css` - Removed !important and refactored specificity
+2. **UI TableSkeleton (src/components/ui/TableSkeleton.tsx)**
+   - Added dark mode classes to container div
+
+3. **Super Admin TableSkeleton (src/components/super-admin/ui/TableSkeleton.tsx)**
+   - Added `dark:bg-gray-800 dark:text-gray-100` to main container
+   - Added `dark:border-gray-700` to border elements
+   - Added `dark:bg-gray-700` to skeleton placeholders
+
+4. **ProductTableView (src/components/admin/ProductTableView.tsx)**
+   - Added dark mode classes to table container
+
+5. **GiftCardTable (src/components/admin/storefront/GiftCardTable.tsx)**
+   - Added dark mode classes to table wrapper
+
+6. **InvoiceTable (src/components/customer/portal/InvoiceTable.tsx)**
+   - Added dark mode classes to desktop table container
+
+7. **FeatureComparisonTable (src/components/pricing/FeatureComparisonTable.tsx)**
+   - Added dark mode classes to header row, category headers, feature rows, and summary row
+   - Added border dark mode classes for proper separation
+
+8. **DataTable (src/components/shared/DataTable.tsx)**
+   - Added dark mode classes to table overflow container
+
+9. **ResponsiveTable (src/components/shared/ResponsiveTable.tsx)**
+   - Added dark mode classes to non-virtualized table container
+
+10. **VirtualizedTable (src/components/shared/VirtualizedTable.tsx)**
+    - Added dark mode classes to main container, header row, and data rows
+
+### Build Verification:
+- `npm run build` passes successfully with no TypeScript errors
+
