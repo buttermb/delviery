@@ -7699,46 +7699,63 @@ Added a multi-layer NODE_ENV check to prevent these dangerous flags from being e
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Add aspect-ratio containers for image upload sections in StorefrontSettings.tsx
+## Button Dark Mode Verification - 2026-01-25 21:26 UTC
 
-### Date: 2026-01-25
+### Task: In all Button components verify dark mode classes exist for visibility
 
-### What was implemented:
+### Analysis Performed:
+1. **Main Button Component** (`src/components/ui/button.tsx`)
+   - Reviewed all 7 variants: default, destructive, outline, secondary, ghost, link, hero, mobile
+   - The component uses CSS custom properties (CSS variables) from index.css that auto-switch in dark mode
+   - Identified that explicit `dark:` classes improve reliability and accessibility
 
-1. **Fixed duplicate Skeleton import** - Removed duplicate import on line 47
+2. **Custom Button Components Reviewed**:
+   - `src/components/ui/CopyButton.tsx` - Uses Button with ghost variant
+   - `src/components/ui/ExportButton.tsx` - Uses Button with outline variant (unchanged - uses Button properly)
+   - `src/components/ui/monitored-button.tsx` - Wraps Button component (unchanged - inherits from Button)
+   - `src/components/ui/ripple-button.tsx` - Custom button with ripple effect
+   - `src/components/ui/context-aware-support-button.tsx` - Uses Button with icon colors
+   - `src/components/ui/BulkActionsBar.tsx` - Uses Button variants (unchanged - uses Button properly)
+   - `src/components/ui/dialog-footer-actions.tsx` - Uses Button variants (unchanged - uses Button properly)
+   - `src/components/debug/ButtonHealthPanel.tsx` - Debug panel with colored indicators
 
-2. **Added aspect-ratio placeholder containers for all image upload sections:**
+### Changes Made:
 
-   - **Logo URL** (Branding tab):
-     - Changed from `aspect-video` to `aspect-square` (1:1 ratio)
-     - Reduced max-width from 200px to 120px for better proportions
-     - Added placeholder text "1:1 ratio" when no image is present
-     - Container is always visible to provide visual guidance
+1. **`src/components/ui/button.tsx`** - Added explicit dark mode classes for all variants:
+   - `default`: Added `dark:shadow-md dark:hover:shadow-lg`
+   - `destructive`: Added `dark:bg-destructive dark:text-destructive-foreground dark:hover:bg-destructive/80`
+   - `outline`: Added `text-foreground` and `dark:border-border dark:text-foreground dark:hover:bg-accent dark:hover:text-accent-foreground`
+   - `secondary`: Added `dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/70`
+   - `ghost`: Added `text-foreground` and `dark:text-foreground dark:hover:bg-accent dark:hover:text-accent-foreground`
+   - `link`: Added `dark:text-primary`
+   - `hero`: Added `dark:shadow-md dark:hover:shadow-lg`
+   - `mobile`: Added `dark:bg-primary dark:text-primary-foreground`
 
-   - **Banner URL** (Branding tab):
-     - Maintained `aspect-[3/1]` ratio
-     - Added placeholder text "3:1 ratio (e.g. 1200×400)" when no image is present
-     - Container is always visible to provide visual guidance
+2. **`src/components/ui/CopyButton.tsx`** - Added dark mode variant for check icon:
+   - Changed `text-green-500` to `text-green-500 dark:text-green-400` for better visibility
 
-   - **Favicon URL** (Branding tab):
-     - Changed from `w-8 h-8` to `size-8` (per UI skills: use `size-*` for square elements)
-     - Added placeholder text "32²" when no image is present
-     - Container is always visible with simplified "32×32px" label
+3. **`src/components/ui/context-aware-support-button.tsx`** - Added dark mode variants for icon colors:
+   - Question icon: `text-blue-500 dark:text-blue-400`
+   - Bug icon: `text-red-500 dark:text-red-400`
+   - Feature icon: `text-amber-500 dark:text-amber-400`
+   - Feedback icon: `text-green-500 dark:text-green-400`
 
-   - **Social Sharing Image URL** (SEO tab):
-     - Added new aspect-ratio container with `aspect-[1200/630]` (Open Graph standard ratio)
-     - Max-width of 300px for appropriate preview size
-     - Added placeholder text "1200×630px (1.91:1 ratio)" when no image is present
-     - Shows image preview when URL is provided
+4. **`src/components/debug/ButtonHealthPanel.tsx`** - Added dark mode variants for status indicators:
+   - Success icon/text: `text-green-600 dark:text-green-400`
+   - Error icon/text: `text-red-600 dark:text-red-400`
+   - Warning icon/text: `text-orange-600 dark:text-orange-400`
 
-### UI/UX Improvements:
-- Users can now see the expected dimensions BEFORE uploading images
-- Visual placeholders show recommended aspect ratios
-- Consistent styling across all image upload sections
-- Follows UI skills best practices (`size-*` for square elements)
+5. **`src/components/ui/ripple-button.tsx`** - Added JSDoc comment documenting ripple color behavior
 
-### Build Verification:
-- `npm run build` - PASSES (0 TypeScript errors)
+### Verification:
+- `npm run build` - PASSES (no TypeScript errors)
+- All button variants now have explicit dark mode classes for better visibility
+- The CSS variable system in index.css provides the underlying theme switching
+- Explicit dark: classes ensure visibility even if CSS variable priority varies
 
 ### Files Changed:
-- `src/pages/admin/storefront/StorefrontSettings.tsx`
+- `src/components/ui/button.tsx`
+- `src/components/ui/CopyButton.tsx`
+- `src/components/ui/context-aware-support-button.tsx`
+- `src/components/debug/ButtonHealthPanel.tsx`
+- `src/components/ui/ripple-button.tsx`
