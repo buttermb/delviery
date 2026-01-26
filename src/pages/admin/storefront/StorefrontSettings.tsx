@@ -365,7 +365,7 @@ export default function StorefrontSettings() {
         </div>
 
         {/* Content skeleton */}
-        <div className="grid gap-6 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_400px]">
+        <div className="grid gap-6 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_400px]">
           {/* Settings skeleton */}
           <div className="space-y-6">
             {/* Tabs skeleton */}
