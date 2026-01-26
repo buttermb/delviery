@@ -7690,3 +7690,45 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+
+---
+
+## Task: Add Tooltip component on hover when sidebar collapsed in SidebarMenuItem.tsx
+
+### Date: 2026-01-26
+
+### What was done:
+
+**Verification:** The tooltip functionality is ALREADY IMPLEMENTED in the codebase.
+
+After analyzing the code:
+
+1. **src/components/ui/sidebar.tsx** - The SidebarMenuButton component (lines 439-477) already has built-in tooltip support:
+   - Accepts a tooltip prop (string or TooltipContent props)
+   - Wraps the button in a Tooltip component when tooltip prop is provided
+   - The TooltipContent is automatically hidden when sidebar is expanded or on mobile (line 474: hidden={state !== "collapsed" || isMobile})
+   - The SidebarProvider already wraps children with TooltipProvider (line 111)
+
+2. **src/components/admin/sidebar/SidebarMenuItem.tsx** - The tooltip prop is ALREADY passed to SidebarMenuButton:
+   - Line 92-93: tooltip={item.name} for locked items (items user doesn't have access to)
+   - Line 113: tooltip={item.name} for regular menu items
+
+### How the tooltip works:
+- When the sidebar is **expanded**: Tooltips are hidden (user can see full item names)
+- When the sidebar is **collapsed**: Tooltips appear on hover showing the item name
+- On **mobile**: Tooltips are hidden (mobile uses a sheet instead of collapsed sidebar)
+
+### Acceptance Criteria Met:
+- [x] Tooltip shows item name when sidebar is collapsed
+- [x] Tooltip is positioned to the right of the menu item
+- [x] Tooltip hidden when sidebar is expanded
+- [x] Works for both regular and locked menu items
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- None - functionality was already implemented
+
+### Verification:
+- npm run build passes with no errors
+
