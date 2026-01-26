@@ -1956,22 +1956,12 @@ Added `.catch()` error handlers to all unhandled `.then()` Promise chains to pre
 ### Files Changed:
 - `progress.txt` (this verification report)
 
----
+## Task: Remove or scope global max-width 100% constraint in src/index.css
 
-## Task: Remove or comment out global max-width 100% rule in src/index.css line 109
+### Completed: Sun, Jan 25, 2026  6:14:01 PM
 
-**Status:** Already Complete (No Changes Needed)
+**Action taken:** Removed commented-out global `* { max-width: 100%; }` rule from src/index.css (lines 107-110).
 
-**Verification:**
-Upon inspection of `src/index.css` lines 107-110, the global `max-width: 100%` rule is already commented out:
+**Reasoning:** The rule was already commented out with a note explaining it broke sticky positioning and caused layout issues. Removed the dead code entirely to keep the CSS clean.
 
-```css
-/* Ensure all containers respect viewport width */
-/* * {
-  max-width: 100%;
-} REMOVED: Breaks sticky positioning and causes layout issues */
-```
-
-The rule was previously removed and properly commented with an explanation that it "Breaks sticky positioning and causes layout issues".
-
-**Result:** No code changes required - the task was already completed in a prior commit.
+**Files modified:** src/index.css
