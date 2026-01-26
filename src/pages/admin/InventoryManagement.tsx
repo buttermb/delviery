@@ -135,62 +135,7 @@ export default function InventoryManagement() {
     return quantity * cost;
   };
 
-  const toggleProductSelection = (productId: string) => {
-    setSelectedProductIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(productId)) {
-        next.delete(productId);
-      } else {
-        next.add(productId);
-      }
-      return next;
-    });
-  };
-
-  const toggleAllSelection = () => {
-    if (selectedProductIds.size === products.length) {
-      setSelectedProductIds(new Set());
-    } else {
-      setSelectedProductIds(new Set(products.map((p) => p.id)));
-    }
-  };
-
-  const selectedBulkProducts = products.filter((p) => selectedProductIds.has(p.id));
-
-  const handleBulkComplete = () => {
-    setSelectedProductIds(new Set());
-    // Re-fetch inventory
-    if (tenant?.id) {
-      supabase
-        .from('products')
-        .select('*')
-        .eq('tenant_id', tenant.id)
-        .order('name')
-        .then(({ data }) => {
-          if (data) setProducts(data);
-        });
-    }
-  };
-
   const columns: ResponsiveColumn<Product>[] = [
-    {
-      header: (
-        <Checkbox
-          checked={products.length > 0 && selectedProductIds.size === products.length}
-          onCheckedChange={toggleAllSelection}
-          aria-label="Select all products"
-        />
-      ),
-      className: 'w-[40px]',
-      cell: (item) => (
-        <Checkbox
-          checked={selectedProductIds.has(item.id)}
-          onCheckedChange={() => toggleProductSelection(item.id)}
-          aria-label={`Select ${item.name}`}
-          onClick={(e) => e.stopPropagation()}
-        />
-      ),
-    },
     {
       header: 'Product',
       accessorKey: 'name',
@@ -224,7 +169,7 @@ export default function InventoryManagement() {
       cell: (item) => {
         const status = getStockStatus(Number(item.available_quantity || 0), item.low_stock_alert);
         return (
-          <Badge variant={status.color === 'warning' ? 'secondary' : status.color as "destructive" | "default"} className="inline-flex items-center">
+          <Badge variant={status.color as "destructive" | "warning" | "default"} className="inline-flex items-center">
             {getStatusIcon(status.status)}
             {status.label}
           </Badge>
@@ -257,15 +202,8 @@ export default function InventoryManagement() {
     return (
       <div className="space-y-3">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
-            <Checkbox
-              checked={selectedProductIds.has(item.id)}
-              onCheckedChange={() => toggleProductSelection(item.id)}
-              aria-label={`Select ${item.name}`}
-            />
-            <div className="font-medium text-base">{item.name}</div>
-          </div>
-          <Badge variant={status.color === 'warning' ? 'secondary' : status.color as "destructive" | "default"} className="flex-shrink-0">
+          <div className="font-medium text-base">{item.name}</div>
+          <Badge variant={status.color as "destructive" | "warning" | "default"} className="flex-shrink-0">
             {status.label}
           </Badge>
         </div>
