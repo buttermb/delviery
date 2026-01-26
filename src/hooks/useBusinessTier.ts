@@ -157,8 +157,9 @@ export function useBusinessTier() {
       if (error) throw error;
       return tier;
     },
-    onSuccess: () => {
+    onSuccess: (tier) => {
       queryClient.invalidateQueries({ queryKey: ['business-tier', tenant?.id] });
+      toast.success('Business tier updated successfully');
     },
     onError: (error: unknown) => {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -200,6 +201,7 @@ export function useBusinessTier() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['business-tier', tenant?.id] });
+      toast.success('Business tier recalculated successfully');
     },
     onError: (error: unknown) => {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';

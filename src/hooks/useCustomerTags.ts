@@ -138,11 +138,6 @@ export function useCreateTag() {
       queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
       toast.success('Tag created successfully');
     },
-    onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Failed to create tag', error, { component: 'useCreateTag' });
-      toast.error('Failed to create tag', { description: errorMessage });
-    },
   });
 }
 
@@ -182,11 +177,6 @@ export function useUpdateTag() {
       queryClient.invalidateQueries({ queryKey: queryKeys.customerTags.all });
       toast.success('Tag updated successfully');
     },
-    onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Failed to update tag', error, { component: 'useUpdateTag' });
-      toast.error('Failed to update tag', { description: errorMessage });
-    },
   });
 }
 
@@ -216,11 +206,6 @@ export function useDeleteTag() {
       queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.customerTags.all });
       toast.success('Tag deleted successfully');
-    },
-    onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Failed to delete tag', error, { component: 'useDeleteTag' });
-      toast.error('Failed to delete tag', { description: errorMessage });
     },
   });
 }
@@ -259,11 +244,6 @@ export function useAssignTag() {
       });
       toast.success('Tag assigned successfully');
     },
-    onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Failed to assign tag', error, { component: 'useAssignTag' });
-      toast.error('Failed to assign tag', { description: errorMessage });
-    },
   });
 }
 
@@ -295,11 +275,6 @@ export function useRemoveTag() {
         queryKey: queryKeys.customerTags.byContact(variables.contactId),
       });
       toast.success('Tag removed successfully');
-    },
-    onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Failed to remove tag', error, { component: 'useRemoveTag' });
-      toast.error('Failed to remove tag', { description: errorMessage });
     },
   });
 }
@@ -341,11 +316,6 @@ export function useBatchAssignTags() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.customerTags.all });
       toast.success('Tags assigned successfully');
-    },
-    onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Failed to batch assign tags', error, { component: 'useBatchAssignTags' });
-      toast.error('Failed to assign tags', { description: errorMessage });
     },
   });
 }

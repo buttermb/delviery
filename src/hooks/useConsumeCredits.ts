@@ -166,6 +166,10 @@ export function useConsumeCredits(options?: UseConsumeCreditsOptions) {
       // Invalidate to sync with server state
       queryClient.invalidateQueries({ queryKey: ['credits', tenantId] });
 
+      toast.success('Credits consumed successfully', {
+        description: `${data.amount} credits used. New balance: ${data.newBalance}`,
+      });
+
       options?.onSuccess?.(data);
     },
   });
