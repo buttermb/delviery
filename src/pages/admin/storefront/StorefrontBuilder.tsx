@@ -13,8 +13,19 @@
  *  - SortableSectionItem.tsx       → Draggable section item for the section list
  */
 
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
+import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { MarketplaceStore } from '@/types/marketplace-extended';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logger } from '@/lib/logger';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import {
     BuilderHeader,
     BuilderLeftPanel,
@@ -28,7 +39,332 @@ export function StorefrontBuilder() {
     const builder = useStorefrontBuilder();
 
     return (
-        <div className="flex flex-col bg-muted overflow-hidden w-full" style={{ height: 'calc(100vh - 56px)' }}>
+        <div
+            ref={setNodeRef}
+            style={style}
+            onClick={onSelect}
+            className={`flex items-center justify-between p-3 rounded-md border cursor-pointer transition-colors ${isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted'
+                } ${isHidden ? 'opacity-50' : ''}`}
+        >
+            <div className="flex items-center gap-3">
+                <button
+                    {...attributes}
+                    {...listeners}
+                    className="touch-none cursor-grab active:cursor-grabbing"
+                >
+                    <GripVertical className="w-4 h-4 text-muted-foreground" />
+                </button>
+                <span className="text-sm font-medium">{sectionLabel}</span>
+                {isHidden && <EyeOff className="w-3 h-3 text-muted-foreground" />}
+            </div>
+            <div className="flex items-center gap-1">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                    onClick={onToggleVisibility}
+                >
+                    {isHidden ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                    onClick={onDuplicate}
+                >
+                    <Copy className="w-3 h-3" />
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                    onClick={onRemove}
+                >
+                    <Trash2 className="w-3 h-3" />
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+export default function StorefrontBuilder() {
+    const { tenant } = useTenantAdminAuth();
+    const { toast } = useToast();
+    const queryClient = useQueryClient();
+    const [searchParams] = useSearchParams();
+
+    // URL params for menu → storefront conversion
+    const fromMenuId = searchParams.get('from_menu');
+    const menuName = searchParams.get('menu_name');
+
+    // Log if this is a menu → storefront conversion
+    useEffect(() => {
+        if (fromMenuId) {
+            logger.info('StorefrontBuilder opened from menu', { menuId: fromMenuId, menuName });
+            toast({
+                title: 'Creating Storefront from Menu',
+                description: `Starting with products from "${menuName || 'your menu'}"`,
+            });
+        }
+    }, [fromMenuId, menuName, toast]);
+
+    const [activeTab, setActiveTab] = useState('sections');
+    const [devicePreview, setDevicePreview] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+    const [rightPanelOpen, setRightPanelOpen] = useState(true);
+    const [previewZoom, setPreviewZoom] = useState(0.85);
+
+    // Builder State
+    const [layoutConfig, setLayoutConfig] = useState<SectionConfig[]>([]);
+    const [themeConfig, setThemeConfig] = useState<{
+        colors: { primary: string; secondary: string; accent: string; background: string; text: string };
+        typography: { fontFamily: string };
+    }>({
+        colors: { primary: '#000000', secondary: '#ffffff', accent: '#3b82f6', background: '#ffffff', text: '#000000' },
+        typography: { fontFamily: 'Inter' }
+    });
+    const [selectedThemeId, setSelectedThemeId] = useState<string | undefined>(undefined);
+    const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+
+    // Handle theme selection
+    const handleThemeSelect = useCallback((theme: ThemePreset) => {
+        logger.debug('Applying theme preset', { themeId: theme.id });
+        setSelectedThemeId(theme.id);
+        // Apply theme colors to our config structure
+        setThemeConfig(prevConfig => ({
+            ...prevConfig,
+            colors: {
+                primary: theme.colors.primary,
+                secondary: theme.colors.secondary,
+                accent: theme.colors.accent,
+                background: theme.colors.background,
+                text: theme.colors.foreground,
+            },
+            typography: {
+                fontFamily: theme.typography.fontFamily.split(',')[0].trim(),
+            }
+        }));
+        toast({
+            title: 'Theme Applied',
+            description: `${theme.name} theme has been applied to your storefront`,
+        });
+    }, [toast]);
+
+    // History for undo/redo
+    const [history, setHistory] = useState<SectionConfig[][]>([]);
+    const [historyIndex, setHistoryIndex] = useState(-1);
+
+    // DnD sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: { distance: 8 }
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    // Fetch Store Config
+    const { data: store, isLoading } = useQuery({
+        queryKey: ['marketplace-settings', tenant?.id],
+        queryFn: async (): Promise<MarketplaceStore> => {
+            try {
+                // @ts-ignore - marketplace_stores table may not be in generated types
+                const { data, error } = await supabase
+                    .from('marketplace_stores')
+                    .select('*')
+                    .eq('tenant_id', tenant?.id)
+                    .maybeSingle();
+
+                if (error) throw error;
+                return data as MarketplaceStore;
+            } catch (e) {
+                logger.warn("Using mock data as DB fetch failed", e);
+                return {
+                    id: 'mock-id',
+                    tenant_id: tenant?.id || '',
+                    store_name: tenant?.business_name || 'Mock Store',
+                    slug: 'mock-store',
+                    layout_config: [],
+                    theme_config: { colors: { primary: '#000000', background: '#ffffff' } }
+                } as MarketplaceStore;
+            }
+        },
+        enabled: !!tenant?.id,
+    });
+
+    // Hydrate state from DB
+    useEffect(() => {
+        if (store) {
+            // Ensure layout_config is always an array
+            const rawConfig = store.layout_config;
+            const config: SectionConfig[] = Array.isArray(rawConfig) ? rawConfig : [];
+            setLayoutConfig(config);
+            if (store.theme_config) setThemeConfig(store.theme_config);
+            // Initialize history
+            setHistory([config]);
+            setHistoryIndex(0);
+        }
+    }, [store]);
+
+    // Save to history
+    const saveToHistory = useCallback((newConfig: SectionConfig[]) => {
+        const newHistory = history.slice(0, historyIndex + 1);
+        newHistory.push(newConfig);
+        setHistory(newHistory);
+        setHistoryIndex(newHistory.length - 1);
+    }, [history, historyIndex]);
+
+    // Undo
+    const undo = useCallback(() => {
+        if (historyIndex > 0) {
+            setHistoryIndex(historyIndex - 1);
+            setLayoutConfig(history[historyIndex - 1]);
+        }
+    }, [history, historyIndex]);
+
+    // Redo
+    const redo = useCallback(() => {
+        if (historyIndex < history.length - 1) {
+            setHistoryIndex(historyIndex + 1);
+            setLayoutConfig(history[historyIndex + 1]);
+        }
+    }, [history, historyIndex]);
+
+    const saveMutation = useMutation({
+        mutationFn: async () => {
+            // @ts-ignore - marketplace_stores table may not be in generated types
+            const { error } = await supabase
+                .from('marketplace_stores')
+                .update({
+                    layout_config: JSON.parse(JSON.stringify(layoutConfig)) as any,
+                    theme_config: themeConfig as any,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('tenant_id', tenant?.id);
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            toast({ title: "Store saved", description: "Your storefront changes have been published." });
+            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+        },
+        onError: (err) => {
+            toast({
+                title: "Save failed",
+                description: "Could not save changes. Is the database migration applied?",
+                variant: "destructive"
+            });
+            logger.error('Failed to save storefront', err);
+        }
+    });
+
+    const addSection = (type: keyof typeof SECTION_TYPES) => {
+        const newSection: SectionConfig = {
+            id: crypto.randomUUID(),
+            type,
+            content: { ...sectionDefaults(type).content },
+            styles: { ...sectionDefaults(type).styles },
+            visible: true
+        };
+        const newConfig = [...layoutConfig, newSection];
+        setLayoutConfig(newConfig);
+        saveToHistory(newConfig);
+        setSelectedSectionId(newSection.id);
+    };
+
+    const removeSection = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const newConfig = layoutConfig.filter(s => s.id !== id);
+        setLayoutConfig(newConfig);
+        saveToHistory(newConfig);
+        if (selectedSectionId === id) setSelectedSectionId(null);
+    };
+
+    const duplicateSection = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const sectionToDuplicate = layoutConfig.find(s => s.id === id);
+        if (!sectionToDuplicate) return;
+
+        const duplicated: SectionConfig = {
+            ...sectionToDuplicate,
+            id: crypto.randomUUID(),
+            content: { ...sectionToDuplicate.content },
+            styles: { ...sectionToDuplicate.styles }
+        };
+
+        const index = layoutConfig.findIndex(s => s.id === id);
+        const newConfig = [...layoutConfig.slice(0, index + 1), duplicated, ...layoutConfig.slice(index + 1)];
+        setLayoutConfig(newConfig);
+        saveToHistory(newConfig);
+        setSelectedSectionId(duplicated.id);
+        toast({ title: "Section duplicated" });
+    };
+
+    const toggleVisibility = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const newConfig = layoutConfig.map(s =>
+            s.id === id ? { ...s, visible: !(s.visible ?? true) } : s
+        );
+        setLayoutConfig(newConfig);
+        saveToHistory(newConfig);
+    };
+
+    const updateSection = (id: string, field: 'content' | 'styles', key: string, value: any) => {
+        const newConfig = layoutConfig.map(s => {
+            if (s.id !== id) return s;
+            return {
+                ...s,
+                [field]: { ...s[field], [key]: value }
+            };
+        });
+        setLayoutConfig(newConfig);
+    };
+
+    const applyTemplate = (templateKey: keyof typeof TEMPLATES) => {
+        const template = TEMPLATES[templateKey];
+        const newSections: SectionConfig[] = template.sections.map(type => ({
+            id: crypto.randomUUID(),
+            type,
+            content: { ...sectionDefaults(type).content },
+            styles: { ...sectionDefaults(type).styles },
+            visible: true
+        }));
+        setLayoutConfig(newSections);
+        saveToHistory(newSections);
+        toast({ title: `Applied "${template.name}" template` });
+    };
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            const oldIndex = layoutConfig.findIndex(s => s.id === active.id);
+            const newIndex = layoutConfig.findIndex(s => s.id === over.id);
+            const newConfig = arrayMove(layoutConfig, oldIndex, newIndex);
+            setLayoutConfig(newConfig);
+            saveToHistory(newConfig);
+        }
+    };
+
+    const selectedSection = layoutConfig.find(s => s.id === selectedSectionId);
+
+    // Preview scale - use transform to fit content without breaking layout
+    const getPreviewStyle = () => {
+        // Apply user-controlled zoom
+        switch (devicePreview) {
+            case 'mobile': return { width: '375px', transform: `scale(${previewZoom * 0.9})`, transformOrigin: 'top center' };
+            case 'tablet': return { width: '768px', transform: `scale(${previewZoom * 0.85})`, transformOrigin: 'top center' };
+            default: return { width: '1200px', transform: `scale(${previewZoom})`, transformOrigin: 'top center' };
+        }
+    };
+
+    // Auto-open right panel when selecting a section
+    const handleSelectSection = (id: string) => {
+        setSelectedSectionId(id);
+        if (!rightPanelOpen) setRightPanelOpen(true);
+    };
+
+    return (
+        <div className="flex flex-col bg-muted overflow-hidden -m-3 sm:-m-4 md:-m-6" style={{ height: 'calc(100vh - 56px)', width: 'calc(100% + 1.5rem)' }}>
             {/* Header */}
             <BuilderHeader
                 store={builder.store}

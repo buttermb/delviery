@@ -171,7 +171,9 @@ export default function OrdersHubPage() {
             id: 'export',
             label: isExporting ? 'Exporting...' : 'Export',
             icon: FileText,
-            onClick: handleExport,
+            onClick: () => {
+                // TODO: Implement export functionality
+            },
             variant: 'outline' as const,
             disabled: isExporting,
         });
