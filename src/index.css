@@ -44,7 +44,6 @@ html {
 }
 
 body {
-  overflow-y: auto;
   will-change: scroll-position;
   -webkit-overflow-scrolling: touch;
 }
@@ -385,7 +384,7 @@ body.keyboard-open [data-radix-dialog-content] {
   html,
   body {
     min-height: 100vh;
-    overflow-x: hidden;
+    /* overflow-x: hidden; - handled by specific containers if needed */
   }
 
   :root {
@@ -1079,12 +1078,11 @@ body.keyboard-open [data-radix-dialog-content] {
 @layer utilities {
 
   /* Prevent horizontal overflow on mobile */
+  /* Prevent horizontal overflow on mobile */
   body {
-    overflow-x: hidden;
     width: 100%;
-    max-width: 100vw;
-    position: relative;
-    /* overscroll-behavior-y: none; */
+    /* max-width: 100vw; - Removed to prevent scroll trapping */
+    /* position: relative; - CRITICAL FIX: Removed to prevent scroll trapping */
   }
 
   html {

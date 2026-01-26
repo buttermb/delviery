@@ -9,8 +9,11 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ShieldCheck, MousePointer2, Smartphone, Play } from "lucide-react";
-import { BusinessAdminDemo } from "./demos/BusinessAdminDemo";
+import { lazy, Suspense } from "react";
+// Lazy load the heavy demo component
+const BusinessAdminDemo = lazy(() => import("./demos/BusinessAdminDemo").then(module => ({ default: module.BusinessAdminDemo })));
 import { useMobileOptimized } from "@/hooks/useMobileOptimized";
+
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -148,7 +151,16 @@ export function ModernHero() {
 
               {/* Live Demo Component */}
               <div className="absolute inset-0 z-0">
-                <BusinessAdminDemo />
+                <Suspense fallback={
+                  <div className="w-full h-full bg-slate-50 flex items-center justify-center">
+                    <div className="animate-pulse flex flex-col items-center gap-4">
+                      <div className="h-8 w-32 bg-slate-200 rounded"></div>
+                      <div className="h-64 w-96 bg-slate-200 rounded"></div>
+                    </div>
+                  </div>
+                }>
+                  <BusinessAdminDemo />
+                </Suspense>
               </div>
 
               {/* Interaction Overlay */}
