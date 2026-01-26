@@ -3060,21 +3060,32 @@ verifying all 5 stat cards load with real data and their navigation links work c
 
 ---
 
-## Task: In App.tsx add Route for live-map path
+## Task: In App.tsx add Route for pos-system path
 
 ### What was done:
 
-**Verification completed - route already exists.**
+Verified that the route for `pos-system` is already correctly implemented in `src/App.tsx`:
 
-The route for `live-map` was already present in `src/App.tsx`:
-- Line 206: `const LiveMap = lazy(() => import("./pages/admin/LiveMap"));` - lazy import
-- Line 961: `<Route path="live-map" element={<FeatureProtectedRoute featureId="live-map"><LiveMap /></FeatureProtectedRoute>} />` - route definition
+1. **Lazy import** (line 311):
+   ```typescript
+   const POSHubPage = lazy(() => import("./pages/admin/hubs/POSHubPage"));
+   ```
 
-The route is properly configured with:
-- Feature protection via `FeatureProtectedRoute` with `featureId="live-map"`
-- Lazy loading for optimal bundle splitting
-- Correct component reference to `LiveMap` from `src/pages/admin/LiveMap.tsx`
+2. **Route definition** (line 963):
+   ```typescript
+   <Route path="pos-system" element={<FeatureProtectedRoute featureId="pos-system"><POSHubPage /></FeatureProtectedRoute>} />
+   ```
+
+3. **Legacy redirect** (line 839):
+   ```typescript
+   <Route path="pos-hub" element={<Navigate to="pos-system" replace />} />
+   ```
+
+### Implementation Details:
+- Route is nested under the `/:tenantSlug/admin/*` route structure
+- Uses `FeatureProtectedRoute` with `featureId="pos-system"` for tier-based access control
+- Renders `POSHubPage` component from `./pages/admin/hubs/POSHubPage`
+- Old `pos-hub` path redirects to `pos-system` for backwards compatibility
 
 ### Files Changed:
-- No changes required - route was already implemented
-- `progress.txt` (this update)
+- None (route already exists and is correctly implemented)
