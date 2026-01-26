@@ -3072,34 +3072,13 @@ verifying all 5 stat cards load with real data and their navigation links work c
 
 ---
 
-## Task: Add ThemeToggle component next to notification bell in AdminLayout.tsx header
+## Task: Add sm:grid-cols-2 to StorefrontDashboard Quick Stats Grid
 
-### Status: Already Complete
+**Completed:** Added `sm:grid-cols-2` responsive breakpoint to the Quick Stats grid in StorefrontDashboard.tsx at line 573.
 
-### Verification:
+**Change:** The grid now uses `grid-cols-1 sm:grid-cols-2 md:grid-cols-4` instead of `grid-cols-1 md:grid-cols-4`.
 
-The ThemeToggle component is already properly integrated in `src/pages/admin/AdminLayout.tsx`:
+This improves the responsive layout by showing 2 columns on small screens (>=640px) before expanding to 4 columns on medium screens (>=768px).
 
-1. **Import statement** (line 20):
-   ```typescript
-   import { ThemeToggle } from "@/components/ThemeToggle";
-   ```
-
-2. **Component placement** (lines 218-219):
-   ```tsx
-   {/* Notifications - optimized touch target */}
-   <div className="[&>button]:h-10 [&>button]:w-10 [&>button]:min-h-[44px] [&>button]:min-w-[44px]">
-     <AdminNotificationCenter />
-   </div>
-
-   {/* Theme Toggle */}
-   <ThemeToggle />
-   ```
-
-The ThemeToggle is positioned directly after the notification bell (AdminNotificationCenter) in the header actions area.
-
-### Build Verification:
-- `npm run build` completed successfully with no TypeScript errors
-
-### No Changes Needed:
-This task was already completed in commit e843130a ("feat: batch improvements - security, UI, TypeScript, dark mode, auth, navigation").
+### File Changed:
+- `src/pages/admin/storefront/StorefrontDashboard.tsx` (line 573)
