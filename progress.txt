@@ -7690,3 +7690,73 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Add settings import from JSON button with file picker and validation
+
+### What was done:
+
+1. **Created `src/components/settings/SettingsImportDialog.tsx`** - New dialog component for importing settings from JSON:
+   - **File picker with drag-and-drop**: Users can click to upload or drag-and-drop a JSON file
+   - **File validation**: Checks file extension (.json only) and size (max 1MB)
+   - **JSON parsing**: Reads file contents and validates JSON syntax
+   - **Zod schema validation**: Validates imported data against defined schemas:
+     - `generalSettingsSchema`: companyName, email, phone, address
+     - `securitySettingsSchema`: twoFactorEnabled, requirePasswordChange, sessionTimeout, passwordMinLength
+     - `notificationSettingsSchema`: emailNotifications, smsNotifications, lowStockAlerts, overdueAlerts, orderAlerts
+   - **Validation feedback**:
+     - Shows errors for invalid JSON or schema violations
+     - Shows warnings for unknown sections or version mismatches
+     - Shows success preview listing which settings sections will be imported
+   - **Export metadata support**: Handles `exportedAt` timestamp and `version` fields from exported files
+   - **Proper error handling**: Uses logger from `@/lib/logger` for error logging
+   - **Loading states**: Shows spinner during import operation
+   - **Clean dialog lifecycle**: Resets state when dialog closes
+
+2. **Updated `src/pages/admin/SettingsPage.tsx`**:
+   - Added "Import Settings" button in the page header
+   - Integrated `SettingsImportDialog` component
+   - Added `handleImportSettings` function that:
+     - Imports general settings to `accounts` table
+     - Imports security settings to account metadata
+     - Imports notification settings to `account_settings` table
+     - Updates all React Hook Form instances with imported values
+     - Calls `refreshAccount()` to sync context
+     - Shows success toast on completion
+   - Proper TypeScript typing with `ImportedSettings` type export
+
+### Key Features:
+
+- **File picker interface**: Click or drag-and-drop to select JSON file
+- **Comprehensive validation**:
+  - JSON syntax validation
+  - Schema validation with Zod
+  - Section presence validation (requires at least one valid section)
+  - Unknown key warnings (non-blocking)
+  - Version compatibility warnings
+- **Visual feedback**:
+  - Error alerts with list of issues
+  - Warning alerts for non-critical issues
+  - Success preview showing what will be imported
+  - Export timestamp display
+- **Import button**: Disabled until validation passes
+- **State management**: Forms are updated with imported values after successful import
+
+### Acceptance Criteria Met:
+
+- [x] Import button added to Settings page header
+- [x] File picker dialog with drag-and-drop support
+- [x] JSON file type restriction (.json only, max 1MB)
+- [x] Schema validation using Zod
+- [x] Validation errors displayed clearly
+- [x] Validation warnings for non-critical issues
+- [x] Success preview before import
+- [x] Settings saved to database on import
+- [x] Forms updated with imported values
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+
+- `src/components/settings/SettingsImportDialog.tsx` (new)
+- `src/pages/admin/SettingsPage.tsx` (modified)
