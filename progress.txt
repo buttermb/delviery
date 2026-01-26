@@ -7690,3 +7690,60 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Add toast.error notification in mutation onError callback for save failures
+
+### What was done:
+
+1. **Added toast.error notifications to CRM hooks** (src/hooks/crm/):
+   - `useActivityLog.ts` - Added toast.error in useLogActivity() onError callback
+   
+2. **Added toast.error notifications to core hooks** (src/hooks/):
+   - `useActivityFeed.ts` - Added toast.error in logActivity mutation onError
+   - `useVotes.ts` - Added toast.error in useVote() onError callback
+   - `useBusinessTier.ts` - Added toast.error in setTierMutation and recalculateTierMutation onError callbacks
+   - `useCustomerTags.ts` - Added toast.error in all mutation onError callbacks:
+     - useCreateTag() 
+     - useUpdateTag()
+     - useDeleteTag()
+     - useAssignTag()
+     - useRemoveTag()
+     - useBatchAssignTags()
+   - `useFreeTierLimits.ts` - Added toast.error in incrementMutation onError
+   - `useKnownDevices.ts` - Added toast.error in all mutation onError callbacks:
+     - trustDeviceMutation
+     - untrustDeviceMutation
+     - removeDeviceMutation
+     - confirmAlertMutation
+   - `usePasswordReset.ts` - Added toast.error in requestResetMutation and confirmResetMutation onError callbacks
+   - `useEmailVerification.ts` - Added toast.error in verifyEmail and resendVerification mutation onError callbacks
+
+### Pattern Used:
+
+All mutations now follow this consistent pattern:
+```typescript
+onError: (error: unknown) => {
+  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+  logger.error('Operation failed', error, { component: 'hookName' });
+  toast.error('User-friendly error message', { description: errorMessage });
+},
+```
+
+### Files Changed:
+- `src/hooks/crm/useActivityLog.ts`
+- `src/hooks/useActivityFeed.ts`
+- `src/hooks/useVotes.ts`
+- `src/hooks/useBusinessTier.ts`
+- `src/hooks/useCustomerTags.ts`
+- `src/hooks/useFreeTierLimits.ts`
+- `src/hooks/useKnownDevices.ts`
+- `src/hooks/usePasswordReset.ts`
+- `src/hooks/useEmailVerification.ts`
+
+### Verification:
+- `npm run build` - PASSES (0 TypeScript errors)
+- All toast imports are from 'sonner' as per codebase convention
+- Error messages include description for user context
+

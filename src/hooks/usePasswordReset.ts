@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { logger } from "@/lib/logger";
+import { toast } from "sonner";
 import { getErrorMessage } from "@/utils/errorHandling/typeGuards";
 
 // ============================================================================
@@ -126,7 +127,9 @@ export function usePasswordReset() {
       };
     },
     onError: (error) => {
-      logger.warn("Password reset request failed", { error: getErrorMessage(error) });
+      const errorMessage = getErrorMessage(error);
+      logger.warn("Password reset request failed", { error: errorMessage });
+      toast.error("Failed to send reset email", { description: errorMessage });
     },
   });
 
@@ -162,7 +165,9 @@ export function usePasswordReset() {
       };
     },
     onError: (error) => {
-      logger.warn("Password confirm reset failed", { error: getErrorMessage(error) });
+      const errorMessage = getErrorMessage(error);
+      logger.warn("Password confirm reset failed", { error: errorMessage });
+      toast.error("Failed to reset password", { description: errorMessage });
     },
   });
 
