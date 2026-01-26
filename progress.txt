@@ -1,3 +1,26 @@
+## Task: Add Remember Me Checkbox to LoginPage.tsx
+
+### What was done:
+
+1. **Updated `src/pages/saas/LoginPage.tsx`**:
+   - Added import for `Checkbox` component from `@/components/ui/checkbox`
+   - Added `rememberMe: z.boolean().default(false)` field to the login schema
+   - Added `rememberMe: false` to form default values
+   - Replaced the non-functional styled div checkbox with a proper `FormField` using the `Checkbox` component
+   - The checkbox is now properly connected to react-hook-form with `checked` and `onCheckedChange` handlers
+   - Added `disabled` state during form submission to prevent user interaction
+
+### Acceptance Criteria Met:
+- [x] Remember Me checkbox component added to LoginPage.tsx
+- [x] Checkbox uses the existing shadcn/ui Checkbox component
+- [x] Checkbox is integrated with react-hook-form
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/pages/saas/LoginPage.tsx` (modified - added functional Remember Me checkbox)
+
+---
+
 ﻿## Task: Test Credit Consumption Flow
 
 ### What was done:
