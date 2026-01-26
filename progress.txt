@@ -7714,45 +7714,75 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Add showPassword state and toggle button for password field in SignupPage.tsx
+## Task: Add disabled and loading state to auth page submit buttons
 
-### Status: ALREADY IMPLEMENTED
+**Completed:** 2026-01-25 14:00:42
 
-Upon review, the SignupPage.tsx already has complete password visibility toggle functionality:
+### Summary
+Audited all authentication pages and added disabled/loading states to submit buttons that were missing them. Most auth pages already had proper implementations.
 
-1. **State variables** (lines 103-104):
-   - " >> C:UsersAlexDownloadsdelviery-main.ralphy-worktreesagent-74-1769377614811-cxy7mdprogress.txt && echo  - "
+### Changes Made
 
-2. **Password field toggle** (lines 351-372):
-   - Input type toggles between 'text' and 'password' based on showPassword state
-   - Toggle button with Eye/EyeOff icons from lucide-react
-   - Proper accessibility label (aria-label)
-   - tabIndex={-1} to prevent focus interference during form navigation
+1. **src/pages/auth/SignupPage.tsx**
+   - Added \ to Step 1 Continue button
+   - Added \ to Step 2 Back and Continue buttons
+   - Added \ to all Step 1 inputs (email, password, confirm password)
+   - Added \ to all Step 2 inputs (fullName, phone)
+   - Added \ to Step 3 tenant mode selection buttons
+   - Added \ to Step 3 inputs (businessName, tenantSlug)
 
-3. **Confirm password field toggle** (lines 387-408):
-   - Same pattern applied to confirm password field
-   - Independent state (showConfirmPassword) for separate control
+2. **src/pages/AccountSignup.tsx**
+   - Added \ to Step 1 Continue button
 
-No changes required - feature is complete and properly implemented.
+### Pages Already Correctly Implemented (no changes needed)
+- LoginPage.tsx - Already had \ and Loader2 spinner
+- ForgotPasswordPage.tsx - Already had \ and spinner
+- PasswordResetPage.tsx - Already had \ and spinner
+- ResetPasswordPage.tsx - Already had \ and spinner
+- ChangePasswordPage.tsx - Already had \ and spinner
+- SignupSuccessPage.tsx - Already had \ and spinner
+- CustomerLoginPage.tsx (customer/LoginPage.tsx) - Already had \ and spinner
+- CustomerForgotPasswordPage.tsx - Already had \ and spinner
+- CustomerResetPasswordPage.tsx - Already had \ and spinner
+- InvitationAcceptPage.tsx - Already had \ and spinner
 
-## Task: Add showPassword state and toggle button for password field in SignupPage.tsx
+### Verification
+- \ passes with 0 TypeScript errors
+- All 6598 modules transform successfully
 
-### Status: ALREADY IMPLEMENTED
 
-Upon review, the SignupPage.tsx already has complete password visibility toggle functionality:
+## Task: Add disabled and loading state to auth page submit buttons
 
-1. **State variables** (lines 103-104):
-   - showPassword state with useState(false)
-   - showConfirmPassword state with useState(false)
+**Completed:** 2026-01-25
 
-2. **Password field toggle** (lines 351-372):
-   - Input type toggles between 'text' and 'password' based on showPassword state
-   - Toggle button with Eye/EyeOff icons from lucide-react
-   - Proper accessibility label (aria-label)
-   - tabIndex={-1} to prevent focus interference during form navigation
+### Summary
+Audited all authentication pages and added disabled/loading states to submit buttons that were missing them. Most auth pages already had proper implementations.
 
-3. **Confirm password field toggle** (lines 387-408):
-   - Same pattern applied to confirm password field
-   - Independent state (showConfirmPassword) for separate control
+### Changes Made
 
-No changes required - feature is complete and properly implemented.
+1. **src/pages/auth/SignupPage.tsx**
+   - Added `disabled={isSubmitting}` to Step 1 Continue button
+   - Added `disabled={isSubmitting}` to Step 2 Back and Continue buttons
+   - Added `disabled={isSubmitting}` to all Step 1 inputs (email, password, confirm password)
+   - Added `disabled={isSubmitting}` to all Step 2 inputs (fullName, phone)
+   - Added `disabled={isSubmitting}` to Step 3 tenant mode selection buttons
+   - Added `disabled={isSubmitting}` to Step 3 inputs (businessName, tenantSlug)
+
+2. **src/pages/AccountSignup.tsx**
+   - Added `disabled={loading}` to Step 1 Continue button
+
+### Pages Already Correctly Implemented (no changes needed)
+- LoginPage.tsx - Already had `disabled={isSubmitting}` and Loader2 spinner
+- ForgotPasswordPage.tsx - Already had `disabled={isRequestingReset || rateLimited}` and spinner
+- PasswordResetPage.tsx - Already had `disabled={loading}` and spinner
+- ResetPasswordPage.tsx - Already had `disabled={isConfirmingReset || ...}` and spinner
+- ChangePasswordPage.tsx - Already had `disabled={loading || !isFormValid}` and spinner
+- SignupSuccessPage.tsx - Already had `disabled={isResending || cooldownRemaining > 0}` and spinner
+- CustomerLoginPage.tsx (customer/LoginPage.tsx) - Already had `disabled={loading || !isOnline || isLocked}` and spinner
+- CustomerForgotPasswordPage.tsx - Already had `disabled={loading || !email}` and spinner
+- CustomerResetPasswordPage.tsx - Already had `disabled={loading || ...}` and spinner
+- InvitationAcceptPage.tsx - Already had `disabled={accepting}` and spinner
+
+### Verification
+- `npm run build` passes with 0 TypeScript errors
+- All 6598 modules transform successfully
