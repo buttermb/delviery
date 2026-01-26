@@ -381,11 +381,15 @@ export default function CustomerLoginPage() {
           {/* Footer Links */}
           <div className="mt-6 space-y-4">
             <div className="flex items-center justify-center gap-3 text-sm">
-              <ForgotPasswordDialog userType="customer" tenantSlug={tenantSlug}>
-                <button className="text-slate-400 hover:text-white font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 rounded-sm">
-                  Forgot password?
-                </button>
-              </ForgotPasswordDialog>
+              <ForgotPasswordDialog 
+                userType="customer" 
+                tenantSlug={tenantSlug}
+                trigger={
+                  <button className="text-slate-400 hover:text-white font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 rounded-sm">
+                    Forgot password?
+                  </button>
+                }
+              />
               <span className="text-slate-600">•</span>
               <Link
                 to={`/${tenantSlug}/customer/signup`}

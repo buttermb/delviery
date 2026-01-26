@@ -42,8 +42,8 @@ export async function checkTableExists(tableName: string): Promise<boolean> {
   try {
     // Try to query the table (with limit 0 to minimize data transfer)
     // Cast to TableName since we're checking tables that may or may not exist in the schema
-    const { error } = await supabase
-      .from(tableName as TableName)
+    const { error } = await (supabase as any)
+      .from(tableName)
       .select('id')
       .limit(0);
 

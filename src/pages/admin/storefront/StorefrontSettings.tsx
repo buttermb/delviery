@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import {
@@ -37,14 +38,13 @@ import {
   Star,
   PanelRightClose,
   PanelRightOpen,
-  Loader2,
-  Copy
+  Loader2
 } from 'lucide-react';
 import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog';
 import { generateUrlToken } from '@/utils/menuHelpers';
 import { StorefrontSettingsLivePreview } from '@/components/admin/storefront/StorefrontSettingsLivePreview';
 import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedProductsManager';
-import { OGImagePreview } from '@/components/admin/storefront/OGImagePreview';
+// Skeleton already imported above
 
 interface DeliveryZone {
   zip_code: string;
@@ -134,45 +134,10 @@ const PAYMENT_METHOD_OPTIONS = [
   { id: 'zelle', label: 'Zelle', icon: '🏦' },
 ];
 
-const DEFAULT_STORE_SETTINGS: Partial<StoreSettings> = {
-  primary_color: '#10b981',
-  secondary_color: '#059669',
-  accent_color: '#34d399',
-  font_family: 'Inter',
-  theme_config: { theme: 'standard' },
-  is_public: true,
-  require_account: false,
-  require_age_verification: false,
-  minimum_age: 21,
-  default_delivery_fee: 5,
-  free_delivery_threshold: 100,
-  delivery_zones: [],
-  time_slots: DEFAULT_TIME_SLOTS,
-  payment_methods: ['cash', 'card'],
-  checkout_settings: {
-    allow_guest_checkout: true,
-    require_phone: true,
-    require_address: true,
-    show_delivery_notes: true,
-    enable_coupons: true,
-    enable_tips: false,
-  },
-  operating_hours: DAYS.reduce((acc, day) => ({
-    ...acc,
-    [day]: { open: '09:00', close: '21:00', closed: day === 'sunday' },
-  }), {}),
-  purchase_limits: {
-    enabled: false,
-    max_per_order: null,
-    max_daily: null,
-    max_weekly: null,
-  },
-  featured_product_ids: [],
-};
-
 export default function StorefrontSettings() {
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
@@ -181,7 +146,6 @@ export default function StorefrontSettings() {
   const [isDirty, setIsDirty] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
-  const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
   // Fetch store data
   const { data: store, isLoading } = useQuery({
@@ -294,31 +258,6 @@ export default function StorefrontSettings() {
     setIsDirty(true);
   };
 
-  // Apply hours from one day to all days
-  const applyHoursToAllDays = (sourceDay: string) => {
-    const sourceHours = formData.operating_hours?.[sourceDay];
-    if (!sourceHours) return;
-
-    const newOperatingHours: Record<string, { open: string; close: string; closed: boolean }> = {};
-    DAYS.forEach((day) => {
-      newOperatingHours[day] = {
-        open: sourceHours.open,
-        close: sourceHours.close,
-        closed: sourceHours.closed,
-      };
-    });
-
-    setFormData((prev) => ({
-      ...prev,
-      operating_hours: newOperatingHours,
-    }));
-    setIsDirty(true);
-    toast({
-      title: 'Hours applied',
-      description: `${sourceDay.charAt(0).toUpperCase() + sourceDay.slice(1)}'s hours copied to all days.`,
-    });
-  };
-
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -365,13 +304,18 @@ export default function StorefrontSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
       setIsDirty(false);
-      toast.success('Settings saved!', {
+      toast({
+        title: 'Settings saved!',
         description: 'Your store settings have been updated.',
       });
     },
     onError: (error) => {
       logger.error('Failed to save settings', error, { component: 'StorefrontSettings' });
-      toast.error('Failed to save settings. Please try again.');
+      toast({
+        title: 'Error',
+        description: 'Failed to save settings. Please try again.',
+        variant: 'destructive',
+      });
     },
   });
 
@@ -395,55 +339,9 @@ export default function StorefrontSettings() {
     },
     onError: (error) => {
       logger.error('Failed to regenerate token', error, { component: 'StorefrontSettings' });
-      toast.error('Failed to generate new link.');
-    },
-  });
-
-  // Reset to defaults mutation
-  const resetToDefaultsMutation = useMutation({
-    mutationFn: async () => {
-      if (!store?.id) throw new Error('No store');
-
-      const { error } = await (supabase as unknown as { from: (table: string) => { update: (data: Record<string, unknown>) => { eq: (col: string, val: string) => Promise<{ error: unknown }> } } })
-        .from('marketplace_stores')
-        .update({
-          primary_color: DEFAULT_STORE_SETTINGS.primary_color,
-          secondary_color: DEFAULT_STORE_SETTINGS.secondary_color,
-          accent_color: DEFAULT_STORE_SETTINGS.accent_color,
-          font_family: DEFAULT_STORE_SETTINGS.font_family,
-          theme_config: DEFAULT_STORE_SETTINGS.theme_config,
-          is_public: DEFAULT_STORE_SETTINGS.is_public,
-          require_account: DEFAULT_STORE_SETTINGS.require_account,
-          require_age_verification: DEFAULT_STORE_SETTINGS.require_age_verification,
-          minimum_age: DEFAULT_STORE_SETTINGS.minimum_age,
-          default_delivery_fee: DEFAULT_STORE_SETTINGS.default_delivery_fee,
-          free_delivery_threshold: DEFAULT_STORE_SETTINGS.free_delivery_threshold,
-          delivery_zones: DEFAULT_STORE_SETTINGS.delivery_zones,
-          time_slots: DEFAULT_STORE_SETTINGS.time_slots,
-          payment_methods: DEFAULT_STORE_SETTINGS.payment_methods,
-          checkout_settings: DEFAULT_STORE_SETTINGS.checkout_settings,
-          operating_hours: DEFAULT_STORE_SETTINGS.operating_hours,
-          purchase_limits: DEFAULT_STORE_SETTINGS.purchase_limits,
-          featured_product_ids: DEFAULT_STORE_SETTINGS.featured_product_ids,
-        })
-        .eq('id', store.id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
-      setIsDirty(false);
-      setResetDialogOpen(false);
-      toast({
-        title: 'Settings reset',
-        description: 'Your store settings have been reset to defaults.',
-      });
-    },
-    onError: (error) => {
-      logger.error('Failed to reset settings', error, { component: 'StorefrontSettings' });
       toast({
         title: 'Error',
-        description: 'Failed to reset settings. Please try again.',
+        description: 'Failed to generate new link.',
         variant: 'destructive',
       });
     },
@@ -467,7 +365,7 @@ export default function StorefrontSettings() {
         </div>
 
         {/* Content skeleton */}
-        <div className="grid gap-6 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_400px]">
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_400px]">
           {/* Settings skeleton */}
           <div className="space-y-6">
             {/* Tabs skeleton */}
@@ -580,46 +478,6 @@ export default function StorefrontSettings() {
             <Share2 className="w-4 h-4 mr-2" />
             Share
           </Button>
-          <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset to Defaults
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Reset to Default Settings?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will reset all store settings to their default values, including colors,
-                  delivery settings, checkout options, and operating hours. Your store name,
-                  slug, and URLs will not be changed. This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={resetToDefaultsMutation.isPending}>
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={(e) => {
-                    e.preventDefault();
-                    resetToDefaultsMutation.mutate();
-                  }}
-                  disabled={resetToDefaultsMutation.isPending}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  {resetToDefaultsMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Resetting...
-                    </>
-                  ) : (
-                    'Reset Settings'
-                  )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
           <Button variant="outline" size="sm" asChild>
             <a href={storeUrl} target="_blank" rel="noopener noreferrer">
               <Eye className="w-4 h-4 mr-2" />
@@ -662,21 +520,18 @@ export default function StorefrontSettings() {
       <div className={`grid gap-6 transition-all duration-300 ${showPreview ? 'lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_400px]' : 'grid-cols-1'}`}>
         {/* Settings Tabs */}
         <Tabs defaultValue="general" className="space-y-6 min-w-0">
-          <ScrollArea className="w-full whitespace-nowrap">
-            <TabsList className="inline-flex w-max justify-start p-1">
-              <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="branding">Branding</TabsTrigger>
-              <TabsTrigger value="featured">Featured</TabsTrigger>
-              <TabsTrigger value="delivery">Delivery</TabsTrigger>
-              <TabsTrigger value="zones">Zones</TabsTrigger>
-              <TabsTrigger value="timeslots">Time Slots</TabsTrigger>
-              <TabsTrigger value="payments">Payments</TabsTrigger>
-              <TabsTrigger value="checkout">Checkout</TabsTrigger>
-              <TabsTrigger value="hours">Hours</TabsTrigger>
-              <TabsTrigger value="seo">SEO</TabsTrigger>
-            </TabsList>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
+          <TabsList className="inline-flex w-full overflow-x-auto justify-start snap-x scrollbar-hide p-1">
+            <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="branding">Branding</TabsTrigger>
+            <TabsTrigger value="featured">Featured</TabsTrigger>
+            <TabsTrigger value="delivery">Delivery</TabsTrigger>
+            <TabsTrigger value="zones">Zones</TabsTrigger>
+            <TabsTrigger value="timeslots">Time Slots</TabsTrigger>
+            <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="checkout">Checkout</TabsTrigger>
+            <TabsTrigger value="hours">Hours</TabsTrigger>
+            <TabsTrigger value="seo">SEO</TabsTrigger>
+          </TabsList>
 
           {/* General Tab */}
           <TabsContent value="general">
@@ -876,19 +731,15 @@ export default function StorefrontSettings() {
                         onChange={(e) => updateField('logo_url', e.target.value)}
                         placeholder="https://..."
                       />
-                      <div className="mt-2 aspect-square w-full max-w-[120px] bg-muted rounded-lg flex items-center justify-center border overflow-hidden p-2">
-                        {formData.logo_url ? (
+                      {formData.logo_url && (
+                        <div className="mt-2 aspect-video w-full max-w-[200px] bg-muted rounded-lg flex items-center justify-center border overflow-hidden p-2">
                           <img
                             src={formData.logo_url}
                             alt="Logo preview"
                             className="w-full h-full object-contain"
                           />
-                        ) : (
-                          <span className="text-xs text-muted-foreground text-center">
-                            1:1 ratio
-                          </span>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -899,19 +750,15 @@ export default function StorefrontSettings() {
                         onChange={(e) => updateField('banner_url', e.target.value)}
                         placeholder="https://..."
                       />
-                      <div className="mt-2 aspect-[3/1] w-full bg-muted rounded-lg flex items-center justify-center border overflow-hidden">
-                        {formData.banner_url ? (
+                      {formData.banner_url && (
+                        <div className="mt-2 aspect-[3/1] bg-muted rounded-lg overflow-hidden border">
                           <img
                             src={formData.banner_url}
                             alt="Banner preview"
                             className="w-full h-full object-cover"
                           />
-                        ) : (
-                          <span className="text-xs text-muted-foreground text-center">
-                            3:1 ratio (e.g. 1200×400)
-                          </span>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -923,20 +770,18 @@ export default function StorefrontSettings() {
                       onChange={(e) => updateField('favicon_url', e.target.value)}
                       placeholder="https://... (32x32 recommended)"
                     />
-                    <div className="mt-2 flex items-center gap-2">
-                      <div className="size-8 rounded border bg-muted flex items-center justify-center p-1">
-                        {formData.favicon_url ? (
+                    {formData.favicon_url && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <div className="w-8 h-8 rounded border bg-background flex items-center justify-center p-1">
                           <img
                             src={formData.favicon_url}
                             alt="Favicon preview"
                             className="w-full h-full object-contain"
                           />
-                        ) : (
-                          <span className="text-[8px] text-muted-foreground">32²</span>
-                        )}
+                        </div>
+                        <span className="text-xs text-muted-foreground">32x32px preview</span>
                       </div>
-                      <span className="text-xs text-muted-foreground">32×32px</span>
-                    </div>
+                    )}
                   </div>
                 </div>
 
@@ -1030,7 +875,6 @@ export default function StorefrontSettings() {
                       step="0.01"
                       value={formData.default_delivery_fee || 5}
                       onChange={(e) => updateField('default_delivery_fee', parseFloat(e.target.value))}
-                      className="w-full sm:w-24"
                     />
                   </div>
 
@@ -1054,91 +898,84 @@ export default function StorefrontSettings() {
 
           {/* Delivery Zones Tab */}
           <TabsContent value="zones">
-            <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5" />
-                    Delivery Zones
-                  </CardTitle>
-                  <CardDescription>Set custom delivery fees by zip code</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    {(formData.delivery_zones || []).map((zone, index) => (
-                      <div key={index} className="flex flex-col sm:flex-row gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  Delivery Zones
+                </CardTitle>
+                <CardDescription>Set custom delivery fees by zip code</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  {(formData.delivery_zones || []).map((zone, index) => (
+                    <div key={index} className="flex flex-col sm:flex-row gap-4">
+                      <Input
+                        placeholder="Zip code"
+                        value={zone.zip_code || ''}
+                        onChange={(e) => {
+                          const zones = [...(formData.delivery_zones || [])];
+                          zones[index] = { ...zones[index], zip_code: e.target.value };
+                          updateField('delivery_zones', zones);
+                        }}
+                        className="w-full sm:w-32"
+                      />
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Fee: $</span>
                         <Input
-                          placeholder="Zip code"
-                          value={zone.zip_code || ''}
+                          type="number"
+                          step="0.01"
+                          value={zone.fee || 0}
                           onChange={(e) => {
                             const zones = [...(formData.delivery_zones || [])];
-                            zones[index] = { ...zones[index], zip_code: e.target.value };
+                            zones[index] = { ...zones[index], fee: parseFloat(e.target.value) };
                             updateField('delivery_zones', zones);
                           }}
-                          className="w-full sm:w-32"
+                          className="w-full sm:w-24"
                         />
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground">Fee: $</span>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={zone.fee || 0}
-                            onChange={(e) => {
-                              const zones = [...(formData.delivery_zones || [])];
-                              zones[index] = { ...zones[index], fee: parseFloat(e.target.value) };
-                              updateField('delivery_zones', zones);
-                            }}
-                            className="w-full sm:w-24"
-                          />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground">Min: $</span>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={zone.min_order || 0}
-                            onChange={(e) => {
-                              const zones = [...(formData.delivery_zones || [])];
-                              zones[index] = { ...zones[index], min_order: parseFloat(e.target.value) };
-                              updateField('delivery_zones', zones);
-                            }}
-                            className="w-full sm:w-24"
-                          />
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            const zones = (formData.delivery_zones || []).filter((_, i) => i !== index);
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Min: $</span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={zone.min_order || 0}
+                          onChange={(e) => {
+                            const zones = [...(formData.delivery_zones || [])];
+                            zones[index] = { ...zones[index], min_order: parseFloat(e.target.value) };
                             updateField('delivery_zones', zones);
                           }}
-                        >
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
+                          className="w-full sm:w-24"
+                        />
                       </div>
-                    ))}
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        const zones = [...(formData.delivery_zones || []), { zip_code: '', fee: 5, min_order: 0 }];
-                        updateField('delivery_zones', zones);
-                      }}
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Zone
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    If a customer's zip code isn't listed, the default delivery fee will be used.
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Zone Map Preview */}
-              <div className="lg:sticky lg:top-6 lg:self-start">
-                <DeliveryZoneMapPreview zones={formData.delivery_zones || []} />
-              </div>
-            </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const zones = (formData.delivery_zones || []).filter((_, i) => i !== index);
+                          updateField('delivery_zones', zones);
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const zones = [...(formData.delivery_zones || []), { zip_code: '', fee: 5, min_order: 0 }];
+                      updateField('delivery_zones', zones);
+                    }}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Zone
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  If a customer's zip code isn't listed, the default delivery fee will be used.
+                </p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Time Slots Tab */}
@@ -1487,25 +1324,15 @@ export default function StorefrontSettings() {
                             type="time"
                             value={formData.operating_hours?.[day]?.open || '09:00'}
                             onChange={(e) => updateHours(day, 'open', e.target.value)}
-                            className="w-full sm:w-28"
+                            className="w-32"
                           />
                           <span className="text-muted-foreground">to</span>
                           <Input
                             type="time"
                             value={formData.operating_hours?.[day]?.close || '21:00'}
                             onChange={(e) => updateHours(day, 'close', e.target.value)}
-                            className="w-full sm:w-28"
+                            className="w-32"
                           />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => applyHoursToAllDays(day)}
-                            title="Apply these hours to all days"
-                            className="text-muted-foreground hover:text-foreground"
-                          >
-                            <Copy className="w-4 h-4 mr-1" />
-                            Apply to all
-                          </Button>
                         </>
                       )}
                       {formData.operating_hours?.[day]?.closed && (
@@ -1550,17 +1377,6 @@ export default function StorefrontSettings() {
                   />
                 </div>
 
-                {/* Google Search Preview */}
-                <GoogleSearchPreview
-                  title={formData.meta_title || formData.store_name || ''}
-                  description={formData.meta_description || ''}
-                  url={formData.custom_domain
-                    ? `https://${formData.custom_domain}`
-                    : storeUrl
-                  }
-                  faviconUrl={formData.favicon_url}
-                />
-
                 <div className="space-y-2">
                   <Label htmlFor="og_image_url">Social Sharing Image URL</Label>
                   <Input
@@ -1569,29 +1385,10 @@ export default function StorefrontSettings() {
                     onChange={(e) => updateField('og_image_url', e.target.value)}
                     placeholder="https://..."
                   />
-                  <div className="mt-2 aspect-[1200/630] w-full max-w-[300px] bg-muted rounded-lg flex items-center justify-center border overflow-hidden">
-                    {formData.og_image_url ? (
-                      <img
-                        src={formData.og_image_url}
-                        alt="Social sharing preview"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-xs text-muted-foreground text-center px-2">
-                        1200×630px (1.91:1 ratio)
-                      </span>
-                    )}
-                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Recommended size: 1200x630 pixels
+                  </p>
                 </div>
-
-                {/* Social Share Preview */}
-                <OGImagePreview
-                  title={formData.meta_title || formData.store_name || ''}
-                  description={formData.meta_description || formData.tagline || ''}
-                  imageUrl={formData.og_image_url || null}
-                  siteUrl={`${window.location.origin}/shop/${formData.slug || ''}`}
-                  siteName={formData.store_name || ''}
-                />
 
                 <Separator />
 

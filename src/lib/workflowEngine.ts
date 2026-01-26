@@ -120,11 +120,11 @@ export async function executeWorkflow(
       execution_log: [],
     };
 
-    const { data: execution, error: execError } = await supabase
-      .from('workflow_executions' as 'accounts') // Type assertion for table not in types
-      .insert(insertPayload as unknown as Record<string, unknown>)
+    const { data: execution, error: execError } = await (supabase as any)
+      .from('workflow_executions') // Type assertion for table not in types
+      .insert(insertPayload)
       .select()
-      .maybeSingle() as unknown as { data: WorkflowExecutionRow | null; error: Error | null };
+      .maybeSingle() as { data: WorkflowExecutionRow | null; error: Error | null };
 
     if (execError || !execution) {
       throw new Error('Failed to create execution record');
@@ -205,9 +205,9 @@ async function executeAction(
     case 'create_record':
       // Create database record
       if (action.config.table && action.config.data) {
-        const { error } = await supabase
-          .from(action.config.table as 'accounts') // Dynamic table access
-          .insert(action.config.data as Record<string, unknown>);
+        const { error } = await (supabase as any)
+          .from(action.config.table) // Dynamic table access
+          .insert(action.config.data);
         if (error) throw error;
       }
       break;
@@ -215,9 +215,9 @@ async function executeAction(
     case 'update_record':
       // Update database record
       if (action.config.table && action.config.id && action.config.data) {
-        const { error } = await supabase
-          .from(action.config.table as 'accounts') // Dynamic table access
-          .update(action.config.data as Record<string, unknown>)
+        const { error } = await (supabase as any)
+          .from(action.config.table) // Dynamic table access
+          .update(action.config.data)
           .eq('id', action.config.id);
         if (error) throw error;
       }
