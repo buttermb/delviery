@@ -14,7 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Settings, Shield, Bell, Printer, Plug, Save,
-  Building, Layout, Sliders, Users, CreditCard, ArrowLeft, Download
+  Building, Layout, Sliders, Users, CreditCard, ArrowLeft, Upload
 } from 'lucide-react';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,6 +22,7 @@ import { OperationSizeSelector } from '@/components/admin/sidebar/OperationSizeS
 import { SidebarCustomizer } from '@/components/admin/sidebar/SidebarCustomizer';
 import { StripeConnectSettings } from '@/components/settings/StripeConnectSettings';
 import { PaymentSettingsForm } from '@/components/settings/PaymentSettingsForm';
+import { SettingsImportDialog, type ImportedSettings } from '@/components/settings/SettingsImportDialog';
 import { useToast } from "@/hooks/use-toast";
 import {
   GeneralSettingsSkeleton,
@@ -71,7 +72,7 @@ export default function SettingsPage() {
   const defaultTab = searchParams.get('tab') || 'general';
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [loading, setLoading] = useState(false);
-  const [formsInitialized, setFormsInitialized] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // --- General Form ---
   const generalForm = useForm<GeneralFormValues>({
@@ -236,69 +237,116 @@ export default function SettingsPage() {
     }
   };
 
-  const [isExporting, setIsExporting] = useState(false);
-
-  const handleExportSettings = () => {
+  // --- Import Handler ---
+  const handleImportSettings = async (settings: ImportedSettings) => {
     if (!account) {
-      toast({ variant: "destructive", title: "Error", description: "No account data to export." });
-      return;
+      throw new Error('No account found');
     }
 
-    setIsExporting(true);
+    setLoading(true);
     try {
-      const generalValues = generalForm.getValues();
-      const securityValues = securityForm.getValues();
-      const notificationValues = notificationForm.getValues();
+      // Import general settings if provided
+      if (settings.general) {
+        const generalData = settings.general;
+        const { error: generalError } = await supabase
+          .from('accounts')
+          .update({
+            company_name: generalData.companyName || account.company_name,
+            billing_email: generalData.email || account.billing_email,
+            metadata: {
+              ...(((account as unknown as Record<string, unknown>).metadata as object) || {}),
+              phone: generalData.phone ?? ((account as unknown as Record<string, unknown>).metadata as Record<string, unknown>)?.phone,
+              address: generalData.address ?? ((account as unknown as Record<string, unknown>).metadata as Record<string, unknown>)?.address,
+            }
+          })
+          .eq('id', account.id);
 
-      const exportData = {
-        exportedAt: new Date().toISOString(),
-        account: {
-          id: account.id,
-          companyName: generalValues.companyName,
-          email: generalValues.email,
-          phone: generalValues.phone,
-          address: generalValues.address,
-          slug: account.slug,
-          status: account.status,
-          planId: account.plan_id,
-        },
-        settings: {
-          general: {
-            timezone: "America/New_York",
-            currency: "USD",
-          },
-          security: securityValues,
-          notifications: notificationValues,
-        },
-        accountSettings: accountSettings ? {
-          businessLicense: accountSettings.business_license,
-          taxRate: accountSettings.tax_rate,
-          state: accountSettings.state,
-          operatingStates: accountSettings.operating_states,
-          branding: accountSettings.branding,
-          complianceSettings: accountSettings.compliance_settings,
-          integrationSettings: accountSettings.integration_settings,
-        } : null,
-      };
+        if (generalError) throw generalError;
 
-      const jsonString = JSON.stringify(exportData, null, 2);
-      const blob = new Blob([jsonString], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
+        // Update form with imported values
+        generalForm.reset({
+          companyName: generalData.companyName || account.company_name,
+          email: generalData.email || account.billing_email || '',
+          phone: generalData.phone || '',
+          address: generalData.address || '',
+        });
+      }
 
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${account.slug || 'settings'}-settings-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      // Import security settings if provided
+      if (settings.security) {
+        const securityData = settings.security;
+        const existingMetadata = ((account as unknown as Record<string, unknown>).metadata as Record<string, unknown>) || {};
+        const existingSecurity = (existingMetadata.security as Record<string, unknown>) || {};
 
-      toast({ title: "Export Complete", description: "Settings exported to JSON file." });
+        const { error: securityError } = await supabase
+          .from('accounts')
+          .update({
+            metadata: {
+              ...existingMetadata,
+              security: {
+                ...existingSecurity,
+                ...securityData,
+              },
+            }
+          })
+          .eq('id', account.id);
+
+        if (securityError) throw securityError;
+
+        // Update form with imported values
+        securityForm.reset({
+          twoFactorEnabled: securityData.twoFactorEnabled ?? securityForm.getValues('twoFactorEnabled'),
+          requirePasswordChange: securityData.requirePasswordChange ?? securityForm.getValues('requirePasswordChange'),
+          sessionTimeout: securityData.sessionTimeout ?? securityForm.getValues('sessionTimeout'),
+          passwordMinLength: securityData.passwordMinLength ?? securityForm.getValues('passwordMinLength'),
+        });
+      }
+
+      // Import notification settings if provided
+      if (settings.notifications) {
+        const notifData = settings.notifications;
+
+        if (accountSettings) {
+          const existingNotif = (accountSettings.notification_settings as Record<string, unknown>) || {};
+          const { error: notifError } = await supabase
+            .from('account_settings')
+            .update({
+              notification_settings: {
+                ...existingNotif,
+                ...notifData,
+              }
+            })
+            .eq('id', accountSettings.id);
+
+          if (notifError) throw notifError;
+        } else {
+          const { error: notifError } = await supabase
+            .from('account_settings')
+            .insert({
+              account_id: account.id,
+              notification_settings: notifData
+            });
+
+          if (notifError) throw notifError;
+        }
+
+        // Update form with imported values
+        notificationForm.reset({
+          emailNotifications: notifData.emailNotifications ?? notificationForm.getValues('emailNotifications'),
+          smsNotifications: notifData.smsNotifications ?? notificationForm.getValues('smsNotifications'),
+          lowStockAlerts: notifData.lowStockAlerts ?? notificationForm.getValues('lowStockAlerts'),
+          overdueAlerts: notifData.overdueAlerts ?? notificationForm.getValues('overdueAlerts'),
+          orderAlerts: notifData.orderAlerts ?? notificationForm.getValues('orderAlerts'),
+        });
+      }
+
+      await refreshAccount();
+      toast({ title: "Settings Imported", description: "Your settings have been imported successfully." });
     } catch (err) {
-      logger.error("Error exporting settings", err);
-      toast({ variant: "destructive", title: "Error", description: "Failed to export settings." });
+      logger.error("Error importing settings", err);
+      throw err;
     } finally {
-      setIsExporting(false);
+      setLoading(false);
     }
   };
 
@@ -315,22 +363,27 @@ export default function SettingsPage() {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">🔧 Settings</h1>
+            <h1 className="text-3xl font-bold mb-2">Settings</h1>
             <p className="text-muted-foreground">Manage your account and system preferences</p>
           </div>
           <Button
             variant="outline"
-            size="sm"
-            onClick={handleExportSettings}
-            disabled={isExporting || !account}
+            onClick={() => setImportDialogOpen(true)}
+            disabled={loading}
           >
-            <Download className="h-4 w-4 mr-2" />
-            {isExporting ? 'Exporting...' : 'Export to JSON'}
+            <Upload className="h-4 w-4 mr-2" />
+            Import Settings
           </Button>
         </div>
       </div>
+
+      <SettingsImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onImport={handleImportSettings}
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="flex flex-col lg:flex-row w-full lg:w-auto h-auto lg:h-10 items-stretch lg:items-center gap-1 bg-muted p-1">
