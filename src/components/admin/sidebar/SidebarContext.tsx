@@ -1,10 +1,10 @@
 /**
  * Sidebar Context Provider
- * 
+ *
  * Provides global sidebar state to all sidebar components
  */
 
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useState, useCallback } from 'react';
 import { useOperationSize } from '@/hooks/useOperationSize';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
 import { useFeatureTracking } from '@/hooks/useFeatureTracking';
@@ -23,6 +23,10 @@ interface SidebarContextType {
   toggleCollapsedSection: (sectionName: string) => void;
   trackFeatureAccess: (featureId: string) => void;
   trackFeatureClick: (featureId: string) => void;
+  /** Search query for filtering sidebar items */
+  searchQuery: string;
+  /** Update the search query */
+  setSearchQuery: (query: string) => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
@@ -51,6 +55,12 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
   const { trackFeature } = useFeatureTracking();
   const trackFeatureClick = trackFeature;
 
+  // Search query state for filtering sidebar items
+  const [searchQuery, setSearchQueryState] = useState('');
+  const setSearchQuery = useCallback((query: string) => {
+    setSearchQueryState(query);
+  }, []);
+
   const value: SidebarContextType = {
     operationSize,
     setOperationSize,
@@ -64,6 +74,8 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
     toggleCollapsedSection,
     trackFeatureAccess,
     trackFeatureClick,
+    searchQuery,
+    setSearchQuery,
   };
 
   return (

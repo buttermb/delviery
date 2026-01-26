@@ -37,6 +37,7 @@ import { SidebarSection } from './SidebarSection';
 import { SidebarHotItems } from './SidebarHotItems';
 import { SidebarFavorites } from './SidebarFavorites';
 import { SidebarRecentlyUsed } from './SidebarRecentlyUsed';
+import { SidebarSearch } from './SidebarSearch';
 import { UpgradeModal } from '@/components/tenant-admin/UpgradeModal';
 import { useState, Suspense, useMemo, useCallback } from 'react';
 import type { FeatureId } from '@/lib/featureConfig';
@@ -57,7 +58,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   const navigate = useNavigate();
   const { tenant, logout } = useTenantAdminAuth();
   const { sidebarConfig, hotItems, favorites, operationSize } = useSidebarConfig();
-  const { trackFeatureClick, toggleFavorite, preferences } = useSidebar();
+  const { trackFeatureClick, toggleFavorite, preferences, searchQuery, setSearchQuery } = useSidebar();
   const [upgradeFeatureId, setUpgradeFeatureId] = useState<FeatureId | null>(null);
 
   // Run storage migration on mount
@@ -153,19 +154,28 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
 
         {/* Unified Search & Quick Actions Bar */}
         <div className="px-3 py-2 border-b space-y-2">
-          {/* Search */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full justify-start text-muted-foreground hover:text-foreground h-9"
-            onClick={() => useCommandPaletteStore.getState().setOpen(true)}
-          >
-            <Search className="mr-2 h-4 w-4" />
-            <span className="flex-1 text-left text-sm">Search...</span>
-            <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-              ⌘K
-            </kbd>
-          </Button>
+          {/* Menu Filter Search */}
+          <SidebarSearch
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Filter menu..."
+          />
+
+          {/* Command Palette Trigger - only show when not filtering */}
+          {!searchQuery && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-muted-foreground hover:text-foreground h-8 text-xs"
+              onClick={() => useCommandPaletteStore.getState().setOpen(true)}
+            >
+              <Search className="mr-2 h-3.5 w-3.5" />
+              <span className="flex-1 text-left">Commands & Search...</span>
+              <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                ⌘K
+              </kbd>
+            </Button>
+          )}
 
           {/* Quick Actions */}
           <div className="flex items-center gap-1">

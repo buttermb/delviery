@@ -1,11 +1,14 @@
 /**
  * Sidebar Favorites Component
- * 
+ *
  * Displays user's favorite menu items
  */
 
+import { useMemo } from 'react';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
 import { SidebarMenuItem } from './SidebarMenuItem';
+import { useSidebar } from './SidebarContext';
+import { matchesSearchQuery } from './SidebarSearch';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { useParams, useLocation } from 'react-router-dom';
@@ -16,6 +19,7 @@ export function SidebarFavorites() {
   const location = useLocation();
   const { sidebarConfig, favorites } = useSidebarConfig();
   const { canAccess } = useFeatureAccess();
+  const { searchQuery } = useSidebar();
 
   // Guard: Ensure favorites is an array
   const safeFavorites = Array.isArray(favorites) ? favorites : [];
@@ -33,8 +37,14 @@ export function SidebarFavorites() {
     .flatMap(section => section?.items || [])
     .filter(item => item && safeFavorites.includes(item.id));
 
-  // Double-check after filtering
-  if (favoriteItems.length === 0) {
+  // Filter favorite items based on search query
+  const filteredFavoriteItems = useMemo(() => {
+    if (!searchQuery.trim()) return favoriteItems;
+    return favoriteItems.filter((item) => matchesSearchQuery(item.name, searchQuery));
+  }, [favoriteItems, searchQuery]);
+
+  // Don't render if no items match
+  if (filteredFavoriteItems.length === 0) {
     return null;
   }
 
@@ -58,7 +68,7 @@ export function SidebarFavorites() {
       </SidebarGroupLabel>
       <SidebarGroupContent className="mt-1">
         <SidebarMenu>
-          {favoriteItems.map((item) => {
+          {filteredFavoriteItems.map((item) => {
             const hasAccess = item.featureId ? canAccess(item.featureId) : true;
             return (
               <SidebarMenuItem
