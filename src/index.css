@@ -90,13 +90,16 @@ section[id] {
     padding-bottom: max(100px, calc(80px + env(safe-area-inset-bottom)));
   }
 
-  /* Prevent horizontal scrolling on mobile */
-  html,
+  /* Prevent horizontal scrolling on mobile while allowing vertical scroll */
+  html {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  
   body {
     overflow-x: hidden;
-    position: relative;
+    overflow-y: auto;
     width: 100%;
-    max-width: 100vw;
   }
 }
 

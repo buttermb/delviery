@@ -282,7 +282,7 @@ export function useUpdateStorefrontSettingsField() {
         throw error;
       }
 
-      return data as StorefrontSettings;
+      return data as unknown as StorefrontSettings;
     },
     onMutate: async ({ storeId, field, value }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.storefrontSettings.byTenant(tenant?.id || '') });
@@ -351,7 +351,7 @@ export function useStorefrontSettingsByStoreId(storeId: string | undefined) {
         throw error;
       }
 
-      return data as StorefrontSettings | null;
+      return data as unknown as StorefrontSettings | null;
     },
     enabled: !!storeId,
     staleTime: 30000,

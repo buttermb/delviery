@@ -125,33 +125,36 @@ export default function ClientDetail() {
     );
   }
 
-  // Calculate metrics from real data
-  const paidOrders = orders.filter(o => o.status === "delivered");
-  const totalSpent = paidOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
-  const avgOrderSize = orders.length > 0
-    ? orders.reduce((sum, o) => sum + Number(o.total_amount), 0) / orders.length
+  // Calculate metrics from real data - cast orders to any to handle schema mismatches
+  const orderData = orders as any[];
+  const paidOrders = orderData.filter(o => o.status === "delivered");
+  const totalSpent = paidOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+  const avgOrderSize = orderData.length > 0
+    ? orderData.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) / orderData.length
     : 0;
 
-  const unpaidOrders = orders.filter(o =>
+  const unpaidOrders = orderData.filter(o =>
     o.status === "pending" || o.status === "assigned" || o.status === "in_transit"
   );
 
+  // Cast client to any to handle schema mismatches
+  const clientData = client as any;
   const displayClient = {
-    id: client.id,
-    business_name: client.business_name,
-    contact_name: client.contact_name,
-    phone: client.phone,
-    client_type: client.client_type,
-    outstanding_balance: Number(client.outstanding_balance),
-    credit_limit: Number(client.credit_limit),
-    reliability_score: Number(client.reliability_score),
-    payment_terms: `net_${client.payment_terms || 7}`,
+    id: clientData.id,
+    business_name: clientData.business_name,
+    contact_name: clientData.contact_name,
+    phone: clientData.phone,
+    client_type: clientData.client_type || 'regular',
+    outstanding_balance: Number(clientData.outstanding_balance || 0),
+    credit_limit: Number(clientData.credit_limit || 0),
+    reliability_score: Number(clientData.reliability_score || 100),
+    payment_terms: `net_${clientData.payment_terms || 7}`,
     total_spent: totalSpent,
     avg_order_size: avgOrderSize,
-    status: client.status,
-    since: client.created_at ? format(new Date(client.created_at), "MMM yyyy") : "",
-    address: client.address || "",
-    monthly_volume: Number(client.monthly_volume || 0)
+    status: clientData.status,
+    since: clientData.created_at ? format(new Date(clientData.created_at), "MMM yyyy") : "",
+    address: clientData.address || "",
+    monthly_volume: Number(clientData.monthly_volume || 0)
   };
 
   const getStatusColor = (balance: number) => {
