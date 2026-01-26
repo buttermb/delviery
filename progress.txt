@@ -1956,11 +1956,21 @@ Added `.catch()` error handlers to all unhandled `.then()` Promise chains to pre
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Remove !important flag from src/index.css line 47
+## Task: Fix BuilderPreview mobile width to 100% maxWidth 375px
 
-### Changes Made:
-- Removed `!important` flag from `overflow-y: auto !important;` on line 47 of src/index.css
-- The rule now reads: `overflow-y: auto;`
+### Status: VERIFIED - Already Implemented
 
-### Context:
-This change is part of the scroll performance optimization section. Removing the !important flag allows other styles to override this behavior when needed, improving CSS specificity management.
+The mobile width styling in BuilderPreview.tsx line 36 already has the correct implementation:
+```typescript
+case 'mobile': return { width: '100%', maxWidth: '375px', transform: `scale(${previewZoom * 0.9})`, transformOrigin: 'top center' };
+```
+
+- **width: '100%'** - Allows the mobile preview to be responsive within its container
+- **maxWidth: '375px'** - Constrains maximum width to standard iPhone viewport width
+
+### Verification:
+- Build passes with 0 TypeScript errors
+- File location: src/pages/admin/storefront/builder/BuilderPreview.tsx:36
+
+### Files Reviewed:
+- `src/pages/admin/storefront/builder/BuilderPreview.tsx` - Mobile width styling confirmed correct
