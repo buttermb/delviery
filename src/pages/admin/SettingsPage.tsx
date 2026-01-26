@@ -23,6 +23,16 @@ import { SidebarCustomizer } from '@/components/admin/sidebar/SidebarCustomizer'
 import { StripeConnectSettings } from '@/components/settings/StripeConnectSettings';
 import { PaymentSettingsForm } from '@/components/settings/PaymentSettingsForm';
 import { useToast } from "@/hooks/use-toast";
+import {
+  GeneralSettingsSkeleton,
+  SecuritySettingsSkeleton,
+  NotificationSettingsSkeleton,
+  PrintingSettingsSkeleton,
+  IntegrationsSettingsSkeleton,
+  SidebarSettingsSkeleton,
+  SidebarCustomizationSkeleton,
+  PaymentSettingsSkeleton,
+} from '@/components/settings/SettingsSkeletons';
 
 // --- Schemas ---
 
@@ -55,12 +65,13 @@ type NotificationFormValues = z.infer<typeof notificationSchema>;
 export default function SettingsPage() {
   const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
-  const { account, accountSettings, refreshAccount } = useAccount();
+  const { account, accountSettings, refreshAccount, loading: accountLoading } = useAccount();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') || 'general';
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [loading, setLoading] = useState(false);
+  const [formsInitialized, setFormsInitialized] = useState(false);
 
   // --- General Form ---
   const generalForm = useForm<GeneralFormValues>({
@@ -113,6 +124,9 @@ export default function SettingsPage() {
         sessionTimeout: secSettings.sessionTimeout || 30,
         passwordMinLength: secSettings.passwordMinLength || 8,
       });
+
+      // Mark forms as initialized once account data is loaded
+      setFormsInitialized(true);
     }
 
     if (accountSettings) {
@@ -126,6 +140,9 @@ export default function SettingsPage() {
       });
     }
   }, [account, accountSettings, generalForm, securityForm, notificationForm]);
+
+  // Determine if we should show loading skeletons
+  const showSkeletons = accountLoading || !formsInitialized;
 
 
   // --- Submit Handlers ---
@@ -274,251 +291,283 @@ export default function SettingsPage() {
 
         {/* General Settings */}
         <TabsContent value="general">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Building className="h-5 w-5" />
-              General Settings
-            </h3>
-            <form onSubmit={generalForm.handleSubmit(onSaveGeneral)} className="space-y-4">
-              <div>
-                <Label>Company Name</Label>
-                <Input {...generalForm.register("companyName")} />
-                {generalForm.formState.errors.companyName && (
-                  <p className="text-sm text-destructive mt-1">{generalForm.formState.errors.companyName.message}</p>
-                )}
-              </div>
-              <div>
-                <Label>Details</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Email</Label>
-                    <Input type="email" {...generalForm.register("email")} />
-                    {generalForm.formState.errors.email && (
-                      <p className="text-sm text-destructive">{generalForm.formState.errors.email.message}</p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Phone</Label>
-                    <Input type="tel" {...generalForm.register("phone")} />
-                  </div>
-                </div>
-              </div>
-              <div>
-                <Label>Address</Label>
-                <Textarea {...generalForm.register("address")} rows={3} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+          {showSkeletons ? (
+            <GeneralSettingsSkeleton />
+          ) : (
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Building className="h-5 w-5" />
+                General Settings
+              </h3>
+              <form onSubmit={generalForm.handleSubmit(onSaveGeneral)} className="space-y-4">
                 <div>
-                  <Label>Timezone</Label>
-                  <Input value="America/New_York" disabled />
+                  <Label>Company Name</Label>
+                  <Input {...generalForm.register("companyName")} />
+                  {generalForm.formState.errors.companyName && (
+                    <p className="text-sm text-destructive mt-1">{generalForm.formState.errors.companyName.message}</p>
+                  )}
                 </div>
                 <div>
-                  <Label>Currency</Label>
-                  <Input value="USD" disabled />
+                  <Label>Details</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Email</Label>
+                      <Input type="email" {...generalForm.register("email")} />
+                      {generalForm.formState.errors.email && (
+                        <p className="text-sm text-destructive">{generalForm.formState.errors.email.message}</p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Phone</Label>
+                      <Input type="tel" {...generalForm.register("phone")} />
+                    </div>
+                  </div>
                 </div>
+                <div>
+                  <Label>Address</Label>
+                  <Textarea {...generalForm.register("address")} rows={3} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Timezone</Label>
+                    <Input value="America/New_York" disabled />
+                  </div>
+                  <div>
+                    <Label>Currency</Label>
+                    <Input value="USD" disabled />
+                  </div>
+                </div>
+                <Button type="submit" disabled={loading}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save General Settings
+                </Button>
+              </form>
+              <div className="pt-4 border-t mt-6">
+                <h4 className="text-sm font-medium mb-2">Team Management</h4>
+                <Button variant="outline" onClick={() => navigateToAdmin('team-members')}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Manage Team Members
+                </Button>
               </div>
-              <Button type="submit" disabled={loading}>
-                <Save className="h-4 w-4 mr-2" />
-                Save General Settings
-              </Button>
-            </form>
-            <div className="pt-4 border-t mt-6">
-              <h4 className="text-sm font-medium mb-2">Team Management</h4>
-              <Button variant="outline" onClick={() => navigateToAdmin('team-members')}>
-                <Users className="h-4 w-4 mr-2" />
-                Manage Team Members
-              </Button>
-            </div>
-          </Card>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Security Settings */}
         <TabsContent value="security">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Security Settings
-            </h3>
-            <form onSubmit={securityForm.handleSubmit(onSaveSecurity)} className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Two-Factor Authentication</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Add an extra layer of security to your account
-                  </p>
+          {showSkeletons ? (
+            <SecuritySettingsSkeleton />
+          ) : (
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Security Settings
+              </h3>
+              <form onSubmit={securityForm.handleSubmit(onSaveSecurity)} className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Two-Factor Authentication</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Add an extra layer of security to your account
+                    </p>
+                  </div>
+                  <Switch
+                    checked={securityForm.watch("twoFactorEnabled")}
+                    onCheckedChange={(checked) => securityForm.setValue("twoFactorEnabled", checked)}
+                  />
                 </div>
-                <Switch
-                  checked={securityForm.watch("twoFactorEnabled")}
-                  onCheckedChange={(checked) => securityForm.setValue("twoFactorEnabled", checked)}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Require Password Change</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Force password changes every 90 days
-                  </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Require Password Change</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Force password changes every 90 days
+                    </p>
+                  </div>
+                  <Switch
+                    checked={securityForm.watch("requirePasswordChange")}
+                    onCheckedChange={(checked) => securityForm.setValue("requirePasswordChange", checked)}
+                  />
                 </div>
-                <Switch
-                  checked={securityForm.watch("requirePasswordChange")}
-                  onCheckedChange={(checked) => securityForm.setValue("requirePasswordChange", checked)}
-                />
-              </div>
-              <div>
-                <Label>Session Timeout (minutes)</Label>
-                <Input
-                  type="number"
-                  {...securityForm.register("sessionTimeout", { valueAsNumber: true })}
-                />
-                {securityForm.formState.errors.sessionTimeout && (
-                  <p className="text-sm text-destructive">{securityForm.formState.errors.sessionTimeout.message}</p>
-                )}
-              </div>
-              <div>
-                <Label>Minimum Password Length</Label>
-                <Input
-                  type="number"
-                  {...securityForm.register("passwordMinLength", { valueAsNumber: true })}
-                />
-                {securityForm.formState.errors.passwordMinLength && (
-                  <p className="text-sm text-destructive">{securityForm.formState.errors.passwordMinLength.message}</p>
-                )}
-              </div>
-              <Button type="submit" disabled={loading}>
-                <Save className="h-4 w-4 mr-2" />
-                Save Security Settings
-              </Button>
-            </form>
-          </Card>
+                <div>
+                  <Label>Session Timeout (minutes)</Label>
+                  <Input
+                    type="number"
+                    {...securityForm.register("sessionTimeout", { valueAsNumber: true })}
+                  />
+                  {securityForm.formState.errors.sessionTimeout && (
+                    <p className="text-sm text-destructive">{securityForm.formState.errors.sessionTimeout.message}</p>
+                  )}
+                </div>
+                <div>
+                  <Label>Minimum Password Length</Label>
+                  <Input
+                    type="number"
+                    {...securityForm.register("passwordMinLength", { valueAsNumber: true })}
+                  />
+                  {securityForm.formState.errors.passwordMinLength && (
+                    <p className="text-sm text-destructive">{securityForm.formState.errors.passwordMinLength.message}</p>
+                  )}
+                </div>
+                <Button type="submit" disabled={loading}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Security Settings
+                </Button>
+              </form>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Notification Settings */}
         <TabsContent value="notifications">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              Notification Settings
-            </h3>
-            <form onSubmit={notificationForm.handleSubmit(onSaveNotifications)} className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive notifications via email</p>
-                </div>
-                <Switch
-                  checked={notificationForm.watch("emailNotifications")}
-                  onCheckedChange={(c) => notificationForm.setValue("emailNotifications", c)}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>SMS Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive notifications via SMS</p>
-                </div>
-                <Switch
-                  checked={notificationForm.watch("smsNotifications")}
-                  onCheckedChange={(c) => notificationForm.setValue("smsNotifications", c)}
-                />
-              </div>
-              <div className="pt-4 border-t space-y-3">
+          {showSkeletons ? (
+            <NotificationSettingsSkeleton />
+          ) : (
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Notification Settings
+              </h3>
+              <form onSubmit={notificationForm.handleSubmit(onSaveNotifications)} className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label>Low Stock Alerts</Label>
+                  <div>
+                    <Label>Email Notifications</Label>
+                    <p className="text-sm text-muted-foreground">Receive notifications via email</p>
+                  </div>
                   <Switch
-                    checked={notificationForm.watch("lowStockAlerts")}
-                    onCheckedChange={(c) => notificationForm.setValue("lowStockAlerts", c)}
+                    checked={notificationForm.watch("emailNotifications")}
+                    onCheckedChange={(c) => notificationForm.setValue("emailNotifications", c)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label>Overdue Payment Alerts</Label>
+                  <div>
+                    <Label>SMS Notifications</Label>
+                    <p className="text-sm text-muted-foreground">Receive notifications via SMS</p>
+                  </div>
                   <Switch
-                    checked={notificationForm.watch("overdueAlerts")}
-                    onCheckedChange={(c) => notificationForm.setValue("overdueAlerts", c)}
+                    checked={notificationForm.watch("smsNotifications")}
+                    onCheckedChange={(c) => notificationForm.setValue("smsNotifications", c)}
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <Label>Order Alerts</Label>
-                  <Switch
-                    checked={notificationForm.watch("orderAlerts")}
-                    onCheckedChange={(c) => notificationForm.setValue("orderAlerts", c)}
-                  />
+                <div className="pt-4 border-t space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>Low Stock Alerts</Label>
+                    <Switch
+                      checked={notificationForm.watch("lowStockAlerts")}
+                      onCheckedChange={(c) => notificationForm.setValue("lowStockAlerts", c)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>Overdue Payment Alerts</Label>
+                    <Switch
+                      checked={notificationForm.watch("overdueAlerts")}
+                      onCheckedChange={(c) => notificationForm.setValue("overdueAlerts", c)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>Order Alerts</Label>
+                    <Switch
+                      checked={notificationForm.watch("orderAlerts")}
+                      onCheckedChange={(c) => notificationForm.setValue("orderAlerts", c)}
+                    />
+                  </div>
                 </div>
-              </div>
-              <Button type="submit" disabled={loading}>
-                <Save className="h-4 w-4 mr-2" />
-                Save Notification Settings
-              </Button>
-            </form>
-          </Card>
+                <Button type="submit" disabled={loading}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Notification Settings
+                </Button>
+              </form>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Printing Settings */}
         <TabsContent value="printing">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Printer className="h-5 w-5" />
-              Printing & Labels
-            </h3>
-            <div className="p-4 border rounded-lg bg-muted/20 text-center text-muted-foreground">
-              <p>Printing preferences are currently managed via the Print Dialog.</p>
-              <p className="text-sm mt-2">More advanced label configuration coming soon.</p>
-            </div>
-          </Card>
+          {showSkeletons ? (
+            <PrintingSettingsSkeleton />
+          ) : (
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Printer className="h-5 w-5" />
+                Printing & Labels
+              </h3>
+              <div className="p-4 border rounded-lg bg-muted/20 text-center text-muted-foreground">
+                <p>Printing preferences are currently managed via the Print Dialog.</p>
+                <p className="text-sm mt-2">More advanced label configuration coming soon.</p>
+              </div>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Integrations */}
         <TabsContent value="integrations">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Plug className="h-5 w-5" />
-              Integrations
-            </h3>
-            <div className="space-y-4">
-              <div className="p-4 border rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <h4 className="font-medium">QuickBooks</h4>
-                    <p className="text-sm text-muted-foreground">Sync financial data</p>
+          {showSkeletons ? (
+            <IntegrationsSettingsSkeleton />
+          ) : (
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Plug className="h-5 w-5" />
+                Integrations
+              </h3>
+              <div className="space-y-4">
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <h4 className="font-medium">QuickBooks</h4>
+                      <p className="text-sm text-muted-foreground">Sync financial data</p>
+                    </div>
+                    <Button variant="outline" size="sm" disabled>Connect (Coming Soon)</Button>
                   </div>
-                  <Button variant="outline" size="sm" disabled>Connect (Coming Soon)</Button>
+                </div>
+                <div className="p-0 border-0">
+                  <StripeConnectSettings />
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <h4 className="font-medium">Twilio</h4>
+                      <p className="text-sm text-muted-foreground">SMS notifications</p>
+                    </div>
+                    <Button variant="outline" size="sm" disabled>Connect (Coming Soon)</Button>
+                  </div>
                 </div>
               </div>
-              <div className="p-0 border-0">
-                <StripeConnectSettings />
-              </div>
-              <div className="p-4 border rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <h4 className="font-medium">Twilio</h4>
-                    <p className="text-sm text-muted-foreground">SMS notifications</p>
-                  </div>
-                  <Button variant="outline" size="sm" disabled>Connect (Coming Soon)</Button>
-                </div>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Sidebar Settings */}
         <TabsContent value="sidebar">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Layout className="h-5 w-5" />
-              Sidebar Preferences
-            </h3>
-            <div className="space-y-4">
-              <OperationSizeSelector />
-            </div>
-          </Card>
+          {showSkeletons ? (
+            <SidebarSettingsSkeleton />
+          ) : (
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Layout className="h-5 w-5" />
+                Sidebar Preferences
+              </h3>
+              <div className="space-y-4">
+                <OperationSizeSelector />
+              </div>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Sidebar Customization */}
         <TabsContent value="sidebar-customization">
-          <SidebarCustomizer />
+          {showSkeletons ? (
+            <SidebarCustomizationSkeleton />
+          ) : (
+            <SidebarCustomizer />
+          )}
         </TabsContent>
 
         {/* Payment Settings */}
         <TabsContent value="payments">
-          <PaymentSettingsForm onSave={async () => { }} />
+          {showSkeletons ? (
+            <PaymentSettingsSkeleton />
+          ) : (
+            <PaymentSettingsForm onSave={async () => { }} />
+          )}
         </TabsContent>
       </Tabs>
     </div>
