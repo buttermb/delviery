@@ -7690,3 +7690,66 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+
+---
+
+## Task: Add Ctrl+S Keyboard Shortcut to Save
+
+**Date:** 2026-01-25
+
+### Implementation Summary
+
+Created `useCtrlSToSave` hook that enables Ctrl+S (Windows/Linux) or Cmd+S (Mac) keyboard shortcut for saving.
+
+### Files Created/Modified
+
+1. **`src/hooks/useCtrlSToSave.ts`** (NEW)
+   - Custom hook that listens for Ctrl+S / Cmd+S keydown events
+   - Prevents browser's default save dialog
+   - Accepts `onSave` callback and optional `enabled` parameter
+   - Uses `useCallback` for memoized event handler
+   - Proper cleanup on unmount
+
+2. **`src/hooks/index.ts`** (MODIFIED)
+   - Added export for `useCtrlSToSave` under "Keyboard Shortcut Hooks" section
+
+### Hook API
+
+```typescript
+useCtrlSToSave(
+  onSave: (() => void) | undefined,  // Callback when save shortcut pressed
+  enabled: boolean = true            // Whether shortcut is active
+)
+```
+
+### Usage Example
+
+```tsx
+import { useCtrlSToSave } from '@/hooks';
+
+function MyForm() {
+  const { mutate: saveData, isPending } = useMutation({ ... });
+
+  useCtrlSToSave(() => {
+    if (!isPending) {
+      saveData();
+    }
+  });
+
+  return <form>...</form>;
+}
+```
+
+### Verification
+
+- **Build:** PASSES (0 TypeScript errors)
+- **Lint:** PASSES (0 errors in new files)
+- No console.log usage (follows project conventions)
+- Uses named export (follows project conventions)
+
+### Notes
+
+- The hook always prevents the browser's default save dialog (even when `enabled` is false) to ensure consistent UX
+- Supports both Ctrl key (Windows/Linux) and Meta/Cmd key (Mac)
+- Already documented in `AdminKeyboardShortcutsDialog.tsx` as a planned shortcut
