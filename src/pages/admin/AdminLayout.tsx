@@ -22,8 +22,6 @@ import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { AdminKeyboardShortcutsDialog } from "@/components/admin/AdminKeyboardShortcutsDialog";
 import { useCommandPaletteStore } from "@/components/tenant-admin/CommandPalette";
 import { TenantAdminCommandPalette } from "@/components/tenant-admin/CommandPalette";
-import { MobileNav } from "@/components/admin/MobileNav";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -225,7 +223,7 @@ const AdminLayout = () => {
                 </div>
               </header>
               <main
-                className="flex-1 overflow-y-auto overflow-x-hidden pb-24 lg:pb-6 safe-area-bottom p-3 sm:p-4 md:p-6"
+                className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 pb-24 lg:pb-6"
                 style={{
                   WebkitOverflowScrolling: 'touch',
                   minHeight: 0,

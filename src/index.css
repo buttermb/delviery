@@ -104,6 +104,12 @@ section[id] {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Ensure main layout containers respect viewport width (scoped to avoid breaking scrollable content) */
+body > #root {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
 /* Ensure inputs are scrollable into view when keyboard opens */
 body {
   position: relative;

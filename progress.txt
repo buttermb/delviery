@@ -23,24 +23,76 @@
 - Responsive layout (2-column on desktop, stacked on mobile)
 - Authentication gate (requires customer login)
 
-#### 3. Enhanced Account Page Order History (`src/pages/shop/AccountPage.tsx`)
-- Integrated `useStorefrontOrders` hook replacing inline query
-- Added order search input with debounced filtering
-- Added status filter dropdown (All/Active/Delivered/Cancelled)
-- Added date range filter dropdown (All Time/7 Days/30 Days/90 Days)
-- Order statistics summary (total orders, total spent, active/delivered counts)
-- "No matching orders" state with "Clear Filters" button when filters applied
-- "View Details" button on each order card linking to OrderDetailPage
-- Conditional "Track" button (only shown when tracking_token exists)
+### Files Changed:
+- `src/components/admin/Breadcrumbs.tsx` (new)
+- `src/pages/admin/AdminLayout.tsx` (modified)
 
-#### 4. Added Route Configuration (`src/App.tsx`)
-- Lazy-loaded `ShopOrderDetailPage` component
-- Route: `/shop/:storeSlug/orders/:orderId` mapped to OrderDetailPage
+---
 
-#### 5. Fixed Pre-existing Build Issue
-- Created missing `src/lib/utils/sanitize.ts` utility (was imported by ProductDetailPage and CustomHTMLSection but file didn't exist)
-- Implements XSS-safe HTML sanitization (strips script tags, event handlers, javascript: URIs)
+## Task: Fix Mobile Navigation Issues
 
-### Build Status
-- Production build passes successfully (`npm run build`)
-- No TypeScript errors in any new or modified files
+### What was done:
+
+1. **Fixed z-index conflicts between admin mobile nav components**
+   - Reduced `MobileBottomNav` (admin) z-index from 100 to 50 to align with design system
+   - Removed unused `MobileNav` import from `AdminLayout.tsx` (was imported but never rendered, had conflicting z-index of 50)
+   - Removed unused `Input` import from `AdminLayout.tsx`
+
+2. **Fixed LuxuryNav mobile menu overlay positioning**
+   - Changed from fixed `top-20` to dynamic `top-16`/`top-20` based on scroll state (nav shrinks on scroll)
+   - Added backdrop overlay for dismissing menu by tapping outside
+   - Added `maxHeight: calc(100dvh - 5rem)` to prevent content overflow off-screen
+   - Improved animation from height-based to y-translate for smoother 60fps transitions
+
+3. **Fixed global `max-width: 100%` CSS rule**
+   - Removed overly aggressive `* { max-width: 100% }` that broke tables, carousels, and scrollable content
+   - Replaced with scoped `body > #root { max-width: 100vw; overflow-x: hidden }` to contain only the root
+
+4. **Fixed double padding issue in admin layout**
+   - Admin `<main>` had both Tailwind `pb-24` AND global CSS `padding-bottom: max(100px, ...)` via `@media`
+   - Added `custom-mobile-padding` class to opt out of the global CSS rule
+   - Retained Tailwind `pb-24 lg:pb-6` for proper responsive padding
+
+5. **Fixed shop MobileBottomNav safe areas and theme support**
+   - Replaced hardcoded `bg-white` with `bg-background/95 backdrop-blur-md` for dark mode support
+   - Replaced non-standard `safe-area-pb` class with proper `env(safe-area-inset-bottom)` inline style
+   - Increased touch targets from 44px to 48px minimum (iOS/Android accessibility guidelines)
+   - Added `touch-manipulation` and `active:scale-95` for responsive touch feedback
+   - Added proper `aria-label` attributes to navigation links
+   - Removed default export (project convention: named exports only)
+
+6. **Added route-change close behavior to all mobile menus**
+   - LuxuryNav: Added `useLocation` + `useEffect` to close menu on pathname change
+   - ShopLayout (default theme): Added `useLocation` + `useEffect` to close menu on pathname change
+
+7. **Added body scroll lock when mobile menus are open**
+   - LuxuryNav: Sets `document.body.style.overflow = 'hidden'` when menu opens
+   - ShopLayout (default theme): Same scroll lock pattern
+   - Both properly clean up on unmount via effect cleanup
+
+8. **Improved ShopLayout default theme mobile menu accessibility**
+   - Added `role="navigation"` and `aria-label` to mobile nav element
+   - Increased touch targets to 44px minimum (`min-h-[44px]`, `py-3`)
+   - Added `touch-manipulation` and `active:scale-[0.98]` for responsive feedback
+
+9. **Fixed pre-existing build error**
+   - Added `sanitizeBasicHtml` export to `src/lib/utils/sanitize.ts` (was imported by HeroSection but not exported)
+
+### Acceptance Criteria Met:
+- [x] Mobile navigation menus close on route change (LuxuryNav, ShopLayout)
+- [x] Body scroll is locked when mobile menus are open
+- [x] Safe area insets properly handled on all mobile navs (notch/home indicator)
+- [x] Touch targets meet 44-48px minimum accessibility guidelines
+- [x] Z-index values consistent (50 for bottom nav, no conflicts)
+- [x] No hardcoded colors that break dark mode
+- [x] LuxuryNav overlay positions correctly relative to nav height on scroll
+- [x] Build passes without TypeScript errors
+
+### Files Changed:
+- `src/components/admin/MobileBottomNav.tsx` (z-index fix, safe area fix)
+- `src/components/shop/MobileBottomNav.tsx` (theme support, safe areas, touch targets, accessibility)
+- `src/components/shop/LuxuryNav.tsx` (menu positioning, route-close, scroll lock, backdrop)
+- `src/pages/admin/AdminLayout.tsx` (removed unused imports, fixed double padding)
+- `src/pages/shop/ShopLayout.tsx` (route-close, scroll lock, touch targets, accessibility)
+- `src/index.css` (scoped global max-width rule)
+- `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export to fix build)
