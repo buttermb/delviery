@@ -38,7 +38,8 @@ import {
   Star,
   PanelRightClose,
   PanelRightOpen,
-  Loader2
+  Loader2,
+  Copy
 } from 'lucide-react';
 import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog';
 import { generateUrlToken } from '@/utils/menuHelpers';
@@ -256,6 +257,31 @@ export default function StorefrontSettings() {
       },
     }));
     setIsDirty(true);
+  };
+
+  // Apply hours from one day to all days
+  const applyHoursToAllDays = (sourceDay: string) => {
+    const sourceHours = formData.operating_hours?.[sourceDay];
+    if (!sourceHours) return;
+
+    const newOperatingHours: Record<string, { open: string; close: string; closed: boolean }> = {};
+    DAYS.forEach((day) => {
+      newOperatingHours[day] = {
+        open: sourceHours.open,
+        close: sourceHours.close,
+        closed: sourceHours.closed,
+      };
+    });
+
+    setFormData((prev) => ({
+      ...prev,
+      operating_hours: newOperatingHours,
+    }));
+    setIsDirty(true);
+    toast({
+      title: 'Hours applied',
+      description: `${sourceDay.charAt(0).toUpperCase() + sourceDay.slice(1)}'s hours copied to all days.`,
+    });
   };
 
   // Save mutation
@@ -1333,6 +1359,16 @@ export default function StorefrontSettings() {
                             onChange={(e) => updateHours(day, 'close', e.target.value)}
                             className="w-32"
                           />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => applyHoursToAllDays(day)}
+                            title="Apply these hours to all days"
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            <Copy className="w-4 h-4 mr-1" />
+                            Apply to all
+                          </Button>
                         </>
                       )}
                       {formData.operating_hours?.[day]?.closed && (
