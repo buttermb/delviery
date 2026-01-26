@@ -16,11 +16,10 @@ import {
   Loader2,
 } from "lucide-react";
 import {
-  compressImage,
-  isCompressibleImage,
-  type ImageCompressionOptions,
-  COMPRESSION_PRESETS,
-} from "@/lib/utils/image-compression";
+  validateImageDimensions,
+  formatDimensionConstraints,
+  type ImageDimensionConstraints,
+} from "@/lib/utils/validation";
 
 /**
  * File type icons mapping
@@ -111,11 +110,10 @@ interface FileUploadProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "on
    */
   showPreview?: boolean;
   /**
-   * Enable automatic image compression before upload.
-   * Can be a boolean (uses default settings) or compression options object.
-   * Set to a preset name ('product', 'thumbnail', 'profile', 'cover') for preset options.
+   * Image dimension constraints (only applies to image files)
+   * Set minWidth, minHeight, maxWidth, maxHeight to validate image dimensions
    */
-  compressImages?: boolean | ImageCompressionOptions | keyof typeof COMPRESSION_PRESETS;
+  imageDimensions?: ImageDimensionConstraints;
 }
 
 /**
@@ -147,7 +145,7 @@ function FileUpload({
   value,
   variant = "default",
   showPreview = true,
-  compressImages: compressImagesOption = false,
+  imageDimensions,
   className,
   ...props
 }: FileUploadProps) {
@@ -209,7 +207,7 @@ function FileUpload({
     };
   }, []);
 
-  const validateFile = (file: File): string | null => {
+  const validateFileBasic = (file: File): string | null => {
     if (maxSize && file.size > maxSize) {
       return `File "${file.name}" exceeds maximum size of ${formatFileSize(maxSize)}`;
     }
@@ -231,6 +229,22 @@ function FileUpload({
     return null;
   };
 
+  const validateFile = async (file: File): Promise<string | null> => {
+    // Basic validation (sync)
+    const basicError = validateFileBasic(file);
+    if (basicError) return basicError;
+
+    // Image dimension validation (async)
+    if (imageDimensions && file.type.startsWith("image/")) {
+      const result = await validateImageDimensions(file, imageDimensions);
+      if (!result.valid) {
+        return `File "${file.name}": ${result.error}`;
+      }
+    }
+
+    return null;
+  };
+
   const handleFiles = async (newFiles: FileList | null) => {
     if (!newFiles || disabled) return;
 
@@ -243,10 +257,10 @@ function FileUpload({
       return;
     }
 
-    // Validate each file (before compression, check original size against limit)
+    // Validate each file (including async dimension checks for images)
     const validFiles: File[] = [];
     for (const file of fileArray) {
-      const validationError = validateFile(file);
+      const validationError = await validateFile(file);
       if (validationError) {
         setError(validationError);
         return;
@@ -489,23 +503,15 @@ function FileUpload({
         </div>
 
         <div className="text-center space-y-1">
-          {isCompressing ? (
-            <p className="text-sm font-medium text-muted-foreground">
-              Compressing images...
-            </p>
-          ) : (
-            <>
-              <p className="text-sm font-medium">
-                <span className="text-primary">Click to upload</span>{" "}
-                <span className="text-muted-foreground">or drag and drop</span>
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {accept ? `Accepted: ${accept}` : "All file types accepted"}
-                {maxSize && ` • Max ${formatFileSize(maxSize)}`}
-                {compressImagesOption && " • Images auto-compressed"}
-              </p>
-            </>
-          )}
+          <p className="text-sm font-medium">
+            <span className="text-primary">Click to upload</span>{" "}
+            <span className="text-muted-foreground">or drag and drop</span>
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {accept ? `Accepted: ${accept}` : "All file types accepted"}
+            {maxSize && ` • Max ${formatFileSize(maxSize)}`}
+            {imageDimensions && ` • ${formatDimensionConstraints(imageDimensions)}`}
+          </p>
         </div>
       </div>
 
