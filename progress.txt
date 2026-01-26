@@ -1,45 +1,67 @@
-# Fix CashRegister Type Mismatches - Progress
-
-## Task: Fix CashRegister Type Mismatches
-
+## Task: Enhance Disposable Menu Generation with Advanced Options
 ## Status: COMPLETED
+## Date: 2026-01-23
 
-## Changes Made
+### What was done:
 
-### src/pages/admin/CashRegister.tsx
+1. **Enhanced MenuCreationWizard with 5-step flow** (was 4 steps)
+   - Added new "Advanced" step (Step 4) between Products and Settings
+   - Restructured step navigation to dynamically skip steps for forum menus
+   - Improved progress bar to accurately track visible steps
 
-1. **Product.category**: Changed from `string | null` to `string` to match DB schema (non-nullable)
-2. **Product.stock_quantity**: Changed from `number` to `number | null` to match DB schema (nullable)
-   - Added `?? 0` null-coalescing throughout the component where stock_quantity is used:
-     - `addToCart`: stock comparison
-     - `updateQuantity`: min/max bounds
-     - Quick Add button disabled state
-     - Cart item quantity increase button disabled state
-     - Product dialog opacity class
-     - Product dialog "Out of Stock" overlay
-     - Product dialog stock display
-     - Offline queue payload
-     - RPC transaction payload
-3. **Customer interface**: Changed from `name: string` to `first_name: string` + `last_name: string` to match DB schema
-   - Updated customer query to select `first_name, last_name` instead of `name`
-   - Updated customer query ordering from `name` to `first_name`
-   - Updated customer filter logic to use full name (`${c.first_name} ${c.last_name}`)
-   - Updated customer display in cart section
-   - Updated customer display in selection dialog
-4. **POSTransaction.payment_status**: Changed from `string | null` to `string` to match DB schema (non-nullable)
-   - Removed `|| 'pending'` fallback in transaction display
-5. **POSTransaction.payment_method**: Changed from `string | null` to `string` to match DB schema (non-nullable)
-6. **Removed unnecessary `@ts-expect-error`**: The `pos_transactions` table exists in the auto-generated Supabase types
-7. **Fixed error type narrowing**: Updated catch blocks to use proper `unknown` type narrowing pattern (`typeof error === 'object'` + `'code' in error`) instead of incorrect `instanceof Error` pattern (PostgrestError is not an Error subclass)
-8. **Removed unnecessary null check on `product.category`**: Since category is non-nullable, simplified the category filter comparison
+2. **Custom Pricing (Advanced > Pricing tab)**
+   - Bulk discount: Apply a percentage discount to all products
+   - Per-product custom pricing: Override individual product prices
+   - Effective price calculation showing base price, discount, or custom override
+   - Visual indicators for discounted vs custom-priced items
+   - Custom prices are passed through to the create-encrypted-menu edge function
 
-### src/pages/admin/__tests__/CashRegister.test.tsx
+3. **Geofencing (Advanced > Location tab)**
+   - Toggle to enable geographic access restrictions
+   - Latitude/longitude inputs with validation (-90/90, -180/180)
+   - Radius input in miles (0.1-100 range)
+   - Template integration: Pop-Up Event template auto-enables geofencing
+   - Geofence config passed to security_settings on menu creation
 
-- Updated all mock customer data from `name` to `first_name`/`last_name` fields
-- Updated customer filtering test assertions to use `first_name` instead of `name`
-- Updated customer filter test logic to use full name matching pattern
+4. **Whitelist (Advanced > Whitelist tab)**
+   - Toggle to enable email/phone whitelist access control
+   - Email input with validation and Enter key support
+   - Phone input with validation (10+ digit format)
+   - Chip/badge display for added entries with remove buttons
+   - Duplicate detection prevents re-adding same email/phone
+   - Whitelist data passed to security_settings on creation
 
-## Verification
+5. **Branding (Advanced > Branding tab)**
+   - Show/hide business branding toggle
+   - Header image URL with recommended dimensions
+   - Custom welcome message (500 char limit with counter)
+   - Live preview panel showing header, branding, and message together
+   - Branding config passed as appearance_settings on creation
 
-- TypeScript compilation (`tsc --noEmit`): PASSES with zero errors
-- Unit tests: 43/44 pass (1 pre-existing failure unrelated to type changes - tests for `$0.00` text which is only rendered when cart has items)
+6. **Form Validation**
+   - Validates custom prices (non-negative numbers)
+   - Validates discount percentage (1-100%)
+   - Validates geofence coordinates (lat/lng ranges, positive radius)
+   - Validates whitelist entries (email format, phone format)
+   - Password validation when password protection enabled
+   - All validations run before advancing past the Advanced step
+
+7. **QR Code Generation**
+   - Already integrated via existing QRCodeDialog component
+   - Accessible from MenuCard after menu creation
+   - Uses qrcode.react for SVG rendering + qrcode lib for data URL generation
+   - Supports download, print, and share functionality
+
+8. **Additional Fix: Created missing sanitize.ts module**
+   - Required by ProductDetailPage.tsx for build to succeed
+   - Implements sanitizeHtml, stripHtml, and sanitizeInput functions
+   - Uses DOM-based allowlist approach for safe tag/attribute filtering
+
+### Files modified:
+- `src/components/admin/disposable-menus/MenuCreationWizard.tsx` - Major rewrite with advanced options
+- `src/lib/utils/sanitize.ts` - New file (was missing, blocking build)
+
+### Build verification:
+- `npm run build` passes successfully
+- `npx tsc --noEmit` reports 0 errors
+- No regressions to existing functionality
