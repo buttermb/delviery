@@ -119,8 +119,8 @@ function OrderCard({ order, onStatusChange }: { order: any; onStatusChange?: (id
 }
 
 // Enhanced Orders Tab with better Kanban
-function OrdersTab({ tenantId }: { tenantId?: string }) {
-  const { data: orders = [], isLoading, refetch } = useMenuOrders(undefined, tenantId);
+function OrdersTab() {
+  const { data: orders = [], isLoading, refetch } = useMenuOrders();
   const updateOrderStatus = useUpdateOrderStatus();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [listLimit, setListLimit] = useState(20);
