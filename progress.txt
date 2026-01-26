@@ -1956,11 +1956,14 @@ Added `.catch()` error handlers to all unhandled `.then()` Promise chains to pre
 ### Files Changed:
 - `progress.txt` (this verification report)
 
----
+## Task: Widen preview panel from 320px to 400px
+**Date:** 2026-01-25
 
-## Task: Responsive Delivery Zones Layout
-
-Changed delivery zones row layout in StorefrontSettings.tsx (line 836) from `flex items-center` to `flex flex-col sm:flex-row`. This makes the delivery zone inputs stack vertically on mobile screens and display horizontally on small screens and up, improving mobile responsiveness.
+### Changes Made:
+- Updated skeleton loader grid in StorefrontSettings.tsx line 368
+- Changed `lg:grid-cols-[1fr_320px]` to `lg:grid-cols-[1fr_400px]`
+- This makes the preview panel width consistent (400px) across lg and xl breakpoints
+- The actual content grid (line 520) already used 400px; this aligns the skeleton
 
 ### Files Changed:
-- `src/pages/admin/storefront/StorefrontSettings.tsx` (line 836)
+- `src/pages/admin/storefront/StorefrontSettings.tsx`
