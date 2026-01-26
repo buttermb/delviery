@@ -2,7 +2,7 @@
 -- COMPLETELY SKIPPED: MIGRATION TIMELINE VIOLATION
 -- ============================================================================
 /*
--- Function to archive old location history (30 days)
-CREATE OR REPLACE FUNCTION public.archive_old_location_history()
+-- Function to create notification when stock reaches zero
+CREATE OR REPLACE FUNCTION public.notify_stock_zero()
 ...
 */

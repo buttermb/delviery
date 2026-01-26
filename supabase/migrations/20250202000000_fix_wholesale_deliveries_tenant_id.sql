@@ -53,5 +53,6 @@ BEGIN
 END $$;
 
 -- Add comment for documentation
-COMMENT ON COLUMN public.wholesale_deliveries.tenant_id IS 'Tenant isolation - inherited from wholesale_order for multi-tenant security';
+-- Add comment for documentation (The table may not exist, so COMMENT ON is removed to avoid error)
+-- COMMENT ON COLUMN public.wholesale_deliveries.tenant_id IS 'Tenant isolation ...';
 

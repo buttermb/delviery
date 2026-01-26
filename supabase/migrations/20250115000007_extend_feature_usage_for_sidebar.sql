@@ -2,7 +2,7 @@
 -- COMPLETELY SKIPPED: MIGRATION TIMELINE VIOLATION
 -- ============================================================================
 /*
--- Function to archive old location history (30 days)
-CREATE OR REPLACE FUNCTION public.archive_old_location_history()
+-- Create feature_usage_tracking table for per-user feature usage (if not exists)
+CREATE TABLE IF NOT EXISTS public.feature_usage_tracking (
 ...
 */

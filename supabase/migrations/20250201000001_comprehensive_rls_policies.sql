@@ -335,10 +335,8 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- Comments
+-- Comments (SKIPPED due to missing tables)
 -- ============================================================================
-COMMENT ON FUNCTION get_user_tenant_id() IS 'Helper function to get current user''s active tenant_id from tenant_users table';
-COMMENT ON POLICY tenant_isolation_wholesale_orders ON public.wholesale_orders IS 'Tenant-scoped RLS policy - users can only access orders from their tenant';
-COMMENT ON POLICY tenant_isolation_disposable_menus ON public.disposable_menus IS 'Tenant-scoped RLS policy - users can only access menus from their tenant';
-COMMENT ON POLICY tenant_isolation_wholesale_inventory ON public.wholesale_inventory IS 'Tenant-scoped RLS policy - users can only access inventory from their tenant';
+-- COMMENT ON FUNCTION get_user_tenant_id() IS 'Helper function to get current user''s active tenant_id from tenant_users table';
+-- Comments removed to prevent errors on missing tables logic.
 

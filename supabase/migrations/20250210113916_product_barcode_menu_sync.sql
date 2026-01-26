@@ -25,7 +25,9 @@ CREATE TABLE IF NOT EXISTS public.product_sku_sequences (
 CREATE INDEX IF NOT EXISTS idx_product_sku_sequences_tenant_id 
   ON public.product_sku_sequences(tenant_id);
 
--- 4. Add index on products.sku for faster lookups
+-- 4. Ensure sku column exists and add index
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS sku TEXT;
+
 CREATE INDEX IF NOT EXISTS idx_products_sku 
   ON public.products(sku) 
   WHERE sku IS NOT NULL;
@@ -75,12 +77,13 @@ CREATE POLICY "Users can insert SKU sequences for their tenant"
   );
 
 -- 11. Set menu_visibility based on current stock for existing products
-UPDATE public.products
-SET menu_visibility = CASE 
-  WHEN available_quantity > 0 THEN true
-  ELSE false
-END
-WHERE menu_visibility IS NULL;
+-- 11. Set menu_visibility based on current stock for existing products (SKIPPED: available_quantity missing)
+-- UPDATE public.products
+-- SET menu_visibility = CASE 
+--   WHEN available_quantity > 0 THEN true
+--   ELSE false
+-- END
+-- WHERE menu_visibility IS NULL;
 
 -- 12. Add comment for documentation
 COMMENT ON COLUMN public.products.barcode_image_url IS 'URL to barcode image stored in Supabase Storage';
