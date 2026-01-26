@@ -13,7 +13,32 @@ interface UseScreenshotProtectionOptions {
   watermarkText?: string;
   disableRightClickEnabled?: boolean;
   showToast?: boolean;
+  autoBurnEnabled?: boolean;
+  autoBurnAction?: 'log' | 'block' | 'burn';
 }
+
+/**
+ * Report a security event to the server-side endpoint for velocity tracking and auto-burn
+ */
+const reportSecurityEvent = async (
+  menuId: string,
+  eventType: string,
+  metadata?: Record<string, unknown>,
+  deviceFingerprint?: string
+): Promise<void> => {
+  try {
+    await supabase.functions.invoke('report-security-event', {
+      body: {
+        menu_id: menuId,
+        event_type: eventType,
+        metadata,
+        device_fingerprint: deviceFingerprint,
+      },
+    });
+  } catch (error) {
+    logger.error('Failed to report security event to server:', error);
+  }
+};
 
 export const useScreenshotProtection = ({
   menuId,
@@ -24,6 +49,8 @@ export const useScreenshotProtection = ({
   watermarkText,
   disableRightClickEnabled = false,
   showToast = true,
+  autoBurnEnabled = false,
+  autoBurnAction = 'log',
 }: UseScreenshotProtectionOptions) => {
   const { toast } = useToast();
 
@@ -47,7 +74,7 @@ export const useScreenshotProtection = ({
             device_fingerprint: attempt.deviceFingerprint,
             ip_address: null, // Will be populated by backend
             user_agent: navigator.userAgent,
-            action_taken: 'detected',
+            action_taken: autoBurnEnabled ? autoBurnAction : 'detected',
             attempted_at: attempt.timestamp.toISOString(),
           });
 
@@ -63,6 +90,25 @@ export const useScreenshotProtection = ({
               device_fingerprint: attempt.deviceFingerprint,
             },
           });
+
+          // Report to server for velocity tracking and potential auto-burn
+          const eventType = attempt.method === 'keyboard'
+            ? 'screenshot_detected'
+            : attempt.method === 'visibility'
+              ? 'visibility_hidden'
+              : 'screenshot_detected';
+
+          await reportSecurityEvent(
+            menuId,
+            eventType,
+            {
+              method: attempt.method,
+              customer_id: customerId,
+              auto_burn_enabled: autoBurnEnabled,
+              auto_burn_action: autoBurnAction,
+            },
+            attempt.deviceFingerprint
+          );
         } catch (error) {
           logger.error('Failed to log screenshot attempt:', error);
         }
@@ -70,7 +116,7 @@ export const useScreenshotProtection = ({
         // Show toast notification
         if (showToast) {
           toast({
-            title: '⚠️ Screenshot Detected',
+            title: 'Screenshot Detected',
             description: 'This action has been logged for security purposes.',
             variant: 'destructive',
           });
@@ -107,6 +153,8 @@ export const useScreenshotProtection = ({
     watermarkText,
     disableRightClickEnabled,
     showToast,
+    autoBurnEnabled,
+    autoBurnAction,
     toast,
   ]);
 };
