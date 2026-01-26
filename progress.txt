@@ -7695,33 +7695,38 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
+
 ---
 
-## Task: Add Apply to all days button for bulk time slot creation
+## Task: Remove ts-ignore in bi-engine.ts line 126 and add explicit type annotation
 
-### What was done:
+### Change Made:
+- **File**: `src/lib/analytics/bi-engine.ts`
+- **Line**: 126
+- **Before**: 
+  ```typescript
+  // @ts-ignore - Avoid deep type instantiation
+  const { data: securityEvents } = await supabase
+      .from('security_events')
+      .select('id, event_type')
+      .gte('created_at', thirtyDaysAgo.toISOString())
+      .in('event_type', ['failed_login', 'unauthorized_access']);
+  ```
+- **After**:
+  ```typescript
+  const { data: securityEvents } = await supabase
+      .from('security_events')
+      .select('id, event_type')
+      .gte('created_at', thirtyDaysAgo.toISOString())
+      .in('event_type', ['failed_login', 'unauthorized_access']) as { data: { id: string; event_type: string }[] | null };
+  ```
 
-1. **Modified `src/pages/admin/storefront/StorefrontSettings.tsx`**:
-   - Added `Copy` icon import from lucide-react
-   - Added `applyHoursToAllDays(sourceDay: string)` helper function that:
-     - Takes the operating hours from a source day
-     - Applies the same open/close times and closed status to all days (Monday-Sunday)
-     - Shows a toast notification confirming the action
-     - Marks the form as dirty so changes can be saved
-   - Added "Apply to all" button next to each day's time inputs in the Hours tab:
-     - Uses the Copy icon for visual clarity
-     - Only shown when the day is not closed (has hours to copy)
-     - Has a tooltip explaining its purpose
-     - Styled as ghost button to not distract from the main UI
+### Verification:
+- `npm run build` - PASSES (exit code 0)
+- TypeScript compiles cleanly with the explicit type assertion
+- The type annotation matches the actual row structure from the Supabase types:
+  - `id: string`
+  - `event_type: string`
 
-### How it works:
-- In the Store Settings > Hours tab, each day that has operating hours (not closed) now shows an "Apply to all" button
-- Clicking this button copies that day's hours to all other days
-- This enables bulk time slot creation - set one day's hours, then apply to all
-
-### Files Changed:
-- `src/pages/admin/storefront/StorefrontSettings.tsx`
-
-### Build Status:
-- Build passes with no TypeScript errors
-- No new lint errors introduced
+### Rationale:
+The `@ts-ignore` was used to bypass Supabase's deep type instantiation issue with complex chained queries. By adding an explicit type assertion at the end of the query chain, we tell TypeScript exactly what type to expect, avoiding the deep type resolution while maintaining type safety for the consuming code.
