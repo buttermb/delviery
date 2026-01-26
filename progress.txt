@@ -5087,22 +5087,14 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Add Stock Levels and Alerts to Inventory Section in sidebar-navigation.ts
+## Task: Add Transfers and Barcodes to Inventory section in sidebar-navigation.ts
 
-### Implementation Details:
-- Created new dedicated 'Inventory' section in sidebar-navigation.ts
-- Added the following navigation items to the Inventory section:
-  - Inventory Hub (/admin/inventory-hub) - Main inventory page
-  - Stock Levels (/admin/inventory-hub?tab=stock) - Stock levels view
-  - Stock Alerts (/admin/stock-alerts) - Stock alert notifications (professional tier)
-  - Inventory Transfers (/admin/inventory-transfers) - Transfer management (professional tier)
-  - Advanced Inventory (/admin/advanced-inventory) - Advanced features (professional tier)
+**Completed:** 2026-01-25 22:06:13 UTC
 
-- Moved inventory-related items from Operations section to the new Inventory section
-- Operations section now focuses on orders, delivery, and receiving operations
+**Changes made:**
+- Added Barcode icon import from lucide-react
+- Added 'Transfers' nav item pointing to /admin/inventory-transfers with ArrowLeftRight icon
+- Added 'Barcodes' nav item pointing to /admin/generate-barcodes with Barcode icon
+- Both items added in the Operations section after 'Advanced Inventory'
 
-### Files Changed:
-- src/components/admin/sidebar-navigation.ts
-
-### Verification:
-- npm run build PASSES (0 TypeScript errors)
+**Build verified:** Yes - npm run build completed successfully
