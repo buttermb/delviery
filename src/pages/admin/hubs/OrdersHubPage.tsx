@@ -27,8 +27,7 @@ import { QuickActions } from '@/components/admin/ui/QuickActions';
 import { AlertBadge } from '@/components/admin/ui/AlertBadge';
 import { useAdminBadgeCounts } from '@/hooks/useAdminBadgeCounts';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
-import { useOrdersExport } from '@/hooks/useOrdersExport';
-import type { OrderType } from '@/hooks/useUnifiedOrders';
+import { toast } from 'sonner';
 
 // Lazy load tab content for performance
 const WholesaleOrdersPage = lazy(() => import('@/pages/admin/WholesaleOrdersPage'));
@@ -70,24 +69,13 @@ export default function OrdersHubPage() {
         setSearchParams({ tab });
     };
 
-    // Map tab IDs to order types for filtered export
-    const getOrderTypeForTab = useCallback((tab: TabId): OrderType => {
-        switch (tab) {
-            case 'wholesale':
-                return 'wholesale';
-            case 'storefront':
-                return 'retail';
-            case 'preorders':
-                return 'menu';
-            default:
-                return 'all';
-        }
-    }, []);
-
     const handleExport = useCallback(() => {
-        const orderType = getOrderTypeForTab(activeTab);
-        exportOrders({ orderType, includeItems: true });
-    }, [activeTab, exportOrders, getOrderTypeForTab]);
+        // Navigate to the data export page for comprehensive export options
+        navigateToAdmin('/data-export');
+        toast.info('Opening Data Export', {
+            description: 'Select "Orders" to export order data with custom options.',
+        });
+    }, [navigateToAdmin]);
 
     const quickActions = useMemo(() => {
         const actions = [];
@@ -116,7 +104,7 @@ export default function OrdersHubPage() {
             disabled: isExporting,
         });
         return actions;
-    }, [activeTab, navigateToAdmin, handleExport, isExporting]);
+    }, [activeTab, navigateToAdmin, handleExport]);
 
     return (
         <div className="space-y-0">
