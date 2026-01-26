@@ -9,7 +9,7 @@ import { safeStorage } from "@/utils/safeStorage";
 import { performLogoutCleanup } from "@/lib/auth/logoutCleanup";
 import { clearPreAuthSessionData, establishFreshSession, invalidateSessionNonce } from "@/lib/auth/sessionFixation";
 import { getTokenExpiration } from "@/lib/auth/jwt";
-import { tokenRefreshManager } from "@/lib/auth/tokenRefreshManager";
+import { createRefreshTimer, tokenNeedsRefresh, type RefreshTimerHandle } from "@/lib/auth/tokenRefresh";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { resilientFetch, ErrorCategory, getErrorMessage, initConnectionMonitoring, onConnectionStatusChange, type ConnectionStatus } from "@/lib/utils/networkResilience";
 import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLogger";
@@ -389,8 +389,8 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const refreshToken = async () => {
-    // For customers, tokens last 30 days, so refresh might not be needed
-    // But we can verify the token is still valid
+    // For customers, tokens last 30 days, so we verify the token is still valid
+    // and refresh it proactively before expiry
     if (!token) return;
 
     // Use tokenRefreshManager to prevent concurrent verify/refresh calls
@@ -400,11 +400,20 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  // Token expiration monitoring - check and verify token before expiry
+  // Token expiration monitoring with visibility-aware refresh timer.
+  // Uses createRefreshTimer for robust handling of:
+  // - Tab backgrounding (visibility change detection)
+  // - Wake-from-sleep (time drift detection)
+  // - Scheduled proactive refresh before expiry
+  const refreshTimerHandleRef = useRef<RefreshTimerHandle | null>(null);
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!token) {
+      if (refreshTimerHandleRef.current) {
+        refreshTimerHandleRef.current.cleanup();
+        refreshTimerHandleRef.current = null;
+      }
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current);
         refreshIntervalRef.current = null;
@@ -412,39 +421,56 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    const checkAndRefreshToken = () => {
-      const expiration = getTokenExpiration(token);
-      if (!expiration) return;
+    // Clean up previous timer
+    if (refreshTimerHandleRef.current) {
+      refreshTimerHandleRef.current.cleanup();
+    }
 
-      const now = new Date();
-      const timeUntilExpiry = expiration.getTime() - now.getTime();
-      const oneDay = 24 * 60 * 60 * 1000;
-      const fiveMinutes = 5 * 60 * 1000;
+    // Customer tokens last 30 days, so refresh 5 minutes before expiry
+    // and warn 5 minutes before expiry
+    const CUSTOMER_REFRESH_BUFFER_MS = 5 * 60 * 1000;
+    const CUSTOMER_WARNING_BUFFER_MS = 5 * 60 * 1000;
 
-      // Show warning if less than 5 minutes until expiry
-      if (timeUntilExpiry < fiveMinutes && timeUntilExpiry > 0) {
-        setSecondsUntilLogout(Math.floor(timeUntilExpiry / 1000));
+    refreshTimerHandleRef.current = createRefreshTimer({
+      token,
+      onRefresh: async () => {
+        await refreshToken();
+        return true;
+      },
+      onWarning: (secondsLeft) => {
+        setSecondsUntilLogout(secondsLeft > 0 ? secondsLeft : 300);
         setShowTimeoutWarning(true);
-      } else if (timeUntilExpiry < oneDay && timeUntilExpiry >= fiveMinutes) {
-        // Auto-verify between 5 minutes and 1 day before expiry
-        logger.info("Token expiring soon, verifying...", { component: 'CustomerAuth' });
+      },
+      bufferMs: CUSTOMER_REFRESH_BUFFER_MS,
+      warningBufferMs: CUSTOMER_WARNING_BUFFER_MS,
+    });
+
+    // Also check periodically as a safety net (every hour for customer tokens)
+    const checkAndRefreshToken = () => {
+      if (tokenNeedsRefresh(token, CUSTOMER_REFRESH_BUFFER_MS)) {
+        logger.info("Customer token expiring soon, verifying...", { component: 'CustomerAuth' });
         refreshToken();
-      } else if (timeUntilExpiry <= 0) {
-        logger.warn("Token expired, logging out...", { component: 'CustomerAuth' });
+      }
+
+      // Check if token is fully expired
+      const expiration = getTokenExpiration(token);
+      if (expiration && expiration.getTime() <= Date.now()) {
+        logger.warn("Customer token expired, logging out...", { component: 'CustomerAuth' });
         setShowTimeoutWarning(false);
         logout();
       }
     };
 
-    // Check immediately
-    checkAndRefreshToken();
-
-    // Check every hour for customer tokens (they last 30 days)
     refreshIntervalRef.current = setInterval(checkAndRefreshToken, 60 * 60 * 1000);
 
     return () => {
+      if (refreshTimerHandleRef.current) {
+        refreshTimerHandleRef.current.cleanup();
+        refreshTimerHandleRef.current = null;
+      }
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
       }
     };
   }, [token]);
