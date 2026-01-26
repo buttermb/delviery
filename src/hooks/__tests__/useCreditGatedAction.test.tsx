@@ -188,10 +188,6 @@ describe('useCreditGatedAction', () => {
         canPerformAction: mockCanPerformAction,
         performAction: mockPerformAction,
         refetch: vi.fn(),
-        lifetimeStats: { earned: 0, spent: 0, purchased: 0, expired: 0, refunded: 0 },
-        subscription: { status: 'active', isFreeTier: false, creditsPerPeriod: 0, currentPeriodEnd: null, cancelAtPeriodEnd: false },
-        hasCredits: vi.fn(() => false),
-        invalidate: vi.fn(),
       });
 
       const { result } = renderHook(() => useCreditGatedAction(), {
@@ -602,10 +598,6 @@ describe('useGenerateMenu', () => {
       canPerformAction: mockCanPerformAction,
       performAction: mockPerformAction,
       refetch: vi.fn(),
-      lifetimeStats: { earned: 1000, spent: 0, purchased: 0, expired: 0, refunded: 0 },
-      subscription: { status: 'active', isFreeTier: true, creditsPerPeriod: 1000, currentPeriodEnd: null, cancelAtPeriodEnd: false },
-      hasCredits: vi.fn(() => true),
-      invalidate: vi.fn(),
     });
   });
 
@@ -696,10 +688,6 @@ describe('useCreateStorefront', () => {
       canPerformAction: mockCanPerformAction,
       performAction: mockPerformAction,
       refetch: vi.fn(),
-      lifetimeStats: { earned: 1000, spent: 0, purchased: 0, expired: 0, refunded: 0 },
-      subscription: { status: 'active', isFreeTier: true, creditsPerPeriod: 1000, currentPeriodEnd: null, cancelAtPeriodEnd: false },
-      hasCredits: vi.fn(() => true),
-      invalidate: vi.fn(),
     });
   });
 
@@ -789,10 +777,6 @@ describe('Complete User Flow', () => {
       canPerformAction: mockCanPerformAction,
       performAction: mockPerformAction,
       refetch: vi.fn(),
-      lifetimeStats: { earned: 1000, spent: 0, purchased: 0, expired: 0, refunded: 0 },
-      subscription: { status: 'active', isFreeTier: true, creditsPerPeriod: 1000, currentPeriodEnd: null, cancelAtPeriodEnd: false },
-      hasCredits: vi.fn(() => true),
-      invalidate: vi.fn(),
     });
   });
 
