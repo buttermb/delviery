@@ -1958,19 +1958,24 @@ Added `.catch()` error handlers to all unhandled `.then()` Promise chains to pre
 
 ---
 
-## Task: Fix BuilderPreview desktop width to 100% maxWidth 1200px
+## Task: Remove !important flags from src/index.css lines 261-263
 
-### Verification:
+### What was done:
+Removed the !important flags from lines 261-263 in src/index.css within the @media (prefers-reduced-motion: reduce) block:
 
-Verified that BuilderPreview.tsx line 38 already has the correct desktop width settings:
-
-```typescript
-default: return { width: '100%', maxWidth: '1200px', transform: `scale(${previewZoom})`, transformOrigin: 'top center' };
+**Before:**
+```css
+animation-duration: 0.01ms !important;
+animation-iteration-count: 1 !important;
+transition-duration: 0.01ms !important;
 ```
 
-The fix was already applied in commit e843130a (feat: batch improvements). No changes needed.
+**After:**
+```css
+animation-duration: 0.01ms;
+animation-iteration-count: 1;
+transition-duration: 0.01ms;
+```
 
-### Files:
-- `src/pages/admin/storefront/builder/BuilderPreview.tsx:38` - Already correct
-
-### Status: ALREADY COMPLETE
+### Files Changed:
+- `src/index.css` (lines 261-263)
