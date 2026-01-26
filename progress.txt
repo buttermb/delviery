@@ -7693,29 +7693,18 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: Add .catch error handler to all Promise .then chains in AuthContext.tsx
+## Task: Change no-unused-vars ESLint rule from off to error
 
-### Status: ALREADY COMPLETE
+### Date: 2026-01-25
 
-### Analysis:
+### Changes Made:
+- Updated `eslint.config.js` line 23
+- Changed `"@typescript-eslint/no-unused-vars": "off"` to `"@typescript-eslint/no-unused-vars": "error"`
 
-Reviewed `src/contexts/AuthContext.tsx` for Promise .then() chains:
+### Impact:
+- ESLint will now report unused variables as errors instead of ignoring them
+- This enforces stricter code quality by requiring removal of unused variables
 
-1. **Line 95: `supabase.auth.getSession().then(...).catch(...)`**
-   - This is the ONLY .then() chain in the file
-   - Already has proper .catch() handler (lines 110-120)
-   - Properly logs errors using `logAuthError` and `logger.error`
-   - Correctly handles state cleanup (sets initializedRef and isLoading)
+### Files Changed:
+- `eslint.config.js`
 
-2. **Other async patterns in file use async/await with try/catch:**
-   - `login()` function (lines 197-230) - uses try/catch
-   - `signup()` function (lines 232-277) - uses try/catch
-   - `logout()` function (lines 279-307) - uses try/catch
-   - `tokenRefreshManager.refresh()` callback (lines 148-172) - uses try/catch internally
-
-### Conclusion:
-
-No changes needed. The only .then() chain in AuthContext.tsx already has a proper .catch() error handler. All other async operations use async/await with try/catch blocks.
-
-### Files Reviewed:
-- `src/contexts/AuthContext.tsx` - No changes required
