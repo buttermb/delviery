@@ -3072,27 +3072,14 @@ verifying all 5 stat cards load with real data and their navigation links work c
 
 ---
 
+## Task: Make Zip Code Input Responsive in Delivery Zones
 
-## Task: Update mobile preview from max-w-320px to max-w-375px
+### What was done:
 
-### Location
-`src/components/admin/storefront/StorefrontSettingsLivePreview.tsx` line 62
-
-### What was found:
-The mobile preview width is already set to `max-w-[375px]` at line 62:
-
-```typescript
-case 'mobile':
-  return orientation === 'portrait' ? 'max-w-[375px]' : 'max-w-[568px]';
-```
-
-This change has already been implemented in the main branch. The 375px width corresponds to iPhone 6/7/8/SE dimensions, which is the most common mobile viewport for testing.
-
-### Verification:
-- Checked `StorefrontSettingsLivePreview.tsx` line 62: Already `max-w-[375px]`
-- Compared against main branch: Same value present
-- No changes needed - task already complete in codebase
+1. **Updated `src/pages/admin/storefront/StorefrontSettings.tsx` line 845:**
+   - Changed `className="w-32"` to `className="w-full sm:w-32"` on the Zip code Input field
+   - This makes the input full-width on mobile devices (xs breakpoint) and 32 units (128px) on small screens and above
+   - Improves mobile responsiveness for the delivery zones section
 
 ### Files Changed:
-- None (change already present)
-- `progress.txt` (this report)
+- `src/pages/admin/storefront/StorefrontSettings.tsx` (line 845)
