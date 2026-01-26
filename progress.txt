@@ -7701,98 +7701,29 @@ Added a multi-layer NODE_ENV check to prevent these dangerous flags from being e
 
 ---
 
-## Task: Create Zod validation schema for all StorefrontSettings fields with proper error messages
+## Task: Remove ts-nocheck from src/hooks/crm/useInvites.ts
 
-### What was done:
+### Completed: 2026-01-25
 
-1. **Created `src/lib/utils/storefrontSettingsSchema.ts`** - Comprehensive Zod validation schema containing:
+### Changes Made:
+- Removed `// @ts-nocheck` directive from line 1 of `src/hooks/crm/useInvites.ts`
 
-   **Regex Patterns:**
-   - `HEX_COLOR_REGEX` - Validates #RGB or #RRGGBB hex color codes
-   - `SLUG_REGEX` - URL-safe slugs (lowercase letters, numbers, hyphens)
-   - `TIME_REGEX` - 24-hour time format (HH:MM)
-   - `ZIP_CODE_REGEX` - US ZIP codes (5 digits or ZIP+4)
-   - `DOMAIN_REGEX` - Domain name format
-   - `GA4_ID_REGEX` - Google Analytics 4 measurement ID format
+### Verification:
+1. **TypeScript compilation** - PASSES
+   - `npx tsc --noEmit` completes with no errors
+   
+2. **Production build** - PASSES
+   - `npm run build` completes successfully
+   - All modules compiled without TypeScript errors
 
-   **Reusable Schema Components:**
-   - `hexColorSchema` - Color validation with case normalization
-   - `slugSchema` - URL slug validation (2-50 chars)
-   - `timeSchema` - Time format validation
-   - `optionalUrlSchema` - Optional URL fields
-
-   **Nested Object Schemas:**
-   - `deliveryZoneSchema` - ZIP code, fee, min_order validation
-   - `timeSlotSchema` - Label, start/end time, enabled status with end > start refinement
-   - `themeConfigSchema` - Theme type ('standard' | 'luxury') with optional colors
-   - `checkoutSettingsSchema` - 6 boolean checkout options
-   - `dailyHoursSchema` - Per-day open/close times with close > open refinement
-   - `operatingHoursSchema` - Full week of operating hours
-   - `purchaseLimitsSchema` - enabled, max_per_order, max_daily, max_weekly
-
-   **Main Schema (`storefrontSettingsSchema`):**
-   - **Identifiers**: id (UUID)
-   - **General**: store_name (2-100 chars), slug, encrypted_url_token, tagline (200 chars), description (2000 chars)
-   - **Visibility**: is_active, is_public, require_account, require_age_verification, minimum_age (18-99)
-   - **Branding**: logo_url, banner_url, favicon_url, primary_color, secondary_color, accent_color, font_family, theme_config
-   - **Delivery**: delivery_zones (max 100), time_slots (max 20), free_delivery_threshold, default_delivery_fee
-   - **Payments**: payment_methods (enum array, min 1), checkout_settings, purchase_limits
-   - **Hours**: operating_hours (full week record)
-   - **SEO**: meta_title (70 chars), meta_description (160 chars), og_image_url, ga4_measurement_id, custom_domain
-   - **Featured**: featured_product_ids (UUID array, max 20)
-
-   **Tab-Specific Partial Schemas:**
-   - `generalSettingsSchema` - General tab fields
-   - `brandingSettingsSchema` - Branding tab fields
-   - `deliverySettingsSchema` - Delivery settings tab
-   - `deliveryZonesSettingsSchema` - Zones tab
-   - `timeSlotsSettingsSchema` - Time slots tab
-   - `paymentSettingsSchema` - Payments tab
-   - `checkoutTabSettingsSchema` - Checkout & purchase limits
-   - `hoursSettingsSchema` - Operating hours tab
-   - `seoSettingsSchema` - SEO tab
-   - `featuredProductsSettingsSchema` - Featured products tab
-
-   **Type Exports:**
-   - `StorefrontSettings` - Full settings type
-   - `DeliveryZone`, `TimeSlot`, `ThemeConfig`, `CheckoutSettings`, `OperatingHours`, `PurchaseLimits`, `DailyHours`
-
-   **Helper Functions:**
-   - `validateStorefrontSettings(data)` - Full validation with type-safe result
-   - `validateSettingsTab(schema, data)` - Tab-specific validation
-   - `getFieldErrors(zodError)` - Extract field -> error message map
-   - `validateField(field, value)` - Single field validation for real-time feedback
-
-2. **Updated `src/lib/utils/validation.ts`** - Added re-export of storefront settings schema
-
-### Error Messages:
-All fields include user-friendly error messages following existing patterns in `validationMessages.ts`:
-- Clear, actionable feedback (e.g., "Invalid color format. Use hex code like #10b981 or #fff")
-- Examples where helpful (e.g., "Invalid ZIP code format. Use 5 digits (e.g., 12345) or ZIP+4 (e.g., 12345-6789)")
-- Character limits shown (e.g., "Meta title should be 70 characters or less for optimal SEO")
-- Business rules explained (e.g., "At least one payment method must be enabled")
-
-### Usage Example:
-```typescript
-import {
-  storefrontSettingsSchema,
-  validateStorefrontSettings,
-  getFieldErrors,
-  generalSettingsSchema,
-  validateSettingsTab
-} from '@/lib/utils/validation';
-
-// Full validation
-const result = validateStorefrontSettings(formData);
-if (!result.success) {
-  const errors = getFieldErrors(result.errors);
-  // errors = { 'store_name': 'Store name must be at least 2 characters', ... }
-}
-
-// Tab-specific validation
-const tabResult = validateSettingsTab(generalSettingsSchema, tabData);
-```
+### Notes:
+- The file already had proper type annotations in place:
+  - Function parameters are properly typed (e.g., `status?: 'pending' | 'accepted' | 'archived'`)
+  - Return types are inferred correctly from TanStack Query hooks
+  - Error handlers use `error: unknown` with proper type narrowing
+  - Supabase query results are cast to the proper `CRMInvite` type
+- The `@ts-nocheck` was likely added as a temporary measure during initial development
+- No additional type annotations were required
 
 ### Files Changed:
-- `src/lib/utils/storefrontSettingsSchema.ts` (new - comprehensive validation schema)
-- `src/lib/utils/validation.ts` (updated - re-export storefront schema)
+- `src/hooks/crm/useInvites.ts` - Removed `// @ts-nocheck` directive
