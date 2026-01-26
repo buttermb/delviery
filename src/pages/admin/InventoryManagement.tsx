@@ -54,12 +54,13 @@ export default function InventoryManagement() {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('id, tenant_id, name, sku, batch_number, available_quantity, low_stock_alert, warehouse_location, category, cost_per_unit, wholesale_price, price_per_lb')
+          .select('id, tenant_id, name, sku, batch_number, available_quantity, low_stock_alert, category, cost_per_unit, wholesale_price, price_per_lb')
           .eq('tenant_id', tenant.id)
           .order('name');
 
         if (error) throw error;
-        setProducts(data || []);
+        // Map data to include warehouse_location as empty string for compatibility
+        setProducts(((data || []) as any[]).map(p => ({ ...p, warehouse_location: '' })) as Product[]);
       } catch (error) {
         logger.error('Error loading inventory', error, { component: 'InventoryManagement' });
         toast.error("Failed to load inventory");
@@ -168,8 +169,9 @@ export default function InventoryManagement() {
       className: 'text-center',
       cell: (item) => {
         const status = getStockStatus(Number(item.available_quantity || 0), item.low_stock_alert);
+        const badgeVariant = status.color === 'warning' ? 'secondary' : (status.color as "destructive" | "default");
         return (
-          <Badge variant={status.color as "destructive" | "warning" | "default"} className="inline-flex items-center">
+          <Badge variant={badgeVariant} className="inline-flex items-center">
             {getStatusIcon(status.status)}
             {status.label}
           </Badge>
@@ -201,11 +203,12 @@ export default function InventoryManagement() {
 
     return (
       <div className="space-y-3">
-        <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between">
           <div className="font-medium text-base">{item.name}</div>
-          <Badge variant={status.color as "destructive" | "warning" | "default"} className="flex-shrink-0">
-            {status.label}
-          </Badge>
+          {(() => {
+            const badgeVariant = status.color === 'warning' ? 'secondary' : (status.color as "destructive" | "default");
+            return <Badge variant={badgeVariant} className="flex-shrink-0">{status.label}</Badge>;
+          })()}
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-sm">
@@ -372,8 +375,8 @@ export default function InventoryManagement() {
       <BulkInventoryModal
         open={bulkModalOpen}
         onOpenChange={setBulkModalOpen}
-        selectedProducts={selectedBulkProducts}
-        onComplete={handleBulkComplete}
+        selectedProducts={Array.from(selectedProductIds).map(id => products.find(p => p.id === id)).filter(Boolean) as Product[]}
+        onComplete={() => { setSelectedProductIds(new Set()); setBulkModalOpen(false); }}
       />
     </div>
   );

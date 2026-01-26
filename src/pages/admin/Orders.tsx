@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, WifiOff, CheckCircle, Truck } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -35,6 +35,7 @@ import { useExport } from "@/hooks/useExport";
 import { ExportOptionsDialog, type ExportField } from "@/components/admin/ExportOptionsDialog";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
+import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
 import {
@@ -142,9 +143,10 @@ export default function Orders() {
         source: 'Orders'
       });
 
-      let query = supabase
+      // Cast to any to handle schema mismatch with delivery_method
+      let query = (supabase as any)
         .from('orders')
-        .select('id, order_number, created_at, status, total_amount, delivery_method, user_id, courier_id, tenant_id, order_items(id, product_id, quantity, price)')
+        .select('id, order_number, created_at, status, total_amount, user_id, courier_id, tenant_id, order_items(id, product_id, quantity, price)')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
         .limit(100);
@@ -191,9 +193,11 @@ export default function Orders() {
         }, {} as Record<string, { user_id: string; full_name: string | null; email: string | null; phone: string | null }>);
       }
 
-      return (ordersData || []).map(order => ({
+      // Cast to any to handle schema mismatches
+      return ((ordersData || []) as any[]).map(order => ({
         ...order,
-        user: profilesMap[order.user_id]
+        delivery_method: order.delivery_method || '',
+        user: order.user_id ? profilesMap[order.user_id] : undefined
       })) as Order[];
     },
     enabled: !!tenant?.id,
@@ -414,9 +418,9 @@ export default function Orders() {
           created_at: order.created_at,
           ...(includeCustomerName && { customer_name: order.user?.full_name || '' }),
           ...(includeCustomerEmail && { customer_email: order.user?.email || '' }),
-          item_product_name: item.product_name || '',
-          item_quantity: item.quantity || 0,
-          item_price: item.price || 0,
+          item_product_name: (item as any).product_name || '',
+          item_quantity: (item as any).quantity || 0,
+          item_price: (item as any).price || 0,
         }));
       });
       exportCSV(flatRows, { filename: `orders-export-${new Date().toISOString().split('T')[0]}.csv` });
@@ -437,7 +441,7 @@ export default function Orders() {
     setExportDialogOpen(false);
   };
 
-  const handlePrintOrder = (order: Order) => {
+  const handlePrintOrderFunc = (order: Order) => {
     // Open print dialog with order details
     const printWindow = window.open('', '_blank');
     if (printWindow) {
@@ -468,12 +472,12 @@ export default function Orders() {
     triggerHaptic('light');
   };
 
-  const handleGenerateInvoice = (order: Order) => {
+  const handleGenerateInvoiceFunc = (order: Order) => {
     toast.success(`Invoice generated for order #${order.order_number || order.id.slice(0, 8)}`);
     triggerHaptic('light');
   };
 
-  const handleCancelOrder = async (order: Order) => {
+  const handleCancelOrderFunc = async (order: Order) => {
     if (!tenant?.id) return;
 
     try {
@@ -494,60 +498,15 @@ export default function Orders() {
     }
   };
 
-  const handlePrintOrder = (order: Order) => {
-    // Open print dialog with order details
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Order #${order.order_number || order.id.slice(0, 8)}</title>
-            <style>
-              body { font-family: Arial, sans-serif; padding: 20px; }
-              h1 { font-size: 24px; margin-bottom: 20px; }
-              .info { margin-bottom: 10px; }
-              .label { font-weight: bold; }
-            </style>
-          </head>
-          <body>
-            <h1>Order #${order.order_number || order.id.slice(0, 8)}</h1>
-            <div class="info"><span class="label">Status:</span> ${order.status}</div>
-            <div class="info"><span class="label">Customer:</span> ${order.user?.full_name || order.user?.email || 'Unknown'}</div>
-            <div class="info"><span class="label">Total:</span> $${order.total_amount?.toFixed(2)}</div>
-            <div class="info"><span class="label">Date:</span> ${order.created_at ? format(new Date(order.created_at), 'PPpp') : 'N/A'}</div>
-            <div class="info"><span class="label">Delivery Method:</span> ${order.delivery_method || 'N/A'}</div>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.print();
-    }
-    triggerHaptic('light');
-  };
-
-  const handleGenerateInvoice = (order: Order) => {
-    toast.success(`Invoice generated for order #${order.order_number || order.id.slice(0, 8)}`);
-    triggerHaptic('light');
-  };
-
-  const handleCancelOrder = async (order: Order) => {
-    if (!tenant?.id) return;
-
+  const handleConfirmBulkStatusUpdate = async () => {
+    if (!tenant?.id || selectedOrders.length === 0) return;
+    
     try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
-        .eq('id', order.id)
-        .eq('tenant_id', tenant.id);
-
-      if (error) throw error;
-
-      toast.success(`Order #${order.order_number || order.id.slice(0, 8)} cancelled`);
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      triggerHaptic('medium');
+      await bulkStatusUpdate.executeBulkUpdate(selectedOrders.map(id => ({ id, order_number: id.slice(0, 8), status: bulkStatusConfirm.targetStatus })), bulkStatusConfirm.targetStatus);
+      setSelectedOrders([]);
+      setBulkStatusConfirm({ open: false, targetStatus: '' });
     } catch (error) {
-      logger.error('Error cancelling order', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
-      toast.error("Failed to cancel order");
+      logger.error('Bulk status update failed', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
     }
   };
 
@@ -706,18 +665,18 @@ export default function Orders() {
                 <Eye className="mr-2 h-4 w-4" />
                 View Details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePrintOrder(order)}>
+              <DropdownMenuItem onClick={() => handlePrintOrderFunc(order)}>
                 <Printer className="mr-2 h-4 w-4" />
                 Print Order
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleGenerateInvoice(order)}>
+              <DropdownMenuItem onClick={() => handleGenerateInvoiceFunc(order)}>
                 <FileText className="mr-2 h-4 w-4" />
                 Generate Invoice
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {order.status !== 'cancelled' && (
                 <DropdownMenuItem
-                  onClick={() => handleCancelOrder(order)}
+                  onClick={() => handleCancelOrderFunc(order)}
                   className="text-destructive focus:text-destructive"
                 >
                   <XCircle className="mr-2 h-4 w-4" />
@@ -1079,7 +1038,7 @@ export default function Orders() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handlePrintOrder(selectedOrder)}
+                    onClick={() => handlePrintOrderFunc(selectedOrder)}
                   >
                     <Printer className="mr-2 h-4 w-4" />
                     Print
@@ -1087,7 +1046,7 @@ export default function Orders() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleGenerateInvoice(selectedOrder)}
+                    onClick={() => handleGenerateInvoiceFunc(selectedOrder)}
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     Invoice
