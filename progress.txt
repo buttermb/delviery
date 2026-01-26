@@ -6699,13 +6699,19 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Time slot inputs responsive width fix
+---
 
-Changed time slot input widths in StorefrontSettings.tsx to be responsive:
-- Updated start time input from `w-28` to `w-full sm:w-28`
-- Updated end time input from `w-28` to `w-full sm:w-28`
+## Task: Make age input responsive w-full sm:w-24 in StorefrontSettings.tsx
 
-This makes the time inputs full-width on mobile and maintains the fixed width on larger screens.
+**Status:** Already Complete
 
-### File Changed:
-- `src/pages/admin/storefront/StorefrontSettings.tsx` (lines 962 and 973)
+**Verification:**
+- Located the age input field at line 639-645 in `src/pages/admin/storefront/StorefrontSettings.tsx`
+- The minimum_age Input component already has `className="w-full sm:w-24"` at line 644
+- This provides responsive behavior:
+  - Mobile (default): Full width (`w-full`)
+  - Small screens and up (sm breakpoint): Fixed 24 units width (`sm:w-24`)
+
+**Note:** The task referenced line 568, but the actual location is line 644. The file path also needed correction from `StorefrontSettings.tsx` to `src/pages/admin/storefront/StorefrontSettings.tsx`.
+
+**No code changes required** - the responsive styling was already implemented.
