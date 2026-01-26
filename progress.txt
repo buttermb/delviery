@@ -7701,29 +7701,77 @@ Added a multi-layer NODE_ENV check to prevent these dangerous flags from being e
 
 ---
 
-## Task: Remove ts-nocheck from src/hooks/crm/useInvites.ts
+## Task: Add useMutation for saving StorefrontSettings with optimistic updates and rollback
 
-### Completed: 2026-01-25
+### What was done:
 
-### Changes Made:
-- Removed `// @ts-nocheck` directive from line 1 of `src/hooks/crm/useInvites.ts`
+1. **Added `storefrontSettings` to query keys factory** (`src/lib/queryKeys.ts`):
+   - Added new `storefrontSettings` entry with standard patterns:
+     - `all` - base key
+     - `lists()` / `list(tenantId)` - for list queries
+     - `details()` / `detail(storeId)` - for individual store queries
+     - `byTenant(tenantId)` - for tenant-scoped queries
 
-### Verification:
-1. **TypeScript compilation** - PASSES
-   - `npx tsc --noEmit` completes with no errors
-   
-2. **Production build** - PASSES
-   - `npm run build` completes successfully
-   - All modules compiled without TypeScript errors
+2. **Created `src/hooks/useStorefrontSettings.ts`** with:
 
-### Notes:
-- The file already had proper type annotations in place:
-  - Function parameters are properly typed (e.g., `status?: 'pending' | 'accepted' | 'archived'`)
-  - Return types are inferred correctly from TanStack Query hooks
-  - Error handlers use `error: unknown` with proper type narrowing
-  - Supabase query results are cast to the proper `CRMInvite` type
-- The `@ts-nocheck` was likely added as a temporary measure during initial development
-- No additional type annotations were required
+   - **Type definitions:**
+     - `StorefrontSettings` - Complete interface matching marketplace_stores table
+     - `StorefrontSettingsInput` - Partial type for updates (excludes id, tenant_id, timestamps)
+     - Supporting interfaces: DeliveryZone, TimeSlot, ThemeConfig, CheckoutSettings, PurchaseLimits, OperatingHours
+
+   - **`useStorefrontSettings()` hook:**
+     - Fetches storefront settings for current tenant
+     - Uses `useTenantAdminAuth()` for tenant context
+     - Returns null for non-existent stores (uses `.maybeSingle()`)
+     - Configurable via options (enabled)
+     - Stale time: 30s, GC time: 5min
+
+   - **`useSaveStorefrontSettings()` mutation hook:**
+     - **Mutation function:** Updates marketplace_stores by id + tenant_id, returns updated settings
+     - **onMutate (optimistic update):**
+       - Cancels outgoing refetches to prevent race conditions
+       - Snapshots previous settings for rollback
+       - Immediately applies optimistic update to both byTenant and detail cache entries
+       - Returns context with previousSettings and storeId
+     - **onError (rollback):**
+       - Restores previous settings from context
+       - Logs error via logger
+       - Shows toast error with description
+     - **onSuccess:**
+       - Updates cache with actual server response
+       - Shows success toast
+     - **onSettled:**
+       - Invalidates all related queries (byTenant, detail, legacy keys)
+       - Ensures cache consistency after mutation completes
+
+   - **`useUpdateStorefrontSettingsField()` mutation hook:**
+     - For single field updates (toggles, inline edits)
+     - Same optimistic update + rollback pattern
+     - Accepts field name and value as parameters
+     - Lighter weight than full settings update
+
+   - **`useStorefrontSettingsByStoreId()` query hook:**
+     - Fetches settings by store ID (for non-tenant contexts)
+     - Used when store ID is known but tenant context isn't available
+
+### Key implementation patterns followed:
+- Uses `queryKeys` factory for consistent cache key management
+- Uses `useTenantAdminAuth()` for tenant context per CLAUDE.md
+- Uses `logger` for error logging (not console.log)
+- Uses `toast` from sonner for user feedback
+- TypeScript strict mode - no `any` types, uses `@ts-ignore` for table not in generated types
+- Named exports only (no default exports)
+- Follows useContacts.ts pattern for optimistic updates with rollback
+- Invalidates legacy query keys for backward compatibility
+
+### Acceptance Criteria Met:
+- [x] useMutation hook for saving StorefrontSettings created
+- [x] Optimistic updates applied immediately on mutation
+- [x] Rollback to previous state on error
+- [x] Query invalidation on success for cache consistency
+- [x] Toast notifications for success/error states
+- [x] Follows existing codebase patterns (useContacts, useStorefrontBuilder)
 
 ### Files Changed:
-- `src/hooks/crm/useInvites.ts` - Removed `// @ts-nocheck` directive
+- `src/lib/queryKeys.ts` - Added storefrontSettings query key factory
+- `src/hooks/useStorefrontSettings.ts` (new) - Complete hook implementation
