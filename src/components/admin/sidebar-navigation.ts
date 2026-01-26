@@ -282,41 +282,20 @@ export const navigationSections: NavSection[] = [
         tier: 'professional'
       },
       {
-        title: 'Couriers',
-        href: '/admin/fulfillment-hub?tab=couriers',
-        icon: UserCog,
+        title: 'Receiving & Packaging',
+        href: '/admin/operations/receiving',
+        icon: ClipboardList
+      },
+      {
+        title: 'Team',
+        href: '/admin/team-members',
+        icon: UsersRound,
         tier: 'professional'
       },
       {
-        title: 'Live Tracking',
-        href: '/admin/fulfillment-hub?tab=map',
-        icon: Map,
-        badge: 'LIVE',
-        tier: 'professional'
-      },
-      {
-        title: 'Route Optimization',
-        href: '/admin/route-optimizer',
-        icon: Route,
-        tier: 'enterprise'
-      }
-    ]
-  },
-
-  // 🚚 FULFILLMENT
-  {
-    title: 'Fulfillment',
-    items: [
-      {
-        title: 'Fulfillment Hub',
-        href: '/admin/fulfillment-hub',
-        icon: Truck,
-        tier: 'professional'
-      },
-      {
-        title: 'Tracking',
-        href: '/admin/fulfillment-hub?tab=map',
-        icon: MapPinned,
+        title: 'Roles',
+        href: '/admin/role-management',
+        icon: Shield,
         tier: 'enterprise'
       }
     ]

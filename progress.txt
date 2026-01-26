@@ -7316,17 +7316,19 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
----
+## Agent 99 - Sidebar Navigation Update
 
-## Task: Add Export to Analytics section in sidebar-navigation.ts
+### Task: Add Team and Roles to Operations section in sidebar-navigation.ts
 
-### Completed:
-- Added Export navigation item to the Analytics section in src/components/admin/sidebar-navigation.ts
-- Export item configuration:
-  - title: Export
-  - href: /admin/analytics-export
-  - icon: FileSpreadsheet (already imported)
-  - tier: professional
+**Completed:**
+- Added "Team" nav item to Operations section
+  - Links to `/admin/team-members`
+  - Uses `UsersRound` icon
+  - Tier: professional
+- Added "Roles" nav item to Operations section
+  - Links to `/admin/role-management`
+  - Uses `Shield` icon
+  - Tier: enterprise
 
 ### Files Changed:
-- src/components/admin/sidebar-navigation.ts - Added Export nav item to Analytics section (line 570-575)
+- `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
