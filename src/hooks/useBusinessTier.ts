@@ -20,6 +20,7 @@ import {
 } from '@/lib/presets/businessTiers';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 import { TenantMetrics } from '@/types/hotbox';
 
 import {
@@ -156,8 +157,9 @@ export function useBusinessTier() {
       if (error) throw error;
       return tier;
     },
-    onSuccess: () => {
+    onSuccess: (tier) => {
       queryClient.invalidateQueries({ queryKey: ['business-tier', tenant?.id] });
+      toast.success('Business tier updated successfully');
     },
   });
 
@@ -194,6 +196,7 @@ export function useBusinessTier() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['business-tier', tenant?.id] });
+      toast.success('Business tier recalculated successfully');
     },
   });
 

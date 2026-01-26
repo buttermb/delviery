@@ -7690,3 +7690,38 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Agent 46 Update: Add toast.success notifications to mutation onSuccess callbacks
+
+### Task
+Add toast.success notification in mutation onSuccess callback for successful saves
+
+### Changes Made
+
+#### 1. `src/hooks/useBusinessTier.ts`
+- Added `toast` import from 'sonner'
+- Added `toast.success('Business tier updated successfully')` to `setTierMutation.onSuccess`
+- Added `toast.success('Business tier recalculated successfully')` to `recalculateTierMutation.onSuccess`
+
+#### 2. `src/hooks/useCustomerTags.ts`
+- Added `toast` import from 'sonner'
+- Added `toast.success('Tag created successfully')` to `useCreateTag.onSuccess`
+- Added `toast.success('Tag updated successfully')` to `useUpdateTag.onSuccess`
+- Added `toast.success('Tag deleted successfully')` to `useDeleteTag.onSuccess`
+- Added `toast.success('Tag assigned successfully')` to `useAssignTag.onSuccess`
+- Added `toast.success('Tag removed successfully')` to `useRemoveTag.onSuccess`
+- Added `toast.success('Tags assigned successfully')` to `useBatchAssignTags.onSuccess`
+
+#### 3. `src/hooks/useConsumeCredits.ts`
+- Added `toast.success('Credits consumed successfully', { description: ... })` to `mutation.onSuccess`
+- Shows amount used and new balance in the toast description
+
+### Summary
+Added toast.success notifications to 9 mutation hooks that were previously missing user feedback on successful operations:
+- 2 mutations in useBusinessTier.ts (setTier, recalculateTier)
+- 6 mutations in useCustomerTags.ts (create, update, delete, assign, remove, batchAssign)
+- 1 mutation in useConsumeCredits.ts (consume credits)
+
+All notifications follow the existing codebase pattern using sonner's toast.success() function.

@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 
 // Types
 export interface Tag {
@@ -135,6 +136,7 @@ export function useCreateTag() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
+      toast.success('Tag created successfully');
     },
   });
 }
@@ -173,6 +175,7 @@ export function useUpdateTag() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.customerTags.all });
+      toast.success('Tag updated successfully');
     },
   });
 }
@@ -202,6 +205,7 @@ export function useDeleteTag() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.customerTags.all });
+      toast.success('Tag deleted successfully');
     },
   });
 }
@@ -238,6 +242,7 @@ export function useAssignTag() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.customerTags.byContact(variables.contactId),
       });
+      toast.success('Tag assigned successfully');
     },
   });
 }
@@ -269,6 +274,7 @@ export function useRemoveTag() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.customerTags.byContact(variables.contactId),
       });
+      toast.success('Tag removed successfully');
     },
   });
 }
@@ -309,6 +315,7 @@ export function useBatchAssignTags() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.customerTags.all });
+      toast.success('Tags assigned successfully');
     },
   });
 }
