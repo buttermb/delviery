@@ -803,6 +803,26 @@ export const navigationSections: NavSection[] = [
     title: 'Integrations',
     items: [
       {
+        title: 'Local AI',
+        href: '/admin/local-ai',
+        icon: Brain,
+        tier: 'professional',
+        badge: 'FREE'
+      },
+      {
+        title: 'Custom Integrations',
+        href: '/admin/custom-integrations',
+        icon: Puzzle,
+        tier: 'ultimate'
+      }
+    ]
+  },
+
+  // 🚀 ENTERPRISE
+  {
+    title: 'Integrations',
+    items: [
+      {
         title: 'Integrations',
         href: '/admin/custom-integrations',
         icon: Puzzle,
@@ -814,19 +834,6 @@ export const navigationSections: NavSection[] = [
         icon: Webhook,
         tier: 'professional'
       },
-      {
-        title: 'API Access',
-        href: '/admin/api-access',
-        icon: Code,
-        tier: 'ultimate'
-      }
-    ]
-  },
-
-  // 🚀 ENTERPRISE
-  {
-    title: 'Enterprise',
-    items: [
       {
         title: 'Compliance',
         href: '/admin/compliance',
