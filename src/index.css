@@ -252,12 +252,12 @@ body.keyboard-open [data-radix-dialog-content] {
 
 /* Performance Optimizations */
 
-/* Respect user preference for reduced motion */
+/* Respect user preference for reduced motion - uses :root prefix for higher specificity */
 @media (prefers-reduced-motion: reduce) {
 
-  *,
-  *::before,
-  *::after {
+  :root *,
+  :root *::before,
+  :root *::after {
     animation-duration: 0.01ms;
     animation-iteration-count: 1;
     transition-duration: 0.01ms;
@@ -358,24 +358,24 @@ body.keyboard-open [data-radix-dialog-content] {
   }
 }
 
-/* Also apply optimizations when user prefers reduced motion */
+/* Also apply optimizations when user prefers reduced motion - uses :root prefix for higher specificity */
 @media (prefers-reduced-motion: reduce) {
 
-  .backdrop-blur-sm,
-  .backdrop-blur,
-  .backdrop-blur-md,
-  .backdrop-blur-lg,
-  .backdrop-blur-xl,
-  [class*="backdrop-blur"] {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+  :root .backdrop-blur-sm,
+  :root .backdrop-blur,
+  :root .backdrop-blur-md,
+  :root .backdrop-blur-lg,
+  :root .backdrop-blur-xl,
+  :root [class*="backdrop-blur"] {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
-  .blur-3xl,
-  .blur-2xl,
-  .blur-xl {
-    filter: none !important;
-    opacity: 0.2 !important;
+  :root .blur-3xl,
+  :root .blur-2xl,
+  :root .blur-xl {
+    filter: none;
+    opacity: 0.2;
   }
 }
 
@@ -1630,20 +1630,20 @@ body.keyboard-open [data-radix-dialog-content] {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  /* Reduced Motion Support */
+  /* Reduced Motion Support - uses :root prefix for higher specificity without !important */
   @media (prefers-reduced-motion: reduce) {
 
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
+    :root *,
+    :root *::before,
+    :root *::after {
+      animation-duration: 0.01ms;
+      animation-iteration-count: 1;
+      transition-duration: 0.01ms;
+      scroll-behavior: auto;
     }
 
-    .animate-on-scroll,
-    .stagger-children>* {
+    :root .animate-on-scroll,
+    :root .stagger-children>* {
       opacity: 1;
       transform: none;
       animation: none;
@@ -1757,22 +1757,24 @@ body.keyboard-open [data-radix-dialog-content] {
     }
   }
 
-  /* Touch device optimizations */
+  /* Touch device optimizations - uses :root prefix for higher specificity without !important */
   @media (hover: none) and (pointer: coarse) {
 
     /* Disable expensive animations on touch devices */
-    .animate-fade-in,
-    .animate-scale-in,
-    .animate-slide-in-right,
-    [class*="animate-"] {
-      animation: none !important;
+    :root .animate-fade-in,
+    :root .animate-scale-in,
+    :root .animate-slide-in-right,
+    :root [class*="animate-"] {
+      animation: none;
     }
 
     /* Reduce motion for better performance */
-    * {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
+    :root *,
+    :root *::before,
+    :root *::after {
+      animation-duration: 0.01ms;
+      animation-iteration-count: 1;
+      transition-duration: 0.01ms;
     }
 
     /* Better tap feedback */
