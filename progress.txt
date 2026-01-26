@@ -1,23 +1,39 @@
-﻿## Task: Remove CSS !important from src/index.css line 47
+﻿## Task: Remove CSS !important from reduced-motion rules by refactoring specificity
 
 ### What was done:
 
-**No changes required** - The task was to remove the `!important` flag from line 47 of `src/index.css` by refactoring specificity.
+1. **Refactored `src/index.css` to remove `!important` from reduced-motion and animation-related rules**:
 
-Upon investigation, line 47 already contains `overflow-y: auto;` without the `!important` flag:
+   - **Lines 255-265 (prefers-reduced-motion block)**: Added `:root` prefix to selectors for higher specificity
+     - Changed `*, *::before, *::after` to `:root *, :root *::before, :root *::after`
+     - Removed `!important` from animation-duration, animation-iteration-count, transition-duration
 
-```css
-body {
-  overflow-y: auto;  /* Line 47 - no !important present */
-  will-change: scroll-position;
-  -webkit-overflow-scrolling: touch;
-}
-```
+   - **Lines 361-380 (prefers-reduced-motion for blur effects)**: Added `:root` prefix
+     - Changed `.backdrop-blur-*` and `.blur-*` selectors to `:root .backdrop-blur-*` and `:root .blur-*`
+     - Removed `!important` from backdrop-filter, -webkit-backdrop-filter, filter, opacity
 
-The codebase is already in the desired state. The `!important` was previously removed in a related commit (`a9199832`) on a different branch, and the main branch already reflects this change.
+   - **Lines 1633-1651 (Reduced Motion Support in @layer utilities)**: Added `:root` prefix
+     - Changed universal selectors to `:root *`, `:root *::before`, `:root *::after`
+     - Removed `!important` from animation-duration, animation-iteration-count, transition-duration, scroll-behavior
+     - Changed `.animate-on-scroll` and `.stagger-children>*` to `:root .animate-on-scroll` and `:root .stagger-children>*`
+
+   - **Lines 1760-1794 (Touch device optimizations)**: Added `:root` prefix
+     - Changed animation class selectors to `:root .animate-*` and `:root [class*="animate-"]`
+     - Changed universal selector for motion reduction to `:root *`, `:root *::before`, `:root *::after`
+     - Removed `!important` from animation, animation-duration, animation-iteration-count, transition-duration
+
+### Technical Approach:
+
+The `:root` pseudo-class selector increases CSS specificity without affecting which elements are selected. When combined with other selectors:
+- `:root *` has higher specificity than `*` alone
+- `:root .class` has higher specificity than `.class` alone
+- This allows reduced-motion rules to override other animation rules without needing `!important`
 
 ### Files Changed:
-- None (task already complete in current codebase state)
+- `src/index.css` (4 blocks refactored)
+
+### Build Verification:
+- ✅ `npm run build` completed successfully with no errors
 
 ---
 
