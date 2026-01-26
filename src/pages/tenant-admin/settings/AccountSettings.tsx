@@ -35,17 +35,17 @@ export default function AccountSettings() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { save: saveName, status: nameStatus } = useAutoSave<string>({
-    onSave: async (newName) => {
-      const { data, error } = await supabase.functions.invoke('update-account-profile', {
-        body: { name: newName },
+  const { save: saveName, status: nameStatus } = useAutoSave<{ name: string }>({
+    onSave: async (data) => {
+      const { data: result, error } = await supabase.functions.invoke('update-account-profile', {
+        body: { name: data.name },
       });
 
       if (error) throw error;
 
       // Check for error in response body (edge functions can return 200 with error)
-      if (data && typeof data === 'object' && 'error' in data && data.error) {
-        throw new Error(typeof data.error === 'string' ? data.error : 'Failed to update profile');
+      if (result && typeof result === 'object' && 'error' in result && result.error) {
+        throw new Error(typeof result.error === 'string' ? result.error : 'Failed to update profile');
       }
     },
     onSuccess: () => {
@@ -59,7 +59,7 @@ export default function AccountSettings() {
 
   const handleNameChange = (value: string) => {
     setName(value);
-    saveName(value);
+    saveName({ name: value });
   };
 
   const handleAvatarClick = () => {

@@ -53,6 +53,8 @@ import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { SectionEditor } from '@/components/admin/storefront/SectionEditors';
+import type { Json } from '@/integrations/supabase/types';
 
 // Define available section types (8 total)
 const SECTION_TYPES = {
@@ -287,8 +289,7 @@ export function StorefrontBuilder() {
         queryKey: ['marketplace-settings', tenant?.id],
         queryFn: async (): Promise<MarketplaceStore> => {
             try {
-                // @ts-expect-error - marketplace_stores table may not be in generated types
-                const { data, error } = await supabase
+                const { data, error } = await (supabase as any)
                     .from('marketplace_stores')
                     .select('*')
                     .eq('tenant_id', tenant?.id)
@@ -365,8 +366,7 @@ export function StorefrontBuilder() {
 
         setIsValidatingSlug(true);
         try {
-            // @ts-expect-error - marketplace_stores table may not be in generated types
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('marketplace_stores')
                 .select('id')
                 .eq('slug', slug)
@@ -403,8 +403,7 @@ export function StorefrontBuilder() {
     // Create store mutation (deducts 500 credits)
     const createStoreMutation = useMutation({
         mutationFn: async (data: { storeName: string; slug: string }) => {
-            // @ts-expect-error - marketplace_stores table may not be in generated types
-            const { data: newStore, error } = await supabase
+            const { data: newStore, error } = await (supabase as any)
                 .from('marketplace_stores')
                 .insert({
                     tenant_id: tenant?.id,
@@ -468,12 +467,11 @@ export function StorefrontBuilder() {
     // Save draft mutation (saves without publishing)
     const saveDraftMutation = useMutation({
         mutationFn: async () => {
-            // @ts-expect-error - marketplace_stores table may not be in generated types
-            const { error } = await supabase
+            const { error } = await (supabase as any)
                 .from('marketplace_stores')
                 .update({
-                    layout_config: JSON.parse(JSON.stringify(layoutConfig)) as unknown,
-                    theme_config: themeConfig as unknown,
+                    layout_config: JSON.parse(JSON.stringify(layoutConfig)),
+                    theme_config: themeConfig,
                     updated_at: new Date().toISOString()
                 })
                 .eq('tenant_id', tenant?.id);
@@ -497,12 +495,11 @@ export function StorefrontBuilder() {
     // Publish mutation (makes store public)
     const publishMutation = useMutation({
         mutationFn: async () => {
-            // @ts-expect-error - marketplace_stores table may not be in generated types
-            const { error } = await supabase
+            const { error } = await (supabase as any)
                 .from('marketplace_stores')
                 .update({
-                    layout_config: JSON.parse(JSON.stringify(layoutConfig)) as unknown,
-                    theme_config: themeConfig as unknown,
+                    layout_config: JSON.parse(JSON.stringify(layoutConfig)),
+                    theme_config: themeConfig,
                     is_public: true,
                     updated_at: new Date().toISOString()
                 })
@@ -527,8 +524,7 @@ export function StorefrontBuilder() {
     // Unpublish mutation (returns store to draft)
     const unpublishMutation = useMutation({
         mutationFn: async () => {
-            // @ts-expect-error - marketplace_stores table may not be in generated types
-            const { error } = await supabase
+            const { error } = await (supabase as any)
                 .from('marketplace_stores')
                 .update({
                     is_public: false,
@@ -555,12 +551,11 @@ export function StorefrontBuilder() {
     // Deprecated - use saveDraftMutation or publishMutation instead
     const saveMutation = useMutation({
         mutationFn: async () => {
-            // @ts-expect-error - marketplace_stores table may not be in generated types
-            const { error } = await supabase
+            const { error } = await (supabase as any)
                 .from('marketplace_stores')
                 .update({
-                    layout_config: JSON.parse(JSON.stringify(layoutConfig)) as unknown,
-                    theme_config: themeConfig as unknown,
+                    layout_config: JSON.parse(JSON.stringify(layoutConfig)),
+                    theme_config: themeConfig,
                     updated_at: new Date().toISOString()
                 })
                 .eq('tenant_id', tenant?.id);
@@ -1190,9 +1185,9 @@ export function StorefrontBuilder() {
 
             {/* Out of Credits Modal */}
             <OutOfCreditsModal
-                isOpen={showOutOfCreditsModal}
-                onClose={closeOutOfCreditsModal}
-                blockedAction={blockedAction ?? undefined}
+                open={showOutOfCreditsModal}
+                onOpenChange={(open) => { if (!open) closeOutOfCreditsModal(); }}
+                actionAttempted={blockedAction ?? undefined}
             />
         </div>
     );

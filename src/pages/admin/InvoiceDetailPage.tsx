@@ -15,7 +15,8 @@ import {
     Printer,
     Trash2,
     Copy,
-    Ban
+    Ban,
+    FileText
 } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/utils/formatters";
