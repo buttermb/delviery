@@ -7699,59 +7699,38 @@ Added a multi-layer NODE_ENV check to prevent these dangerous flags from being e
 ### Files Changed:
 - `progress.txt` (this verification report)
 
----
+## Task: Remove ts-nocheck from VendorDashboardPage.tsx and fix types
 
-## Task: Add toast.error notification in mutation onError callback for save failures
+### Date: 2026-01-25
 
 ### What was done:
 
-1. **Added toast.error notifications to CRM hooks** (src/hooks/crm/):
-   - `useActivityLog.ts` - Added toast.error in useLogActivity() onError callback
-   
-2. **Added toast.error notifications to core hooks** (src/hooks/):
-   - `useActivityFeed.ts` - Added toast.error in logActivity mutation onError
-   - `useVotes.ts` - Added toast.error in useVote() onError callback
-   - `useBusinessTier.ts` - Added toast.error in setTierMutation and recalculateTierMutation onError callbacks
-   - `useCustomerTags.ts` - Added toast.error in all mutation onError callbacks:
-     - useCreateTag() 
-     - useUpdateTag()
-     - useDeleteTag()
-     - useAssignTag()
-     - useRemoveTag()
-     - useBatchAssignTags()
-   - `useFreeTierLimits.ts` - Added toast.error in incrementMutation onError
-   - `useKnownDevices.ts` - Added toast.error in all mutation onError callbacks:
-     - trustDeviceMutation
-     - untrustDeviceMutation
-     - removeDeviceMutation
-     - confirmAlertMutation
-   - `usePasswordReset.ts` - Added toast.error in requestResetMutation and confirmResetMutation onError callbacks
-   - `useEmailVerification.ts` - Added toast.error in verifyEmail and resendVerification mutation onError callbacks
+1. **Removed `@ts-nocheck` directive**
+   - File was using `// @ts-nocheck` to bypass TypeScript checking entirely
 
-### Pattern Used:
+2. **Added proper type imports**
+   - Imported `Database` type from `@/integrations/supabase/types`
+   - Created `MarketplaceOrderRow` type alias from the Supabase generated types
 
-All mutations now follow this consistent pattern:
-```typescript
-onError: (error: unknown) => {
-  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-  logger.error('Operation failed', error, { component: 'hookName' });
-  toast.error('User-friendly error message', { description: errorMessage });
-},
-```
+3. **Fixed `MarketplaceOrder` interface**
+   - Extended the base Supabase type instead of defining all fields manually
+   - Used `Pick<>` to select only the fields being used: `id`, `order_number`, `total_amount`, `created_at`
+   - Properly typed nullable fields (`status: string | null`, `payment_status: string | null`)
+   - Added `buyer_business_name` as optional field (exists in DB but not in generated types)
 
-### Files Changed:
-- `src/hooks/crm/useActivityLog.ts`
-- `src/hooks/useActivityFeed.ts`
-- `src/hooks/useVotes.ts`
-- `src/hooks/useBusinessTier.ts`
-- `src/hooks/useCustomerTags.ts`
-- `src/hooks/useFreeTierLimits.ts`
-- `src/hooks/useKnownDevices.ts`
-- `src/hooks/usePasswordReset.ts`
-- `src/hooks/useEmailVerification.ts`
+4. **Fixed null safety issues**
+   - Line 60: Fixed `activeStatuses.includes(o.status)` by checking `o.status` truthiness first
+   - Line 169: Changed `order.status.toUpperCase()` to `(order.status ?? 'unknown').toUpperCase()`
+   - Line 173: Changed `new Date(order.created_at)` to include null check with ternary
+
+### Technical Details:
+- The `marketplace_orders` table has `buyer_business_name` column in the database (per migrations)
+- The auto-generated `types.ts` doesn't include this field (likely out of sync)
+- Used type extension pattern to add the missing field without editing auto-generated types
 
 ### Verification:
-- `npm run build` - PASSES (0 TypeScript errors)
-- All toast imports are from 'sonner' as per codebase convention
-- Error messages include description for user context
+- `npx tsc --noEmit --skipLibCheck` - PASSES (0 errors)
+- `npm run build` - PASSES (0 errors)
 
+### Files Changed:
+- `src/pages/vendor/VendorDashboardPage.tsx` (removed ts-nocheck, added proper types, fixed null safety)
