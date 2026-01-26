@@ -114,8 +114,7 @@ interface PurchaseRecord {
 }
 
 export function CreditAnalyticsPage() {
-  const { tenant } = useTenantAdminAuth();
-  const tenantSlug = tenant?.slug || '';
+  const { tenant, tenantSlug } = useTenantAdminAuth();
   const navigate = useNavigate();
   const [purchaseModalOpen, setPurchaseModalOpen] = useState(false);
 
