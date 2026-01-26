@@ -7690,3 +7690,30 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+
+## Task: Update mobile preview from max-w-320px to max-w-375px
+
+### Location
+`src/components/admin/storefront/StorefrontSettingsLivePreview.tsx` line 62
+
+### What was found:
+The mobile preview width is already set to `max-w-[375px]` at line 62:
+
+```typescript
+case 'mobile':
+  return orientation === 'portrait' ? 'max-w-[375px]' : 'max-w-[568px]';
+```
+
+This change has already been implemented in the main branch. The 375px width corresponds to iPhone 6/7/8/SE dimensions, which is the most common mobile viewport for testing.
+
+### Verification:
+- Checked `StorefrontSettingsLivePreview.tsx` line 62: Already `max-w-[375px]`
+- Compared against main branch: Same value present
+- No changes needed - task already complete in codebase
+
+### Files Changed:
+- None (change already present)
+- `progress.txt` (this report)
