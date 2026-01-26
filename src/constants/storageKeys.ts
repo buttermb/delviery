@@ -104,6 +104,9 @@ export const STORAGE_KEYS = {
 
   // Credits
   INSUFFICIENT_CREDITS_DISMISSED: 'insufficient_credits_dismissed',
+
+  // Navigation
+  SCROLL_POSITIONS: 'scroll_positions',
 } as const;
 
 /**

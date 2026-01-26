@@ -29,6 +29,13 @@ export { useRealtimeSubscription } from './useRealtimeSubscription';
 // Toast Hook
 export { useToast, toast } from './use-toast';
 
+// Navigation Hooks
+export {
+  useScrollRestoration,
+  useSaveScrollPosition,
+  clearScrollPositions,
+} from './useScrollRestoration';
+
 
 
 
