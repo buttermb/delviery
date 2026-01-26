@@ -81,7 +81,7 @@ export function VendorManagement() {
         .order('name');
 
       if (error) throw error;
-      setVendors((data || []) as unknown as Vendor[]);
+      setVendors((data || []) as Vendor[]);
     } catch (error) {
       handleError(error, {
         component: 'VendorManagement.loadVendors',
@@ -121,7 +121,7 @@ export function VendorManagement() {
 
         const { error } = await (supabase as any)
           .from('vendors')
-          .update(formData as Record<string, unknown>)
+          .update(vendorData as Record<string, unknown>)
           .eq('id', editingVendor.id)
           .eq('account_id', tenant.id);
 
@@ -135,8 +135,8 @@ export function VendorManagement() {
         const { error } = await (supabase as any)
           .from('vendors')
           .insert({
-            ...formData,
-            tenant_id: tenant.id
+            ...vendorData,
+            account_id: tenant.id
           } as Record<string, unknown>);
 
         if (error) throw error;
