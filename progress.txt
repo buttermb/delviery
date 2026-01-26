@@ -3070,16 +3070,33 @@ verifying all 5 stat cards load with real data and their navigation links work c
 ### Files Changed:
 - `progress.txt` (this verification report)
 
----
+## Task: Update tablet preview from max-w-600px to max-w-768px
 
-## Task: Make Zip Code Input Responsive in Delivery Zones
+### Date: 2026-01-25
 
-### What was done:
+### Status: ALREADY COMPLETED
 
-1. **Updated `src/pages/admin/storefront/StorefrontSettings.tsx` line 845:**
-   - Changed `className="w-32"` to `className="w-full sm:w-32"` on the Zip code Input field
-   - This makes the input full-width on mobile devices (xs breakpoint) and 32 units (128px) on small screens and above
-   - Improves mobile responsiveness for the delivery zones section
+The tablet preview width in StorefrontSettingsLivePreview.tsx has already been updated from 600px to 768px.
 
-### Files Changed:
-- `src/pages/admin/storefront/StorefrontSettings.tsx` (line 845)
+### Verification:
+- Original value (commit 2b60c097): `max-w-[600px]` for tablet
+- Current value (line 64): `max-w-[768px]` for portrait, `max-w-[900px]` for landscape
+- The change was made in commit e843130a with additional orientation support
+
+### Current Implementation (line 59-68):
+```typescript
+const containerWidth = useMemo(() => {
+  switch (deviceMode) {
+    case 'mobile':
+      return orientation === 'portrait' ? 'max-w-[375px]' : 'max-w-[568px]';
+    case 'tablet':
+      return orientation === 'portrait' ? 'max-w-[768px]' : 'max-w-[900px]';
+    default:
+      return 'w-full';
+  }
+}, [deviceMode, orientation]);
+```
+
+### Files Verified:
+- `src/components/admin/storefront/StorefrontSettingsLivePreview.tsx` (no changes needed - already at 768px)
+
