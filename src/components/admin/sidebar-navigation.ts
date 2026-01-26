@@ -169,14 +169,9 @@ export const navigationSections: NavSection[] = [
         badge: 'HOT'
       },
       {
-        title: 'Inventory',
-        href: '/admin/inventory-hub',
-        icon: Package
-      },
-      {
-        title: 'Advanced Inventory',
-        href: '/admin/advanced-inventory',
-        icon: Database,
+        title: 'Live Orders',
+        href: '/admin/orders?tab=live',
+        icon: Activity,
         tier: 'professional'
       },
       {
@@ -203,6 +198,34 @@ export const navigationSections: NavSection[] = [
         tier: 'enterprise'
       },
       {
+        title: 'Bulk Operations',
+        href: '/admin/bulk-operations',
+        icon: Layers,
+        tier: 'professional'
+      },
+      {
+        title: 'Receiving & Packaging',
+        href: '/admin/operations/receiving',
+        icon: ClipboardList
+      }
+    ]
+  },
+
+  // 📦 INVENTORY
+  {
+    title: 'Inventory',
+    items: [
+      {
+        title: 'Inventory Hub',
+        href: '/admin/inventory-hub',
+        icon: Package
+      },
+      {
+        title: 'Stock Levels',
+        href: '/admin/inventory-hub?tab=stock',
+        icon: Boxes
+      },
+      {
         title: 'Stock Alerts',
         href: '/admin/stock-alerts',
         icon: AlertTriangle,
@@ -215,26 +238,9 @@ export const navigationSections: NavSection[] = [
         tier: 'professional'
       },
       {
-        title: 'Bulk Operations',
-        href: '/admin/bulk-operations',
-        icon: Layers,
-        tier: 'professional'
-      },
-      {
-        title: 'Receiving & Packaging',
-        href: '/admin/operations/receiving',
-        icon: ClipboardList
-      },
-      {
-        title: 'Locations',
-        href: '/admin/locations',
-        icon: Building2,
-        tier: 'professional'
-      },
-      {
-        title: 'Activity Logs',
-        href: '/admin/activity-logs',
-        icon: History,
+        title: 'Advanced Inventory',
+        href: '/admin/advanced-inventory',
+        icon: Database,
         tier: 'professional'
       }
     ]
