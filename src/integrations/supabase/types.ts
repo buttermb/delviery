@@ -11661,6 +11661,7 @@ export type Database = {
           responded_at: string | null
           secure_token: string | null
           severity: string | null
+          status: string | null
           user_id: string
           user_response: string | null
         }
@@ -11681,6 +11682,7 @@ export type Database = {
           responded_at?: string | null
           secure_token?: string | null
           severity?: string | null
+          status?: string | null
           user_id: string
           user_response?: string | null
         }
@@ -11701,6 +11703,7 @@ export type Database = {
           responded_at?: string | null
           secure_token?: string | null
           severity?: string | null
+          status?: string | null
           user_id?: string
           user_response?: string | null
         }
