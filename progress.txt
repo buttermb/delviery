@@ -7699,63 +7699,100 @@ Added a multi-layer NODE_ENV check to prevent these dangerous flags from being e
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Button Dark Mode Verification - 2026-01-25 21:26 UTC
+---
 
-### Task: In all Button components verify dark mode classes exist for visibility
+## Task: Create Zod validation schema for all StorefrontSettings fields with proper error messages
 
-### Analysis Performed:
-1. **Main Button Component** (`src/components/ui/button.tsx`)
-   - Reviewed all 7 variants: default, destructive, outline, secondary, ghost, link, hero, mobile
-   - The component uses CSS custom properties (CSS variables) from index.css that auto-switch in dark mode
-   - Identified that explicit `dark:` classes improve reliability and accessibility
+### What was done:
 
-2. **Custom Button Components Reviewed**:
-   - `src/components/ui/CopyButton.tsx` - Uses Button with ghost variant
-   - `src/components/ui/ExportButton.tsx` - Uses Button with outline variant (unchanged - uses Button properly)
-   - `src/components/ui/monitored-button.tsx` - Wraps Button component (unchanged - inherits from Button)
-   - `src/components/ui/ripple-button.tsx` - Custom button with ripple effect
-   - `src/components/ui/context-aware-support-button.tsx` - Uses Button with icon colors
-   - `src/components/ui/BulkActionsBar.tsx` - Uses Button variants (unchanged - uses Button properly)
-   - `src/components/ui/dialog-footer-actions.tsx` - Uses Button variants (unchanged - uses Button properly)
-   - `src/components/debug/ButtonHealthPanel.tsx` - Debug panel with colored indicators
+1. **Created `src/lib/utils/storefrontSettingsSchema.ts`** - Comprehensive Zod validation schema containing:
 
-### Changes Made:
+   **Regex Patterns:**
+   - `HEX_COLOR_REGEX` - Validates #RGB or #RRGGBB hex color codes
+   - `SLUG_REGEX` - URL-safe slugs (lowercase letters, numbers, hyphens)
+   - `TIME_REGEX` - 24-hour time format (HH:MM)
+   - `ZIP_CODE_REGEX` - US ZIP codes (5 digits or ZIP+4)
+   - `DOMAIN_REGEX` - Domain name format
+   - `GA4_ID_REGEX` - Google Analytics 4 measurement ID format
 
-1. **`src/components/ui/button.tsx`** - Added explicit dark mode classes for all variants:
-   - `default`: Added `dark:shadow-md dark:hover:shadow-lg`
-   - `destructive`: Added `dark:bg-destructive dark:text-destructive-foreground dark:hover:bg-destructive/80`
-   - `outline`: Added `text-foreground` and `dark:border-border dark:text-foreground dark:hover:bg-accent dark:hover:text-accent-foreground`
-   - `secondary`: Added `dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/70`
-   - `ghost`: Added `text-foreground` and `dark:text-foreground dark:hover:bg-accent dark:hover:text-accent-foreground`
-   - `link`: Added `dark:text-primary`
-   - `hero`: Added `dark:shadow-md dark:hover:shadow-lg`
-   - `mobile`: Added `dark:bg-primary dark:text-primary-foreground`
+   **Reusable Schema Components:**
+   - `hexColorSchema` - Color validation with case normalization
+   - `slugSchema` - URL slug validation (2-50 chars)
+   - `timeSchema` - Time format validation
+   - `optionalUrlSchema` - Optional URL fields
 
-2. **`src/components/ui/CopyButton.tsx`** - Added dark mode variant for check icon:
-   - Changed `text-green-500` to `text-green-500 dark:text-green-400` for better visibility
+   **Nested Object Schemas:**
+   - `deliveryZoneSchema` - ZIP code, fee, min_order validation
+   - `timeSlotSchema` - Label, start/end time, enabled status with end > start refinement
+   - `themeConfigSchema` - Theme type ('standard' | 'luxury') with optional colors
+   - `checkoutSettingsSchema` - 6 boolean checkout options
+   - `dailyHoursSchema` - Per-day open/close times with close > open refinement
+   - `operatingHoursSchema` - Full week of operating hours
+   - `purchaseLimitsSchema` - enabled, max_per_order, max_daily, max_weekly
 
-3. **`src/components/ui/context-aware-support-button.tsx`** - Added dark mode variants for icon colors:
-   - Question icon: `text-blue-500 dark:text-blue-400`
-   - Bug icon: `text-red-500 dark:text-red-400`
-   - Feature icon: `text-amber-500 dark:text-amber-400`
-   - Feedback icon: `text-green-500 dark:text-green-400`
+   **Main Schema (`storefrontSettingsSchema`):**
+   - **Identifiers**: id (UUID)
+   - **General**: store_name (2-100 chars), slug, encrypted_url_token, tagline (200 chars), description (2000 chars)
+   - **Visibility**: is_active, is_public, require_account, require_age_verification, minimum_age (18-99)
+   - **Branding**: logo_url, banner_url, favicon_url, primary_color, secondary_color, accent_color, font_family, theme_config
+   - **Delivery**: delivery_zones (max 100), time_slots (max 20), free_delivery_threshold, default_delivery_fee
+   - **Payments**: payment_methods (enum array, min 1), checkout_settings, purchase_limits
+   - **Hours**: operating_hours (full week record)
+   - **SEO**: meta_title (70 chars), meta_description (160 chars), og_image_url, ga4_measurement_id, custom_domain
+   - **Featured**: featured_product_ids (UUID array, max 20)
 
-4. **`src/components/debug/ButtonHealthPanel.tsx`** - Added dark mode variants for status indicators:
-   - Success icon/text: `text-green-600 dark:text-green-400`
-   - Error icon/text: `text-red-600 dark:text-red-400`
-   - Warning icon/text: `text-orange-600 dark:text-orange-400`
+   **Tab-Specific Partial Schemas:**
+   - `generalSettingsSchema` - General tab fields
+   - `brandingSettingsSchema` - Branding tab fields
+   - `deliverySettingsSchema` - Delivery settings tab
+   - `deliveryZonesSettingsSchema` - Zones tab
+   - `timeSlotsSettingsSchema` - Time slots tab
+   - `paymentSettingsSchema` - Payments tab
+   - `checkoutTabSettingsSchema` - Checkout & purchase limits
+   - `hoursSettingsSchema` - Operating hours tab
+   - `seoSettingsSchema` - SEO tab
+   - `featuredProductsSettingsSchema` - Featured products tab
 
-5. **`src/components/ui/ripple-button.tsx`** - Added JSDoc comment documenting ripple color behavior
+   **Type Exports:**
+   - `StorefrontSettings` - Full settings type
+   - `DeliveryZone`, `TimeSlot`, `ThemeConfig`, `CheckoutSettings`, `OperatingHours`, `PurchaseLimits`, `DailyHours`
 
-### Verification:
-- `npm run build` - PASSES (no TypeScript errors)
-- All button variants now have explicit dark mode classes for better visibility
-- The CSS variable system in index.css provides the underlying theme switching
-- Explicit dark: classes ensure visibility even if CSS variable priority varies
+   **Helper Functions:**
+   - `validateStorefrontSettings(data)` - Full validation with type-safe result
+   - `validateSettingsTab(schema, data)` - Tab-specific validation
+   - `getFieldErrors(zodError)` - Extract field -> error message map
+   - `validateField(field, value)` - Single field validation for real-time feedback
+
+2. **Updated `src/lib/utils/validation.ts`** - Added re-export of storefront settings schema
+
+### Error Messages:
+All fields include user-friendly error messages following existing patterns in `validationMessages.ts`:
+- Clear, actionable feedback (e.g., "Invalid color format. Use hex code like #10b981 or #fff")
+- Examples where helpful (e.g., "Invalid ZIP code format. Use 5 digits (e.g., 12345) or ZIP+4 (e.g., 12345-6789)")
+- Character limits shown (e.g., "Meta title should be 70 characters or less for optimal SEO")
+- Business rules explained (e.g., "At least one payment method must be enabled")
+
+### Usage Example:
+```typescript
+import {
+  storefrontSettingsSchema,
+  validateStorefrontSettings,
+  getFieldErrors,
+  generalSettingsSchema,
+  validateSettingsTab
+} from '@/lib/utils/validation';
+
+// Full validation
+const result = validateStorefrontSettings(formData);
+if (!result.success) {
+  const errors = getFieldErrors(result.errors);
+  // errors = { 'store_name': 'Store name must be at least 2 characters', ... }
+}
+
+// Tab-specific validation
+const tabResult = validateSettingsTab(generalSettingsSchema, tabData);
+```
 
 ### Files Changed:
-- `src/components/ui/button.tsx`
-- `src/components/ui/CopyButton.tsx`
-- `src/components/ui/context-aware-support-button.tsx`
-- `src/components/debug/ButtonHealthPanel.tsx`
-- `src/components/ui/ripple-button.tsx`
+- `src/lib/utils/storefrontSettingsSchema.ts` (new - comprehensive validation schema)
+- `src/lib/utils/validation.ts` (updated - re-export storefront schema)
