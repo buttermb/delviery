@@ -54,31 +54,31 @@ export default function MarketingHubPage() {
     }, [setSearchParams]);
 
     return (
-        <div className="space-y-0">
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                {/* Header - Sticky Tabs */}
-                <div className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur-sm px-4 pt-4 pb-0">
+        <div className="min-h-0 bg-background flex flex-col -m-3 sm:-m-4 md:-m-6" style={{ height: 'calc(100vh - 56px)' }}>
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full flex-1 min-h-0 flex flex-col">
+                {/* Header - Fixed Tabs */}
+                <div className="border-b bg-card px-4 py-4 shrink-0">
                     <HubBreadcrumbs
                         hubName="marketing-hub"
                         hubHref="marketing-hub"
                         currentTab={tabs.find(t => t.id === activeTab)?.label}
                     />
-                    <div className="overflow-x-auto pb-4 scrollbar-hide">
-                        <TabsList className="inline-flex min-w-max gap-1 bg-transparent p-0">
+                    <div className="overflow-x-auto">
+                        <TabsList className="inline-flex min-w-max gap-0.5">
                             {tabs.map((tab, index) => {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
                                 const showSeparator = prevTab && prevTab.group !== tab.group;
                                 return (
                                     <div key={tab.id} className="flex items-center">
                                         {showSeparator && (
-                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-2" />
+                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
                                         )}
                                         <TabsTrigger
                                             value={tab.id}
-                                            className="flex items-center gap-2 rounded-full border border-transparent px-4 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 transition-all hover:bg-muted"
+                                            className="flex items-center gap-2"
                                         >
                                             <tab.icon className="h-4 w-4" />
-                                            <span className="hidden sm:inline font-medium">{tab.label}</span>
+                                            <span className="hidden md:inline">{tab.label}</span>
                                         </TabsTrigger>
                                     </div>
                                 );
@@ -87,40 +87,43 @@ export default function MarketingHubPage() {
                     </div>
                 </div>
 
-                {/* Loyalty Tab */}
-                <TabsContent value="loyalty" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <LoyaltyProgramPage />
-                    </Suspense>
-                </TabsContent>
+                {/* Tab Content - Scrollable */}
+                <div className="flex-1 min-h-0 overflow-auto">
+                    {/* Loyalty Tab */}
+                    <TabsContent value="loyalty" className="m-0 h-full">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <LoyaltyProgramPage />
+                        </Suspense>
+                    </TabsContent>
 
-                {/* Coupons Tab */}
-                <TabsContent value="coupons" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <CouponManagementPage />
-                    </Suspense>
-                </TabsContent>
+                    {/* Coupons Tab */}
+                    <TabsContent value="coupons" className="m-0 h-full">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <CouponManagementPage />
+                        </Suspense>
+                    </TabsContent>
 
-                {/* Reviews Tab */}
-                <TabsContent value="reviews" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <ReviewsPage />
-                    </Suspense>
-                </TabsContent>
+                    {/* Reviews Tab */}
+                    <TabsContent value="reviews" className="m-0 h-full">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <ReviewsPage />
+                        </Suspense>
+                    </TabsContent>
 
-                {/* Campaigns Tab */}
-                <TabsContent value="campaigns" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <MarketingAutomationPage />
-                    </Suspense>
-                </TabsContent>
+                    {/* Campaigns Tab */}
+                    <TabsContent value="campaigns" className="m-0 h-full">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <MarketingAutomationPage />
+                        </Suspense>
+                    </TabsContent>
 
-                {/* Live Chat Tab */}
-                <TabsContent value="live-chat" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <AdminLiveChat />
-                    </Suspense>
-                </TabsContent>
+                    {/* Live Chat Tab */}
+                    <TabsContent value="live-chat" className="m-0 h-full">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <AdminLiveChat />
+                        </Suspense>
+                    </TabsContent>
+                </div>
             </Tabs>
         </div>
     );
