@@ -21,6 +21,7 @@ import {
   CRITICAL_CREDIT_THRESHOLD,
   FREE_TIER_MONTHLY_CREDITS,
   LOW_BALANCE_WARNING_LEVELS,
+  CREDIT_WARNING_THRESHOLDS,
   type CreditBalance,
   type ConsumeCreditsResult,
 } from '@/lib/credits';
@@ -118,31 +119,9 @@ const RATE_LIMIT = {
   windowMs: 60 * 1000, // 1 minute
 };
 
-// ============================================================================
-// Edge Function Fetcher
-// ============================================================================
-
-async function fetchCreditsBalance(tenantId: string): Promise<CreditsBalanceResponse> {
-  const { data, error } = await supabase.functions.invoke('credits-balance', {
-    body: { tenant_id: tenantId },
-  });
-
-  if (error) {
-    logger.error('Failed to fetch credits balance from edge function', error, { tenantId });
-    throw new Error(error.message || 'Failed to fetch credit balance');
-  }
-
-  if (!data) {
-    throw new Error('No data returned from credits-balance');
-  }
-
-  return data as CreditsBalanceResponse;
-}
-
-// ============================================================================
-// Warning Messages
-// ============================================================================
-
+/**
+ * Get warning message based on threshold level
+ */
 function getWarningMessage(threshold: number, balance: number): { title: string; description: string } | null {
   switch (threshold) {
     case 2000:
@@ -170,26 +149,13 @@ function getWarningMessage(threshold: number, balance: number): { title: string;
   }
 }
 
-// ============================================================================
-// Hook Implementation
-// ============================================================================
-
-// Safe wrapper to get tenant without throwing
-function useTenantSafe() {
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const context = useTenantAdminAuth();
-    return context.tenant;
-  } catch {
-    return null;
-  }
-}
-
 export function useCredits(): UseCreditsReturn {
   const tenant = useTenantSafe();
   const queryClient = useQueryClient();
   const [showWarning, setShowWarning] = useState(false);
+  // Track which warning thresholds have been shown to avoid duplicates
   const [shownWarningThresholds, setShownWarningThresholds] = useState<Set<number>>(new Set());
+  // RACE CONDITION FIX: Track in-flight actions to prevent double-execution
   const [inFlightActions, setInFlightActions] = useState<Set<string>>(new Set());
   const [recentOperations, setRecentOperations] = useState<number[]>([]);
 
@@ -301,31 +267,37 @@ export function useCredits(): UseCreditsReturn {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLowCredits, showWarning, tenantId]);
 
-  // Show progressive low balance warnings
+  // Show progressive low balance warnings at 2000, 1000, 500, 100 credits
   useEffect(() => {
     if (!tenantId || !isFreeTier || isLoading) return;
 
+    // Check each warning level threshold
     for (const threshold of LOW_BALANCE_WARNING_LEVELS) {
+      // Skip if we've already shown this warning
       if (shownWarningThresholds.has(threshold)) continue;
 
+      // Show warning if balance just dropped to or below this threshold
       if (balance <= threshold) {
         setShownWarningThresholds(prev => new Set(prev).add(threshold));
         trackCreditEvent(tenantId, `low_balance_warning_${threshold}`, balance);
 
+        // Show appropriate toast based on threshold severity
         const warningMessage = getWarningMessage(threshold, balance);
         if (warningMessage) {
           toast.warning(warningMessage.title, {
             description: warningMessage.description,
-            duration: threshold <= 500 ? 8000 : 5000,
+            duration: threshold <= 500 ? 8000 : 5000, // Longer duration for critical warnings
             action: threshold <= 500 ? {
               label: 'Buy Credits',
               onClick: () => {
+                // This will be handled by the CreditContext opening the modal
                 logger.info('Low balance warning: Buy Credits clicked', { threshold, balance });
               },
             } : undefined,
           });
         }
 
+        // Only show one warning per balance check
         break;
       }
     }
