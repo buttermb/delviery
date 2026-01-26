@@ -3072,26 +3072,43 @@ verifying all 5 stat cards load with real data and their navigation links work c
 
 ---
 
-## Task: StorefrontBuilder width calc to w-full
+## Task: Add useMutation to persist Disposable Menu status changes in SmartDashboard.tsx
 
 ### What was done:
 
-1. **Modified \ line 31**:
-   - Changed inline style \ to Tailwind class " >> progress.txt && echo  - Before: "
-   - After: " >> progress.txt && echo  >> progress.txt && echo ### Files Changed: >> progress.txt && echo - "
+1. **Fixed `useMenuOrders` hook calls to include `tenantId` parameter**:
 
+   The `useMenuOrders` hook was being called without the required `tenantId` parameter in two places:
+   - In `SmartDashboard` component at line 503
+   - In `OrdersTab` component at line 123
 
----
+   This caused the query to always return an empty array since the hook has `enabled: !!tenantId` which was evaluating to `false`.
 
-## Task: StorefrontBuilder width calc to w-full
+2. **Updated `OrdersTab` component to accept `tenantId` prop**:
+   - Changed function signature from `function OrdersTab()` to `function OrdersTab({ tenantId }: { tenantId?: string })`
+   - Updated `useMenuOrders` call to pass `tenantId`: `useMenuOrders(undefined, tenantId)`
+   - The existing `useUpdateOrderStatus` mutation was already properly implemented and working
 
-### What was done:
+3. **Updated `SmartDashboard` to pass `tenantId` to child components**:
+   - Updated `useMenuOrders()` call to include tenant ID: `useMenuOrders(undefined, tenant?.id)`
+   - Updated `<OrdersTab />` to pass the prop: `<OrdersTab tenantId={tenant?.id} />`
 
-1. **Modified `src/pages/admin/storefront/StorefrontBuilder.tsx` line 31**:
-   - Changed inline style `width: 'calc(100% + 1.5rem)'` to Tailwind class `w-full`
-   - Before: `style={{ height: 'calc(100vh - 56px)', width: 'calc(100% + 1.5rem)' }}`
-   - After: `className="... w-full" style={{ height: 'calc(100vh - 56px)' }}`
+4. **Verified the `useUpdateOrderStatus` mutation is correctly implemented**:
+   - Already uses TanStack Query `useMutation`
+   - Updates order status in `menu_orders` table via Supabase
+   - Invalidates `['menu-orders']` query cache on success
+   - Shows success/error toasts
+   - Called at line 284 when order status is changed in the Kanban board
+
+### Technical Details:
+
+The mutation flow now works as follows:
+1. User clicks "Confirm" or "Reject" button on an order in the Kanban board
+2. `onStatusChange` callback is triggered with `orderId` and new `status`
+3. `updateOrderStatus.mutate({ orderId: id, status })` is called
+4. Supabase updates the `menu_orders` table
+5. Query cache is invalidated, triggering a refetch
+6. Success toast is shown to user
 
 ### Files Changed:
-- `src/pages/admin/storefront/StorefrontBuilder.tsx`
-
+- `src/components/admin/disposable-menus/SmartDashboard.tsx` (modified - 3 edits)
