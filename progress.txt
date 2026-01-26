@@ -1958,13 +1958,19 @@ Added `.catch()` error handlers to all unhandled `.then()` Promise chains to pre
 
 ---
 
-## Task: Remove !important flag from src/index.css line 96
+## Task: Fix BuilderPreview desktop width to 100% maxWidth 1200px
 
-### Change Made:
-- Removed `!important` flag from `overflow-x: hidden !important;` on line 96 of `src/index.css`
-- This line is within the mobile media query `@media (max-width: 1024px)` that prevents horizontal scrolling on mobile
-- Changed from: `overflow-x: hidden !important;`
-- Changed to: `overflow-x: hidden;`
+### Verification:
 
-### Files Changed:
-- `src/index.css` (line 96)
+Verified that BuilderPreview.tsx line 38 already has the correct desktop width settings:
+
+```typescript
+default: return { width: '100%', maxWidth: '1200px', transform: `scale(${previewZoom})`, transformOrigin: 'top center' };
+```
+
+The fix was already applied in commit e843130a (feat: batch improvements). No changes needed.
+
+### Files:
+- `src/pages/admin/storefront/builder/BuilderPreview.tsx:38` - Already correct
+
+### Status: ALREADY COMPLETE
