@@ -391,20 +391,6 @@ export function ProductCatalogPage() {
     return Array.from(cats).sort();
   }, [products]);
 
-  // Get unique strain types from products
-  const strainTypes = useMemo(() => {
-    const types = new Set<string>();
-    products.forEach((p) => {
-      if (p.strain_type) types.add(p.strain_type);
-    });
-    return Array.from(types).sort();
-  }, [products]);
-
-  // Calculate max price from products
-  const maxPrice = useMemo(() => {
-    return Math.max(...products.map((p) => p.display_price), 1000);
-  }, [products]);
-
   // Clear all filters
   const clearFilters = () => {
     setSearchQuery('');
@@ -421,7 +407,20 @@ export function ProductCatalogPage() {
 
   const hasActiveFilters = searchQuery || selectedCategory || selectedStrainTypes.length > 0 || inStockOnly || thcRange[0] > 0 || thcRange[1] < 100 || cbdRange[0] > 0 || cbdRange[1] < 100;
 
-  // Early return AFTER all hooks have been called
+  // Get unique strain types from products
+  const strainTypes = useMemo(() => {
+    const types = new Set<string>();
+    products.forEach((p) => {
+      if (p.strain_type) types.add(p.strain_type);
+    });
+    return Array.from(types).sort();
+  }, [products]);
+
+  // Calculate max price from products
+  const maxPrice = useMemo(() => {
+    return Math.max(...products.map((p) => p.display_price), 1000);
+  }, [products]);
+
   if (!store) return null;
 
   // Filter state for FilterDrawer
@@ -438,7 +437,6 @@ export function ProductCatalogPage() {
     setPriceRange(newFilters.priceRange);
     setSortBy(newFilters.sortBy);
   };
-
 
   return (
     <div className="container mx-auto px-4 py-8">
