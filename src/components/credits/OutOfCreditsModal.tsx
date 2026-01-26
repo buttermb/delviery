@@ -70,8 +70,7 @@ export function OutOfCreditsModal({
   onSetupAutoTopUp,
 }: OutOfCreditsModalProps) {
   const navigate = useNavigate();
-  const { tenant } = useTenantAdminAuth();
-  const tenantSlug = tenant?.slug || '';
+  const { tenant, tenantSlug } = useTenantAdminAuth();
   const { lifetimeSpent, balance } = useCredits();
 
   // Get action info if provided
