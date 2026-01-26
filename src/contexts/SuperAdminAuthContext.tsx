@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 import { resilientFetch, ErrorCategory, getErrorMessage, initConnectionMonitoring, onConnectionStatusChange, type ConnectionStatus } from "@/lib/utils/networkResilience";
 import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLogger";
+import { performFullLogout } from "@/lib/utils/authHelpers";
 
 interface SuperAdmin {
   id: string;
@@ -308,14 +309,13 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       authFlowLogger.failFlow(flowId, error, category);
       logger.error("Logout error", error);
     } finally {
-      // Clear local React state
+      // Perform complete state cleanup (encryption, Supabase, storage, query cache)
+      await performFullLogout();
+
+      // Clear context-specific React state
       setToken(null);
       setSuperAdmin(null);
       setSupabaseSession(null);
-      safeStorage.removeItem(SUPABASE_SESSION_KEY);
-
-      // Comprehensive cleanup: encryption, query cache, storage
-      performLogoutCleanup({ queryClient, tier: 'super_admin' });
     }
   };
 

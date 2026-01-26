@@ -1,27 +1,10 @@
 import { logger } from '@/lib/logger';
-import { logAuth, logAuthError } from '@/lib/debug/logger';
-import { createContext, useContext, useEffect, useState, useRef, useCallback, ReactNode } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { performLogoutCleanup } from '@/lib/auth/logoutCleanup';
-import { tokenRefreshManager } from '@/lib/auth/tokenRefreshManager';
-
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-interface SignupCredentials {
-  email: string;
-  password: string;
-  metadata?: Record<string, unknown>;
-}
-
-interface AuthResult {
-  success: boolean;
-  error?: string;
-}
+import { logAuth, logAuthWarn, logAuthError } from '@/lib/debug/logger';
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { User, Session } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import { clientEncryption } from "@/lib/encryption/clientEncryption";
+import { performFullLogout } from "@/lib/utils/authHelpers";
 
 interface AuthContextType {
   user: User | null;
@@ -196,107 +179,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = useCallback(async (credentials: LoginCredentials): Promise<AuthResult> => {
     try {
-      logAuth('Login attempt', { email: credentials.email, source: 'AuthContext' });
-      logger.info('[AuthContext] Login attempt', { email: credentials.email });
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: credentials.email,
-        password: credentials.password,
-      });
-
-      if (error) {
-        logAuthError('Login failed', {
-          error: error.message,
-          email: credentials.email,
-          source: 'AuthContext'
-        });
-        logger.warn('[AuthContext] Login failed', { error: error.message, email: credentials.email });
-        return { success: false, error: error.message };
-      }
-
-      logAuth('Login successful', {
-        userId: data.user?.id,
-        email: data.user?.email,
-        source: 'AuthContext'
-      });
-      logger.info('[AuthContext] Login successful', { userId: data.user?.id });
-      return { success: true };
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'An unexpected error occurred';
-      logAuthError('Login exception', { error: errorMsg, source: 'AuthContext' });
-      logger.error('[AuthContext] Login exception', err instanceof Error ? err : new Error(errorMsg));
-      return { success: false, error: errorMsg };
-    }
-  }, []);
-
-  const signup = useCallback(async (credentials: SignupCredentials): Promise<AuthResult> => {
-    try {
-      logAuth('Signup attempt', { email: credentials.email, source: 'AuthContext' });
-      logger.info('[AuthContext] Signup attempt', { email: credentials.email });
-
-      const { data, error } = await supabase.auth.signUp({
-        email: credentials.email,
-        password: credentials.password,
-        options: credentials.metadata ? { data: credentials.metadata } : undefined,
-      });
-
-      if (error) {
-        logAuthError('Signup failed', {
-          error: error.message,
-          email: credentials.email,
-          source: 'AuthContext'
-        });
-        logger.warn('[AuthContext] Signup failed', { error: error.message, email: credentials.email });
-        return { success: false, error: error.message };
-      }
-
-      // Check if email confirmation is required
-      if (data.user && !data.session) {
-        logAuth('Signup successful - email confirmation required', {
-          userId: data.user.id,
-          email: data.user.email,
-          source: 'AuthContext'
-        });
-        logger.info('[AuthContext] Signup successful, confirmation required', { userId: data.user.id });
-        return { success: true };
-      }
-
-      logAuth('Signup successful', {
-        userId: data.user?.id,
-        email: data.user?.email,
-        source: 'AuthContext'
-      });
-      logger.info('[AuthContext] Signup successful', { userId: data.user?.id });
-      return { success: true };
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'An unexpected error occurred';
-      logAuthError('Signup exception', { error: errorMsg, source: 'AuthContext' });
-      logger.error('[AuthContext] Signup exception', err instanceof Error ? err : new Error(errorMsg));
-      return { success: false, error: errorMsg };
-    }
-  }, []);
-
-  const logout = useCallback(async () => {
-    try {
-      logAuth('Logout initiated', {
+      logAuth('Sign out initiated', {
         userId: user?.id,
         userEmail: user?.email,
         source: 'AuthContext'
       });
-      logger.info('[AuthContext] Logout initiated', { userId: user?.id });
 
-      await supabase.auth.signOut();
+      // Perform complete state cleanup (encryption, Supabase, storage, query cache)
+      await performFullLogout();
+
+      // Clear context-specific React state
       setUser(null);
       setSession(null);
 
-      // Reset token refresh manager state
-      tokenRefreshManager.reset('auth-context');
-
-      // Comprehensive cleanup: encryption, query cache, storage
-      performLogoutCleanup({ queryClient, tier: 'base' });
-
-      logAuth('Logout completed', { source: 'AuthContext' });
-      logger.info('[AuthContext] Logout completed');
+      logAuth('Sign out completed', { source: 'AuthContext' });
     } catch (error) {
       logAuthError('Logout failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
