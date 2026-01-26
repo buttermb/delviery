@@ -1,4 +1,40 @@
-﻿## Task: Test Credit Consumption Flow
+﻿## Task: Persist collapsed section state to localStorage per section in SidebarContext.tsx
+
+### What was done:
+
+1. **Updated `src/hooks/useSidebarPreferences.ts`**:
+   - Added import for `STORAGE_KEYS`, `safeStorage`, `safeJsonParse`, and `safeJsonStringify` from `@/constants/storageKeys`
+   - Added `getCollapsedSectionsFromStorage()` helper function to read collapsed sections from localStorage with safe fallback to empty array
+   - Added `saveCollapsedSectionsToStorage()` helper function to persist collapsed sections to localStorage
+   - Modified query to use localStorage collapsed sections as placeholder data for instant initial render
+   - Modified query fallbacks to use localStorage collapsed sections when tenant/user is not available or on error
+   - Added sync from database to localStorage when database preferences are successfully fetched
+   - Modified `toggleCollapsedSectionMutation.onMutate` to persist to localStorage immediately (optimistic update)
+   - Added localStorage restoration in `onError` handler to rollback on mutation failure
+
+### How it works:
+
+- **Fast initial load**: Uses `STORAGE_KEYS.SIDEBAR_COLLAPSED_SECTIONS` from localStorage for instant render before database fetch completes
+- **Database sync**: When database preferences load, collapsed sections are synced to localStorage for future fast loads
+- **Optimistic localStorage updates**: When toggling a section, localStorage is updated immediately alongside the optimistic React Query cache update
+- **Error recovery**: If the database mutation fails, localStorage is restored to the previous state
+- **Offline support**: Works without database connection using localStorage as fallback
+
+### Acceptance Criteria Met:
+- [x] Collapsed section state is persisted to localStorage per section
+- [x] Uses `STORAGE_KEYS.SIDEBAR_COLLAPSED_SECTIONS` from storageKeys.ts
+- [x] Uses `safeStorage` and `safeJsonParse/safeJsonStringify` for safe localStorage access
+- [x] localStorage serves as fast initial data source before database load
+- [x] Database preferences are synced to localStorage when fetched
+- [x] Build passes with no TypeScript errors
+- [x] Existing toggle collapsed section test passes
+
+### Files Changed:
+- `src/hooks/useSidebarPreferences.ts` (modified)
+
+---
+
+## Task: Test Credit Consumption Flow
 
 ### What was done:
 

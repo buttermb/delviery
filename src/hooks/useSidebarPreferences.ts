@@ -1,8 +1,10 @@
 import { logger } from '@/lib/logger';
 /**
  * useSidebarPreferences Hook
- * 
- * Manages user sidebar preferences with React Query and optimistic updates
+ *
+ * Manages user sidebar preferences with React Query and optimistic updates.
+ * Collapsed sections are persisted to both localStorage (for fast initial load)
+ * and the database (for cross-device sync).
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -11,10 +13,27 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import type { SidebarPreferences } from '@/types/sidebar';
 import { toast } from 'sonner';
+import { STORAGE_KEYS, safeStorage, safeJsonParse, safeJsonStringify } from '@/constants/storageKeys';
 
 /**
- * Default sidebar preferences
+ * Get collapsed sections from localStorage
+ * Falls back to empty array if not found or invalid
  */
+function getCollapsedSectionsFromStorage(): string[] {
+  const stored = safeStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED_SECTIONS);
+  return safeJsonParse<string[]>(stored, []);
+}
+
+/**
+ * Save collapsed sections to localStorage
+ */
+function saveCollapsedSectionsToStorage(sections: string[]): void {
+  const json = safeJsonStringify(sections);
+  if (json) {
+    safeStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED_SECTIONS, json);
+  }
+}
+
 /**
  * Default sidebar preferences
  */
@@ -47,11 +66,20 @@ export function useSidebarPreferences() {
   const queryClient = useQueryClient();
 
 
+  // Get initial collapsed sections from localStorage for fast initial render
+  const localStorageCollapsedSections = useRef<string[]>(getCollapsedSectionsFromStorage());
+
   // Fetch preferences
   const { data: preferences, isLoading } = useQuery({
     queryKey: ['sidebar-preferences', tenant?.id, admin?.userId],
     queryFn: async (): Promise<SidebarPreferences> => {
-      if (!tenant?.id) return DEFAULT_PREFERENCES;
+      if (!tenant?.id) {
+        // Return defaults with localStorage collapsed sections for fast initial render
+        return {
+          ...DEFAULT_PREFERENCES,
+          collapsedSections: localStorageCollapsedSections.current,
+        };
+      }
 
       // Get auth user ID with defensive fallback
       let userId = admin?.userId;
@@ -60,7 +88,12 @@ export function useSidebarPreferences() {
         userId = session?.user?.id;
       }
 
-      if (!userId) return DEFAULT_PREFERENCES;
+      if (!userId) {
+        return {
+          ...DEFAULT_PREFERENCES,
+          collapsedSections: localStorageCollapsedSections.current,
+        };
+      }
 
       const { data, error } = await (supabase as any)
         .from('sidebar_preferences')
@@ -71,19 +104,32 @@ export function useSidebarPreferences() {
 
       if (error) {
         logger.error('Failed to fetch sidebar preferences', error, { component: 'useSidebarPreferences' });
-        return DEFAULT_PREFERENCES;
+        // Fallback to localStorage collapsed sections on error
+        return {
+          ...DEFAULT_PREFERENCES,
+          collapsedSections: localStorageCollapsedSections.current,
+        };
       }
 
       if (!data) {
-        return DEFAULT_PREFERENCES;
+        // No database record, use localStorage collapsed sections
+        return {
+          ...DEFAULT_PREFERENCES,
+          collapsedSections: localStorageCollapsedSections.current,
+        };
       }
 
       // Parse JSONB fields with safe defaults
+      const dbCollapsedSections = ((data as any).collapsed_sections as string[]) || [];
+
+      // Sync database collapsed sections to localStorage for future fast loads
+      saveCollapsedSectionsToStorage(dbCollapsedSections);
+
       return {
         operationSize: (data as any).operation_size as SidebarPreferences['operationSize'],
         customLayout: (data as any).custom_layout || false,
         favorites: ((data as any).favorites as string[]) || [],
-        collapsedSections: ((data as any).collapsed_sections as string[]) || [],
+        collapsedSections: dbCollapsedSections,
         pinnedItems: ((data as any).pinned_items as string[]) || [],
         lastAccessedFeatures: ((data as any).last_accessed_features as SidebarPreferences['lastAccessedFeatures']) || [],
         hiddenFeatures: ((data as any).hidden_features as string[]) || [],
@@ -99,6 +145,11 @@ export function useSidebarPreferences() {
     enabled: !!tenant?.id,
     staleTime: 1000, // Reduce cache time for faster updates
     refetchOnMount: 'always', // Always fetch fresh data on mount
+    // Use localStorage collapsed sections as placeholder data for instant render
+    placeholderData: {
+      ...DEFAULT_PREFERENCES,
+      collapsedSections: localStorageCollapsedSections.current,
+    },
   });
 
   // Auto-patch missing integrations for existing users (run only once per session)
@@ -253,14 +304,23 @@ export function useSidebarPreferences() {
       await queryClient.cancelQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.userId] });
       const previous = queryClient.getQueryData<SidebarPreferences>(['sidebar-preferences', tenant?.id, admin?.userId]);
 
+      // Calculate new collapsed sections
+      const current = previous || DEFAULT_PREFERENCES;
+      const newCollapsed = current.collapsedSections.includes(sectionName)
+        ? current.collapsedSections.filter(name => name !== sectionName)
+        : [...current.collapsedSections, sectionName];
+
+      // Persist to localStorage immediately for fast future loads
+      saveCollapsedSectionsToStorage(newCollapsed);
+
       queryClient.setQueryData<SidebarPreferences>(
         ['sidebar-preferences', tenant?.id, admin?.userId],
         (old) => {
-          const current = old || DEFAULT_PREFERENCES;
-          const newCollapsed = current.collapsedSections.includes(sectionName)
-            ? current.collapsedSections.filter(name => name !== sectionName)
-            : [...current.collapsedSections, sectionName];
-          return { ...current, collapsedSections: newCollapsed };
+          const curr = old || DEFAULT_PREFERENCES;
+          const collapsed = curr.collapsedSections.includes(sectionName)
+            ? curr.collapsedSections.filter(name => name !== sectionName)
+            : [...curr.collapsedSections, sectionName];
+          return { ...curr, collapsedSections: collapsed };
         }
       );
 
@@ -272,6 +332,8 @@ export function useSidebarPreferences() {
           ['sidebar-preferences', tenant?.id, admin?.userId],
           context.previous
         );
+        // Restore localStorage to previous state on error
+        saveCollapsedSectionsToStorage(context.previous.collapsedSections);
       }
       logger.error('Failed to toggle collapsed section', error, { component: 'useSidebarPreferences' });
     },
