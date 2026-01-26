@@ -2,6 +2,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 
 interface VerifyEmailResponse {
   success: boolean;
@@ -32,17 +33,9 @@ export function useEmailVerification() {
         throw new Error('No verification token provided');
       }
 
-      setResult(data);
-      return data;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Verification failed';
-      setError(errorMessage);
-      logger.error('Email verification error', err);
-      return null;
-    } finally {
-      setIsVerifying(false);
-    }
-  }, [options.checkMx, options.checkDisposable]);
+      const { data, error } = await supabase.functions.invoke('auth-verify-email', {
+        body: { token: tokenToUse },
+      });
 
       if (error) {
         throw new Error(error.message || 'Email verification failed');

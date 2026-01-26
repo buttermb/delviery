@@ -853,35 +853,34 @@ export function StorefrontBuilder() {
 
             <div className="flex flex-1 min-h-0 overflow-hidden">
                 {/* Left Sidebar */}
-                <BuilderLeftPanel
-                    activeTab={builder.activeTab}
-                    setActiveTab={builder.setActiveTab}
-                    layoutConfig={builder.layoutConfig}
-                    setLayoutConfig={builder.setLayoutConfig}
-                    themeConfig={builder.themeConfig}
-                    setThemeConfig={builder.setThemeConfig}
-                    selectedSectionId={builder.selectedSectionId}
-                    onAddSection={builder.addSection}
-                    onSelectSection={builder.handleSelectSection}
-                    onRemoveSection={builder.requestRemoveSection}
-                    onDuplicateSection={builder.duplicateSection}
-                    onToggleVisibility={builder.toggleVisibility}
-                    onApplyTemplate={builder.applyTemplate}
-                    saveToHistory={builder.saveToHistory}
-                />
+                <div className="w-64 bg-background border-r flex flex-col shrink-0 z-10">
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1">
+                        <TabsList className="mx-4 mt-4 mb-2 grid grid-cols-3">
+                            <TabsTrigger value="sections" className="text-xs">Sections</TabsTrigger>
+                            <TabsTrigger value="theme" className="text-xs">Theme</TabsTrigger>
+                            <TabsTrigger value="templates" className="text-xs">Templates</TabsTrigger>
+                        </TabsList>
 
-                {/* Center Preview */}
-                <BuilderPreview
-                    store={builder.store}
-                    layoutConfig={builder.layoutConfig}
-                    themeConfig={builder.themeConfig}
-                    devicePreview={builder.devicePreview}
-                    previewZoom={builder.previewZoom}
-                    selectedSectionId={builder.selectedSectionId}
-                    onSelectSection={builder.handleSelectSection}
-                    onApplyTemplate={builder.applyTemplate}
-                    setActiveTab={builder.setActiveTab}
-                />
+                        <TabsContent value="sections" className="flex-1 overflow-hidden flex flex-col m-0 p-4">
+                            <ScrollArea className="flex-1">
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label>Add Section</Label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {Object.entries(SECTION_TYPES).map(([key, { label, icon: Icon }]) => (
+                                                <Button
+                                                    key={key}
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="justify-start text-xs h-auto py-2"
+                                                    onClick={() => addSection(key as keyof typeof SECTION_TYPES)}
+                                                >
+                                                    <Icon className="w-3 h-3 mr-1" />
+                                                    {label.split(' ')[0]}
+                                                </Button>
+                                            ))}
+                                        </div>
+                                    </div>
 
                                     <Separator />
 
