@@ -7690,3 +7690,32 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+
+## Task 8: Add .catch error handler to Promise .then chains in TenantContext.tsx lines 90-93
+
+**Status: ALREADY COMPLETE**
+
+### Verification:
+The `.catch` error handler already exists in `src/contexts/TenantContext.tsx`:
+
+```typescript
+// Lines 86-93:
+(supabase as any)
+  .from('tenants')
+  .update({ last_activity_at: new Date().toISOString() })
+  .eq('id', tenant.id)
+  .then(() => {
+    queryClient.invalidateQueries({ queryKey: ['tenant', tenant.id] });
+  })
+  .catch((err) => logger.error('Failed to update tenant activity', err));
+```
+
+### Implementation Details:
+- The `.catch` handler was added in commit `6c62059b` (refactor: replace console.log/error/warn with production-safe logger)
+- Uses `logger.error` from `@/lib/logger` as per project guidelines (not `console.log`)
+- Properly logs the error message with context ("Failed to update tenant activity")
+- Error object is passed as second argument for full stack trace logging
+
+### No Changes Required:
+This task was already implemented as part of the logger refactoring effort. The error handling is properly in place.
