@@ -7695,59 +7695,26 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Add drag-drop reordering for featured products using dnd-kit library
+## Task: bi-engine.ts line 86 - Remove @ts-ignore and add explicit type annotation
 
-### Date: 2026-01-25
+### Summary
+Removed the `@ts-ignore` directive on line 86 of `src/lib/analytics/bi-engine.ts` and replaced it with an explicit type annotation.
 
-### What was implemented:
+### Changes Made
 
-Updated `src/components/admin/storefront/FeaturedProductsManager.tsx` to add drag-and-drop reordering functionality for featured products using the @dnd-kit library.
+1. **Added imports and interface** (lines 3-7):
+   - Imported `Json` type from `@/integrations/supabase/types`
+   - Created `MenuOrderData` interface with `order_data: Json` property
 
-### Key Changes:
+2. **Replaced @ts-ignore with type assertion** (line 91-95):
+   - Removed: `// @ts-ignore - Avoid deep type instantiation`
+   - Added type assertion: `as { data: MenuOrderData[] | null }`
+   - This provides proper typing without suppressing TypeScript checks
 
-1. **Added dnd-kit imports**:
-   - `DndContext`, `closestCenter`, `KeyboardSensor`, `PointerSensor`, `useSensor`, `useSensors` from `@dnd-kit/core`
-   - `arrayMove`, `SortableContext`, `sortableKeyboardCoordinates`, `verticalListSortingStrategy`, `useSortable` from `@dnd-kit/sortable`
-   - `CSS` from `@dnd-kit/utilities`
-   - `DragEndEvent`, `DragStartEvent`, `DragOverlay` for type-safe event handling
+### Verification
+- TypeScript compilation passes (`npx tsc --noEmit`)
+- The type assertion properly handles the Supabase query response structure
 
-2. **Created `SortableFeaturedProduct` component**:
-   - Individual sortable item wrapper using `useSortable` hook
-   - Applies transform/transition styles for smooth animations
-   - Drag handle with accessibility attributes (`aria-label="Drag to reorder"`)
-   - Visual feedback with opacity change and shadow when dragging
-   - Touch-friendly with `touch-none` class on drag handle
+### Files Changed
+- `src/lib/analytics/bi-engine.ts`
 
-3. **Created `DragOverlayContent` component**:
-   - Visual feedback showing the dragged product during drag operations
-   - Matches the styling of the sortable items with enhanced shadow
-
-4. **Updated main `FeaturedProductsManager` component**:
-   - Added `activeId` state to track currently dragged item
-   - Configured sensors (PointerSensor with 8px activation distance, KeyboardSensor for accessibility)
-   - Added `handleDragStart` callback to track active item for overlay
-   - Added `handleDragEnd` callback to reorder products using `arrayMove`
-   - Wrapped selected products list with `DndContext` and `SortableContext`
-   - Added `DragOverlay` for visual feedback during drag
-   - Added "Drag to reorder" hint text in the header
-
-5. **Accessibility features**:
-   - Keyboard navigation support via `KeyboardSensor`
-   - `sortableKeyboardCoordinates` for keyboard arrow navigation
-   - `aria-label` on drag handles
-   - Visual feedback for drag state
-
-### Implementation Details:
-
-- Uses `verticalListSortingStrategy` for efficient vertical list reordering
-- Pointer sensor has 8px distance constraint to prevent accidental drags
-- Order changes are immediately reflected via `onSelectionChange` callback
-- Preserves existing product selection functionality (checkboxes, max limit)
-- Maintains backwards compatibility with existing API
-
-### Build Verification:
-- `npm run build` - PASSES (0 TypeScript errors)
-- Production build completes successfully
-
-### Files Changed:
-- `src/components/admin/storefront/FeaturedProductsManager.tsx` (updated - added drag-drop reordering)
