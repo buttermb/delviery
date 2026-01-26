@@ -816,16 +816,10 @@ export const navigationSections: NavSection[] = [
         tier: 'enterprise'
       },
       {
-        title: 'Reports',
-        href: '/admin/analytics/reports',
+        title: 'Export',
+        href: '/admin/analytics-export',
         icon: FileSpreadsheet,
         tier: 'professional'
-      },
-      {
-        title: 'Advanced',
-        href: '/admin/analytics/advanced',
-        icon: Rocket,
-        tier: 'enterprise'
       }
     ]
   },
