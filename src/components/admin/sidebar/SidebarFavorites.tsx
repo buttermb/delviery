@@ -1,16 +1,21 @@
 /**
  * Sidebar Favorites Component
  *
- * Displays user's favorite menu items
+ * Displays user's favorite menu items with database sync via useMutation.
+ * Features:
+ * - Displays favorited items from sidebar config
+ * - Remove favorites directly with optimistic updates
+ * - Database persistence through SidebarContext's toggleFavorite mutation
  */
 
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
 import { SidebarMenuItem } from './SidebarMenuItem';
 import { useSidebar } from './SidebarContext';
 import { matchesSearchQuery } from './SidebarSearch';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
+import { useSidebar } from './SidebarContext';
 import { useParams, useLocation } from 'react-router-dom';
 import type { FeatureId } from '@/lib/featureConfig';
 
@@ -21,45 +26,61 @@ export function SidebarFavorites() {
   const { canAccess } = useFeatureAccess();
   const { searchQuery } = useSidebar();
 
+  // Get toggleFavorite mutation from SidebarContext
+  // This provides database sync with optimistic updates via useMutation
+  const { toggleFavorite, trackFeatureAccess } = useSidebar();
+
   // Guard: Ensure favorites is an array
-  const safeFavorites = Array.isArray(favorites) ? favorites : [];
-  
-  // Guard: Early return if no favorites
-  if (safeFavorites.length === 0) {
-    return null;
-  }
+  const safeFavorites = useMemo(() =>
+    Array.isArray(favorites) ? favorites : [],
+    [favorites]
+  );
 
   // Guard: Ensure sidebarConfig is an array
-  const safeConfig = Array.isArray(sidebarConfig) ? sidebarConfig : [];
+  const safeConfig = useMemo(() =>
+    Array.isArray(sidebarConfig) ? sidebarConfig : [],
+    [sidebarConfig]
+  );
 
-  // Find favorite items from all sections
-  const favoriteItems = safeConfig
-    .flatMap(section => section?.items || [])
-    .filter(item => item && safeFavorites.includes(item.id));
+  // Find favorite items from all sections, maintaining order based on favorites array
+  const favoriteItems = useMemo(() => {
+    const allItems = safeConfig.flatMap(section => section?.items || []);
 
-  // Filter favorite items based on search query
-  const filteredFavoriteItems = useMemo(() => {
-    if (!searchQuery.trim()) return favoriteItems;
-    return favoriteItems.filter((item) => matchesSearchQuery(item.name, searchQuery));
-  }, [favoriteItems, searchQuery]);
+    // Map favorites to items while preserving favorites order
+    return safeFavorites
+      .map(favId => allItems.find(item => item?.id === favId))
+      .filter((item): item is NonNullable<typeof item> => item !== undefined);
+  }, [safeConfig, safeFavorites]);
 
-  // Don't render if no items match
-  if (filteredFavoriteItems.length === 0) {
-    return null;
-  }
-
-  const isActive = (url: string) => {
+  // Check if path is active
+  const isActive = useCallback((url: string) => {
     const fullPath = `/${tenantSlug}${url}`;
     return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
-  };
+  }, [tenantSlug, location.pathname]);
 
-  const handleItemClick = (itemId: string, featureId?: string) => {
-    // Tracking is handled by SidebarMenuItem
-  };
+  // Handle item click - track feature access for recently used
+  const handleItemClick = useCallback((itemId: string, featureId?: string) => {
+    if (featureId) {
+      trackFeatureAccess(featureId);
+    }
+  }, [trackFeatureAccess]);
 
-  const handleLockedItemClick = (featureId: FeatureId) => {
+  // Handle locked item click - parent handles upgrade modal
+  const handleLockedItemClick = useCallback((_featureId: FeatureId) => {
     // Upgrade modal is handled by parent AdaptiveSidebar
-  };
+  }, []);
+
+  // Handle removing a favorite - uses database mutation with optimistic updates
+  const handleRemoveFavorite = useCallback((itemId: string) => {
+    // toggleFavorite is backed by useMutation in useSidebarPreferences
+    // It performs optimistic updates and syncs to database
+    toggleFavorite(itemId);
+  }, [toggleFavorite]);
+
+  // Early return if no favorites
+  if (favoriteItems.length === 0) {
+    return null;
+  }
 
   return (
     <SidebarGroup>
