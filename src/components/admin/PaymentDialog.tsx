@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useProcessPayment } from "@/hooks/useWholesaleData";
-import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
