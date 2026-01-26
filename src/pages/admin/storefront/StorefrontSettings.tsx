@@ -17,7 +17,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import {
   Store,
@@ -509,18 +511,21 @@ export default function StorefrontSettings() {
       <div className={`grid gap-6 transition-all duration-300 ${showPreview ? 'lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_400px]' : 'grid-cols-1'}`}>
         {/* Settings Tabs */}
         <Tabs defaultValue="general" className="space-y-6 min-w-0">
-          <TabsList className="inline-flex w-full overflow-x-auto justify-start snap-x scrollbar-hide p-1">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="branding">Branding</TabsTrigger>
-            <TabsTrigger value="featured">Featured</TabsTrigger>
-            <TabsTrigger value="delivery">Delivery</TabsTrigger>
-            <TabsTrigger value="zones">Zones</TabsTrigger>
-            <TabsTrigger value="timeslots">Time Slots</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
-            <TabsTrigger value="checkout">Checkout</TabsTrigger>
-            <TabsTrigger value="hours">Hours</TabsTrigger>
-            <TabsTrigger value="seo">SEO</TabsTrigger>
-          </TabsList>
+          <ScrollArea className="w-full whitespace-nowrap">
+            <TabsList className="inline-flex w-max justify-start p-1">
+              <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="branding">Branding</TabsTrigger>
+              <TabsTrigger value="featured">Featured</TabsTrigger>
+              <TabsTrigger value="delivery">Delivery</TabsTrigger>
+              <TabsTrigger value="zones">Zones</TabsTrigger>
+              <TabsTrigger value="timeslots">Time Slots</TabsTrigger>
+              <TabsTrigger value="payments">Payments</TabsTrigger>
+              <TabsTrigger value="checkout">Checkout</TabsTrigger>
+              <TabsTrigger value="hours">Hours</TabsTrigger>
+              <TabsTrigger value="seo">SEO</TabsTrigger>
+            </TabsList>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
 
           {/* General Tab */}
           <TabsContent value="general">
