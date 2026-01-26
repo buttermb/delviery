@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Shield, Upload, CheckCircle } from "lucide-react";
+import { Shield, Upload, CheckCircle, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { validateFile, generateSecureStoragePath, FILE_SIZE_LIMITS, formatFileSize } from "@/lib/fileValidation";
 
 export default function IDVerificationUpload() {
   const { user } = useAuth();
@@ -22,27 +23,51 @@ export default function IDVerificationUpload() {
   const [idFrontFile, setIdFrontFile] = useState<File | null>(null);
   const [idBackFile, setIdBackFile] = useState<File | null>(null);
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
+  const [fileErrors, setFileErrors] = useState<Record<string, string>>({});
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: string) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: string) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (type === "front") setIdFrontFile(file);
-      if (type === "back") setIdBackFile(file);
-      if (type === "selfie") setSelfieFile(file);
+    if (!file) return;
+
+    // Clear previous error for this field
+    setFileErrors(prev => ({ ...prev, [type]: '' }));
+
+    // Validate the file
+    const validation = await validateFile(file, {
+      context: 'idVerification',
+      maxSize: FILE_SIZE_LIMITS.image,
+    });
+
+    if (!validation.isValid) {
+      setFileErrors(prev => ({ ...prev, [type]: validation.error || 'Invalid file' }));
+      // Clear the input
+      e.target.value = '';
+      toast.error(validation.error || 'Invalid file');
+      return;
     }
+
+    if (type === "front") setIdFrontFile(file);
+    if (type === "back") setIdBackFile(file);
+    if (type === "selfie") setSelfieFile(file);
   };
 
-  const uploadFile = async (file: File, path: string) => {
-    const { data, error } = await supabase.storage
+  const uploadFile = async (file: File, prefix: string) => {
+    // Generate secure storage path with user isolation
+    const storagePath = generateSecureStoragePath(file.name, prefix, user?.id);
+
+    const { error } = await supabase.storage
       .from("id-verifications")
-      .upload(path, file, { upsert: true });
+      .upload(storagePath, file, {
+        upsert: true,
+        contentType: file.type,
+      });
 
     if (error) throw error;
-    
+
     const { data: urlData } = supabase.storage
       .from("id-verifications")
-      .getPublicUrl(path);
-    
+      .getPublicUrl(storagePath);
+
     return urlData.publicUrl;
   };
 
@@ -62,10 +87,10 @@ export default function IDVerificationUpload() {
     setLoading(true);
 
     try {
-      const timestamp = Date.now();
-      const idFrontUrl = await uploadFile(idFrontFile, `${user.id}/id-front-${timestamp}.jpg`);
-      const idBackUrl = idBackFile ? await uploadFile(idBackFile, `${user.id}/id-back-${timestamp}.jpg`) : null;
-      const selfieUrl = await uploadFile(selfieFile, `${user.id}/selfie-${timestamp}.jpg`);
+      // Use secure upload paths with prefixes instead of timestamp-based names
+      const idFrontUrl = await uploadFile(idFrontFile, 'id-front');
+      const idBackUrl = idBackFile ? await uploadFile(idBackFile, 'id-back') : null;
+      const selfieUrl = await uploadFile(selfieFile, 'selfie');
 
       const { error: verificationError } = await supabase
         .from("age_verifications")
@@ -166,12 +191,15 @@ export default function IDVerificationUpload() {
             <div className="flex items-center gap-2">
               <Input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 onChange={(e) => handleFileChange(e, "front")}
                 required
               />
               {idFrontFile && <CheckCircle className="w-5 h-5 text-green-600" />}
+              {fileErrors.front && <AlertCircle className="w-5 h-5 text-red-600" />}
             </div>
+            {fileErrors.front && <p className="text-sm text-red-600">{fileErrors.front}</p>}
+            <p className="text-xs text-muted-foreground">JPEG, PNG, or WebP. Max {formatFileSize(FILE_SIZE_LIMITS.image)}.</p>
           </div>
 
           <div className="space-y-2">
@@ -179,11 +207,13 @@ export default function IDVerificationUpload() {
             <div className="flex items-center gap-2">
               <Input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 onChange={(e) => handleFileChange(e, "back")}
               />
               {idBackFile && <CheckCircle className="w-5 h-5 text-green-600" />}
+              {fileErrors.back && <AlertCircle className="w-5 h-5 text-red-600" />}
             </div>
+            {fileErrors.back && <p className="text-sm text-red-600">{fileErrors.back}</p>}
           </div>
 
           <div className="space-y-2">
@@ -191,12 +221,14 @@ export default function IDVerificationUpload() {
             <div className="flex items-center gap-2">
               <Input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 onChange={(e) => handleFileChange(e, "selfie")}
                 required
               />
               {selfieFile && <CheckCircle className="w-5 h-5 text-green-600" />}
+              {fileErrors.selfie && <AlertCircle className="w-5 h-5 text-red-600" />}
             </div>
+            {fileErrors.selfie && <p className="text-sm text-red-600">{fileErrors.selfie}</p>}
           </div>
 
           <div className="bg-muted/50 p-3 rounded-lg text-sm text-muted-foreground">
