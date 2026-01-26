@@ -1,10 +1,13 @@
 /**
  * Client-side validation utilities
- * 
+ *
  * CRITICAL: Always validate user input on both client and server
  */
 
 import { z } from 'zod';
+
+// Re-export storefront settings schema
+export * from './storefrontSettingsSchema';
 
 /**
  * Sanitize string input
