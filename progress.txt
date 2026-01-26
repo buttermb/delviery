@@ -1,35 +1,43 @@
-## Task: Fix Complete Login Flow - Token Storage and Validation
+## Enhance Disposable Menu Analytics Dashboard - COMPLETED
 
-### Status: COMPLETED
+### What was done:
 
-### Changes Made:
+1. **Created `useMenuDashboardAnalytics` hook** (`src/hooks/useMenuDashboardAnalytics.ts`)
+   - Fetches tenant-wide analytics data (menus, access logs, orders)
+   - Computes comprehensive MenuDashboardAnalytics with 15+ metrics
+   - Real-time subscription to `menu_access_logs` and `menu_orders` tables via Supabase channels
+   - Provides `getExportData()` for CSV/Excel export
+   - Includes `refresh()` function that resets realtime counters and refetches data
+   - Proper cleanup on unmount (removes Supabase channel)
 
-1. **Added `tenantSlug` to TenantAdminAuthContext interface and provider** (src/contexts/TenantAdminAuthContext.tsx)
-   - Added `tenantSlug: string | null` to `TenantAdminAuthContextType` interface
-   - Added `tenantSlug` state variable with `useState<string | null>(null)`
-   - Added `useEffect` to sync `tenantSlug` from `tenant?.slug`
-   - Added `tenantSlug` to the provider value object
-   - Added `setTenantSlug(null)` to `clearAuthState()` for proper cleanup on logout
+2. **Created `MenuAnalyticsDashboard` component** (`src/components/admin/disposable-menus/MenuAnalyticsDashboard.tsx`)
+   - **8 stat cards**: Total Menus, Active Menus, Burned Menus, Total Views, Total Orders, Revenue, Conversion Rate, Avg Time to First View
+   - **Views Over Time chart** (area chart, last 14 days)
+   - **Orders & Revenue chart** (dual-axis line chart)
+   - **Menu Status donut chart** (active vs soft-burned vs hard-burned vs expired)
+   - **Burn Reasons pie chart** (breakdown of why menus were burned)
+   - **Conversion Funnel** (views → unique visitors → orders placed → completed)
+   - **Peak Access Hours** bar chart (24-hour distribution)
+   - **Top Products by Revenue** (ranked list with progress bars)
+   - **Key Insights summary** card with auto-generated insights
+   - Live activity badge showing real-time view/order counts
+   - Export button (CSV/Excel/JSON) using existing AnalyticsExportButton component
+   - Loading skeletons and empty states for all sections
 
-2. **Fixed duplicate storage call** (src/contexts/TenantAdminAuthContext.tsx)
-   - Removed duplicate `safeStorage.setItem('floraiq_user_id', data.admin.id)` call in login function
+3. **Added Analytics tab to SmartDashboard** (`src/components/admin/disposable-menus/SmartDashboard.tsx`)
+   - New "Analytics" tab (4th tab between Orders and Setup)
+   - Lazy-loaded for performance (code-split)
+   - Suspense boundary with skeleton loading state
+   - Responsive tab labels (icon-only on mobile)
 
-3. **Created `useAuthenticatedApi` hook** (src/hooks/useAuthenticatedApi.ts)
-   - Provides `apiCall` wrapper that automatically retries on 401 errors
-   - On 401: attempts token refresh via `refreshAuthToken()`
-   - If refresh succeeds: retries the original request
-   - If refresh fails: logs user out and throws 'Session expired' error
-
-4. **Created sanitize utility module** (src/lib/utils/sanitize.ts)
-   - Created missing `sanitizeHtml`, `stripHtml`, and `sanitizeInput` functions
-   - Uses DOMPurify for XSS prevention
-   - This was blocking the build (imported by ProductDetailPage.tsx)
+4. **Fixed pre-existing build issue** (`src/lib/utils/sanitize.ts`)
+   - Created missing `sanitizeHtml` utility using DOMPurify
+   - Fixes build failure from unresolved import in ProductDetailPage and CustomHTMLSection
 
 ### Acceptance Criteria Met:
-- [x] Login clears all stale tokens first (already implemented in src/pages/saas/LoginPage.tsx)
-- [x] Tokens stored correctly after login (verified in TenantAdminAuthContext.tsx)
-- [x] 401 errors trigger token refresh (new useAuthenticatedApi hook)
-- [x] Failed refresh triggers logout (useAuthenticatedApi + existing refreshAuthToken logic)
-- [x] tenantSlug property exists in context
-- [x] No TypeScript errors (tsc --noEmit passes)
-- [x] Build passes (npm run build succeeds)
+- All stats display correctly (8 key metrics)
+- Charts render with real data (5 chart types)
+- Real-time updates work (Supabase channel subscriptions for live view/order counts)
+- CSV/Excel/JSON export option available via AnalyticsExportButton
+
+### Build Status: PASSING
