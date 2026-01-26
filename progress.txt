@@ -5087,16 +5087,16 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
----
 
-## Task: Add .catch to Promise chains in TenantContext.tsx (lines 90-93)
+## Task 8: Add .catch error handler to Promise .then chains in TenantContext.tsx lines 90-93
 
-**Status:** Already Complete ✓
+**Status: ALREADY COMPLETE**
 
-**Analysis:**
-Reviewed `src/contexts/TenantContext.tsx` and found that the Promise chain in the `useEffect` hook (lines 86-93) already has proper error handling:
+### Verification:
+The `.catch` error handler already exists in `src/contexts/TenantContext.tsx`:
 
 ```typescript
+// Lines 86-93:
 (supabase as any)
   .from('tenants')
   .update({ last_activity_at: new Date().toISOString() })
@@ -5107,10 +5107,11 @@ Reviewed `src/contexts/TenantContext.tsx` and found that the Promise chain in th
   .catch((err) => logger.error('Failed to update tenant activity', err));
 ```
 
-The `.catch()` handler on line 93 properly catches any errors from:
-1. The Supabase update operation
-2. Any synchronous errors thrown in the `.then()` callback
+### Implementation Details:
+- The `.catch` handler was added in commit `6c62059b` (refactor: replace console.log/error/warn with production-safe logger)
+- Uses `logger.error` from `@/lib/logger` as per project guidelines (not `console.log`)
+- Properly logs the error message with context ("Failed to update tenant activity")
+- Error object is passed as second argument for full stack trace logging
 
-This was added in commit `6c62059b` during the refactoring to replace console.log/error/warn with the production-safe logger.
-
-**No code changes required** - the task was already implemented correctly.
+### No Changes Required:
+This task was already implemented as part of the logger refactoring effort. The error handling is properly in place.
