@@ -7699,27 +7699,18 @@ Added a multi-layer NODE_ENV check to prevent these dangerous flags from being e
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Wrap all JSON.parse calls in try-catch in src/contexts/SuperAdminAuthContext.tsx
+---
 
-### Date: 2026-01-25
+## Task: Add dark mode classes to Input components
 
-### What was verified:
+Added `dark:bg-gray-700 dark:border-gray-600 dark:text-white` classes to all Input components:
 
-Audited all JSON.parse calls in SuperAdminAuthContext.tsx:
+### Files Modified:
+1. `src/components/ui/input.tsx` - Main Input component
+2. `src/components/ui/input-otp.tsx` - InputOTPSlot component
+3. `src/components/PhoneInput.tsx` - PhoneInput component
 
-1. **Line 139: `setSuperAdmin(JSON.parse(storedAdmin))`**
-   - Already wrapped in try-catch (lines 138-171)
-   - Catch block clears storage and sets loading to false
-
-2. **Line 144: `const session = JSON.parse(storedSupabaseSession)`**
-   - Already wrapped in nested try-catch (lines 143-160)
-   - Catch block logs error and removes invalid session from storage
-
-### Result: No changes needed
-
-All JSON.parse calls in SuperAdminAuthContext.tsx are already properly wrapped in try-catch blocks with appropriate error handling:
-- Invalid stored admin data is cleared and loading state is reset
-- Invalid stored Supabase session is logged and removed from storage
-
-### Files Changed:
-- None (existing code already compliant)
+These changes ensure input fields display with appropriate dark mode styling:
+- Dark gray background (bg-gray-700)
+- Dark gray border (border-gray-600)
+- White text (text-white)
