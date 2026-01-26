@@ -70,7 +70,7 @@ interface Order {
     email: string | null;
     phone: string | null;
   };
-  order_items?: OrderItemData[];
+  order_items?: unknown[];
 }
 
 export default function Orders() {
@@ -309,10 +309,45 @@ export default function Orders() {
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
   };
 
-  const handleBulkStatusChange = (status: string) => {
+  const handleBulkStatusChange = async (status: string) => {
     if (!tenant?.id) {
       toast.error("No tenant context available");
       return;
+    }
+
+    // Optimistic update: capture previous state for rollback
+    const previousOrders = orders;
+
+    // Optimistically update the UI
+    queryClient.setQueryData(['orders', tenant.id, statusFilter], (old: Order[] = []) =>
+      old.map(o => selectedOrders.includes(o.id) ? { ...o, status } : o)
+    );
+
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({
+          status,
+          ...(status === 'delivered' && { delivered_at: new Date().toISOString() }),
+          ...(status === 'cancelled' && { cancelled_at: new Date().toISOString() }),
+          updated_at: new Date().toISOString()
+        })
+        .in('id', selectedOrders)
+        .eq('tenant_id', tenant.id); // CRITICAL: Tenant isolation
+
+      if (error) throw error;
+
+      toast.success(`Updated ${selectedOrders.length} orders to ${status}`);
+      // Invalidate related queries for consistency
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      setSelectedOrders([]);
+    } catch (error) {
+      // Rollback on error
+      queryClient.setQueryData(['orders', tenant.id, statusFilter], previousOrders);
+      logger.error('Error updating orders in bulk', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
+      toast.error("Failed to update orders");
     }
     setBulkStatusConfirm({ open: true, targetStatus: status });
   };
