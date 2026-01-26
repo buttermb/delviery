@@ -7693,48 +7693,23 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: Add .catch error handler to Promise .then chains in AdminContext.tsx
+## Task: Remove ForceLightMode wrapper from AdminLayout.tsx
 
-### Completed: 2026-01-25
+### What was done:
 
-### Analysis:
-Reviewed `src/contexts/AdminContext.tsx` for Promise .then chains without .catch handlers:
+1. **Removed ForceLightMode import** from line 45 in `src/pages/admin/AdminLayout.tsx`
 
-1. **Line 83-96**: `supabase.auth.getSession().then(...).catch(...)` - Already had proper .catch handler ✓
-2. **Line 154-158**: `supabase.from("security_events").insert({...})` - Fire-and-forget promise without error handling
+2. **Removed ForceLightMode wrapper** that was wrapping the entire AdminLayout component (lines 96 and 260)
 
-### Changes Made:
-Added .catch error handler to the security_events insert operation in the `signIn` function:
+3. **Restored ThemeToggle component** in the header actions section (was previously disabled with a comment saying "Theme toggle removed - ForceLightMode enforces light mode")
 
-**Before:**
-```typescript
-supabase.from("security_events").insert({
-  event_type: "admin_login",
-  user_id: authData.user.id,
-  details: { email, timestamp: new Date().toISOString() }
-});
-```
-
-**After:**
-```typescript
-supabase.from("security_events").insert({
-  event_type: "admin_login",
-  user_id: authData.user.id,
-  details: { email, timestamp: new Date().toISOString() }
-}).then(() => {
-  // Security event logged successfully
-}).catch((error) => {
-  handleError(error, {
-    component: 'AdminContext',
-    context: { action: 'logAdminLogin' },
-    showToast: false
-  });
-});
-```
-
-### Verification:
-- `npm run build` - PASSES (0 TypeScript errors)
-- Build completes successfully with 6599 modules transformed
+### Changes made:
+- Removed `import { ForceLightMode } from '@/components/marketing/ForceLightMode';`
+- Removed `<ForceLightMode>` opening tag and `</ForceLightMode>` closing tag
+- Changed comment from "Theme toggle removed - ForceLightMode enforces light mode" to "Theme Toggle" and added `<ThemeToggle />` component back
 
 ### Files Changed:
-- `src/contexts/AdminContext.tsx` - Added .catch handler to fire-and-forget security_events insert
+- `src/pages/admin/AdminLayout.tsx`
+
+### Build Status:
+- TypeScript build passes successfully
