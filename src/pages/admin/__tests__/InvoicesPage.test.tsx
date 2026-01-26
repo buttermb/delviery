@@ -101,6 +101,18 @@ vi.mock('@/hooks/crm/useInvoices', () => ({
       mutate: vi.fn(),
       isPending: false,
     }),
+    useMarkInvoiceSent: vi.fn().mockReturnValue({
+      mutate: vi.fn(),
+      isPending: false,
+    }),
+    useVoidInvoice: vi.fn().mockReturnValue({
+      mutate: vi.fn(),
+      isPending: false,
+    }),
+    useDuplicateInvoice: vi.fn().mockReturnValue({
+      mutate: vi.fn(),
+      isPending: false,
+    }),
   }),
 }));
 
@@ -159,6 +171,37 @@ const wrapper = ({ children }: { children: ReactNode }) => (
     </MemoryRouter>
   </QueryClientProvider>
 );
+
+// Helper to create a complete useInvoices mock with all required hooks
+const createUseInvoicesMock = (overrides: {
+  data?: CRMInvoice[];
+  isLoading?: boolean;
+  markPaidMutate?: ReturnType<typeof vi.fn>;
+  markSentMutate?: ReturnType<typeof vi.fn>;
+  voidMutate?: ReturnType<typeof vi.fn>;
+  duplicateMutate?: ReturnType<typeof vi.fn>;
+} = {}) => ({
+  useInvoicesQuery: vi.fn().mockReturnValue({
+    data: overrides.data ?? [],
+    isLoading: overrides.isLoading ?? false,
+  }),
+  useMarkInvoicePaid: vi.fn().mockReturnValue({
+    mutate: overrides.markPaidMutate ?? vi.fn(),
+    isPending: false,
+  }),
+  useMarkInvoiceSent: vi.fn().mockReturnValue({
+    mutate: overrides.markSentMutate ?? vi.fn(),
+    isPending: false,
+  }),
+  useVoidInvoice: vi.fn().mockReturnValue({
+    mutate: overrides.voidMutate ?? vi.fn(),
+    isPending: false,
+  }),
+  useDuplicateInvoice: vi.fn().mockReturnValue({
+    mutate: overrides.duplicateMutate ?? vi.fn(),
+    isPending: false,
+  }),
+});
 
 const mockInvoices: CRMInvoice[] = [
   {
@@ -249,6 +292,18 @@ describe('InvoicesPage', () => {
         mutate: vi.fn(),
         isPending: false,
       }),
+      useMarkInvoiceSent: vi.fn().mockReturnValue({
+        mutate: vi.fn(),
+        isPending: false,
+      }),
+      useVoidInvoice: vi.fn().mockReturnValue({
+        mutate: vi.fn(),
+        isPending: false,
+      }),
+      useDuplicateInvoice: vi.fn().mockReturnValue({
+        mutate: vi.fn(),
+        isPending: false,
+      }),
     });
   });
 
@@ -288,16 +343,9 @@ describe('InvoicesPage', () => {
     });
 
     it('should calculate correct revenue from paid invoices', () => {
-      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue({
-        useInvoicesQuery: vi.fn().mockReturnValue({
-          data: mockInvoices,
-          isLoading: false,
-        }),
-        useMarkInvoicePaid: vi.fn().mockReturnValue({
-          mutate: vi.fn(),
-          isPending: false,
-        }),
-      });
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: mockInvoices })
+      );
 
       render(<InvoicesPage />, { wrapper });
 
@@ -306,21 +354,15 @@ describe('InvoicesPage', () => {
     });
 
     it('should calculate correct outstanding amount', () => {
-      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue({
-        useInvoicesQuery: vi.fn().mockReturnValue({
-          data: mockInvoices,
-          isLoading: false,
-        }),
-        useMarkInvoicePaid: vi.fn().mockReturnValue({
-          mutate: vi.fn(),
-          isPending: false,
-        }),
-      });
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: mockInvoices })
+      );
 
       render(<InvoicesPage />, { wrapper });
 
       // Sent invoices count as outstanding - INV-001 is $110
-      expect(screen.getByText('1 sent invoices')).toBeInTheDocument();
+      // Updated: stats card now shows "X sent, Y overdue" format
+      expect(screen.getByText(/1 sent/)).toBeInTheDocument();
     });
   });
 
@@ -333,16 +375,9 @@ describe('InvoicesPage', () => {
     it('should filter invoices by search query', async () => {
       const user = userEvent.setup();
 
-      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue({
-        useInvoicesQuery: vi.fn().mockReturnValue({
-          data: mockInvoices,
-          isLoading: false,
-        }),
-        useMarkInvoicePaid: vi.fn().mockReturnValue({
-          mutate: vi.fn(),
-          isPending: false,
-        }),
-      });
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: mockInvoices })
+      );
 
       render(<InvoicesPage />, { wrapper });
 
@@ -395,16 +430,9 @@ describe('InvoicesPage', () => {
       const user = userEvent.setup();
       const mutateFunc = vi.fn();
 
-      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue({
-        useInvoicesQuery: vi.fn().mockReturnValue({
-          data: [mockInvoices[0]], // Only sent invoice
-          isLoading: false,
-        }),
-        useMarkInvoicePaid: vi.fn().mockReturnValue({
-          mutate: mutateFunc,
-          isPending: false,
-        }),
-      });
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: [mockInvoices[0]], markPaidMutate: mutateFunc })
+      );
 
       render(<InvoicesPage />, { wrapper });
 
@@ -429,16 +457,9 @@ describe('InvoicesPage', () => {
         options.onSuccess();
       });
 
-      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue({
-        useInvoicesQuery: vi.fn().mockReturnValue({
-          data: [mockInvoices[0]],
-          isLoading: false,
-        }),
-        useMarkInvoicePaid: vi.fn().mockReturnValue({
-          mutate: mutateFunc,
-          isPending: false,
-        }),
-      });
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: [mockInvoices[0]], markPaidMutate: mutateFunc })
+      );
 
       render(<InvoicesPage />, { wrapper });
 
@@ -462,16 +483,9 @@ describe('InvoicesPage', () => {
     it('should have download PDF option in actions menu', async () => {
       const user = userEvent.setup();
 
-      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue({
-        useInvoicesQuery: vi.fn().mockReturnValue({
-          data: [mockInvoices[0]],
-          isLoading: false,
-        }),
-        useMarkInvoicePaid: vi.fn().mockReturnValue({
-          mutate: vi.fn(),
-          isPending: false,
-        }),
-      });
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: [mockInvoices[0]] })
+      );
 
       render(<InvoicesPage />, { wrapper });
 
@@ -490,16 +504,9 @@ describe('InvoicesPage', () => {
       const user = userEvent.setup();
       const jsPDF = (await import('jspdf')).default;
 
-      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue({
-        useInvoicesQuery: vi.fn().mockReturnValue({
-          data: [mockInvoices[0]],
-          isLoading: false,
-        }),
-        useMarkInvoicePaid: vi.fn().mockReturnValue({
-          mutate: vi.fn(),
-          isPending: false,
-        }),
-      });
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: [mockInvoices[0]] })
+      );
 
       render(<InvoicesPage />, { wrapper });
 
@@ -534,16 +541,9 @@ describe('InvoicesPage', () => {
     it('should have copy link option in actions menu', async () => {
       const user = userEvent.setup();
 
-      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue({
-        useInvoicesQuery: vi.fn().mockReturnValue({
-          data: [mockInvoices[0]],
-          isLoading: false,
-        }),
-        useMarkInvoicePaid: vi.fn().mockReturnValue({
-          mutate: vi.fn(),
-          isPending: false,
-        }),
-      });
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: [mockInvoices[0]] })
+      );
 
       render(<InvoicesPage />, { wrapper });
 
@@ -571,16 +571,9 @@ describe('Invoice Statistics Calculation', () => {
       { ...mockInvoices[1], status: 'paid', total: 200 },
     ];
 
-    (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue({
-      useInvoicesQuery: vi.fn().mockReturnValue({
-        data: invoices,
-        isLoading: false,
-      }),
-      useMarkInvoicePaid: vi.fn().mockReturnValue({
-        mutate: vi.fn(),
-        isPending: false,
-      }),
-    });
+    (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+      createUseInvoicesMock({ data: invoices })
+    );
 
     render(<InvoicesPage />, { wrapper });
 
@@ -593,21 +586,15 @@ describe('Invoice Statistics Calculation', () => {
       { ...mockInvoices[1], status: 'overdue', total: 200 },
     ];
 
-    (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue({
-      useInvoicesQuery: vi.fn().mockReturnValue({
-        data: invoices,
-        isLoading: false,
-      }),
-      useMarkInvoicePaid: vi.fn().mockReturnValue({
-        mutate: vi.fn(),
-        isPending: false,
-      }),
-    });
+    (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+      createUseInvoicesMock({ data: invoices })
+    );
 
     render(<InvoicesPage />, { wrapper });
 
-    // Should show 1 sent invoice (the overdue one doesn't count as "sent")
-    expect(screen.getByText('1 sent invoices')).toBeInTheDocument();
+    // Updated format: "X sent, Y overdue"
+    expect(screen.getByText(/1 sent/)).toBeInTheDocument();
+    expect(screen.getByText(/1 overdue/)).toBeInTheDocument();
   });
 
   it('should correctly sum overdue invoice totals', () => {
@@ -616,19 +603,175 @@ describe('Invoice Statistics Calculation', () => {
       { ...mockInvoices[1], status: 'overdue', total: 250 },
     ];
 
-    (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue({
-      useInvoicesQuery: vi.fn().mockReturnValue({
-        data: invoices,
-        isLoading: false,
-      }),
-      useMarkInvoicePaid: vi.fn().mockReturnValue({
-        mutate: vi.fn(),
-        isPending: false,
-      }),
-    });
+    (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+      createUseInvoicesMock({ data: invoices })
+    );
 
     render(<InvoicesPage />, { wrapper });
 
-    expect(screen.getByText('2 overdue invoices')).toBeInTheDocument();
+    // Updated format: "X sent, Y overdue"
+    expect(screen.getByText(/2 overdue/)).toBeInTheDocument();
+  });
+});
+
+describe('New Invoice Actions', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('Mark as Sent', () => {
+    it('should show Mark as Sent option for draft invoices', async () => {
+      const user = userEvent.setup();
+      const draftInvoice = { ...mockInvoices[0], status: 'draft' as const };
+
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: [draftInvoice] })
+      );
+
+      render(<InvoicesPage />, { wrapper });
+
+      await waitFor(() => {
+        expect(screen.getAllByText('INV-001').length).toBeGreaterThan(0);
+      });
+
+      // Open actions menu
+      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(moreButtons[0]);
+
+      expect(await screen.findByText('Mark as Sent')).toBeInTheDocument();
+    });
+
+    it('should not show Mark as Sent option for non-draft invoices', async () => {
+      const user = userEvent.setup();
+
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: [mockInvoices[0]] }) // status is 'sent'
+      );
+
+      render(<InvoicesPage />, { wrapper });
+
+      await waitFor(() => {
+        expect(screen.getAllByText('INV-001').length).toBeGreaterThan(0);
+      });
+
+      // Open actions menu
+      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(moreButtons[0]);
+
+      // Wait for menu to open
+      await screen.findByText('Copy Link');
+      expect(screen.queryByText('Mark as Sent')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Duplicate Invoice', () => {
+    it('should show Duplicate option in actions menu', async () => {
+      const user = userEvent.setup();
+
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: [mockInvoices[0]] })
+      );
+
+      render(<InvoicesPage />, { wrapper });
+
+      await waitFor(() => {
+        expect(screen.getAllByText('INV-001').length).toBeGreaterThan(0);
+      });
+
+      // Open actions menu
+      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(moreButtons[0]);
+
+      expect(await screen.findByText('Duplicate')).toBeInTheDocument();
+    });
+
+    it('should call duplicate mutation when clicked', async () => {
+      const user = userEvent.setup();
+      const duplicateMutate = vi.fn();
+
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: [mockInvoices[0]], duplicateMutate })
+      );
+
+      render(<InvoicesPage />, { wrapper });
+
+      await waitFor(() => {
+        expect(screen.getAllByText('INV-001').length).toBeGreaterThan(0);
+      });
+
+      // Open actions menu
+      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(moreButtons[0]);
+
+      // Click Duplicate
+      const duplicateOption = await screen.findByText('Duplicate');
+      await user.click(duplicateOption);
+
+      expect(duplicateMutate).toHaveBeenCalledWith('invoice-1', expect.any(Object));
+    });
+  });
+
+  describe('Void Invoice', () => {
+    it('should show Void Invoice option for non-paid, non-cancelled invoices', async () => {
+      const user = userEvent.setup();
+
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: [mockInvoices[0]] }) // status is 'sent'
+      );
+
+      render(<InvoicesPage />, { wrapper });
+
+      await waitFor(() => {
+        expect(screen.getAllByText('INV-001').length).toBeGreaterThan(0);
+      });
+
+      // Open actions menu
+      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(moreButtons[0]);
+
+      expect(await screen.findByText('Void Invoice')).toBeInTheDocument();
+    });
+
+    it('should not show Void Invoice option for paid invoices', async () => {
+      const user = userEvent.setup();
+
+      (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+        createUseInvoicesMock({ data: [mockInvoices[1]] }) // status is 'paid'
+      );
+
+      render(<InvoicesPage />, { wrapper });
+
+      await waitFor(() => {
+        expect(screen.getAllByText('INV-002').length).toBeGreaterThan(0);
+      });
+
+      // Open actions menu
+      const moreButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(moreButtons[0]);
+
+      // Wait for menu to open
+      await screen.findByText('Copy Link');
+      expect(screen.queryByText('Void Invoice')).not.toBeInTheDocument();
+    });
+  });
+});
+
+describe('Enhanced Stats Cards', () => {
+  it('should display Paid This Month card', () => {
+    (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+      createUseInvoicesMock({ data: mockInvoices })
+    );
+
+    render(<InvoicesPage />, { wrapper });
+    expect(screen.getByText('Paid This Month')).toBeInTheDocument();
+  });
+
+  it('should display Avg. Payment Time card', () => {
+    (useInvoices as ReturnType<typeof vi.fn>).mockReturnValue(
+      createUseInvoicesMock({ data: mockInvoices })
+    );
+
+    render(<InvoicesPage />, { wrapper });
+    expect(screen.getByText('Avg. Payment Time')).toBeInTheDocument();
   });
 });

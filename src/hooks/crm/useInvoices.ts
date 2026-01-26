@@ -14,15 +14,12 @@ export const crmInvoiceKeys = {
     byClient: (clientId: string) => [...crmInvoiceKeys.all, 'client', clientId] as const,
 };
 
-const normalizeInvoice = (row: unknown): CRMInvoice => {
-    const data = row as Record<string, unknown>;
-    return {
-        ...(data as unknown as CRMInvoice),
-        line_items: Array.isArray(data.line_items) ? (data.line_items as unknown as LineItem[]) : [],
-        issue_date: data.invoice_date as string,
-        tax: data.tax_amount as number,
-    };
-};
+const normalizeInvoice = (row: Record<string, unknown>): CRMInvoice => ({
+    ...(row as CRMInvoice),
+    line_items: Array.isArray(row.line_items) ? (row.line_items as unknown as LineItem[]) : [],
+    issue_date: row.invoice_date as string,
+    tax: row.tax_amount as number,
+});
 
 export function useInvoices() {
     const accountId = useAccountIdSafe();
@@ -80,12 +77,10 @@ export function useInvoices() {
         const queryClient = useQueryClient();
         return useMutation({
             mutationFn: async (invoiceId: string) => {
-                if (!accountId) throw new Error('Account ID required');
                 const { data, error } = await supabase
                     .from('crm_invoices')
                     .update({ status: 'sent' })
                     .eq('id', invoiceId)
-                    .eq('account_id', accountId)
                     .select('*, client:crm_clients(*)')
                     .maybeSingle();
                 if (error) throw error;
@@ -93,11 +88,6 @@ export function useInvoices() {
             },
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
-                toast.success('Invoice marked as sent');
-            },
-            onError: (error: Error) => {
-                logger.error('Failed to mark invoice as sent', { error });
-                toast.error('Failed to mark invoice as sent');
             },
         });
     };
@@ -106,12 +96,10 @@ export function useInvoices() {
         const queryClient = useQueryClient();
         return useMutation({
             mutationFn: async (invoiceId: string) => {
-                if (!accountId) throw new Error('Account ID required');
                 const { data, error } = await supabase
                     .from('crm_invoices')
                     .update({ status: 'cancelled' })
                     .eq('id', invoiceId)
-                    .eq('account_id', accountId)
                     .select('*, client:crm_clients(*)')
                     .maybeSingle();
                 if (error) throw error;
@@ -119,11 +107,6 @@ export function useInvoices() {
             },
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
-                toast.success('Invoice voided');
-            },
-            onError: (error: Error) => {
-                logger.error('Failed to void invoice', { error });
-                toast.error('Failed to void invoice');
             },
         });
     };
@@ -132,13 +115,11 @@ export function useInvoices() {
         const queryClient = useQueryClient();
         return useMutation({
             mutationFn: async (invoiceId: string) => {
-                if (!accountId) throw new Error('Account ID required');
                 // First fetch the original invoice
                 const { data: original, error: fetchError } = await supabase
                     .from('crm_invoices')
                     .select('*')
                     .eq('id', invoiceId)
-                    .eq('account_id', accountId)
                     .maybeSingle();
 
                 if (fetchError) throw fetchError;
@@ -149,7 +130,7 @@ export function useInvoices() {
                 const dueDate = new Date();
                 dueDate.setDate(dueDate.getDate() + 30);
 
-                const { data, error } = await (supabase as any)
+                const { data, error } = await supabase
                     .from('crm_invoices')
                     .insert({
                         account_id: original.account_id,
@@ -161,7 +142,7 @@ export function useInvoices() {
                         tax_rate: original.tax_rate,
                         tax_amount: original.tax_amount,
                         total: original.total,
-                        notes: (original as any).notes,
+                        notes: original.notes,
                         status: 'draft',
                     })
                     .select('*, client:crm_clients(*)')
@@ -172,11 +153,6 @@ export function useInvoices() {
             },
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
-                toast.success('Invoice duplicated');
-            },
-            onError: (error: Error) => {
-                logger.error('Failed to duplicate invoice', { error });
-                toast.error('Failed to duplicate invoice');
             },
         });
     };
@@ -213,7 +189,7 @@ export function useCreateInvoice() {
         mutationFn: async (values: InvoiceFormValues & { account_id?: string }) => {
             const finalAccountId = values.account_id || accountId;
             if (!finalAccountId) throw new Error('Account ID required');
-            const { data, error } = await (supabase as any).from('crm_invoices').insert({ ...values, account_id: finalAccountId, line_items: values.line_items as unknown as Json[] }).select('*, client:crm_clients(*)').maybeSingle();
+            const { data, error } = await supabase.from('crm_invoices').insert({ ...values, account_id: finalAccountId, line_items: values.line_items as unknown as Json[] }).select('*, client:crm_clients(*)').maybeSingle();
             if (error) throw error;
             return normalizeInvoice(data as unknown as Record<string, unknown>);
         },
