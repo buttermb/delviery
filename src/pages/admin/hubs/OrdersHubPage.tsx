@@ -30,7 +30,6 @@ import { useAdminBadgeCounts } from '@/hooks/useAdminBadgeCounts';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { useUnifiedOrders, type UnifiedOrder } from '@/hooks/useUnifiedOrders';
 import { toast } from 'sonner';
-import Papa from 'papaparse';
 
 // Lazy load tab content for performance
 const WholesaleOrdersPage = lazy(() => import('@/pages/admin/WholesaleOrdersPage'));

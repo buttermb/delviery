@@ -224,7 +224,7 @@ export default function ProductManagement() {
   });
 
   // Load products
-  const loadProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     if (!tenant?.id) {
       toast.error('Tenant not found. Please refresh.');
       setLoading(false);
@@ -247,33 +247,17 @@ export default function ProductManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenant?.id]);
 
-  // Sync query data into optimistic list state
+  // Load products on mount
   useEffect(() => {
-    if (queryProducts) {
-      setProducts(queryProducts);
+    if (tenant?.id) {
+      fetchProducts();
     }
-  }, [queryProducts, setProducts]);
+  }, [tenant?.id, fetchProducts]);
 
-  // Handle query errors
-  useEffect(() => {
-    if (productsError) {
-      const errorMessage = productsError instanceof Error ? productsError.message : 'Unknown error';
-      logger.error('Error loading products:', { error: errorMessage });
-      toast.error('Failed to load products');
-    }
-  }, [productsError]);
-
-  // Sync loading state
-  useEffect(() => {
-    setLoading(productsLoading);
-  }, [productsLoading]);
-
-  // Helper to reload products (triggers refetch + cache invalidation)
-  const loadProducts = useCallback(async () => {
-    await refetchProducts();
-  }, [refetchProducts]);
+  // Alias for external usage
+  const loadProducts = fetchProducts;
 
   // Derived state for categories
   const categories = useMemo(() => {

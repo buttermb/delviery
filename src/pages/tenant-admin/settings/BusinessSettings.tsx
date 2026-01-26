@@ -61,6 +61,14 @@ const TIMEZONES = [
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+// Color presets for brand customization
+const COLOR_PRESETS = [
+  { name: 'Emerald', primary: '#10b981', accent: '#3b82f6', description: 'Fresh & modern' },
+  { name: 'Ocean', primary: '#0ea5e9', accent: '#8b5cf6', description: 'Cool & professional' },
+  { name: 'Rose', primary: '#f43f5e', accent: '#ec4899', description: 'Bold & vibrant' },
+  { name: 'Amber', primary: '#f59e0b', accent: '#84cc16', description: 'Warm & inviting' },
+];
+
 interface BusinessHours {
   [key: string]: { open: string; close: string; closed: boolean };
 }
@@ -95,6 +103,12 @@ export default function BusinessSettings() {
     primary: '#10b981',
     accent: '#3b82f6',
   });
+
+  // Apply color preset
+  const applyColorPreset = (preset: { name: string; primary: string; accent: string }) => {
+    setBrandColors({ primary: preset.primary, accent: preset.accent });
+    toast.success(`Applied ${preset.name} color preset`);
+  };
 
   // Settings version history
   const {

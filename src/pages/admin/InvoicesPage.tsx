@@ -927,7 +927,7 @@ export function InvoicesPage() {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                paginatedInvoices?.map((invoice) => (
+                                (paginatedInvoices as CRMInvoice[])?.map((invoice) => (
                                     <TableRow
                                         key={invoice.id}
                                         className="cursor-pointer hover:bg-muted/50"

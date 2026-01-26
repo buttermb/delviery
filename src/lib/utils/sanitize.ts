@@ -249,3 +249,17 @@ export function sanitizeColor(color: string): string {
   // Return empty for invalid colors
   return '';
 }
+
+/**
+ * Safely parses a JSON string with a fallback value.
+ * @param json - The JSON string to parse
+ * @param fallback - The fallback value if parsing fails
+ */
+export function safeJsonParse<T>(json: string | null | undefined, fallback: T): T {
+  if (!json) return fallback;
+  try {
+    return JSON.parse(json) as T;
+  } catch {
+    return fallback;
+  }
+}

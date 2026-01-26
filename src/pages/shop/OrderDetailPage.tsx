@@ -174,7 +174,7 @@ export function OrderDetailPage() {
       addedCount += item.quantity;
     });
 
-    setCartItemCount((prev: number) => prev + addedCount);
+    setCartItemCount(addedCount);
     toast({
       title: 'Items added to cart',
       description: `${order.items.length} item(s) from order #${order.order_number}`,

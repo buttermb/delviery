@@ -169,7 +169,7 @@ export default function Orders() {
       logSelectQuery('orders', { tenant_id: tenant.id, status: statusFilter }, ordersData, 'Orders');
 
       // Fetch profiles
-      const userIds = [...new Set(ordersData?.map(o => o.user_id).filter(Boolean))];
+      const userIds = [...new Set(ordersData?.map(o => o.user_id).filter(Boolean))] as string[];
       let profilesMap: Record<string, { user_id: string; full_name: string | null; email: string | null; phone: string | null }> = {};
 
       if (userIds.length > 0) {
