@@ -7690,3 +7690,37 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Agent 29: Fix Delivery Zones Form Mobile Layout
+
+### Task
+Fix delivery zones form to stack on mobile using `flex-col sm:flex-row` pattern in StorefrontSettings.tsx
+
+### Changes Made
+**File:** `src/pages/admin/storefront/StorefrontSettings.tsx` (lines 911-965)
+
+Updated the delivery zones form to have better mobile responsiveness:
+
+1. **Main container improvements:**
+   - Added `sm:items-center` for proper vertical alignment on desktop
+   - Added mobile-specific padding and border (`p-3 sm:p-0 border sm:border-0 rounded-lg sm:rounded-none`) to create card-like appearance on mobile
+
+2. **Zip code input:**
+   - Wrapped in flex container with `flex-col gap-1 sm:gap-0`
+   - Added mobile-only label (`sm:hidden`) for clarity on smaller screens
+
+3. **Fee and Min order inputs:**
+   - Changed from `flex items-center gap-2` to `flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2`
+   - This allows labels and inputs to stack vertically on mobile and display inline on desktop
+
+4. **Delete button:**
+   - Added `self-end sm:self-auto` to position button at bottom-right on mobile, auto-aligned on desktop
+
+### Verification
+- `npm run build` - PASSES (0 TypeScript errors)
+- Build completed successfully with exit code 0
+
+### Files Changed
+- `src/pages/admin/storefront/StorefrontSettings.tsx`
