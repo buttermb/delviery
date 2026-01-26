@@ -5087,19 +5087,20 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Add POS item to Command Center section in sidebar-navigation.ts
+## Task: Add Live Map item to Command Center section
 
-### Changes Made:
-- Modified `src/components/admin/sidebar-navigation.ts`:
-  - Renamed 'Dashboard' section to 'Command Center'
-  - Added POS navigation item to Command Center section with:
-    - title: 'POS'
-    - href: '/admin/pos-system'
-    - icon: Store
-    - tier: 'enterprise'
+### Date: 2026-01-25
 
-### Verification:
-- POS item added to Command Center section at line 99-104
-- Uses existing Store icon (already imported)
-- Follows established pattern for enterprise tier features
+### What was done:
+- Added a new 'Command Center' section to sidebar-navigation.ts
+- Added 'Live Map' navigation item with:
+  - Title: 'Live Map'
+  - Route: '/admin/live-map'
+  - Icon: Map (from lucide-react)
+  - Badge: 'LIVE'
+  - Tier: 'enterprise'
 
+### Files Changed:
+- src/components/admin/sidebar-navigation.ts
+
+### Build Status: PASSES
