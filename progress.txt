@@ -7695,26 +7695,37 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
+## OG Image Preview Feature Implementation
 
----
+### Task: Add OG image preview showing social share preview card in SEO tab
 
-## Task: Remove @ts-ignore in useAttentionQueue.ts line 225 and fix the type
+### Implementation Summary:
 
-### What was done:
+1. **Created new component: `OGImagePreview.tsx`**
+   - Location: `src/components/admin/storefront/OGImagePreview.tsx`
+   - Displays social share preview cards for Facebook, Twitter/X, and LinkedIn
+   - Shows how the store URL will appear when shared on social media
+   - Features:
+     - Tabbed interface to preview different platforms
+     - Real-time preview updates based on form data
+     - Proper aspect ratios for each platform (1.91:1 for Facebook/LinkedIn, 2:1 for Twitter)
+     - Graceful fallback when no OG image is set
+     - Tips section with best practices for OG images
+     - Responsive card layout matching each platform's style
 
-1. **Removed unnecessary `@ts-ignore` comment in `src/hooks/useAttentionQueue.ts` line 225**
-
-   The `@ts-ignore` comment was suppressing a perceived type incompatibility when calling `getOldestTimestamp(lateDeliveries.data)`. However, upon analysis:
-   
-   - `lateDeliveries.data` is typed as `DeliveryRow[]` where `DeliveryRow = { id: string; created_at: string }`
-   - `getOldestTimestamp` expects `{ created_at: string }[]`
-   - These types are already compatible - `DeliveryRow` satisfies the requirement of having a `created_at: string` property
-   - The same pattern is used without `@ts-ignore` elsewhere in the file (e.g., line 321 with `activeDeliveries.data`)
-
-2. **Verified the fix** - Build passes successfully with no TypeScript errors
+2. **Updated StorefrontSettings.tsx**
+   - Added import for `OGImagePreview` component
+   - Removed duplicate `Skeleton` import
+   - Integrated `OGImagePreview` component into the SEO tab
+   - Preview dynamically uses:
+     - `meta_title` or `store_name` as title
+     - `meta_description` or `tagline` as description
+     - `og_image_url` for the preview image
+     - Constructed store URL from `slug`
 
 ### Files Changed:
-- `src/hooks/useAttentionQueue.ts` - Removed `@ts-ignore` comment on line 225
+- `src/components/admin/storefront/OGImagePreview.tsx` (new file)
+- `src/pages/admin/storefront/StorefrontSettings.tsx` (modified)
 
-### Why this works:
-The `@ts-ignore` was likely added during an earlier development phase when the type structure was different or when there was a deep instantiation issue with Supabase types. With the current code using explicit `DeliveryRow` type casting at the fetch level (line 106), the types flow correctly through the code and no suppression is needed.
+### Build Status:
+- Build passes successfully with no TypeScript errors
