@@ -17,8 +17,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import {
@@ -46,18 +44,7 @@ import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog
 import { generateUrlToken } from '@/utils/menuHelpers';
 import { StorefrontSettingsLivePreview } from '@/components/admin/storefront/StorefrontSettingsLivePreview';
 import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedProductsManager';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { DeliveryZoneMapPreview } from '@/components/admin/storefront/DeliveryZoneMapPreview';
 
 interface DeliveryZone {
   zip_code: string;
@@ -1067,85 +1054,91 @@ export default function StorefrontSettings() {
 
           {/* Delivery Zones Tab */}
           <TabsContent value="zones">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  Delivery Zones
-                </CardTitle>
-                <CardDescription>Set custom delivery fees by zip code</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  {(formData.delivery_zones || []).map((zone, index) => (
-                    <div key={index} className="flex flex-col sm:flex-row gap-4">
-                      <Input
-                        placeholder="Zip code"
-                        value={zone.zip_code || ''}
-                        onChange={(e) => {
-                          const zones = [...(formData.delivery_zones || [])];
-                          zones[index] = { ...zones[index], zip_code: e.target.value };
-                          updateField('delivery_zones', zones);
-                        }}
-                        className="w-32"
-                      />
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Fee: $</span>
+            <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5" />
+                    Delivery Zones
+                  </CardTitle>
+                  <CardDescription>Set custom delivery fees by zip code</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    {(formData.delivery_zones || []).map((zone, index) => (
+                      <div key={index} className="flex flex-col sm:flex-row gap-4">
                         <Input
-                          type="number"
-                          step="0.01"
-                          value={zone.fee || 0}
+                          placeholder="Zip code"
+                          value={zone.zip_code || ''}
                           onChange={(e) => {
                             const zones = [...(formData.delivery_zones || [])];
-                            zones[index] = { ...zones[index], fee: parseFloat(e.target.value) };
+                            zones[index] = { ...zones[index], zip_code: e.target.value };
                             updateField('delivery_zones', zones);
                           }}
-                          className="w-full sm:w-24"
+                          className="w-full sm:w-32"
                         />
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                        <span className="text-sm text-muted-foreground">Min: $</span>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={zone.min_order || 0}
-                          onChange={(e) => {
-                            const zones = [...(formData.delivery_zones || [])];
-                            zones[index] = { ...zones[index], min_order: parseFloat(e.target.value) };
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">Fee: $</span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={zone.fee || 0}
+                            onChange={(e) => {
+                              const zones = [...(formData.delivery_zones || [])];
+                              zones[index] = { ...zones[index], fee: parseFloat(e.target.value) };
+                              updateField('delivery_zones', zones);
+                            }}
+                            className="w-full sm:w-24"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">Min: $</span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={zone.min_order || 0}
+                            onChange={(e) => {
+                              const zones = [...(formData.delivery_zones || [])];
+                              zones[index] = { ...zones[index], min_order: parseFloat(e.target.value) };
+                              updateField('delivery_zones', zones);
+                            }}
+                            className="w-full sm:w-24"
+                          />
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            const zones = (formData.delivery_zones || []).filter((_, i) => i !== index);
                             updateField('delivery_zones', zones);
                           }}
-                          className="w-full sm:w-24"
-                        />
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="self-end sm:self-auto"
-                        onClick={() => {
-                          const zones = (formData.delivery_zones || []).filter((_, i) => i !== index);
-                          updateField('delivery_zones', zones);
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </div>
-                  ))}
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      const zones = [...(formData.delivery_zones || []), { zip_code: '', fee: 5, min_order: 0 }];
-                      updateField('delivery_zones', zones);
-                    }}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Zone
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  If a customer's zip code isn't listed, the default delivery fee will be used.
-                </p>
-              </CardContent>
-            </Card>
+                    ))}
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        const zones = [...(formData.delivery_zones || []), { zip_code: '', fee: 5, min_order: 0 }];
+                        updateField('delivery_zones', zones);
+                      }}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Zone
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    If a customer's zip code isn't listed, the default delivery fee will be used.
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Zone Map Preview */}
+              <div className="lg:sticky lg:top-6 lg:self-start">
+                <DeliveryZoneMapPreview zones={formData.delivery_zones || []} />
+              </div>
+            </div>
           </TabsContent>
 
           {/* Time Slots Tab */}

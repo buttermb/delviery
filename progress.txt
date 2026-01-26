@@ -7696,37 +7696,61 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - `progress.txt` (this verification report)
 
 
----
+## Task: Add Delivery Zone Map Preview Component
 
-## Task: Remove ts-ignore in bi-engine.ts line 126 and add explicit type annotation
+### Date: 2026-01-25
 
-### Change Made:
-- **File**: `src/lib/analytics/bi-engine.ts`
-- **Line**: 126
-- **Before**: 
-  ```typescript
-  // @ts-ignore - Avoid deep type instantiation
-  const { data: securityEvents } = await supabase
-      .from('security_events')
-      .select('id, event_type')
-      .gte('created_at', thirtyDaysAgo.toISOString())
-      .in('event_type', ['failed_login', 'unauthorized_access']);
-  ```
-- **After**:
-  ```typescript
-  const { data: securityEvents } = await supabase
-      .from('security_events')
-      .select('id, event_type')
-      .gte('created_at', thirtyDaysAgo.toISOString())
-      .in('event_type', ['failed_login', 'unauthorized_access']) as { data: { id: string; event_type: string }[] | null };
-  ```
+### Summary:
+Implemented a mini map component that displays delivery zones visually on a Leaflet map within the Storefront Settings page. The map shows zone markers color-coded by delivery fee, with interactive popups showing zone details.
 
-### Verification:
-- `npm run build` - PASSES (exit code 0)
-- TypeScript compiles cleanly with the explicit type assertion
-- The type annotation matches the actual row structure from the Supabase types:
-  - `id: string`
-  - `event_type: string`
+### Implementation Details:
 
-### Rationale:
-The `@ts-ignore` was used to bypass Supabase's deep type instantiation issue with complex chained queries. By adding an explicit type assertion at the end of the query chain, we tell TypeScript exactly what type to expect, avoiding the deep type resolution while maintaining type safety for the consuming code.
+#### 1. Created DeliveryZoneMapPreview Component
+**File:** `src/components/admin/storefront/DeliveryZoneMapPreview.tsx`
+
+**Features:**
+- Uses Leaflet with OpenStreetMap tiles (free, no API key required)
+- Displays delivery zones as markers on an interactive map
+- Color-coded markers based on delivery fee (green=low, amber=medium, red=high)
+- Custom styled markers showing ZIP code and fee
+- Clickable popups with zone details (ZIP, fee, minimum order)
+- Auto-fits map bounds to show all zones
+- Shows legend explaining fee color coding
+- Handles unmapped ZIP codes with warning message
+- Empty state when no zones configured
+- Uses ZIP code prefix mapping for approximate geographic locations
+
+**Technical Implementation:**
+- Reusable component with configurable height and className
+- Uses `useMemo` for zone location calculations
+- Uses `useCallback` for marker updates
+- Proper cleanup of map instance on unmount
+- ZIP prefix to lat/lng mapping for major US regions
+
+#### 2. Integrated into StorefrontSettings
+**File:** `src/pages/admin/storefront/StorefrontSettings.tsx`
+
+**Changes:**
+- Added import for `DeliveryZoneMapPreview` component
+- Modified Zones tab to use side-by-side layout (form + map)
+- Map preview is sticky on desktop for visibility while scrolling
+- Responsive layout: stacked on mobile, side-by-side on lg+ screens
+
+### Technical Decisions:
+
+1. **Leaflet over Mapbox** - Used Leaflet with OpenStreetMap tiles instead of Mapbox to avoid API key requirements for this preview feature
+
+2. **ZIP Prefix Mapping** - Since full ZIP-to-coordinate geocoding would require an external API, used a comprehensive ZIP prefix mapping for major US metropolitan areas to provide approximate zone visualization
+
+3. **Color Gradient** - Implemented fee-based color coding (green → amber → red) to quickly visualize delivery fee tiers across zones
+
+4. **Marker Jitter** - Added slight position randomization to prevent overlapping markers for zones in the same region
+
+### Build Verification:
+- `npm run build` - PASSES (0 TypeScript errors)
+- All 6600+ modules transformed successfully
+- No new warnings introduced
+
+### Files Changed:
+- `src/components/admin/storefront/DeliveryZoneMapPreview.tsx` (new - 315 lines)
+- `src/pages/admin/storefront/StorefrontSettings.tsx` (modified - added import and map preview to zones tab)
