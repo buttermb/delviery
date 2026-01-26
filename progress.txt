@@ -7672,33 +7672,12 @@ Added `.catch()` error handlers to all unhandled `.then()` Promise chains to pre
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Add transition-colors class to body element
-
-**Date**: 2026-01-25
-**Status**: ✅ Complete
+## Task: Add dark mode classes to AdaptiveSidebar main container
+**Date:** 2026-01-25
 
 ### Changes Made:
-- Added `transition-colors` Tailwind utility class to the body element in `src/index.css`
-- Updated the transition property to include `border-color` for more complete theme transition coverage
+- Added `dark:bg-gray-900 dark:text-white` classes to the main `<Sidebar>` component in `src/components/admin/sidebar/AdaptiveSidebar.tsx`
+- This ensures proper dark mode styling for the sidebar container
 
-### File Modified:
-- `src/index.css` (line 998-1001 in @layer base)
-
-### Before:
-```css
-body {
-  @apply bg-background text-foreground;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-```
-
-### After:
-```css
-body {
-  @apply bg-background text-foreground transition-colors;
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-```
-
-### Purpose:
-The `transition-colors` class enables smooth theme transitions when switching between light and dark modes. This provides a better user experience by animating color changes rather than abrupt switches.
+### Files Changed:
+- `src/components/admin/sidebar/AdaptiveSidebar.tsx` (line 103)
