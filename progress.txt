@@ -6696,19 +6696,32 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
    - `JSON.parse(storedAdmin)` and `JSON.parse(storedSupabaseSession)` - Already wrapped in try-catch block (lines 138-166)
    - Catch block clears storage and sets loading to false on parse failure
 
-4. **TenantAdminAuthContext.tsx (lines 145, 154, 620, 627, 1543)**:
-   - Line 145: `JSON.parse(stored)` in `getInitialAdminState()` - Wrapped in try-catch (lines 143-148)
-   - Line 154: `JSON.parse(stored)` in `getInitialTenantState()` - Wrapped in try-catch (lines 151-163)
-   - Line 620: `JSON.parse(storedAdmin)` - Wrapped in try-catch (lines 619-625)
-   - Line 627: `JSON.parse(storedTenant)` - Wrapped in try-catch (lines 626-632)
-   - Line 1543: `JSON.parse(storedAdmin)` in real-time subscription handler - Wrapped in try-catch (lines 1542-1590)
+### Files Changed:
+- `progress.txt` (this verification report)
 
-### Acceptance Criteria Met:
-- [x] All JSON.parse calls in storageKeys.ts are wrapped in try-catch
-- [x] All JSON.parse calls in CustomerAuthContext.tsx are wrapped in try-catch
-- [x] All JSON.parse calls in SuperAdminAuthContext.tsx are wrapped in try-catch
-- [x] All JSON.parse calls in TenantAdminAuthContext.tsx are wrapped in try-catch
-- [x] Error handling properly clears state/storage on parse failures
 
-### Conclusion:
-No code changes were required - all JSON.parse calls were already properly wrapped in try-catch blocks with appropriate error handling that clears corrupted storage and resets auth state.
+## Task: Add safeJsonParseOrNull function to storageKeys.ts
+
+### Date: 2026-01-25
+
+### What was done:
+
+Added a new `safeJsonParseOrNull` function to `src/constants/storageKeys.ts` that wraps `JSON.parse` in a try-catch and returns `null` on error.
+
+The existing `safeJsonParse` function already had a try-catch but returned `defaultValue` on error. The new function provides an alternative that specifically returns `null` on parse errors, as requested.
+
+### Changes:
+
+1. Added `safeJsonParseOrNull<T>(json: string | null): T | null` function:
+   - Returns `null` if input is null or empty
+   - Wraps `JSON.parse` in try-catch
+   - Returns `null` on JSON parse errors
+   - Uses modern `catch` syntax without unused error variable
+
+2. Updated `safeJsonParse` to use modern `catch` syntax (removed unused `error` variable)
+
+### Files Changed:
+- `src/constants/storageKeys.ts` - Added `safeJsonParseOrNull` function
+
+### Verification:
+- `npm run build` passes with 0 TypeScript errors
