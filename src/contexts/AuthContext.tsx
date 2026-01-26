@@ -112,7 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         error: error instanceof Error ? error.message : 'Unknown error',
         source: 'AuthContext'
       });
-      logger.error('[AuthContext] getSession error', error instanceof Error ? error : new Error(String(error)));
+      logger.error('[AuthContext] getSession failed', error instanceof Error ? error : new Error(String(error)));
       if (mounted && !initializedRef.current) {
         initializedRef.current = true;
         setIsLoading(false);

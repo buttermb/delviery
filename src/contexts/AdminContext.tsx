@@ -155,6 +155,10 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         event_type: "admin_login",
         user_id: authData.user.id,
         details: { email, timestamp: new Date().toISOString() }
+      }).then(() => {
+        // Successfully logged
+      }).catch((error) => {
+        logger.warn('[AdminContext] Failed to log admin_login event', { error });
       });
 
       toast({
