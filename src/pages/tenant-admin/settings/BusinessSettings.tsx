@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import {
   SettingsSection,
@@ -7,7 +7,10 @@ import {
   SettingsRow,
   SaveStatusIndicator,
 } from '@/components/settings/SettingsSection';
+import { SettingsVersionHistory } from '@/components/settings/SettingsVersionHistory';
 import { useAutoSave } from '@/hooks/useAutoSave';
+import { useSettingsVersions } from '@/hooks/useSettingsVersions';
+import type { SettingsVersion } from '@/hooks/useSettingsVersions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -42,6 +45,7 @@ import {
   Database,
   Trash2,
   Loader2,
+  History,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -62,11 +66,12 @@ interface BusinessHours {
 }
 
 export default function BusinessSettings() {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null); // Ideally fetch this from storage
   const [clearDemoDialogOpen, setClearDemoDialogOpen] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
 
   const [businessInfo, setBusinessInfo] = useState({
     name: tenant?.business_name || '',
@@ -91,41 +96,16 @@ export default function BusinessSettings() {
     accent: '#3b82f6',
   });
 
-  // Color preset themes
-  const COLOR_PRESETS = [
-    {
-      name: 'Modern',
-      primary: '#10b981', // Emerald green
-      accent: '#3b82f6',  // Blue
-      description: 'Fresh and professional',
-    },
-    {
-      name: 'Classic',
-      primary: '#6366f1', // Indigo
-      accent: '#f59e0b',  // Amber
-      description: 'Timeless elegance',
-    },
-    {
-      name: 'Dark',
-      primary: '#1e293b', // Slate dark
-      accent: '#f43f5e',  // Rose
-      description: 'Bold and striking',
-    },
-    {
-      name: 'Nature',
-      primary: '#059669', // Emerald deeper
-      accent: '#84cc16',  // Lime
-      description: 'Organic and earthy',
-    },
-  ] as const;
-
-  const applyColorPreset = (preset: typeof COLOR_PRESETS[number]) => {
-    setBrandColors({
-      primary: preset.primary,
-      accent: preset.accent,
-    });
-    toast.success(`${preset.name} theme applied`);
-  };
+  // Settings version history
+  const {
+    versions: businessVersions,
+    isLoading: versionsLoading,
+    saveVersion,
+  } = useSettingsVersions({
+    tenantId: tenant?.id,
+    settingsKey: 'business',
+    enabled: !!tenant?.id,
+  });
 
   // Clear demo data mutation
   const clearDemoDataMutation = useMutation({
@@ -196,6 +176,13 @@ export default function BusinessSettings() {
       queryClient.invalidateQueries({ queryKey: ['tenant'] });
     },
     onSuccess: () => toast.success('Business info saved'),
+    versionTracking: {
+      enabled: !!tenant?.id,
+      tenantId: tenant?.id ?? '',
+      settingsKey: 'business',
+      userEmail: admin?.email,
+      userId: admin?.id,
+    },
   });
 
   const handleInfoChange = (field: string, value: string) => {
@@ -269,7 +256,63 @@ export default function BusinessSettings() {
       if (error) throw error;
     },
     onSuccess: () => toast.success('Business hours saved'),
+    versionTracking: {
+      enabled: !!tenant?.id,
+      tenantId: tenant?.id ?? '',
+      settingsKey: 'business_hours',
+      userEmail: admin?.email,
+      userId: admin?.id,
+    },
   });
+
+  // Handle restoring a previous version
+  const handleRestoreVersion = async (version: SettingsVersion) => {
+    if (!tenant?.id) return;
+    setIsRestoring(true);
+
+    try {
+      const snapshot = version.snapshot as Record<string, unknown>;
+
+      // First save current settings as a new version (before restoring)
+      saveVersion({
+        tenantId: tenant.id,
+        settingsKey: version.settings_key,
+        snapshot: version.settings_key === 'business'
+          ? businessInfo as unknown as Record<string, unknown>
+          : businessHours as unknown as Record<string, unknown>,
+        changedFields: ['restored_backup'],
+        changedBy: admin?.id,
+        changedByEmail: admin?.email,
+        description: `Auto-backup before restoring v${version.version_number}`,
+      });
+
+      // Apply the restored settings based on the settings key
+      if (version.settings_key === 'business') {
+        const restoredInfo = {
+          name: (snapshot.name as string) ?? '',
+          phone: (snapshot.phone as string) ?? '',
+          address: (snapshot.address as string) ?? '',
+          website: (snapshot.website as string) ?? '',
+          timezone: (snapshot.timezone as string) ?? 'America/Los_Angeles',
+        };
+        setBusinessInfo(restoredInfo);
+        await saveBusinessInfo(restoredInfo);
+      } else if (version.settings_key === 'business_hours') {
+        const restoredHours = snapshot as BusinessHours;
+        setBusinessHours(restoredHours);
+        await saveBusinessHoursDebounced(restoredHours);
+      }
+
+      toast.success('Settings restored', {
+        description: `Restored to version ${version.version_number}`,
+      });
+    } catch (error) {
+      logger.error('Failed to restore settings version', { error });
+      toast.error('Failed to restore settings');
+    } finally {
+      setIsRestoring(false);
+    }
+  };
 
   const handleHoursChange = (day: string, field: 'open' | 'close' | 'closed', value: string | boolean) => {
     setBusinessHours((prev) => {
@@ -622,6 +665,40 @@ export default function BusinessSettings() {
               </AlertDialogContent>
             </AlertDialog>
           </SettingsRow>
+        </SettingsCard>
+      </SettingsSection>
+
+      {/* Version History */}
+      <SettingsSection
+        title="Version History"
+        description="View and restore previous settings configurations (last 10 saves)"
+        icon={History}
+      >
+        <SettingsCard>
+          <SettingsVersionHistory
+            versions={businessVersions}
+            isLoading={versionsLoading}
+            onRestore={handleRestoreVersion}
+            isRestoring={isRestoring}
+            formatFieldName={(field) => {
+              const fieldLabels: Record<string, string> = {
+                name: 'Business Name',
+                phone: 'Phone Number',
+                address: 'Address',
+                website: 'Website',
+                timezone: 'Timezone',
+                business_hours: 'Business Hours',
+                Mon: 'Monday Hours',
+                Tue: 'Tuesday Hours',
+                Wed: 'Wednesday Hours',
+                Thu: 'Thursday Hours',
+                Fri: 'Friday Hours',
+                Sat: 'Saturday Hours',
+                Sun: 'Sunday Hours',
+              };
+              return fieldLabels[field] ?? field.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+            }}
+          />
         </SettingsCard>
       </SettingsSection>
     </div>
