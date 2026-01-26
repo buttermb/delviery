@@ -1,3 +1,22 @@
+## Task: Change ThemeContext default from system to light
+
+### What was done:
+
+1. **Modified `src/contexts/ThemeContext.tsx`**:
+   - Removed system preference detection (window.matchMedia prefers-color-scheme: dark)
+   - Simplified the useState initializer to default to 'light' when no stored theme exists
+   - Users with existing stored theme preferences are unaffected
+   - New users will now always get light theme by default instead of respecting system preference
+
+### Acceptance Criteria Met:
+- [x] Default theme is now 'light' instead of respecting system preference
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/contexts/ThemeContext.tsx`
+
+---
+
 ﻿## Task: Test Credit Consumption Flow
 
 ### What was done:
