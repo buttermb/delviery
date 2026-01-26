@@ -42,7 +42,7 @@ import {
     TrendingUp
 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
-import { format, differenceInDays, startOfMonth, isAfter } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { toast } from "sonner";
 import { CRMInvoice, CRMSettings } from "@/types/crm";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
@@ -428,9 +428,6 @@ export function InvoicesPage() {
     const { useInvoicesQuery, useMarkInvoicePaid, useMarkInvoiceSent, useVoidInvoice, useDuplicateInvoice } = useInvoices();
     const { data: invoices, isLoading } = useInvoicesQuery();
     const markAsPaid = useMarkInvoicePaid();
-    const markAsSent = useMarkInvoiceSent();
-    const voidInvoice = useVoidInvoice();
-    const duplicateInvoice = useDuplicateInvoice();
     const { data: crmSettings } = useCRMSettings();
 
     const filteredInvoices = invoices?.filter((invoice) => {
@@ -471,77 +468,6 @@ export function InvoicesPage() {
             },
         });
     };
-
-    const handleMarkAsSent = (id: string) => {
-        markAsSent.mutate(id, {
-            onSuccess: () => {
-                toast.success("Invoice marked as sent");
-            },
-            onError: (error: unknown) => {
-                const message = error instanceof Error ? error.message : "Failed to update invoice";
-                toast.error("Update failed", { description: message });
-                logger.error('Failed to mark invoice as sent', error, { component: 'InvoicesPage', invoiceId: id });
-            },
-        });
-    };
-
-    const handleVoidInvoice = (id: string) => {
-        voidInvoice.mutate(id, {
-            onSuccess: () => {
-                toast.success("Invoice voided");
-            },
-            onError: (error: unknown) => {
-                const message = error instanceof Error ? error.message : "Failed to void invoice";
-                toast.error("Void failed", { description: message });
-                logger.error('Failed to void invoice', error, { component: 'InvoicesPage', invoiceId: id });
-            },
-        });
-    };
-
-    const handleDuplicateInvoice = (id: string) => {
-        duplicateInvoice.mutate(id, {
-            onSuccess: (newInvoice) => {
-                toast.success("Invoice duplicated");
-                navigate(`/${tenantSlug}/admin/crm/invoices/${newInvoice.id}`);
-            },
-            onError: (error: unknown) => {
-                const message = error instanceof Error ? error.message : "Failed to duplicate invoice";
-                toast.error("Duplicate failed", { description: message });
-                logger.error('Failed to duplicate invoice', error, { component: 'InvoicesPage', invoiceId: id });
-            },
-        });
-    };
-
-    const handlePrintInvoice = useCallback(async (invoice: CRMInvoice) => {
-        if (isGeneratingPDF) return;
-
-        setIsGeneratingPDF(true);
-        try {
-            const doc = new jsPDF({
-                orientation: "portrait",
-                unit: "mm",
-                format: "a4",
-            });
-
-            // Generate PDF content (reuse the same generation logic)
-            await generateEnhancedInvoicePDF({ invoice, settings: crmSettings });
-
-            // For print, we generate and open in a new window
-            const pdfBlob = doc.output('blob');
-            const pdfUrl = URL.createObjectURL(pdfBlob);
-            const printWindow = window.open(pdfUrl);
-            if (printWindow) {
-                printWindow.onload = () => {
-                    printWindow.print();
-                };
-            }
-        } catch (error) {
-            logger.error("PDF print failed:", error instanceof Error ? error : new Error(String(error)), { component: 'InvoicesPage' });
-            toast.error("Failed to print invoice");
-        } finally {
-            setIsGeneratingPDF(false);
-        }
-    }, [crmSettings, isGeneratingPDF]);
 
     const handleDownloadPDF = useCallback(async (invoice: CRMInvoice) => {
         if (isGeneratingPDF) return;
@@ -1052,5 +978,3 @@ export function InvoicesPage() {
         </div>
     );
 }
-
-export default InvoicesPage;
