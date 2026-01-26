@@ -46,7 +46,7 @@ window.addEventListener('error', (event) => {
     // Show error message to user
     const errorDiv = document.createElement('div');
     errorDiv.id = 'chunk-loading-error';
-    errorDiv.innerHTML = '⚠️ Loading error detected. Reloading page...';
+    errorDiv.textContent = '⚠️ Loading error detected. Reloading page...';
     errorDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#dc2626;color:white;padding:1rem;text-align:center;z-index:9999;font-family:system-ui,sans-serif;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.2)';
     document.body.appendChild(errorDiv);
 
@@ -63,23 +63,38 @@ window.addEventListener('error', (event) => {
 
     const errorDiv = document.createElement('div');
     errorDiv.id = 'chunk-loading-error-permanent';
-    errorDiv.innerHTML = `
-      <div style="max-width:600px;margin:2rem auto;padding:2rem;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);font-family:system-ui,sans-serif;">
-        <h2 style="color:#dc2626;margin:0 0 1rem 0;">⚠️ Loading Error</h2>
-        <p style="color:#374151;margin:0 0 1.5rem 0;line-height:1.6;">
-          The application failed to load after multiple attempts. Please try:
-        </p>
-        <ul style="color:#374151;margin:0 0 1.5rem 0;padding-left:1.5rem;line-height:1.8;">
-          <li>Hard refresh (Ctrl+Shift+R or Cmd+Shift+R)</li>
-          <li>Clear browser cache and reload</li>
-          <li>Try an incognito/private window</li>
-        </ul>
-        <button onclick="location.reload(true)" style="width:100%;padding:12px;background:#10b981;color:white;border:none;border-radius:6px;font-size:16px;font-weight:500;cursor:pointer;">
-          Reload Page
-        </button>
-      </div>
-    `;
     errorDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;z-index:99999;padding:1rem';
+
+    // Build error UI safely without innerHTML
+    const container = document.createElement('div');
+    container.style.cssText = 'max-width:600px;margin:2rem auto;padding:2rem;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);font-family:system-ui,sans-serif;';
+
+    const heading = document.createElement('h2');
+    heading.style.cssText = 'color:#dc2626;margin:0 0 1rem 0;';
+    heading.textContent = '⚠️ Loading Error';
+    container.appendChild(heading);
+
+    const description = document.createElement('p');
+    description.style.cssText = 'color:#374151;margin:0 0 1.5rem 0;line-height:1.6;';
+    description.textContent = 'The application failed to load after multiple attempts. Please try:';
+    container.appendChild(description);
+
+    const list = document.createElement('ul');
+    list.style.cssText = 'color:#374151;margin:0 0 1.5rem 0;padding-left:1.5rem;line-height:1.8;';
+    ['Hard refresh (Ctrl+Shift+R or Cmd+Shift+R)', 'Clear browser cache and reload', 'Try an incognito/private window'].forEach(text => {
+      const li = document.createElement('li');
+      li.textContent = text;
+      list.appendChild(li);
+    });
+    container.appendChild(list);
+
+    const button = document.createElement('button');
+    button.style.cssText = 'width:100%;padding:12px;background:#10b981;color:white;border:none;border-radius:6px;font-size:16px;font-weight:500;cursor:pointer;';
+    button.textContent = 'Reload Page';
+    button.addEventListener('click', () => location.reload());
+    container.appendChild(button);
+
+    errorDiv.appendChild(container);
     document.body.appendChild(errorDiv);
   }
 });
@@ -221,33 +236,58 @@ try {
     logger.debug('Initialization error details', { error: error instanceof Error ? error.message : String(error), component: 'main' });
   }
 
-  // Display user-friendly error message
+  // Display user-friendly error message safely without innerHTML
   const rootElement = document.getElementById("root");
   if (rootElement) {
-    rootElement.innerHTML = `
-      <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; font-family: system-ui, -apple-system, sans-serif;">
-        <div style="max-width: 500px; padding: 30px; border: 1px solid #e5e7eb; border-radius: 12px; background: white;">
-          <h1 style="color: #dc2626; margin: 0 0 16px 0; font-size: 24px;">⚠️ Failed to Load</h1>
-          <p style="color: #374151; margin: 0 0 20px 0; line-height: 1.5;">
-            We encountered an error while loading the app. Please try:
-          </p>
-          <ul style="color: #374151; margin: 0 0 20px 0; line-height: 1.8;">
-            <li>Refreshing the page</li>
-            <li>Clearing your browser cache</li>
-            <li>Using an incognito/private window</li>
-          </ul>
-          <button 
-            onclick="location.reload()" 
-            style="width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer;"
-          >
-            Reload Page
-          </button>
-          <details style="margin-top: 20px; font-size: 12px; color: #6b7280;">
-            <summary style="cursor: pointer;">Technical Details</summary>
-            <pre style="margin-top: 10px; padding: 10px; background: #f3f4f6; border-radius: 6px; overflow: auto;">${error instanceof Error ? error.message : String(error)}</pre>
-          </details>
-        </div>
-      </div>
-    `;
+    // Clear existing content
+    rootElement.textContent = '';
+
+    // Build error UI safely
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; font-family: system-ui, -apple-system, sans-serif;';
+
+    const card = document.createElement('div');
+    card.style.cssText = 'max-width: 500px; padding: 30px; border: 1px solid #e5e7eb; border-radius: 12px; background: white;';
+
+    const title = document.createElement('h1');
+    title.style.cssText = 'color: #dc2626; margin: 0 0 16px 0; font-size: 24px;';
+    title.textContent = '⚠️ Failed to Load';
+    card.appendChild(title);
+
+    const desc = document.createElement('p');
+    desc.style.cssText = 'color: #374151; margin: 0 0 20px 0; line-height: 1.5;';
+    desc.textContent = 'We encountered an error while loading the app. Please try:';
+    card.appendChild(desc);
+
+    const list = document.createElement('ul');
+    list.style.cssText = 'color: #374151; margin: 0 0 20px 0; line-height: 1.8;';
+    ['Refreshing the page', 'Clearing your browser cache', 'Using an incognito/private window'].forEach(text => {
+      const li = document.createElement('li');
+      li.textContent = text;
+      list.appendChild(li);
+    });
+    card.appendChild(list);
+
+    const button = document.createElement('button');
+    button.style.cssText = 'width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer;';
+    button.textContent = 'Reload Page';
+    button.addEventListener('click', () => location.reload());
+    card.appendChild(button);
+
+    const details = document.createElement('details');
+    details.style.cssText = 'margin-top: 20px; font-size: 12px; color: #6b7280;';
+    const summary = document.createElement('summary');
+    summary.style.cssText = 'cursor: pointer;';
+    summary.textContent = 'Technical Details';
+    details.appendChild(summary);
+    const pre = document.createElement('pre');
+    pre.style.cssText = 'margin-top: 10px; padding: 10px; background: #f3f4f6; border-radius: 6px; overflow: auto;';
+    // Safely set error message using textContent to prevent XSS
+    pre.textContent = error instanceof Error ? error.message : String(error);
+    details.appendChild(pre);
+    card.appendChild(details);
+
+    wrapper.appendChild(card);
+    rootElement.appendChild(wrapper);
   }
 }

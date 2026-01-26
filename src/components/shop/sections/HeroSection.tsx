@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { sanitizeBasicHtml } from '@/lib/utils/sanitize';
+import { sanitizeWithLineBreaks } from '@/lib/utils/sanitize';
 
 export interface HeroSectionProps {
     content: {
@@ -170,8 +170,8 @@ export function HeroSection({ content, styles }: HeroSectionProps) {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
                         className="text-center text-lg md:text-xl font-light leading-relaxed mt-12 mb-12 max-w-2xl mx-auto"
-                        style={{ color: `${text_color}80` }} // 50% opacity
-                        dangerouslySetInnerHTML={{ __html: sanitizeBasicHtml(subheading) }} // Sanitized HTML - allows only basic formatting
+                        style={{ color: `${text_color}80` }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeWithLineBreaks(subheading) }}
                     />
 
                     {/* CTAs */}

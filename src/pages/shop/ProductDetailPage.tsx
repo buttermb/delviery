@@ -19,8 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import { queryKeys } from '@/lib/queryKeys';
-import { sanitizeHtml } from '@/lib/utils/sanitize';
+import { sanitizeHtml, safeJsonParse } from '@/lib/utils/sanitize';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart,
@@ -328,7 +327,7 @@ export function ProductDetailPage() {
   // Check wishlist status
   useEffect(() => {
     if (store?.id && product?.product_id) {
-      const wishlist = JSON.parse(localStorage.getItem(`shop_wishlist_${store.id}`) || '[]');
+      const wishlist = safeJsonParse<string[]>(localStorage.getItem(`shop_wishlist_${store.id}`), []);
       setIsWishlisted(wishlist.includes(product.product_id));
     }
   }, [store?.id, product?.product_id]);
