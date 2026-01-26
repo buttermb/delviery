@@ -879,11 +879,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
         // Handle specific error cases
         const errorData = await response.json().catch(() => ({}));
-        logger.error('[AUTH] Token refresh failed', { status: response.status, error: errorData });
 
         if (response.status === 401) {
-          // Refresh token is invalid/expired - try Supabase native refresh as fallback
-          logger.debug('[AUTH] Edge function refresh failed with 401, trying Supabase native refresh');
+          // 401 is expected when using Supabase native auth (vs custom tenant sessions)
+          // Don't log as error since we have a fallback - log as debug instead
+          logger.debug('[AUTH] Edge function refresh returned 401, attempting Supabase native refresh fallback', { 
+            reason: errorData?.reason 
+          });
 
           try {
             const { data: supabaseRefreshData, error: supabaseRefreshError } = await supabase.auth.refreshSession({
