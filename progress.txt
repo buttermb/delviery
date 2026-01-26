@@ -3060,19 +3060,29 @@ verifying all 5 stat cards load with real data and their navigation links work c
 
 ---
 
-## Task: Add lazy import for AdminNotifications page in App.tsx
+## Task: Add Route for team-management path in App.tsx
 
-### Status: Already Complete ✓
+**Date:** 2026-01-25
+**Status:** COMPLETED
 
-**Verification performed on:** 2026-01-25
+### Implementation Summary:
+Added a new route for `team-management` path in App.tsx that renders the `TeamManagement` component with proper role and feature protection.
 
-### Finding:
-The lazy import for AdminNotifications already exists in `src/App.tsx`:
+### Changes Made:
+- **File:** `src/App.tsx` (line 946)
+- **Added Route:**
+  ```tsx
+  <Route path="team-management" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute></RoleProtectedRoute>} />
+  ```
 
-- **Line 212**: `const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));`
-- **Line 971**: Route configured: `<Route path="notifications" element={<FeatureProtectedRoute featureId="notifications"><AdminNotifications /></FeatureProtectedRoute>} />`
+### Route Details:
+- **Path:** `team-management`
+- **Component:** `TeamManagement` (already imported at line 202)
+- **Protection:** 
+  - `RoleProtectedRoute` - restricts to `owner` and `admin` roles
+  - `FeatureProtectedRoute` - requires `team-members` feature flag
+- **Pattern:** Follows existing conventions used by `staff-management` and `team-members` routes
 
-The AdminNotifications page (`src/pages/admin/AdminNotifications.tsx`) is properly lazy-loaded and routed. No changes were necessary.
-
-### Files Changed:
-- `progress.txt` (this verification report)
+### Verification:
+- `npm run build` - PASSES (6598 modules transformed, no TypeScript errors)
+- Route properly placed alongside related team routes (staff-management, team-members)
