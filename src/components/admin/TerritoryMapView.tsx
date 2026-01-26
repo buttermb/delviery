@@ -56,7 +56,7 @@ export function TerritoryMapView() {
     existingMarkers.forEach(marker => marker.remove());
 
     // Add markers for each client with coordinates
-    clients.forEach((client) => {
+    (clients as any[]).forEach((client) => {
       const coords = client.coordinates as { lat: number; lng: number } | undefined;
       if (!coords || typeof coords.lat !== 'number' || typeof coords.lng !== 'number') return;
 
@@ -85,7 +85,10 @@ export function TerritoryMapView() {
       el.style.justifyContent = "center";
       el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>`;
 
-      // Create popup
+      // Create popup with optional fields
+      const monthlyVolume = client.monthly_volume ?? 'N/A';
+      const reliabilityScore = client.reliability_score ?? 'N/A';
+      
       const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
         <div style="padding: 8px; min-width: 200px;">
           <h3 style="font-weight: 600; margin-bottom: 4px;">${client.business_name}</h3>
@@ -93,16 +96,16 @@ export function TerritoryMapView() {
           <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px;">
             <span style="font-size: 12px; font-weight: 500;">Balance:</span>
             <span style="font-size: 14px; font-weight: 600; color: ${markerColor};">
-              $${client.outstanding_balance.toLocaleString()}
+              $${(client.outstanding_balance || 0).toLocaleString()}
             </span>
           </div>
           <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px;">
             <span style="font-size: 12px; font-weight: 500;">Monthly:</span>
-            <span style="font-size: 12px;">${client.monthly_volume} lbs</span>
+            <span style="font-size: 12px;">${monthlyVolume} lbs</span>
           </div>
           <div style="display: flex; gap: 8px; align-items: center;">
             <span style="font-size: 12px; font-weight: 500;">Rating:</span>
-            <span style="font-size: 12px;">${client.reliability_score}%</span>
+            <span style="font-size: 12px;">${reliabilityScore}%</span>
           </div>
         </div>
       `);

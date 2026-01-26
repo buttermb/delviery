@@ -63,8 +63,15 @@ import {
   UserCheck,
   Flame,
   Brain,
-  Star
+  Star,
+  Barcode,
+  Headphones,
+  Award,
+  HelpCircle,
 } from 'lucide-react';
+
+// Aliases for backwards compatibility
+const HeadphonesIcon = Headphones;
 
 export interface NavItem {
   title: string;

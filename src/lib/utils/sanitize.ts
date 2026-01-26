@@ -173,3 +173,79 @@ export function sanitizeCouponCode(code: string, maxLength?: number): string {
   }
   return sanitized;
 }
+
+/**
+ * Sanitizes a SKU input.
+ * Converts to uppercase, keeps alphanumeric and hyphens.
+ * @param sku - The SKU string to sanitize
+ * @param maxLength - Optional maximum length to truncate to
+ */
+export function sanitizeSkuInput(sku: string, maxLength?: number): string {
+  if (!sku) return '';
+  let sanitized = sku
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9-]/g, '');
+  
+  if (maxLength && sanitized.length > maxLength) {
+    sanitized = sanitized.substring(0, maxLength);
+  }
+  return sanitized;
+}
+
+/**
+ * Sanitizes a URL input.
+ * Trims whitespace and removes dangerous protocols.
+ * @param url - The URL string to sanitize
+ * @param maxLength - Optional maximum length to truncate to
+ */
+export function sanitizeUrlInput(url: string, maxLength?: number): string {
+  if (!url) return '';
+  let sanitized = url
+    .trim()
+    .replace(/javascript:/gi, '')
+    .replace(/vbscript:/gi, '')
+    .replace(/data:/gi, '');
+  
+  if (maxLength && sanitized.length > maxLength) {
+    sanitized = sanitized.substring(0, maxLength);
+  }
+  return sanitized;
+}
+
+/**
+ * Sanitizes text while preserving line breaks.
+ * @param text - The text to sanitize
+ * @param maxLength - Optional maximum length to truncate to
+ */
+export function sanitizeWithLineBreaks(text: string, maxLength?: number): string {
+  if (!text) return '';
+  let sanitized = text
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/on\w+\s*=\s*(['"])[^'"]*\1/gi, '')
+    .replace(/[<>]/g, '');
+  
+  if (maxLength && sanitized.length > maxLength) {
+    sanitized = sanitized.substring(0, maxLength);
+  }
+  return sanitized;
+}
+
+/**
+ * Sanitizes a color value (hex or hsl).
+ * @param color - The color string to sanitize
+ */
+export function sanitizeColor(color: string): string {
+  if (!color) return '';
+  // Allow hex colors (#fff, #ffffff) and hsl/hsla
+  const hexPattern = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
+  const hslPattern = /^hsla?\(\s*\d+\s*,\s*\d+%?\s*,\s*\d+%?\s*(,\s*[\d.]+)?\s*\)$/;
+  
+  const trimmed = color.trim();
+  if (hexPattern.test(trimmed) || hslPattern.test(trimmed)) {
+    return trimmed;
+  }
+  // Return empty for invalid colors
+  return '';
+}
