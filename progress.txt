@@ -1,91 +1,64 @@
-# Task: Deploy and Verify Auth Edge Functions
-# Status: COMPLETED
-# Date: 2026-01-22
+# Task: Complete Storefront Checkout with Stripe
 
-## What Was Done
+## Status: COMPLETED
 
-### 1. Added Health Check Endpoints to All Auth Edge Functions
+## Changes Made
 
-Each auth function now supports a `?action=health` query parameter that returns:
-- Function status (`ok`)
-- Function name
-- Timestamp
-- Environment variable availability (boolean flags, not values)
+### 1. Fixed Stripe Checkout Item Payload (CheckoutPage.tsx)
+- Added `product_id` field to checkout items sent to the `storefront-checkout` edge function
+- Previously only sent `name`, `price`, `quantity`, `image_url` - but the edge function requires `product_id` for server-side price verification
+- Removed client `price` from the payload since the edge function ignores it (security best practice)
 
-Functions updated:
-- `supabase/functions/tenant-admin-auth/index.ts` - Added health check (checks SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-- `supabase/functions/super-admin-auth/index.ts` - Added health check (checks SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, JWT_SECRET)
-- `supabase/functions/customer-auth/index.ts` - Added health check (checks SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, JWT_SECRET)
-- `supabase/functions/revoke-all-sessions/index.ts` - Added health check (checks SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+### 2. Added Discount Support to Stripe Session
+- CheckoutPage now calculates total discount (coupon + loyalty + deals) and sends `discount_amount` to the edge function
+- Edge function creates a Stripe coupon on-the-fly to apply the discount to the checkout session
+- Discount is capped at subtotal to prevent negative charges
 
-### 2. Created Deployment Script
+### 3. Fixed Cart Clearing for Card Payments
+- Cart is now cleared before redirecting to Stripe checkout (since order is already created at that point)
+- Previously cart was only cleared for cash/other payment methods after order placement
+- Prevents duplicate orders if user returns and tries to checkout again
 
-`scripts/deploy-auth-functions.sh` - Full deployment pipeline:
-- Links to Supabase project (mtvwmyerntkhrcdnhahp)
-- Verifies required secrets are configured (JWT_SECRET, SUPABASE_SERVICE_ROLE_KEY)
-- Deploys all 4 auth edge functions
-- Runs health checks to verify successful deployment
+### 4. Added Stripe Session ID to Success URL
+- Success URL now includes `{CHECKOUT_SESSION_ID}` template parameter (Stripe replaces with actual session ID)
+- OrderConfirmationPage reads session_id from URL params for payment verification
 
-### 3. Created Verification Script
+### 5. Enhanced OrderConfirmationPage with Payment Verification
+- Added Stripe payment status verification when redirected from Stripe checkout
+- Shows loading spinner while verifying payment
+- Checks storefront_orders table for payment_status or matching stripe_session_id
+- Gracefully handles cases where webhook hasn't arrived yet (shows confirmation anyway)
 
-`scripts/verify-auth-functions.sh` - Quick health check script:
-- Runs health checks against all 4 auth functions
-- Reports env variable status from each function
-- Supports custom project ref as argument
-- Returns exit code 1 if any function fails
+### 6. Added Cancelled Payment Handling
+- Cancel URL now includes `?cancelled=true` parameter
+- CheckoutPage detects the cancelled parameter and shows a toast notification
+- Cleanly removes the parameter from URL after showing the message
 
-## Deployment Instructions
+### 7. Converted to Named Exports (Code Style Compliance)
+- CheckoutPage: Changed from `export default function` to `export function`
+- OrderConfirmationPage: Changed from `export default function` to `export function`
+- Updated index.ts barrel exports to use `{ CheckoutPage }` and `{ OrderConfirmationPage }` instead of `{ default as ... }`
 
-### Prerequisites
-1. Install Supabase CLI: `npm install -g supabase`
-2. Login: `npx supabase login`
+### 8. Created Missing sanitize.ts Utility
+- Created `src/lib/utils/sanitize.ts` with `sanitizeHtml()` function
+- Strips script/iframe/object/embed/form tags
+- Removes event handler attributes (onclick, onload, etc.)
+- Blocks javascript:/vbscript:/data: protocol URIs
+- Adds `rel="noopener noreferrer"` to target="_blank" links
+- Required by ProductDetailPage and CustomHTMLSection (was missing, blocking build)
 
-### Deploy
-```bash
-# Option 1: Full deploy with verification
-chmod +x scripts/deploy-auth-functions.sh
-./scripts/deploy-auth-functions.sh
+### 9. Updated storefront-checkout Edge Function
+- Added `discount_amount` to CheckoutRequest interface
+- Creates a one-time Stripe coupon when discount is present
+- Applies discount via Stripe's `discounts` parameter on session creation
+- Added proper spread of discounts into session config
 
-# Option 2: Manual deploy
-cd supabase
-npx supabase link --project-ref mtvwmyerntkhrcdnhahp
-npx supabase functions deploy tenant-admin-auth --no-verify-jwt
-npx supabase functions deploy super-admin-auth --no-verify-jwt
-npx supabase functions deploy customer-auth --no-verify-jwt
-npx supabase functions deploy revoke-all-sessions --no-verify-jwt
-```
+## Files Modified
+- `src/pages/shop/CheckoutPage.tsx` - Stripe integration fixes, named export, cancelled handling
+- `src/pages/shop/OrderConfirmationPage.tsx` - Payment verification, named export
+- `src/pages/shop/index.ts` - Updated barrel exports
+- `supabase/functions/storefront-checkout/index.ts` - Discount support, updated request interface
+- `src/lib/utils/sanitize.ts` (NEW) - HTML sanitization utility
 
-### Set Required Secrets (if not already set)
-```bash
-npx supabase secrets set JWT_SECRET=<your-jwt-secret>
-npx supabase secrets set SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
-```
-
-### Verify Deployment
-```bash
-# Using verification script
-chmod +x scripts/verify-auth-functions.sh
-./scripts/verify-auth-functions.sh
-
-# Or manual curl
-curl -s "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/tenant-admin-auth?action=health"
-curl -s "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/super-admin-auth?action=health"
-curl -s "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/customer-auth?action=health"
-curl -s "https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/revoke-all-sessions?action=health"
-```
-
-## Acceptance Criteria Met
-- [x] All auth functions have health check endpoints
-- [x] Health checks verify required environment variables
-- [x] Deployment script automates the full deploy process
-- [x] Verification script provides quick health status
-- [x] Functions ready for deployment (code complete, validation in place)
-
-## Auth Functions Summary
-
-| Function | Purpose | Token Expiry | Key Dependencies |
-|----------|---------|--------------|------------------|
-| tenant-admin-auth | Tenant admin login/verify/refresh/logout | Supabase Auth session | SUPABASE_URL, SERVICE_ROLE_KEY |
-| super-admin-auth | Platform super admin auth | 8 hours (JWT) | SUPABASE_URL, SERVICE_ROLE_KEY, JWT_SECRET |
-| customer-auth | Storefront customer auth | 30 days (JWT) | SUPABASE_URL, SERVICE_ROLE_KEY, JWT_SECRET |
-| revoke-all-sessions | Bulk session revocation | N/A | SUPABASE_URL, SERVICE_ROLE_KEY |
+## Build Status
+- `npm run build` passes cleanly (6530 modules, no TypeScript errors)

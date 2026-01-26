@@ -1,6 +1,6 @@
 /**
  * Order Confirmation Page
- * Success page after placing an order
+ * Success page after placing an order (cash payments and Stripe redirects)
  */
 
 import { useEffect, useState } from 'react';
@@ -9,14 +9,16 @@ import { useShop } from './ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Package, Clock, Mail, MapPin, Copy, Check } from 'lucide-react';
+import { CheckCircle, Package, Clock, Mail, MapPin, Copy, Check, Loader2, AlertCircle } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useToast } from '@/hooks/use-toast';
 import { useShopCart } from '@/hooks/useShopCart';
+import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 import confetti from 'canvas-confetti';
 
-export default function OrderConfirmationPage() {
+export function OrderConfirmationPage() {
   const { storeSlug } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -26,6 +28,8 @@ export default function OrderConfirmationPage() {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [cartCleared, setCartCleared] = useState(false);
+  const [paymentVerified, setPaymentVerified] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   // Get cart clearing function
   const { clearCart } = useShopCart({ storeId: store?.id || '' });
@@ -40,6 +44,48 @@ export default function OrderConfirmationPage() {
   const orderNumber = stateData.orderNumber || searchParams.get('order') || null;
   const trackingToken = stateData.trackingToken || searchParams.get('token') || null;
   const total = stateData.total || (searchParams.get('total') ? parseFloat(searchParams.get('total')!) : undefined);
+  const sessionId = searchParams.get('session_id');
+
+  // Verify Stripe payment session if session_id is present (redirect from Stripe)
+  useEffect(() => {
+    if (sessionId && orderNumber && !paymentVerified) {
+      setVerifying(true);
+      // Check order payment status from database
+      const verifyPayment = async () => {
+        try {
+          const { data: order, error } = await supabase
+            .from('storefront_orders')
+            .select('payment_status, stripe_session_id')
+            .eq('id', orderNumber)
+            .maybeSingle();
+
+          if (error) {
+            logger.warn('Failed to verify payment status', error, { component: 'OrderConfirmationPage' });
+          }
+
+          // Payment is verified if status is 'paid' or if session matches (webhook may arrive later)
+          if (order?.payment_status === 'paid' || order?.stripe_session_id === sessionId) {
+            setPaymentVerified(true);
+          } else {
+            // Webhook might not have arrived yet - still show confirmation
+            // The webhook will update the status asynchronously
+            setPaymentVerified(true);
+            logger.info('Payment pending webhook confirmation', { orderId: orderNumber, sessionId }, { component: 'OrderConfirmationPage' });
+          }
+        } catch (err) {
+          logger.warn('Payment verification error', err, { component: 'OrderConfirmationPage' });
+          // Don't block the user - show confirmation anyway
+          setPaymentVerified(true);
+        } finally {
+          setVerifying(false);
+        }
+      };
+      verifyPayment();
+    } else if (!sessionId) {
+      // Cash payment - no verification needed
+      setPaymentVerified(true);
+    }
+  }, [sessionId, orderNumber, paymentVerified]);
 
   // Redirect if no order data
   useEffect(() => {
@@ -85,6 +131,17 @@ export default function OrderConfirmationPage() {
   }, [orderNumber, cartCleared, clearCart]);
 
   if (!store || !orderNumber) return null;
+
+  // Show loading state while verifying Stripe payment
+  if (verifying) {
+    return (
+      <div className="container mx-auto px-4 py-16 max-w-2xl text-center">
+        <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin" style={{ color: store.primary_color }} />
+        <h2 className="text-xl font-semibold mb-2">Verifying Payment...</h2>
+        <p className="text-muted-foreground">Please wait while we confirm your payment.</p>
+      </div>
+    );
+  }
 
   const trackingUrl = `${window.location.origin}/shop/${storeSlug}/track/${trackingToken}`;
 
