@@ -869,6 +869,7 @@ export default function StorefrontSettings() {
                       step="0.01"
                       value={formData.default_delivery_fee || 5}
                       onChange={(e) => updateField('default_delivery_fee', parseFloat(e.target.value))}
+                      className="w-full sm:w-24"
                     />
                   </div>
 
