@@ -125,7 +125,7 @@ export const STARTER_SIDEBAR: SidebarSection[] = [
   {
     section: 'Operations',
     items: [
-      createItem('suppliers', 'Suppliers', '/admin/suppliers', Building2),
+      createItem('suppliers', 'Suppliers', '/admin/operations-hub', Building2),
     ],
   },
   {
@@ -139,7 +139,7 @@ export const STARTER_SIDEBAR: SidebarSection[] = [
     collapsed: true,
     items: [
       createItem('settings', 'Settings', '/admin/settings', Settings),
-      createItem('billing', 'Billing', '/admin/billing', CreditCard),
+      createItem('billing', 'Billing', '/admin/settings?section=billing', CreditCard),
       createItem('help', 'Help', '/admin/help-hub', HelpCircle),
     ],
   },
@@ -188,7 +188,7 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
   {
     section: 'Operations',
     items: [
-      createItem('suppliers', 'Suppliers', '/admin/suppliers', Building2),
+      createItem('suppliers', 'Suppliers', '/admin/operations-hub', Building2),
       createItem('team-members', 'Team', '/admin/staff-management', Users),
     ],
   },
@@ -203,7 +203,7 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     section: 'Integrations',
     collapsed: true,
     items: [
-      createItem('bulk-operations', 'Bulk Operations', '/admin/integrations-hub', FolderKanban),
+      createItem('bulk-operations', 'Bulk Operations', '/admin/settings-hub?tab=integrations', FolderKanban),
     ],
   },
   {
@@ -211,7 +211,7 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     collapsed: true,
     items: [
       createItem('settings', 'Settings', '/admin/settings', Settings),
-      createItem('billing', 'Billing', '/admin/billing', CreditCard),
+      createItem('billing', 'Billing', '/admin/settings?section=billing', CreditCard),
       createItem('help', 'Help', '/admin/help-hub', HelpCircle),
     ],
   },
