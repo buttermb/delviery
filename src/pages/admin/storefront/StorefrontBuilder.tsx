@@ -743,9 +743,9 @@ export function StorefrontBuilder() {
 
     const getPreviewStyle = () => {
         switch (devicePreview) {
-            case 'mobile': return { width: '375px', transform: `scale(${previewZoom * 0.9})`, transformOrigin: 'top center' };
-            case 'tablet': return { width: '768px', transform: `scale(${previewZoom * 0.85})`, transformOrigin: 'top center' };
-            default: return { width: '1200px', transform: `scale(${previewZoom})`, transformOrigin: 'top center' };
+            case 'mobile': return { width: '375px', transform: `scale(${previewZoom})`, transformOrigin: 'top center' };
+            case 'tablet': return { width: '768px', transform: `scale(${previewZoom * 0.8})`, transformOrigin: 'top center' };
+            default: return { width: '100%', maxWidth: '1000px', transform: `scale(${previewZoom * 0.75})`, transformOrigin: 'top center' };
         }
     };
 
@@ -905,31 +905,31 @@ export function StorefrontBuilder() {
             ) : (
                 /* Advanced Builder Layout */
                 <div className="flex flex-1 min-h-0 overflow-hidden">
-                    {/* Left Sidebar */}
-                    <div className="w-64 bg-background border-r flex flex-col shrink-0 z-10">
+                    {/* Left Sidebar - Narrower for more preview space */}
+                    <div className="w-56 bg-background border-r flex flex-col shrink-0 z-10">
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1">
-                            <TabsList className="mx-4 mt-4 mb-2 grid grid-cols-3">
-                                <TabsTrigger value="sections" className="text-xs">Sections</TabsTrigger>
-                                <TabsTrigger value="theme" className="text-xs">Theme</TabsTrigger>
-                                <TabsTrigger value="templates" className="text-xs">Templates</TabsTrigger>
+                            <TabsList className="mx-3 mt-3 mb-2 grid grid-cols-3 h-8">
+                                <TabsTrigger value="sections" className="text-xs px-2">Sections</TabsTrigger>
+                                <TabsTrigger value="theme" className="text-xs px-2">Theme</TabsTrigger>
+                                <TabsTrigger value="templates" className="text-xs px-2">Templates</TabsTrigger>
                             </TabsList>
 
-                            <TabsContent value="sections" className="flex-1 overflow-hidden flex flex-col m-0 p-4">
+                            <TabsContent value="sections" className="flex-1 overflow-hidden flex flex-col m-0 p-3">
                                 <ScrollArea className="flex-1">
-                                    <div className="space-y-4">
+                                    <div className="space-y-3">
                                         <div className="space-y-2">
-                                            <Label>Add Section</Label>
-                                            <div className="grid grid-cols-2 gap-2">
+                                            <Label className="text-xs">Add Section</Label>
+                                            <div className="grid grid-cols-2 gap-1.5">
                                                 {Object.entries(SECTION_TYPES).map(([key, { label, icon: Icon }]) => (
                                                     <Button
                                                         key={key}
                                                         variant="outline"
                                                         size="sm"
-                                                        className="justify-start text-xs h-auto py-2"
+                                                        className="justify-start text-xs h-8 px-2"
                                                         onClick={() => addSection(key as keyof typeof SECTION_TYPES)}
                                                     >
-                                                        <Icon className="w-3 h-3 mr-1" />
-                                                        {label.split(' ')[0]}
+                                                        <Icon className="w-3 h-3 mr-1 shrink-0" />
+                                                        <span className="truncate">{label.split(' ')[0]}</span>
                                                     </Button>
                                                 ))}
                                             </div>
@@ -974,19 +974,19 @@ export function StorefrontBuilder() {
                                 </ScrollArea>
                             </TabsContent>
 
-                            <TabsContent value="theme" className="flex-1 overflow-hidden flex flex-col m-0 p-4">
+                            <TabsContent value="theme" className="flex-1 overflow-hidden flex flex-col m-0 p-3">
                                 <ScrollArea className="flex-1">
-                                    <div className="space-y-6">
-                                        <div className="space-y-3">
-                                            <Label>Global Colors</Label>
-                                            <div className="grid gap-3">
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-xs">Global Colors</Label>
+                                            <div className="grid gap-2">
                                                 {['primary', 'secondary', 'accent', 'background', 'text'].map(colorKey => (
-                                                    <div key={colorKey} className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground capitalize">{colorKey}</span>
-                                                        <div className="flex items-center gap-2">
+                                                    <div key={colorKey} className="flex items-center justify-between gap-2">
+                                                        <span className="text-xs text-muted-foreground capitalize shrink-0">{colorKey}</span>
+                                                        <div className="flex items-center gap-1">
                                                             <Input
                                                                 type="color"
-                                                                className="w-8 h-8 p-0 border-0 cursor-pointer"
+                                                                className="w-7 h-7 p-0 border-0 cursor-pointer"
                                                                 value={themeConfig.colors?.[colorKey as keyof typeof themeConfig.colors] || '#000000'}
                                                                 onChange={(e) => setThemeConfig({
                                                                     ...themeConfig,
@@ -994,7 +994,7 @@ export function StorefrontBuilder() {
                                                                 })}
                                                             />
                                                             <Input
-                                                                className="w-24 h-8 text-xs"
+                                                                className="w-20 h-7 text-xs px-2"
                                                                 value={themeConfig.colors?.[colorKey as keyof typeof themeConfig.colors] || '#000000'}
                                                                 onChange={(e) => setThemeConfig({
                                                                     ...themeConfig,
@@ -1009,8 +1009,8 @@ export function StorefrontBuilder() {
 
                                         <Separator />
 
-                                        <div className="space-y-3">
-                                            <Label>Typography</Label>
+                                        <div className="space-y-2">
+                                            <Label className="text-xs">Typography</Label>
                                             <Select
                                                 value={themeConfig.typography?.fontFamily || 'Inter'}
                                                 onValueChange={(value) => setThemeConfig({
@@ -1018,7 +1018,7 @@ export function StorefrontBuilder() {
                                                     typography: { ...themeConfig.typography, fontFamily: value }
                                                 })}
                                             >
-                                                <SelectTrigger>
+                                                <SelectTrigger className="h-8 text-xs">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -1034,29 +1034,28 @@ export function StorefrontBuilder() {
                                 </ScrollArea>
                             </TabsContent>
 
-                            <TabsContent value="templates" className="flex-1 overflow-hidden flex flex-col m-0 p-4">
+                            <TabsContent value="templates" className="flex-1 overflow-hidden flex flex-col m-0 p-3">
                                 <ScrollArea className="flex-1">
-                                    <div className="space-y-3">
-                                        <Label>Quick Templates</Label>
-                                        <p className="text-xs text-muted-foreground">Start with a pre-built layout</p>
-                                        <div className="space-y-2">
+                                    <div className="space-y-2">
+                                        <Label className="text-xs">Quick Templates</Label>
+                                        <div className="space-y-1.5">
                                             {Object.entries(TEMPLATES).map(([key, template]) => (
                                                 <Card
                                                     key={key}
                                                     className="cursor-pointer hover:border-primary transition-colors"
                                                     onClick={() => applyTemplate(key as keyof typeof TEMPLATES)}
                                                 >
-                                                    <CardContent className="p-4">
+                                                    <CardContent className="p-3">
                                                         <div className="flex items-center justify-between">
                                                             <div>
-                                                                <p className="font-medium text-sm">{template.name}</p>
+                                                                <p className="font-medium text-xs">{template.name}</p>
                                                                 <p className="text-xs text-muted-foreground">{template.description}</p>
                                                             </div>
-                                                            <FileText className="w-4 h-4 text-muted-foreground" />
+                                                            <FileText className="w-3 h-3 text-muted-foreground shrink-0" />
                                                         </div>
-                                                        <div className="flex gap-1 mt-2 flex-wrap">
+                                                        <div className="flex gap-1 mt-1.5 flex-wrap">
                                                             {template.sections.map((s, i) => (
-                                                                <span key={i} className="text-xs bg-muted px-2 py-0.5 rounded">
+                                                                <span key={i} className="text-xs bg-muted px-1.5 py-0.5 rounded">
                                                                     {SECTION_TYPES[s as keyof typeof SECTION_TYPES]?.label.split(' ')[0]}
                                                                 </span>
                                                             ))}
@@ -1071,13 +1070,13 @@ export function StorefrontBuilder() {
                         </Tabs>
                     </div>
 
-                    {/* Center: Live Preview */}
-                    <div className="flex-1 bg-muted flex items-start justify-center p-4 overflow-auto relative min-w-0 min-h-0">
+                    {/* Center: Live Preview - Takes remaining space */}
+                    <div className="flex-1 bg-muted/50 flex items-start justify-center p-3 overflow-auto relative min-w-0 min-h-0">
                         <div
-                            className="bg-background shadow-2xl overflow-visible transition-all duration-300 relative"
+                            className="bg-background shadow-xl rounded-lg overflow-hidden transition-all duration-300 relative"
                             style={{
                                 ...getPreviewStyle(),
-                                minHeight: '800px',
+                                minHeight: '600px',
                             }}
                         >
                             {/* Simulated Header */}
@@ -1130,19 +1129,19 @@ export function StorefrontBuilder() {
                         </div>
                     </div>
 
-                    {/* Right Sidebar: Property Editor */}
+                    {/* Right Sidebar: Property Editor - Narrower */}
                     {selectedSection && rightPanelOpen && (
-                        <div className="w-72 bg-background border-l flex flex-col shrink-0 z-10 animate-in slide-in-from-right-10 duration-200">
-                            <div className="p-4 border-b flex items-center justify-between">
+                        <div className="w-64 bg-background border-l flex flex-col shrink-0 z-10 animate-in slide-in-from-right-10 duration-200">
+                            <div className="p-3 border-b flex items-center justify-between">
                                 <div>
-                                    <h3 className="font-semibold text-xs uppercase text-muted-foreground mb-1">Editing</h3>
-                                    <p className="font-medium text-sm">{SECTION_TYPES[selectedSection.type as keyof typeof SECTION_TYPES]?.label}</p>
+                                    <h3 className="font-semibold text-xs uppercase text-muted-foreground">Editing</h3>
+                                    <p className="font-medium text-xs">{SECTION_TYPES[selectedSection.type as keyof typeof SECTION_TYPES]?.label}</p>
                                 </div>
                                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setRightPanelOpen(false)}>
-                                    <X className="w-4 h-4" />
+                                    <X className="w-3 h-3" />
                                 </Button>
                             </div>
-                            <ScrollArea className="flex-1 p-4">
+                            <ScrollArea className="flex-1 p-3">
                                 <SectionEditor
                                     section={selectedSection}
                                     onUpdateContent={(key, value) => updateSection(selectedSection.id, 'content', key, value)}
