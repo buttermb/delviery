@@ -69,7 +69,6 @@ export function SimpleStorefrontEditor({
             toast({
                 title: "Section not found",
                 description: "Switch to Advanced Mode to add this section first.",
-                variant: "secondary"
             });
         }
     };
