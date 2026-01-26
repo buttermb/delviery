@@ -7690,3 +7690,37 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Remove hardcoded Aikido token from src/main.tsx
+
+### Completed: 2026-01-25 17:57:21
+
+**Investigation:**
+- Examined \ line 14 - found only a comment referencing \ environment variable
+- No actual hardcoded token was present in src/main.tsx
+- Found the actual hardcoded token in \ which contained a real Aikido token value
+
+**Changes Made:**
+- Updated \ to replace hardcoded Aikido token with placeholder values
+- Added both \ (for backend) and \ (for frontend) with placeholder values
+- Added comment referencing \ for setup instructions
+
+**Files Changed:**
+- \ - Replaced hardcoded token with placeholder
+
+## Task: Remove hardcoded Aikido token from src/main.tsx
+
+### Completed: 2026-01-25
+
+**Investigation:**
+- Examined src/main.tsx line 14 - found only a comment referencing AIKIDO_TOKEN environment variable
+- No actual hardcoded token was present in src/main.tsx
+- Found the actual hardcoded token in .env.example which contained a real Aikido token value
+
+**Changes Made:**
+- Updated .env.example to replace hardcoded Aikido token with placeholder values
+- Added both AIKIDO_TOKEN (for backend) and VITE_AIKIDO_TOKEN (for frontend) with placeholder values
+- Added comment referencing ZEN_FIREWALL_SETUP.md for setup instructions
+
+**Files Changed:**
+- .env.example - Replaced hardcoded token with placeholder
