@@ -7661,16 +7661,21 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Wrap all JSON.parse calls in try-catch in src/contexts/TenantAdminAuthContext.tsx
+## Task: Remove ts-nocheck from src/utils/productionLogger.ts and fix types
 
-**Status:** Already Complete - No changes needed
+### Changes Made:
 
-**Analysis:** Reviewed all 5 JSON.parse calls in TenantAdminAuthContext.tsx:
+1. **Removed `// @ts-nocheck` directive** from the top of the file
 
-1. **Line 145** (getInitialAdminState): Already wrapped in try-catch (lines 143-147)
-2. **Line 154** (getInitialTenantState): Already wrapped in try-catch (lines 151-162)
-3. **Line 620** (initializeAuth localStorage fallback - admin): Already wrapped in try-catch (lines 619-625)
-4. **Line 627** (initializeAuth localStorage fallback - tenant): Already wrapped in try-catch (lines 626-632)
-5. **Line 1544** (real-time subscription handler): Already wrapped in try-catch (lines 1543-1548)
+2. **Fixed `any` type violation** in LogEntry interface:
+   - Changed `context?: any` to `context?: Record<string, unknown>`
+   - This aligns with the TypeScript strict mode requirement (no `any` types)
 
-All JSON.parse calls properly handle parse errors and either return null/early or log errors appropriately.
+3. **Removed unused catch error variables:**
+   - Changed `catch (e)` to `catch` in 4 places (loadLogs, saveLogs x2, clearLogs)
+   - The error variable was never used, so this cleans up unused variable warnings
+
+### Verification:
+- TypeScript check (`npx tsc --noEmit --skipLibCheck`) - PASSES
+- Production build (`npm run build`) - PASSES
+
