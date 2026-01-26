@@ -7690,3 +7690,55 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Implement favorites sync to database with useMutation in SidebarFavorites.tsx
+
+### Date: 2026-01-26
+
+### What was implemented:
+
+Enhanced `SidebarFavorites.tsx` to integrate with the database sync system via useMutation:
+
+1. **Added useSidebar context integration**
+   - Component now imports and uses `useSidebar` from `SidebarContext`
+   - Gets `toggleFavorite` mutation function backed by `useMutation` in `useSidebarPreferences`
+   - Gets `trackFeatureAccess` for recently used feature tracking
+
+2. **Performance optimizations with React hooks**
+   - Added `useMemo` for `safeFavorites` to memoize favorites array validation
+   - Added `useMemo` for `safeConfig` to memoize sidebar config array validation
+   - Added `useMemo` for `favoriteItems` that preserves favorites order from database
+   - Added `useCallback` for `isActive` path checking function
+   - Added `useCallback` for `handleItemClick` with feature access tracking
+   - Added `useCallback` for `handleLockedItemClick`
+   - Added `useCallback` for `handleRemoveFavorite` mutation trigger
+
+3. **Database sync flow**
+   - `toggleFavorite` from context is backed by `toggleFavoriteMutation` in `useSidebarPreferences.ts`
+   - Mutation uses optimistic updates for instant UI feedback
+   - Syncs to `sidebar_preferences` table via Supabase upsert
+   - On error, rolls back to previous state and shows toast
+   - Query invalidation ensures UI consistency across components
+
+4. **Favorites order preservation**
+   - `favoriteItems` now maps from `safeFavorites` array order
+   - This ensures favorites display in the order stored in the database
+   - Rather than the order items appear in sidebar config
+
+### Architecture:
+
+```
+SidebarFavorites.tsx
+    └── useSidebar() (from SidebarContext)
+         └── toggleFavorite
+              └── useSidebarPreferences.toggleFavoriteMutation
+                   └── useMutation with optimistic updates
+                        └── Supabase sidebar_preferences table
+```
+
+### Files Changed:
+- `src/components/admin/sidebar/SidebarFavorites.tsx` (enhanced with useMutation integration)
+
+### Build Verification:
+- `npm run build` passes with 0 TypeScript errors
+- 6599 modules transformed successfully
