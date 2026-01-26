@@ -7701,52 +7701,61 @@ Added a multi-layer NODE_ENV check to prevent these dangerous flags from being e
 
 ---
 
-## Task: Add Skeleton loader components for each settings tab while data loads
+## Task: Remove ts-nocheck from src/pages/vendor/VendorLoginPage.tsx and fix types
 
-### Implementation Summary
+### Changes Made:
 
-Added comprehensive skeleton loading states for all 8 settings tabs in the admin panel Settings page. This provides a smoother user experience by showing animated placeholder content while data loads.
+1. **Removed `// @ts-nocheck` directive** from VendorLoginPage.tsx
 
-### Files Created
+2. **Fixed missing `isLoading` state** - Added the `useState` hook for `isLoading`:
+   ```typescript
+   const [isLoading, setIsLoading] = useState(false);
+   ```
 
-1. **`src/components/settings/SettingsSkeletons.tsx`** - New component file containing:
-   - `GeneralSettingsSkeleton` - Form fields skeleton for company info (inputs, textareas, buttons)
-   - `SecuritySettingsSkeleton` - Toggle switches and input fields skeleton
-   - `NotificationSettingsSkeleton` - Toggle switches with divider skeleton
-   - `PrintingSettingsSkeleton` - Placeholder card skeleton
-   - `IntegrationsSettingsSkeleton` - Integration cards and Stripe connect skeleton
-   - `SidebarSettingsSkeleton` - Radio group options and badge skeleton
-   - `SidebarCustomizationSkeleton` - Nested tabs with feature toggles skeleton
-   - `PaymentSettingsSkeleton` - Payment method cards with tabs skeleton
-   - Helper components: `SkeletonSwitchRow`, `SkeletonIntegrationCard`, `SkeletonPaymentCard`
+3. **Consolidated `useVendorAuth()` calls** - Combined two separate hook calls into one:
+   ```typescript
+   // Before:
+   const { login } = useVendorAuth();
+   const { vendor, isAuthenticated } = useVendorAuth();
+   
+   // After:
+   const { login, vendor, isAuthenticated } = useVendorAuth();
+   ```
 
-### Files Modified
+4. **Fixed error typing in catch block** - Replaced `any` type with proper type checking:
+   ```typescript
+   // Before:
+   } catch (error: any) {
+     logger.error('Vendor login failed', error, { component: 'VendorLoginPage' });
+     toast.error(error.message || "Invalid credentials");
+   
+   // After:
+   } catch (error) {
+     logger.error('Vendor login failed', error instanceof Error ? error : new Error(String(error)), { component: 'VendorLoginPage' });
+     toast.error(error instanceof Error ? error.message : "Invalid credentials");
+   ```
 
-1. **`src/pages/admin/SettingsPage.tsx`**:
-   - Added imports for all skeleton components
-   - Added `formsInitialized` state to track when form data is loaded
-   - Added `showSkeletons` computed value based on `accountLoading` and `formsInitialized`
-   - Updated all 8 TabsContent components to conditionally render skeletons when loading
+5. **Changed from default export to named export** per project conventions:
+   ```typescript
+   // Before:
+   export default function VendorLoginPage()
+   
+   // After:
+   export function VendorLoginPage()
+   ```
 
-### Key Design Decisions
+6. **Updated lazy import in App.tsx** to work with named export:
+   ```typescript
+   // Before:
+   const VendorLoginPage = lazy(() => import("./pages/vendor/VendorLoginPage"));
+   
+   // After:
+   const VendorLoginPage = lazy(() => import("./pages/vendor/VendorLoginPage").then(m => ({ default: m.VendorLoginPage })));
+   ```
 
-1. **Reused existing skeleton primitives** from `@/components/ui/skeleton.tsx`:
-   - `Skeleton` - Base animated placeholder
-   - `SkeletonInput` - Input field with optional label
-   - `SkeletonButton` - Button-shaped placeholder
+### Verification:
+- `npm run build` - PASSES (TypeScript compilation successful, 0 errors)
 
-2. **Loading state detection**:
-   - Uses `loading` from `useAccount()` context for initial data load
-   - Uses `formsInitialized` state to ensure forms are populated before showing content
-   - Combined as `showSkeletons = accountLoading || !formsInitialized`
-
-3. **Skeleton design matches actual content structure**:
-   - Each skeleton matches the layout and spacing of its corresponding tab
-   - Switch rows, input fields, cards, and buttons all have matching placeholders
-   - Proper spacing and hierarchy preserved
-
-### Verification
-
-- **Build passes**: `npm run build` completes with 0 TypeScript errors
-- Skeletons use proper pulse animation via `animate-pulse` class
-- All skeletons have proper `role="status"` and `aria-label` for accessibility
+### Files Changed:
+- `src/pages/vendor/VendorLoginPage.tsx` - Removed ts-nocheck, fixed types, named export
+- `src/App.tsx` - Updated lazy import for named export
