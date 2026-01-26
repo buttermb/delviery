@@ -7,6 +7,7 @@
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
 import { SidebarMenuItem } from './SidebarMenuItem';
 import { useSidebar } from './SidebarContext';
+import { matchesSearchQuery } from './SidebarSearch';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { useParams, useLocation } from 'react-router-dom';
@@ -18,7 +19,7 @@ import { useMemo } from 'react';
 export function SidebarRecentlyUsed() {
     const { tenantSlug } = useParams();
     const location = useLocation();
-    const { preferences, trackFeatureClick } = useSidebar();
+    const { preferences, trackFeatureClick, searchQuery } = useSidebar();
     const { sidebarConfig } = useSidebarConfig();
     const { canAccess } = useFeatureAccess();
 
@@ -70,7 +71,13 @@ export function SidebarRecentlyUsed() {
         return foundItems;
     }, [lastAccessed, sidebarConfig]);
 
-    if (recentItems.length === 0) return null;
+    // Filter recent items based on search query
+    const filteredRecentItems = useMemo(() => {
+        if (!searchQuery.trim()) return recentItems;
+        return recentItems.filter((item) => matchesSearchQuery(item.name, searchQuery));
+    }, [recentItems, searchQuery]);
+
+    if (filteredRecentItems.length === 0) return null;
 
     const isActive = (url: string) => {
         const fullPath = `/${tenantSlug}${url}`;
@@ -103,7 +110,7 @@ export function SidebarRecentlyUsed() {
             </SidebarGroupLabel>
             <SidebarGroupContent className="mt-1">
                 <SidebarMenu>
-                    {recentItems.map((item) => (
+                    {filteredRecentItems.map((item) => (
                         <SidebarMenuItem
                             key={`recent-${item.id}`}
                             item={item}

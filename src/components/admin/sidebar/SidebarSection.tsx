@@ -9,10 +9,11 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
 import { SidebarMenuItem } from './SidebarMenuItem';
 import { useSidebar } from './SidebarContext';
+import { matchesSearchQuery } from './SidebarSearch';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import type { SidebarSection as SidebarSectionType, SidebarItem } from '@/types/sidebar';
 import type { FeatureId } from '@/lib/featureConfig';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
 interface SidebarSectionProps {
@@ -28,9 +29,22 @@ export function SidebarSection({
   onItemClick,
   onLockedItemClick,
 }: SidebarSectionProps) {
-  const { toggleCollapsedSection, preferences } = useSidebar();
+  const { toggleCollapsedSection, preferences, searchQuery } = useSidebar();
   const { canAccess } = useFeatureAccess();
   const [isOpen, setIsOpen] = useState(!section.collapsed && (section.defaultExpanded || section.pinned));
+
+  // Filter items based on search query
+  const filteredItems = useMemo(() => {
+    if (!searchQuery.trim()) return section.items;
+    return section.items.filter((item) => matchesSearchQuery(item.name, searchQuery));
+  }, [section.items, searchQuery]);
+
+  // Auto-expand section when search matches items
+  useEffect(() => {
+    if (searchQuery.trim() && filteredItems.length > 0) {
+      setIsOpen(true);
+    }
+  }, [searchQuery, filteredItems.length]);
 
   // Sync with preferences
   useEffect(() => {
@@ -55,8 +69,8 @@ export function SidebarSection({
     toggleCollapsedSection(section.section);
   };
 
-  // Don't render if no items
-  if (section.items.length === 0) {
+  // Don't render if no items or no items match search
+  if (filteredItems.length === 0) {
     return null;
   }
 
@@ -89,7 +103,7 @@ export function SidebarSection({
         <CollapsibleContent>
           <SidebarGroupContent className="mt-1">
             <SidebarMenu>
-              {section.items.map((item, index) => {
+              {filteredItems.map((item, index) => {
                 const hasAccess = item.featureId ? canAccess(item.featureId) : true;
 
                 return (
