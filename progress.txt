@@ -3070,35 +3070,16 @@ verifying all 5 stat cards load with real data and their navigation links work c
 ### Files Changed:
 - `progress.txt` (this verification report)
 
+## Task: Add papaparse import to OrdersHubPage.tsx
 
-## Task: Add onClick handler for export in OrdersHubPage
-
-### Date: 2026-01-25
-
-### What was implemented:
-Added an onClick handler to the Export button in the OrdersHubPage quick actions menu that navigates users to the Data Export page.
-
-### Changes Made:
-1. **Added imports** (line 24, 30):
-   - Added `useCallback` to React imports
-   - Added `toast` from 'sonner'
-
-2. **Added handleExport function** (lines 71-77):
-   - Created a `useCallback` wrapped function that:
-     - Navigates to the Data Export page via `navigateToAdmin('/data-export')`
-     - Shows an informative toast message guiding users to select 'Orders' for export
-
-3. **Updated Export button onClick** (line 101):
-   - Changed from empty TODO comment to call `handleExport`
-   - Updated useMemo dependency array to include `handleExport`
-
-### Rationale:
-Since OrdersHubPage is a hub page with lazy-loaded tab content, it doesn't have direct access to order data. The Data Export page provides comprehensive export options including order data with custom fields, making it the appropriate destination for the export action.
+Added \ at the top of \.
 
 ### Files Changed:
-- `src/pages/admin/hubs/OrdersHubPage.tsx`
+- \ - Added papaparse import
 
-### Verification:
-- TypeScript compilation: PASSES (no errors)
-- ESLint: PASSES (no errors)
+## Task: Add papaparse import to OrdersHubPage.tsx
 
+Added `import Papa from 'papaparse';` at the top of `src/pages/admin/hubs/OrdersHubPage.tsx`.
+
+### Files Changed:
+- `src/pages/admin/hubs/OrdersHubPage.tsx` - Added papaparse import

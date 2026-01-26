@@ -8,6 +8,7 @@
  * - Live: Real-time order tracking
  */
 
+import Papa from 'papaparse';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
