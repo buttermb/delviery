@@ -7697,13 +7697,74 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: Set noImplicitAny to true in tsconfig.json
+## Task: Add image compression before upload using browser-image-compression library
 
-### Completed:
-- Changed `"noImplicitAny": false` to `"noImplicitAny": true` in `tsconfig.json`
+### What was done:
 
-### Summary:
-This enables TypeScript's `noImplicitAny` compiler option, which enforces explicit type annotations when TypeScript cannot infer a type. This aligns with the project's "TypeScript strict mode" code style requirement as documented in CLAUDE.md.
+1. **Installed `browser-image-compression` package** - Added the browser-image-compression library for client-side image compression before upload.
+
+2. **Created `src/lib/utils/image-compression.ts`** - New utility module providing:
+   - `compressImage()` - Main compression function with configurable options
+   - `compressImageWithPreset()` - Convenience function using predefined presets
+   - `compressImages()` - Batch compression for multiple files
+   - `compressImageWithStats()` - Compression with detailed statistics
+   - `isCompressibleImage()` - Helper to check if a file can be compressed
+   - `COMPRESSION_PRESETS` - Predefined settings for product, thumbnail, profile, and cover images
+   - `DEFAULT_COMPRESSION_OPTIONS` - Default settings (1MB max, 1920px, 0.8 quality)
+
+3. **Updated `src/components/ui/file-upload.tsx`**:
+   - Added `compressImages` prop that accepts:
+     - `boolean` - Uses default compression settings
+     - `ImageCompressionOptions` - Custom compression options
+     - Preset name (`'product'`, `'thumbnail'`, `'profile'`, `'cover'`)
+   - Integrated compression into `handleFiles()` before processing
+   - Added "Compressing..." UI state with loading spinner
+   - Shows "Images auto-compressed" hint when compression is enabled
+   - Re-exports compression utilities for convenience
+
+4. **Updated `src/components/ui/file-upload-progress.tsx`**:
+   - Added same `compressImages` prop with identical options
+   - Added new `'compressing'` status to track compression phase
+   - Shows amber spinner and "Compressing..." text during compression
+   - Compression happens before upload starts
+
+5. **Updated `src/pages/tenant-admin/marketplace/ProfileForm.tsx`**:
+   - Integrated automatic image compression into `uploadFile()` function
+   - Logo images use `COMPRESSION_PRESETS.profile` (1MB max, 1024px)
+   - Cover images use `COMPRESSION_PRESETS.cover` (2MB max, 1920px)
+   - License documents (PDFs) skip compression
+   - Logs compression savings for debugging
+
+### Usage Examples:
+
+```tsx
+// Enable compression with defaults
+<FileUpload compressImages accept="image/*" />
+
+// Use a preset
+<FileUpload compressImages="product" accept="image/*" />
+
+// Custom options
+<FileUpload
+  compressImages={{ maxSizeMB: 0.5, maxWidthOrHeight: 800 }}
+  accept="image/*"
+/>
+
+// Direct utility usage
+import { compressImage } from '@/lib/utils/image-compression';
+const compressed = await compressImage(file, { maxSizeMB: 1 });
+```
+
+### Benefits:
+- Reduces upload time for large images
+- Lowers storage costs
+- Improves page load performance
+- Maintains quality with configurable settings
+- Graceful fallback if compression fails
 
 ### Files Changed:
-- `tsconfig.json` - Set `noImplicitAny` to `true`
+- `package.json` - Added browser-image-compression dependency
+- `src/lib/utils/image-compression.ts` (new)
+- `src/components/ui/file-upload.tsx` (modified)
+- `src/components/ui/file-upload-progress.tsx` (modified)
+- `src/pages/tenant-admin/marketplace/ProfileForm.tsx` (modified)
