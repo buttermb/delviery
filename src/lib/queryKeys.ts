@@ -580,6 +580,16 @@ export const queryKeys = {
     pendingAlerts: (userId?: string) => ['suspicious-login-alerts', userId, 'pending'] as const,
   },
 
+  // Storefront Settings
+  storefrontSettings: {
+    all: ['storefront-settings'] as const,
+    lists: () => [...queryKeys.storefrontSettings.all, 'list'] as const,
+    list: (tenantId?: string) => [...queryKeys.storefrontSettings.lists(), { tenantId }] as const,
+    details: () => [...queryKeys.storefrontSettings.all, 'detail'] as const,
+    detail: (storeId: string) => [...queryKeys.storefrontSettings.details(), storeId] as const,
+    byTenant: (tenantId: string) => [...queryKeys.storefrontSettings.all, 'tenant', tenantId] as const,
+  },
+
   // Activity Feed
   activityFeed: {
     all: ['activity-feed'] as const,

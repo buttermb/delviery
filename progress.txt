@@ -7690,3 +7690,80 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Add useMutation for saving StorefrontSettings with optimistic updates and rollback
+
+### What was done:
+
+1. **Added `storefrontSettings` to query keys factory** (`src/lib/queryKeys.ts`):
+   - Added new `storefrontSettings` entry with standard patterns:
+     - `all` - base key
+     - `lists()` / `list(tenantId)` - for list queries
+     - `details()` / `detail(storeId)` - for individual store queries
+     - `byTenant(tenantId)` - for tenant-scoped queries
+
+2. **Created `src/hooks/useStorefrontSettings.ts`** with:
+
+   - **Type definitions:**
+     - `StorefrontSettings` - Complete interface matching marketplace_stores table
+     - `StorefrontSettingsInput` - Partial type for updates (excludes id, tenant_id, timestamps)
+     - Supporting interfaces: DeliveryZone, TimeSlot, ThemeConfig, CheckoutSettings, PurchaseLimits, OperatingHours
+
+   - **`useStorefrontSettings()` hook:**
+     - Fetches storefront settings for current tenant
+     - Uses `useTenantAdminAuth()` for tenant context
+     - Returns null for non-existent stores (uses `.maybeSingle()`)
+     - Configurable via options (enabled)
+     - Stale time: 30s, GC time: 5min
+
+   - **`useSaveStorefrontSettings()` mutation hook:**
+     - **Mutation function:** Updates marketplace_stores by id + tenant_id, returns updated settings
+     - **onMutate (optimistic update):**
+       - Cancels outgoing refetches to prevent race conditions
+       - Snapshots previous settings for rollback
+       - Immediately applies optimistic update to both byTenant and detail cache entries
+       - Returns context with previousSettings and storeId
+     - **onError (rollback):**
+       - Restores previous settings from context
+       - Logs error via logger
+       - Shows toast error with description
+     - **onSuccess:**
+       - Updates cache with actual server response
+       - Shows success toast
+     - **onSettled:**
+       - Invalidates all related queries (byTenant, detail, legacy keys)
+       - Ensures cache consistency after mutation completes
+
+   - **`useUpdateStorefrontSettingsField()` mutation hook:**
+     - For single field updates (toggles, inline edits)
+     - Same optimistic update + rollback pattern
+     - Accepts field name and value as parameters
+     - Lighter weight than full settings update
+
+   - **`useStorefrontSettingsByStoreId()` query hook:**
+     - Fetches settings by store ID (for non-tenant contexts)
+     - Used when store ID is known but tenant context isn't available
+
+### Key implementation patterns followed:
+- Uses `queryKeys` factory for consistent cache key management
+- Uses `useTenantAdminAuth()` for tenant context per CLAUDE.md
+- Uses `logger` for error logging (not console.log)
+- Uses `toast` from sonner for user feedback
+- TypeScript strict mode - no `any` types, uses `@ts-ignore` for table not in generated types
+- Named exports only (no default exports)
+- Follows useContacts.ts pattern for optimistic updates with rollback
+- Invalidates legacy query keys for backward compatibility
+
+### Acceptance Criteria Met:
+- [x] useMutation hook for saving StorefrontSettings created
+- [x] Optimistic updates applied immediately on mutation
+- [x] Rollback to previous state on error
+- [x] Query invalidation on success for cache consistency
+- [x] Toast notifications for success/error states
+- [x] Follows existing codebase patterns (useContacts, useStorefrontBuilder)
+
+### Files Changed:
+- `src/lib/queryKeys.ts` - Added storefrontSettings query key factory
+- `src/hooks/useStorefrontSettings.ts` (new) - Complete hook implementation
