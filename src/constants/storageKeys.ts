@@ -95,6 +95,9 @@ export const STORAGE_KEYS = {
   // Command Palette
   COMMAND_PALETTE_RECENT_SEARCHES: 'command_palette_recent_searches',
 
+  // Recently Used Items
+  RECENTLY_USED_ITEMS: 'admin_recently_used_items',
+
   // Dashboard
   DASHBOARD_WIDGETS: 'dashboard_widgets',
 
