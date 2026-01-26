@@ -3070,26 +3070,42 @@ verifying all 5 stat cards load with real data and their navigation links work c
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Add Tooltip wrapper when sidebar is collapsed
+---
 
-Date: 2026-01-25
+## Task: Add scroll-into-view when SidebarMenuItem becomes active
 
-### Summary
-Added tooltip support to SidebarMenuItem component. When the sidebar is collapsed, hovering over a menu item now displays a tooltip showing the item name.
+### What was done:
 
-### Implementation Details
-The `SidebarMenuButton` component from `@/components/ui/sidebar` already has built-in tooltip support via a `tooltip` prop. When provided, it wraps the button in a Tooltip that only displays when the sidebar state is "collapsed" (not expanded or on mobile).
+1. **Modified `src/components/admin/sidebar/SidebarMenuItem.tsx`**:
+   - Added `useEffect` and `useRef` imports from React
+   - Created `itemRef` using `useRef<HTMLLIElement>(null)` to reference the menu item element
+   - Added a `useEffect` hook that triggers when `isActive` changes to scroll the item into view
+   - Uses `scrollIntoView` with smooth behavior and 'nearest' block/inline positioning to avoid jarring scrolls
+   - Applied the ref to both `UISidebarMenuItem` render branches (locked items and regular items)
 
-### Changes Made
-- **File**: `src/components/admin/sidebar/SidebarMenuItem.tsx`
-  - Added `tooltip={item.name}` prop to the `SidebarMenuButton` for locked items (lines 77-80)
-  - Added `tooltip={item.name}` prop to the `SidebarMenuButton` for regular items (lines 97-101)
+### Implementation details:
 
-### How It Works
-- The `SidebarMenuButton` in `@/components/ui/sidebar.tsx` checks `state !== "collapsed" || isMobile` to conditionally hide the tooltip
-- When sidebar is collapsed (icon-only mode), the tooltip appears on the right side of the menu item
-- When sidebar is expanded or on mobile, the tooltip is hidden (since the text is already visible)
+```typescript
+const itemRef = useRef<HTMLLIElement>(null);
 
-### Verification
-- Build passes with no TypeScript errors
-- No lint errors introduced
+// Scroll into view when item becomes active
+useEffect(() => {
+  if (isActive && itemRef.current) {
+    itemRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'nearest',
+    });
+  }
+}, [isActive]);
+```
+
+The `block: 'nearest'` and `inline: 'nearest'` options ensure the scrolling is minimal - only scrolling if the element is outside the visible viewport, which prevents unnecessary jumps when the item is already visible.
+
+### Acceptance Criteria Met:
+- [x] Active menu items automatically scroll into view when they become active
+- [x] Scroll behavior is smooth and non-jarring
+- [x] Build passes with no TypeScript errors
+
+### Files Changed:
+- `src/components/admin/sidebar/SidebarMenuItem.tsx`
