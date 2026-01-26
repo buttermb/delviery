@@ -141,6 +141,23 @@ export const navigationSections: NavSection[] = [
     ]
   },
 
+  // 🛒 ORDERS
+  {
+    title: 'Orders',
+    items: [
+      {
+        title: 'All Orders',
+        href: '/admin/orders',
+        icon: ShoppingCart
+      },
+      {
+        title: 'B2B Orders',
+        href: '/admin/orders/b2b',
+        icon: Building2
+      }
+    ]
+  },
+
   // 📦 OPERATIONS
   {
     title: 'Operations',
