@@ -6692,16 +6692,10 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Make fee input responsive w-full sm w-24 in StorefrontSettings.tsx
+## Task: Update BuilderPreview.tsx tablet preview width
 
-### Date: 2026-01-25
+### Change Made:
+- Modified `src/pages/admin/storefront/builder/BuilderPreview.tsx` line 37
+- Changed tablet preview from `width: '768px'` to `width: '100%', maxWidth: '768px'`
 
-### What was done:
-
-Added responsive className to the default delivery fee input in StorefrontSettings.tsx:
-- Added `className="w-full sm:w-24"` to the Default Delivery Fee input (line 879)
-- This makes the input full-width on mobile and 6rem (24 tailwind units) on sm breakpoint and above
-- Consistent with other fee inputs in the file (delivery zone fee at line 934, min order at line 948)
-
-### Files Changed:
-- `src/pages/admin/storefront/StorefrontSettings.tsx` (line 879)
+This allows the tablet preview to be responsive (using 100% width) while still capping at 768px maximum width, improving the preview behavior on various screen sizes.

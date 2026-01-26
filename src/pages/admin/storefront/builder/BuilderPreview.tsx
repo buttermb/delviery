@@ -33,9 +33,9 @@ export function BuilderPreview({
 }: BuilderPreviewProps) {
     const getPreviewStyle = () => {
         switch (devicePreview) {
-            case 'mobile': return { width: '100%', maxWidth: '375px', transform: `scale(${previewZoom * 0.9})`, transformOrigin: 'top center' };
-            case 'tablet': return { width: '768px', transform: `scale(${previewZoom * 0.85})`, transformOrigin: 'top center' };
-            default: return { width: '100%', maxWidth: '1200px', transform: `scale(${previewZoom})`, transformOrigin: 'top center' };
+            case 'mobile': return { width: '375px', transform: `scale(${previewZoom * 0.9})`, transformOrigin: 'top center' };
+            case 'tablet': return { width: '100%', maxWidth: '768px', transform: `scale(${previewZoom * 0.85})`, transformOrigin: 'top center' };
+            default: return { width: '1200px', transform: `scale(${previewZoom})`, transformOrigin: 'top center' };
         }
     };
 
