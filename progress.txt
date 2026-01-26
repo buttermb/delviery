@@ -3072,56 +3072,38 @@ verifying all 5 stat cards load with real data and their navigation links work c
 
 ---
 
-## Task: Replace browser prompt with shadcn Dialog component in AdvancedProductFilters.tsx
+## Task: Wrap navItems in useMemo hook in AdaptiveSidebar.tsx
 
 ### What was done:
 
-**Verification of existing implementation** - This task was already completed in previous commits:
-- Commit `6421e469`: "refactor: replace browser prompt with Dialog component in AdvancedProductFilters"
-- Commit `86640c16`: "feat: replace browser prompt with Dialog for saving filters"
+1. **Added useMemo and useCallback imports** to React imports in AdaptiveSidebar.tsx
 
-### Implementation details:
+2. **Memoized presetNames object** using useMemo to prevent recreation on each render
 
-The original implementation used a browser `prompt()` call:
-```typescript
-const saveCurrentFilter = () => {
-  const name = prompt("Enter filter name:");
-  if (name) {
-    setSavedFilters([...savedFilters, { name, config: filters }]);
-  }
-};
-```
+3. **Created memoized navItems object** containing:
+   - `sidebarConfig` - main sidebar configuration sections
+   - `hotItems` - hot/trending navigation items (normalized to empty array if undefined)
+   - `favorites` - user favorite navigation items (normalized to empty array if undefined)
 
-This was replaced with a proper shadcn Dialog component that includes:
+4. **Wrapped callback functions with useCallback**:
+   - `isActive` - memoized with tenantSlug and location.pathname dependencies
+   - `handleLogout` - memoized with logout dependency
+   - `handleLockedItemClick` - memoized with empty dependencies
+   - `handleItemClick` - memoized with trackFeatureClick dependency
 
-1. **Dialog state management** (lines 46-47):
-   - `saveDialogOpen` - controls dialog visibility
-   - `filterName` - stores the input value
+5. **Updated JSX to use memoized navItems**:
+   - Changed `Array.isArray(hotItems) && hotItems.length > 0` to `navItems.hotItems.length > 0`
+   - Changed `Array.isArray(favorites) && favorites.length > 0` to `navItems.favorites.length > 0`
+   - Changed `sidebarConfig` references to `navItems.sidebarConfig`
 
-2. **Dialog trigger handler** (`handleOpenSaveDialog`, lines 90-93):
-   - Resets filter name
-   - Opens the dialog
+### Benefits:
+- Prevents unnecessary re-renders of child components when sidebar config hasn't changed
+- Normalizes array checks into the useMemo, simplifying JSX conditionals
+- Memoized callbacks prevent new function references on each render
+- Improves overall performance of the admin sidebar
 
-3. **Save handler** (`handleSaveFilter`, lines 95-102):
-   - Validates input is not empty
-   - Calls `saveFilter` from `useSavedFilters` hook
-   - Shows success toast
-   - Closes dialog and resets state
+### Files Changed:
+- `src/components/admin/sidebar/AdaptiveSidebar.tsx`
 
-4. **Dialog component** (lines 255-287):
-   - `DialogHeader` with title "Save Filter" and description
-   - `Input` field with label for filter name
-   - Keyboard support (Enter key triggers save)
-   - `DialogFooter` with Cancel and Save buttons
-   - Save button disabled when filter name is empty
-
-### Acceptance Criteria Met:
-- [x] Browser `prompt()` removed
-- [x] shadcn Dialog component implemented
-- [x] Form with proper validation
-- [x] Keyboard accessibility (Enter to save)
-- [x] Proper button states (disabled when empty)
-- [x] Build passes with no TypeScript errors
-
-### Files:
-- `src/components/admin/AdvancedProductFilters.tsx` (already updated in previous commits)
+### Build Status:
+- ✅ npm run build passes with no TypeScript errors
