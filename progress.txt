@@ -1,80 +1,51 @@
-## Task: Fix Complete Logout Flow - Clean All State
+# Task: Enhance Menu Customer Ordering Experience
 
-### Status: COMPLETED
+## Status: COMPLETED
 
-### Problem
-The logout flow across all auth contexts (TenantAdmin, Customer, SuperAdmin, Auth, Vendor) had
-inconsistent state cleanup. Key issues:
-1. TanStack Query cache was NEVER cleared on logout - stale data from previous sessions could persist
-2. The existing `clearAllAuthTokens()` utility was never called by any logout function
-3. VendorAuthContext had minimal cleanup (no encryption destroy, no storage clearing)
-4. CustomerAuthContext never called `supabase.auth.signOut()`
-5. Inconsistent session/localStorage clearing across contexts
-6. Cart data, onboarding state, and age verification persisted across user sessions
+## Changes Made
 
-### Solution
-Created a centralized `performFullLogout()` utility and refactored all auth contexts to use it.
+### 1. Expiration Countdown Timer (src/pages/customer/SecureMenuView.tsx)
+- Added `TimeRemaining` component that shows a live countdown (days/hours/minutes/seconds)
+- Timer color transitions from amber to red when time is running low (< 2 hours)
+- Pulses when urgent (< 1 hour remaining)
+- Shows "Menu Expired" badge with alert styling when time runs out
+- Added `expiration_date` and `never_expires` fields to the MenuData interface
+- Timer is displayed below the header in the sticky top bar
 
-### Changes Made
+### 2. Enhanced Product Cards (src/pages/customer/SecureMenuView.tsx)
+- Added gradient background placeholder for products without images, using strain-type-aware colors
+- Shows category badge on the no-image placeholder
+- Leaf icon placeholder for visual consistency
 
-1. **src/lib/react-query-config.ts**
-   - Added singleton `appQueryClient` export (created once, used by both App.tsx and logout utility)
-   - Kept `createQueryClient` for tests that need isolated instances
+### 3. Enhanced Sticky Cart Summary Bar (src/pages/customer/SecureMenuView.tsx)
+- Redesigned floating cart with gradient background and blur effect
+- Added cart icon in a circular container with item count badge
+- Added item count and total price display
+- Gradient checkout button with shadow for visual emphasis
+- Added bottom padding to content area to prevent cart from overlapping products
 
-2. **src/App.tsx**
-   - Updated to import and use `appQueryClient` instead of creating a new instance via `createQueryClient()`
+### 4. Order Confirmation with SMS Option (src/components/menu/ModernCheckoutFlow.tsx)
+- Added SMS notification opt-in card to the OrderSuccess component
+- Users can enable SMS order status updates after placing an order
+- Shows phone icon, description, and "Enable SMS Alerts" button
+- Calls `menu-order-sms-subscribe` edge function to register
+- Shows confirmation message once enabled
+- Loading state on the button during API call
+- Graceful error handling if SMS subscription fails
+- Passed `menuId` and `phone` props through to OrderSuccess
 
-3. **src/lib/utils/authHelpers.ts**
-   - Added `performFullLogout()` function that comprehensively cleans ALL state:
-     - Destroys encryption session (clears keys from memory + session storage)
-     - Signs out from Supabase (clears Supabase-managed tokens)
-     - Calls `clearAllAuthTokens()` (clears all auth tier tokens/user data)
-     - Clears session-specific storage (cart, checkout, onboarding, age verification)
-     - Clears user ID from both session and local storage
-     - Clears `lastTenantSlug` for session restoration
-     - Cancels all in-flight queries and clears TanStack Query cache
+### 5. Bug Fix: Missing sanitize utility (src/lib/utils/sanitize.ts)
+- Created missing `sanitize.ts` utility that was imported by ProductDetailPage
+- Exports `sanitizeHtml`, `stripHtml`, and `sanitizeInput` functions
+- Fixed pre-existing build failure
 
-4. **src/contexts/TenantAdminAuthContext.tsx**
-   - Logout function: replaced manual cleanup with `await performFullLogout()` + `clearAuthState()`
-   - BroadcastChannel remote logout handler: same cleanup pattern
+## Files Modified
+- `src/pages/customer/SecureMenuView.tsx` - Timer, product cards, sticky cart
+- `src/components/menu/ModernCheckoutFlow.tsx` - SMS opt-in on order success
 
-5. **src/contexts/CustomerAuthContext.tsx**
-   - Logout function: replaced manual cleanup with `await performFullLogout()` + context state reset
-   - Now properly calls `supabase.auth.signOut()` (via performFullLogout)
+## Files Created
+- `src/lib/utils/sanitize.ts` - HTML sanitization utility (fixed build)
 
-6. **src/contexts/SuperAdminAuthContext.tsx**
-   - Logout function: replaced manual cleanup with `await performFullLogout()` + context state reset
-
-7. **src/contexts/AuthContext.tsx**
-   - signOut function: replaced manual cleanup with `await performFullLogout()` + context state reset
-
-8. **src/contexts/VendorAuthContext.tsx**
-   - Logout function: replaced bare `supabase.auth.signOut()` with `await performFullLogout()`
-   - Now has full encryption, storage, and query cache cleanup
-
-9. **src/lib/utils/sanitize.ts** (new - fixes pre-existing build error)
-   - Added missing HTML sanitization utility imported by ProductDetailPage
-
-### What Gets Cleaned on Logout Now
-- All auth tokens (super admin, tenant admin, customer, courier)
-- All user profile data from storage
-- Encryption keys and session
-- Supabase auth session
-- TanStack Query cache (prevents stale data between sessions)
-- Cart and checkout data
-- Onboarding state
-- Age verification state
-- User ID from session/local storage
-- lastTenantSlug
-
-### What Is Preserved (intentional)
-- Theme preference
-- Language setting
-- Sidebar collapsed state
-- Device ID/fingerprint
-- PWA installation state
-- Network quality setting
-- Reduced motion preference
-
-### Build Verification
-- `npm run build` passes successfully
+## Build Status
+- TypeScript: PASS (tsc --noEmit)
+- Vite build: PASS

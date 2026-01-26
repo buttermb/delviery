@@ -7,10 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogTitle, DialogHeader } from '@/components/ui/dialog';
-import { 
-  Shield, ShoppingCart, Package, Minus, Plus, Lock, 
+import {
+  Shield, ShoppingCart, Package, Minus, Plus, Lock,
   ZoomIn, Leaf, Sparkles, Wind, Coffee, Search, X, Check,
-  ChevronRight
+  ChevronRight, Timer, AlertTriangle
 } from 'lucide-react';
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { OptimizedProductImage } from '@/components/OptimizedProductImage';
@@ -54,6 +54,8 @@ interface MenuData {
   min_order_quantity?: number;
   max_order_quantity?: number;
   custom_prices?: Record<string, number>;
+  expiration_date?: string;
+  never_expires?: boolean;
 }
 
 const STRAIN_TYPES = ['All', 'Indica', 'Sativa', 'Hybrid', 'CBD'] as const;
@@ -94,6 +96,69 @@ const getEffectIcon = (effect: string) => {
   if (lowerEffect.includes('hungry') || lowerEffect.includes('munch')) return '🍕';
   return '✨';
 };
+
+// Expiration Countdown Component
+function TimeRemaining({ expiresAt }: { expiresAt: Date }) {
+  const [remaining, setRemaining] = useState('');
+  const [isUrgent, setIsUrgent] = useState(false);
+  const [isExpired, setIsExpired] = useState(false);
+
+  useEffect(() => {
+    const update = () => {
+      const diff = expiresAt.getTime() - Date.now();
+      if (diff <= 0) {
+        setRemaining('Expired');
+        setIsExpired(true);
+        setIsUrgent(true);
+        return;
+      }
+
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+
+      if (days > 0) {
+        setRemaining(`${days}d ${hours}h remaining`);
+        setIsUrgent(false);
+      } else if (hours > 0) {
+        setRemaining(`${hours}h ${mins}m remaining`);
+        setIsUrgent(hours < 2);
+      } else {
+        setRemaining(`${mins}m ${secs}s remaining`);
+        setIsUrgent(true);
+      }
+    };
+
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [expiresAt]);
+
+  if (isExpired) {
+    return (
+      <Badge variant="destructive" className="gap-1.5 animate-pulse">
+        <AlertTriangle className="h-3 w-3" />
+        Menu Expired
+      </Badge>
+    );
+  }
+
+  return (
+    <Badge
+      variant="outline"
+      className={cn(
+        "gap-1.5 transition-colors",
+        isUrgent
+          ? "border-red-500/50 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30"
+          : "border-amber-500/50 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30"
+      )}
+    >
+      <Timer className={cn("h-3 w-3", isUrgent && "animate-pulse")} />
+      {remaining}
+    </Badge>
+  );
+}
 
 // Enhanced Product Card Component
 function ProductCard({ 
@@ -141,8 +206,8 @@ function ProductCard({
     )}>
       {/* Image Section */}
       <div className="relative">
-        {shouldShowImage && imageUrl && (
-          <div 
+        {shouldShowImage && imageUrl ? (
+          <div
             className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted to-muted/50 cursor-pointer"
             onClick={onImageZoom}
           >
@@ -159,6 +224,20 @@ function ProductCard({
                 View
               </Button>
             </div>
+          </div>
+        ) : (
+          <div className={cn(
+            "relative aspect-[3/2] overflow-hidden flex items-center justify-center",
+            product.strain_type
+              ? `bg-gradient-to-br ${getStrainBgColor(product.strain_type)}`
+              : "bg-gradient-to-br from-muted to-muted/50"
+          )}>
+            <Leaf className="h-12 w-12 text-muted-foreground/30" />
+            {product.category && (
+              <Badge variant="secondary" className="absolute bottom-3 left-3 text-xs">
+                {product.category}
+              </Badge>
+            )}
           </div>
         )}
         
@@ -469,20 +548,22 @@ const SecureMenuView = () => {
     <div className="min-h-dvh bg-gradient-to-b from-background to-muted/30">
       {/* Header */}
       <div className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0 flex-1">
               <h1 className="text-xl sm:text-2xl font-bold truncate">{menuData.name}</h1>
-              {menuData.description && (
-                <p className="text-sm text-muted-foreground truncate">{menuData.description}</p>
-              )}
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                {menuData.description && (
+                  <p className="text-sm text-muted-foreground truncate">{menuData.description}</p>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="hidden sm:flex items-center gap-1 shrink-0">
                 <Shield className="h-3 w-3" />
                 Encrypted
               </Badge>
-              
+
               {/* Cart Button */}
               <Button
                 variant="default"
@@ -500,10 +581,17 @@ const SecureMenuView = () => {
               </Button>
             </div>
           </div>
+
+          {/* Expiration Countdown - below header row */}
+          {menuData.expiration_date && !menuData.never_expires && (
+            <div className="mt-2 flex items-center">
+              <TimeRemaining expiresAt={new Date(menuData.expiration_date)} />
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className={cn("container mx-auto px-4 py-6 space-y-6", totalItems > 0 && "pb-28")}>
         {/* Security Notice */}
         <Alert className="bg-primary/5 border-primary/20">
           <Lock className="h-4 w-4" />
@@ -629,24 +717,38 @@ const SecureMenuView = () => {
 
       {/* Floating Cart Summary */}
       {totalItems > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t shadow-2xl p-4 z-30 safe-area-inset-bottom">
-          <div className="container mx-auto flex items-center justify-between gap-4">
-            <div>
-              <div className="text-sm text-muted-foreground">
-                {totalItems} item{totalItems !== 1 ? 's' : ''}
-              </div>
-              <div className="text-2xl font-bold text-primary">
-                ${totalAmount.toFixed(2)}
+        <div className="fixed bottom-0 left-0 right-0 z-30 safe-area-inset-bottom">
+          <div className="bg-gradient-to-t from-card via-card to-card/80 backdrop-blur-lg border-t shadow-2xl">
+            <div className="container mx-auto px-4 py-3">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <ShoppingCart className="h-5 w-5 text-primary" />
+                    </div>
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-[10px]">
+                      {totalItems}
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">
+                      {totalItems} item{totalItems !== 1 ? 's' : ''}
+                    </p>
+                    <p className="text-2xl font-bold text-primary leading-tight">
+                      ${totalAmount.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="lg"
+                  onClick={() => setCheckoutOpen(true)}
+                  className="min-w-[140px] h-12 text-base font-semibold gap-2 bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/90 hover:to-emerald-600/90 shadow-lg shadow-primary/25"
+                >
+                  Checkout
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
               </div>
             </div>
-            <Button
-              size="lg"
-              onClick={() => setCheckoutOpen(true)}
-              className="min-w-[160px] h-12 text-base font-semibold gap-2"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              View Cart
-            </Button>
           </div>
         </div>
       )}
