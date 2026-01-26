@@ -104,11 +104,6 @@ section[id] {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Ensure all containers respect viewport width */
-/* * {
-  max-width: 100%;
-} REMOVED: Breaks sticky positioning and causes layout issues */
-
 /* Ensure inputs are scrollable into view when keyboard opens */
 body {
   position: relative;
