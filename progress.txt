@@ -7690,3 +7690,48 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+---
+
+## Task: Memoize navigation items with useMemo and proper dependencies in AdaptiveSidebar.tsx
+
+### What was done:
+
+1. **Enhanced `navItems` memoization** (`src/components/admin/sidebar/AdaptiveSidebar.tsx:78-91`):
+   - Added safety checks with `Array.isArray()` for all data sources
+   - Added pre-computed boolean flags (`hasHotItems`, `hasFavorites`, `hasSections`) to avoid recalculating in render
+   - Clear documentation of dependencies: `sidebarConfig`, `hotItems`, `favorites`
+
+2. **Added `currentPresetDisplayName` memoization** (lines 94-97):
+   - Memoizes the preset display name lookup to avoid recalculation on each render
+   - Dependencies: `presetNames`, `currentPreset`
+
+3. **Added memoized navigation handlers with `useCallback`** (lines 124-155):
+   - `handleNavigateToDashboard` - Navigates to dashboard
+   - `handleNavigateToSettings` - Navigates to settings
+   - `handleNavigateToProfile` - Navigates to profile
+   - `handleNavigateToHelp` - Navigates to help
+   - `handleNavigateToNewOrder` - Navigates to new order form
+   - `handleNavigateToNewProduct` - Navigates to new product form
+   - `handleNavigateToPOS` - Navigates to POS
+   - `handleNavigateToSettingsSidebar` - Navigates to settings with sidebar tab
+   - All have proper dependencies: `[navigate, tenantSlug]`
+
+4. **Updated JSX to use memoized values**:
+   - Replaced `navItems.hotItems.length > 0` with `navItems.hasHotItems`
+   - Replaced `navItems.favorites.length > 0` with `navItems.hasFavorites`
+   - Replaced `Array.isArray(navItems.sidebarConfig) && navItems.sidebarConfig.length > 0` with `navItems.hasSections`
+   - Replaced `presetNames[currentPreset] || currentPreset` with `currentPresetDisplayName`
+   - Replaced inline arrow functions for navigation with memoized handlers
+
+### Performance Benefits:
+- Prevents unnecessary re-renders of child components when parent re-renders
+- Avoids recreating callback functions on every render
+- Pre-computes derived boolean values in `useMemo` instead of during render
+- All dependencies are correctly specified to ensure proper memoization invalidation
+
+### Files Changed:
+- `src/components/admin/sidebar/AdaptiveSidebar.tsx`
+
+### Verification:
+- Build passes with no TypeScript errors

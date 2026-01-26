@@ -74,11 +74,27 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   }), []);
 
   // Memoize navigation items to prevent unnecessary re-renders
-  const navItems = useMemo(() => ({
-    sidebarConfig,
-    hotItems: Array.isArray(hotItems) ? hotItems : [],
-    favorites: Array.isArray(favorites) ? favorites : [],
-  }), [sidebarConfig, hotItems, favorites]);
+  // Dependencies: sidebarConfig, hotItems, favorites from useSidebarConfig hook
+  const navItems = useMemo(() => {
+    const safeHotItems = Array.isArray(hotItems) ? hotItems : [];
+    const safeFavorites = Array.isArray(favorites) ? favorites : [];
+    const safeSidebarConfig = Array.isArray(sidebarConfig) ? sidebarConfig : [];
+
+    return {
+      sidebarConfig: safeSidebarConfig,
+      hotItems: safeHotItems,
+      favorites: safeFavorites,
+      hasHotItems: safeHotItems.length > 0,
+      hasFavorites: safeFavorites.length > 0,
+      hasSections: safeSidebarConfig.length > 0,
+    };
+  }, [sidebarConfig, hotItems, favorites]);
+
+  // Memoize preset display name to avoid recalculation on each render
+  const currentPresetDisplayName = useMemo(() =>
+    presetNames[currentPreset] || currentPreset,
+    [presetNames, currentPreset]
+  );
 
   // Guard against missing tenant slug
   if (!tenantSlug) {
@@ -105,6 +121,39 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
     }
   }, [trackFeatureClick]);
 
+  // Memoize navigation handlers to prevent unnecessary re-renders of child components
+  const handleNavigateToDashboard = useCallback(() => {
+    navigate(`/${tenantSlug}/admin/dashboard`);
+  }, [navigate, tenantSlug]);
+
+  const handleNavigateToSettings = useCallback(() => {
+    navigate(`/${tenantSlug}/admin/settings`);
+  }, [navigate, tenantSlug]);
+
+  const handleNavigateToProfile = useCallback(() => {
+    navigate(`/${tenantSlug}/admin/profile`);
+  }, [navigate, tenantSlug]);
+
+  const handleNavigateToHelp = useCallback(() => {
+    navigate(`/${tenantSlug}/admin/help`);
+  }, [navigate, tenantSlug]);
+
+  const handleNavigateToNewOrder = useCallback(() => {
+    navigate(`/${tenantSlug}/admin/orders/new`);
+  }, [navigate, tenantSlug]);
+
+  const handleNavigateToNewProduct = useCallback(() => {
+    navigate(`/${tenantSlug}/admin/inventory/products/new`);
+  }, [navigate, tenantSlug]);
+
+  const handleNavigateToPOS = useCallback(() => {
+    navigate(`/${tenantSlug}/admin/pos`);
+  }, [navigate, tenantSlug]);
+
+  const handleNavigateToSettingsSidebar = useCallback(() => {
+    navigate(`/${tenantSlug}/admin/settings?tab=sidebar`);
+  }, [navigate, tenantSlug]);
+
   return (
     <>
       <Sidebar data-tutorial="navigation-sidebar" collapsible={collapsible} className="dark:bg-gray-900 dark:text-white">
@@ -126,19 +175,19 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuItem onClick={() => navigate(`/${tenantSlug}/admin/dashboard`)}>
+              <DropdownMenuItem onClick={handleNavigateToDashboard}>
                 <LayoutDashboard className="h-4 w-4 mr-2" />
                 Dashboard
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate(`/${tenantSlug}/admin/settings`)}>
+              <DropdownMenuItem onClick={handleNavigateToSettings}>
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate(`/${tenantSlug}/admin/profile`)}>
+              <DropdownMenuItem onClick={handleNavigateToProfile}>
                 <User className="h-4 w-4 mr-2" />
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate(`/${tenantSlug}/admin/help`)}>
+              <DropdownMenuItem onClick={handleNavigateToHelp}>
                 <HelpCircle className="h-4 w-4 mr-2" />
                 Help & Support
               </DropdownMenuItem>
@@ -173,7 +222,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               variant="ghost"
               size="sm"
               className="flex-1 h-8 text-xs gap-1.5"
-              onClick={() => navigate(`/${tenantSlug}/admin/orders/new`)}
+              onClick={handleNavigateToNewOrder}
             >
               <Plus className="h-3.5 w-3.5" />
               Order
@@ -182,7 +231,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               variant="ghost"
               size="sm"
               className="flex-1 h-8 text-xs gap-1.5"
-              onClick={() => navigate(`/${tenantSlug}/admin/inventory/products/new`)}
+              onClick={handleNavigateToNewProduct}
             >
               <Package className="h-3.5 w-3.5" />
               Product
@@ -191,7 +240,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               variant="ghost"
               size="sm"
               className="flex-1 h-8 text-xs gap-1.5"
-              onClick={() => navigate(`/${tenantSlug}/admin/pos`)}
+              onClick={handleNavigateToPOS}
             >
               <ShoppingCart className="h-3.5 w-3.5" />
               POS
@@ -211,17 +260,17 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
             <SidebarRecentlyUsed />
 
             {/* Hot Items Section */}
-            {navItems.hotItems.length > 0 && (
+            {navItems.hasHotItems && (
               <SidebarHotItems />
             )}
 
             {/* Favorites Section */}
-            {navItems.favorites.length > 0 && (
+            {navItems.hasFavorites && (
               <SidebarFavorites />
             )}
 
             {/* Main Sections */}
-            {Array.isArray(navItems.sidebarConfig) && navItems.sidebarConfig.length > 0 ? (
+            {navItems.hasSections ? (
               navItems.sidebarConfig.map((section) => (
                 <SidebarSection
                   key={section.section}
@@ -239,7 +288,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
                     No menu items available
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Layout: <span className="font-semibold">{presetNames[currentPreset] || currentPreset}</span>
+                    Layout: <span className="font-semibold">{currentPresetDisplayName}</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {tenant ? `Tenant: ${tenant.slug}` : 'Loading tenant...'}
@@ -260,7 +309,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate(`/${tenantSlug}/admin/settings?tab=sidebar`)}
+                  onClick={handleNavigateToSettingsSidebar}
                   className="w-full"
                 >
                   <Settings className="h-4 w-4 mr-2" />
@@ -278,7 +327,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               variant="ghost"
               size="sm"
               className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground"
-              onClick={() => navigate(`/${tenantSlug}/admin/settings`)}
+              onClick={handleNavigateToSettings}
             >
               <Settings className="h-3.5 w-3.5 mr-1" />
               Settings
@@ -287,7 +336,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               variant="ghost"
               size="sm"
               className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground"
-              onClick={() => navigate(`/${tenantSlug}/admin/help`)}
+              onClick={handleNavigateToHelp}
             >
               <HelpCircle className="h-3.5 w-3.5 mr-1" />
               Help
