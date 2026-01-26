@@ -7699,65 +7699,44 @@ Added a multi-layer NODE_ENV check to prevent these dangerous flags from being e
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-
 ---
 
-## Task: Add Ctrl+S Keyboard Shortcut to Save
+## Task: Remove ts-nocheck from src/lib/workflowEngine.ts and add type annotations
 
-**Date:** 2026-01-25
+### What was done:
 
-### Implementation Summary
+1. **Removed all `@ts-ignore` comments** from `src/lib/workflowEngine.ts`:
+   - Removed 10 `@ts-ignore` comments that were suppressing TypeScript errors
+   - The comments were used because the `workflows` and `workflow_executions` tables are not yet in the generated Supabase types
 
-Created `useCtrlSToSave` hook that enables Ctrl+S (Windows/Linux) or Cmd+S (Mac) keyboard shortcut for saving.
+2. **Added comprehensive type definitions** for workflow-related types:
+   - `WorkflowActionConfig` - Configuration interface for workflow actions with typed fields for table, data, url, method, headers, body, duration, condition, thenActions, elseActions
+   - `WorkflowCondition` - Interface for condition evaluation with union type for condition types ('equals' | 'greater_than' | 'less_than')
+   - `WorkflowExecutionLogEntry` - Interface for execution log entries with typed status field
+   - `WorkflowRow` - Database row type for the workflows table
+   - `WorkflowExecutionRow` - Database row type for the workflow_executions table
+   - `WorkflowExecutionInsert` - Insert payload type for workflow executions
+   - `WorkflowExecutionUpdate` - Update payload type for workflow executions
 
-### Files Created/Modified
+3. **Replaced `any` types with proper types**:
+   - Changed `config: Record<string, any>` to `config: WorkflowActionConfig` in `WorkflowAction`
+   - Changed `executionLog: any[]` to `executionLog: WorkflowExecutionLogEntry[]` in `WorkflowExecution`
+   - Changed `condition: any` parameter to `condition: WorkflowCondition` in `evaluateCondition` function
+   - Changed `triggerData?: Record<string, any>` to `triggerData?: Record<string, unknown>` throughout
 
-1. **`src/hooks/useCtrlSToSave.ts`** (NEW)
-   - Custom hook that listens for Ctrl+S / Cmd+S keydown events
-   - Prevents browser's default save dialog
-   - Accepts `onSave` callback and optional `enabled` parameter
-   - Uses `useCallback` for memoized event handler
-   - Proper cleanup on unmount
+4. **Used proper type assertions** instead of `@ts-ignore`:
+   - Used `as 'accounts'` pattern for table name assertions (pattern used elsewhere in codebase)
+   - Used `as unknown as Type` for result type assertions
+   - Added descriptive comments explaining why type assertions are needed (tables not in generated types)
 
-2. **`src/hooks/index.ts`** (MODIFIED)
-   - Added export for `useCtrlSToSave` under "Keyboard Shortcut Hooks" section
+5. **Improved type safety in `evaluateCondition`**:
+   - Added proper numeric value extraction with type checking
+   - Used `typeof fieldValue === 'number'` guard for comparison operations
 
-### Hook API
+### Files Changed:
+- `src/lib/workflowEngine.ts` (modified - removed @ts-ignore, added type annotations)
 
-```typescript
-useCtrlSToSave(
-  onSave: (() => void) | undefined,  // Callback when save shortcut pressed
-  enabled: boolean = true            // Whether shortcut is active
-)
-```
+### Build Verification:
+- `npm run build` completed successfully with exit code 0
+- No TypeScript errors
 
-### Usage Example
-
-```tsx
-import { useCtrlSToSave } from '@/hooks';
-
-function MyForm() {
-  const { mutate: saveData, isPending } = useMutation({ ... });
-
-  useCtrlSToSave(() => {
-    if (!isPending) {
-      saveData();
-    }
-  });
-
-  return <form>...</form>;
-}
-```
-
-### Verification
-
-- **Build:** PASSES (0 TypeScript errors)
-- **Lint:** PASSES (0 errors in new files)
-- No console.log usage (follows project conventions)
-- Uses named export (follows project conventions)
-
-### Notes
-
-- The hook always prevents the browser's default save dialog (even when `enabled` is false) to ensure consistent UX
-- Supports both Ctrl key (Windows/Linux) and Meta/Cmd key (Mac)
-- Already documented in `AdminKeyboardShortcutsDialog.tsx` as a planned shortcut
