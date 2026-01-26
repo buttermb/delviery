@@ -14,8 +14,8 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Get stored theme or default to light
-    const stored = safeStorage.getItem(STORAGE_KEYS.THEME);
+    // Get stored theme or default to light mode
+    const stored = safeStorage.getItem("theme");
     const initialTheme: Theme = (stored === "light" || stored === "dark") ? stored : "light";
 
     // Apply theme IMMEDIATELY before React renders
