@@ -1956,14 +1956,33 @@ Added `.catch()` error handlers to all unhandled `.then()` Promise chains to pre
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Widen preview panel from 320px to 400px
-**Date:** 2026-01-25
+## Task: Add transition-colors class to body element
+
+**Date**: 2026-01-25
+**Status**: ✅ Complete
 
 ### Changes Made:
-- Updated skeleton loader grid in StorefrontSettings.tsx line 368
-- Changed `lg:grid-cols-[1fr_320px]` to `lg:grid-cols-[1fr_400px]`
-- This makes the preview panel width consistent (400px) across lg and xl breakpoints
-- The actual content grid (line 520) already used 400px; this aligns the skeleton
+- Added `transition-colors` Tailwind utility class to the body element in `src/index.css`
+- Updated the transition property to include `border-color` for more complete theme transition coverage
 
-### Files Changed:
-- `src/pages/admin/storefront/StorefrontSettings.tsx`
+### File Modified:
+- `src/index.css` (line 998-1001 in @layer base)
+
+### Before:
+```css
+body {
+  @apply bg-background text-foreground;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+```
+
+### After:
+```css
+body {
+  @apply bg-background text-foreground transition-colors;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+```
+
+### Purpose:
+The `transition-colors` class enables smooth theme transitions when switching between light and dark modes. This provides a better user experience by animating color changes rather than abrupt switches.
