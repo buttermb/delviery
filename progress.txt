@@ -7699,68 +7699,65 @@ Added a multi-layer NODE_ENV check to prevent these dangerous flags from being e
 ### Files Changed:
 - `progress.txt` (this verification report)
 
----
-
-## Task: Remove ts-nocheck from src/lib/api/marketplace.ts and fix types
-
-### What was done:
-
-1. **Removed \ directive** from the top of the file
-
-2. **Fixed type definitions:**
-   - Added \ interface for the joined profile data
-   - Updated \ interface to match actual database schema:
-     - \ is now \ (matches DB type)
-     - Changed \ to \ (correct column name in marketplace_listings)
-     - \ is optional and nullable with proper typing
-     - \ is \ (matches DB type)
-
-3. **Updated Supabase queries:**
-   - Changed \ to \ in select statements
-   - Removed \ join modifier (not needed, allows null profiles)
-   - Removed \ filter (column doesn't exist in DB schema)
-   - Removed \ from select (column doesn't exist in DB)
-   - Used \ for proper type casting
-
-4. **Verified build passes** with no TypeScript errors
-
-### Technical Notes:
-- The \ and \ fields referenced in the original code don't exist in the auto-generated Supabase types
-- The extended types in \ include these as optional fields for future use
-- Consumer code in \ uses optional chaining (\) so it won't break
-
-### Files Changed:
-- \ (modified - removed ts-nocheck, fixed types)
 
 ---
 
-## Task: Remove ts-nocheck from src/lib/api/marketplace.ts and fix types
+## Task: Add Ctrl+S Keyboard Shortcut to Save
 
-### What was done:
+**Date:** 2026-01-25
 
-1. **Removed `@ts-nocheck` directive** from the top of the file
+### Implementation Summary
 
-2. **Fixed type definitions:**
-   - Added `MarketplaceProfileData` interface for the joined profile data
-   - Updated `MarketplaceListing` interface to match actual database schema:
-     - `images` is now `string[] | null` (matches DB type)
-     - Changed `strain_type` to `strain_name` (correct column name in marketplace_listings)
-     - `marketplace_profiles` is optional and nullable with proper typing
-     - `business_name` is `string | null` (matches DB type)
+Created `useCtrlSToSave` hook that enables Ctrl+S (Windows/Linux) or Cmd+S (Mac) keyboard shortcut for saving.
 
-3. **Updated Supabase queries:**
-   - Changed `strain_type` to `strain_name` in select statements
-   - Removed `!inner` join modifier (not needed, allows null profiles)
-   - Removed `visibility` filter (column doesn't exist in DB schema)
-   - Removed `verified_badge` from select (column doesn't exist in DB)
-   - Used `as unknown as MarketplaceListing[]` for proper type casting
+### Files Created/Modified
 
-4. **Verified build passes** with no TypeScript errors
+1. **`src/hooks/useCtrlSToSave.ts`** (NEW)
+   - Custom hook that listens for Ctrl+S / Cmd+S keydown events
+   - Prevents browser's default save dialog
+   - Accepts `onSave` callback and optional `enabled` parameter
+   - Uses `useCallback` for memoized event handler
+   - Proper cleanup on unmount
 
-### Technical Notes:
-- The `visibility` and `verified_badge` fields referenced in the original code don't exist in the auto-generated Supabase types
-- The extended types in `src/types/marketplace-extended.ts` include these as optional fields for future use
-- Consumer code in `CreatePostPage.tsx` uses optional chaining (`?.verified_badge`) so it won't break
+2. **`src/hooks/index.ts`** (MODIFIED)
+   - Added export for `useCtrlSToSave` under "Keyboard Shortcut Hooks" section
 
-### Files Changed:
-- `src/lib/api/marketplace.ts` (modified - removed ts-nocheck, fixed types)
+### Hook API
+
+```typescript
+useCtrlSToSave(
+  onSave: (() => void) | undefined,  // Callback when save shortcut pressed
+  enabled: boolean = true            // Whether shortcut is active
+)
+```
+
+### Usage Example
+
+```tsx
+import { useCtrlSToSave } from '@/hooks';
+
+function MyForm() {
+  const { mutate: saveData, isPending } = useMutation({ ... });
+
+  useCtrlSToSave(() => {
+    if (!isPending) {
+      saveData();
+    }
+  });
+
+  return <form>...</form>;
+}
+```
+
+### Verification
+
+- **Build:** PASSES (0 TypeScript errors)
+- **Lint:** PASSES (0 errors in new files)
+- No console.log usage (follows project conventions)
+- Uses named export (follows project conventions)
+
+### Notes
+
+- The hook always prevents the browser's default save dialog (even when `enabled` is false) to ensure consistent UX
+- Supports both Ctrl key (Windows/Linux) and Meta/Cmd key (Mac)
+- Already documented in `AdminKeyboardShortcutsDialog.tsx` as a planned shortcut
