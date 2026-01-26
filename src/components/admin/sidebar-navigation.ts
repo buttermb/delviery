@@ -92,16 +92,16 @@ export const navigationSections: NavSection[] = [
         icon: LayoutDashboard
       },
       {
-        title: 'Hotbox',
-        href: '/admin/hotbox',
-        icon: Flame,
-        badge: 'HOT'
+        title: 'Live Orders',
+        href: '/admin/orders?tab=live',
+        icon: Activity,
+        badge: 'LIVE',
+        tier: 'professional'
       },
       {
         title: 'Real-Time Dashboard',
         href: '/admin/realtime-dashboard',
         icon: Activity,
-        badge: 'LIVE',
         tier: 'enterprise'
       }
     ]
@@ -130,12 +130,6 @@ export const navigationSections: NavSection[] = [
         href: '/admin/orders',
         icon: ShoppingCart,
         badge: 'HOT'
-      },
-      {
-        title: 'Live Orders',
-        href: '/admin/orders?tab=live',
-        icon: Activity,
-        tier: 'professional'
       },
       {
         title: 'Inventory',

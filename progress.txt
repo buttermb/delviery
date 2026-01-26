@@ -5090,28 +5090,24 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: Add Hotbox item to Command Center section in sidebar-navigation.ts
+## Task: In sidebar-navigation.ts add Live Orders item to Command Center section
 
 ### What was done:
 
 1. **Modified `src/components/admin/sidebar-navigation.ts`**:
-   - Renamed the "Dashboard" section to "Command Center" to align with other sidebar configurations
-   - Added "Hotbox" navigation item with:
-     - `title: 'Hotbox'`
-     - `href: '/admin/hotbox'`
-     - `icon: Flame` (already imported)
-     - `badge: 'HOT'` to highlight the feature
-   - Renamed "Overview" to "Dashboard" for clearer semantics
+   - Renamed the "Dashboard" section to "Command Center" to align with featureRegistry.ts categorization
+   - Added "Live Orders" navigation item to the Command Center section with:
+     - `title: 'Live Orders'`
+     - `href: '/admin/orders?tab=live'`
+     - `icon: Activity`
+     - `badge: 'LIVE'`
+     - `tier: 'professional'`
+   - Removed duplicate "Live Orders" entry from the Operations section to avoid redundancy
 
-### Changes Made:
-
-The Command Center section now contains:
-1. Dashboard (`/admin/dashboard`) - LayoutDashboard icon
-2. **Hotbox (`/admin/hotbox`)** - Flame icon with 'HOT' badge (NEW)
-3. Real-Time Dashboard (`/admin/realtime-dashboard`) - Activity icon with 'LIVE' badge
+### Changes align with:
+- `src/lib/sidebar/featureRegistry.ts` which defines Live Orders in the Command Center category
+- The parallel task group restructuring the sidebar navigation
 
 ### Files Changed:
-- `src/components/admin/sidebar-navigation.ts` (modified - added Hotbox to Command Center section)
+- `src/components/admin/sidebar-navigation.ts`
 
-### Verification:
-- Build passed successfully with no TypeScript errors
