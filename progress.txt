@@ -7732,5 +7732,31 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - The actual token should be rotated since it was exposed in version control history
 
 ### Files Changed:
-- `src/main.tsx` - Removed hardcoded token from comment
-- `.env.example` - Replaced real token with placeholder and added documentation
+- `progress.txt` (this verification report)
+
+
+## Task: Add production environment check to disable AUTO_APPROVE and AUTO_BYPASS
+
+### Changes Made:
+- Modified `src/config/featureFlags.ts` lines 12-20 and 32-41
+- Added `isProduction` constant that checks both `import.meta.env.MODE === 'production'` and `import.meta.env.PROD === true`
+- Created `toBoolSafe()` function that wraps `toBool()` but always returns `false` in production environments
+- Updated all AUTO_APPROVE_* and AUTO_BYPASS_* flags in `envDefaults` to use `toBoolSafe()` instead of `toBool()`
+
+### Security Improvement:
+This change provides defense-in-depth security by ensuring that dangerous auto-approve and auto-bypass flags are ALWAYS disabled in production environments at the initialization level, even if:
+- Environment variables are misconfigured
+- Runtime flags JSON contains malicious values
+- Someone attempts to enable these flags through other means
+
+The existing production check in `shouldAutoApprove()` function (lines 96-98) is now complemented by this initialization-level check.
+
+### Verification:
+- `npm run build` - PASSES (0 TypeScript errors)
+- All 6599 modules transformed successfully
+- Production build completes without issues
+
+### Files Changed:
+- `src/config/featureFlags.ts`
+- `progress.txt` (this update)
+
