@@ -7690,3 +7690,46 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Add Color Preset Theme Buttons (Modern, Classic, Dark, Nature) in Branding Tab
+
+### Date: 2026-01-25
+
+### What was implemented:
+
+Added color preset theme buttons to the Brand Colors section in BusinessSettings.tsx. Users can now quickly apply predefined color themes with a single click, or continue using custom color pickers.
+
+### Implementation Details:
+
+1. **Added 4 Color Presets**:
+   - **Modern**: Emerald green (#10b981) + Blue (#3b82f6) - "Fresh and professional"
+   - **Classic**: Indigo (#6366f1) + Amber (#f59e0b) - "Timeless elegance"
+   - **Dark**: Slate dark (#1e293b) + Rose (#f43f5e) - "Bold and striking"
+   - **Nature**: Emerald deeper (#059669) + Lime (#84cc16) - "Organic and earthy"
+
+2. **UI Implementation**:
+   - Grid layout with 4 preset buttons (2x2 on mobile, 4 columns on desktop)
+   - Each button shows color swatches, theme name, and description
+   - Active theme highlighted with primary border and "Active" badge
+   - Hover effects with shadow for better interactivity
+   - Toast notification confirms theme application
+
+3. **Section Organization**:
+   - "Quick Presets" section at the top for easy theme selection
+   - "Custom Colors" section below with existing color pickers
+   - Clear visual separation with border divider
+
+### Build Verification:
+- `npm run build` - PASSES (0 TypeScript errors)
+
+### Files Changed:
+- `src/pages/tenant-admin/settings/BusinessSettings.tsx` - Added COLOR_PRESETS constant, applyColorPreset function, and preset button grid UI
+
+### Acceptance Criteria Met:
+- [x] Modern, Classic, Dark, Nature preset buttons added
+- [x] Each preset has distinct primary/accent color combination
+- [x] Active preset is visually indicated
+- [x] Clicking preset applies colors immediately
+- [x] Toast feedback on preset application
+- [x] Responsive grid layout (2 cols mobile, 4 cols desktop)
+- [x] Build passes with no TypeScript errors
