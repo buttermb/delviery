@@ -44,7 +44,6 @@ import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog
 import { generateUrlToken } from '@/utils/menuHelpers';
 import { StorefrontSettingsLivePreview } from '@/components/admin/storefront/StorefrontSettingsLivePreview';
 import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedProductsManager';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface DeliveryZone {
   zip_code: string;
@@ -731,15 +730,19 @@ export default function StorefrontSettings() {
                         onChange={(e) => updateField('logo_url', e.target.value)}
                         placeholder="https://..."
                       />
-                      {formData.logo_url && (
-                        <div className="mt-2 aspect-video w-full max-w-[200px] bg-muted rounded-lg flex items-center justify-center border overflow-hidden p-2">
+                      <div className="mt-2 aspect-square w-full max-w-[120px] bg-muted rounded-lg flex items-center justify-center border overflow-hidden p-2">
+                        {formData.logo_url ? (
                           <img
                             src={formData.logo_url}
                             alt="Logo preview"
                             className="w-full h-full object-contain"
                           />
-                        </div>
-                      )}
+                        ) : (
+                          <span className="text-xs text-muted-foreground text-center">
+                            1:1 ratio
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -750,15 +753,19 @@ export default function StorefrontSettings() {
                         onChange={(e) => updateField('banner_url', e.target.value)}
                         placeholder="https://..."
                       />
-                      {formData.banner_url && (
-                        <div className="mt-2 aspect-[3/1] bg-muted rounded-lg overflow-hidden border">
+                      <div className="mt-2 aspect-[3/1] w-full bg-muted rounded-lg flex items-center justify-center border overflow-hidden">
+                        {formData.banner_url ? (
                           <img
                             src={formData.banner_url}
                             alt="Banner preview"
                             className="w-full h-full object-cover"
                           />
-                        </div>
-                      )}
+                        ) : (
+                          <span className="text-xs text-muted-foreground text-center">
+                            3:1 ratio (e.g. 1200×400)
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -770,18 +777,20 @@ export default function StorefrontSettings() {
                       onChange={(e) => updateField('favicon_url', e.target.value)}
                       placeholder="https://... (32x32 recommended)"
                     />
-                    {formData.favicon_url && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <div className="w-8 h-8 rounded border bg-background flex items-center justify-center p-1">
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="size-8 rounded border bg-muted flex items-center justify-center p-1">
+                        {formData.favicon_url ? (
                           <img
                             src={formData.favicon_url}
                             alt="Favicon preview"
                             className="w-full h-full object-contain"
                           />
-                        </div>
-                        <span className="text-xs text-muted-foreground">32x32px preview</span>
+                        ) : (
+                          <span className="text-[8px] text-muted-foreground">32²</span>
+                        )}
                       </div>
-                    )}
+                      <span className="text-xs text-muted-foreground">32×32px</span>
+                    </div>
                   </div>
                 </div>
 
@@ -1385,9 +1394,19 @@ export default function StorefrontSettings() {
                     onChange={(e) => updateField('og_image_url', e.target.value)}
                     placeholder="https://..."
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Recommended size: 1200x630 pixels
-                  </p>
+                  <div className="mt-2 aspect-[1200/630] w-full max-w-[300px] bg-muted rounded-lg flex items-center justify-center border overflow-hidden">
+                    {formData.og_image_url ? (
+                      <img
+                        src={formData.og_image_url}
+                        alt="Social sharing preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-xs text-muted-foreground text-center px-2">
+                        1200×630px (1.91:1 ratio)
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <Separator />

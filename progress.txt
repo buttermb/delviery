@@ -7690,3 +7690,47 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `progress.txt` (this verification report)
+
+## Task: Add aspect-ratio containers for image upload sections in StorefrontSettings.tsx
+
+### Date: 2026-01-25
+
+### What was implemented:
+
+1. **Fixed duplicate Skeleton import** - Removed duplicate import on line 47
+
+2. **Added aspect-ratio placeholder containers for all image upload sections:**
+
+   - **Logo URL** (Branding tab):
+     - Changed from `aspect-video` to `aspect-square` (1:1 ratio)
+     - Reduced max-width from 200px to 120px for better proportions
+     - Added placeholder text "1:1 ratio" when no image is present
+     - Container is always visible to provide visual guidance
+
+   - **Banner URL** (Branding tab):
+     - Maintained `aspect-[3/1]` ratio
+     - Added placeholder text "3:1 ratio (e.g. 1200×400)" when no image is present
+     - Container is always visible to provide visual guidance
+
+   - **Favicon URL** (Branding tab):
+     - Changed from `w-8 h-8` to `size-8` (per UI skills: use `size-*` for square elements)
+     - Added placeholder text "32²" when no image is present
+     - Container is always visible with simplified "32×32px" label
+
+   - **Social Sharing Image URL** (SEO tab):
+     - Added new aspect-ratio container with `aspect-[1200/630]` (Open Graph standard ratio)
+     - Max-width of 300px for appropriate preview size
+     - Added placeholder text "1200×630px (1.91:1 ratio)" when no image is present
+     - Shows image preview when URL is provided
+
+### UI/UX Improvements:
+- Users can now see the expected dimensions BEFORE uploading images
+- Visual placeholders show recommended aspect ratios
+- Consistent styling across all image upload sections
+- Follows UI skills best practices (`size-*` for square elements)
+
+### Build Verification:
+- `npm run build` - PASSES (0 TypeScript errors)
+
+### Files Changed:
+- `src/pages/admin/storefront/StorefrontSettings.tsx`
