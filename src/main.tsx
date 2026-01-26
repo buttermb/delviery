@@ -9,9 +9,9 @@ import { logger } from '@/lib/logger';
 /**
  * NOTE: Zen Firewall (AikidoSec) is installed but designed for Node.js/Express backend servers.
  * This is a React frontend application. Zen should be set up on your backend server.
- * 
+ *
  * See ZEN_FIREWALL_SETUP.md for backend setup instructions.
- * Environment variable: AIKIDO_TOKEN
+ * Configure AIKIDO_TOKEN environment variable on your backend server.
  */
 
 import { createRoot } from "react-dom/client";
