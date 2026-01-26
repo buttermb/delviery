@@ -191,15 +191,31 @@ export function BuilderLeftPanel({
                                         typography: { ...themeConfig.typography, fontFamily: value }
                                     })}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger
+                                        style={{
+                                            fontFamily: themeConfig.typography?.fontFamily
+                                                ? `"${themeConfig.typography.fontFamily}", sans-serif`
+                                                : 'Inter, sans-serif'
+                                        }}
+                                    >
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Inter">Inter</SelectItem>
-                                        <SelectItem value="Space Grotesk">Space Grotesk</SelectItem>
-                                        <SelectItem value="DM Sans">DM Sans</SelectItem>
-                                        <SelectItem value="Playfair Display">Playfair Display</SelectItem>
-                                        <SelectItem value="Montserrat">Montserrat</SelectItem>
+                                        <SelectItem value="Inter">
+                                            <span style={{ fontFamily: 'Inter, sans-serif' }}>Inter</span>
+                                        </SelectItem>
+                                        <SelectItem value="Space Grotesk">
+                                            <span style={{ fontFamily: '"Space Grotesk", sans-serif' }}>Space Grotesk</span>
+                                        </SelectItem>
+                                        <SelectItem value="DM Sans">
+                                            <span style={{ fontFamily: '"DM Sans", sans-serif' }}>DM Sans</span>
+                                        </SelectItem>
+                                        <SelectItem value="Playfair Display">
+                                            <span style={{ fontFamily: '"Playfair Display", serif' }}>Playfair Display</span>
+                                        </SelectItem>
+                                        <SelectItem value="Montserrat">
+                                            <span style={{ fontFamily: 'Montserrat, sans-serif' }}>Montserrat</span>
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
