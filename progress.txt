@@ -1,80 +1,18 @@
-## Task: Implement Offline Order Creation
-
-### What was done:
-1. Created `src/hooks/useOfflineOrderCreation.ts` - A custom hook that:
-   - Manages offline order creation, storage, and sync lifecycle
-   - Stores orders in IndexedDB (via existing `idb.ts` infrastructure) when offline
-   - Syncs orders to Supabase `orders` and `order_items` tables when online
-   - Uses idempotency keys to prevent duplicate order creation
-   - Provides automatic sync on network restoration
-   - Exposes retry and remove operations for failed orders
-   - Integrates with existing `offlineQueue` for robust retry with backoff
-
-2. Created `src/pages/admin/OfflineOrderCreate.tsx` - A full admin page that:
-   - Loads products from Supabase (online) or IndexedDB cache (offline)
-   - Caches products in IndexedDB on load for offline availability
-   - Provides product search by name/SKU with add-to-cart functionality
-   - Includes customer details form (name, phone, email, address, notes)
-   - Shows cart with quantity adjustment, item removal, and total calculation
-   - Displays clear online/offline status indicators
-   - Has two tabs: "New Order" (creation form) and "Pending Orders" (sync queue)
-   - Shows pending orders with status badges, retry, and remove actions
-   - Works fully offline with graceful degradation
-
-3. Updated `src/pages/admin/Orders.tsx` to:
-   - Add "Offline Order" button in the header linking to offline order creation
-
-4. Updated `src/App.tsx` to:
-   - Add lazy import for `OfflineOrderCreate` page
-   - Add route `orders/offline-create` in admin routes
-
-5. Updated `src/lib/queryKeys.ts` to:
-   - Add `offline` query key under orders for tenant-scoped offline order queries
-
-6. Fixed pre-existing build error in `src/lib/utils/sanitize.ts`:
-   - Added `sanitizeBasicHtml` export alias (was imported but not exported)
-
-### Architecture:
-- **Storage**: IndexedDB (encrypted via existing `clientEncryption`) for offline orders
-- **Sync**: Direct Supabase insert when online; queued via `offlineQueue` when offline
-- **Products Cache**: Products loaded from Supabase are cached in IndexedDB for offline use
-- **Network Detection**: `navigator.onLine` + event listeners for real-time status
-- **Idempotency**: UUID-based keys prevent duplicate order creation on retry
-
-### Acceptance Criteria Met:
-- [x] Orders can be created while completely offline
-- [x] Products are cached locally for offline product selection
-- [x] Orders sync automatically when connectivity is restored
-- [x] Failed syncs can be retried manually
-- [x] Pending offline orders are visible with status indicators
-- [x] Build passes with no TypeScript errors
-
-### Files Changed:
-- `src/hooks/useOfflineOrderCreation.ts` (new)
-- `src/pages/admin/OfflineOrderCreate.tsx` (new)
-- `src/pages/admin/Orders.tsx` (modified - added Offline Order button)
-- `src/App.tsx` (modified - added lazy import and route)
-- `src/lib/queryKeys.ts` (modified - added offline query key)
-- `src/lib/utils/sanitize.ts` (modified - fixed pre-existing missing export)
-
----
-
-## Task: Add Breadcrumb Navigation Between Panels
+## Task: Add Vendors and Purchase Orders to sidebar navigation
 
 ### What was done:
 
-1. **Removed hardcoded Aikido token from `src/main.tsx`**:
-   - Deleted line 14 which contained the hardcoded Aikido runtime token
-   - Token string `AIK_RUNTIME_47083_33691_EU_...` was exposed in the source code (security vulnerability)
-   - Kept the comment referencing the AIKIDO_TOKEN environment variable for proper configuration
-   - The Zen Firewall setup comment block now only references the setup docs and environment variable
+1. **Updated `src/components/admin/sidebar-navigation.ts`**:
+   - Added "Vendors" navigation item to Operations section with route `/admin/vendors` and `Building2` icon
+   - Added "Purchase Orders" navigation item to Operations section with route `/admin/purchase-orders` and `FileText` icon
+   - Both items added after "Receiving & Packaging" in the Operations section
 
 ### Files Changed:
-- `src/main.tsx` (edited - removed hardcoded token on line 14)
+- `src/components/admin/sidebar-navigation.ts` (modified - added 2 nav items)
 
 ---
 
-## Task: Test Credit Consumption Flow
+﻿## Task: Test Credit Consumption Flow
 
 ### What was done:
 
