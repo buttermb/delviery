@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useProcessPayment } from "@/hooks/useWholesaleData";
 import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 
 interface PaymentDialogProps {
   clientId: string;
