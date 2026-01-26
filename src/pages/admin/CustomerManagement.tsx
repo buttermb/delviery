@@ -126,7 +126,7 @@ export default function CustomerManagement() {
       let decryptedCustomers: any[] = data || [];
       if (encryptionIsReady && data && data.length > 0 && ((data[0] as any).phone_encrypted || (data[0] as any).email_encrypted)) {
         try {
-          decryptedCustomers = data.map((customer: any) => {
+          decryptedCustomers = data.map((customer: Record<string, unknown>) => {
             try {
               const decrypted = decryptObject(customer as Record<string, string>);
               // Map decrypted fields to Customer interface
@@ -161,7 +161,7 @@ export default function CustomerManagement() {
         }
       } else if (data && data.length > 0) {
         // Encryption not ready but data may have encrypted fields - check for ciphertext
-        decryptedCustomers = data.map((customer: any) => {
+        decryptedCustomers = data.map((customer: Record<string, unknown>) => {
           const emailValue = customer.email as string | null;
           const phoneValue = customer.phone as string | null;
           const hasEncryptedData = looksLikeEncryptedData(emailValue) || looksLikeEncryptedData(phoneValue);
