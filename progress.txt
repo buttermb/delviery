@@ -1,23 +1,70 @@
-## Task: Change ThemeContext default from system to light
+## Task: Add context-aware hot items showing different items based on time of day
 
 ### What was done:
 
-1. **Modified `src/contexts/ThemeContext.tsx`**:
-   - Removed system preference detection (window.matchMedia prefers-color-scheme: dark)
-   - Simplified the useState initializer to default to 'light' when no stored theme exists
-   - Users with existing stored theme preferences are unaffected
-   - New users will now always get light theme by default instead of respecting system preference
+1. **Created `src/types/storefront-hot-items.ts`**:
+   - TypeScript interfaces for storefront hot items system
+   - `TimePeriod` type: 'morning' | 'afternoon' | 'evening' | 'night'
+   - `StorefrontContext` interface: hour, dayOfWeek, timePeriod, isWeekend
+   - `HotItemConfig` interface: title, subtitle, icon, priorityCategories, priorityStrains, priorityEffects, badge, accentColor
+   - `StorefrontHotItem` interface: extends MarketplaceProduct with hotReason, matchScore, timeBadge
+   - `ContextAwareHotItemsResult` interface: items, context, config, isLoading, error
 
-### Acceptance Criteria Met:
-- [x] Default theme is now 'light' instead of respecting system preference
-- [x] Build passes with no TypeScript errors
+2. **Created `src/hooks/useContextAwareHotItems.ts`**:
+   - Time-period-specific configurations:
+     - **Morning (6am-12pm)**: "Rise & Shine Picks" - Sativas, energizing effects, amber accent
+     - **Afternoon (12pm-5pm)**: "Midday Favorites" - Hybrids, balanced effects, cyan accent
+     - **Evening (5pm-9pm)**: "Evening Essentials" - Indicas, relaxing effects, violet accent
+     - **Night (9pm-6am)**: "Late Night Selection" - Heavy indicas, sleep effects, indigo accent
+   - `calculateMatchScore()`: Scores products based on category, strain type, effects, THC/CBD content
+   - `getHotReason()`: Generates contextual reason why product is "hot" for current time
+   - `useContextAwareHotItems()` hook: Fetches products, scores and sorts by context relevance
+   - `useCurrentTimeContext()` helper: Returns current context/config without fetching products
+   - Exports `TIME_PERIOD_CONFIGS`, `getTimePeriod`, `getStorefrontContext` for reuse
+
+3. **Created `src/components/shop/sections/HotItemsSection.tsx`**:
+   - Full storefront section component with:
+     - Dynamic title/subtitle/icon based on time of day
+     - Time indicator badge showing current time
+     - Product grid with animated cards
+     - Hot reason displayed on each card (e.g., "Great for morning energy")
+     - Time-based badge on products (e.g., "Morning Pick")
+     - Quick add to cart functionality
+     - Wishlist integration
+     - Cart preview popup
+     - Sale price support
+     - Out of stock handling
+     - Decorative gradient background with accent color
+   - Configurable via `content` props: `show_time_indicator`, `max_items`
+   - Configurable via `styles` props: `accent_color` (defaults to time-based color)
+
+4. **Updated `src/pages/shop/StorefrontPage.tsx`**:
+   - Imported `HotItemsSection` component
+   - Added `hot_items` to `SECTION_COMPONENTS` mapping
+   - Added hot_items section to default layout (appears between hero and product grid)
+   - Default config: `show_time_indicator: true`, `max_items: 8`
+
+### Features:
+- **Time-aware recommendations**: Products automatically change based on time of day
+- **Smart scoring algorithm**: Considers category, strain type, effects, THC/CBD content
+- **Visual differentiation**: Different colors, icons, and messaging for each time period
+- **Graceful degradation**: Section doesn't render if no products match or on error
+- **Mobile responsive**: 2-column grid on mobile, up to 4 columns on desktop
+- **Performance optimized**: Uses TanStack Query with 5-minute stale time
 
 ### Files Changed:
-- `src/contexts/ThemeContext.tsx`
+- `src/types/storefront-hot-items.ts` (new)
+- `src/hooks/useContextAwareHotItems.ts` (new)
+- `src/components/shop/sections/HotItemsSection.tsx` (new)
+- `src/pages/shop/StorefrontPage.tsx` (modified - added hot_items section)
+
+### Build Status:
+- ✅ TypeScript compilation passes
+- ✅ No ESLint errors in new files
 
 ---
 
-﻿## Task: Test Credit Consumption Flow
+## Task: Test Credit Consumption Flow
 
 ### What was done:
 
