@@ -7693,16 +7693,26 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: Add Eye and EyeOff import to LoginPage.tsx
+## Task: Add showPassword state and toggle button to LoginPage.tsx
 
-**Status: Already Complete**
+### Implementation Summary
+Added password visibility toggle functionality to all LoginPage components that were missing it.
 
-Verified that `src/pages/auth/LoginPage.tsx` already has Eye and EyeOff imported from lucide-react on line 23:
+### Files Modified
+- src/pages/courier/LoginPage.tsx - Added showPassword state and Eye/EyeOff toggle button
+- src/pages/customer/LoginPage.tsx - Added showPassword state and Eye/EyeOff toggle button
+- src/pages/super-admin/LoginPage.tsx - Added showPassword state and Eye/EyeOff toggle button
+- src/pages/tenant-admin/LoginPage.tsx - Added showPassword state and Eye/EyeOff toggle button
 
-```typescript
-import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
-```
+### Already Had Feature (No Changes Needed)
+- src/pages/auth/LoginPage.tsx - Already had showPassword toggle
+- src/pages/saas/LoginPage.tsx - Already had showPassword toggle
 
-These icons are used in the password toggle functionality on lines 192-193 for the show/hide password feature.
-
-No changes needed - task was already implemented.
+### Changes Per File
+1. Added Eye/EyeOff icons from lucide-react to imports
+2. Added showPassword state using useState(false)
+3. Wrapped password Input in a relative div container
+4. Changed input type to conditionally render text or password based on state
+5. Added pr-10 padding to input for toggle button space
+6. Added toggle button with proper accessibility (aria-label, tabIndex=-1)
+7. Button toggles between Eye and EyeOff icons based on showPassword state
