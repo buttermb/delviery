@@ -27,11 +27,20 @@ const LiveBadgeContext = createContext<LiveBadgeContextType | undefined>(undefin
 /**
  * Navigation paths that display live count badges.
  * Maps item path to the badge count key from useAdminBadgeCounts.
+ *
+ * Badge counts are updated in real-time via Supabase subscriptions:
+ * - pendingOrders: wholesale_orders + menu_orders with pending status
+ * - lowStockItems: products with stock below threshold
+ * - inventoryAlerts: active inventory_alerts (not resolved/dismissed/snoozed)
+ * - unreadMessages: open conversations
+ * - pendingShipments: deliveries with assigned/picked_up status
  */
 const BADGE_PATH_MAP: Record<string, keyof BadgeCounts> = {
   '/admin/orders': 'pendingOrders',
   '/admin/inventory-hub': 'lowStockItems',
-  '/admin/stock-alerts': 'lowStockItems',
+  '/admin/stock-alerts': 'inventoryAlerts',
+  '/admin/inventory-alerts': 'inventoryAlerts',
+  '/admin/alerts': 'inventoryAlerts',
   '/admin/live-chat': 'unreadMessages',
   '/admin/notifications': 'unreadMessages',
   '/admin/dispatch-inventory': 'pendingShipments',

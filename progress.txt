@@ -7727,18 +7727,82 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Add ThemeToggle component to AdminLayout header
-**Status: COMPLETE**
 
-### Changes Made:
-1. Added ThemeToggle component next to the notification bell in AdminLayout.tsx header
-2. Fixed ThemeToggle.tsx to use named export (was using default export)
-3. Updated LoginPage.tsx import to use named import for ThemeToggle
+## Task: Add Real-Time Badge Counts Subscribing to Supabase Realtime (2026-01-26T03:02:21Z)
 
-### Files Modified:
-- src/pages/admin/AdminLayout.tsx - Added ThemeToggle next to AdminNotificationCenter
-- src/components/ThemeToggle.tsx - Changed to named export
-- src/pages/saas/LoginPage.tsx - Updated import to use named export
+### Summary
+Implemented comprehensive real-time badge counts for admin navigation using Supabase realtime subscriptions for orders and alerts.
 
-### Verification:
-- npm run build: PASSES (0 TypeScript errors)
+### Changes Made
+
+#### 1. Enhanced \ hook:
+- Added 6 concurrent Supabase realtime channel subscriptions:
+  - \ - tracks pending order changes
+  - \ - tracks menu order status changes
+  - \ - tracks alert creation/resolution/dismissal
+  - \ - tracks unread message status changes
+  - \ - tracks shipment status changes
+  - \ - tracks stock_quantity changes for low stock
+- Added new \ count to BadgeCounts interface
+- Implemented debounced fetch (100ms) to prevent rapid-fire requests on multiple events
+- Added subscription status tracking for each channel
+- Changed from count queries using \ to \ for efficiency
+- Increased fallback polling interval from 30s to 60s since realtime handles most updates
+- Added proper cleanup for all channels on unmount
+
+#### 2. Updated \:
+- Added new path mappings for inventory alerts:
+  - \ → 
+  - \ → 
+  - \ → 
+- Added documentation comments explaining badge count sources
+
+### Technical Details
+- Uses Supabase Postgres Changes (postgres_changes) for real-time updates
+- Each subscription is tenant-scoped with 
+- Products subscription only triggers on UPDATE events and only refetches if stock_quantity changed
+- Subscription status exposed via \ object and \ boolean
+- All subscriptions log debug messages for monitoring
+
+### Build Verification
+- \ - PASSES (0 TypeScript errors)
+
+
+## Task: Add Real-Time Badge Counts Subscribing to Supabase Realtime
+
+### Summary
+Implemented comprehensive real-time badge counts for admin navigation using Supabase realtime subscriptions for orders and alerts.
+
+### Changes Made
+
+#### 1. Enhanced `useAdminBadgeCounts.ts` hook:
+- Added 6 concurrent Supabase realtime channel subscriptions:
+  - `wholesale_orders` - tracks pending order changes
+  - `menu_orders` - tracks menu order status changes
+  - `inventory_alerts` - tracks alert creation/resolution/dismissal
+  - `conversations` - tracks unread message status changes
+  - `wholesale_deliveries` - tracks shipment status changes
+  - `products` - tracks stock_quantity changes for low stock
+- Added new `inventoryAlerts` count to BadgeCounts interface
+- Implemented debounced fetch (100ms) to prevent rapid-fire requests on multiple events
+- Added subscription status tracking for each channel
+- Changed from count queries using select id to count: exact, head: true for efficiency
+- Increased fallback polling interval from 30s to 60s since realtime handles most updates
+- Added proper cleanup for all channels on unmount
+
+#### 2. Updated `LiveBadgeContext.tsx`:
+- Added new path mappings for inventory alerts:
+  - /admin/stock-alerts -> inventoryAlerts
+  - /admin/inventory-alerts -> inventoryAlerts
+  - /admin/alerts -> inventoryAlerts
+- Added documentation comments explaining badge count sources
+
+### Technical Details
+- Uses Supabase Postgres Changes (postgres_changes) for real-time updates
+- Each subscription is tenant-scoped with tenant_id filter
+- Products subscription only triggers on UPDATE events and only refetches if stock_quantity changed
+- Subscription status exposed via subscriptionStatus object and isSubscribed boolean
+- All subscriptions log debug messages for monitoring
+
+### Build Verification
+- npm run build - PASSES (0 TypeScript errors)
