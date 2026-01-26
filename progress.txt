@@ -6692,23 +6692,13 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `progress.txt` (this verification report)
 
-## Task: Make day label responsive w-full sm:w-28 in StorefrontSettings.tsx
+## Task: Change grid-cols preview width from 320px to 400px
 
-### Date: 2026-01-25
+**File:** `src/pages/admin/storefront/StorefrontSettings.tsx` (line 444)
 
-### Status: Already Implemented
+**Change:** Updated the grid column width for the preview panel at lg breakpoint from 320px to 400px.
 
-### Verification:
-The day label in StorefrontSettings.tsx at line 1316 already has the responsive classes:
+- Before: `lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_400px]`
+- After: `lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_400px]`
 
-```tsx
-<div className="w-full sm:w-28 capitalize font-medium">{day}</div>
-```
-
-This pattern ensures:
-- On mobile (< sm breakpoint): w-full - day label takes full width
-- On sm breakpoint and up (>= 640px): w-28 - day label has fixed width of 7rem (112px)
-
-### Location: src/pages/admin/storefront/StorefrontSettings.tsx:1316
-
-### Files Changed: None (already implemented)
+This gives the live preview panel more horizontal space at the lg breakpoint, making it consistent with the xl breakpoint width.
