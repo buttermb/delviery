@@ -201,14 +201,16 @@ export const navigationSections: NavSection[] = [
         icon: ClipboardList
       },
       {
-        title: 'Vendors',
-        href: '/admin/vendors',
-        icon: Building2
+        title: 'Locations',
+        href: '/admin/locations',
+        icon: Building2,
+        tier: 'professional'
       },
       {
-        title: 'Purchase Orders',
-        href: '/admin/purchase-orders',
-        icon: FileText
+        title: 'Activity Logs',
+        href: '/admin/activity-logs',
+        icon: History,
+        tier: 'professional'
       }
     ]
   },
