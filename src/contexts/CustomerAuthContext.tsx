@@ -393,11 +393,8 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     // and refresh it proactively before expiry
     if (!token) return;
 
-    // Use tokenRefreshManager to prevent concurrent verify/refresh calls
-    await tokenRefreshManager.refresh('customer', async () => {
-      await verifyToken(token);
-      return { success: true };
-    });
+    // Verify the token directly
+    await verifyToken(token);
   };
 
   // Token expiration monitoring with visibility-aware refresh timer.

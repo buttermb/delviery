@@ -211,8 +211,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     safeStorage.removeItem('lastTenantSlug');
     safeStorage.removeItem(ACCESS_TOKEN_KEY);
     safeStorage.removeItem(REFRESH_TOKEN_KEY);
-    // Reset token refresh manager to prevent stale refresh attempts
-    tokenRefreshManager.reset('tenant-admin');
     // Allow re-initialization after logout (e.g., switching tenants)
     authInitializedRef.current = false;
   }, []);
@@ -267,13 +265,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.access_token) {
-          // Skip token updates if a managed refresh is in progress to prevent
-          // stale tokens from onAuthStateChange overwriting newer tokens
-          if (tokenRefreshManager.isRefreshing('tenant-admin')) {
-            logger.debug('[AUTH] Skipping onAuthStateChange token update - refresh in progress');
-            return;
-          }
-
           // Update tokens when Supabase refreshes them
           const currentAccessToken = safeStorage.getItem(ACCESS_TOKEN_KEY);
           if (currentAccessToken !== session.access_token) {
@@ -307,6 +298,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       let parsedAdmin: TenantAdmin | null = null;
       // Check if we're on a tenant admin route
       const isTenantAdminRoute = /^\/[^/]+\/admin/.test(location.pathname);
+
+      // Check if we have stored session data
+      const storedAccessToken = safeStorage.getItem(ACCESS_TOKEN_KEY);
+      const storedAdmin = safeStorage.getItem(ADMIN_KEY);
+      const hasStoredSession = !!(storedAccessToken && storedAdmin);
 
       // Skip all authentication logic if NOT on a tenant admin route
       if (!isTenantAdminRoute) {

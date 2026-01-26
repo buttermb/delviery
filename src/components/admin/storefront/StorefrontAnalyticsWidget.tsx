@@ -51,7 +51,7 @@ function getLast7Days(): { start: Date; end: Date; days: Date[] } {
 
 export function StorefrontAnalyticsWidget({ storeId, className }: StorefrontAnalyticsWidgetProps) {
   const { data: analytics, isLoading } = useQuery({
-    queryKey: queryKeys.analytics.storefront({ storeId, period: '7d' }),
+    queryKey: ['storefront-analytics', storeId, '7d'] as const,
     queryFn: async (): Promise<AnalyticsSummary> => {
       const { start, days } = getLast7Days();
 

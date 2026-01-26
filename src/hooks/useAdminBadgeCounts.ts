@@ -111,19 +111,23 @@ export function useAdminBadgeCounts() {
           .or('snoozed_until.is.null,snoozed_until.lt.now()'),
       ]);
 
+      const wholesaleOrderCount = ordersResult.count || 0;
+      const menuOrderCount = menuOrdersResult.count || 0;
+      const inventoryAlertCount = 0; // inventory_alerts query removed for now
+
       setCounts({
-        pendingOrders: (ordersResult.count || 0) + (menuOrdersResult.count || 0),
+        pendingOrders: wholesaleOrderCount + menuOrderCount,
         lowStockItems: stockResult.count || 0,
         unreadMessages: messagesResult.count || 0,
         pendingShipments: shipmentsResult.count || 0,
         overduePayments: 0,
-        inventoryAlerts: alertsCount,
+        inventoryAlerts: inventoryAlertCount,
       });
 
       logger.debug('Badge counts fetched', {
-        pendingOrders: wholesaleCount + menuCount,
+        pendingOrders: wholesaleOrderCount + menuOrderCount,
         lowStockItems: stockResult.count,
-        inventoryAlerts: alertsCount,
+        inventoryAlerts: inventoryAlertCount,
         component: 'useAdminBadgeCounts',
       });
     } catch (error) {

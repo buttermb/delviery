@@ -74,7 +74,7 @@ export function useStorefrontOrders({
     queryFn: async (): Promise<StorefrontOrder[]> => {
       if (!storeId || !customerId) return [];
 
-      let query = supabase
+      let query = (supabase as any)
         .from('marketplace_orders')
         .select('*')
         .eq('store_id', storeId)
@@ -99,7 +99,6 @@ export function useStorefrontOrders({
         query = query.gte('created_at', startDate.toISOString());
       }
 
-      // @ts-expect-error - marketplace_orders is a view and types don't match perfectly
       const { data, error: fetchError } = await query;
 
       if (fetchError) {
@@ -152,11 +151,10 @@ export function useStorefrontOrders({
         throw new Error('Only pending or confirmed orders can be cancelled');
       }
 
-      const { error: cancelError } = await supabase
+      const { error: cancelError } = await (supabase as any)
         .from('marketplace_orders')
         .update({
           status: 'cancelled',
-          // @ts-expect-error - cancellation fields may not be in strict types
           cancellation_reason: reason || 'Customer requested cancellation',
           updated_at: new Date().toISOString(),
         })
@@ -220,8 +218,8 @@ export function useStorefrontOrderByToken(trackingToken: string | undefined) {
     queryFn: async (): Promise<StorefrontOrder | null> => {
       if (!trackingToken) return null;
 
-      const { data, error } = await supabase
-        .rpc('get_marketplace_order_by_token' as unknown as string, {
+      const { data, error } = await (supabase as any)
+        .rpc('get_marketplace_order_by_token', {
           p_tracking_token: trackingToken,
         });
 

@@ -12,10 +12,8 @@ import { useCallback, useMemo } from 'react';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
 import { SidebarMenuItem } from './SidebarMenuItem';
 import { useSidebar } from './SidebarContext';
-import { matchesSearchQuery } from './SidebarSearch';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
-import { useSidebar } from './SidebarContext';
 import { useParams, useLocation } from 'react-router-dom';
 import type { FeatureId } from '@/lib/featureConfig';
 
@@ -89,7 +87,7 @@ export function SidebarFavorites() {
       </SidebarGroupLabel>
       <SidebarGroupContent className="mt-1">
         <SidebarMenu>
-          {filteredFavoriteItems.map((item) => {
+          {favoriteItems.map((item) => {
             const hasAccess = item.featureId ? canAccess(item.featureId) : true;
             return (
               <SidebarMenuItem

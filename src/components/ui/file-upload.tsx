@@ -155,29 +155,16 @@ function FileUpload({
   const [error, setError] = React.useState<string | null>(null);
   const [isCompressing, setIsCompressing] = React.useState(false);
 
-  // Resolve compression options
-  const getCompressionOptions = React.useCallback((): ImageCompressionOptions | null => {
-    if (!compressImagesOption) return null;
-    if (compressImagesOption === true) return {};
-    if (typeof compressImagesOption === 'string') {
-      return COMPRESSION_PRESETS[compressImagesOption] || {};
-    }
-    return compressImagesOption;
-  }, [compressImagesOption]);
+  // Compression is disabled for now - stub implementation
+  const getCompressionOptions = React.useCallback((): Record<string, unknown> | null => {
+    return null;
+  }, []);
 
-  // Compress a file if it's a compressible image
+  // Compress a file if it's a compressible image - disabled for now
   const maybeCompressFile = React.useCallback(async (file: File): Promise<File> => {
-    const options = getCompressionOptions();
-    if (!options || !isCompressibleImage(file)) {
-      return file;
-    }
-    try {
-      return await compressImage(file, options);
-    } catch {
-      // Return original file if compression fails
-      return file;
-    }
-  }, [getCompressionOptions]);
+    // Compression disabled - return original file
+    return file;
+  }, []);
 
   // Sync with controlled value
   React.useEffect(() => {
@@ -268,18 +255,8 @@ function FileUpload({
       validFiles.push(file);
     }
 
-    // Compress images if enabled
-    let processedFiles = validFiles;
-    if (compressImagesOption) {
-      setIsCompressing(true);
-      try {
-        processedFiles = await Promise.all(
-          validFiles.map((file) => maybeCompressFile(file))
-        );
-      } finally {
-        setIsCompressing(false);
-      }
-    }
+    // Skip compression for now - compression library not available
+    const processedFiles = validFiles;
 
     // Create upload entries
     const newUploadedFiles: UploadedFile[] = processedFiles.map((file) => ({

@@ -128,7 +128,7 @@ export function useStorefrontSettings(options: UseStorefrontSettingsOptions = {}
         throw error;
       }
 
-      return data as StorefrontSettings | null;
+      return data as unknown as StorefrontSettings | null;
     },
     enabled: enabled && !!tenant?.id,
     staleTime: 30000,
@@ -148,12 +148,12 @@ export function useSaveStorefrontSettings() {
       if (!tenant?.id) throw new Error('No tenant');
 
       // @ts-ignore - Table exists in database
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('marketplace_stores')
         .update({
           ...settings,
           updated_at: new Date().toISOString(),
-        })
+        } as Record<string, unknown>)
         .eq('id', storeId)
         .eq('tenant_id', tenant.id)
         .select()
@@ -164,7 +164,7 @@ export function useSaveStorefrontSettings() {
         throw error;
       }
 
-      return data as StorefrontSettings;
+      return data as unknown as StorefrontSettings;
     },
     onMutate: async ({ storeId, settings }) => {
       // Cancel any outgoing refetches
