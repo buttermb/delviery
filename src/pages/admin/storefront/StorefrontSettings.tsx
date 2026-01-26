@@ -308,9 +308,7 @@ export default function StorefrontSettings() {
     },
     onError: (error) => {
       logger.error('Failed to save settings', error, { component: 'StorefrontSettings' });
-      toast.error('Failed to save settings', {
-        description: 'Please try again.',
-      });
+      toast.error('Failed to save settings. Please try again.');
     },
   });
 
@@ -334,7 +332,7 @@ export default function StorefrontSettings() {
     },
     onError: (error) => {
       logger.error('Failed to regenerate token', error, { component: 'StorefrontSettings' });
-      toast.error('Failed to generate new link');
+      toast.error('Failed to generate new link.');
     },
   });
 
