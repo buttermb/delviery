@@ -10,12 +10,14 @@ import { LuxuryHeroSection } from '@/components/shop/sections/LuxuryHeroSection'
 import { logger } from '@/lib/logger';
 import { LuxuryProductGridSection } from '@/components/shop/sections/LuxuryProductGridSection';
 import { LuxuryFeaturesSection } from '@/components/shop/sections/LuxuryFeaturesSection';
+import { HotItemsSection } from '@/components/shop/sections/HotItemsSection';
 
 // Map section types to components
 const SECTION_COMPONENTS: Record<string, any> = {
   hero: HeroSection,
   features: FeaturesSection,
   product_grid: LuxuryProductGridSection, // Use luxury grid as default for better UX
+  hot_items: HotItemsSection, // Context-aware hot items based on time of day
   // Luxury theme sections (kept for backwards compatibility)
   luxury_hero: LuxuryHeroSection,
   luxury_products: LuxuryProductGridSection,
@@ -72,6 +74,17 @@ export default function StorefrontPage() {
           background_gradient_end: '#022c22',
           text_color: '#ffffff',
           accent_color: '#34d399'
+        }
+      },
+      {
+        id: 'default-hot-items',
+        type: 'hot_items',
+        content: {
+          show_time_indicator: true,
+          max_items: 8
+        },
+        styles: {
+          accent_color: store.theme_config?.colors?.primary || store.primary_color || undefined
         }
       },
       {
