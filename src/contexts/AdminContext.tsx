@@ -150,20 +150,22 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         role: adminData.role
       });
 
-      // Log admin login (fire and forget, don't await)
-      supabase.from("security_events").insert({
-        event_type: "admin_login",
-        user_id: authData.user.id,
-        details: { email, timestamp: new Date().toISOString() }
-      }).then(() => {
-        // Security event logged successfully
-      }).catch((error) => {
-        handleError(error, {
-          component: 'AdminContext',
-          context: { action: 'logAdminLogin' },
-          showToast: false
-        });
-      });
+      // Log admin login (fire and forget)
+      (async () => {
+        try {
+          await supabase.from("security_events").insert({
+            event_type: "admin_login",
+            user_id: authData.user.id,
+            details: { email, timestamp: new Date().toISOString() }
+          });
+        } catch (error) {
+          handleError(error, {
+            component: 'AdminContext',
+            context: { action: 'logAdminLogin' },
+            showToast: false
+          });
+        }
+      })();
 
       toast({
         title: "Welcome back!",
