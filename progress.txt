@@ -1,61 +1,60 @@
-## Fix Token Refresh Mechanism - Auto Refresh Before Expiry
+# Complete Storefront Builder with All Section Types - Progress
 
-### Status: COMPLETED
+## Status: COMPLETE
 
-### What was done:
+## What Was Done
 
-1. **Created `src/lib/auth/tokenRefresh.ts`** - A dedicated utility module that extracts and improves token refresh logic:
-   - `isValidRefreshToken()` - Validates refresh tokens (checks for null, "undefined"/"null" strings, empty, too short)
-   - `tokenNeedsRefresh()` - Checks if a token is within the refresh buffer window
-   - `extractRefreshTokenFromCookies()` - Parses refresh token from cookie strings
-   - `cleanupStaleAuthState()` - Removes stale auth keys from localStorage
-   - `cleanupAuthCookies()` - Clears auth cookies by setting expiry in the past
-   - `createRefreshTimer()` - **KEY FEATURE**: Creates a robust, visibility-aware refresh timer that handles:
-     - Regular scheduled refresh (setTimeout before expiry)
-     - Tab visibility changes (refreshes when tab becomes visible again)
-     - Wake-from-sleep detection (detects time drift > 15s between checks)
-     - Warning callback before expiry
-     - Proper cleanup of all timers and event listeners
-   - `createRefreshExecutor()` - Race-condition-safe wrapper that deduplicates concurrent refresh calls
+### 1. Created Type-Specific Section Editors (`src/components/admin/storefront/SectionEditors.tsx`)
+- **HeroEditor**: Full editing for 3 headline lines, subheading, CTA buttons (text + links), trust badges toggle, and all gradient/color styles
+- **FeaturesEditor**: Editable feature list with add/remove, icon selector (clock/shield/lock/star), title, description per feature, plus heading/color controls
+- **ProductGridEditor**: Toggle switches for search bar, categories, premium filter; adjustable initial categories shown; heading/subheading; accent colors
+- **TestimonialsEditor**: Full testimonial management with add/remove, name/role/quote fields, clickable star rating selector, card background color
+- **NewsletterEditor**: Heading, subheading, button text, placeholder, success message; gradient colors, accent, button color
+- **GalleryEditor**: Image management with add/remove, URL + alt text per image, inline image preview thumbnails; background/text/accent colors
+- **FAQEditor**: Question/answer pair management with add/remove; heading/subheading; background, text, accent, border colors
+- **CustomHTMLEditor**: HTML textarea with live preview toggle, section title, padding/max-width selectors, sanitization notice
 
-2. **Updated `TenantAdminAuthContext.tsx`**:
-   - Imported and integrated the new `createRefreshTimer` utility
-   - Replaced inline `setupRefreshTimer` with the visibility-aware timer
-   - Used `isValidRefreshToken()` for token validation (DRY)
-   - Used `tokenNeedsRefresh()` in the periodic validation effect
-   - Added `refreshTimerHandleRef` for proper lifecycle management
-   - Maintained all existing functionality (race condition prevention, fallback to Supabase native refresh, session timeout warning)
+### 2. Added Responsive Settings Per Section
+- Each section now has a "Responsive" accordion in the editor
+- Per-device (desktop/tablet/mobile) controls for:
+  - **Hide on device**: Toggle to hide section on specific device sizes
+  - **Custom padding**: Override section padding per device
+- Preview respects responsive visibility based on current device preview mode
 
-3. **Updated `CustomerAuthContext.tsx`**:
-   - Added visibility-aware proactive refresh (previously only verified, didn't actually refresh before expiry)
-   - Uses `createRefreshTimer` for the same robust timer behavior
-   - Maintains hourly safety-net interval as fallback
-   - Properly handles token expiry detection and logout
+### 3. Enhanced Section Defaults
+- All section types now include complete default content with populated arrays:
+  - Features: 4 default feature items with icons
+  - Testimonials: 3 default customer testimonials with 5-star ratings
+  - Gallery: 6 default Unsplash images
+  - FAQ: 4 default question/answer pairs
+  - Hero: Full CTA links and trust badges
+  - Product Grid: All display option defaults (search, categories, premium filter)
 
-4. **Updated `src/lib/auth/__tests__/tokenRefresh.test.ts`** (32 tests, all passing):
-   - Tests now import and test the actual exported functions from `tokenRefresh.ts`
-   - Added tests for `tokenNeedsRefresh()` with various scenarios
-   - Added tests for `extractRefreshTokenFromCookies()` with custom cookie names
-   - Added tests for `createRefreshTimer()`:
-     - Triggers refresh before expiry
-     - Refreshes immediately when near expiry
-     - Doesn't trigger when plenty of time left
-     - Calls onWarning before expiry
-     - Cleans up timers on disposal
-     - Detects visibility changes
-     - Handles checkNow method
-   - Added tests for `createRefreshExecutor()` race condition prevention
-   - Kept existing fallback mechanism tests
+### 4. Integrated SectionEditor into StorefrontBuilder
+- Replaced generic text-input editor with type-specific `SectionEditor` component
+- Added `updateSectionResponsive` function for responsive state management
+- Updated preview rendering to filter sections based on responsive visibility
+- Cleaned up unused imports
 
-### Key Improvements:
-- **Visibility-aware refresh**: When a user returns to a backgrounded tab, the token is immediately checked and refreshed if needed
-- **Wake-from-sleep detection**: If the machine sleeps and wakes, the timer detects the time drift and triggers a refresh check
-- **Customer auth now has proactive refresh**: Previously only verified tokens; now refreshes before expiry
-- **DRY code**: Common logic extracted to reusable utility functions
-- **Better testability**: All core logic is now in a testable utility module
+### 5. Created Missing `sanitize.ts` Module
+- Created `src/lib/utils/sanitize.ts` with DOMPurify-based sanitization
+- Required by CustomHTMLSection and ProductDetailPage
+- Provides `sanitizeHtml`, `stripHtml`, and `sanitizeInput` functions
 
-### Files Changed:
-- `src/lib/auth/tokenRefresh.ts` (NEW)
-- `src/contexts/TenantAdminAuthContext.tsx` (MODIFIED)
-- `src/contexts/CustomerAuthContext.tsx` (MODIFIED)
-- `src/lib/auth/__tests__/tokenRefresh.test.ts` (MODIFIED)
+### 6. Build Verification
+- `npm run build` passes with 0 errors
+- `npx tsc --noEmit` passes with 0 errors
+- All TypeScript types properly defined
+
+## Files Modified
+- `src/pages/admin/storefront/StorefrontBuilder.tsx` - Integrated SectionEditor, added responsive support, enhanced defaults
+- `src/components/admin/storefront/SectionEditors.tsx` - NEW: All 8 section type editors + responsive settings
+- `src/lib/utils/sanitize.ts` - NEW: HTML sanitization utilities (was missing, blocking build)
+
+## Architecture Notes
+- Section editors are modular - each type has its own editor component
+- The `SectionEditor` component routes to the correct editor based on `section.type`
+- Responsive settings are stored per-section in a `responsive` property alongside `content` and `styles`
+- All array content (features, testimonials, FAQs, images) supports add/remove/edit operations
+- Live preview updates immediately as content is edited (React state-driven)
+- Delete confirmation uses AlertDialog (was already implemented)

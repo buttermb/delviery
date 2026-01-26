@@ -23,20 +23,120 @@ import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
 import {
-    BuilderHeader,
-    BuilderLeftPanel,
-    BuilderPreview,
-    BuilderPropertyEditor,
-    BuilderCreateStoreDialog,
-    useStorefrontBuilder,
-} from './builder';
+    Plus, GripVertical, Trash2, Save, ArrowLeft, Layout,
+    Monitor, Smartphone, Tablet, Copy, Eye, EyeOff, Undo2, Redo2,
+    FileText, Image, MessageSquare, HelpCircle, Mail, Sparkles, X, ZoomIn, ZoomOut,
+    Code, Globe, GlobeLock, AlertCircle, Store
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { HeroSection } from '@/components/shop/sections/HeroSection';
+import { FeaturesSection } from '@/components/shop/sections/FeaturesSection';
+import { ProductGridSection } from '@/components/shop/sections/ProductGridSection';
+import { TestimonialsSection } from '@/components/shop/sections/TestimonialsSection';
+import { NewsletterSection } from '@/components/shop/sections/NewsletterSection';
+import { GallerySection } from '@/components/shop/sections/GallerySection';
+import { FAQSection } from '@/components/shop/sections/FAQSection';
+import { CustomHTMLSection } from '@/components/shop/sections/CustomHTMLSection';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { ThemePresetStrip } from '@/components/admin/storefront/ThemePresetSelector';
+import { THEME_PRESETS, applyThemeToConfig, type ThemePreset } from '@/lib/storefrontThemes';
+import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
+import { SectionEditor } from '@/components/admin/storefront/SectionEditors';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
-export function StorefrontBuilder() {
-    const builder = useStorefrontBuilder();
+// Define available section types (8 total)
+const SECTION_TYPES = {
+    hero: { label: 'Hero Section', icon: Layout, component: HeroSection },
+    features: { label: 'Features Grid', icon: Sparkles, component: FeaturesSection },
+    product_grid: { label: 'Product Grid', icon: Layout, component: ProductGridSection },
+    testimonials: { label: 'Testimonials', icon: MessageSquare, component: TestimonialsSection },
+    newsletter: { label: 'Newsletter', icon: Mail, component: NewsletterSection },
+    gallery: { label: 'Gallery', icon: Image, component: GallerySection },
+    faq: { label: 'FAQ', icon: HelpCircle, component: FAQSection },
+    custom_html: { label: 'Custom HTML', icon: Code, component: CustomHTMLSection },
+};
+
+// Templates for quick setup
+const TEMPLATES = {
+    minimal: {
+        name: 'Minimal',
+        description: 'Clean and simple',
+        sections: ['hero', 'product_grid']
+    },
+    standard: {
+        name: 'Standard',
+        description: 'Hero, Features, Products',
+        sections: ['hero', 'features', 'product_grid']
+    },
+    full: {
+        name: 'Full Experience',
+        description: 'Complete storefront',
+        sections: ['hero', 'features', 'product_grid', 'testimonials', 'faq', 'newsletter']
+    },
+    landing: {
+        name: 'Landing Page',
+        description: 'Conversion focused',
+        sections: ['hero', 'gallery', 'testimonials', 'newsletter']
+    }
+};
+
+interface SectionConfig {
+    id: string;
+    type: string;
+    content: Record<string, unknown>;
+    styles: Record<string, unknown>;
+    visible?: boolean;
+    responsive?: {
+        mobile?: { padding_y?: string; hidden?: boolean };
+        tablet?: { padding_y?: string; hidden?: boolean };
+        desktop?: { padding_y?: string; hidden?: boolean };
+    };
+}
+
+// Sortable section item component
+function SortableSectionItem({
+    section,
+    isSelected,
+    onSelect,
+    onRemove,
+    onDuplicate,
+    onToggleVisibility,
+    sectionLabel
+}: {
+    section: SectionConfig;
+    isSelected: boolean;
+    onSelect: () => void;
+    onRemove: (e: React.MouseEvent) => void;
+    onDuplicate: (e: React.MouseEvent) => void;
+    onToggleVisibility: (e: React.MouseEvent) => void;
+    sectionLabel: string;
+}) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: section.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    };
+
+    const isHidden = section.visible === false;
 
     return (
         <div
@@ -320,6 +420,23 @@ export default function StorefrontBuilder() {
         setLayoutConfig(newConfig);
     };
 
+    const updateSectionResponsive = (id: string, device: 'mobile' | 'tablet' | 'desktop', key: string, value: unknown) => {
+        const newConfig = layoutConfig.map(s => {
+            if (s.id !== id) return s;
+            return {
+                ...s,
+                responsive: {
+                    ...s.responsive,
+                    [device]: {
+                        ...(s.responsive?.[device] || {}),
+                        [key]: value
+                    }
+                }
+            };
+        });
+        setLayoutConfig(newConfig);
+    };
+
     const applyTemplate = (templateKey: keyof typeof TEMPLATES) => {
         const template = TEMPLATES[templateKey];
         const newSections: SectionConfig[] = template.sections.map(type => ({
@@ -421,13 +538,229 @@ export default function StorefrontBuilder() {
                     setActiveTab={builder.setActiveTab}
                 />
 
-                {/* Right Property Editor */}
-                {builder.selectedSection && builder.rightPanelOpen && (
-                    <BuilderPropertyEditor
-                        selectedSection={builder.selectedSection}
-                        onClose={() => builder.setRightPanelOpen(false)}
-                        onUpdateSection={builder.updateSection}
-                    />
+                                    <Separator />
+
+                                    <div className="space-y-2">
+                                        <Label>Page Sections</Label>
+                                        <DndContext
+                                            sensors={sensors}
+                                            collisionDetection={closestCenter}
+                                            onDragEnd={handleDragEnd}
+                                        >
+                                            <SortableContext
+                                                items={layoutConfig.map(s => s.id)}
+                                                strategy={verticalListSortingStrategy}
+                                            >
+                                                <div className="space-y-2">
+                                                    {layoutConfig.map((section) => (
+                                                        <SortableSectionItem
+                                                            key={section.id}
+                                                            section={section}
+                                                            isSelected={selectedSectionId === section.id}
+                                                            onSelect={() => handleSelectSection(section.id)}
+                                                            onRemove={(e) => requestRemoveSection(section.id, e)}
+                                                            onDuplicate={(e) => duplicateSection(section.id, e)}
+                                                            onToggleVisibility={(e) => toggleVisibility(section.id, e)}
+                                                            sectionLabel={SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.label || section.type}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </SortableContext>
+                                        </DndContext>
+                                        {layoutConfig.length === 0 && (
+                                            <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg">
+                                                No sections added
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </ScrollArea>
+                        </TabsContent>
+
+                        <TabsContent value="theme" className="flex-1 overflow-hidden flex flex-col m-0 p-4">
+                            <ScrollArea className="flex-1">
+                                <div className="space-y-6">
+                                    <div className="space-y-3">
+                                        <Label>Global Colors</Label>
+                                        <div className="grid gap-3">
+                                            {['primary', 'secondary', 'accent', 'background', 'text'].map(colorKey => (
+                                                <div key={colorKey} className="flex items-center justify-between">
+                                                    <span className="text-sm text-muted-foreground capitalize">{colorKey}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <Input
+                                                            type="color"
+                                                            className="w-8 h-8 p-0 border-0 cursor-pointer"
+                                                            value={themeConfig.colors?.[colorKey] || '#000000'}
+                                                            onChange={(e) => setThemeConfig({
+                                                                ...themeConfig,
+                                                                colors: { ...themeConfig.colors, [colorKey]: e.target.value }
+                                                            })}
+                                                        />
+                                                        <Input
+                                                            className="w-24 h-8 text-xs"
+                                                            value={themeConfig.colors?.[colorKey] || '#000000'}
+                                                            onChange={(e) => setThemeConfig({
+                                                                ...themeConfig,
+                                                                colors: { ...themeConfig.colors, [colorKey]: e.target.value }
+                                                            })}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <Separator />
+
+                                    <div className="space-y-3">
+                                        <Label>Typography</Label>
+                                        <Select
+                                            value={themeConfig.typography?.fontFamily || 'Inter'}
+                                            onValueChange={(value) => setThemeConfig({
+                                                ...themeConfig,
+                                                typography: { ...themeConfig.typography, fontFamily: value }
+                                            })}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Inter">Inter</SelectItem>
+                                                <SelectItem value="Space Grotesk">Space Grotesk</SelectItem>
+                                                <SelectItem value="DM Sans">DM Sans</SelectItem>
+                                                <SelectItem value="Playfair Display">Playfair Display</SelectItem>
+                                                <SelectItem value="Montserrat">Montserrat</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            </ScrollArea>
+                        </TabsContent>
+
+                        <TabsContent value="templates" className="flex-1 overflow-hidden flex flex-col m-0 p-4">
+                            <ScrollArea className="flex-1">
+                                <div className="space-y-3">
+                                    <Label>Quick Templates</Label>
+                                    <p className="text-xs text-muted-foreground">Start with a pre-built layout</p>
+                                    <div className="space-y-2">
+                                        {Object.entries(TEMPLATES).map(([key, template]) => (
+                                            <Card
+                                                key={key}
+                                                className="cursor-pointer hover:border-primary transition-colors"
+                                                onClick={() => applyTemplate(key as keyof typeof TEMPLATES)}
+                                            >
+                                                <CardContent className="p-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <div>
+                                                            <p className="font-medium text-sm">{template.name}</p>
+                                                            <p className="text-xs text-muted-foreground">{template.description}</p>
+                                                        </div>
+                                                        <FileText className="w-4 h-4 text-muted-foreground" />
+                                                    </div>
+                                                    <div className="flex gap-1 mt-2 flex-wrap">
+                                                        {template.sections.map((s, i) => (
+                                                            <span key={i} className="text-xs bg-muted px-2 py-0.5 rounded">
+                                                                {SECTION_TYPES[s as keyof typeof SECTION_TYPES]?.label.split(' ')[0]}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                </div>
+                            </ScrollArea>
+                        </TabsContent>
+                    </Tabs>
+                </div>
+
+                {/* Center: Live Preview - uses transform scaling */}
+                <div className="flex-1 bg-muted flex items-start justify-center p-4 overflow-auto relative min-w-0 min-h-0">
+                    <div
+                        className="bg-background shadow-2xl overflow-visible transition-all duration-300 relative"
+                        style={{
+                            ...getPreviewStyle(),
+                            minHeight: '800px',
+                        }}
+                    >
+                        {/* Simulated Header */}
+                        <div className="h-16 border-b flex items-center px-6 justify-between sticky top-0 bg-background/80 backdrop-blur-md z-50">
+                            <span className="font-bold text-lg">{store?.store_name || 'Store Name'}</span>
+                            <div className="hidden md:flex gap-6 text-sm">
+                                <span>Home</span>
+                                <span>Shop</span>
+                                <span>Contact</span>
+                            </div>
+                        </div>
+
+                        {/* Sections Render */}
+                        <div className="min-h-[calc(100%-4rem)] bg-background" style={{ backgroundColor: themeConfig.colors?.background }}>
+                            {layoutConfig.filter(s => {
+                                if (s.visible === false) return false;
+                                // Check responsive visibility for current device preview
+                                const responsiveHidden = s.responsive?.[devicePreview]?.hidden;
+                                if (responsiveHidden) return false;
+                                return true;
+                            }).map((section) => {
+                                const Component = SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.component as React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string }>;
+                                if (!Component) return <div key={section.id} className="p-4 text-destructive">Unknown: {section.type}</div>;
+
+                                return (
+                                    <div
+                                        key={section.id}
+                                        className={`relative group ${selectedSectionId === section.id ? 'ring-2 ring-primary ring-inset z-10' : ''}`}
+                                        onClick={() => handleSelectSection(section.id)}
+                                    >
+                                        <Component content={section.content} styles={section.styles} storeId={store?.id} />
+
+                                        {/* Hover overlay for selection */}
+                                        {selectedSectionId !== section.id && (
+                                            <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors cursor-pointer" />
+                                        )}
+                                    </div>
+                                );
+                            })}
+                            {layoutConfig.length === 0 && (
+                                <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+                                    <Layout className="w-16 h-16 mb-4 opacity-50" />
+                                    <p className="text-lg font-medium mb-2">Your store canvas is empty</p>
+                                    <p className="text-sm mb-6">Get started with a template or add sections manually</p>
+                                    <div className="flex gap-3">
+                                        <Button variant="default" onClick={() => applyTemplate('standard')}>
+                                            <Sparkles className="w-4 h-4 mr-2" />
+                                            Quick Start (Standard)
+                                        </Button>
+                                        <Button variant="outline" onClick={() => setActiveTab('templates')}>
+                                            Browse Templates
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Sidebar: Property Editor - collapsible */}
+                {selectedSection && rightPanelOpen && (
+                    <div className="w-72 bg-background border-l flex flex-col shrink-0 z-10 animate-in slide-in-from-right-10 duration-200">
+                        <div className="p-4 border-b flex items-center justify-between">
+                            <div>
+                                <h3 className="font-semibold text-xs uppercase text-muted-foreground mb-1">Editing</h3>
+                                <p className="font-medium text-sm">{SECTION_TYPES[selectedSection.type as keyof typeof SECTION_TYPES]?.label}</p>
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setRightPanelOpen(false)}>
+                                <X className="w-4 h-4" />
+                            </Button>
+                        </div>
+                        <ScrollArea className="flex-1 p-4">
+                            <SectionEditor
+                                section={selectedSection}
+                                onUpdateContent={(key, value) => updateSection(selectedSection.id, 'content', key, value)}
+                                onUpdateStyles={(key, value) => updateSection(selectedSection.id, 'styles', key, value)}
+                                onUpdateResponsive={(device, key, value) => updateSectionResponsive(selectedSection.id, device, key, value)}
+                            />
+                        </ScrollArea>
+                    </div>
                 )}
             </div>
 
@@ -476,5 +809,96 @@ export default function StorefrontBuilder() {
     );
 }
 
-// Default export for lazy loading compatibility
+// Helper to get defaults dynamically so we don't crash on new props
+function sectionDefaults(type: string) {
+    if (type === 'hero') return {
+        content: {
+            heading_line_1: 'Premium',
+            heading_line_2: 'Flower',
+            heading_line_3: 'Delivered',
+            subheading: 'Curated strains. Same-day delivery.',
+            cta_primary_text: 'Explore Collection',
+            cta_primary_link: '/shop',
+            cta_secondary_text: 'View Menu',
+            cta_secondary_link: '/menu',
+            trust_badges: true
+        },
+        styles: { background_gradient_start: '#000000', background_gradient_end: '#022c22', text_color: '#ffffff', accent_color: '#34d399' }
+    };
+    if (type === 'features') return {
+        content: {
+            heading_small: 'The Difference',
+            heading_large: 'Excellence in Every Detail',
+            features: [
+                { icon: 'clock', title: 'Same-Day Delivery', description: 'Order before 9 PM for delivery within the hour.' },
+                { icon: 'shield', title: 'Lab Verified', description: 'Every strain tested for purity and quality.' },
+                { icon: 'lock', title: 'Discreet Service', description: 'Unmarked packaging. Your privacy is our priority.' },
+                { icon: 'star', title: 'Premium Selection', description: 'Hand-picked strains. Top-shelf quality.' },
+            ]
+        },
+        styles: { background_color: '#171717', text_color: '#ffffff', icon_color: '#34d399' }
+    };
+    if (type === 'product_grid') return {
+        content: {
+            heading: 'Shop Premium Collection',
+            subheading: 'Premium indoor-grown flower from licensed cultivators',
+            show_search: true,
+            show_categories: true,
+            initial_categories_shown: 2,
+            show_premium_filter: true
+        },
+        styles: { background_color: '#f4f4f5', text_color: '#000000', accent_color: '#10b981' }
+    };
+    if (type === 'testimonials') return {
+        content: {
+            heading: 'What Our Customers Say',
+            subheading: 'Join thousands of satisfied customers',
+            testimonials: [
+                { name: 'Sarah M.', role: 'Verified Customer', quote: 'The quality is unmatched. Fast delivery and exactly what I was looking for.', rating: 5 },
+                { name: 'Michael R.', role: 'Regular Customer', quote: 'Best service in the city. Professional, discreet, and always reliable.', rating: 5 },
+                { name: 'Jessica L.', role: 'New Customer', quote: 'Impressed with the selection and the speed of delivery. Highly recommend!', rating: 5 },
+            ]
+        },
+        styles: { background_color: '#ffffff', text_color: '#000000', accent_color: '#10b981', card_background: '#f9fafb' }
+    };
+    if (type === 'newsletter') return {
+        content: { heading: 'Stay in the Loop', subheading: 'Subscribe for exclusive drops, deals, and updates.', button_text: 'Subscribe', placeholder_text: 'Enter your email', success_message: 'Thanks for subscribing!' },
+        styles: { background_gradient_start: '#000000', background_gradient_end: '#1f2937', text_color: '#ffffff', accent_color: '#10b981', button_color: '#10b981' }
+    };
+    if (type === 'gallery') return {
+        content: {
+            heading: 'Gallery',
+            subheading: 'A curated visual experience',
+            images: [
+                { url: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=600', alt: 'Product 1' },
+                { url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600', alt: 'Product 2' },
+                { url: 'https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?w=600', alt: 'Product 3' },
+                { url: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600', alt: 'Product 4' },
+                { url: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600', alt: 'Product 5' },
+                { url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600', alt: 'Product 6' },
+            ]
+        },
+        styles: { background_color: '#000000', text_color: '#ffffff', accent_color: '#10b981' }
+    };
+    if (type === 'faq') return {
+        content: {
+            heading: 'Frequently Asked Questions',
+            subheading: 'Got questions? We\'ve got answers.',
+            faqs: [
+                { question: 'What are your delivery hours?', answer: 'We deliver 7 days a week from 10 AM to 10 PM. Same-day delivery available.' },
+                { question: 'How do I track my order?', answer: 'You\'ll receive a tracking link via SMS and email once dispatched.' },
+                { question: 'What payment methods do you accept?', answer: 'We accept cash, debit cards, and all major credit cards.' },
+                { question: 'Is there a minimum order?', answer: 'Minimum order is $50 for delivery. Orders above $100 get free delivery.' },
+            ]
+        },
+        styles: { background_color: '#f9fafb', text_color: '#000000', accent_color: '#10b981', border_color: '#e5e7eb' }
+    };
+    if (type === 'custom_html') return {
+        content: { html_content: '<p>Add your custom HTML content here</p>', section_title: '' },
+        styles: { background_color: '#ffffff', text_color: '#000000', padding_y: '4rem', max_width: '1200px' }
+    };
+    return { content: {}, styles: {} };
+}
+
+// Default export for compatibility
 export default StorefrontBuilder;
