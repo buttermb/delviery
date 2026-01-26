@@ -7674,52 +7674,42 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Agent 11 - Wrap JSON.parse in try-catch in TenantAdminAuthContext.tsx
+## Task: Implement CSV export with papaparse for Orders Hub
 
-### Task: Find all JSON.parse calls and wrap each in try-catch
+### Completed Work:
 
-### Analysis
+1. **Installed papaparse dependency**
+   - Added `papaparse` for robust CSV generation
+   - Added `@types/papaparse` for TypeScript type definitions
 
-Found 5 JSON.parse calls in TenantAdminAuthContext.tsx:
+2. **Created useOrdersExport hook** (`src/hooks/useOrdersExport.ts`)
+   - Uses papaparse's `unparse()` for RFC 4180 compliant CSV generation
+   - Fetches orders from `unified_orders` table with tenant filtering
+   - Supports filtering by order type, status, and date range
+   - Includes related data (customer, client, items)
+   - Properly formats dates using date-fns
+   - Shows loading state during export
+   - Handles errors with toast notifications
+   - Generates timestamped filenames with order type suffix
 
-1. **Line 145** (`getInitialAdminState`): Already wrapped in try-catch with empty catch block - acceptable for initial hydration
-2. **Line 154** (`getInitialTenantState`): Already wrapped in try-catch with empty catch block - acceptable for initial hydration
-3. **Line 620** (`initializeAuth`): Already wrapped in dedicated try-catch block
-4. **Line 627** (`initializeAuth`): Already wrapped in dedicated try-catch block
-5. **Line 1543** (subscription handler): Was inside a broader try-catch, but JSON.parse errors were mixed with network errors
+3. **Updated OrdersHubPage** (`src/pages/admin/hubs/OrdersHubPage.tsx`)
+   - Replaced navigation to data-export page with direct CSV export
+   - Export button now triggers immediate CSV download
+   - Button shows "Exporting..." state during operation
+   - Export filters by active tab's order type (wholesale, storefront, etc.)
 
-### Change Made
+4. **Enhanced QuickActions component** (`src/components/admin/ui/QuickActions.tsx`)
+   - Added `disabled` prop to QuickAction interface
+   - Applied disabled state to single button, dropdown items, and action bar buttons
 
-Wrapped the JSON.parse on line 1543 (now line 1544 after edit) in its own dedicated try-catch block:
-- Separated JSON.parse error handling from network error handling
-- Added specific error logging for parse failures
-- Early return on parse failure to prevent undefined data from being used
+### Build Verification:
+- `npm run build` passes with 0 TypeScript errors
+- All 6602 modules transform successfully
+- PWA service worker generates correctly
 
-### Code Change (src/contexts/TenantAdminAuthContext.tsx):
-
-Before:
-```typescript
-if (storedAdmin) {
-  try {
-    const adminData = JSON.parse(storedAdmin);
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '...';
-```
-
-After:
-```typescript
-if (storedAdmin) {
-  let adminData;
-  try {
-    adminData = JSON.parse(storedAdmin);
-  } catch (parseError) {
-    logger.error('Failed to parse stored admin data', parseError);
-    return;
-  }
-  try {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '...';
-```
-
-### Verification
-
-- **Build**: `npm run build` passes with 0 TypeScript errors
-- All 5 JSON.parse calls now have proper try-catch handling
+### Files Changed:
+- `package.json` - Added papaparse dependency
+- `package-lock.json` - Updated with papaparse
+- `src/hooks/useOrdersExport.ts` - New hook for CSV export
+- `src/pages/admin/hubs/OrdersHubPage.tsx` - Updated export button behavior
+- `src/components/admin/ui/QuickActions.tsx` - Added disabled prop support

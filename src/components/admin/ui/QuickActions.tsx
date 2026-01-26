@@ -19,6 +19,7 @@ interface QuickAction {
   icon: LucideIcon;
   onClick: () => void;
   variant?: 'default' | 'destructive' | 'outline';
+  disabled?: boolean;
 }
 
 interface QuickActionsProps {
@@ -36,6 +37,7 @@ export function QuickActions({ actions, className }: QuickActionsProps) {
       <Button
         onClick={action.onClick}
         variant={action.variant || 'default'}
+        disabled={action.disabled}
         className={cn('gap-2', className)}
       >
         <action.icon className="h-4 w-4" />
@@ -58,6 +60,7 @@ export function QuickActions({ actions, className }: QuickActionsProps) {
           <DropdownMenuItem
             key={action.id}
             onClick={action.onClick}
+            disabled={action.disabled}
             className="gap-2 cursor-pointer"
           >
             <action.icon className="h-4 w-4" />
@@ -85,6 +88,7 @@ export function QuickActionBar({ actions, className }: QuickActionBarProps) {
           onClick={action.onClick}
           variant={action.variant || 'outline'}
           size="sm"
+          disabled={action.disabled}
           className="gap-2"
         >
           <action.icon className="h-4 w-4" />
