@@ -7674,30 +7674,13 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: In App.tsx add lazy import for RunnerLocationTracking page
+## Task: Add lazy import for LiveMap page in App.tsx
 
-### Date: 2026-01-25
+**Status: Already Complete**
 
-### What was verified:
+Upon inspection, the LiveMap page already has a lazy import in `src/App.tsx`:
 
-The lazy import for RunnerLocationTracking already exists in App.tsx:
+- **Line 206**: `const LiveMap = lazy(() => import("./pages/admin/LiveMap"));`
+- **Line 961**: Route configured with feature protection: `<Route path="live-map" element={<FeatureProtectedRoute featureId="live-map"><LiveMap /></FeatureProtectedRoute>} />`
 
-**Line 205:**
-```typescript
-const RunnerLocationTracking = lazy(() => import("./pages/admin/RunnerLocationTracking"));
-```
-
-**Route configuration at line 962:**
-```typescript
-<Route path="gps-tracking" element={<FeatureProtectedRoute featureId="fleet-management"><RunnerLocationTracking /></FeatureProtectedRoute>} />
-```
-
-### Status: ALREADY IMPLEMENTED
-
-- The lazy import pattern using `lazy(() => import(...))` is correctly applied
-- The component is used in the routing configuration with proper feature protection
-- No changes needed - task was already complete
-
-### Files Verified:
-- `src/App.tsx` (lines 205, 962)
-- `src/pages/admin/RunnerLocationTracking.tsx` (exports default function)
+The lazy import is properly implemented using React's `lazy()` function, which enables code splitting for the LiveMap component. No changes were required as this task was already completed in the existing codebase.
