@@ -205,7 +205,7 @@ export function StorefrontProductCard({
                 </div>
 
                 {/* Footer */}
-                <div className="pt-5 mt-2 flex items-center justify-between border-t border-neutral-50">
+                <div className="px-5 pt-5 mt-2 flex items-center justify-between border-t border-neutral-50">
                     <div className="flex flex-col">
                         <div className="flex items-baseline gap-2">
                             {displayPrice === 0 ? (
