@@ -129,7 +129,7 @@ export function QuickEditDialog({ product, open, onOpenChange }: QuickEditDialog
 
           <div>
             <Label htmlFor="quick-status">Status</Label>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status} onValueChange={(val) => setStatus(val as "active" | "inactive")}>
               <SelectTrigger className="mt-1.5">
                 <SelectValue />
               </SelectTrigger>

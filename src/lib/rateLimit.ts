@@ -247,7 +247,7 @@ export async function recordAction(
 
   if (options.syncServer) {
     try {
-      await supabase.rpc('increment_rate_limit', {
+      await (supabase as any).rpc('increment_rate_limit', {
         p_tenant_id: tenantId,
         p_action_type: actionType,
       });
@@ -297,7 +297,7 @@ async function verifyWithServer(
     throw error;
   }
 
-  return data as RateLimitResult;
+  return data as unknown as RateLimitResult;
 }
 
 // ============================================================================
