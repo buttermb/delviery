@@ -831,7 +831,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
     const doRefresh = async (): Promise<boolean> => {
       try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
 
         // STEP 4: Attempt to refresh the session via edge function
         const { response } = await resilientFetch(
@@ -1410,7 +1410,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
     try {
       // Call logout endpoint to clear cookies
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
         method: "POST",
         credentials: 'include',
@@ -1520,7 +1520,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                 return;
               }
               try {
-                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
                 const { response } = await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
                   method: "GET",
                   headers: {
