@@ -32,6 +32,16 @@ import { buildTimestampPlugin } from './vite-plugins/build-timestamp';
 import { realtimeValidationPlugin } from './vite-plugins/realtime-validation';
 import { versionGeneratorPlugin } from './vite-plugins/version-generator';
 
+// Backend env fallbacks for preview/dev environments.
+// These are *public* values (URL + anon/publishable key) and prevent the app from hard-crashing
+// when the platform doesn't inject VITE_SUPABASE_* into the frontend build.
+const FALLBACK_BACKEND = {
+  url: 'https://aejugtmhwwknrowfyzie.supabase.co',
+  anonKey:
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlanVndG1od3drbnJvd2Z5emllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE4NDA4OTcsImV4cCI6MjA3NzQxNjg5N30.R7S5uyha_U5oNc1IBXt8bThumQJSa8FuJZdgiWRgwek',
+  projectId: 'aejugtmhwwknrowfyzie',
+} as const;
+
 // Sitemap generator plugin
 function sitemapPlugin() {
   return {
@@ -70,6 +80,14 @@ export default defineConfig(({ mode }) => ({
     },
   },
   define: {
+    // Ensure frontend always has backend env vars available.
+    // If the host environment provides them, we use those; otherwise we fall back.
+    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL || FALLBACK_BACKEND.url),
+    'import.meta.env.VITE_SUPABASE_PROJECT_ID': JSON.stringify(process.env.VITE_SUPABASE_PROJECT_ID || FALLBACK_BACKEND.projectId),
+    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY || FALLBACK_BACKEND.anonKey),
+    'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(
+      process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || FALLBACK_BACKEND.anonKey
+    ),
     'BUILD_TIMESTAMP': JSON.stringify(Date.now().toString()),
     '__BUILD_TIME__': JSON.stringify(Date.now().toString())
   },
