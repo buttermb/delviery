@@ -124,9 +124,14 @@ export default function AddressBook() {
           .eq('id', data.editing.id);
         if (error) throw error;
       } else {
+        // Insert requires zip_code field
+        const insertData = {
+          ...dbData,
+          zip_code: data.formData.zip || '00000',
+        };
         const { error } = await supabase
           .from('addresses')
-          .insert(dbData);
+          .insert(insertData);
         if (error) throw error;
       }
     },

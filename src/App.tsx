@@ -232,6 +232,22 @@ const ReviewsPage = lazy(() => import("./pages/admin/ReviewsPage"));
 // GitHub Repos Integration Pages
 const AnalyticsPage = lazy(() => import("./pages/admin/AnalyticsPage"));
 
+// Missing Admin Pages - Added for route completeness
+const TeamManagement = lazy(() => import("./pages/admin/TeamManagement"));
+const FrontedInventory = lazy(() => import("./pages/admin/FrontedInventory"));
+const FrontedInventoryDetails = lazy(() => import("./pages/admin/FrontedInventoryDetails"));
+const CustomerInvoices = lazy(() => import("./pages/admin/CustomerInvoices"));
+const LiveMap = lazy(() => import("./pages/admin/LiveMap"));
+const RunnerLocationTracking = lazy(() => import("./pages/admin/RunnerLocationTracking"));
+const LocationsManagement = lazy(() => import("./pages/admin/LocationsManagement"));
+const AdminLiveChat = lazy(() => import("./pages/admin/AdminLiveChat"));
+const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
+const CustomerReports = lazy(() => import("./pages/admin/CustomerReports"));
+const DispatchInventory = lazy(() => import("./pages/admin/DispatchInventory"));
+const FrontedInventoryAnalytics = lazy(() => import("./pages/admin/FrontedInventoryAnalytics"));
+const OrderAnalyticsPage = lazy(() => import("./pages/tenant-admin/OrderAnalyticsPage"));
+const SalesDashboardPage = lazy(() => import("./pages/tenant-admin/SalesDashboardPage"));
+
 const AdvancedInvoicePage = lazy(() => import("./pages/admin/AdvancedInvoicePage"));
 const LocalAIPage = lazy(() => import("./pages/admin/LocalAIPage"));
 const WorkflowAutomationPage = lazy(() => import("./pages/admin/WorkflowAutomationPage"));

@@ -236,12 +236,12 @@ export function useUpdateClient() {
             logger.error('Client update failed', error, { component: 'useUpdateClient' });
             toast.error('Client update failed', { description: errorMessage });
         },
-        onSuccess: (data) => {
+        onSuccess: (data: CRMClient | null) => {
             toast.success('Client updated successfully');
             // Cross-panel invalidation - CRM client update affects invoices, collections
-            if (accountId) {
+            if (accountId && data) {
                 invalidateOnEvent(queryClient, 'CUSTOMER_UPDATED', accountId, {
-                    customerId: data?.id,
+                    customerId: data.id,
                 });
             }
         },
@@ -304,12 +304,12 @@ export function useArchiveClient() {
             logger.error('Client archive failed', error, { component: 'useArchiveClient' });
             toast.error('Client archive failed', { description: errorMessage });
         },
-        onSuccess: (data) => {
+        onSuccess: (data: CRMClient | null) => {
             toast.success('Client archived successfully');
             // Cross-panel invalidation - CRM client deletion affects analytics
-            if (accountId) {
+            if (accountId && data) {
                 invalidateOnEvent(queryClient, 'CUSTOMER_DELETED', accountId, {
-                    customerId: data?.id,
+                    customerId: data.id,
                 });
             }
         },
