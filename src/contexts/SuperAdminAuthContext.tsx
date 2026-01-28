@@ -66,7 +66,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const url = `${supabaseUrl}/functions/v1/super-admin-auth?action=verify`;
 
       authFlowLogger.logFetchAttempt(flowId, url, 1);
@@ -180,7 +180,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const url = `${supabaseUrl}/functions/v1/super-admin-auth?action=login`;
 
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
@@ -285,7 +285,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
     try {
       if (token) {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
         await resilientFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=logout`, {
           method: "POST",
           headers: {
@@ -326,7 +326,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const url = `${supabaseUrl}/functions/v1/super-admin-auth?action=refresh`;
 
       authFlowLogger.logFetchAttempt(flowId, url, 1);
