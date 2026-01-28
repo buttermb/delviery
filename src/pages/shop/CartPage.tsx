@@ -234,7 +234,7 @@ export default function CartPage() {
                   className="rounded-full px-8 h-12 text-base font-medium transition-all hover:scale-105"
                   style={{ backgroundColor: themeColor, color: isLuxuryTheme ? '#000' : '#fff' }}
                 >
-                  Continuue Shopping
+                  Continue Shopping
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>

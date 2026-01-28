@@ -119,7 +119,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
     }
 
     return filtered.slice(0, max_products);
-  }, [products, searchQuery, selectedCategory, max_products]);
+  }, [products, debouncedSearch, selectedCategory, max_products]);
 
   const handleQuickAdd = (e: React.MouseEvent, product: MarketplaceProduct) => {
     e.preventDefault();
