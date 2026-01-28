@@ -68,8 +68,12 @@ async function comparePassword(password: string, hashValue: string): Promise<boo
     // Check if it's the old SHA-256 format (hex string, 64 characters)
     if (hashValue.length === 64 && /^[a-f0-9]+$/i.test(hashValue)) {
       // Old format: SHA-256(password + secret)
+      const secret = Deno.env.get("PASSWORD_SECRET");
+      if (!secret) {
+        console.error("PASSWORD_SECRET environment variable is required for legacy password verification");
+        return false;
+      }
       const encoder = new TextEncoder();
-      const secret = Deno.env.get("PASSWORD_SECRET") || "change-in-production";
       const data = encoder.encode(password + secret);
       const hashBuffer = await crypto.subtle.digest('SHA-256', data);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -184,20 +188,11 @@ serve(secureHeadersMiddleware(async (req) => {
 
     // Health check endpoint - no auth required, verifies function is deployed and running
     if (action === 'health') {
-      const hasSupabaseUrl = !!Deno.env.get('SUPABASE_URL');
-      const hasServiceRoleKey = !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-      const hasJwtSecret = !!Deno.env.get('JWT_SECRET');
-
       return new Response(
         JSON.stringify({
           status: 'ok',
           function: 'super-admin-auth',
           timestamp: new Date().toISOString(),
-          env: {
-            SUPABASE_URL: hasSupabaseUrl,
-            SUPABASE_SERVICE_ROLE_KEY: hasServiceRoleKey,
-            JWT_SECRET: hasJwtSecret,
-          },
         }),
         { status: 200, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
       );
@@ -657,9 +652,9 @@ serve(secureHeadersMiddleware(async (req) => {
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    // Server-side error logging only
+    console.error('[super-admin-auth] Error:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Authentication failed" }),
+      JSON.stringify({ error: "Authentication failed" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

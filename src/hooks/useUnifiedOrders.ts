@@ -11,6 +11,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { invalidateOnEvent } from '@/lib/invalidation';
 
 // Types
 export type OrderType = 'retail' | 'wholesale' | 'menu' | 'pos' | 'all';
@@ -336,8 +337,15 @@ export function useCreateUnifiedOrder() {
       logger.error('Failed to create order', error, { component: 'useCreateUnifiedOrder' });
       toast.error('Order creation failed', { description: message });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success('Order created successfully');
+      // Cross-panel invalidation
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'ORDER_CREATED', tenant.id, {
+          customerId: data.customer_id || undefined,
+          orderId: data.id,
+        });
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
@@ -427,6 +435,13 @@ export function useUpdateOrderStatus() {
     },
     onSuccess: (data) => {
       toast.success(`Order status updated to ${data.status}`);
+      // Cross-panel invalidation
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', tenant.id, {
+          orderId: data.id,
+          customerId: data.customer_id || undefined,
+        });
+      }
     },
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
@@ -532,8 +547,15 @@ export function useCancelOrder() {
       logger.error('Failed to cancel order', error, { component: 'useCancelOrder' });
       toast.error('Order cancellation failed', { description: message });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success('Order cancelled successfully');
+      // Cross-panel invalidation - cancellation affects order lists, customer stats, inventory
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'ORDER_DELETED', tenant.id, {
+          orderId: data.id,
+          customerId: data.customer_id || undefined,
+        });
+      }
     },
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });

@@ -6,11 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import type { Database } from "@/integrations/supabase/types";
@@ -36,9 +37,14 @@ interface ClientFormData {
 }
 
 export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClientDialogProps) {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
+
+  const isContextReady = !tenantLoading && !!tenant?.id;
+  const contextError = !tenantLoading && !tenant?.id
+    ? 'Tenant context not available. Please refresh the page or contact support.'
+    : null;
   const [formData, setFormData] = useState<ClientFormData>({
     business_name: "",
     contact_name: "",
@@ -124,7 +130,14 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
         <DialogHeader>
           <DialogTitle>Create New Client</DialogTitle>
         </DialogHeader>
-        
+
+        {contextError && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{contextError}</AlertDescription>
+          </Alert>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -251,9 +264,9 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Create Client
+            <Button type="submit" disabled={loading || !isContextReady || tenantLoading}>
+              {(loading || tenantLoading) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {tenantLoading ? 'Loading...' : 'Create Client'}
             </Button>
           </div>
         </form>

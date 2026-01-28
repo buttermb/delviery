@@ -473,6 +473,19 @@ export default function ProductManagement() {
         // Manually update state
         setProducts(prev => [newProduct, ...prev]);
 
+        // Sync to marketplace if store exists (auto-trigger handles marketplace_product_settings,
+        // this handles marketplace_products with additional fields like slug)
+        if (store?.id && newProduct) {
+          const { error: syncError } = await (supabase as any).rpc('sync_product_to_marketplace', {
+            p_product_id: newProduct.id,
+            p_store_id: store.id,
+          });
+          if (syncError) {
+            // Don't block on sync error - product was created successfully
+            logger.warn('Product sync to marketplace failed', { error: syncError, productId: newProduct.id });
+          }
+        }
+
         // Invalidate all product caches so storefront reflects changes instantly
         invalidateProductCaches({
           tenantId: tenant.id,

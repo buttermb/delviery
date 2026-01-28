@@ -48,7 +48,7 @@ function ComplianceDemoMobile() {
                         <span className="text-xs text-slate-500">Last Sync</span>
                     </div>
                     <div className="text-sm font-bold text-slate-900">Just now</div>
-                    <div className="text-xs text-emerald-600">✓ Success</div>
+                    <div className="text-xs text-emerald-600 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" aria-hidden="true" /> Success</div>
                 </div>
             </div>
 

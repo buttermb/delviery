@@ -11,18 +11,38 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, newPassword } = await req.json();
-    
-    if (!email || !newPassword) {
-      throw new Error("Email and newPassword are required");
-    }
-
-    console.log(`[admin-reset-password] Attempting to reset password for: ${email}`);
-
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    // Verify the caller is authenticated and is a super admin
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const callerToken = authHeader.replace('Bearer ', '');
+    const { data: { user: callerUser }, error: callerError } = await supabaseAdmin.auth.getUser(callerToken);
+    if (callerError || !callerUser) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { email, newPassword } = await req.json();
+
+    if (!email || !newPassword) {
+      return new Response(
+        JSON.stringify({ error: "Email and new password are required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`[admin-reset-password] Password reset requested`);
 
     // Find user by email
     const { data: users, error: listError } = await supabaseAdmin.auth.admin.listUsers();
@@ -33,11 +53,11 @@ Deno.serve(async (req) => {
 
     const user = users.users.find(u => u.email === email);
     if (!user) {
-      console.error(`[admin-reset-password] User not found: ${email}`);
+      console.error(`[admin-reset-password] User not found`);
       throw new Error("User not found");
     }
 
-    console.log(`[admin-reset-password] Found user: ${user.id}`);
+    console.log(`[admin-reset-password] Found user, updating password`);
 
     // Update password
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
@@ -50,7 +70,7 @@ Deno.serve(async (req) => {
       throw updateError;
     }
 
-    console.log(`[admin-reset-password] Password updated successfully for: ${email}`);
+    console.log(`[admin-reset-password] Password updated successfully`);
 
     return new Response(
       JSON.stringify({ success: true, message: "Password updated successfully" }),
@@ -59,7 +79,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error(`[admin-reset-password] Error:`, error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Password reset failed' }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

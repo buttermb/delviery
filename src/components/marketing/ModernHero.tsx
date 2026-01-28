@@ -51,7 +51,7 @@ export function ModernHero() {
         {/* Centered Hero Content */}
         <div className="max-w-5xl mx-auto text-center mb-10 md:mb-16">
           {/* Rotating Badge */}
-          <div className="h-12 mb-6 md:mb-8 flex items-center justify-center">
+          <div className="h-12 mb-6 md:mb-8 flex items-center justify-center" aria-live="polite" aria-atomic="true">
             <AnimatePresence mode="wait">
               <motion.div
                 key={featureIndex}

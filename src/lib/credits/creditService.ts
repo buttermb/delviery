@@ -1,7 +1,6 @@
-// @ts-nocheck
 /**
  * Credit Service
- * 
+ *
  * Core service for managing credits in the freemium system.
  * Handles credit checking, consumption, granting, and purchasing.
  */

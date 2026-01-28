@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { queryKeys } from '@/lib/queryKeys';
+import { invalidateOnEvent } from '@/lib/invalidation';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useCreditGatedAction } from '@/hooks/useCredits';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -302,9 +303,11 @@ function CashRegisterContent() {
       p_shift_id: null
     };
 
+    // Use full Supabase functions URL for offline queue
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     await queueAction(
       'generic',
-      `/api/pos/transaction`,
+      `${supabaseUrl}/functions/v1/api/pos/transaction`,
       'POST',
       payload,
       3
@@ -422,9 +425,16 @@ function CashRegisterContent() {
       setReceiptDialogOpen(true);
 
       resetTransaction();
+
+      // Cross-panel invalidation - POS sale affects inventory, finance, dashboard, analytics
+      if (tenantId) {
+        invalidateOnEvent(queryClient, 'POS_SALE_COMPLETED', tenantId, {
+          customerId: selectedCustomer?.id || undefined,
+        });
+      }
+
+      // Also invalidate POS-specific queries
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.transactions(tenantId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.pos.products(tenantId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
     },
     onError: (error: unknown) => {
       triggerError();

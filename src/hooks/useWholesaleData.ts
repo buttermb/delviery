@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { logger } from "@/lib/logger";
+import { invalidateOnEvent } from "@/lib/invalidation";
 
 /**
  * Fetch active wholesale clients (excludes soft-deleted)
@@ -67,6 +68,7 @@ export const useWholesaleOrders = () => {
 
 export const useCreateWholesaleOrder = () => {
   const queryClient = useQueryClient();
+  const { tenant } = useTenantAdminAuth();
 
   return useMutation({
     mutationFn: async (orderData: Record<string, unknown>) => {
@@ -99,6 +101,10 @@ export const useCreateWholesaleOrder = () => {
     },
     onSuccess: () => {
       showSuccessToast("Order Created", "Wholesale order created successfully");
+      // Cross-panel invalidation - wholesale order affects inventory, dashboard, CRM
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'WHOLESALE_ORDER_CREATED', tenant.id);
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["wholesale-orders"] });
@@ -109,6 +115,7 @@ export const useCreateWholesaleOrder = () => {
 
 export const useProcessPayment = () => {
   const queryClient = useQueryClient();
+  const { tenant } = useTenantAdminAuth();
 
   return useMutation({
     mutationFn: async (paymentData: Record<string, unknown>) => {
@@ -144,8 +151,14 @@ export const useProcessPayment = () => {
       logger.error('Failed to process payment', error, { component: 'useProcessPayment' });
       showErrorToast("Payment Failed", message);
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       showSuccessToast("Payment Processed", "Payment recorded successfully");
+      // Cross-panel invalidation - payment affects finance, collections, dashboard
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'PAYMENT_RECEIVED', tenant.id, {
+          customerId: variables.client_id as string | undefined,
+        });
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["wholesale-clients"] });
@@ -156,6 +169,7 @@ export const useProcessPayment = () => {
 
 export const useAssignDelivery = () => {
   const queryClient = useQueryClient();
+  const { tenant } = useTenantAdminAuth();
 
   return useMutation({
     mutationFn: async (data: { order_id: string; runner_id: string }) => {
@@ -191,8 +205,14 @@ export const useAssignDelivery = () => {
       logger.error('Failed to assign delivery', error, { component: 'useAssignDelivery' });
       showErrorToast("Assignment Failed", message);
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       showSuccessToast("Delivery Assigned", "Runner assigned successfully");
+      // Cross-panel invalidation - driver assignment affects fulfillment, orders, dashboard
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'DRIVER_ASSIGNED', tenant.id, {
+          courierId: variables.runner_id,
+        });
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["wholesale-orders"] });
@@ -204,6 +224,7 @@ export const useAssignDelivery = () => {
 
 export const useUpdateDeliveryStatus = () => {
   const queryClient = useQueryClient();
+  const { tenant } = useTenantAdminAuth();
 
   return useMutation({
     mutationFn: async (data: { delivery_id: string; status: string; location?: { lat?: number; lng?: number;[key: string]: unknown } | null; notes?: string }) => {
@@ -241,6 +262,10 @@ export const useUpdateDeliveryStatus = () => {
     },
     onSuccess: () => {
       showSuccessToast("Status Updated", "Delivery status updated successfully");
+      // Cross-panel invalidation - delivery status affects orders, fulfillment, dashboard
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'DELIVERY_STATUS_CHANGED', tenant.id);
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["wholesale-deliveries"] });

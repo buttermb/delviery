@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { startOfDay, endOfDay, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { invalidateOnEvent } from "@/lib/invalidation";
 
 export const useFinancialSnapshot = () => {
   const { tenant } = useTenantAdminAuth();
@@ -204,10 +205,16 @@ export const useCreateCollectionActivity = () => {
       if (error) throw error;
       return result;
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["collection-activities"] });
       queryClient.invalidateQueries({ queryKey: ["credit-out"] });
       showSuccessToast("Activity Logged", "Collection activity recorded successfully");
+      // Cross-panel invalidation - collection activity affects finance, CRM, dashboard
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'PAYMENT_RECEIVED', tenant.id, {
+          customerId: variables.client_id,
+        });
+      }
     },
     onError: (error) => {
       showErrorToast("Log Failed", error instanceof Error ? error.message : "Failed to log activity");

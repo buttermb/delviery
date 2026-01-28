@@ -158,7 +158,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'B2B Orders',
-        href: '/admin/orders/b2b',
+        href: '/admin/orders?tab=wholesale',
         icon: Building2
       }
     ]
@@ -387,7 +387,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Support',
-        href: '/admin/customer-support',
+        href: '/admin/marketing-hub?tab=live-chat',
         icon: HeadphonesIcon,
         tier: 'professional'
       },
@@ -631,7 +631,7 @@ export const navigationSections: NavSection[] = [
     items: [
       {
         title: 'Drivers',
-        href: '/admin/drivers',
+        href: '/admin/fulfillment-hub?tab=fleet',
         icon: Car
       }
     ]
@@ -649,13 +649,13 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Revenue',
-        href: '/admin/revenue',
+        href: '/admin/finance-hub?tab=revenue',
         icon: TrendingUp,
         tier: 'professional'
       },
       {
         title: 'Expenses',
-        href: '/admin/expenses',
+        href: '/admin/finance-hub?tab=expenses',
         icon: TrendingDown,
         tier: 'professional'
       },
@@ -803,7 +803,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Export',
-        href: '/admin/analytics-export',
+        href: '/admin/data-export',
         icon: FileSpreadsheet,
         tier: 'professional'
       }
@@ -898,7 +898,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Help Center',
-        href: '/admin/help-center',
+        href: '/admin/priority-support',
         icon: HelpCircle
       },
       {

@@ -25,9 +25,9 @@ interface Driver {
 }
 
 const INITIAL_DRIVERS: Driver[] = [
-  { id: '1', name: 'Mike T.', avatar: '👨', status: 'delivering', orders: 3, eta: 12, position: { x: 30, y: 35 } },
-  { id: '2', name: 'Sarah K.', avatar: '👩', status: 'picking_up', orders: 2, eta: 5, position: { x: 55, y: 60 } },
-  { id: '3', name: 'John D.', avatar: '🧔', status: 'completed', orders: 5, eta: 0, position: { x: 75, y: 40 } },
+  { id: '1', name: 'Mike T.', avatar: 'MT', status: 'delivering', orders: 3, eta: 12, position: { x: 30, y: 35 } },
+  { id: '2', name: 'Sarah K.', avatar: 'SK', status: 'picking_up', orders: 2, eta: 5, position: { x: 55, y: 60 } },
+  { id: '3', name: 'John D.', avatar: 'JD', status: 'completed', orders: 5, eta: 0, position: { x: 75, y: 40 } },
 ];
 
 // Mobile-optimized static fallback
@@ -87,7 +87,7 @@ function LiveMapDemoMobile() {
                   driver.status === 'picking_up' ? 'bg-blue-100' :
                     'bg-slate-100'
                   }`}>
-                  {driver.avatar}
+                  <span className="text-xs font-bold">{driver.avatar}</span>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-slate-900">{driver.name}</div>
@@ -261,7 +261,7 @@ export function LiveMapDemo() {
                   animate={driver.status === 'delivering' ? { scale: [1, 1.08, 1] } : {}}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 >
-                  <span className="text-lg">{driver.avatar}</span>
+                  <span className="text-xs font-bold text-white">{driver.avatar}</span>
                 </motion.div>
 
                 {/* Pulse for active */}

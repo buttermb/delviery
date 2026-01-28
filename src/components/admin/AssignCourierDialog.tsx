@@ -52,6 +52,14 @@ export const AssignCourierDialog = ({
   const { toast } = useToast();
   const { tenant } = useTenantAdminAuth();
 
+  // Reset state when dialog opens
+  useEffect(() => {
+    if (open) {
+      setSelectedCourierId("");
+      setLoading(true);
+    }
+  }, [open]);
+
   useEffect(() => {
     const fetchAvailableCouriers = async () => {
       if (!tenant?.id) return;
@@ -210,7 +218,7 @@ export const AssignCourierDialog = ({
             </div>
           ) : (
             <>
-              <Select value={selectedCourierId} onValueChange={setSelectedCourierId}>
+              <Select value={selectedCourierId || undefined} onValueChange={setSelectedCourierId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a courier" />
                 </SelectTrigger>

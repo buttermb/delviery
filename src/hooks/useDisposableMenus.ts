@@ -2,6 +2,7 @@ import { logger } from '@/lib/logger';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
+import { invalidateOnEvent } from '@/lib/invalidation';
 
 export const useDisposableMenus = (tenantId?: string) => {
   return useQuery({
@@ -286,7 +287,7 @@ export const useMenuOrders = (menuId?: string, tenantId?: string) => {
   });
 };
 
-export const useUpdateOrderStatus = () => {
+export const useUpdateOrderStatus = (tenantId?: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -301,9 +302,16 @@ export const useUpdateOrderStatus = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
       showSuccessToast('Order Updated', `Order marked as ${variables.status}`);
+
+      // Cross-panel invalidation - menu order status affects dashboard, orders list
+      if (tenantId) {
+        invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', tenantId, {
+          orderId: variables.orderId,
+        });
+      }
     },
     onError: (error: unknown) => {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';

@@ -11,6 +11,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { invalidateOnEvent } from '@/lib/invalidation';
 
 // Types
 export type ContactType = 'retail' | 'wholesale' | 'crm';
@@ -357,8 +358,14 @@ export function useCreateContact() {
       logger.error('Contact creation failed', error, { component: 'useCreateContact' });
       toast.error('Contact creation failed', { description: message });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success('Contact created successfully');
+      // Cross-panel invalidation - new contact affects CRM, dashboard, analytics
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'CUSTOMER_CREATED', tenant.id, {
+          customerId: data.id,
+        });
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
@@ -436,8 +443,14 @@ export function useUpdateContact() {
       logger.error('Contact update failed', error, { component: 'useUpdateContact' });
       toast.error('Contact update failed', { description: message });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success('Contact updated successfully');
+      // Cross-panel invalidation - customer update affects CRM, orders, collections
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'CUSTOMER_UPDATED', tenant.id, {
+          customerId: data.id,
+        });
+      }
     },
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
@@ -493,8 +506,14 @@ export function useDeleteContact() {
       logger.error('Contact deletion failed', error, { component: 'useDeleteContact' });
       toast.error('Contact deletion failed', { description: message });
     },
-    onSuccess: () => {
+    onSuccess: (contactId) => {
       toast.success('Contact deleted successfully');
+      // Cross-panel invalidation - customer deletion affects CRM, analytics
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'CUSTOMER_DELETED', tenant.id, {
+          customerId: contactId,
+        });
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });
@@ -575,8 +594,14 @@ export function useUpdateContactBalance() {
       logger.error('Balance update failed', error, { component: 'useUpdateContactBalance' });
       toast.error('Balance update failed', { description: message });
     },
-    onSuccess: () => {
+    onSuccess: ({ contactId }) => {
       toast.success('Balance updated successfully');
+      // Cross-panel invalidation - balance change affects finance, collections, CRM
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'PAYMENT_RECEIVED', tenant.id, {
+          customerId: contactId,
+        });
+      }
     },
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: contactsKeys.lists() });

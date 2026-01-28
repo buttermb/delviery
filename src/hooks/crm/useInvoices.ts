@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { crmClientKeys } from './useClients';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
+import { invalidateOnEvent } from '@/lib/invalidation';
 
 export const crmInvoiceKeys = {
     all: ['crm-invoices'] as const,
@@ -69,7 +70,17 @@ export function useInvoices() {
                 if (error) throw error;
                 return normalizeInvoice(data);
             },
-            onSuccess: () => { queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all }); toast.success('Invoice marked as paid'); },
+            onSuccess: (data) => {
+                queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
+                toast.success('Invoice marked as paid');
+                // Cross-panel invalidation - invoice payment affects finance, collections, dashboard
+                if (accountId) {
+                    invalidateOnEvent(queryClient, 'INVOICE_PAID', accountId, {
+                        invoiceId: data?.id,
+                        customerId: data?.client_id,
+                    });
+                }
+            },
             onError: (error: Error) => { logger.error('Failed to mark invoice as paid', { error }); toast.error('Failed to mark invoice as paid'); },
         });
     };
@@ -213,7 +224,17 @@ export function useCreateInvoice() {
             if (error) throw error;
             return normalizeInvoice(data as unknown as Record<string, unknown>);
         },
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all }); toast.success('Invoice created'); },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
+            toast.success('Invoice created');
+            // Cross-panel invalidation - invoice creation affects finance, collections, dashboard
+            if (accountId) {
+                invalidateOnEvent(queryClient, 'INVOICE_CREATED', accountId, {
+                    invoiceId: data?.id,
+                    customerId: data?.client_id,
+                });
+            }
+        },
         onError: (error: Error) => { logger.error('Create failed', error); toast.error(error.message); },
     });
 }

@@ -5,6 +5,7 @@ import {
   CheckCircle,
   HelpCircle,
   AlertCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -61,7 +62,7 @@ export default function MarketingHome() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-dvh bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] font-sans">
+      <div id="main-content" className="min-h-dvh bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] font-sans">
 
         <SEOHead
           title="FloraIQ - Secure Disposable Menus for Cannabis Operators"
@@ -321,7 +322,7 @@ export default function MarketingHome() {
                   </Link>
                   {plan.name !== "ENTERPRISE" && (
                     <div className="text-[10px] text-center mt-2 text-[hsl(var(--marketing-text-light))] flex justify-center gap-1">
-                      ⚠️ Credit card required for trial
+                      <AlertTriangle className="w-3 h-3 inline-block mr-1" aria-hidden="true" /> Credit card required for trial
                     </div>
                   )}
                 </div>

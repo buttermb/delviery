@@ -58,11 +58,6 @@ body {
   will-change: transform, opacity;
 }
 
-/* Remove will-change after animation completes */
-.animation-complete {
-  will-change: auto;
-}
-
 /* Section containment adjusted for scroll compatibility */
 section {
   contain: style;
@@ -96,10 +91,6 @@ section[id] {
   }
 
   /* Body rules moved to global scope to prevent conflicts */
-}
-
-.smooth-scroll-touch {
-  -webkit-overflow-scrolling: touch;
 }
 
 /* Ensure main layout containers respect viewport width (scoped to avoid breaking scrollable content) */
@@ -164,9 +155,6 @@ body.keyboard-open [data-radix-dialog-content] {
   }
 }
 
-.panic-button-active {
-  animation: panic-pulse 1s infinite;
-}
 
 @keyframes blob {
 
@@ -224,24 +212,6 @@ body.keyboard-open [data-radix-dialog-content] {
   100% {
     background-position: 0% 50%;
   }
-}
-
-.border-gradient-animated {
-  position: relative;
-  background: linear-gradient(90deg,
-      hsl(var(--marketing-primary)),
-      hsl(var(--marketing-secondary)),
-      hsl(var(--marketing-accent)),
-      hsl(var(--marketing-primary)));
-  background-size: 300% 100%;
-  animation: border-spin 3s linear infinite;
-  padding: 2px;
-  border-radius: 1.5rem;
-}
-
-.border-gradient-animated>div {
-  background: hsl(var(--marketing-bg-subtle));
-  border-radius: calc(1.5rem - 2px);
 }
 
 /* Performance Optimizations */

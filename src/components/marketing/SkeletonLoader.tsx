@@ -98,7 +98,7 @@ export function SkeletonLoader({ className = '', variant = 'card' }: SkeletonLoa
 
 export function SectionSkeleton() {
   return (
-    <div className="py-20 space-y-8 animate-pulse">
+    <div className="py-20 space-y-8 animate-pulse" role="status" aria-busy="true" aria-label="Loading section content">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 space-y-4">
           <div className="h-10 bg-muted rounded w-64 mx-auto" />

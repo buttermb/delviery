@@ -19,6 +19,7 @@ import {
     FileEdit,
     Wallet,
     Building2,
+    HandCoins,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,6 +33,7 @@ const CommissionTrackingPage = lazy(() => import('@/pages/tenant-admin/Commissio
 const AdvancedInvoicePage = lazy(() => import('@/pages/admin/AdvancedInvoicePage'));
 const CollectionMode = lazy(() => import('@/pages/admin/CollectionMode'));
 const TaxManagementPage = lazy(() => import('@/pages/admin/TaxManagementPage'));
+const FrontedInventory = lazy(() => import('@/pages/admin/FrontedInventory'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -50,6 +52,7 @@ const tabs = [
     // Transactions
     { id: 'invoices', label: 'Invoices', icon: FileText, group: 'Transactions' },
     { id: 'collections', label: 'Collect', icon: Wallet, group: 'Transactions' },
+    { id: 'owed', label: 'Owed', icon: HandCoins, group: 'Transactions' },
     { id: 'commissions', label: 'Payouts', icon: Percent, group: 'Transactions' },
     // Utilities
     { id: 'builder', label: 'Builder', icon: FileEdit, group: 'Tools' },
@@ -123,6 +126,9 @@ export default function FinanceHubPage() {
                 </TabsContent>
                 <TabsContent value="collections" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><CollectionMode embedded /></Suspense>
+                </TabsContent>
+                <TabsContent value="owed" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><FrontedInventory /></Suspense>
                 </TabsContent>
                 <TabsContent value="commissions" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><CommissionTrackingPage /></Suspense>

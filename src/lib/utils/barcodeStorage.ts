@@ -10,55 +10,79 @@ import { generateBarcodeDataURL } from '@/utils/barcodeService';
 export interface BarcodeGenerationResult {
   barcode_url: string;
   sku: string;
+  is_fallback?: boolean;
+}
+
+export interface BarcodeGenerationError {
+  success: false;
+  error: string;
+  sku: string;
 }
 
 /**
  * Generate and store barcode image for a product
+ * Returns the barcode URL or throws an error with details
  */
 export async function generateAndStoreBarcode(
   sku: string,
   tenantId: string
-): Promise<string> {
-  try {
-    // Call Edge Function to generate and store barcode
-    const { data, error } = await supabase.functions.invoke<BarcodeGenerationResult>(
-      'generate-product-barcode',
-      {
-        body: {
-          sku,
-          tenant_id: tenantId,
-        },
-      }
-    );
-
-    if (error) {
-      logger.error('Barcode generation failed', error, {
-        component: 'barcodeStorage',
+): Promise<{ url: string; isFallback: boolean }> {
+  // Call Edge Function to generate and store barcode
+  const { data, error } = await supabase.functions.invoke<BarcodeGenerationResult>(
+    'generate-product-barcode',
+    {
+      body: {
         sku,
-        tenantId,
-      });
-      throw error;
+        tenant_id: tenantId,
+      },
     }
+  );
 
-    // Check for error in response body (some edge functions return 200 with error)
-    if (data && typeof data === 'object' && 'error' in data && data.error) {
-      const errorMessage = typeof data.error === 'string' ? data.error : 'Barcode generation failed';
-      logger.error('Barcode generation returned error in response', { error: errorMessage, sku, tenantId }, {
-        component: 'barcodeStorage',
-      });
-      throw new Error(errorMessage);
-    }
+  if (error) {
+    logger.error('Barcode generation failed', error, {
+      component: 'barcodeStorage',
+      sku,
+      tenantId,
+    });
+    throw new Error(`Barcode generation failed: ${error.message || 'Unknown error'}`);
+  }
 
-    if (!data?.barcode_url) {
-      throw new Error('Barcode generation returned no URL');
-    }
-
-    return data.barcode_url;
-  } catch (error) {
-    logger.error('Barcode storage error', error, {
+  // Check for error in response body (some edge functions return 200 with error)
+  if (data && typeof data === 'object' && 'error' in data && data.error) {
+    const errorMessage = typeof data.error === 'string' ? data.error : 'Barcode generation failed';
+    logger.error('Barcode generation returned error in response', { error: errorMessage, sku, tenantId }, {
       component: 'barcodeStorage',
     });
-    // Return null on error - product can still be created without barcode
+    throw new Error(errorMessage);
+  }
+
+  if (!data?.barcode_url) {
+    throw new Error('Barcode generation returned no URL');
+  }
+
+  return {
+    url: data.barcode_url,
+    isFallback: data.is_fallback || false,
+  };
+}
+
+/**
+ * Generate and store barcode - safe version that returns null on error
+ * Use this when barcode is optional and shouldn't block the operation
+ */
+export async function generateAndStoreBarcodeOptional(
+  sku: string,
+  tenantId: string
+): Promise<string> {
+  try {
+    const result = await generateAndStoreBarcode(sku, tenantId);
+    return result.url;
+  } catch (error) {
+    logger.warn('Optional barcode generation failed, continuing without barcode', error, {
+      component: 'barcodeStorage',
+      sku,
+      tenantId,
+    });
     return '';
   }
 }

@@ -126,8 +126,8 @@ export function TestimonialsCarousel() {
         </div>
 
         {/* Testimonial carousel - CSS transitions only */}
-        <div className="max-w-4xl mx-auto">
-          <div className="relative min-h-[380px] md:min-h-[320px]">
+        <div className="max-w-4xl mx-auto" role="region" aria-label="Customer testimonials" aria-roledescription="carousel">
+          <div className="relative min-h-[380px] md:min-h-[320px]" aria-live="polite" aria-atomic="true">
             {testimonials.map((testimonial, index) => (
               <div
                 key={testimonial.id}
@@ -187,22 +187,32 @@ export function TestimonialsCarousel() {
               size="icon"
               onClick={handlePrev}
               className="rounded-full border-[hsl(var(--marketing-border))] hover:bg-[hsl(var(--marketing-primary))]/10 hover:border-[hsl(var(--marketing-primary))]"
+              aria-label="Previous testimonial"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5" aria-hidden="true" />
             </Button>
 
             {/* Dots */}
-            <div className="flex gap-2">
-              {testimonials.map((_, index) => (
+            <div className="flex gap-2" role="tablist" aria-label="Testimonial navigation">
+              {testimonials.map((t, index) => (
                 <button
                   key={index}
                   onClick={() => handleDotClick(index)}
-                  className={`h-2 rounded-full transition-all duration-300 ${
+                  role="tab"
+                  aria-selected={index === activeIndex}
+                  aria-label={`Testimonial ${index + 1} of ${testimonials.length}: ${t.name}`}
+                  className={`rounded-full transition-all duration-300 min-w-[44px] min-h-[44px] flex items-center justify-center ${
+                    index === activeIndex
+                      ? ""
+                      : ""
+                  }`}
+                >
+                  <span className={`block h-2 rounded-full transition-all duration-300 ${
                     index === activeIndex
                       ? "w-8 bg-[hsl(var(--marketing-primary))]"
                       : "w-2 bg-[hsl(var(--marketing-border))] hover:bg-[hsl(var(--marketing-text-light))]"
-                  }`}
-                />
+                  }`} />
+                </button>
               ))}
             </div>
 
@@ -211,8 +221,9 @@ export function TestimonialsCarousel() {
               size="icon"
               onClick={handleNext}
               className="rounded-full border-[hsl(var(--marketing-border))] hover:bg-[hsl(var(--marketing-primary))]/10 hover:border-[hsl(var(--marketing-primary))]"
+              aria-label="Next testimonial"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5" aria-hidden="true" />
             </Button>
           </div>
         </div>
