@@ -7407,50 +7407,33 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
+## Agent 45 - Connect Operations to Vendors
 
-## Agent 43 - Connect Operations to Team
-
-### Task: Connect Operations to Team showing team member list and management
+### Task: Connect Operations to Vendors showing vendor list and order history
 
 **Completed:**
+1. Added `vendors` query keys to query key factory (`src/lib/queryKeys.ts`)
+   - Added `vendors.list()`, `vendors.detail()`, `vendors.orders()` for consistent query key management
 
-1. **Updated Operations section in sidebar navigation to link to Operations Hub Team tab**
-   - Added "Team" nav item linking to `/admin/operations-hub?tab=team`
-   - Added "Roles" nav item linking to `/admin/operations-hub?tab=roles`
-   - Both items connect to the existing Operations Hub tabs for team management
+2. Created vendor operations hooks (`src/hooks/useVendorOrders.ts`)
+   - `useVendorsWithStats()` - Fetches vendors with aggregated PO statistics (total orders, total spent, last order date)
+   - `useVendorOrders()` - Fetches purchase order history for a specific vendor
 
-2. **Fixed pre-existing build errors in the worktree:**
-   - **StorefrontBuilder.tsx**: Removed ~135 lines of orphaned JSX code (Separator, DndContext, TabsContent blocks) that was outside any component structure
-   - **CashRegister.tsx**: Removed duplicate `tenantSlug` variable declaration (was declared both from hook and manually)
-   - **ProductManagement.tsx**: Removed duplicate `loadProducts` function (old direct supabase version replaced by TanStack Query version)
-   - **Orders.tsx**: Removed duplicate `handlePrintOrder`, `handleGenerateInvoice`, and `handleCancelOrder` functions (~55 lines of duplicated code)
-   - **sanitize.ts**: Added missing exports for sanitization functions used across the codebase:
-     - `sanitizeFormInput` - escapes HTML entities for text inputs
-     - `sanitizeEmail` - validates and normalizes email input
-     - `sanitizePhoneInput` - cleans phone number input
-     - `sanitizeTextareaInput` - escapes HTML entities for textareas
-     - `sanitizeCouponCode` - uppercases and validates coupon codes
-     - `sanitizeWithLineBreaks` - escapes HTML while preserving newlines
-     - `sanitizeUrlInput` - blocks dangerous protocols in URLs
-     - `sanitizeSkuInput` - validates SKU format
-     - `sanitizeSlugInput` - creates URL-safe slugs
+3. Created VendorOperationsPage (`src/pages/admin/operations/VendorOperationsPage.tsx`)
+   - Shows summary stats cards (total vendors, total orders, total spent)
+   - Displays searchable/filterable vendor list table with order statistics
+   - Click vendor to open detail dialog showing:
+     - Contact information
+     - Order summary (total orders, total spent, last order)
+     - Complete purchase order history with status, total, dates
+     - Notes section
 
-### Architecture:
-The Operations Hub (`/admin/operations-hub`) already includes:
-- Team tab (`?tab=team`) - renders `TeamManagement` component
-- Roles tab (`?tab=roles`) - renders `RoleManagement` component
-
-These tabs were pre-existing in `OperationsHubPage.tsx`. This task connected the sidebar navigation to these tabs by:
-1. Adding navigation items in the Operations section
-2. Linking to the hub-based routes instead of standalone pages
+4. Updated OperationsHubPage (`src/pages/admin/hubs/OperationsHubPage.tsx`)
+   - Changed "Vendors" tab from SupplierManagementPage to VendorOperationsPage
+   - Now shows vendor list with order history in Operations Hub
 
 ### Files Changed:
-- `src/components/admin/sidebar-navigation.ts` - Added Team and Roles to Operations section with hub links
-- `src/pages/admin/storefront/StorefrontBuilder.tsx` - Fixed orphaned JSX
-- `src/pages/admin/CashRegister.tsx` - Fixed duplicate variable
-- `src/pages/admin/ProductManagement.tsx` - Fixed duplicate function
-- `src/pages/admin/Orders.tsx` - Fixed duplicate functions
-- `src/lib/utils/sanitize.ts` - Added missing sanitization function exports
-
-### Build Status:
-- `npm run build` passes with no errors
+- `src/lib/queryKeys.ts` - Added vendors query keys
+- `src/hooks/useVendorOrders.ts` - New hook for vendor order data
+- `src/pages/admin/operations/VendorOperationsPage.tsx` - New vendor operations page
+- `src/pages/admin/hubs/OperationsHubPage.tsx` - Updated to use VendorOperationsPage

@@ -32,7 +32,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
 // Lazy load tab content for performance
-const SupplierManagementPage = lazy(() => import('@/pages/admin/SupplierManagementPage'));
+const VendorOperationsPage = lazy(() => import('@/pages/admin/operations/VendorOperationsPage'));
 const PurchaseOrdersPage = lazy(() => import('@/pages/admin/PurchaseOrdersPage'));
 const ReturnsManagementPage = lazy(() => import('@/pages/admin/ReturnsManagementPage'));
 const TeamManagement = lazy(() => import('@/pages/admin/TeamManagement'));
@@ -122,10 +122,10 @@ export default function OperationsHubPage() {
                     </div>
                 </div>
 
-                {/* Suppliers Tab */}
+                {/* Vendors Tab */}
                 <TabsContent value="suppliers" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
-                        <SupplierManagementPage />
+                        <VendorOperationsPage />
                     </Suspense>
                 </TabsContent>
 
