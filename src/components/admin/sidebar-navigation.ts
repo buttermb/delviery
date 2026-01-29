@@ -21,7 +21,6 @@ import {
   Shield,
   ScrollText,
   PieChart,
-  LineChart,
   Activity,
   Map,
   FileSpreadsheet,
@@ -37,14 +36,11 @@ import {
   Calculator,
   Wallet,
   Landmark,
-  UserPlus,
-  Lock,
   History,
   FileCheck,
   Target,
   Rocket,
   Route,
-  Navigation,
   Code,
   Webhook,
   Puzzle,
@@ -55,7 +51,6 @@ import {
   TrendingDown,
   BarChart2,
   Store,
-  Clock,
   Search,
   Bell,
   PackageOpen,
@@ -63,7 +58,11 @@ import {
   UserCheck,
   Flame,
   Brain,
-  Star
+  Star,
+  QrCode,
+  Menu,
+  Headphones,
+  HelpCircle
 } from 'lucide-react';
 
 export interface NavItem {
@@ -192,7 +191,7 @@ export const navigationSections: NavSection[] = [
       {
         title: 'Barcodes',
         href: '/admin/generate-barcodes',
-        icon: Barcode
+        icon: QrCode
       },
       {
         title: 'Transfers & Delivery',
@@ -236,9 +235,14 @@ export const navigationSections: NavSection[] = [
     title: 'Inventory',
     items: [
       {
-        title: 'Inventory Hub',
-        href: '/admin/inventory-hub',
+        title: 'Products',
+        href: '/admin/inventory/products',
         icon: Package
+      },
+      {
+        title: 'Menus',
+        href: '/admin/inventory/menus',
+        icon: Menu
       },
       {
         title: 'Stock Levels',
@@ -246,22 +250,21 @@ export const navigationSections: NavSection[] = [
         icon: Boxes
       },
       {
-        title: 'Stock Alerts',
+        title: 'Alerts',
         href: '/admin/stock-alerts',
         icon: AlertTriangle,
         tier: 'professional'
       },
       {
-        title: 'Inventory Transfers',
+        title: 'Transfers',
         href: '/admin/inventory-transfers',
         icon: ArrowLeftRight,
         tier: 'professional'
       },
       {
-        title: 'Advanced Inventory',
-        href: '/admin/advanced-inventory',
-        icon: Database,
-        tier: 'professional'
+        title: 'Barcodes',
+        href: '/admin/generate-barcodes',
+        icon: QrCode
       }
     ]
   },
@@ -381,13 +384,13 @@ export const navigationSections: NavSection[] = [
       {
         title: 'Support',
         href: '/admin/customer-support',
-        icon: HeadphonesIcon,
+        icon: Headphones,
         tier: 'professional'
       },
       {
         title: 'Loyalty',
         href: '/admin/loyalty-program',
-        icon: Award,
+        icon: Star,
         tier: 'professional'
       },
       {

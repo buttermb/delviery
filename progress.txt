@@ -7332,3 +7332,24 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 17 - Sidebar Navigation Update
+
+### Task: Add Inventory section with Products, Menus, Stock Levels, Alerts, Transfers, Barcodes
+
+**Completed:**
+- Updated the Inventory section in sidebar-navigation.ts with all required items:
+  1. **Products** - Links to `/admin/inventory/products`, uses `Package` icon
+  2. **Menus** - Links to `/admin/inventory/menus`, uses `Menu` icon
+  3. **Stock Levels** - Links to `/admin/inventory-hub?tab=stock`, uses `Boxes` icon
+  4. **Alerts** - Links to `/admin/stock-alerts`, uses `AlertTriangle` icon, tier: professional
+  5. **Transfers** - Links to `/admin/inventory-transfers`, uses `ArrowLeftRight` icon, tier: professional
+  6. **Barcodes** - Links to `/admin/generate-barcodes`, uses `QrCode` icon
+
+- Added new icon imports: `QrCode`, `Menu`, `Headphones`, `HelpCircle`
+- Fixed existing invalid icon references (replaced `Barcode` with `QrCode`, `HeadphonesIcon` with `Headphones`)
+- Removed unused icon imports to pass ESLint
+
+### Files Changed:
+- `src/components/admin/sidebar-navigation.ts` - Updated Inventory section, fixed icon imports
+
