@@ -15,7 +15,6 @@ import { useSidebar } from './SidebarContext';
 import { matchesSearchQuery } from './SidebarSearch';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
-import { useSidebar } from './SidebarContext';
 import { useParams, useLocation } from 'react-router-dom';
 import type { FeatureId } from '@/lib/featureConfig';
 
@@ -52,6 +51,12 @@ export function SidebarFavorites() {
       .filter((item): item is NonNullable<typeof item> => item !== undefined);
   }, [safeConfig, safeFavorites]);
 
+  // Filter favorite items based on search query
+  const filteredFavoriteItems = useMemo(() => {
+    if (!searchQuery.trim()) return favoriteItems;
+    return favoriteItems.filter((item) => matchesSearchQuery(item.name, searchQuery));
+  }, [favoriteItems, searchQuery]);
+
   // Check if path is active
   const isActive = useCallback((url: string) => {
     const fullPath = `/${tenantSlug}${url}`;
@@ -77,8 +82,8 @@ export function SidebarFavorites() {
     toggleFavorite(itemId);
   }, [toggleFavorite]);
 
-  // Early return if no favorites
-  if (favoriteItems.length === 0) {
+  // Early return if no favorites or no matches in search
+  if (filteredFavoriteItems.length === 0) {
     return null;
   }
 
