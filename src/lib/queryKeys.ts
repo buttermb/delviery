@@ -210,6 +210,7 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.runners.all, id] as const,
     deliveries: (runnerId: string) => 
       [...queryKeys.runners.detail(runnerId), 'deliveries'] as const,
+    available: () => [...queryKeys.runners.all, 'available'] as const,
   },
 
   // POS / Cash Register

@@ -713,3 +713,5 @@ export function TeamManagement() {
     </div>
   );
 }
+
+export default TeamManagement;

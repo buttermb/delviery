@@ -1236,3 +1236,4 @@ function MessageBubble({ message, formatTime }: MessageBubbleProps) {
 }
 
 export { AdminLiveChat };
+export default AdminLiveChat;
