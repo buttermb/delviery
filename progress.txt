@@ -7332,3 +7332,39 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+---
+
+## Agent 8 - Preserve Scroll Position (Saving scrollTop Before Navigation)
+
+### Task: Preserve scroll position saving scrollTop before navigation and restoring after
+
+**Problem:**
+The existing `useScrollRestoration` hook had a race condition where scroll position was saved **after** navigation started (in the `useEffect` triggered by pathname changes). By the time the effect ran, the scroll position might have already been modified.
+
+**Solution - Enhanced `useScrollRestoration` hook:**
+
+1. **Continuous scroll tracking** - Added module-level variables (`currentScrollTop`, `lastScrollUpdate`) that are updated on every scroll event (throttled to 100ms). This ensures we always have an accurate scroll position available before navigation.
+
+2. **Click event interception** - Added a capture-phase click event listener that detects internal link clicks and saves the scroll position **before** React Router processes the navigation.
+
+3. **Fallback save on pathname change** - Kept the original save-on-pathname-change logic as a fallback for programmatic navigation or cases the click handler might miss.
+
+4. **New `saveScrollPositionForPath` export** - Added a utility function that can be called before programmatic navigation (e.g., `navigate()`) to ensure scroll position is saved.
+
+5. **Deduplication tracking** - Added `lastSavedPathRef` to prevent saving the same path multiple times, avoiding unnecessary sessionStorage writes.
+
+### Key Improvements:
+- Scroll position captured BEFORE navigation starts (via click interception)
+- Throttled scroll tracking (100ms) balances accuracy with performance
+- Passive scroll listener for better scroll performance
+- Capture phase click handler ensures we run before React Router
+- New export for programmatic navigation support
+
+### Files Changed:
+- `src/hooks/useScrollRestoration.ts` - Enhanced hook with pre-navigation scroll capture
+- `src/hooks/index.ts` - Added `saveScrollPositionForPath` to exports
+
+### Verification:
+- TypeScript compilation: ✅ Passed
+- ESLint: ✅ Passed

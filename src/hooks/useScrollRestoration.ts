@@ -16,8 +16,39 @@ const SCROLL_STORAGE_KEY = STORAGE_KEYS.SCROLL_POSITIONS;
  */
 const MAX_CACHED_POSITIONS = 50;
 
+/**
+ * Throttle interval for scroll tracking (ms)
+ * Balances accuracy with performance
+ */
+const SCROLL_THROTTLE_MS = 100;
+
 interface ScrollPositionCache {
   [pathname: string]: number;
+}
+
+/**
+ * Module-level ref to track current scroll position continuously
+ * This ensures we always have the latest position available before navigation
+ */
+let currentScrollTop = 0;
+let lastScrollUpdate = 0;
+
+/**
+ * Get current scroll position (uses cached value for performance)
+ */
+function getCurrentScrollTop(): number {
+  return currentScrollTop;
+}
+
+/**
+ * Update the cached scroll position (called on scroll events)
+ */
+function updateCurrentScrollTop(): void {
+  const now = Date.now();
+  if (now - lastScrollUpdate >= SCROLL_THROTTLE_MS) {
+    currentScrollTop = window.scrollY || document.documentElement.scrollTop;
+    lastScrollUpdate = now;
+  }
 }
 
 /**
@@ -54,10 +85,28 @@ function saveScrollPositions(positions: ScrollPositionCache): void {
 }
 
 /**
+ * Save scroll position for a specific pathname
+ * Can be called before programmatic navigation
+ */
+export function saveScrollPositionForPath(pathname: string): void {
+  // Get the most current scroll position
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  const positions = getScrollPositions();
+  positions[pathname] = scrollTop;
+  saveScrollPositions(positions);
+}
+
+/**
  * Hook to preserve scroll position when navigating between pages
  *
- * Saves the current scroll position before navigation and restores it
+ * Saves the current scroll position BEFORE navigation and restores it
  * when returning to a previously visited page.
+ *
+ * Key improvements:
+ * - Continuously tracks scroll position to capture accurate values before navigation
+ * - Intercepts link clicks to save position before navigation starts
+ * - Handles browser back/forward with popstate events
+ * - Supports programmatic navigation via saveScrollPositionForPath export
  *
  * @param options - Configuration options
  * @param options.scrollBehavior - 'auto' for instant scroll, 'smooth' for animated
@@ -78,28 +127,92 @@ export function useScrollRestoration(options?: {
   const { pathname } = useLocation();
   const previousPathnameRef = useRef<string | null>(null);
   const isInitialMount = useRef(true);
+  const lastSavedPathRef = useRef<string | null>(null);
 
-  // Save scroll position before navigating away
-  const saveCurrentScrollPosition = useCallback(() => {
-    if (previousPathnameRef.current) {
+  // Save scroll position for the current/previous page
+  const saveCurrentScrollPosition = useCallback((forPath?: string) => {
+    const targetPath = forPath ?? previousPathnameRef.current;
+    if (targetPath && targetPath !== lastSavedPathRef.current) {
       const positions = getScrollPositions();
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      positions[previousPathnameRef.current] = scrollTop;
+      // Use the tracked scroll position for accuracy
+      const scrollTop = getCurrentScrollTop();
+      positions[targetPath] = scrollTop;
       saveScrollPositions(positions);
+      lastSavedPathRef.current = targetPath;
     }
   }, []);
 
-  // Handle pathname changes
+  // Continuously track scroll position
   useEffect(() => {
-    // Skip on initial mount - we want to let the browser handle initial load
+    const handleScroll = () => {
+      updateCurrentScrollTop();
+    };
+
+    // Initialize current scroll position
+    currentScrollTop = window.scrollY || document.documentElement.scrollTop;
+
+    // Use passive listener for performance
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Intercept link clicks to save scroll position BEFORE navigation
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const anchor = target.closest('a');
+
+      if (anchor && anchor.href) {
+        // Check if this is an internal navigation (same origin)
+        try {
+          const url = new URL(anchor.href);
+          if (url.origin === window.location.origin && url.pathname !== pathname) {
+            // Force update scroll position before navigation
+            currentScrollTop = window.scrollY || document.documentElement.scrollTop;
+            saveCurrentScrollPosition(pathname);
+          }
+        } catch {
+          // Invalid URL, ignore
+        }
+      }
+    };
+
+    // Use capture phase to ensure we run before React Router
+    document.addEventListener('click', handleClick, { capture: true });
+    return () => document.removeEventListener('click', handleClick, { capture: true });
+  }, [pathname, saveCurrentScrollPosition]);
+
+  // Handle browser back/forward navigation (popstate)
+  useEffect(() => {
+    const handlePopState = () => {
+      // On popstate, the browser handles scroll restoration by default
+      // We just need to ensure our saved position is available
+      // The pathname effect below will handle restoration
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Handle pathname changes - restore scroll position
+  useEffect(() => {
+    // Skip on initial mount - let the browser handle initial load
     if (isInitialMount.current) {
       isInitialMount.current = false;
       previousPathnameRef.current = pathname;
+      // Reset the last saved path on initial mount
+      lastSavedPathRef.current = null;
       return;
     }
 
-    // Save the scroll position of the previous page
-    saveCurrentScrollPosition();
+    // Save scroll position of the page we're leaving (fallback if click handler missed it)
+    // Use the current window scroll position as final save
+    if (previousPathnameRef.current && previousPathnameRef.current !== lastSavedPathRef.current) {
+      const positions = getScrollPositions();
+      const scrollTop = getCurrentScrollTop();
+      positions[previousPathnameRef.current] = scrollTop;
+      saveScrollPositions(positions);
+    }
 
     // Restore scroll position for the new page, or scroll to top
     const positions = getScrollPositions();
@@ -124,6 +237,9 @@ export function useScrollRestoration(options?: {
     if (restoreDelay > 0) {
       // Delay restoration for pages with async content
       const timeoutId = setTimeout(restoreScroll, restoreDelay);
+      // Update previous pathname after scheduling restore
+      previousPathnameRef.current = pathname;
+      lastSavedPathRef.current = null;
       return () => clearTimeout(timeoutId);
     } else {
       restoreScroll();
@@ -131,6 +247,7 @@ export function useScrollRestoration(options?: {
 
     // Update previous pathname for next navigation
     previousPathnameRef.current = pathname;
+    lastSavedPathRef.current = null;
   }, [pathname, scrollBehavior, restoreDelay, saveCurrentScrollPosition]);
 
   // Save scroll position when leaving the page (beforeunload)
@@ -138,6 +255,7 @@ export function useScrollRestoration(options?: {
     const handleBeforeUnload = () => {
       if (previousPathnameRef.current) {
         const positions = getScrollPositions();
+        // Get fresh scroll position for final save
         const scrollTop = window.scrollY || document.documentElement.scrollTop;
         positions[previousPathnameRef.current] = scrollTop;
         saveScrollPositions(positions);

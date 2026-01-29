@@ -34,6 +34,7 @@ export {
   useScrollRestoration,
   useSaveScrollPosition,
   clearScrollPositions,
+  saveScrollPositionForPath,
 } from './useScrollRestoration';
 
 
