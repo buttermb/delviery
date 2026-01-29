@@ -662,6 +662,13 @@ export const queryKeys = {
     byTenant: (tenantId: string) => [...queryKeys.storefrontSettings.all, 'tenant', tenantId] as const,
   },
 
+  // Storefront Marketing (banners, deals for shop-facing)
+  storefront: {
+    all: ['storefront-marketing'] as const,
+    banners: (storeId?: string) => [...queryKeys.storefront.all, 'banners', storeId] as const,
+    deals: (storeId?: string) => [...queryKeys.storefront.all, 'deals', storeId] as const,
+  },
+
   // Activity Feed
   activityFeed: {
     all: ['activity-feed'] as const,

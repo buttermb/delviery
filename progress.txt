@@ -7407,48 +7407,54 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 38 - Connect Fulfillment to Live Map with Active Delivery Markers
+## Agent 39 - Connect Marketing to Storefront
 
-### Task: Connect Fulfillment to Live Map showing active deliveries with markers
+### Task: Connect Marketing to Storefront displaying promotions and announcements
 
 **Completed:**
 
-1. **Enhanced LiveMap Component (`src/pages/admin/LiveMap.tsx`)**
-   - Added `ActiveDelivery` interface to track delivery information including:
-     - Order ID, courier ID, delivery address, status, total amount
-     - Destination coordinates (lat/lng)
-     - Assigned courier name and phone
-   
-   - Added new state variables:
-     - `activeDeliveries` - List of orders being delivered
-     - `showDeliveries` - Toggle for showing/hiding delivery markers
-     - `selectedDelivery` - Currently focused delivery
-     - `deliveryMarkers` ref - Map of delivery marker objects
+1. **Created storefront hooks for fetching marketing data:**
+   - `src/hooks/useBanners.ts` - Fetches active banners from `marketplace_banners` table for a store
+   - `src/hooks/useStorefrontDeals.ts` - Fetches active deals/promotions from `marketplace_deals` table, filters by current day and date range
 
-2. **Data Loading**
-   - Created `loadActiveDeliveries()` function that fetches orders with status: `out_for_delivery`, `in_transit`, `picked_up`
-   - Integrated with `loadCourierLocations()` to load both data sources
-   - Added real-time subscription to `orders` table for live updates
+2. **Added query keys for storefront marketing:**
+   - Updated `src/lib/queryKeys.ts` with new `storefront` section for banners and deals queries
 
-3. **Delivery Markers**
-   - Orange/red gradient markers for delivery destinations
-   - Markers show delivery address, status badge, order amount
-   - If assigned courier exists, shows courier name with call button
-   - Route lines (dashed orange) connecting courier location to delivery destination
+3. **Created storefront components for marketing display:**
+   - `src/components/shop/sections/PromotionsBannerSection.tsx` - Rotating banner carousel with auto-rotation, navigation arrows, and indicators
+   - `src/components/shop/sections/DealsHighlightSection.tsx` - Grid of deal cards showing active promotions with discount badges, dates, and descriptions
+   - `src/components/shop/sections/AnnouncementBar.tsx` - Thin top banner that cycles through promotions and deals announcements
 
-4. **UI Enhancements**
-   - Added "Active Deliveries" stat card in stats row (shows count)
-   - Added "Deliveries" toggle button in map controls
-   - Added "Active Deliveries" list in sidebar showing:
-     - Delivery address (truncated)
-     - Status badge and order amount
-     - Assigned courier name with phone link
-     - Click to focus on delivery location
-   - Updated "Center" button to include delivery locations in bounds
+4. **Integrated marketing into storefront pages:**
+   - Updated `src/pages/shop/StorefrontPage.tsx`:
+     - Added `AnnouncementBar` component at top of page
+     - Added `promotions_banner` and `deals_highlight` section types to SECTION_COMPONENTS map
+     - Added `DealsHighlightSection` to default layout
+   - Updated `src/components/shop/LuxuryNav.tsx`:
+     - Added "Deals" link to desktop navigation
+     - Added "Deals & Promos" link to mobile menu with animated indicator
+   - Updated `src/pages/shop/ShopLayout.tsx`:
+     - Added "Deals" link to desktop navigation
+     - Added "Deals & Promos" link to mobile menu
 
-5. **Statistics**
-   - Added `deliveriesInProgress` to stats object
-   - Grid now shows 5 stat cards: Total Couriers, Online, Delivering, Active Deliveries, Offline
+5. **Marketing features now available on storefront:**
+   - AnnouncementBar at top of homepage shows latest promotions/deals with auto-cycling
+   - DealsHighlightSection displays up to 3 active deals on homepage with "View All Deals" link
+   - PromotionsBannerSection available for custom layouts with rotating hero banners
+   - Deals page accessible via navigation for full promotions listing
 
-### Files Changed:
-- `src/pages/admin/LiveMap.tsx` - Major enhancements to show active deliveries with markers, sidebar list, and real-time updates
+### Files Created:
+- `src/hooks/useBanners.ts`
+- `src/hooks/useStorefrontDeals.ts`
+- `src/components/shop/sections/PromotionsBannerSection.tsx`
+- `src/components/shop/sections/DealsHighlightSection.tsx`
+- `src/components/shop/sections/AnnouncementBar.tsx`
+
+### Files Modified:
+- `src/lib/queryKeys.ts` - Added storefront marketing query keys
+- `src/pages/shop/StorefrontPage.tsx` - Integrated marketing sections
+- `src/components/shop/LuxuryNav.tsx` - Added Deals navigation links
+- `src/pages/shop/ShopLayout.tsx` - Added Deals navigation links
+
+### TypeScript Validation:
+- All new code passes TypeScript compilation (`npx tsc --noEmit`)
