@@ -228,24 +228,32 @@ export function TwoFactorVerification({ onVerified, onCancel }: TwoFactorVerific
                         type="submit"
                         className="w-full h-11"
                         disabled={loading || (isRecoveryMode ? !backupCode : verificationCode.length !== 6)}
+                        aria-busy={loading}
                     >
-                        {loading ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Verifying...
-                            </>
-                        ) : (
-                            isRecoveryMode ? "Verify Recovery Code" : "Verify & Continue"
-                        )}
+                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {loading
+                            ? 'Verifying...'
+                            : isRecoveryMode
+                                ? "Verify Recovery Code"
+                                : "Verify"}
                     </Button>
 
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-muted" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-background px-2 text-muted-foreground">or</span>
-                        </div>
+                    <div className="text-center">
+                        <Button
+                            type="button"
+                            variant="link"
+                            className="text-sm text-muted-foreground"
+                            disabled={loading}
+                            onClick={() => {
+                                setIsRecoveryMode(!isRecoveryMode);
+                                setVerificationCode("");
+                                setBackupCode("");
+                            }}
+                        >
+                            {isRecoveryMode
+                                ? "Use Authenticator App instead"
+                                : "Lost your device? Use a backup code"}
+                        </Button>
                     </div>
 
                     <Button

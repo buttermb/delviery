@@ -237,8 +237,8 @@ export function ForgotPasswordPage() {
             <Button
               variant="outline"
               className="w-full min-h-[44px]"
-              onClick={handleTryAgain}
-              disabled={rateLimited}
+              disabled={isRequestingReset || rateLimited}
+              aria-busy={isRequestingReset}
             >
               {rateLimited ? (
                 <>

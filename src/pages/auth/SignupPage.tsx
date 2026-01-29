@@ -616,6 +616,7 @@ export function SignupPage() {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
+                      aria-busy={isSubmitting}
                       className="flex-[2] h-11"
                     >
                       {isSubmitting ? (

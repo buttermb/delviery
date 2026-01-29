@@ -327,6 +327,7 @@ export function ResetPasswordPage() {
               type="submit"
               className="w-full"
               disabled={isConfirmingReset || !passwordsMatch || passwordStrength.score < 100}
+              aria-busy={isConfirmingReset}
             >
               {isConfirmingReset ? (
                 <>
