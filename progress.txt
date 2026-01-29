@@ -7407,59 +7407,55 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
----
+## Agent 30 - Connect Customers to CRM
 
-## Agent 29 - Connect Inventory to Stock Alerts
-
-### Task: Connect Inventory to Stock Alerts so low stock threshold triggers alert creation
+### Task: Connect Customers to CRM so customer updates sync to CRM timeline records
 
 **Completed:**
 
-1. **Created stock_alerts database table and trigger** (`supabase/migrations/20260128000001_stock_alerts_integration.sql`)
-   - Created `stock_alerts` table with tenant isolation (RLS enabled)
-   - Fields: id, tenant_id, product_id, product_name, current_quantity, threshold, severity, status
-   - Alert lifecycle: active → acknowledged → resolved
-   - Created `check_and_create_stock_alert()` trigger function that:
-     - Automatically creates alerts when product's `available_quantity` drops below `low_stock_alert` threshold
-     - Updates existing alerts when stock changes
-     - Auto-resolves alerts when stock goes back above threshold
-   - Created trigger on `products` table for INSERT/UPDATE of stock columns
-   - Created `acknowledge_stock_alert(UUID)` RPC for acknowledging alerts without resolving
-   - Created `get_active_stock_alerts(UUID)` RPC for fetching active alerts
-   - Initialized alerts for existing low-stock products
+1. **Database Migration** (`supabase/migrations/20260128000001_customer_crm_sync.sql`)
+   - Extended `crm_activity_log` table with `contact_id` column for customer references
+   - Added `metadata` JSONB column for storing rich activity context
+   - Created `crm_customer_links` table to link unified contacts to CRM clients
+   - Implemented `log_customer_crm_activity()` function to log customer activities to CRM timeline
+   - Created `sync_contact_update_to_crm()` trigger function for automatic sync on contact updates
+   - Added `link_customer_to_crm()` and `unlink_customer_from_crm()` functions
+   - Created `get_customer_crm_timeline()` function for fetching customer activities
+   - Added `contacts_with_crm_links` view for easy querying
+   - Full RLS policies for tenant isolation
 
-2. **Updated query keys** (`src/lib/queryKeys.ts`)
-   - Added `stockAlerts` query key factory with `all`, `lists`, `list`, `active`, and `detail` keys
+2. **TypeScript Types** (`src/types/crm.ts`)
+   - Added `CRMActivityType` union type with all supported activity types including:
+     - Original CRM activities (pre_order_created, invoice_created, etc.)
+     - Customer sync activities (customer_created, customer_updated, customer_linked, etc.)
+   - Extended `CRMActivityLog` interface with `contact_id` and `metadata` fields
+   - Added `CRMCustomerLink` interface for customer-CRM links
+   - Added `LinkCustomerToCRMInput` and `CustomerCRMTimelineEntry` types
 
-3. **Updated StockAlerts page** (`src/pages/admin/StockAlerts.tsx`)
-   - Now queries the `stock_alerts` table directly
-   - Added acknowledge button to acknowledge alerts
-   - Improved quick restock functionality
-   - Maintains fallback to products-based calculation for backwards compatibility
+3. **React Hook** (`src/hooks/crm/useSyncCustomerToCRM.ts`)
+   - `useContactCRMLinks()` - Fetch CRM links for a contact
+   - `useCRMClientContacts()` - Fetch contacts linked to a CRM client
+   - `useCustomerCRMTimeline()` - Fetch CRM activity timeline for a contact
+   - `useLinkCustomerToCRM()` - Link a customer to a CRM client
+   - `useUnlinkCustomerFromCRM()` - Unlink a customer from a CRM client
+   - `useToggleCRMSync()` - Enable/disable sync for a link
+   - `useLogCustomerCRMActivity()` - Manually log activities
+   - `useIsContactLinkedToCRM()` - Check if contact has CRM links
 
-4. **Updated useLowStockAlerts hook** (`src/hooks/useLowStockAlerts.ts`)
-   - Prioritizes `stock_alerts` table when available
-   - Falls back to products-based calculation if table doesn't exist
-   - Uses new query key from `queryKeys.stockAlerts`
+4. **Activity Timeline Component** (`src/components/crm/ActivityTimeline.tsx`)
+   - Added icons for customer sync activities (Users, RefreshCw, Link2, Unlink, Star, ShoppingCart)
+   - Added color coding for customer activities (emerald, sky, indigo, orange, amber, cyan)
+   - Added metadata changes display for customer_updated activities showing field changes
+   - Properly typed activities using CRMActivityLog interface
 
-5. **Updated tenant-admin StockAlertsPage** (`src/pages/tenant-admin/StockAlertsPage.tsx`)
-   - Same pattern: queries `stock_alerts` table first, falls back to products
-
-6. **Updated StockAlert type** (`src/types/admin.ts`)
-   - Added new fields: status, updated_at, acknowledged_by, acknowledged_at, resolved_at
-   - Made product_id and tenant_id required
-
-### How it works:
-- When a product's `available_quantity` or `stock_quantity` is updated below the `low_stock_alert` threshold, a database trigger automatically creates a stock alert record
-- Alerts are classified as 'critical' (<=0 or <=50% of threshold) or 'warning' (below threshold)
-- When stock is restocked above the threshold, the alert is automatically resolved
-- Users can acknowledge alerts to indicate they've seen them without resolving
-- The frontend queries the `stock_alerts` table for fast, accurate alert display
+### How It Works:
+1. When a contact is linked to a CRM client via `link_customer_to_crm()`, a link record is created
+2. Database trigger `sync_contact_update_to_crm()` automatically logs activities when linked contacts are updated
+3. Activities appear in the CRM client's timeline with proper icons, colors, and change details
+4. Frontend hooks allow fetching customer timeline, managing links, and manual activity logging
 
 ### Files Changed:
-- `supabase/migrations/20260128000001_stock_alerts_integration.sql` (new)
-- `src/lib/queryKeys.ts` (added stockAlerts keys)
-- `src/pages/admin/StockAlerts.tsx` (refactored to use stock_alerts table)
-- `src/hooks/useLowStockAlerts.ts` (refactored to use stock_alerts table)
-- `src/pages/tenant-admin/StockAlertsPage.tsx` (refactored to use stock_alerts table)
-- `src/types/admin.ts` (updated StockAlert interface)
+- `supabase/migrations/20260128000001_customer_crm_sync.sql` (new)
+- `src/types/crm.ts` (updated)
+- `src/hooks/crm/useSyncCustomerToCRM.ts` (new)
+- `src/components/crm/ActivityTimeline.tsx` (updated)
