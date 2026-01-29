@@ -301,6 +301,7 @@ export default function PasswordResetPage() {
                 required
                 disabled={loading}
                 minLength={8}
+                autoComplete="new-password"
                 className={theme.input}
               />
               <PasswordStrengthIndicator password={password} className="mt-2" />
@@ -318,30 +319,18 @@ export default function PasswordResetPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className={theme.text}>Confirm Password</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirm new password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                  minLength={8}
-                  className={`${theme.input} min-h-[44px] pr-10`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {confirmPassword && password !== confirmPassword && (
-                <p className="text-xs text-red-600" role="alert">Passwords do not match</p>
-              )}
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                disabled={loading}
+                minLength={8}
+                autoComplete="new-password"
+                className={theme.input}
+              />
             </div>
             <Button
               type="submit"

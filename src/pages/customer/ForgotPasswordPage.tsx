@@ -192,6 +192,7 @@ export default function CustomerForgotPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoFocus
+                autoComplete="email"
                 className="min-h-[44px]"
               />
             </div>

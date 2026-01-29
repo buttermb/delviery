@@ -7407,38 +7407,47 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
----
+## Agent 82 - Add Autocomplete Attributes to Auth Form Inputs
 
-## Agent 8 - Preserve Scroll Position (Saving scrollTop Before Navigation)
+### Task: Add autocomplete attributes (email and password) to all auth form inputs
 
-### Task: Preserve scroll position saving scrollTop before navigation and restoring after
+**Date:** 2026-01-28
 
-**Problem:**
-The existing `useScrollRestoration` hook had a race condition where scroll position was saved **after** navigation started (in the `useEffect` triggered by pathname changes). By the time the effect ran, the scroll position might have already been modified.
+**Completed:**
 
-**Solution - Enhanced `useScrollRestoration` hook:**
+Added autocomplete attributes to improve browser autofill support and password manager integration across all authentication forms:
 
-1. **Continuous scroll tracking** - Added module-level variables (`currentScrollTop`, `lastScrollUpdate`) that are updated on every scroll event (throttled to 100ms). This ensures we always have an accurate scroll position available before navigation.
+1. **src/pages/customer/ForgotPasswordPage.tsx**
+   - Added `autoComplete="email"` to email input
 
-2. **Click event interception** - Added a capture-phase click event listener that detects internal link clicks and saves the scroll position **before** React Router processes the navigation.
+2. **src/pages/customer/ResetPasswordPage.tsx**
+   - Added `autoComplete="email"` to email input
+   - Added `autoComplete="new-password"` to new password input
+   - Added `autoComplete="new-password"` to confirm password input
 
-3. **Fallback save on pathname change** - Kept the original save-on-pathname-change logic as a fallback for programmatic navigation or cases the click handler might miss.
+3. **src/pages/auth/PasswordResetPage.tsx**
+   - Added `autoComplete="new-password"` to password input
+   - Added `autoComplete="new-password"` to confirm password input
 
-4. **New `saveScrollPositionForPath` export** - Added a utility function that can be called before programmatic navigation (e.g., `navigate()`) to ensure scroll position is saved.
+4. **src/pages/saas/SignUpPage.tsx**
+   - Added `autoComplete="email"` to email input
+   - Added `autoComplete="new-password"` to password input
 
-5. **Deduplication tracking** - Added `lastSavedPathRef` to prevent saving the same path multiple times, avoiding unnecessary sessionStorage writes.
+5. **src/pages/community/AuthPage.tsx**
+   - Added `autoComplete="email"` to login email input
+   - Added `autoComplete="current-password"` to login password input
+   - Added `autoComplete="email"` to signup email input
+   - Added `autoComplete="new-password"` to signup password input
+   - Added `autoComplete="new-password"` to signup confirm password input
 
-### Key Improvements:
-- Scroll position captured BEFORE navigation starts (via click interception)
-- Throttled scroll tracking (100ms) balances accuracy with performance
-- Passive scroll listener for better scroll performance
-- Capture phase click handler ensures we run before React Router
-- New export for programmatic navigation support
+### Autocomplete Values Used:
+- `email` - For email address fields
+- `current-password` - For login password fields
+- `new-password` - For signup and reset password fields
 
 ### Files Changed:
-- `src/hooks/useScrollRestoration.ts` - Enhanced hook with pre-navigation scroll capture
-- `src/hooks/index.ts` - Added `saveScrollPositionForPath` to exports
-
-### Verification:
-- TypeScript compilation: ✅ Passed
-- ESLint: ✅ Passed
+- `src/pages/customer/ForgotPasswordPage.tsx`
+- `src/pages/customer/ResetPasswordPage.tsx`
+- `src/pages/auth/PasswordResetPage.tsx`
+- `src/pages/saas/SignUpPage.tsx`
+- `src/pages/community/AuthPage.tsx`

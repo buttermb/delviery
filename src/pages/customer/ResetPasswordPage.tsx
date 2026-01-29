@@ -197,6 +197,7 @@ export default function CustomerResetPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={!!emailFromUrl}
+                autoComplete="email"
                 className="min-h-[44px]"
               />
             </div>
@@ -212,6 +213,7 @@ export default function CustomerResetPasswordPage() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   minLength={8}
+                  autoComplete="new-password"
                   className="min-h-[44px] pr-10"
                 />
                 <button
@@ -248,6 +250,7 @@ export default function CustomerResetPasswordPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={8}
+                autoComplete="new-password"
                 className="min-h-[44px]"
               />
             </div>

@@ -204,6 +204,7 @@ export function AuthPage() {
                       onChange={(e) => setLoginEmail(e.target.value)}
                       required
                       disabled={isSubmitting}
+                      autoComplete="email"
                     />
                   </div>
 
@@ -216,6 +217,7 @@ export function AuthPage() {
                       onChange={(e) => setLoginPassword(e.target.value)}
                       required
                       disabled={isSubmitting}
+                      autoComplete="current-password"
                     />
                   </div>
 
@@ -254,6 +256,7 @@ export function AuthPage() {
                       onChange={(e) => setSignupEmail(e.target.value)}
                       required
                       disabled={isSubmitting}
+                      autoComplete="email"
                     />
                   </div>
 
@@ -267,6 +270,7 @@ export function AuthPage() {
                       onChange={(e) => setSignupPassword(e.target.value)}
                       required
                       disabled={isSubmitting}
+                      autoComplete="new-password"
                     />
                   </div>
 
@@ -280,6 +284,7 @@ export function AuthPage() {
                       onChange={(e) => setSignupPasswordConfirm(e.target.value)}
                       required
                       disabled={isSubmitting}
+                      autoComplete="new-password"
                     />
                   </div>
 
