@@ -73,6 +73,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [loading, setLoading] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [formsInitialized, setFormsInitialized] = useState(false);
 
   // --- General Form ---
   const generalForm = useForm<GeneralFormValues>({

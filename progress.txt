@@ -7332,3 +7332,102 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+---
+
+## Task: Connect Settings to All Features Applying Global Config Changes
+
+### What was done:
+
+1. **Created `useGlobalSettings` hook** (`src/hooks/useGlobalSettings.ts`)
+   - Centralized hook for accessing all global configuration settings
+   - Aggregates settings from multiple sources: account, security, notifications
+   - Provides mutations for updating general, security, and notification settings
+   - Derives settings from account metadata and account_settings table
+   - Exposes convenience hooks: `useNotificationEnabled`, `useSecuritySettings`, `useSessionTimeout`, `useTwoFactorEnabled`
+
+2. **Created `GlobalSettingsContext`** (`src/contexts/GlobalSettingsContext.tsx`)
+   - Context provider for centralized settings access throughout the application
+   - Aggregates settings from: account, sidebar preferences, payment settings, storefront settings
+   - Provides real-time updates when settings change
+   - Feature flags derived from settings (isTwoFactorEnabled, isEmailNotificationsEnabled, etc.)
+   - Exposes convenience hooks: `useGlobalSettingsContext`, `useFeatureEnabled`, `useNotificationSettings`, `useSecuritySettingsContext`, `useIsNotificationEnabled`
+
+3. **Updated `ThemeContext`** (`src/contexts/ThemeContext.tsx`)
+   - Added `setTheme` method for programmatic theme setting
+   - Exposed method for settings sync integration
+   - Maintains backward compatibility with existing `toggleTheme`
+
+4. **Created `useNotificationGate` hook** (`src/hooks/useNotificationGate.ts`)
+   - Gateway for features to check notification settings before sending notifications
+   - Respects user notification preferences from account settings
+   - Channel-aware notification sending (email, SMS, push, toast)
+   - Convenience methods: `notifyLowStock`, `notifyNewOrder`, `notifyOverduePayment`
+   - `useIsNotificationEnabled` hook for conditional UI rendering
+
+5. **Created `useSecuritySettings` hook** (`src/hooks/useSecuritySettings.ts`)
+   - Security settings enforcement throughout the application
+   - Session timeout monitoring with automatic logout
+   - Password validation based on global minimum length setting
+   - 2FA status checking
+   - Activity tracking for session management
+   - Convenience hooks: `useTwoFactorRequired`, `useSessionTimeout`, `usePasswordMinLength`, `usePasswordValidator`
+
+6. **Created `useSettingsSync` hook** (`src/hooks/useSettingsSync.ts`)
+   - Unified access to all settings across the application
+   - Cross-feature settings synchronization
+   - Combined loading state management
+   - Convenience hooks for specific feature settings:
+     - `useSidebarSettingsSync` - Sidebar preferences access
+     - `useThemeSettingsSync` - Theme settings with sync capabilities
+   - `refreshAll` method to invalidate all settings queries
+
+7. **Fixed `SettingsPage`** (`src/pages/admin/SettingsPage.tsx`)
+   - Added missing `formsInitialized` state declaration
+
+### Files Created:
+- `src/hooks/useGlobalSettings.ts`
+- `src/hooks/useNotificationGate.ts`
+- `src/hooks/useSecuritySettings.ts`
+- `src/hooks/useSettingsSync.ts`
+- `src/contexts/GlobalSettingsContext.tsx`
+
+### Files Modified:
+- `src/contexts/ThemeContext.tsx` - Added `setTheme` method
+- `src/pages/admin/SettingsPage.tsx` - Fixed missing state declaration
+
+### How to Use:
+
+**For notification gating:**
+```typescript
+import { useNotificationGate } from '@/hooks/useNotificationGate';
+
+const { canSendNotification, notifyLowStock } = useNotificationGate();
+
+if (canSendNotification('lowStockAlerts')) {
+  notifyLowStock('Product Name', 5);
+}
+```
+
+**For security settings:**
+```typescript
+import { useSecuritySettings } from '@/hooks/useSecuritySettings';
+
+const { validatePassword, is2FARequired } = useSecuritySettings();
+
+const { valid, errors } = validatePassword(password);
+if (is2FARequired()) {
+  // Show 2FA prompt
+}
+```
+
+**For unified settings access:**
+```typescript
+import { useSettingsSync } from '@/hooks/useSettingsSync';
+
+const { general, security, notifications, sidebar, refreshAll } = useSettingsSync();
+```
+
+### Build Status:
+- TypeScript compilation: ✅ No errors
+- ESLint: ✅ Only warnings (React fast refresh)
