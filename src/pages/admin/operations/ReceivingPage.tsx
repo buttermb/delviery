@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +16,8 @@ import {
   Plus,
   Truck,
   ClipboardList,
-  AlertTriangle
+  AlertTriangle,
+  MapPin
 } from 'lucide-react';
 import {
   Dialog,
@@ -36,15 +37,18 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
+import { useLocationOptions } from '@/hooks/useLocations';
 
 export default function ReceivingPage() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+  const { options: locationOptions } = useLocationOptions();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'received' | 'qc_passed' | 'qc_failed'>('all');
+  const [locationFilter, setLocationFilter] = useState<string>('all');
   const [receiveDialogOpen, setReceiveDialogOpen] = useState(false);
   const [qcDialogOpen, setQcDialogOpen] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
@@ -53,7 +57,8 @@ export default function ReceivingPage() {
     vendor: '',
     received_date: new Date().toISOString().split('T')[0],
     expected_items: '',
-    notes: ''
+    notes: '',
+    location_id: ''
   });
   const [qcData, setQcData] = useState({
     qc_status: 'passed',
@@ -64,16 +69,19 @@ export default function ReceivingPage() {
 
   const [tableMissing, setTableMissing] = useState(false);
 
-  // Fetch receiving records
+  // Fetch receiving records with location data
   const { data: receipts, isLoading } = useQuery({
-    queryKey: queryKeys.receiving.list(tenantId, filter),
+    queryKey: queryKeys.receiving.list(tenantId, `${filter}-${locationFilter}`),
     queryFn: async () => {
       if (!tenantId) return [];
 
       try {
         let query = supabase
           .from('receiving_records')
-          .select('*')
+          .select(`
+            *,
+            location:locations(id, name, city, state)
+          `)
           .eq('tenant_id', tenantId)
           .order('received_date', { ascending: false });
 
@@ -81,8 +89,12 @@ export default function ReceivingPage() {
           query = query.eq('status', filter);
         }
 
+        if (locationFilter !== 'all') {
+          query = query.eq('location_id', locationFilter);
+        }
+
         const { data, error } = await query;
-        
+
         // Gracefully handle missing table
         if (error && error.code === '42P01') {
           setTableMissing(true);
@@ -112,10 +124,14 @@ export default function ReceivingPage() {
       const { error } = await supabase
         .from('receiving_records')
         .insert([{
-          ...receipt,
+          shipment_number: receipt.shipment_number,
+          vendor: receipt.vendor,
+          received_date: receipt.received_date,
+          notes: receipt.notes,
           tenant_id: tenantId,
           status: 'pending',
-          expected_items: parseInt(receipt.expected_items) || 0
+          expected_items: parseInt(receipt.expected_items) || 0,
+          location_id: receipt.location_id || null
         }]);
 
       if (error) throw error;
@@ -124,19 +140,22 @@ export default function ReceivingPage() {
       toast({ title: 'Receiving record created successfully!' });
       queryClient.invalidateQueries({ queryKey: queryKeys.receiving.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.locations.all });
       setReceiveDialogOpen(false);
       setNewReceipt({
         shipment_number: '',
         vendor: '',
         received_date: new Date().toISOString().split('T')[0],
         expected_items: '',
-        notes: ''
+        notes: '',
+        location_id: ''
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       toast({
         title: 'Failed to create receiving record',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive'
       });
     }
@@ -248,8 +267,8 @@ export default function ReceivingPage() {
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+            <div className="relative flex-1 w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search shipments..."
@@ -258,7 +277,23 @@ export default function ReceivingPage() {
                 className="pl-10"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              {/* Location filter */}
+              <Select value={locationFilter} onValueChange={setLocationFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <MapPin className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="All Locations" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Locations</SelectItem>
+                  {locationOptions.map((loc) => (
+                    <SelectItem key={loc.value} value={loc.value}>
+                      {loc.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {/* Status filters */}
               <Button
                 variant={filter === 'all' ? 'default' : 'outline'}
                 size="sm"
@@ -333,9 +368,15 @@ export default function ReceivingPage() {
                           <p className="text-sm text-muted-foreground">{receipt.vendor}</p>
                         </div>
                         {getStatusBadge(receipt.status)}
+                        {receipt.location && (
+                          <Badge variant="outline" className="ml-2">
+                            <MapPin className="h-3 w-3 mr-1" />
+                            {receipt.location.name}
+                          </Badge>
+                        )}
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
                         <div>
                           <p className="text-muted-foreground">Received Date</p>
                           <p className="font-medium">
@@ -346,6 +387,16 @@ export default function ReceivingPage() {
                           <p className="text-muted-foreground">Expected Items</p>
                           <p className="font-medium">{receipt.expected_items || 'N/A'}</p>
                         </div>
+                        {receipt.location && (
+                          <div>
+                            <p className="text-muted-foreground">Location</p>
+                            <p className="font-medium">
+                              {receipt.location.city && receipt.location.state
+                                ? `${receipt.location.city}, ${receipt.location.state}`
+                                : receipt.location.name}
+                            </p>
+                          </div>
+                        )}
                         {receipt.qc_status && (
                           <>
                             <div>
@@ -430,6 +481,36 @@ export default function ReceivingPage() {
               />
             </div>
 
+            <div>
+              <Label htmlFor="location">Receiving Location</Label>
+              <Select
+                value={newReceipt.location_id}
+                onValueChange={(value) => setNewReceipt({ ...newReceipt, location_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a location (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {locationOptions.map((loc) => (
+                    <SelectItem key={loc.value} value={loc.value}>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        <span>{loc.label}</span>
+                        {loc.description && (
+                          <span className="text-muted-foreground text-xs">
+                            ({loc.description})
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                Select which location will receive this shipment for inventory tracking
+              </p>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="received-date">Received Date *</Label>
@@ -473,7 +554,7 @@ export default function ReceivingPage() {
               onClick={() => createReceipt.mutate(newReceipt)}
               disabled={!newReceipt.shipment_number || !newReceipt.vendor || createReceipt.isPending}
             >
-              Create Receipt
+              {createReceipt.isPending ? 'Creating...' : 'Create Receipt'}
             </Button>
           </DialogFooter>
         </DialogContent>
