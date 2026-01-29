@@ -7332,3 +7332,50 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+
+## Agent 66 - ForgotPasswordPage Implementation
+
+### Task: Build ForgotPasswordPage with email input rate limiting display and success message
+
+**Completed:**
+
+1. **Enhanced ForgotPasswordPage with comprehensive features:**
+   - Email input with client-side validation (required, max 255 chars, valid format)
+   - Client-side rate limiting (3 requests per minute, 30-second cooldown)
+   - Visual rate limit countdown using RateLimitWarning component
+   - Request count indicator showing remaining requests when approaching limit
+   - Success state with helpful instructions (expiry warning, spam folder tip)
+   - Dark mode support for success state icons
+   - Proper cleanup of interval timers on unmount
+
+2. **Integrated with AuthLayout for consistent styling:**
+   - Uses AuthLayout wrapper for brand consistency
+   - Includes FloraIQ logo and footer with Terms/Privacy/Support links
+   - Responsive design with proper spacing
+
+3. **Tenant-aware routing support:**
+   - Uses useParams to get tenantSlug from URL
+   - Back to login link dynamically routes to tenant-specific login page
+   - Passes tenantSlug and userType to password reset request
+
+4. **Accessibility improvements:**
+   - Proper ARIA attributes (aria-invalid, aria-describedby, aria-required, aria-busy)
+   - Role="alert" with aria-live for error messages
+   - Proper form labeling and hints
+   - Keyboard navigation support (enterKeyHint)
+
+5. **Added route in App.tsx:**
+   - Imported TenantAdminForgotPasswordPage
+   - Added route at /:tenantSlug/admin/forgot-password
+   - Wrapped with PublicOnlyRoute for proper auth flow
+
+### Files Changed:
+- `src/pages/auth/ForgotPasswordPage.tsx` - Enhanced with AuthLayout, rate limiting display, tenant-aware routing
+- `src/App.tsx` - Added lazy import and route for ForgotPasswordPage
+
+### Verification:
+- TypeScript compilation passes with no errors
+- ESLint passes with no warnings
+- Component properly integrates with existing auth infrastructure
+
