@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Send } from 'lucide-react';
+import { Send, Ticket, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,8 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { validateChatSession, validateChatMessage } from '@/utils/realtimeValidation';
-import { useDebounce } from '@/hooks/useDebounce';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { CreateTicketFromChatDialog } from '@/components/admin/support/CreateTicketFromChatDialog';
 
 interface ChatSession {
   id: string;
@@ -34,8 +34,12 @@ const AdminLiveChat = () => {
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [isTicketDialogOpen, setIsTicketDialogOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Get the currently selected session object
+  const currentSession = sessions.find(s => s.id === selectedSession) || null;
 
   // Debounced session loading to prevent rapid re-renders
   const debouncedLoadSessions = useCallback(async () => {
@@ -327,10 +331,30 @@ const AdminLiveChat = () => {
 
         {/* Chat Window */}
         <Card className="col-span-2">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle>
               {selectedSession ? 'Chat Messages' : 'Select a chat'}
             </CardTitle>
+            {selectedSession && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsTicketDialogOpen(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Ticket className="w-4 h-4" />
+                  Create Ticket
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedSession(null)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             {selectedSession ? (
@@ -387,6 +411,20 @@ const AdminLiveChat = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Create Ticket from Chat Dialog */}
+      <CreateTicketFromChatDialog
+        open={isTicketDialogOpen}
+        onOpenChange={setIsTicketDialogOpen}
+        session={currentSession}
+        messages={messages}
+        onSuccess={() => {
+          toast({
+            title: "Success",
+            description: "Support ticket created from chat session"
+          });
+        }}
+      />
     </div>
   );
 };

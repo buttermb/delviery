@@ -7409,78 +7409,44 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: Connect Notifications to Events Triggering Alerts for Orders & Stock Messages
+## Task: Connect Live Chat to Support - Create Tickets from Customer Conversations
 
 ### What was done:
 
-#### 1. Created `useEventNotifications` Hook (`src/hooks/useEventNotifications.ts`)
+1. **Created `CreateTicketFromChatDialog` component** (`src/components/admin/support/CreateTicketFromChatDialog.tsx`)
+   - Dialog modal for creating support tickets from active chat sessions
+   - Auto-generates ticket subject from first customer message
+   - Auto-generates description with conversation summary
+   - Chat preview showing first 5 messages with sender badges
+   - Option to include full chat transcript in ticket description
+   - Priority selection (low, medium, high, urgent)
+   - Category selection (general, technical, billing, feature, bug, account)
+   - Stores chat session linkage in ticket metadata:
+     - `source: 'live_chat'`
+     - `chat_session_id`: Links back to the original chat
+     - `chat_mode`: Whether AI or human assisted
+     - `customer_identifier`: User ID or guest ID
+     - `message_count`: Number of messages in conversation
+     - `created_from_chat_at`: Timestamp of ticket creation
+   - Graceful degradation if support_tickets table doesn't exist
 
-A comprehensive real-time event notification system that connects database events to user notifications.
-
-**Features:**
-- **Real-time Order Notifications**: Subscribes to INSERT events on multiple order tables:
-  - `orders` (standard orders)
-  - `menu_orders` (disposable menu orders)
-  - `storefront_orders` (online storefront orders)
-  - `wholesale_orders` (B2B wholesale orders)
-
-- **Stock Alert Notifications**: Subscribes to UPDATE events on `products` table:
-  - Tracks stock level changes in real-time
-  - Only alerts when stock drops below threshold (not when already below)
-  - Three alert levels: `out_of_stock`, `critical` (≤25% of threshold), `warning`
-
-- **User Preference Integration**: 
-  - Fetches notification preferences from `notification_preferences` table
-  - Respects push notification settings (`push_enabled`, `push_all_updates`)
-  - Fallback to enabled by default if no preferences set
-
-- **Multi-Channel Notifications**:
-  - Toast notifications via `useToast` hook
-  - Browser push notifications (with permission request)
-  - Sound alerts via `playNotificationSound`
-  - Haptic feedback via `navigator.vibrate`
-
-- **Smart Alerting**:
-  - Caches previous stock levels to detect threshold crossings
-  - Different urgency levels for different alert types
-  - Critical alerts (out of stock) have longer duration and destructive variant
-
-**Interface:**
-```typescript
-interface EventNotificationOptions {
-  enabled?: boolean;
-  playSound?: boolean;
-  showBrowserNotification?: boolean;
-  onNewOrder?: (order: OrderEventPayload) => void;
-  onStockAlert?: (product: StockAlertPayload) => void;
-}
-```
-
-#### 2. Integrated into AdminLayout (`src/pages/admin/AdminLayout.tsx`)
-
-- Added `useEventNotifications` hook import
-- Enabled real-time notifications for all admin users with:
-  - Sound enabled
-  - Browser notifications enabled
-  - Automatic subscription on mount
+2. **Updated `AdminLiveChat` page** (`src/pages/admin/AdminLiveChat.tsx`)
+   - Added "Create Ticket" button in chat window header when a session is selected
+   - Added close button (X) to deselect current chat session
+   - Integrated CreateTicketFromChatDialog component
+   - State management for ticket dialog visibility
+   - Success toast notification when ticket is created
 
 ### Files Changed:
-- `src/hooks/useEventNotifications.ts` (new - 400+ lines)
-- `src/pages/admin/AdminLayout.tsx` (modified - added hook integration)
+- `src/components/admin/support/CreateTicketFromChatDialog.tsx` (new)
+- `src/pages/admin/AdminLiveChat.tsx` (modified - added ticket creation functionality)
 
-### How It Works:
-
-1. When AdminLayout mounts, the hook subscribes to Supabase realtime channels
-2. For new orders: triggers immediate toast + browser notification + sound
-3. For stock changes: compares against cached values, triggers alert only when crossing threshold
-4. On unmount: cleans up all subscriptions and cache
-
-### Acceptance Criteria Met:
-- [x] New orders trigger real-time notifications
-- [x] Low stock alerts trigger when stock drops below threshold
-- [x] Respects user notification preferences
-- [x] Multi-channel support (toast, browser, sound)
-- [x] Clean subscription management (no memory leaks)
-- [x] TypeScript strict mode compliant
-- [x] ESLint clean
+### How it works:
+1. Admin selects an active chat session in Live Chat
+2. "Create Ticket" button appears in the chat window header
+3. Clicking opens dialog with pre-filled subject and description from chat
+4. Admin can adjust details, priority, and category
+5. Optionally include full chat transcript in ticket
+6. On submit, ticket is created with metadata linking to chat session
+7. Support Tickets page shows all tickets, including those from chat
 
