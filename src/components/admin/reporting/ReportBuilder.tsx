@@ -144,14 +144,15 @@ export function ReportBuilder({
             end_date: data.custom_end_date || null,
           },
           selected_fields: data.selected_fields,
-        } as Json,
+        } as unknown as Json,
+        report_type: 'custom',
         visualization_type: data.visualization_type,
         format: data.format,
         schedule: data.schedule || null,
         created_by: admin?.id || null,
       };
 
-      const { error } = await supabase.from("custom_reports").insert([reportData]);
+      const { error } = await (supabase as any).from("custom_reports").insert([reportData]);
 
       if (error && error.code !== "42P01") throw error;
     },

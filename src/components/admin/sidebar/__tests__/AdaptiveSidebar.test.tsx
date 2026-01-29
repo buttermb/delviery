@@ -110,6 +110,7 @@ describe('AdaptiveSidebar', () => {
         limits: { locations: 1, users: 1, products: 100, ordersPerMonth: 100 } 
       },
       isFeatureEnabledByTier: () => true,
+      isLoading: true,
     });
 
     render(<AdaptiveSidebar />, { wrapper: createWrapper() });

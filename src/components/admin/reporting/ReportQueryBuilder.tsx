@@ -257,8 +257,8 @@ export function ReportQueryBuilder(props: ReportQueryBuilderProps) {
         const source = allDataSources?.find((ds) => ds.name === sourceName);
         if (!source?.source_table) continue;
 
-        // Build query
-        let query = supabase
+        // Build query - use (supabase as any) to bypass deep type instantiation
+        let query = (supabase as any)
           .from(source.source_table)
           .select('*');
 
@@ -346,7 +346,7 @@ export function ReportQueryBuilder(props: ReportQueryBuilderProps) {
           }
 
           // Add source data to results
-          allResults.push(...sourceData);
+          allResults.push(...(sourceData as Record<string, unknown>[]));
         }
       }
 

@@ -200,7 +200,7 @@ export function useAdminSessions(): UseAdminSessionsReturn {
       if (!admin?.userId) return [];
 
       // Query user_sessions table for the current user
-      const { data, error: queryError } = await supabase
+      const { data, error: queryError } = await (supabase as any)
         .from('user_sessions')
         .select('*')
         .eq('user_id', admin.userId)
@@ -213,7 +213,7 @@ export function useAdminSessions(): UseAdminSessionsReturn {
         throw new Error(queryError.message || 'Failed to fetch sessions');
       }
 
-      const rawSessions: RawAdminSession[] = (data || []).map((session) => ({
+      const rawSessions: RawAdminSession[] = ((data || []) as any[]).map((session) => ({
         id: session.id,
         session_token: session.session_token,
         ip_address: session.ip_address,
@@ -235,7 +235,7 @@ export function useAdminSessions(): UseAdminSessionsReturn {
   const revokeSessionMutation = useMutation({
     mutationFn: async (sessionId: string) => {
       // Deactivate the session by setting is_active to false and expiring it
-      const { error: revokeError } = await supabase
+      const { error: revokeError } = await (supabase as any)
         .from('user_sessions')
         .update({
           is_active: false,
@@ -263,7 +263,7 @@ export function useAdminSessions(): UseAdminSessionsReturn {
       }
 
       // Deactivate all sessions except the current one
-      const { error: revokeError } = await supabase
+      const { error: revokeError } = await (supabase as any)
         .from('user_sessions')
         .update({
           is_active: false,
