@@ -1,15 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
-import { startOfDay, endOfDay, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { invalidateOnEvent } from "@/lib/invalidation";
+import { queryKeys } from "@/lib/queryKeys";
 
 export const useFinancialSnapshot = () => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ["financial-snapshot", tenant?.id],
+    queryKey: queryKeys.finance.snapshot(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
@@ -17,29 +17,61 @@ export const useFinancialSnapshot = () => {
       const startOfToday = startOfDay(today);
       const endOfToday = endOfDay(today);
 
-      // Today's orders - filtered by tenant_id
-      const { data: orders, error: ordersError } = await supabase
-        .from("wholesale_orders")
-        .select("total_amount, status")
-        .eq("tenant_id", tenant.id)
-        .gte("created_at", startOfToday.toISOString())
-        .lte("created_at", endOfToday.toISOString());
+      // Fetch from both orders tables to get comprehensive revenue data
+      const [ordersResult, wholesaleResult] = await Promise.all([
+        // Regular orders (retail, POS, etc.)
+        supabase
+          .from("orders")
+          .select("total_amount, status, payment_status")
+          .eq("tenant_id", tenant.id)
+          .gte("created_at", startOfToday.toISOString())
+          .lte("created_at", endOfToday.toISOString()),
+        // Wholesale orders (B2B)
+        supabase
+          .from("wholesale_orders")
+          .select("total_amount, status, payment_status")
+          .eq("tenant_id", tenant.id)
+          .gte("created_at", startOfToday.toISOString())
+          .lte("created_at", endOfToday.toISOString()),
+      ]);
 
-      if (ordersError) throw ordersError;
+      const orders = ordersResult.data || [];
+      const wholesaleOrders = wholesaleResult.data || [];
+      const allOrders = [...orders, ...wholesaleOrders];
 
-      const revenue = orders?.reduce((sum, o) => sum + Number(o.total_amount), 0) || 0;
-      const deals = orders?.length || 0;
+      // Calculate revenue from completed/delivered orders (real revenue)
+      const completedStatuses = ['completed', 'delivered'];
+      const completedOrders = allOrders.filter(o => completedStatuses.includes(o.status));
+      const pendingOrders = allOrders.filter(o => !completedStatuses.includes(o.status) && o.status !== 'cancelled' && o.status !== 'rejected');
+
+      // Real revenue from completed orders
+      const completedRevenue = completedOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+      // Pending revenue (not yet finalized)
+      const pendingRevenue = pendingOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+      // Total revenue includes completed orders
+      const revenue = completedRevenue;
+      const deals = allOrders.length;
+
+      // Calculate margin based on actual data if available, otherwise estimate
+      // For now, using estimated COGS but flagging for future product cost integration
+      const estimatedCOGSPercentage = 0.62;
+      const cost = revenue * estimatedCOGSPercentage;
+      const net_profit = revenue - cost;
+      const margin = revenue > 0 ? Math.round((net_profit / revenue) * 100) : 0;
 
       return {
         revenue,
         deals,
-        cost: revenue * 0.62, // Estimate 62% COGS
-        net_profit: revenue * 0.38, // Estimate 38% margin
-        margin: 38
+        cost,
+        net_profit,
+        margin,
+        pendingRevenue, // Additional data for UI
+        completedDeals: completedOrders.length,
+        pendingDeals: pendingOrders.length,
       };
     },
     enabled: !!tenant?.id,
-    staleTime: 60_000,
+    staleTime: 30_000, // Reduced for more real-time updates
     gcTime: 300_000,
   });
 };
@@ -48,7 +80,7 @@ export const useCashFlow = () => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ["cash-flow", tenant?.id],
+    queryKey: queryKeys.finance.cashFlow(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
@@ -103,7 +135,7 @@ export const useCreditOut = () => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ["credit-out", tenant?.id],
+    queryKey: queryKeys.finance.creditOut(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
@@ -226,27 +258,45 @@ export const useMonthlyPerformance = () => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ["monthly-performance", tenant?.id],
+    queryKey: queryKeys.finance.monthlyPerformance(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
       const monthStart = startOfMonth(new Date());
       const monthEnd = endOfMonth(new Date());
 
-      const { data: orders, error } = await supabase
-        .from("wholesale_orders")
-        .select("total_amount, status")
-        .eq("tenant_id", tenant.id)
-        .gte("created_at", monthStart.toISOString())
-        .lte("created_at", monthEnd.toISOString());
+      // Fetch from both orders tables for complete picture
+      const [ordersResult, wholesaleResult] = await Promise.all([
+        supabase
+          .from("orders")
+          .select("total_amount, status, payment_status")
+          .eq("tenant_id", tenant.id)
+          .gte("created_at", monthStart.toISOString())
+          .lte("created_at", monthEnd.toISOString()),
+        supabase
+          .from("wholesale_orders")
+          .select("total_amount, status, payment_status")
+          .eq("tenant_id", tenant.id)
+          .gte("created_at", monthStart.toISOString())
+          .lte("created_at", monthEnd.toISOString()),
+      ]);
 
-      if (error) throw error;
+      const orders = ordersResult.data || [];
+      const wholesaleOrders = wholesaleResult.data || [];
+      const allOrders = [...orders, ...wholesaleOrders];
 
-      const revenue = orders?.reduce((sum, o) => sum + Number(o.total_amount), 0) || 0;
-      const cost = revenue * 0.635; // Estimate
+      // Calculate revenue from completed orders only (real recognized revenue)
+      const completedStatuses = ['completed', 'delivered'];
+      const completedOrders = allOrders.filter(o => completedStatuses.includes(o.status));
+
+      const revenue = completedOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+      // Estimated COGS (can be enhanced with real product costs later)
+      const estimatedCOGSPercentage = 0.635;
+      const cost = revenue * estimatedCOGSPercentage;
       const gross_profit = revenue - cost;
       const margin = revenue > 0 ? (gross_profit / revenue) * 100 : 0;
-      const deals = orders?.length || 0;
+      const deals = allOrders.length;
+      const completedDeals = completedOrders.length;
 
       return {
         revenue,
@@ -254,11 +304,12 @@ export const useMonthlyPerformance = () => {
         gross_profit,
         margin: Math.round(margin * 10) / 10,
         deals,
-        avg_deal_size: deals > 0 ? Math.round(revenue / deals) : 0
+        completedDeals,
+        avg_deal_size: completedDeals > 0 ? Math.round(revenue / completedDeals) : 0
       };
     },
     enabled: !!tenant?.id,
-    staleTime: 120_000,
+    staleTime: 60_000, // Reduced for more real-time updates
     gcTime: 600_000,
   });
 };

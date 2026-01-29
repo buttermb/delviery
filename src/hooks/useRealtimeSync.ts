@@ -349,21 +349,97 @@ export function useRealtimeSync({
                   component: 'useRealtimeSync',
                 });
 
-                // Get the appropriate invalidation event
-                const invalidation = getInvalidationEvent(
-                  table,
-                  payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE',
-                  payload.old,
-                  payload.new
-                );
+                // Invalidate relevant query caches based on table
+                switch (table) {
+                  case 'wholesale_orders':
+                    queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['dashboard-orders'] });
+                    // Invalidate finance queries for real-time revenue updates
+                    queryClient.invalidateQueries({ queryKey: ['finance'] });
+                    queryClient.invalidateQueries({ queryKey: ['revenue-reports'] });
+                    // Also invalidate related queries
+                    if (payload.new && hasId(payload.new)) {
+                      queryClient.invalidateQueries({ queryKey: ['order', payload.new.id] });
+                    }
+                    break;
 
-                if (invalidation) {
-                  invalidateOnEvent(
-                    queryClient,
-                    invalidation.event,
-                    tenantId,
-                    invalidation.metadata
-                  );
+                  case 'products':
+                    queryClient.invalidateQueries({ queryKey: ['inventory'] });
+                    queryClient.invalidateQueries({ queryKey: ['products'] });
+                    queryClient.invalidateQueries({ queryKey: ['products-inventory'] });
+                    queryClient.invalidateQueries({ queryKey: ['products-for-wholesale'] });
+                    queryClient.invalidateQueries({ queryKey: ['inventory-alerts'] });
+                    queryClient.invalidateQueries({ queryKey: ['inventory-forecast'] });
+                    queryClient.invalidateQueries({ queryKey: ['low-stock'] });
+                    // Invalidate product-specific queries
+                    if (payload.new && hasId(payload.new)) {
+                      queryClient.invalidateQueries({ queryKey: ['product', payload.new.id] });
+                    }
+                    break;
+
+                  case 'deliveries':
+                    queryClient.invalidateQueries({ queryKey: ['deliveries'] });
+                    queryClient.invalidateQueries({ queryKey: ['active-deliveries'] });
+                    queryClient.invalidateQueries({ queryKey: ['delivery-map'] });
+                    queryClient.invalidateQueries({ queryKey: ['fleet-management'] });
+                    // Invalidate delivery-specific queries
+                    if (payload.new && hasId(payload.new)) {
+                      queryClient.invalidateQueries({ queryKey: ['delivery', payload.new.id] });
+                    }
+                    break;
+
+                  case 'courier_earnings':
+                    queryClient.invalidateQueries({ queryKey: ['courier-earnings'] });
+                    queryClient.invalidateQueries({ queryKey: ['courier-stats'] });
+                    queryClient.invalidateQueries({ queryKey: ['financial-center'] });
+                    queryClient.invalidateQueries({ queryKey: ['revenue-reports'] });
+                    // Invalidate courier-specific queries
+                    if (payload.new && hasCourierId(payload.new)) {
+                      queryClient.invalidateQueries({ queryKey: ['courier', payload.new.courier_id] });
+                    }
+                    break;
+
+                  case 'storefront_orders':
+                    queryClient.invalidateQueries({ queryKey: ['storefront-orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['realtime-sales'] });
+                    queryClient.invalidateQueries({ queryKey: ['multi-channel-orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['storefront-performance'] });
+                    queryClient.invalidateQueries({ queryKey: ['order-tracking'] });
+                    break;
+
+                  case 'marketplace_stores':
+                    queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
+                    queryClient.invalidateQueries({ queryKey: ['storefront-performance'] });
+                    break;
+
+                  case 'orders':
+                    queryClient.invalidateQueries({ queryKey: ['orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['live-orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['dashboard-orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['pending-orders'] });
+                    // Invalidate finance queries for real-time revenue updates
+                    queryClient.invalidateQueries({ queryKey: ['finance'] });
+                    queryClient.invalidateQueries({ queryKey: ['revenue-reports'] });
+                    if (payload.new && hasId(payload.new)) {
+                      queryClient.invalidateQueries({ queryKey: ['order', payload.new.id] });
+                    }
+                    break;
+
+                  case 'menu_orders':
+                    queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['live-orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['pending-orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['orders'] });
+                    if (payload.new && hasId(payload.new)) {
+                      queryClient.invalidateQueries({ queryKey: ['menu-order', payload.new.id] });
+                    }
+                    break;
+
+                  default:
+                    // Generic invalidation for unknown tables
+                    queryClient.invalidateQueries({ queryKey: [table] });
+                    queryClient.invalidateQueries({ queryKey: [table, tenantId] });
                 }
               } catch (error) {
                 logger.error(`Error processing realtime update for ${table}`, error, {

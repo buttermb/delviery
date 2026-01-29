@@ -218,6 +218,23 @@ export const queryKeys = {
       [...queryKeys.analytics.all, 'traffic-sources', filters] as const,
   },
 
+  // Finance
+  finance: {
+    all: ['finance'] as const,
+    snapshot: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'snapshot', tenantId] as const,
+    completedOrders: (tenantId: string, dateRange: string) =>
+      [...queryKeys.finance.all, 'completed-orders', tenantId, dateRange] as const,
+    revenueByPeriod: (tenantId: string, period: string) =>
+      [...queryKeys.finance.all, 'revenue', tenantId, period] as const,
+    monthlyPerformance: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'monthly-performance', tenantId] as const,
+    cashFlow: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'cash-flow', tenantId] as const,
+    creditOut: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'credit-out', tenantId] as const,
+  },
+
   // Super Admin
   superAdmin: {
     all: ['super-admin'] as const,
