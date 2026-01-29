@@ -303,6 +303,13 @@ export const queryKeys = {
       summary: (tenantId?: string) =>
         [...queryKeys.pos.shifts.all(), 'summary', tenantId] as const,
     },
+    cashDrawer: {
+      all: () => [...queryKeys.pos.all, 'cash-drawer'] as const,
+      events: (shiftId?: string) =>
+        [...queryKeys.pos.cashDrawer.all(), 'events', shiftId] as const,
+      balance: (shiftId?: string) =>
+        [...queryKeys.pos.cashDrawer.all(), 'balance', shiftId] as const,
+    },
   },
 
   // Batches

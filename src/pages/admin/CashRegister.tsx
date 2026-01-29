@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import {
   ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2,
-  User, Percent, Receipt, Printer, X, Keyboard, Tag
+  User, Percent, Receipt, Printer, X, Keyboard, Tag, Wallet
 } from 'lucide-react';
 import {
   Dialog,
@@ -42,6 +42,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { CashDrawerPanel } from '@/components/pos/CashDrawerPanel';
+import { useRealtimeShifts, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 
 interface Product {
   id: string;
@@ -104,13 +106,37 @@ interface POSTransactionResult {
 const DEFAULT_TAX_RATE = 0.0825; // 8.25%
 
 function CashRegisterContent() {
-  const { tenant, tenantSlug: authTenantSlug } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { triggerSuccess, triggerLight, triggerError } = useHapticFeedback();
   const { execute: executeCreditAction } = useCreditGatedAction();
   const { isOnline, pendingCount } = useOfflineQueue();
+
+  // Query active shift for cash drawer tracking
+  const { data: activeShift } = useQuery({
+    queryKey: queryKeys.pos.shifts.active(tenantId),
+    queryFn: async () => {
+      if (!tenantId) return null;
+      const { data, error } = await supabase
+        .from('pos_shifts')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .eq('status', 'open')
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return data;
+    },
+    enabled: !!tenantId,
+  });
+
+  // Enable realtime updates for shifts and cash drawer
+  useRealtimeShifts(tenantId);
+  useRealtimeCashDrawer(activeShift?.id);
 
   // Refs for keyboard shortcuts
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -773,6 +799,12 @@ function CashRegisterContent() {
           <p className="text-muted-foreground">Point of sale transaction management</p>
         </div>
         <div className="flex items-center gap-2">
+          {activeShift && (
+            <Badge variant="secondary" className="flex items-center gap-1.5 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              Shift: ${((activeShift.opening_cash || 0) + (activeShift.cash_sales || 0)).toFixed(2)}
+            </Badge>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -1071,6 +1103,28 @@ function CashRegisterContent() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Cash Drawer Panel - Full Width */}
+      {activeShift && (
+        <div className="mt-4">
+          <CashDrawerPanel
+            shiftId={activeShift.id}
+            openingCash={activeShift.opening_cash || 0}
+            expectedCash={(activeShift.opening_cash || 0) + (activeShift.cash_sales || 0)}
+          />
+        </div>
+      )}
+
+      {/* No Active Shift Alert */}
+      {!activeShift && (
+        <Alert className="mt-4">
+          <Wallet className="h-4 w-4" />
+          <AlertTitle>No Active Shift</AlertTitle>
+          <AlertDescription>
+            Start a shift from the POS page to track cash drawer activity and generate Z-reports.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Product Selection Dialog */}
       <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>

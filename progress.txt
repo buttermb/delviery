@@ -7407,37 +7407,77 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 53 - Connect POS to Customers
+## Agent 54 - Connect POS to Cash Register Tracking Drawer Open Close and Counts
 
-### Task: Connect POS to Customers enabling customer lookup and quick create
+### Task: Connect POS to Cash Register tracking drawer open/close and counts
 
 **Completed:**
 
-1. **Created POSCustomerSelector component** (`src/components/pos/POSCustomerSelector.tsx`)
-   - Searchable combobox for customer lookup in POS
-   - Search by name, phone, or email
-   - Walk-in customer option always available at top
-   - Shows customer details: name, type (Med badge), phone, email, loyalty points
-   - "Add New Customer" option when no results match
-   - Integrated with QuickCreateCustomerDialog for inline customer creation
+1. **Added cash drawer query keys to queryKeys.ts**
+   - Added `cashDrawer.all()`, `cashDrawer.events(shiftId)`, and `cashDrawer.balance(shiftId)` keys
 
-2. **Created QuickCreateCustomerDialog component** (`src/components/pos/QuickCreateCustomerDialog.tsx`)
-   - Simplified customer creation optimized for POS checkout flow
-   - Minimal required fields: first name, last name
-   - Optional: phone, email, customer type (recreational/medical)
-   - Pre-populates name from search query when creating
-   - Full encryption support using existing customerEncryption utilities
-   - HIPAA-compliant PHI logging for new customer creation
-   - Auto-selects newly created customer in POS
+2. **Created useCashDrawer hook (src/hooks/useCashDrawer.ts)**
+   - Manages cash drawer events (open, close, add, remove, payout, deposit)
+   - Queries cash drawer events for active shift
+   - Calculates current drawer balance from events
+   - Provides convenience methods: openDrawer, closeDrawer, addCash, removeCash, recordPayout, recordDeposit
+   - Includes CashCount interface and calculateCashCountTotal utility
 
-3. **Updated PointOfSale.tsx**
-   - Replaced basic Select dropdown with POSCustomerSelector
-   - Added customersLoading state for better UX
-   - Updated loadCustomers to fetch email/phone for search
-   - Filter to only show active customers
-   - Added handleCustomerCreated callback to update customer list after quick create
+3. **Created CashDrawerPanel component (src/components/pos/CashDrawerPanel.tsx)**
+   - Displays drawer status (open/closed badge)
+   - Shows opening cash, expected cash, and current drawer balance
+   - Shows variance if actual differs from expected
+   - Quick action buttons for Add Cash, Remove Cash, Payout
+   - Count Drawer button for detailed cash counting
+   - Recent activity feed with last 10 events
 
-### Files Changed:
-- `src/components/pos/POSCustomerSelector.tsx` (NEW)
-- `src/components/pos/QuickCreateCustomerDialog.tsx` (NEW)
-- `src/pages/admin/PointOfSale.tsx` (MODIFIED - integrated new customer selector)
+4. **Created CashCountDialog component (src/components/pos/CashCountDialog.tsx)**
+   - Full denomination counting (pennies through $100 bills)
+   - Real-time total calculation
+   - Variance display with over/short indicators
+   - Quick +/- buttons for each denomination
+   - Records variance as cash drawer event
+
+5. **Created CashDrawerEventDialog component (src/components/pos/CashDrawerEventDialog.tsx)**
+   - Reusable dialog for Add Cash, Remove Cash, and Payout actions
+   - Amount input with dollar formatting
+   - Optional reason field
+   - Configurable labels per event type
+
+6. **Integrated into PointOfSale.tsx**
+   - Added active shift query
+   - Added realtime subscriptions for shifts and cash drawer events
+   - Added "Shift & Drawer" tab with ShiftManager and CashDrawerPanel
+   - Added shift status badge in header (shows "Shift Active" when shift open)
+   - Added quick drawer balance button in header
+
+7. **Integrated into CashRegister.tsx**
+   - Added active shift query
+   - Added realtime subscriptions for shifts and cash drawer events
+   - Added CashDrawerPanel below transactions section
+   - Added shift balance badge in header
+   - Added "No Active Shift" alert when no shift is open
+   - Fixed duplicate tenantSlug variable declaration bug
+
+### Files Created:
+- `src/hooks/useCashDrawer.ts`
+- `src/components/pos/CashDrawerPanel.tsx`
+- `src/components/pos/CashCountDialog.tsx`
+- `src/components/pos/CashDrawerEventDialog.tsx`
+
+### Files Modified:
+- `src/lib/queryKeys.ts` - Added cashDrawer keys
+- `src/pages/admin/PointOfSale.tsx` - Integrated shift/drawer tracking
+- `src/pages/admin/CashRegister.tsx` - Integrated shift/drawer tracking
+
+### Database Tables Used:
+- `pos_shifts` - Shift management with opening/closing cash
+- `pos_cash_drawer_events` - Drawer activity log (open, close, add, remove, payout, deposit)
+
+### Features:
+- Real-time cash drawer tracking with Supabase subscriptions
+- Full denomination cash counting
+- Variance tracking (over/short)
+- Activity log of all drawer events
+- Integration with existing shift management
+- Visual shift status indicators in headers
