@@ -7409,59 +7409,78 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: Fix Mobile Drawer - Add Swipe-to-Close Gesture in AdaptiveSidebar.tsx
+## Task: Connect Notifications to Events Triggering Alerts for Orders & Stock Messages
 
-### Summary
+### What was done:
 
-The swipe-to-close gesture for the mobile drawer was already implemented in the base `src/components/ui/sidebar.tsx` component. The implementation includes:
+#### 1. Created `useEventNotifications` Hook (`src/hooks/useEventNotifications.ts`)
 
-1. **`useSwipeToClose` hook** (lines 29-99) - A complete swipe gesture handler that:
-   - Tracks touch start position, direction, and velocity
-   - Determines horizontal vs vertical swipes (to not interfere with scrolling)
-   - Triggers close when swipe distance > 50px or velocity > 0.3
-   - Handles both left and right sidebars based on `side` prop
+A comprehensive real-time event notification system that connects database events to user notifications.
 
-2. **Integration in the `Sidebar` component** (lines 220-257):
-   - Creates a callback to close the mobile drawer via `setOpenMobile(false)`
-   - Uses the hook with proper configuration for mobile-only activation
-   - Attaches swipe handlers to the mobile drawer content div with `touch-pan-y` class
+**Features:**
+- **Real-time Order Notifications**: Subscribes to INSERT events on multiple order tables:
+  - `orders` (standard orders)
+  - `menu_orders` (disposable menu orders)
+  - `storefront_orders` (online storefront orders)
+  - `wholesale_orders` (B2B wholesale orders)
 
-### Additional Fixes Made
+- **Stock Alert Notifications**: Subscribes to UPDATE events on `products` table:
+  - Tracks stock level changes in real-time
+  - Only alerts when stock drops below threshold (not when already below)
+  - Three alert levels: `out_of_stock`, `critical` (≤25% of threshold), `warning`
 
-During build verification, several pre-existing issues were discovered and fixed:
+- **User Preference Integration**: 
+  - Fetches notification preferences from `notification_preferences` table
+  - Respects push notification settings (`push_enabled`, `push_all_updates`)
+  - Fallback to enabled by default if no preferences set
 
-1. **Fixed StorefrontBuilder.tsx** - Removed orphaned JSX code (lines 886-1019) that was left behind after a refactor to use BuilderLeftPanel component
+- **Multi-Channel Notifications**:
+  - Toast notifications via `useToast` hook
+  - Browser push notifications (with permission request)
+  - Sound alerts via `playNotificationSound`
+  - Haptic feedback via `navigator.vibrate`
 
-2. **Fixed CashRegister.tsx** - Removed duplicate `tenantSlug` declaration (already extracted from `useTenantAdminAuth()`)
+- **Smart Alerting**:
+  - Caches previous stock levels to detect threshold crossings
+  - Different urgency levels for different alert types
+  - Critical alerts (out of stock) have longer duration and destructive variant
 
-3. **Fixed Orders.tsx** - Removed duplicate function declarations:
-   - `handlePrintOrder`
-   - `handleGenerateInvoice`
-   - `handleCancelOrder`
+**Interface:**
+```typescript
+interface EventNotificationOptions {
+  enabled?: boolean;
+  playSound?: boolean;
+  showBrowserNotification?: boolean;
+  onNewOrder?: (order: OrderEventPayload) => void;
+  onStockAlert?: (product: StockAlertPayload) => void;
+}
+```
 
-4. **Fixed ProductManagement.tsx** - Removed old `loadProducts` function that was replaced by TanStack Query refetch
+#### 2. Integrated into AdminLayout (`src/pages/admin/AdminLayout.tsx`)
 
-5. **Added missing sanitize utilities in `src/lib/utils/sanitize.ts`**:
-   - `sanitizeFormInput` (with optional maxLength)
-   - `sanitizeEmail`
-   - `sanitizePhoneInput`
-   - `sanitizeTextareaInput` (with optional maxLength)
-   - `sanitizeCouponCode`
-   - `sanitizeSkuInput`
-   - `sanitizeSlugInput`
-   - `sanitizeColor`
-   - `sanitizeWithLineBreaks`
-   - `sanitizeUrlInput`
-
-6. **Installed missing dependency**: `papaparse` and `@types/papaparse`
+- Added `useEventNotifications` hook import
+- Enabled real-time notifications for all admin users with:
+  - Sound enabled
+  - Browser notifications enabled
+  - Automatic subscription on mount
 
 ### Files Changed:
-- `src/components/ui/sidebar.tsx` - Already contains swipe-to-close implementation (no changes needed)
-- `src/pages/admin/storefront/StorefrontBuilder.tsx` - Removed orphaned JSX code
-- `src/pages/admin/CashRegister.tsx` - Removed duplicate variable declaration
-- `src/pages/admin/Orders.tsx` - Removed duplicate function declarations
-- `src/pages/admin/ProductManagement.tsx` - Removed old loadProducts function
-- `src/lib/utils/sanitize.ts` - Added missing sanitization functions
+- `src/hooks/useEventNotifications.ts` (new - 400+ lines)
+- `src/pages/admin/AdminLayout.tsx` (modified - added hook integration)
 
-### Build Status:
-- `npm run build` passes with no errors
+### How It Works:
+
+1. When AdminLayout mounts, the hook subscribes to Supabase realtime channels
+2. For new orders: triggers immediate toast + browser notification + sound
+3. For stock changes: compares against cached values, triggers alert only when crossing threshold
+4. On unmount: cleans up all subscriptions and cache
+
+### Acceptance Criteria Met:
+- [x] New orders trigger real-time notifications
+- [x] Low stock alerts trigger when stock drops below threshold
+- [x] Respects user notification preferences
+- [x] Multi-channel support (toast, browser, sound)
+- [x] Clean subscription management (no memory leaks)
+- [x] TypeScript strict mode compliant
+- [x] ESLint clean
+
