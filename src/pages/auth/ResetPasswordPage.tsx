@@ -9,6 +9,7 @@ import { Loader2, CheckCircle2, XCircle, Key, Eye, EyeOff, Check, X } from "luci
 import { toast } from "@/hooks/use-toast";
 import { usePasswordReset } from "@/hooks/usePasswordReset";
 import { logger } from "@/lib/logger";
+import { AuthErrorAlert, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
 
 const TOKEN_PATTERN = /^[a-zA-Z0-9_-]{20,}$/;
 
@@ -49,6 +50,7 @@ export function ResetPasswordPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [success, setSuccess] = useState(false);
   const [tokenError, setTokenError] = useState<string | null>(null);
+  const [resetError, setResetError] = useState<string | null>(null);
 
   const {
     confirmReset,
@@ -82,25 +84,18 @@ export function ResetPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setResetError(null);
 
     if (!token) return;
 
     if (password !== confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Password Mismatch",
-        description: "Passwords do not match. Please try again.",
-      });
+      setResetError("Passwords do not match. Please try again.");
       return;
     }
 
     const allMet = PASSWORD_REQUIREMENTS.every((req) => req.test(password));
     if (!allMet) {
-      toast({
-        variant: "destructive",
-        title: "Weak Password",
-        description: "Please meet all password requirements.",
-      });
+      setResetError("Please meet all password requirements before continuing.");
       return;
     }
 
@@ -114,15 +109,11 @@ export function ResetPasswordPage() {
         });
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to reset password";
+      const message = getAuthErrorMessage(error, "Failed to reset password");
       if (message.toLowerCase().includes("expired")) {
         setTokenError(message);
       } else {
-        toast({
-          variant: "destructive",
-          title: "Reset Failed",
-          description: message,
-        });
+        setResetError(message);
       }
     }
   };
@@ -218,6 +209,14 @@ export function ResetPasswordPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Error Alert */}
+            <AuthErrorAlert
+              message={resetError || ''}
+              type="error"
+              variant="light"
+              className="mb-2"
+            />
+
             {/* New Password */}
             <div className="space-y-2">
               <Label htmlFor="password">New Password</Label>

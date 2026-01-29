@@ -18,6 +18,7 @@ import { RateLimitWarning } from "@/components/auth/RateLimitWarning";
 import { useAuthRateLimit } from "@/hooks/useAuthRateLimit";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
 
 
 export default function CustomerLoginPage() {
@@ -95,19 +96,17 @@ export default function CustomerLoginPage() {
   }, [tenantSlug]);
 
   const [isMagicLinkMode, setIsMagicLinkMode] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const { isLocked, remainingSeconds, recordAttempt, resetOnSuccess } = useAuthRateLimit({
     storageKey: 'floraiq_customer_login_rate_limit',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError(null);
 
     if (!validateToken()) {
-      toast({
-        variant: "destructive",
-        title: "Security Error",
-        description: "Invalid security token. Please refresh the page and try again.",
-      });
+      setLoginError("Invalid security token. Please refresh the page and try again.");
       return;
     }
 
@@ -116,11 +115,7 @@ export default function CustomerLoginPage() {
     }
 
     if (!tenantSlug) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Tenant slug is required",
-      });
+      setLoginError("Store information is missing. Please check the URL and try again.");
       return;
     }
 
@@ -177,24 +172,16 @@ export default function CustomerLoginPage() {
       logger.error("Customer login error", error);
 
       // Handle email verification error
-      if (error instanceof Error && (error as any).requires_verification) {
-        toast({
-          variant: "destructive",
-          title: "Email Not Verified",
-          description: error.message || "Please verify your email address before logging in.",
-        });
+      if (error instanceof Error && (error as { requires_verification?: boolean }).requires_verification) {
+        setLoginError("Please verify your email address before logging in.");
         navigate(`/${tenantSlug}/customer/verify-email?email=${encodeURIComponent(email)}`);
         setLoading(false);
         return;
       }
 
       recordAttempt();
-
-      toast({
-        variant: "destructive",
-        title: "Login failed",
-        description: error instanceof Error ? error.message : "Invalid credentials",
-      });
+      const errorMessage = getAuthErrorMessage(error, "Invalid email or password. Please try again.");
+      setLoginError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -255,6 +242,12 @@ export default function CustomerLoginPage() {
           <AuthOfflineIndicator isOnline={isOnline} hasQueuedAttempt={hasQueuedAttempt} className="mb-4" />
           <form onSubmit={handleSubmit} className="space-y-5">
             <RateLimitWarning remainingSeconds={remainingSeconds} variant="dark" />
+            <AuthErrorAlert
+              message={loginError || ''}
+              type={loginError ? getAuthErrorType(loginError) : 'error'}
+              variant="dark"
+              className="mb-2"
+            />
 
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium text-slate-200">

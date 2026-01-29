@@ -32,6 +32,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowRight, CheckCircle2, Lock, Mail, WifiOff, AlertCircle, Eye, EyeOff, ArrowLeft, Wand2, Flower2, Leaf, Star, ShieldCheck } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RateLimitWarning } from '@/components/auth/RateLimitWarning';
+import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from '@/components/auth/AuthErrorAlert';
 import { useAuthRateLimit } from '@/hooks/useAuthRateLimit';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
@@ -75,6 +76,7 @@ export default function LoginPage() {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [isSendingReset, setIsSendingReset] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   // Monitor connection status
   useEffect(() => {
@@ -145,8 +147,10 @@ export default function LoginPage() {
   };
 
   const onSubmit = async (data: LoginFormData) => {
+    setLoginError(null);
+
     if (!validateToken()) {
-      toast({ title: 'Security Error', description: 'Invalid security token. Please refresh the page and try again.', variant: 'destructive' });
+      setLoginError('Invalid security token. Please refresh the page and try again.');
       return;
     }
 
@@ -155,7 +159,7 @@ export default function LoginPage() {
     }
 
     if (isOffline()) {
-      toast({ title: 'No Internet Connection', description: 'Please check your connection.', variant: 'destructive' });
+      setLoginError('No internet connection. Please check your connection and try again.');
       return;
     }
 
@@ -274,15 +278,12 @@ export default function LoginPage() {
         navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
       }, 500);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       recordAttempt();
       logger.error('Login error', error);
       authFlowLogger.failFlow(flowId, error, ErrorCategory.AUTH);
-      toast({
-        title: 'Login Failed',
-        description: error.message || 'Invalid email or password',
-        variant: 'destructive',
-      });
+      const errorMessage = getAuthErrorMessage(error, 'Invalid email or password. Please try again.');
+      setLoginError(errorMessage);
       form.setValue('password', '');
     } finally {
       setIsSubmitting(false);
@@ -338,6 +339,14 @@ export default function LoginPage() {
               </AnimatePresence>
 
               <RateLimitWarning remainingSeconds={remainingSeconds} variant="light" className="mb-4" />
+
+              {/* Login Error Alert */}
+              <AuthErrorAlert
+                message={loginError || ''}
+                type={loginError ? getAuthErrorType(loginError) : 'error'}
+                variant="light"
+                className="mb-4"
+              />
 
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">

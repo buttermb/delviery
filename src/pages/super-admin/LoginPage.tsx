@@ -14,6 +14,7 @@ import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { AuthOfflineIndicator } from "@/components/auth/AuthOfflineIndicator";
 import { useAuthOffline } from "@/hooks/useAuthOffline";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
 
 
 export default function SuperAdminLoginPage() {
@@ -23,6 +24,7 @@ export default function SuperAdminLoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const { validateToken } = useCsrfToken();
 
   const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline(
@@ -38,13 +40,10 @@ export default function SuperAdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError(null);
 
     if (!validateToken()) {
-      toast({
-        variant: "destructive",
-        title: "Security Error",
-        description: "Invalid security token. Please refresh the page and try again.",
-      });
+      setLoginError("Invalid security token. Please refresh the page and try again.");
       return;
     }
 
@@ -66,11 +65,8 @@ export default function SuperAdminLoginPage() {
       navigate("/super-admin/dashboard", { replace: true });
     } catch (error: unknown) {
       logger.error("Super admin login error", error, { component: 'SuperAdminLoginPage' });
-      toast({
-        variant: "destructive",
-        title: "Login failed",
-        description: error instanceof Error ? error.message : "Invalid credentials",
-      });
+      const errorMessage = getAuthErrorMessage(error, "Invalid email or password. Please try again.");
+      setLoginError(errorMessage);
       setLoading(false);
     }
   };
@@ -139,6 +135,14 @@ export default function SuperAdminLoginPage() {
 
           {/* Offline Indicator */}
           <AuthOfflineIndicator isOnline={isOnline} hasQueuedAttempt={hasQueuedAttempt} className="mb-6" />
+
+          {/* Error Alert */}
+          <AuthErrorAlert
+            message={loginError || ''}
+            type={loginError ? getAuthErrorType(loginError) : 'error'}
+            variant="light"
+            className="mb-4"
+          />
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
