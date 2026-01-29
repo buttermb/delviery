@@ -143,6 +143,43 @@ export function useAdminOrdersRealtime({
 
       channelsRef.current.push(ordersChannel);
 
+      // 2. Subscribe to unified_orders for POS transactions
+      const unifiedOrdersChannel = supabase
+        .channel(`admin-unified-orders-realtime-${tenant.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'unified_orders',
+            filter: `tenant_id=eq.${tenant.id}`,
+          },
+          (payload) => {
+            const newOrder = payload.new as Record<string, unknown>;
+            // Only handle POS orders - other order types are handled by their respective channels
+            if (newOrder.order_type !== 'pos') return;
+
+            handleNewOrder({
+              id: newOrder.id as string,
+              orderNumber: (newOrder.order_number as string) || (newOrder.id as string).slice(0, 8),
+              source: 'pos',
+              customerName: 'POS Sale',
+              totalAmount: (newOrder.total_amount as number) || 0,
+              timestamp: (newOrder.created_at as string) || new Date().toISOString(),
+            });
+
+            // Also invalidate unified orders queries
+            queryClient.invalidateQueries({ queryKey: ['unified-orders'] });
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            logger.debug('Unified orders realtime subscription active (POS)', { component: 'useAdminOrdersRealtime' });
+          }
+        });
+
+      channelsRef.current.push(unifiedOrdersChannel);
+
       // 2. Fetch stores for this tenant and subscribe to marketplace_orders
       const { data: stores } = await supabase
         .from('marketplace_stores')

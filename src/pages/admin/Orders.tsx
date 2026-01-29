@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, WifiOff, CheckCircle, Truck } from 'lucide-react';
+import { useAdminOrdersRealtime } from '@/hooks/useAdminOrdersRealtime';
 import { SEOHead } from '@/components/SEOHead';
 import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -130,7 +131,7 @@ export default function Orders() {
     savePreferences({ customFilters: { status: statusFilter } });
   }, [statusFilter, savePreferences]);
 
-  // Data Fetching
+  // Data Fetching - includes both regular orders and POS orders from unified_orders
   const { data: orders = [], isLoading, refetch } = useQuery({
     queryKey: ['orders', tenant?.id, statusFilter],
     queryFn: async () => {
@@ -142,7 +143,8 @@ export default function Orders() {
         source: 'Orders'
       });
 
-      let query = supabase
+      // Fetch regular orders
+      let regularQuery = supabase
         .from('orders')
         .select('id, order_number, created_at, status, total_amount, delivery_method, user_id, courier_id, tenant_id, order_items(id, product_id, quantity, price)')
         .eq('tenant_id', tenant.id)
@@ -150,10 +152,10 @@ export default function Orders() {
         .limit(100);
 
       if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
+        regularQuery = regularQuery.eq('status', statusFilter);
       }
 
-      const { data: ordersData, error: ordersError } = await query;
+      const { data: ordersData, error: ordersError } = await regularQuery;
 
       if (ordersError) {
         logRLSFailure('Orders query failed', {
@@ -166,7 +168,46 @@ export default function Orders() {
 
       logSelectQuery('orders', { tenant_id: tenant.id, status: statusFilter }, ordersData, 'Orders');
 
-      // Fetch profiles
+      // Fetch POS orders from unified_orders
+      let posQuery = supabase
+        .from('unified_orders')
+        .select('id, order_number, created_at, status, total_amount, payment_method, customer_id, shift_id, metadata')
+        .eq('tenant_id', tenant.id)
+        .eq('order_type', 'pos')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (statusFilter !== 'all') {
+        posQuery = posQuery.eq('status', statusFilter);
+      }
+
+      const { data: posOrdersData, error: posError } = await posQuery;
+
+      if (posError) {
+        // Non-fatal - just log and continue with regular orders
+        logger.warn('Failed to fetch POS orders from unified_orders', { error: posError.message });
+      }
+
+      // Transform POS orders to match Order interface
+      const transformedPosOrders: Order[] = (posOrdersData || []).map(posOrder => ({
+        id: posOrder.id,
+        order_number: posOrder.order_number,
+        created_at: posOrder.created_at,
+        status: posOrder.status,
+        total_amount: posOrder.total_amount || 0,
+        delivery_method: 'pickup', // POS orders are typically pickup/in-store
+        user_id: posOrder.customer_id || '',
+        courier_id: undefined,
+        order_source: 'pos',
+        order_items: [], // Items stored in metadata for POS orders
+        user: {
+          full_name: 'POS Sale',
+          email: null,
+          phone: null,
+        }
+      }));
+
+      // Fetch profiles for regular orders
       const userIds = [...new Set(ordersData?.map(o => o.user_id).filter(Boolean))];
       let profilesMap: Record<string, { user_id: string; full_name: string | null; email: string | null; phone: string | null }> = {};
 
@@ -191,10 +232,18 @@ export default function Orders() {
         }, {} as Record<string, { user_id: string; full_name: string | null; email: string | null; phone: string | null }>);
       }
 
-      return (ordersData || []).map(order => ({
+      // Merge regular orders with user info
+      const regularOrdersWithUsers = (ordersData || []).map(order => ({
         ...order,
         user: profilesMap[order.user_id]
       })) as Order[];
+
+      // Combine and sort by date (most recent first)
+      const allOrders = [...regularOrdersWithUsers, ...transformedPosOrders]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 100); // Limit total results
+
+      return allOrders;
     },
     enabled: !!tenant?.id,
     staleTime: 15_000,
@@ -347,6 +396,15 @@ export default function Orders() {
       toast.error("Failed to update orders");
     }
     setBulkStatusConfirm({ open: true, targetStatus: status });
+  };
+
+  const handleConfirmBulkStatusUpdate = async () => {
+    if (!tenant?.id) return;
+
+    setBulkStatusConfirm({ open: false, targetStatus: '' });
+
+    // Execute the bulk status update
+    await bulkStatusUpdate.execute(selectedOrders, bulkStatusConfirm.targetStatus);
   };
 
   const handleClearFilters = () => {

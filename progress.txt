@@ -7332,3 +7332,46 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 51 - Connect POS to Orders
+
+### Task: Connect POS to Orders so checkout immediately creates order record
+
+**Problem:**
+The Point of Sale (POS) system was creating transactions in `pos_transactions` table but these were not appearing in the Orders dashboard. The `create_pos_transaction_atomic` function had a conditional block to insert into `unified_orders`, but it was not creating individual `unified_order_items` records.
+
+**Solution:**
+1. **Enhanced the atomic POS transaction function** to create proper order records:
+   - Modified `create_pos_transaction_atomic` RPC to insert into `unified_orders` table with `order_type = 'pos'` and `source = 'pos_terminal'`
+   - Added insertion of `unified_order_items` for each cart item, enabling proper order line item tracking
+   - Returns `unified_order_id` in the response for integration purposes
+
+2. **Updated real-time subscriptions** in `useAdminOrdersRealtime.ts`:
+   - Added subscription to `unified_orders` table INSERT events
+   - Filters for `order_type = 'pos'` to only handle POS orders (other order types handled by their respective channels)
+   - Triggers toast notifications with POS branding when new POS orders arrive
+   - Invalidates `unified-orders` query cache to refresh UI
+
+3. **Enhanced Orders page query** in `Orders.tsx`:
+   - Added parallel fetch from `unified_orders` table for POS orders
+   - Merges POS orders with regular orders and sorts by date
+   - Transforms POS orders to match the Order interface structure
+   - Added missing icon imports: Store, Monitor, Utensils, Zap, WifiOff, CheckCircle, Truck
+   - Added missing `useAdminOrdersRealtime` import
+   - Added missing `handleConfirmBulkStatusUpdate` function
+
+4. **Database optimizations:**
+   - Added indexes for fast POS order queries: `idx_unified_orders_pos_type` and `idx_unified_orders_pos_source`
+
+**Technical Details:**
+- POS orders appear in Orders dashboard with source badge "POS" (green styling)
+- Status is set to 'completed' immediately since POS sales are instant
+- Payment status is set to 'paid'
+- Items are stored both in metadata (for backward compatibility) and as proper `unified_order_items` records
+- Real-time notifications work for POS orders via the unified_orders channel
+
+### Files Changed:
+- `supabase/migrations/20260128150000_pos_to_unified_orders_integration.sql` (new) - Enhanced atomic function with order items creation
+- `src/hooks/useAdminOrdersRealtime.ts` - Added unified_orders subscription for POS orders
+- `src/pages/admin/Orders.tsx` - Added POS orders fetching, missing imports, and missing handler function
+
