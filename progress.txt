@@ -7332,3 +7332,56 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 78 - Auth Form Loading States Enhancement
+
+### Task: Add loading states with disabled button and spinner to all auth form submits
+
+**Completed:**
+
+1. **TwoFactorSetup.tsx** - Enhanced loading states:
+   - Added `aria-busy` attribute to password confirm button
+   - Added `aria-busy` attribute to "Verify & Enable" button
+   - Added `aria-busy` attribute to "Disable 2FA" button
+   - Added `aria-busy` attribute to "Setup 2FA" button
+   - Added loading text variants for all buttons (e.g., "Confirming...", "Verifying...", "Disabling...", "Setting up...")
+
+2. **TwoFactorVerification.tsx** - Enhanced loading states:
+   - Added `aria-busy` attribute to verify submit button
+   - Added loading text variant ("Verifying...")
+   - Added `disabled={loading}` to mode toggle button to prevent interaction during loading
+
+3. **LoginPage.tsx** - Enhanced loading states:
+   - Added `aria-busy={isSubmitting}` attribute to sign-in button
+
+4. **SignupPage.tsx** - Enhanced loading states:
+   - Added `aria-busy={isSubmitting}` attribute to "Create Account" button (Step 3)
+
+5. **ForgotPasswordPage.tsx** - Enhanced loading states:
+   - Added `aria-busy={isRequestingReset}` attribute to submit button
+
+6. **ChangePasswordPage.tsx** - Enhanced loading states:
+   - Added `aria-busy={loading}` attribute to "Update Password" button
+
+7. **ResetPasswordPage.tsx** - Enhanced loading states:
+   - Added `aria-busy={isConfirmingReset}` attribute to "Reset Password" button
+
+### Summary of Changes:
+All auth form submit buttons now have:
+- ✅ `disabled` attribute when loading/submitting
+- ✅ `aria-busy` attribute for accessibility (screen readers)
+- ✅ Loader2 spinner animation during loading
+- ✅ Loading text variant (e.g., "Signing in...", "Creating account...")
+
+### Files Changed:
+- `src/components/auth/TwoFactorSetup.tsx`
+- `src/components/auth/TwoFactorVerification.tsx`
+- `src/pages/auth/LoginPage.tsx`
+- `src/pages/auth/SignupPage.tsx`
+- `src/pages/auth/ForgotPasswordPage.tsx`
+- `src/pages/auth/ChangePasswordPage.tsx`
+- `src/pages/auth/ResetPasswordPage.tsx`
+
+### TypeScript Verification:
+- All changes compile successfully with `tsc --noEmit`
+- No type errors introduced

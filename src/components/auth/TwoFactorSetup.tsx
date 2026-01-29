@@ -345,9 +345,10 @@ export function TwoFactorSetup() {
                         <Button
                             type="submit"
                             disabled={!password || confirmingPassword}
+                            aria-busy={confirmingPassword}
                         >
                             {confirmingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Confirm
+                            {confirmingPassword ? 'Confirming...' : 'Confirm'}
                         </Button>
                         <Button
                             type="button"
@@ -454,10 +455,11 @@ export function TwoFactorSetup() {
                         variant="destructive"
                         onClick={initiateDisable}
                         disabled={loading}
+                        aria-busy={loading}
                         className="w-full sm:w-auto"
                     >
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Disable 2FA
+                        {loading ? 'Disabling...' : 'Disable 2FA'}
                     </Button>
                 </div>
             </>
@@ -498,9 +500,9 @@ export function TwoFactorSetup() {
                             maxLength={6}
                             autoComplete="one-time-code"
                         />
-                        <Button onClick={verifyAndEnable} disabled={loading || verificationCode.length !== 6}>
+                        <Button onClick={verifyAndEnable} disabled={loading || verificationCode.length !== 6} aria-busy={loading}>
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Verify & Enable
+                            {loading ? 'Verifying...' : 'Verify & Enable'}
                         </Button>
                     </div>
                 </div>
@@ -519,9 +521,9 @@ export function TwoFactorSetup() {
                 <ShieldCheck className="h-5 w-5" />
                 <p>Secure your account with two-factor authentication.</p>
             </div>
-            <Button onClick={initiateEnable} disabled={loading}>
+            <Button onClick={initiateEnable} disabled={loading} aria-busy={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Setup 2FA
+                {loading ? 'Setting up...' : 'Setup 2FA'}
             </Button>
         </div>
     );

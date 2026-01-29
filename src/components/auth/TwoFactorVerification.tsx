@@ -161,9 +161,14 @@ export function TwoFactorVerification({ onVerified, onCancel }: TwoFactorVerific
                         type="submit"
                         className="w-full h-10"
                         disabled={loading || (isRecoveryMode ? !backupCode : verificationCode.length !== 6)}
+                        aria-busy={loading}
                     >
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {isRecoveryMode ? "Verify Recovery Code" : "Verify"}
+                        {loading
+                            ? 'Verifying...'
+                            : isRecoveryMode
+                                ? "Verify Recovery Code"
+                                : "Verify"}
                     </Button>
 
                     <div className="text-center">
@@ -171,6 +176,7 @@ export function TwoFactorVerification({ onVerified, onCancel }: TwoFactorVerific
                             type="button"
                             variant="link"
                             className="text-sm text-muted-foreground"
+                            disabled={loading}
                             onClick={() => {
                                 setIsRecoveryMode(!isRecoveryMode);
                                 setVerificationCode("");

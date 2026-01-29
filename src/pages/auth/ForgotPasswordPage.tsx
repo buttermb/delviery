@@ -218,6 +218,7 @@ export function ForgotPasswordPage() {
               type="submit"
               className="w-full min-h-[44px]"
               disabled={isRequestingReset || rateLimited}
+              aria-busy={isRequestingReset}
             >
               {isRequestingReset ? (
                 <>

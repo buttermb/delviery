@@ -230,6 +230,7 @@ export function LoginPage() {
                 type="submit"
                 className="w-full"
                 disabled={isSubmitting}
+                aria-busy={isSubmitting}
               >
                 {isSubmitting ? (
                   <>

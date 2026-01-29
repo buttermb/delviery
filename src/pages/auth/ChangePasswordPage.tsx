@@ -267,6 +267,7 @@ export function ChangePasswordPage() {
             <Button
               type="submit"
               disabled={loading || !isFormValid}
+              aria-busy={loading}
               className="w-full min-h-[44px]"
             >
               {loading ? (
