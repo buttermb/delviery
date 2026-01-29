@@ -3,15 +3,15 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, Menu, X, Zap } from 'lucide-react';
+import { ChevronRight, Menu, X, Zap } from 'lucide-react';
 import { navigationSections } from './sidebar-navigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { prefetchOnHover } from '@/lib/utils/prefetch';
 import { isFeatureAvailable, featureTableRequirements } from '@/utils/featureAvailability';
 import { AttentionBadge } from './hotbox/AttentionBadge';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -172,63 +172,84 @@ export function Sidebar() {
                     className="flex items-center justify-between w-full px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <span>{section.title}</span>
-                    {expandedSections.has(section.title) ? (
-                      <ChevronDown className="h-3 w-3" />
-                    ) : (
+                    <motion.div
+                      animate={{ rotate: expandedSections.has(section.title) ? 90 : 0 }}
+                      transition={{ duration: 0.2, ease: 'easeOut' }}
+                    >
                       <ChevronRight className="h-3 w-3" />
-                    )}
+                    </motion.div>
                   </button>
 
                   {/* Section items */}
-                  {expandedSections.has(section.title) && (
-                    <div className="mt-1 space-y-0.5">
-                      {section.items
-                        .filter((item) => {
-                          // Hide features that require tables that don't exist
-                          // If availableFeatures is empty, show all (still loading)
-                          if (availableFeatures.size === 0) return true;
-                          return availableFeatures.has(item.href);
-                        })
-                        .map((item) => {
-                          const Icon = item.icon;
-                          const fullPath = getFullPath(item.href);
-                          const active = isActive(item.href);
+                  <AnimatePresence initial={false}>
+                    {expandedSections.has(section.title) && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-1 space-y-0.5">
+                          {section.items
+                            .filter((item) => {
+                              // Hide features that require tables that don't exist
+                              // If availableFeatures is empty, show all (still loading)
+                              if (availableFeatures.size === 0) return true;
+                              return availableFeatures.has(item.href);
+                            })
+                            .map((item, index) => {
+                              const Icon = item.icon;
+                              const fullPath = getFullPath(item.href);
+                              const active = isActive(item.href);
 
-                          return (
-                            <Link
-                              key={item.href}
-                              to={fullPath}
-                              onClick={() => {
-                                logger.debug('Sidebar click', {
-                                  href: item.href,
-                                  fullPath,
-                                  title: item.title
-                                });
-                                setIsOpen(false);
-                              }}
-                              onMouseEnter={() => prefetchOnHover(fullPath)}
-                              className={cn(
-                                'flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors',
-                                active
-                                  ? 'bg-primary text-primary-foreground font-medium'
-                                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                              )}
-                            >
-                              <Icon className="h-4 w-4 shrink-0" />
-                              <span className="flex-1 truncate min-w-0">{item.title}</span>
+                              return (
+                                <motion.div
+                                  key={item.href}
+                                  initial={{ opacity: 0, x: -8 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{
+                                    duration: 0.15,
+                                    delay: index * 0.02,
+                                    ease: 'easeOut'
+                                  }}
+                                >
+                                  <Link
+                                    to={fullPath}
+                                    onClick={() => {
+                                      logger.debug('Sidebar click', {
+                                        href: item.href,
+                                        fullPath,
+                                        title: item.title
+                                      });
+                                      setIsOpen(false);
+                                    }}
+                                    onMouseEnter={() => prefetchOnHover(fullPath)}
+                                    className={cn(
+                                      'flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors',
+                                      active
+                                        ? 'bg-primary text-primary-foreground font-medium'
+                                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                                    )}
+                                  >
+                                    <Icon className="h-4 w-4 shrink-0" />
+                                    <span className="flex-1 truncate min-w-0">{item.title}</span>
 
-                              {item.badge && (
-                                <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                                  {item.badge}
-                                </Badge>
-                              )}
+                                    {item.badge && (
+                                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                                        {item.badge}
+                                      </Badge>
+                                    )}
 
-                              {getTierBadge(item.tier)}
-                            </Link>
-                          );
-                        })}
-                    </div>
-                  )}
+                                    {getTierBadge(item.tier)}
+                                  </Link>
+                                </motion.div>
+                              );
+                            })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               ))}
             </div>
