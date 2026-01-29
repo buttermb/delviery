@@ -59,10 +59,10 @@ import {
   Flame,
   Brain,
   Star,
-  Barcode,
-  Headphones,
   HelpCircle,
-  Award
+  Headphones,
+  Award,
+  Barcode
 } from 'lucide-react';
 
 // Aliases for backwards compatibility
