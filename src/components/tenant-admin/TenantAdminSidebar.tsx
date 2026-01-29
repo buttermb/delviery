@@ -6,7 +6,6 @@
  * with upgrade prompts for higher-tier features.
  */
 
-import { logger } from '@/lib/logger';
 import { NavLink, useParams, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -40,9 +39,7 @@ import {
   CreditCard,
   Warehouse,
   TrendingUp,
-  Lock,
   Star,
-  Diamond,
   Truck,
   MapPin,
   DollarSign,
@@ -81,13 +78,12 @@ import { Badge } from "@/components/ui/badge";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { UpgradeModal } from "./UpgradeModal";
+import { LockedFeatureItem, LockedSectionBadge } from "@/components/sidebar/LockedFeatureItem";
 import { useState, useMemo } from "react";
 import {
   type FeatureId,
   type SubscriptionTier,
   FEATURES,
-  TIER_NAMES,
-  hasFeatureAccess,
 } from "@/lib/featureConfig";
 
 // Icon mapping for features
@@ -261,7 +257,7 @@ export function TenantAdminSidebar() {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const location = useLocation();
   const { tenant, logout } = useTenantAdminAuth();
-  const { canAccess, currentTier, subscriptionValid } = useFeatureAccess();
+  const { canAccess, currentTier } = useFeatureAccess();
   const [upgradeFeatureId, setUpgradeFeatureId] = useState<FeatureId | null>(null);
 
   // Build filtered sidebar based on current tier
@@ -298,7 +294,7 @@ export function TenantAdminSidebar() {
       // But always show categories with accessible features
       return category.hasAccessibleFeatures || category.upgradeHints.length > 0;
     });
-  }, [canAccess]);
+  }, [canAccess, tenantSlug]);
 
   const isActive = (url: string) => {
     const fullPath = `/${tenantSlug}${url}`;
@@ -315,26 +311,6 @@ export function TenantAdminSidebar() {
 
   const getIcon = (featureId: FeatureId) => {
     return ICON_MAP[featureId] || Package;
-  };
-
-  const getTierBadge = (tier: SubscriptionTier) => {
-    if (tier === 'enterprise') {
-      return (
-        <Badge variant="outline" className="ml-auto flex items-center gap-1 text-[10px] px-1.5 py-0 h-5 border-purple-500/50 text-purple-600 dark:text-purple-400">
-          <Diamond className="h-2.5 w-2.5" />
-          Pro+
-        </Badge>
-      );
-    }
-    if (tier === 'professional') {
-      return (
-        <Badge variant="outline" className="ml-auto flex items-center gap-1 text-[10px] px-1.5 py-0 h-5 border-blue-500/50 text-blue-600 dark:text-blue-400">
-          <Star className="h-2.5 w-2.5" />
-          Pro
-        </Badge>
-      );
-    }
-    return null;
   };
 
   // Get current tier display info
@@ -381,9 +357,11 @@ export function TenantAdminSidebar() {
                       <div className="flex items-center gap-2">
                         <span>{category.label}</span>
                         {category.hasLockedFeatures && category.lockedFeatures.length > 2 && (
-                          <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 opacity-50">
-                            +{category.lockedFeatures.length}
-                          </Badge>
+                          <LockedSectionBadge
+                            count={category.lockedFeatures.length}
+                            lowestTier={FEATURES[category.lockedFeatures[0]]?.tier || 'professional'}
+                            onClick={() => handleLockedItemClick(category.lockedFeatures[0])}
+                          />
                         )}
                       </div>
                       <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
@@ -412,7 +390,7 @@ export function TenantAdminSidebar() {
                           );
                         })}
 
-                        {/* Upgrade hint features (locked) */}
+                        {/* Upgrade hint features (locked) - with tooltip */}
                         {category.upgradeHints.map((featureId) => {
                           const feature = FEATURES[featureId];
                           if (!feature) return null;
@@ -421,15 +399,14 @@ export function TenantAdminSidebar() {
 
                           return (
                             <SidebarMenuItem key={`locked-${featureId}`}>
-                              <SidebarMenuButton
+                              <LockedFeatureItem
+                                name={feature.name}
+                                icon={Icon}
+                                requiredTier={feature.tier}
+                                currentTier={currentTier}
                                 onClick={() => handleLockedItemClick(featureId)}
-                                className="cursor-pointer opacity-50 hover:opacity-80 transition-opacity"
-                              >
-                                <Icon className="h-4 w-4" />
-                                <span className="truncate min-w-0">{feature.name}</span>
-                                <Lock className="h-3 w-3 ml-auto text-muted-foreground" />
-                                {getTierBadge(feature.tier)}
-                              </SidebarMenuButton>
+                                description={feature.description}
+                              />
                             </SidebarMenuItem>
                           );
                         })}
@@ -437,15 +414,15 @@ export function TenantAdminSidebar() {
                         {/* Show "View more" if there are additional locked features */}
                         {category.lockedFeatures.length > 2 && (
                           <SidebarMenuItem>
-                            <SidebarMenuButton
-                              onClick={() => handleLockedItemClick(category.lockedFeatures[0])}
-                              className="cursor-pointer opacity-40 hover:opacity-60 text-xs"
-                            >
-                              <ChevronUp className="h-3 w-3 rotate-180" />
-                              <span className="text-muted-foreground">
-                                Upgrade to unlock {category.lockedFeatures.length - 2} more
-                              </span>
-                            </SidebarMenuButton>
+                            <LockedFeatureItem
+                              name={`${category.lockedFeatures.length - 2} more feature${category.lockedFeatures.length - 2 !== 1 ? 's' : ''}`}
+                              icon={ChevronUp}
+                              requiredTier={FEATURES[category.lockedFeatures[2]]?.tier || 'professional'}
+                              currentTier={currentTier}
+                              onClick={() => handleLockedItemClick(category.lockedFeatures[2])}
+                              description={`Unlock additional ${category.label.toLowerCase()} features by upgrading your plan.`}
+                              className="text-xs"
+                            />
                           </SidebarMenuItem>
                         )}
                       </SidebarMenu>

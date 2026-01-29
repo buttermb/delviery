@@ -7332,3 +7332,57 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+
+## Agent 11 - Tier Upgrade Prompts with Lock Icon and Tooltip
+
+### Task: Add tier upgrade prompts with lock icon and Upgrade tooltip on restricted items
+
+**Completed:**
+
+1. **Created LockedFeatureItem component** (`src/components/sidebar/LockedFeatureItem.tsx`)
+   - New reusable component that displays locked sidebar items with:
+     - Lock icon overlay on the feature icon
+     - Required tier badge (Pro/Pro+/Enterprise)
+     - Rich upgrade tooltip showing:
+       - Feature name and description
+       - Required tier information
+       - Price difference from current tier
+       - "Upgrade to Unlock" CTA button
+   - Also includes helper components:
+     - `LockedBadge` - Simple lock indicator with tooltip
+     - `LockedSectionBadge` - Section header indicator for locked feature count
+
+2. **Updated TenantAdminSidebar** (`src/components/tenant-admin/TenantAdminSidebar.tsx`)
+   - Integrated `LockedFeatureItem` component for locked features
+   - Replaced basic locked item rendering with enhanced tooltip version
+   - Updated section headers to use `LockedSectionBadge` with tooltips
+   - "View more" locked features now show upgrade tooltips
+   - Cleaned up unused imports and fixed lint warnings
+
+3. **Updated OptimizedSidebar** (`src/components/sidebar/OptimizedSidebar.tsx`)
+   - Added support for showing locked features with upgrade prompts
+   - New props: `showLockedFeatures` (default: true) and `maxLockedPerSection` (default: 2)
+   - Locked items show tier-specific badges and upgrade tooltips
+   - Section headers show locked feature count badges with tooltips
+   - Integrated UpgradeModal for when users click on locked items
+
+### User Experience:
+- Locked sidebar items now display with a subtle lock icon overlay
+- Hovering over locked items shows an informative tooltip with:
+  - Feature name and description
+  - Which tier is required
+  - Price difference info
+  - Clear upgrade CTA
+- Clicking locked items opens the existing UpgradeModal
+- Section headers show badge indicating number of locked features available
+
+### Files Changed:
+- `src/components/sidebar/LockedFeatureItem.tsx` (NEW)
+- `src/components/sidebar/OptimizedSidebar.tsx` (MODIFIED)
+- `src/components/tenant-admin/TenantAdminSidebar.tsx` (MODIFIED)
+
+### Verification:
+- TypeScript compilation passes (`npx tsc --noEmit`)
+- ESLint passes with no errors
+
