@@ -7332,3 +7332,58 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+---
+
+## Task: Add proper redirect after auth actions to dashboard or intended destination
+
+### What was done:
+
+1. **Created `useIntendedDestination` hook (`src/hooks/useIntendedDestination.ts`)**
+   - Hook and utility functions to manage intended destination for auth redirects
+   - Stores intended destination in sessionStorage with 30-minute expiry
+   - `saveIntendedDestination(path)` - saves the current path before redirecting to login
+   - `getIntendedDestination()` - retrieves and clears the stored destination
+   - `consume()` - one-shot get-and-clear operation for use after login
+   - `buildLoginUrlWithRedirect()` - builds login URL with redirect query param for OAuth flows
+   - Automatically excludes auth-related pages from being saved as destinations
+
+2. **Updated `TenantAdminProtectedRoute` (`src/components/auth/TenantAdminProtectedRoute.tsx`)**
+   - Saves the current path (including query string) as intended destination before redirecting to login
+   - Uses `intendedDestinationUtils.save()` to persist the destination
+   - Logs the saved destination for debugging
+
+3. **Updated Tenant Admin Login Page (`src/pages/tenant-admin/LoginPage.tsx`)**
+   - After successful login, checks for intended destination using `intendedDestinationUtils.consume()`
+   - Redirects to intended destination if available, otherwise defaults to dashboard
+   - Applied to all login paths: direct login, queued offline login, and MFA verification
+
+4. **Updated SAAS Login Page (`src/pages/saas/LoginPage.tsx`)**
+   - After successful login, checks for intended destination
+   - Redirects to intended destination if available, otherwise defaults to tenant dashboard
+
+5. **Updated Auth Callback Page (`src/pages/auth/AuthCallbackPage.tsx`)**
+   - After OAuth (Google) login success, checks for intended destination
+   - Validates that the intended destination matches the current portal type (tenant-admin, super-admin, customer)
+   - Redirects to intended destination if valid, otherwise uses default dashboard for portal type
+
+### How it works:
+
+1. User tries to access a protected route (e.g., `/acme-corp/admin/products`)
+2. `TenantAdminProtectedRoute` detects unauthenticated user
+3. Current path is saved to sessionStorage as intended destination
+4. User is redirected to login page
+5. After successful login (email/password, OAuth, or MFA):
+   - System checks for stored intended destination
+   - If found and valid, redirects to that destination
+   - If not found, redirects to default dashboard
+   - Stored destination is cleared after use (one-shot)
+
+### Files Changed:
+- `src/hooks/useIntendedDestination.ts` (new)
+- `src/components/auth/TenantAdminProtectedRoute.tsx` (modified)
+- `src/pages/tenant-admin/LoginPage.tsx` (modified)
+- `src/pages/saas/LoginPage.tsx` (modified)
+- `src/pages/auth/AuthCallbackPage.tsx` (modified)
+
+### TypeScript Compilation: ✅ Passes

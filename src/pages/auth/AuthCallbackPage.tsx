@@ -4,14 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { intendedDestinationUtils } from "@/hooks/useIntendedDestination";
+import { Button } from "@/components/ui/button";
 
 type AuthPortal = "tenant-admin" | "super-admin" | "customer";
 
 interface AuthCallbackPageProps {
   portal: AuthPortal;
 }
-
-import { Button } from "@/components/ui/button";
 
 export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
   const navigate = useNavigate();
@@ -104,7 +104,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
           return;
         }
 
-        // Success - redirect to dashboard
+        // Success - redirect to intended destination or dashboard
         setStatus("success");
         // Clear redirect timestamps on success
         sessionStorage.removeItem('auth_redirect_timestamps');
@@ -114,7 +114,27 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
           description: "You've been signed in with Google.",
         });
 
+        // Check for intended destination (user tried to access a protected page before OAuth login)
+        const intendedDestination = intendedDestinationUtils.consume();
+
         setTimeout(() => {
+          // If there's an intended destination, use it (only for matching portal type)
+          if (intendedDestination) {
+            // Validate the intended destination matches the current portal context
+            const isValidDestination =
+              (portal === "tenant-admin" && intendedDestination.includes('/admin/')) ||
+              (portal === "super-admin" && intendedDestination.includes('/super-admin/')) ||
+              (portal === "customer" && (intendedDestination.includes('/shop/') || intendedDestination.includes('/customer/')));
+
+            if (isValidDestination) {
+              logger.debug('[AuthCallback] Redirecting to intended destination', { intendedDestination, portal });
+              navigate(intendedDestination, { replace: true });
+              return;
+            }
+            logger.debug('[AuthCallback] Intended destination does not match portal, using default', { intendedDestination, portal });
+          }
+
+          // Default redirects based on portal type
           switch (portal) {
             case "tenant-admin":
               navigate(`/${tenantSlug}/admin/dashboard`, { replace: true });

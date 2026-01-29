@@ -19,6 +19,7 @@ import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
 import { resilientFetch, ErrorCategory, getErrorMessage, onConnectionStatusChange, type ConnectionStatus, isOffline } from '@/lib/utils/networkResilience';
 import { authFlowLogger, AuthFlowStep, AuthAction } from '@/lib/utils/authFlowLogger';
+import { intendedDestinationUtils } from '@/hooks/useIntendedDestination';
 import {
   Form,
   FormControl,
@@ -286,9 +287,15 @@ export default function LoginPage() {
         description: `Redirecting to ${authResponse.tenant.business_name}...`,
       });
 
+      // Check for intended destination (user tried to access a protected page before login)
+      const intendedDestination = intendedDestinationUtils.consume();
+      const defaultDashboard = `/${tenant.slug}/admin/dashboard`;
+      const redirectTo = intendedDestination || defaultDashboard;
+      logger.debug('[SaasLogin] Redirecting after successful login', { intendedDestination, redirectTo });
+
       // Smooth redirect delay
       setTimeout(() => {
-        navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
+        navigate(redirectTo, { replace: true });
       }, 500);
 
     } catch (error: any) {
