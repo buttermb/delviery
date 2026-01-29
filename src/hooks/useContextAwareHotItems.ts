@@ -1,11 +1,19 @@
 /**
  * Context-Aware Hot Items Hook
  *
- * Provides products tailored to the current time of day:
+ * Provides products tailored to the current time of day and day of week:
+ *
+ * Weekday recommendations:
  * - Morning (6am-12pm): Energizing sativas, focus strains
  * - Afternoon (12pm-5pm): Balanced hybrids, productivity strains
  * - Evening (5pm-9pm): Relaxing indicas, wind-down strains
  * - Night (9pm-6am): Sleep aids, heavy indicas
+ *
+ * Weekend recommendations (adjusted for leisure):
+ * - Morning (6am-12pm): Gentle wake-up, social strains
+ * - Afternoon (12pm-5pm): Social hybrids, party strains
+ * - Evening (5pm-9pm): Relaxing indica-leaning hybrids
+ * - Night (9pm-6am): Deep relaxation, sleep aids
  */
 
 import { useMemo } from 'react';
@@ -23,9 +31,9 @@ import type {
 } from '@/types/storefront-hot-items';
 
 /**
- * Configuration for each time period
+ * Configuration for weekday time periods
  */
-const TIME_PERIOD_CONFIGS: Record<TimePeriod, HotItemConfig> = {
+const WEEKDAY_CONFIGS: Record<TimePeriod, HotItemConfig> = {
   morning: {
     timePeriod: 'morning',
     title: 'Rise & Shine Picks',
@@ -73,6 +81,70 @@ const TIME_PERIOD_CONFIGS: Record<TimePeriod, HotItemConfig> = {
 };
 
 /**
+ * Configuration for weekend time periods
+ * More relaxed and social-focused recommendations
+ */
+const WEEKEND_CONFIGS: Record<TimePeriod, HotItemConfig> = {
+  morning: {
+    timePeriod: 'morning',
+    title: 'Weekend Wake & Bake',
+    subtitle: 'Gentle morning picks for a relaxed start',
+    icon: 'coffee',
+    priorityCategories: ['Flower', 'Edibles', 'Pre-Rolls'],
+    priorityStrains: ['Hybrid', 'Sativa'],
+    priorityEffects: ['Happy', 'Relaxed', 'Creative', 'Euphoric', 'Giggly'],
+    badge: 'Weekend Fave',
+    accentColor: '#10b981', // emerald
+  },
+  afternoon: {
+    timePeriod: 'afternoon',
+    title: 'Weekend Social Picks',
+    subtitle: 'Perfect for hanging with friends',
+    icon: 'star',
+    priorityCategories: ['Flower', 'Vapes', 'Pre-Rolls', 'Edibles'],
+    priorityStrains: ['Hybrid', 'Sativa'],
+    priorityEffects: ['Social', 'Giggly', 'Talkative', 'Happy', 'Euphoric'],
+    badge: 'Party Pick',
+    accentColor: '#f97316', // orange
+  },
+  evening: {
+    timePeriod: 'evening',
+    title: 'Weekend Unwind',
+    subtitle: 'Chill vibes for your evening',
+    icon: 'moon',
+    priorityCategories: ['Flower', 'Edibles', 'Pre-Rolls', 'Tinctures'],
+    priorityStrains: ['Hybrid', 'Indica'],
+    priorityEffects: ['Relaxed', 'Euphoric', 'Hungry', 'Happy', 'Sleepy'],
+    badge: 'Chill Pick',
+    accentColor: '#a855f7', // purple
+  },
+  night: {
+    timePeriod: 'night',
+    title: 'Saturday Night Special',
+    subtitle: 'Deep relaxation for the weekend',
+    icon: 'sparkles',
+    priorityCategories: ['Flower', 'Edibles', 'Tinctures'],
+    priorityStrains: ['Indica'],
+    priorityEffects: ['Sleepy', 'Relaxed', 'Calm', 'Sedated', 'Euphoric'],
+    badge: 'Weekend Night',
+    accentColor: '#6366f1', // indigo
+  },
+};
+
+/**
+ * Get the appropriate config based on time period and day type
+ */
+function getTimeConfig(timePeriod: TimePeriod, isWeekend: boolean): HotItemConfig {
+  return isWeekend ? WEEKEND_CONFIGS[timePeriod] : WEEKDAY_CONFIGS[timePeriod];
+}
+
+/**
+ * Legacy export for backward compatibility
+ * @deprecated Use getTimeConfig with isWeekend parameter instead
+ */
+const TIME_PERIOD_CONFIGS = WEEKDAY_CONFIGS;
+
+/**
  * Determine the current time period based on hour
  */
 function getTimePeriod(hour: number): TimePeriod {
@@ -99,11 +171,12 @@ function getStorefrontContext(): StorefrontContext {
 }
 
 /**
- * Calculate match score for a product based on current config
+ * Calculate match score for a product based on current config and context
  */
 function calculateMatchScore(
   product: MarketplaceProduct,
-  config: HotItemConfig
+  config: HotItemConfig,
+  context: StorefrontContext
 ): number {
   let score = 0;
 
@@ -149,6 +222,50 @@ function calculateMatchScore(
     score += 15;
   }
 
+  // Weekend-specific boosts
+  if (context.isWeekend) {
+    // Boost edibles on weekends (more leisure time for onset)
+    if (product.category?.toLowerCase() === 'edibles') {
+      score += 15;
+    }
+
+    // Boost social strains on weekend afternoons
+    if (config.timePeriod === 'afternoon' && product.effects) {
+      const socialEffects = ['Social', 'Giggly', 'Talkative', 'Happy'];
+      const hasSocialEffect = product.effects.some((effect) =>
+        socialEffects.some((se) => effect.toLowerCase().includes(se.toLowerCase()))
+      );
+      if (hasSocialEffect) {
+        score += 10;
+      }
+    }
+
+    // Boost balanced hybrids on weekend mornings (relaxed wake-up)
+    if (config.timePeriod === 'morning' && product.strain_type?.toLowerCase() === 'hybrid') {
+      score += 8;
+    }
+  } else {
+    // Weekday-specific boosts
+    // Boost vapes on weekday mornings/afternoons (quick, discreet)
+    if (
+      (config.timePeriod === 'morning' || config.timePeriod === 'afternoon') &&
+      product.category?.toLowerCase() === 'vapes'
+    ) {
+      score += 8;
+    }
+
+    // Boost focused effects on weekday mornings
+    if (config.timePeriod === 'morning' && product.effects) {
+      const focusEffects = ['Focused', 'Energetic', 'Creative'];
+      const hasFocusEffect = product.effects.some((effect) =>
+        focusEffects.some((fe) => effect.toLowerCase().includes(fe.toLowerCase()))
+      );
+      if (hasFocusEffect) {
+        score += 8;
+      }
+    }
+  }
+
   // Boost products with images (better UX)
   if (product.image_url) {
     score += 5;
@@ -168,25 +285,63 @@ function calculateMatchScore(
 }
 
 /**
- * Get reason why this product is hot for the current time
+ * Get reason why this product is hot for the current time and day
  */
 function getHotReason(
   product: MarketplaceProduct,
-  config: HotItemConfig
+  config: HotItemConfig,
+  context: StorefrontContext
 ): string {
-  // Check strain match first
-  if (config.priorityStrains.includes(product.strain_type || '')) {
-    if (config.timePeriod === 'morning') {
-      return 'Great for morning energy';
+  // Weekend-specific reasons
+  if (context.isWeekend) {
+    // Check for social/party strains on weekend afternoons
+    if (config.timePeriod === 'afternoon' && product.effects) {
+      const socialEffects = ['Social', 'Giggly', 'Talkative'];
+      const matchingSocial = product.effects.find((effect) =>
+        socialEffects.some((se) => effect.toLowerCase().includes(se.toLowerCase()))
+      );
+      if (matchingSocial) {
+        return `Great for weekend hangouts`;
+      }
     }
-    if (config.timePeriod === 'afternoon') {
-      return 'Perfect afternoon balance';
+
+    // Weekend morning chill
+    if (config.timePeriod === 'morning' && product.strain_type?.toLowerCase() === 'hybrid') {
+      return 'Perfect for a lazy weekend morning';
     }
-    if (config.timePeriod === 'evening') {
-      return 'Ideal for winding down';
+
+    // Edibles recommendation on weekend
+    if (product.category?.toLowerCase() === 'edibles') {
+      return 'Take your time this weekend';
     }
-    if (config.timePeriod === 'night') {
-      return 'Perfect for restful nights';
+  }
+
+  // Check strain match
+  if (config.priorityStrains.some(
+    (strain) => product.strain_type?.toLowerCase() === strain.toLowerCase()
+  )) {
+    if (context.isWeekend) {
+      switch (config.timePeriod) {
+        case 'morning':
+          return 'Weekend wake-up favorite';
+        case 'afternoon':
+          return 'Perfect for weekend vibes';
+        case 'evening':
+          return 'Unwind your weekend night';
+        case 'night':
+          return 'Drift off after a great weekend';
+      }
+    } else {
+      switch (config.timePeriod) {
+        case 'morning':
+          return 'Great for morning energy';
+        case 'afternoon':
+          return 'Perfect afternoon balance';
+        case 'evening':
+          return 'Ideal for winding down';
+        case 'night':
+          return 'Perfect for restful nights';
+      }
     }
   }
 
@@ -202,7 +357,22 @@ function getHotReason(
     }
   }
 
-  // Default based on time period
+  // Default based on time period and day type
+  if (context.isWeekend) {
+    switch (config.timePeriod) {
+      case 'morning':
+        return 'Weekend morning pick';
+      case 'afternoon':
+        return 'Saturday/Sunday favorite';
+      case 'evening':
+        return 'Weekend wind-down';
+      case 'night':
+        return 'Weekend late night choice';
+      default:
+        return 'Weekend favorite';
+    }
+  }
+
   switch (config.timePeriod) {
     case 'morning':
       return 'Popular morning choice';
@@ -233,7 +403,8 @@ export function useContextAwareHotItems({
 }: UseContextAwareHotItemsOptions): ContextAwareHotItemsResult {
   // Get current context (recalculates on each render, but memoized below)
   const context = useMemo(() => getStorefrontContext(), []);
-  const config = TIME_PERIOD_CONFIGS[context.timePeriod];
+  // Use weekend-aware config based on context
+  const config = useMemo(() => getTimeConfig(context.timePeriod, context.isWeekend), [context.timePeriod, context.isWeekend]);
 
   // Fetch products from the store
   const {
@@ -241,7 +412,8 @@ export function useContextAwareHotItems({
     isLoading,
     error,
   } = useQuery({
-    queryKey: [...queryKeys.shopProducts.list(storeId), 'hot-items', context.timePeriod],
+    // Include isWeekend in query key for proper cache separation
+    queryKey: [...queryKeys.shopProducts.list(storeId), 'hot-items', context.timePeriod, context.isWeekend],
     queryFn: async () => {
       if (!storeId || storeId.length < 32) return [];
       try {
@@ -264,7 +436,7 @@ export function useContextAwareHotItems({
     retry: 2,
   });
 
-  // Score and sort products based on current context
+  // Score and sort products based on current context (time of day + weekend/weekday)
   const hotItems = useMemo((): StorefrontHotItem[] => {
     if (!products.length) return [];
 
@@ -273,11 +445,11 @@ export function useContextAwareHotItems({
       (p) => p.is_visible && (p.stock_quantity === undefined || p.stock_quantity > 0)
     );
 
-    // Score each product
+    // Score each product based on time of day and weekend/weekday context
     const scoredProducts = eligibleProducts.map((product) => ({
       ...product,
-      matchScore: calculateMatchScore(product, config),
-      hotReason: getHotReason(product, config),
+      matchScore: calculateMatchScore(product, config, context),
+      hotReason: getHotReason(product, config, context),
       timeBadge: config.badge,
     }));
 
@@ -285,7 +457,7 @@ export function useContextAwareHotItems({
     return scoredProducts
       .sort((a, b) => b.matchScore - a.matchScore)
       .slice(0, limit);
-  }, [products, config, limit]);
+  }, [products, config, context, limit]);
 
   return {
     items: hotItems,
@@ -299,16 +471,27 @@ export function useContextAwareHotItems({
 /**
  * Get the time period config without fetching products
  * Useful for UI elements that just need the current context info
+ * Returns weekend-aware configuration
  */
 export function useCurrentTimeContext(): {
   context: StorefrontContext;
   config: HotItemConfig;
 } {
   const context = useMemo(() => getStorefrontContext(), []);
-  const config = TIME_PERIOD_CONFIGS[context.timePeriod];
+  const config = useMemo(
+    () => getTimeConfig(context.timePeriod, context.isWeekend),
+    [context.timePeriod, context.isWeekend]
+  );
 
   return { context, config };
 }
 
 // Export configs for use in other components
-export { TIME_PERIOD_CONFIGS, getTimePeriod, getStorefrontContext };
+export {
+  TIME_PERIOD_CONFIGS,
+  WEEKDAY_CONFIGS,
+  WEEKEND_CONFIGS,
+  getTimePeriod,
+  getStorefrontContext,
+  getTimeConfig,
+};
