@@ -7408,64 +7408,49 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
 
-## Agent 74 - Build SessionsPage with Active Session List
+## Agent 76 - Remember Me Checkbox Implementation
 
-### Task: Build SessionsPage with active session list device info and revoke buttons
+### Task: Add remember me checkbox that extends session duration in LoginPage
 
-### Date: 2026-01-28
+**Completed:**
 
-### What was implemented:
+1. **Added REMEMBER_ME storage key constant**
+   - File: `src/constants/storageKeys.ts`
+   - Added `REMEMBER_ME: 'remember_me'` to STORAGE_KEYS constant
 
-#### 1. Created useAdminSessions hook (src/hooks/useAdminSessions.ts)
-A new hook specifically for admin panel session management that:
-- Uses `useTenantAdminAuth` context for authentication
-- Queries the `user_sessions` table for active sessions
-- Parses device info (browser, OS, device type) from device_info JSONB field
-- Formats location display from location JSONB field and IP address
-- Calculates relative time for last activity
-- Provides `revokeSession` mutation to revoke individual sessions
-- Provides `revokeAllOtherSessions` mutation to revoke all except current
-- Auto-refreshes sessions every 60 seconds
-- Exports `AdminSessionInfo` type for use in components
+2. **Updated edge function validation schema**
+   - File: `supabase/functions/tenant-admin-auth/validation.ts`
+   - Added `rememberMe: z.boolean().optional().default(false)` to loginSchema
 
-#### 2. Created SessionsPage component (src/pages/admin/SessionsPage.tsx)
-A full-featured admin panel page that:
-- Displays all active sessions with device icons (mobile/tablet/desktop)
-- Shows browser name, OS, device type for each session
-- Shows location (city/country or IP address)
-- Shows relative time since last activity
-- Highlights current session with badge and visual distinction
-- Current session cannot be revoked from this page
-- Revoke button for each non-current session with loading state
-- "Revoke All Others" button for bulk revocation
-- Confirmation dialog before any revoke action
-- Error state with retry button
-- Loading skeleton while fetching sessions
-- Empty state when no sessions found
-- Security info card explaining session management
-- Responsive design that works on mobile and desktop
+3. **Updated edge function to extend session duration**
+   - File: `supabase/functions/tenant-admin-auth/index.ts`
+   - Cookie Max-Age now uses 30 days when rememberMe is true, 7 days otherwise
+   - Session duration dynamically calculated based on rememberMe preference
 
-### Key Features:
-- **Device Info Display**: Parses user agent and device_info to show:
-  - Device type icon (mobile, tablet, desktop)
-  - Browser name (Chrome, Firefox, Safari, Edge, etc.)
-  - Operating system (Windows, macOS, Linux, Android, iOS)
-- **Session Identification**: Current session marked with badge
-- **Revocation Controls**: 
-  - Individual session revoke with confirmation
-  - Bulk "Revoke All Others" with confirmation
-  - Loading states during revocation
-- **Security Best Practices**:
-  - Cannot revoke current session (must logout instead)
-  - Confirmation dialogs prevent accidental revocation
-  - Security information panel educates users
+4. **Updated TenantAdminAuthContext**
+   - File: `src/contexts/TenantAdminAuthContext.tsx`
+   - Login function signature updated to accept optional `rememberMe` parameter
+   - Login API request now includes `rememberMe` in request body
+
+5. **Updated LoginPage files with Remember Me functionality**
+   - `src/pages/auth/LoginPage.tsx` - Passes rememberMe to login function
+   - `src/pages/saas/LoginPage.tsx` - Passes rememberMe to edge function API
+   - `src/pages/tenant-admin/LoginPage.tsx` - Added Checkbox UI and state, passes rememberMe to login
+
+6. **UI Improvements**
+   - Added title tooltip on all Remember Me checkboxes explaining duration
+   - Proper accessibility with htmlFor/id attributes on checkboxes
+
+### Session Duration:
+- **Without Remember Me**: 7 days cookie expiration (default)
+- **With Remember Me checked**: 30 days cookie expiration (extended)
 
 ### Files Changed:
-- `src/hooks/useAdminSessions.ts` (new - Admin sessions hook)
-- `src/pages/admin/SessionsPage.tsx` (new - Admin sessions page)
-
-### Verification:
-- TypeScript compilation passes (`npx tsc --noEmit`)
-- ESLint passes with no errors
-- Note: Build has pre-existing unrelated failure (missing papaparse dependency)
+- `src/constants/storageKeys.ts`
+- `supabase/functions/tenant-admin-auth/validation.ts`
+- `supabase/functions/tenant-admin-auth/index.ts`
+- `src/contexts/TenantAdminAuthContext.tsx`
+- `src/pages/auth/LoginPage.tsx`
+- `src/pages/saas/LoginPage.tsx`
+- `src/pages/tenant-admin/LoginPage.tsx`
 

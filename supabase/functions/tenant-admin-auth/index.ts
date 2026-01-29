@@ -114,7 +114,7 @@ serve(secureHeadersMiddleware(async (req) => {
         );
       }
 
-      const { email, password, tenantSlug } = validationResult.data;
+      const { email, password, tenantSlug, rememberMe } = validationResult.data;
 
       // Extract client IP for rate limiting
       const clientIP = getClientIP(req);
@@ -384,12 +384,14 @@ serve(secureHeadersMiddleware(async (req) => {
       }
 
       // Prepare httpOnly cookie options
+      // Extended session: 30 days if "Remember Me" is checked, otherwise 7 days
+      const sessionDurationSeconds = rememberMe ? 30 * 24 * 60 * 60 : 7 * 24 * 60 * 60;
       const cookieOptions = [
         'HttpOnly',
         'Secure',
         'SameSite=Strict',
         'Path=/',
-        `Max-Age=${7 * 24 * 60 * 60}` // 7 days
+        `Max-Age=${sessionDurationSeconds}`
       ].join('; ');
 
       // Return user data with tenant context (including limits and usage)
