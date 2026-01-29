@@ -44,6 +44,7 @@ import type { FeatureId } from '@/lib/featureConfig';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CreditBalance } from '@/components/credits';
 import { useCommandPaletteStore } from '@/components/tenant-admin/CommandPalette';
+import { SidebarLoadingSkeleton } from './SidebarLoadingSkeleton';
 
 /**
  * Static preset display names - hoisted outside component to avoid recreation on every render
@@ -70,7 +71,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   const location = useLocation();
   const navigate = useNavigate();
   const { tenant, logout } = useTenantAdminAuth();
-  const { sidebarConfig, hotItems, favorites, operationSize } = useSidebarConfig();
+  const { sidebarConfig, hotItems, favorites, operationSize, isLoading } = useSidebarConfig();
   const { trackFeatureClick, toggleFavorite, preferences, searchQuery, setSearchQuery } = useSidebar();
   const [upgradeFeatureId, setUpgradeFeatureId] = useState<FeatureId | null>(null);
 
@@ -121,6 +122,11 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   if (!tenantSlug) {
     logger.error('AdaptiveSidebar rendered without tenantSlug', new Error('Missing tenantSlug'), { component: 'AdaptiveSidebar' });
     return null;
+  }
+
+  // Show loading skeleton while navigation config is loading
+  if (isLoading) {
+    return <SidebarLoadingSkeleton collapsible={collapsible} />;
   }
 
   const isActive = useCallback((url: string) => {

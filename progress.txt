@@ -7407,26 +7407,37 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
+---
 
-## Agent 13 - Sidebar Expand/Collapse Animations
+## Agent 14 - Sidebar Loading Skeleton
 
-### Task: Add expand/collapse animations with framer-motion in sidebar.tsx
+### Task: Add sidebar loading skeleton while navigation config loads
 
 **Completed:**
-- Added framer-motion import (`motion`, `AnimatePresence`)
-- Animated chevron icon rotation (0° → 90° on expand)
-- Added smooth height + opacity animation for section expansion/collapse
-  - Duration: 200ms with easeOut easing
-  - Uses AnimatePresence for proper exit animations
-- Added staggered fade-in animation for nav items
-  - Each item slides in from left with 20ms stagger delay
-  - Duration: 150ms per item
-- Removed unused ChevronDown import (replaced with rotating ChevronRight)
 
-### Animation Details:
-- Section toggle: Animates height from 0 to auto with opacity fade
-- Chevron: Rotates 90° clockwise when section is expanded
-- Items: Staggered x: -8 → 0 slide with opacity: 0 → 1
+1. **Created `SidebarLoadingSkeleton` component** (`src/components/admin/sidebar/SidebarLoadingSkeleton.tsx`)
+   - New component that displays a skeleton loading state matching the sidebar structure
+   - Uses `SidebarMenuSkeleton` from ui/sidebar for menu item skeletons
+   - Includes skeleton for header (tenant dropdown), search bar, quick actions, menu sections, and footer
+   - Properly uses the Sidebar component structure for consistent styling
+
+2. **Updated `useSidebarConfig` hook** (`src/hooks/useSidebarConfig.ts`)
+   - Aggregates loading states from `useOperationSize`, `useSidebarPreferences`, and `useBusinessTier`
+   - Exposes new `isLoading` property that is true while any dependent hook is still loading
+   - Allows components to show loading UI while navigation configuration is being fetched
+
+3. **Integrated skeleton into `AdaptiveSidebar`** (`src/components/admin/sidebar/AdaptiveSidebar.tsx`)
+   - Added import for `SidebarLoadingSkeleton`
+   - Uses `isLoading` from `useSidebarConfig` hook
+   - Shows `SidebarLoadingSkeleton` when loading, otherwise shows full sidebar
+   - Skeleton appears after tenantSlug check but before main content renders
 
 ### Files Changed:
-- `src/components/admin/Sidebar.tsx` - Added framer-motion animations for expand/collapse
+- `src/components/admin/sidebar/SidebarLoadingSkeleton.tsx` (new)
+- `src/hooks/useSidebarConfig.ts` (modified)
+- `src/components/admin/sidebar/AdaptiveSidebar.tsx` (modified)
+
+### Testing:
+- TypeScript compilation passes with no errors
+- Skeleton component structure matches real sidebar layout
+- Loading state properly aggregates from all dependent hooks

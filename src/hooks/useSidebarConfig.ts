@@ -31,12 +31,15 @@ import type { SidebarSection, HotItem } from '@/types/sidebar';
  * Main hook to get complete sidebar configuration
  */
 export function useSidebarConfig() {
-  const { operationSize, detectedSize, isAutoDetected } = useOperationSize();
-  const { preferences } = useSidebarPreferences();
+  const { operationSize, detectedSize, isAutoDetected, isLoading: operationSizeLoading } = useOperationSize();
+  const { preferences, isLoading: preferencesLoading } = useSidebarPreferences();
   const { role, checkPermission } = usePermissions();
   const { currentTier, canAccess } = useFeatureAccess();
   const { tenant } = useTenantAdminAuth();
-  const { preset: businessPreset, isFeatureEnabled, tier: businessTier } = useBusinessTier();
+  const { preset: businessPreset, isFeatureEnabled, tier: businessTier, isLoading: businessTierLoading } = useBusinessTier();
+
+  // Aggregate loading states from all dependent hooks
+  const isLoading = operationSizeLoading || preferencesLoading || businessTierLoading;
 
   // Safe defaults for preferences
   const safePreferences = preferences || {
@@ -272,6 +275,8 @@ export function useSidebarConfig() {
     businessTier,
     businessPreset,
     isFeatureEnabledByTier: isFeatureEnabled,
+    // Loading state - true while navigation config is still being loaded
+    isLoading,
   };
 }
 
