@@ -52,6 +52,12 @@ export function SidebarFavorites() {
       .filter((item): item is NonNullable<typeof item> => item !== undefined);
   }, [safeConfig, safeFavorites]);
 
+  // Filter favorite items based on search query
+  const filteredFavoriteItems = useMemo(() => {
+    if (!searchQuery.trim()) return favoriteItems;
+    return favoriteItems.filter((item) => matchesSearchQuery(item.name, searchQuery));
+  }, [favoriteItems, searchQuery]);
+
   // Check if path is active
   const isActive = useCallback((url: string) => {
     const fullPath = `/${tenantSlug}${url}`;
@@ -77,8 +83,8 @@ export function SidebarFavorites() {
     toggleFavorite(itemId);
   }, [toggleFavorite]);
 
-  // Early return if no favorites
-  if (favoriteItems.length === 0) {
+  // Early return if no favorites match
+  if (filteredFavoriteItems.length === 0) {
     return null;
   }
 

@@ -7332,3 +7332,41 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+---
+
+### Task: Fix Active State Highlight Ensuring Current Route Visible with Scroll-Into-View
+
+**Problem:**
+- When navigating to a route, the corresponding sidebar item may not be visible if it's inside a collapsed section
+- The scroll-into-view might trigger before the section has expanded, causing incorrect scrolling
+
+**What was done:**
+
+1. **Enhanced `SidebarSection.tsx` to auto-expand when containing active route:**
+   - Added `hasActiveItem` memoized check that evaluates if any item in the section matches the current route
+   - Added new `useEffect` that auto-expands the section when it contains the active item
+   - Modified preferences sync logic to only apply collapsed state when there's no active item in the section
+   - This ensures users always see the highlighted active item without needing to manually expand sections
+
+2. **Fixed `SidebarMenuItem.tsx` scroll timing for delayed expansion:**
+   - Added `requestAnimationFrame` wrapper around scroll logic to wait for DOM layout updates
+   - Added 100ms delay after RAF to allow collapsible animations to complete
+   - Added proper cleanup for both RAF and timeout to prevent memory leaks
+   - This ensures smooth scrolling to the active item after section expansion animation completes
+
+3. **Fixed `SidebarFavorites.tsx` missing search filtering:**
+   - Added `filteredFavoriteItems` memoized variable that filters favorites based on search query
+   - Updated early return to check `filteredFavoriteItems.length` instead of `favoriteItems.length`
+   - The component was referencing `filteredFavoriteItems` but it wasn't defined, causing potential runtime errors
+
+**Acceptance Criteria Met:**
+- [x] Active sidebar item is always visible (section auto-expands if needed)
+- [x] Smooth scroll brings the active item into view after expansion animation
+- [x] Search filtering works correctly in Favorites section
+- [x] No TypeScript errors in changed files
+
+### Files Changed:
+- `src/components/admin/sidebar/SidebarSection.tsx` - Added hasActiveItem check and auto-expand logic
+- `src/components/admin/sidebar/SidebarMenuItem.tsx` - Fixed scroll timing with RAF and delay
+- `src/components/admin/sidebar/SidebarFavorites.tsx` - Added filteredFavoriteItems for search filtering
