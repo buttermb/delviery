@@ -353,6 +353,7 @@ const AdvancedAnalyticsPage = lazy(() => import("./pages/tenant-admin/AdvancedAn
 const RealtimeDashboardPage = lazy(() => import("./pages/tenant-admin/RealtimeDashboardPage"));
 const CustomReportsPage = lazy(() => import("./pages/tenant-admin/CustomReportsPage"));
 const CommissionTrackingPage = lazy(() => import("./pages/tenant-admin/CommissionTrackingPage"));
+const PayoutsPage = lazy(() => import("./pages/admin/PayoutsPage"));
 
 // Marketplace Pages
 const SellerProfilePage = lazy(() => import("./pages/tenant-admin/marketplace/SellerProfilePage"));
@@ -1028,6 +1029,7 @@ const App = () => {
                                         <Route path="realtime-dashboard" element={<FeatureProtectedRoute featureId="realtime-dashboard"><RealtimeDashboardPage /></FeatureProtectedRoute>} />
                                         <Route path="custom-reports" element={<FeatureProtectedRoute featureId="custom-reports"><CustomReportsPage /></FeatureProtectedRoute>} />
                                         <Route path="commission-tracking" element={<FeatureProtectedRoute featureId="commission-tracking"><CommissionTrackingPage /></FeatureProtectedRoute>} />
+                                        <Route path="payouts" element={<FeatureProtectedRoute featureId="financial-center"><PayoutsPage /></FeatureProtectedRoute>} />
                                         <Route path="revenue-reports" element={<FeatureProtectedRoute featureId="revenue-reports"><RevenueReportsPage /></FeatureProtectedRoute>} />
                                         <Route path="delivery-analytics" element={<FeatureProtectedRoute featureId="delivery-analytics"><DeliveryAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="cash-register" element={<FeatureProtectedRoute featureId="cash-register"><CashRegisterPage /></FeatureProtectedRoute>} />

@@ -5,7 +5,7 @@
  * - Invoices: Invoice management
  * - Expenses: Expense tracking
  * - Revenue: Revenue reports
- * - Commissions: Commission tracking
+ * - Payouts: Payout schedules and history
  */
 
 import { useSearchParams } from 'react-router-dom';
@@ -15,12 +15,12 @@ import {
     FileText,
     CreditCard,
     TrendingUp,
-    Percent,
     FileEdit,
     Wallet,
     Building2,
+    Banknote,
 } from 'lucide-react';
-import { lazy, Suspense, useCallback, useMemo } from 'react';
+import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
@@ -28,7 +28,7 @@ const FinancialCenter = lazy(() => import('@/pages/admin/FinancialCenterReal'));
 const InvoicesPage = lazy(() => import('@/pages/admin/InvoicesPage'));
 const ExpenseTracking = lazy(() => import('@/pages/admin/ExpenseTracking'));
 const RevenueReportsPage = lazy(() => import('@/pages/tenant-admin/RevenueReportsPage'));
-const CommissionTrackingPage = lazy(() => import('@/pages/tenant-admin/CommissionTrackingPage'));
+const PayoutsPage = lazy(() => import('@/pages/admin/PayoutsPage'));
 const AdvancedInvoicePage = lazy(() => import('@/pages/admin/AdvancedInvoicePage'));
 const CollectionMode = lazy(() => import('@/pages/admin/CollectionMode'));
 const TaxManagementPage = lazy(() => import('@/pages/admin/TaxManagementPage'));
@@ -50,7 +50,7 @@ const tabs = [
     // Transactions
     { id: 'invoices', label: 'Invoices', icon: FileText, group: 'Transactions' },
     { id: 'collections', label: 'Collect', icon: Wallet, group: 'Transactions' },
-    { id: 'commissions', label: 'Payouts', icon: Percent, group: 'Transactions' },
+    { id: 'payouts', label: 'Payouts', icon: Banknote, group: 'Transactions' },
     // Utilities
     { id: 'builder', label: 'Builder', icon: FileEdit, group: 'Tools' },
 ] as const;
@@ -124,8 +124,8 @@ export default function FinanceHubPage() {
                 <TabsContent value="collections" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><CollectionMode embedded /></Suspense>
                 </TabsContent>
-                <TabsContent value="commissions" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><CommissionTrackingPage /></Suspense>
+                <TabsContent value="payouts" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><PayoutsPage /></Suspense>
                 </TabsContent>
             </Tabs>
         </div>
