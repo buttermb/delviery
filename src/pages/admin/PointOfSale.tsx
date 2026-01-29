@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, CreditCard, Maximize2, Minimize2, Share2, Receipt } from 'lucide-react';
+import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, CreditCard, Maximize2, Minimize2, Share2, Receipt, Wallet } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
@@ -26,6 +27,10 @@ import { cn } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { ShiftManager } from '@/components/pos/ShiftManager';
+import { CashDrawerPanel } from '@/components/pos/CashDrawerPanel';
+import { queryKeys } from '@/lib/queryKeys';
+import { useRealtimeShifts, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 
 export interface Product {
   id: string;
@@ -89,6 +94,30 @@ export default function PointOfSale() {
     tables: ['wholesale_orders', 'products'],
     enabled: !!tenantId,
   });
+
+  // Query active shift for cash drawer tracking
+  const { data: activeShift } = useQuery({
+    queryKey: queryKeys.pos.shifts.active(tenantId),
+    queryFn: async () => {
+      if (!tenantId) return null;
+      const { data, error } = await supabase
+        .from('pos_shifts')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .eq('status', 'open')
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return data;
+    },
+    enabled: !!tenantId,
+  });
+
+  // Enable realtime updates for shifts and cash drawer
+  useRealtimeShifts(tenantId);
+  useRealtimeCashDrawer(activeShift?.id);
 
   useEffect(() => {
     if (tenantId) {
@@ -516,8 +545,25 @@ export default function PointOfSale() {
           <Badge variant={activeOrderId ? "default" : "outline"} className="hidden sm:flex">
             {activeOrderId ? "Online Order Active" : "Walk-In Mode"}
           </Badge>
+          {activeShift && (
+            <Badge variant="secondary" className="hidden md:flex items-center gap-1.5 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              Shift Active
+            </Badge>
+          )}
         </div>
         <div className="flex items-center gap-2">
+          {!isFullScreen && activeShift && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setActiveTab('shift')}
+              className="hidden lg:flex items-center gap-2"
+            >
+              <Wallet className="h-4 w-4" />
+              ${((activeShift.opening_cash || 0) + (activeShift.cash_sales || 0)).toFixed(2)}
+            </Button>
+          )}
           {!isFullScreen && (
             <Button variant="outline" onClick={() => navigateToAdmin('order-management')}>
               View History
@@ -542,6 +588,10 @@ export default function PointOfSale() {
             <TabsList className="mb-4">
               <TabsTrigger value="register" className="px-6 py-2">Here & Now</TabsTrigger>
               <TabsTrigger value="pickups" className="px-6 py-2">Pending Pickups</TabsTrigger>
+              <TabsTrigger value="shift" className="px-6 py-2 flex items-center gap-2">
+                <Wallet className="h-4 w-4" />
+                Shift & Drawer
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="register" className="flex-1 flex flex-col min-h-0 data-[state=active]:flex">
@@ -646,6 +696,27 @@ export default function PointOfSale() {
                     onCancelOrder={handleCancelOrder}
                   />
                 )}
+              </ScrollArea>
+            </TabsContent>
+
+            <TabsContent value="shift" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
+              <ScrollArea className="flex-1 pr-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-4">
+                  {/* Shift Manager */}
+                  <div className="lg:col-span-2">
+                    <ShiftManager />
+                  </div>
+
+                  {/* Cash Drawer Panel */}
+                  {activeShift && (
+                    <CashDrawerPanel
+                      shiftId={activeShift.id}
+                      openingCash={activeShift.opening_cash || 0}
+                      expectedCash={(activeShift.opening_cash || 0) + (activeShift.cash_sales || 0)}
+                      className="lg:col-span-1"
+                    />
+                  )}
+                </div>
               </ScrollArea>
             </TabsContent>
           </Tabs>
