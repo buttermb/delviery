@@ -7332,3 +7332,72 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+---
+
+## Agent 68: Build ResetPasswordPage Handling URL Token with Password Requirements Display
+
+### Task: Build ResetPasswordPage handling URL token with password requirements display
+
+**Summary:**
+The existing `src/pages/auth/ResetPasswordPage.tsx` already implements all required functionality for password reset with URL token handling and password requirements display. This task involved routing the existing implementation in `App.tsx`.
+
+### What was done:
+
+1. **Verified existing ResetPasswordPage implementation** (`src/pages/auth/ResetPasswordPage.tsx`):
+   - URL token handling via `useSearchParams` hook (line 43-44)
+   - Token pattern validation with regex (line 13)
+   - Password requirements display with visual indicators (lines 20-26, 266-282):
+     - At least 8 characters
+     - One uppercase letter
+     - One lowercase letter
+     - One number
+     - One special character
+   - Password strength meter with color-coded progress bar (lines 28-40, 247-263)
+   - Real-time password match validation (lines 65-66, 311-322)
+   - Token verification states (loading, valid, expired, invalid)
+   - Show/hide password toggle buttons
+   - Form submission with password reset confirmation
+   - Success state with redirect to login
+
+2. **Verified existing ForgotPasswordPage implementation** (`src/pages/auth/ForgotPasswordPage.tsx`):
+   - Email input with validation
+   - Client-side rate limiting (3 requests per minute)
+   - Success state with security messaging (doesn't reveal if email exists)
+   - Link to ForgotPasswordPage from ResetPasswordPage
+
+3. **Added routes in `App.tsx`**:
+   - Added lazy import for `ResetPasswordPage` from `./pages/auth/ResetPasswordPage`
+   - Added lazy import for `ForgotPasswordPage` from `./pages/auth/ForgotPasswordPage`
+   - Added route `/auth/forgot-password` for ForgotPasswordPage
+   - Added route `/auth/reset-password` for ResetPasswordPage
+
+4. **Verified existing `usePasswordReset` hook** (`src/hooks/usePasswordReset.ts`):
+   - Token verification via edge function
+   - Password strength validation
+   - Password reset confirmation via edge function
+   - TanStack Query mutations with proper error handling
+
+### Password Requirements Display Features:
+- Visual checklist showing each requirement met/unmet with ✓/✗ icons
+- Green color for met requirements, gray for unmet
+- Password strength labels: Very weak, Weak, Fair, Good, Strong
+- Color-coded progress bar (red → orange → yellow → blue → green)
+- Real-time updates as user types
+
+### Token Handling:
+- Token extracted from URL via `useSearchParams().get("token")`
+- Token format validation (alphanumeric, 20+ chars)
+- Token verification via edge function on page load
+- Error states for: missing token, invalid format, expired, already used
+
+### Files Changed:
+- `src/App.tsx` - Added imports and routes for ResetPasswordPage and ForgotPasswordPage
+
+### Verification:
+- TypeScript type checking passes (`npx tsc --noEmit`)
+- Routes correctly added at `/auth/forgot-password` and `/auth/reset-password`
+
+### Notes:
+- Pre-existing build errors in `src/pages/admin/storefront/StorefrontBuilder.tsx` (unrelated to this task)
+- Pre-existing lint warnings (no new warnings introduced)

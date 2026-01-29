@@ -163,6 +163,8 @@ import { UrlEncodingFixer } from "./components/UrlEncodingFixer";
 const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePage"));
 const TenantAdminVerifyEmailPage = lazy(() => import("./pages/tenant-admin/VerifyEmailPage"));
 const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
+const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage").then(m => ({ default: m.ResetPasswordPage })));
+const ForgotPasswordPage = lazy(() => import("./pages/auth/ForgotPasswordPage").then(m => ({ default: m.ForgotPasswordPage })));
 const SignupSuccessPage = lazy(() => import("./pages/auth/SignupSuccessPage").then(m => ({ default: m.SignupSuccessPage })));
 const AccountSettingsPage = lazy(() => import("./pages/auth/AccountSettingsPage").then(m => ({ default: m.AccountSettingsPage })));
 const ChangePasswordPage = lazy(() => import("./pages/auth/ChangePasswordPage").then(m => ({ default: m.ChangePasswordPage })));
@@ -631,6 +633,8 @@ const App = () => {
                                       <Route path="/signup-success" element={<SignupSuccessPage />} />
                                       <Route path="/auth/confirm" element={<AuthConfirmPage />} />
                                       <Route path="/auth/secure-account" element={<SecureAccountPage />} />
+                                      <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+                                      <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
 
 
                                       {/* Redirect admin routes without tenant slug - go directly to business login */}
