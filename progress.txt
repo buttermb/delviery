@@ -2,6 +2,18 @@
 
 ### Completed
 
+#### Task: Add Fulfillment section with Overview, Fleet, Couriers, Tracking in sidebar-navigation.ts
+
+**What was done:**
+- Updated the Fulfillment section in `src/components/admin/sidebar-navigation.ts` to include all required items:
+  - Overview (`/admin/fulfillment-hub`) - Truck icon
+  - Fleet (`/admin/fulfillment-hub?tab=fleet`) - Car icon, professional tier
+  - Couriers (`/admin/couriers`) - UserCog icon
+  - Tracking (`/admin/delivery-tracking`) - Navigation icon, professional tier
+- Removed duplicate Fulfillment section (that only had Drivers) to clean up the navigation structure
+
+---
+
 #### 1. Created `useStorefrontOrders` Hook (`src/hooks/useStorefrontOrders.ts`)
 - Customer order history fetching with TanStack Query
 - Order filtering: status (all/active/completed/cancelled), search (order number/item names), date range (7d/30d/90d)
