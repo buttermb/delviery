@@ -63,7 +63,12 @@ import {
   UserCheck,
   Flame,
   Brain,
-  Star
+  Star,
+  Barcode,
+  Headphones,
+  HeadphonesIcon,
+  Award,
+  HelpCircle
 } from 'lucide-react';
 
 export interface NavItem {
@@ -91,6 +96,12 @@ export const navigationSections: NavSection[] = [
         icon: LayoutDashboard
       },
       {
+        title: 'Hotbox',
+        href: '/admin/hotbox',
+        icon: Flame,
+        badge: 'HOT'
+      },
+      {
         title: 'Live Orders',
         href: '/admin/orders?tab=live',
         icon: Activity,
@@ -98,38 +109,11 @@ export const navigationSections: NavSection[] = [
         tier: 'professional'
       },
       {
-        title: 'Real-Time Dashboard',
-        href: '/admin/realtime-dashboard',
-        icon: Activity,
-        tier: 'enterprise'
-      }
-    ]
-  },
-
-  // 🎛️ COMMAND CENTER
-  {
-    title: 'Command Center',
-    items: [
-      {
-        title: 'Live Map',
-        href: '/admin/live-map',
-        icon: Map,
-        badge: 'LIVE',
-        tier: 'enterprise'
-      },
-      {
         title: 'POS',
         href: '/admin/pos-system',
         icon: Store,
         tier: 'enterprise'
-      }
-    ]
-  },
-
-  // 🎛️ COMMAND CENTER
-  {
-    title: 'Command Center',
-    items: [
+      },
       {
         title: 'Live Map',
         href: '/admin/live-map',
