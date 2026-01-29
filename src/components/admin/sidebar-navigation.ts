@@ -63,7 +63,13 @@ import {
   UserCheck,
   Flame,
   Brain,
-  Star
+  Star,
+  Barcode,
+  HelpCircle,
+  Headphones,
+  Award,
+  ClipboardCheck,
+  FileBox
 } from 'lucide-react';
 
 export interface NavItem {
@@ -161,6 +167,31 @@ export const navigationSections: NavSection[] = [
   {
     title: 'Operations',
     items: [
+      {
+        title: 'Team & Roles',
+        href: '/admin/team-members',
+        icon: UsersRound
+      },
+      {
+        title: 'Vendors',
+        href: '/admin/vendor-management',
+        icon: Building2
+      },
+      {
+        title: 'Purchase Orders',
+        href: '/admin/purchase-orders',
+        icon: ClipboardCheck
+      },
+      {
+        title: 'Locations',
+        href: '/admin/locations',
+        icon: MapPin
+      },
+      {
+        title: 'Activity Logs',
+        href: '/admin/activity-logs',
+        icon: History
+      },
       {
         title: 'Orders',
         href: '/admin/orders',
@@ -381,7 +412,7 @@ export const navigationSections: NavSection[] = [
       {
         title: 'Support',
         href: '/admin/customer-support',
-        icon: HeadphonesIcon,
+        icon: Headphones,
         tier: 'professional'
       },
       {

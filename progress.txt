@@ -7332,3 +7332,24 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+
+## Agent 23 - Operations Section Enhancement
+
+### Task: Add Operations section with Team Roles, Vendors, Purchase Orders, Locations, Activity Logs
+
+**Completed:**
+- Updated Operations section in sidebar-navigation.ts to include the following items at the top:
+  1. **Team & Roles** - Links to /admin/team-members with UsersRound icon
+  2. **Vendors** - Links to /admin/vendor-management with Building2 icon
+  3. **Purchase Orders** - Links to /admin/purchase-orders with ClipboardCheck icon
+  4. **Locations** - Links to /admin/locations with MapPin icon
+  5. **Activity Logs** - Links to /admin/activity-logs with History icon
+
+- Fixed icon imports:
+  - Added missing imports: Barcode, HelpCircle, Headphones, Award, ClipboardCheck, FileBox
+  - Fixed HeadphonesIcon reference to use Headphones (valid lucide-react icon)
+
+### Files Changed:
+- `src/components/admin/sidebar-navigation.ts` - Added 5 new nav items to Operations section and fixed icon imports
+
