@@ -6,6 +6,7 @@
  * - Displays favorited items from sidebar config
  * - Remove favorites directly with optimistic updates
  * - Database persistence through SidebarContext's toggleFavorite mutation
+ * - Search filtering support for favorites
  */
 
 import { useCallback, useMemo } from 'react';
@@ -50,10 +51,12 @@ export function SidebarFavorites() {
       .filter((item): item is NonNullable<typeof item> => item !== undefined);
   }, [safeConfig, safeFavorites]);
 
-  // Filter favorite items based on search query
+  // Filter favorites by search query
   const filteredFavoriteItems = useMemo(() => {
-    if (!searchQuery.trim()) return favoriteItems;
-    return favoriteItems.filter((item) => matchesSearchQuery(item.name, searchQuery));
+    if (!searchQuery.trim()) {
+      return favoriteItems;
+    }
+    return favoriteItems.filter(item => matchesSearchQuery(item.name, searchQuery));
   }, [favoriteItems, searchQuery]);
 
   // Check if path is active
@@ -81,7 +84,7 @@ export function SidebarFavorites() {
     toggleFavorite(itemId);
   }, [toggleFavorite]);
 
-  // Early return if no favorites or no matches in search
+  // Early return if no favorites or no filtered results
   if (filteredFavoriteItems.length === 0) {
     return null;
   }
