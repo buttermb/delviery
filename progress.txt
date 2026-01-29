@@ -7332,3 +7332,24 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 22 - Analytics Section Navigation Update
+
+### Task: Add Analytics section with Overview, Reports, Advanced Export in sidebar-navigation.ts
+
+**Completed:**
+- Added "Overview" nav item to Analytics section (first item per convention)
+  - Links to `/admin/analytics`
+  - Uses `BarChart3` icon
+  - No tier restriction (available to all tiers)
+- Added "Reports" nav item to Analytics section
+  - Links to `/admin/analytics-reports`
+  - Uses `FileText` icon
+  - Tier: professional
+- Added "Advanced Export" nav item to Analytics section
+  - Links to `/admin/analytics-advanced-export`
+  - Uses `Database` icon
+  - Tier: enterprise
+
+### Files Changed:
+- `src/components/admin/sidebar-navigation.ts` - Added Overview, Reports, and Advanced Export items to Analytics section
