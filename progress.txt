@@ -7332,3 +7332,56 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 30 - Connect Customers to CRM
+
+### Task: Connect Customers to CRM so customer updates sync to CRM timeline records
+
+**Completed:**
+
+1. **Database Migration** (`supabase/migrations/20260128000001_customer_crm_sync.sql`)
+   - Extended `crm_activity_log` table with `contact_id` column for customer references
+   - Added `metadata` JSONB column for storing rich activity context
+   - Created `crm_customer_links` table to link unified contacts to CRM clients
+   - Implemented `log_customer_crm_activity()` function to log customer activities to CRM timeline
+   - Created `sync_contact_update_to_crm()` trigger function for automatic sync on contact updates
+   - Added `link_customer_to_crm()` and `unlink_customer_from_crm()` functions
+   - Created `get_customer_crm_timeline()` function for fetching customer activities
+   - Added `contacts_with_crm_links` view for easy querying
+   - Full RLS policies for tenant isolation
+
+2. **TypeScript Types** (`src/types/crm.ts`)
+   - Added `CRMActivityType` union type with all supported activity types including:
+     - Original CRM activities (pre_order_created, invoice_created, etc.)
+     - Customer sync activities (customer_created, customer_updated, customer_linked, etc.)
+   - Extended `CRMActivityLog` interface with `contact_id` and `metadata` fields
+   - Added `CRMCustomerLink` interface for customer-CRM links
+   - Added `LinkCustomerToCRMInput` and `CustomerCRMTimelineEntry` types
+
+3. **React Hook** (`src/hooks/crm/useSyncCustomerToCRM.ts`)
+   - `useContactCRMLinks()` - Fetch CRM links for a contact
+   - `useCRMClientContacts()` - Fetch contacts linked to a CRM client
+   - `useCustomerCRMTimeline()` - Fetch CRM activity timeline for a contact
+   - `useLinkCustomerToCRM()` - Link a customer to a CRM client
+   - `useUnlinkCustomerFromCRM()` - Unlink a customer from a CRM client
+   - `useToggleCRMSync()` - Enable/disable sync for a link
+   - `useLogCustomerCRMActivity()` - Manually log activities
+   - `useIsContactLinkedToCRM()` - Check if contact has CRM links
+
+4. **Activity Timeline Component** (`src/components/crm/ActivityTimeline.tsx`)
+   - Added icons for customer sync activities (Users, RefreshCw, Link2, Unlink, Star, ShoppingCart)
+   - Added color coding for customer activities (emerald, sky, indigo, orange, amber, cyan)
+   - Added metadata changes display for customer_updated activities showing field changes
+   - Properly typed activities using CRMActivityLog interface
+
+### How It Works:
+1. When a contact is linked to a CRM client via `link_customer_to_crm()`, a link record is created
+2. Database trigger `sync_contact_update_to_crm()` automatically logs activities when linked contacts are updated
+3. Activities appear in the CRM client's timeline with proper icons, colors, and change details
+4. Frontend hooks allow fetching customer timeline, managing links, and manual activity logging
+
+### Files Changed:
+- `supabase/migrations/20260128000001_customer_crm_sync.sql` (new)
+- `src/types/crm.ts` (updated)
+- `src/hooks/crm/useSyncCustomerToCRM.ts` (new)
+- `src/components/crm/ActivityTimeline.tsx` (updated)
