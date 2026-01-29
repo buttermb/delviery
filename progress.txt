@@ -7407,77 +7407,34 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 54 - Connect POS to Cash Register Tracking Drawer Open Close and Counts
+## Agent 55 - Connect Hotbox to Live Orders
 
-### Task: Connect POS to Cash Register tracking drawer open/close and counts
+### Task: Connect Hotbox to Live Orders showing real-time order queue feed
 
 **Completed:**
+- Created `LiveOrdersWidget` component for Hotbox dashboard
+  - Real-time order queue feed with live connection status indicator
+  - Status summary badges showing counts for New, Preparing, Ready, and In Transit orders
+  - Compact order list with order number, source badge (Menu/App), time ago, amount, and status
+  - Uses `useRealtimeSync` hook for Supabase real-time subscriptions on `orders` and `menu_orders` tables
+  - Fallback polling every 30 seconds if real-time connection fails
+  - "View All Orders" button links to full Live Orders page
 
-1. **Added cash drawer query keys to queryKeys.ts**
-   - Added `cashDrawer.all()`, `cashDrawer.events(shiftId)`, and `cashDrawer.balance(shiftId)` keys
+- Added `live-orders` widget to all business tier presets in `businessTiers.ts`:
+  - Street tier: Shows at top of widget list
+  - Trap tier: Shows at top of widget list
+  - Block tier: Shows at top of widget list
+  - Hood tier: Shows at top of widget list
+  - Empire tier: Shows at top of widget list
 
-2. **Created useCashDrawer hook (src/hooks/useCashDrawer.ts)**
-   - Manages cash drawer events (open, close, add, remove, payout, deposit)
-   - Queries cash drawer events for active shift
-   - Calculates current drawer balance from events
-   - Provides convenience methods: openDrawer, closeDrawer, addCash, removeCash, recordPayout, recordDeposit
-   - Includes CashCount interface and calculateCashCountTotal utility
-
-3. **Created CashDrawerPanel component (src/components/pos/CashDrawerPanel.tsx)**
-   - Displays drawer status (open/closed badge)
-   - Shows opening cash, expected cash, and current drawer balance
-   - Shows variance if actual differs from expected
-   - Quick action buttons for Add Cash, Remove Cash, Payout
-   - Count Drawer button for detailed cash counting
-   - Recent activity feed with last 10 events
-
-4. **Created CashCountDialog component (src/components/pos/CashCountDialog.tsx)**
-   - Full denomination counting (pennies through $100 bills)
-   - Real-time total calculation
-   - Variance display with over/short indicators
-   - Quick +/- buttons for each denomination
-   - Records variance as cash drawer event
-
-5. **Created CashDrawerEventDialog component (src/components/pos/CashDrawerEventDialog.tsx)**
-   - Reusable dialog for Add Cash, Remove Cash, and Payout actions
-   - Amount input with dollar formatting
-   - Optional reason field
-   - Configurable labels per event type
-
-6. **Integrated into PointOfSale.tsx**
-   - Added active shift query
-   - Added realtime subscriptions for shifts and cash drawer events
-   - Added "Shift & Drawer" tab with ShiftManager and CashDrawerPanel
-   - Added shift status badge in header (shows "Shift Active" when shift open)
-   - Added quick drawer balance button in header
-
-7. **Integrated into CashRegister.tsx**
-   - Added active shift query
-   - Added realtime subscriptions for shifts and cash drawer events
-   - Added CashDrawerPanel below transactions section
-   - Added shift balance badge in header
-   - Added "No Active Shift" alert when no shift is open
-   - Fixed duplicate tenantSlug variable declaration bug
+- Integrated widget into `HotboxDashboard.tsx`:
+  - Added import for `LiveOrdersWidget`
+  - Added conditional rendering based on `hasWidget('live-orders')`
+  - Widget appears first in the tier-specific sections
 
 ### Files Created:
-- `src/hooks/useCashDrawer.ts`
-- `src/components/pos/CashDrawerPanel.tsx`
-- `src/components/pos/CashCountDialog.tsx`
-- `src/components/pos/CashDrawerEventDialog.tsx`
+- `src/components/admin/hotbox/widgets/LiveOrdersWidget.tsx` - New real-time order queue widget
 
 ### Files Modified:
-- `src/lib/queryKeys.ts` - Added cashDrawer keys
-- `src/pages/admin/PointOfSale.tsx` - Integrated shift/drawer tracking
-- `src/pages/admin/CashRegister.tsx` - Integrated shift/drawer tracking
-
-### Database Tables Used:
-- `pos_shifts` - Shift management with opening/closing cash
-- `pos_cash_drawer_events` - Drawer activity log (open, close, add, remove, payout, deposit)
-
-### Features:
-- Real-time cash drawer tracking with Supabase subscriptions
-- Full denomination cash counting
-- Variance tracking (over/short)
-- Activity log of all drawer events
-- Integration with existing shift management
-- Visual shift status indicators in headers
+- `src/lib/presets/businessTiers.ts` - Added 'live-orders' to all tier dashboardWidgets arrays
+- `src/components/admin/hotbox/HotboxDashboard.tsx` - Added import and rendering of LiveOrdersWidget
