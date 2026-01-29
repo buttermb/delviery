@@ -409,6 +409,11 @@ export const navigationSections: NavSection[] = [
         badge: 'NEW'
       },
       {
+        title: 'Storefront',
+        href: '/admin/storefront',
+        icon: Store
+      },
+      {
         title: 'Loyalty Program',
         href: '/admin/marketing-hub?tab=loyalty',
         icon: Star
