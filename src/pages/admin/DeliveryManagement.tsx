@@ -21,6 +21,7 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { SearchInput } from '@/components/shared/SearchInput';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { CourierAvailabilityPanel } from '@/components/admin/fulfillment/CourierAvailabilityPanel';
 
 interface Delivery {
   id: string;
@@ -451,6 +452,12 @@ export default function DeliveryManagement() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Courier Availability Panel */}
+      <CourierAvailabilityPanel
+        maxCouriers={4}
+        className="mb-6"
+      />
 
       {/* Filters */}
       <Card className="mb-6">
