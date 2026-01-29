@@ -149,7 +149,10 @@ export default function PurchaseOrdersPage() {
       onConfirm: async () => {
         setLoading(true);
         try {
-          await deleteMutation.mutateAsync(po.id);
+          await deleteMutation.mutateAsync({
+            id: po.id,
+            poNumber: po.po_number || undefined,
+          });
           closeDialog();
         } finally {
           setLoading(false);
@@ -159,7 +162,11 @@ export default function PurchaseOrdersPage() {
   };
 
   const handleStatusChange = async (po: PurchaseOrder, newStatus: string) => {
-    await updateStatusMutation.mutateAsync({ id: po.id, status: newStatus });
+    await updateStatusMutation.mutateAsync({
+      id: po.id,
+      status: newStatus,
+      poNumber: po.po_number || undefined,
+    });
   };
 
   return (

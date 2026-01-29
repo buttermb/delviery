@@ -40,6 +40,7 @@ import {
 import { RACreateForm } from "@/components/admin/returns/RACreateForm";
 import { RADetail } from "@/components/admin/returns/RADetail";
 import { queryKeys } from "@/lib/queryKeys";
+import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
@@ -125,19 +126,34 @@ export default function ReturnsManagementPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, raNumber }: { id: string; raNumber: string }) => {
       if (!tenant?.id) throw new Error('No tenant');
       const { error } = await supabase
-        .from("returns" as any)
+        .from("returns" as unknown as 'returns')
         .delete()
         .eq("id", id)
         .eq("tenant_id", tenant.id);
 
       if (error && error.code !== "42P01") throw error;
+      return { id, raNumber };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.returns.lists() });
       toast.success("Return authorization deleted successfully");
+
+      // Log activity for audit trail
+      if (tenant?.id) {
+        logActivityAuto(
+          tenant.id,
+          ActivityActions.DELETE_RETURN,
+          'return_authorization',
+          data.id,
+          {
+            ra_number: data.raNumber,
+            deleted_at: new Date().toISOString(),
+          }
+        );
+      }
     },
     onError: (error: unknown) => {
       logger.error('Failed to delete return authorization', error, { component: 'ReturnsManagementPage' });
@@ -187,7 +203,10 @@ export default function ReturnsManagementPage() {
       onConfirm: async () => {
         setLoading(true);
         try {
-          await deleteMutation.mutateAsync(ra.id);
+          await deleteMutation.mutateAsync({
+            id: ra.id,
+            raNumber: ra.ra_number,
+          });
           closeDialog();
         } finally {
           setLoading(false);

@@ -7407,75 +7407,45 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
+=== Connect Operations to Activity Logs ===
+Date: Wed, Jan 28, 2026  7:54:52 PM
 
-## Agent 47 - Connect Operations to Locations
+Task: Connect Operations to Activity Logs showing audit trail of all actions
 
-### Task: Connect Operations to Locations enabling multi-location inventory management
+Changes Made:
 
-**Completed:**
+1. Updated src/lib/activityLogger.ts:
+   - Added Operations-specific activity actions:
+     * CREATE_SUPPLIER, UPDATE_SUPPLIER, DELETE_SUPPLIER
+     * CREATE_PURCHASE_ORDER, UPDATE_PURCHASE_ORDER, UPDATE_PURCHASE_ORDER_STATUS, DELETE_PURCHASE_ORDER
+     * CREATE_RETURN, UPDATE_RETURN, UPDATE_RETURN_STATUS, DELETE_RETURN
+     * INVITE_TEAM_MEMBER, REMOVE_TEAM_MEMBER, UPDATE_TEAM_MEMBER_ROLE
+     * CREATE_ROLE, UPDATE_ROLE, DELETE_ROLE
+   - Added ActivityCategories export with SUPPLY and OPERATIONS categories
 
-1. **Database Migration (20260128000001_connect_operations_to_locations.sql)**
-   - Added `location_id` column to `receiving_records` table for tracking which location received shipments
-   - Added `home_location_id` column to `wholesale_runners` table for runner base location assignment
-   - Created `operations_location_summary` view for aggregated operations statistics by location
-   - Created `get_location_operations_summary()` RPC function for dashboard metrics
-   - Added proper indexes for efficient location-based queries
-   - Ensured tenant isolation with RLS policies
+2. Added activity logging to Supplier operations:
+   - src/components/admin/suppliers/SupplierForm.tsx - logs create/update supplier actions
+   - src/pages/admin/SupplierManagementPage.tsx - logs delete supplier actions
 
-2. **Query Keys (src/lib/queryKeys.ts)**
-   - Added comprehensive `locations` query key factory:
-     - `locations.list(tenantId, filters)` - List locations with filters
-     - `locations.detail(id)` - Single location details
-     - `locations.operationsSummary(tenantId, locationId)` - Operations summary
-     - `locations.inventory(locationId)` - Location inventory
-     - `locations.receiving(locationId)` - Location receiving records
-     - `locations.runners(locationId)` - Location runners
+3. Added activity logging to Purchase Order operations:
+   - src/hooks/usePurchaseOrders.ts - logs create/status update/delete PO actions
+   - src/pages/admin/PurchaseOrdersPage.tsx - updated to pass PO metadata to hooks
 
-3. **useLocations Hook (src/hooks/useLocations.ts)**
-   - Created comprehensive hook for location management
-   - Features:
-     - Fetch locations with tenant isolation
-     - Operations summary calculation (receiving, runners, inventory stats)
-     - CRUD operations (create, update, delete) with optimistic updates
-     - TanStack Query integration with proper cache invalidation
-   - Also exported `useLocationOptions()` for dropdown/select components
+4. Added activity logging to Returns operations:
+   - src/components/admin/returns/RACreateForm.tsx - logs create return authorization
+   - src/pages/admin/ReturnsManagementPage.tsx - logs delete return authorization
 
-4. **ReceivingPage Updates (src/pages/admin/operations/ReceivingPage.tsx)**
-   - Added location selector dropdown in filters section
-   - Location filter persists in query and filters receiving records
-   - Create Receipt dialog now includes location selection (optional)
-   - Receipt list items display location badge with name/city/state
-   - Properly invalidates location queries on mutations
+5. Added activity logging to Team Management operations:
+   - src/pages/admin/TeamManagement.tsx - logs invite/remove/role change actions
 
-5. **LocationsManagement Updates (src/pages/admin/LocationsManagement.tsx)**
-   - Refactored to use new `useLocations` hook instead of direct supabase calls
-   - Each location card now shows operations summary:
-     - Receiving stats (total, pending)
-     - Inventory stats (products, units)
-     - Runner stats (total, active)
-   - Low stock alert indicator when products below reorder point
-   - Improved loading states with skeleton components
+6. Added activity logging to Role Management operations:
+   - src/pages/admin/RoleManagement.tsx - logs create/update role actions
 
-6. **LocationInventoryPage (src/pages/admin/locations/LocationInventoryPage.tsx)**
-   - New dedicated page for location-based inventory view
-   - Features:
-     - Location selector to filter by specific location or view all
-     - Search by product name or SKU
-     - Sort by product name, quantity, or available stock
-     - Filter to show low stock items only
-     - Stats cards showing totals (products, units, available, low stock)
-     - Detailed inventory table with per-location breakdown
-     - Summary table aggregating inventory across all locations
+All activity logs include relevant metadata such as:
+- Resource names and IDs
+- Previous and new values for updates
+- Timestamps for deletions
+- Associated user information (email, role)
 
-### Files Changed:
-- `supabase/migrations/20260128000001_connect_operations_to_locations.sql` (new)
-- `src/lib/queryKeys.ts` - Added locations query keys
-- `src/hooks/useLocations.ts` (new)
-- `src/pages/admin/operations/ReceivingPage.tsx` - Location selection/filtering
-- `src/pages/admin/LocationsManagement.tsx` - Operations summary display
-- `src/pages/admin/locations/LocationInventoryPage.tsx` (new)
-
-### Build Status:
-- TypeScript compilation: PASSED (npx tsc --noEmit --skipLibCheck)
-- ESLint: 0 errors (4 pre-existing warnings in ReceivingPage)
-
+The existing Activity Logs page in Operations Hub will now display
+a complete audit trail of all operations actions.

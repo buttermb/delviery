@@ -28,6 +28,7 @@ import { PendingInvitations } from '@/components/admin/PendingInvitations';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
 
 export default function TeamManagement() {
   const { tenant, loading: authLoading } = useTenantAdminAuth();
@@ -118,6 +119,19 @@ export default function TeamManagement() {
         description: `Invitation sent to ${formData.email}.`
       });
 
+      // Log activity for audit trail
+      logActivityAuto(
+        tenant.id,
+        ActivityActions.INVITE_TEAM_MEMBER,
+        'team_member',
+        undefined,
+        {
+          email: formData.email,
+          role: formData.role,
+          full_name: formData.full_name || undefined,
+        }
+      );
+
       setIsDialogOpen(false);
       setFormData({ email: '', full_name: '', role: 'team_member' });
       loadTeamMembers();
@@ -155,6 +169,11 @@ export default function TeamManagement() {
 
   const handleUpdateRole = async (userId: string, newRole: string) => {
     if (!tenant) return;
+
+    // Get current member info for audit logging
+    const member = teamMembers.find(m => m.user_id === userId);
+    const previousRole = member?.role;
+
     try {
       const { error } = await supabase
         .from('tenant_users')
@@ -165,6 +184,21 @@ export default function TeamManagement() {
       if (error) throw error;
 
       toast({ title: 'Success', description: 'Role updated successfully' });
+
+      // Log activity for audit trail
+      logActivityAuto(
+        tenant.id,
+        ActivityActions.UPDATE_TEAM_MEMBER_ROLE,
+        'team_member',
+        userId,
+        {
+          email: member?.email,
+          full_name: member?.full_name,
+          previous_role: previousRole,
+          new_role: newRole,
+        }
+      );
+
       loadTeamMembers();
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update role';
@@ -178,7 +212,11 @@ export default function TeamManagement() {
   };
 
   const handleRemove = async () => {
-    if (!memberToRemove) return;
+    if (!memberToRemove || !tenant) return;
+
+    // Get member info for audit logging before deletion
+    const member = teamMembers.find(m => m.user_id === memberToRemove.userId);
+
     try {
       setIsRemoving(true);
       const { error } = await supabase
@@ -190,6 +228,21 @@ export default function TeamManagement() {
       if (error) throw error;
 
       toast({ title: 'Success', description: 'Team member removed successfully' });
+
+      // Log activity for audit trail
+      logActivityAuto(
+        tenant.id,
+        ActivityActions.REMOVE_TEAM_MEMBER,
+        'team_member',
+        memberToRemove.userId,
+        {
+          email: member?.email,
+          full_name: member?.full_name || memberToRemove.name,
+          role: member?.role,
+          removed_at: new Date().toISOString(),
+        }
+      );
+
       loadTeamMembers();
       setDeleteDialogOpen(false);
       setMemberToRemove(null);

@@ -39,8 +39,7 @@ import { handleError } from '@/utils/errorHandling/handlers';
 import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { queryKeys } from '@/lib/queryKeys';
-import { PERMISSION_CATEGORIES, getPermissionLabel } from '@/lib/permissions/rolePermissions';
+import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
 
 interface Role {
   id: string;
@@ -165,9 +164,26 @@ export function RoleManagement() {
 
       return roleData;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.roles.list(tenantId) });
-      toast({ title: 'Role created', description: 'The role has been created successfully.' });
+    onSuccess: (roleData) => {
+      queryClient.invalidateQueries({ queryKey: ['roles', tenantId] });
+      toast({ title: 'Role created', description: 'Role has been successfully created.' });
+
+      // Log activity for audit trail
+      if (tenantId && roleData) {
+        logActivityAuto(
+          tenantId,
+          ActivityActions.CREATE_ROLE,
+          'role',
+          (roleData as { id: string }).id,
+          {
+            role_name: formData.name,
+            description: formData.description,
+            permissions_count: formData.permissions.length,
+            permissions: formData.permissions,
+          }
+        );
+      }
+
       resetForm();
     },
     onError: (error) => {
@@ -224,8 +240,27 @@ export function RoleManagement() {
       return roleData;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.roles.list(tenantId) });
-      toast({ title: 'Role updated', description: 'The role has been updated successfully.' });
+      queryClient.invalidateQueries({ queryKey: ['roles', tenantId] });
+      toast({ title: 'Role updated', description: 'Role has been successfully updated.' });
+
+      // Log activity for audit trail
+      if (tenantId && editingRole) {
+        logActivityAuto(
+          tenantId,
+          ActivityActions.UPDATE_ROLE,
+          'role',
+          editingRole.id,
+          {
+            role_name: formData.name,
+            previous_name: editingRole.name,
+            description: formData.description,
+            permissions_count: formData.permissions.length,
+            permissions: formData.permissions,
+            previous_permissions: editingRole.permissions,
+          }
+        );
+      }
+
       resetForm();
     },
     onError: (error) => {

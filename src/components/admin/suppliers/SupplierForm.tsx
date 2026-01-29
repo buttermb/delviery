@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
+import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
 import type { Database } from "@/integrations/supabase/types";
 
 type Supplier = Database['public']['Tables']['wholesale_suppliers']['Row'];
@@ -66,15 +67,34 @@ export function SupplierForm({ open, onOpenChange, supplier, onSuccess }: Suppli
 
   const createMutation = useMutation({
     mutationFn: async (data: SupplierInsert) => {
-      const { error } = await supabase
+      const { data: newSupplier, error } = await supabase
         .from("wholesale_suppliers")
-        .insert([data]);
+        .insert([data])
+        .select()
+        .single();
 
       if (error) throw error;
+      return newSupplier;
     },
-    onSuccess: () => {
+    onSuccess: (newSupplier) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.lists() });
       toast.success("Supplier created successfully");
+
+      // Log activity for audit trail
+      if (tenant?.id) {
+        logActivityAuto(
+          tenant.id,
+          ActivityActions.CREATE_SUPPLIER,
+          'supplier',
+          newSupplier.id,
+          {
+            supplier_name: newSupplier.supplier_name,
+            contact_person: newSupplier.contact_person,
+            email: newSupplier.email,
+          }
+        );
+      }
+
       onSuccess?.();
     },
     onError: (error: unknown) => {
@@ -87,17 +107,38 @@ export function SupplierForm({ open, onOpenChange, supplier, onSuccess }: Suppli
     mutationFn: async (data: SupplierUpdate) => {
       if (!supplier?.id) throw new Error("Supplier ID is required");
 
-      const { error } = await supabase
+      const { data: updatedSupplier, error } = await supabase
         .from("wholesale_suppliers")
         .update(data)
-        .eq("id", supplier.id);
+        .eq("id", supplier.id)
+        .select()
+        .single();
 
       if (error) throw error;
+      return updatedSupplier;
     },
-    onSuccess: () => {
+    onSuccess: (updatedSupplier) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.detail(supplier!.id) });
       toast.success("Supplier updated successfully");
+
+      // Log activity for audit trail
+      if (tenant?.id) {
+        logActivityAuto(
+          tenant.id,
+          ActivityActions.UPDATE_SUPPLIER,
+          'supplier',
+          supplier!.id,
+          {
+            supplier_name: updatedSupplier.supplier_name,
+            changes: {
+              previous_name: supplier!.supplier_name,
+              new_name: updatedSupplier.supplier_name,
+            },
+          }
+        );
+      }
+
       onSuccess?.();
     },
     onError: (error: unknown) => {
