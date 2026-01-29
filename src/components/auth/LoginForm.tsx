@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -40,6 +40,16 @@ interface LoginFormProps {
 
 export function LoginForm({ onSubmit, error, isLoading = false, defaultEmail = '' }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus email input on mount for better keyboard accessibility
+  useEffect(() => {
+    // Small delay to ensure form is rendered
+    const timer = setTimeout(() => {
+      emailInputRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -82,14 +92,20 @@ export function LoginForm({ onSubmit, error, isLoading = false, defaultEmail = '
               <FormControl>
                 <Input
                   {...field}
+                  ref={(e) => {
+                    // Merge refs: react-hook-form's ref and our emailInputRef
+                    field.ref(e);
+                    (emailInputRef as React.MutableRefObject<HTMLInputElement | null>).current = e;
+                  }}
                   type="email"
                   placeholder="you@example.com"
                   autoComplete="email"
                   disabled={isLoading}
                   aria-required="true"
+                  aria-describedby={form.formState.errors.email ? 'email-error' : undefined}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage id="email-error" />
             </FormItem>
           )}
         />
@@ -109,6 +125,7 @@ export function LoginForm({ onSubmit, error, isLoading = false, defaultEmail = '
                     autoComplete="current-password"
                     disabled={isLoading}
                     aria-required="true"
+                    aria-describedby={form.formState.errors.password ? 'password-error' : undefined}
                     className="pr-10"
                   />
                   <Button
@@ -130,7 +147,7 @@ export function LoginForm({ onSubmit, error, isLoading = false, defaultEmail = '
                   </Button>
                 </div>
               </FormControl>
-              <FormMessage />
+              <FormMessage id="password-error" />
             </FormItem>
           )}
         />

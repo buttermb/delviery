@@ -4,7 +4,7 @@
  * full name, phone (with formatting), terms checkbox, and error display.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -106,6 +106,16 @@ export function SignupForm({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const firstInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus first input on mount for better keyboard accessibility
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      firstInputRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const markTouched = useCallback((field: string) => {
     setTouched(prev => ({ ...prev, [field]: true }));
@@ -240,6 +250,7 @@ export function SignupForm({
         error={touched.fullName ? errors.fullName : undefined}
       >
         <Input
+          ref={firstInputRef}
           id="signup-fullName"
           type="text"
           value={fullName}
@@ -250,6 +261,7 @@ export function SignupForm({
           error={!!(touched.fullName && errors.fullName)}
           disabled={loading}
           aria-invalid={!!(touched.fullName && errors.fullName)}
+          aria-describedby={touched.fullName && errors.fullName ? 'fullName-error' : undefined}
         />
       </FormField>
 
@@ -271,6 +283,7 @@ export function SignupForm({
           error={!!(touched.email && errors.email)}
           disabled={loading}
           aria-invalid={!!(touched.email && errors.email)}
+          aria-describedby={touched.email && errors.email ? 'email-error' : undefined}
         />
       </FormField>
 
@@ -292,6 +305,7 @@ export function SignupForm({
           error={!!(touched.phone && errors.phone)}
           disabled={loading}
           aria-invalid={!!(touched.phone && errors.phone)}
+          aria-describedby={touched.phone && errors.phone ? 'phone-error' : undefined}
         />
       </FormField>
 
@@ -315,6 +329,7 @@ export function SignupForm({
             disabled={loading}
             className="pr-10"
             aria-invalid={!!(touched.password && errors.password)}
+            aria-describedby={touched.password && errors.password ? 'password-error' : 'password-requirements'}
           />
           <button
             type="button"
@@ -353,6 +368,7 @@ export function SignupForm({
             disabled={loading}
             className="pr-10"
             aria-invalid={!!(touched.confirmPassword && errors.confirmPassword)}
+            aria-describedby={touched.confirmPassword && errors.confirmPassword ? 'confirmPassword-error' : undefined}
           />
           <button
             type="button"

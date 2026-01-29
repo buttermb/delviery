@@ -7332,3 +7332,90 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 80 - Keyboard Navigation Implementation
+
+### Task: Add keyboard navigation with proper tab order and Enter to submit
+
+**Completed:**
+
+1. **Created `useKeyboardNavigation` hook** (`src/hooks/useKeyboardNavigation.ts`)
+   - Comprehensive keyboard navigation support for forms and interactive components
+   - `useKeyboardNavigation()` - Main hook with Enter/Escape/Tab handling and focus trap
+   - `useInitialFocus()` - Manages initial focus when components mount with focus restoration
+   - `useEnterSubmit()` - Enter key submission handler for individual inputs
+   - `useTabOrder()` - Tab order management for complex forms
+   - `getFocusableElements()` - Utility to find all focusable elements in a container
+   - `focusFirstElement()` / `focusElement()` - Focus management utilities
+   - Supports focus trap for modal dialogs
+   - Arrow key navigation support for lists
+
+2. **Enhanced LoginForm** (`src/components/auth/LoginForm.tsx`)
+   - Added auto-focus on email input when form mounts
+   - Added `aria-describedby` linking inputs to their error messages
+   - Added error message IDs for screen reader accessibility
+   - Improved form field accessibility with proper ARIA attributes
+
+3. **Enhanced SignupForm** (`src/components/auth/SignupForm.tsx`)
+   - Added auto-focus on first input (Full Name) when form mounts
+   - Added `aria-describedby` for all form fields:
+     - Full Name, Email, Phone, Password, Confirm Password
+   - Password field links to password requirements for screen readers
+   - Improved accessibility for all form validation messages
+
+4. **Enhanced Dialog component** (`src/components/ui/dialog.tsx`)
+   - Added `autoFocus` prop (default: true) for automatic initial focus
+   - Added `initialFocusSelector` prop for custom focus target
+   - Auto-focuses first content element when dialog opens (skips close button)
+   - Supports `data-autofocus` attribute for marking focus target
+   - Restores focus to previously focused element when dialog closes
+   - Improved focus management for better keyboard navigation
+
+5. **Exported hooks from barrel file** (`src/hooks/index.ts`)
+   - Added exports for all new keyboard navigation utilities
+   - Makes hooks easily importable from `@/hooks`
+
+### Files Changed:
+- `src/hooks/useKeyboardNavigation.ts` (NEW) - Keyboard navigation hook
+- `src/components/auth/LoginForm.tsx` - Auto-focus and ARIA improvements
+- `src/components/auth/SignupForm.tsx` - Auto-focus and ARIA improvements
+- `src/components/ui/dialog.tsx` - Focus management enhancements
+- `src/hooks/index.ts` - Added exports for new hooks
+
+### Usage Examples:
+
+```tsx
+// Auto-focus first element in form
+useKeyboardNavigation({
+  onEnter: () => form.handleSubmit(onSubmit)(),
+  onEscape: () => setIsOpen(false),
+});
+
+// Modal with focus trap
+const containerRef = useKeyboardNavigation({
+  trapFocus: true,
+  onEscape: () => setIsOpen(false),
+});
+
+// Enter key submission on specific input
+const handleKeyDown = useEnterSubmit(handleSubmit);
+<Input onKeyDown={handleKeyDown} />
+
+// Dialog with custom focus target
+<DialogContent initialFocusSelector="#email-input">
+  <Input id="email-input" />
+</DialogContent>
+
+// Or using data-autofocus attribute
+<DialogContent>
+  <Input data-autofocus />
+</DialogContent>
+```
+
+### Accessibility Improvements:
+- Screen readers now properly announce error messages
+- Tab order follows natural form flow
+- Enter key submits forms (except in textareas)
+- Escape key closes dialogs
+- Focus is restored when dialogs close
+- Focus trap keeps keyboard users in modals
