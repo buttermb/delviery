@@ -59,10 +59,12 @@ import {
   Flame,
   Brain,
   Star,
-  Award,
   Barcode,
+  HelpCircle,
   Headphones,
-  HelpCircle
+  Award,
+  ClipboardCheck,
+  FileBox
 } from 'lucide-react';
 
 // Aliases for backwards compatibility
@@ -147,6 +149,31 @@ export const navigationSections: NavSection[] = [
   {
     title: 'Operations',
     items: [
+      {
+        title: 'Team & Roles',
+        href: '/admin/team-members',
+        icon: UsersRound
+      },
+      {
+        title: 'Vendors',
+        href: '/admin/vendor-management',
+        icon: Building2
+      },
+      {
+        title: 'Purchase Orders',
+        href: '/admin/purchase-orders',
+        icon: ClipboardCheck
+      },
+      {
+        title: 'Locations',
+        href: '/admin/locations',
+        icon: MapPin
+      },
+      {
+        title: 'Activity Logs',
+        href: '/admin/activity-logs',
+        icon: History
+      },
       {
         title: 'Orders',
         href: '/admin/orders',
@@ -368,6 +395,18 @@ export const navigationSections: NavSection[] = [
         href: '/admin/disposable-menus',
         icon: FileText,
         badge: '🔥'
+      },
+      {
+        title: 'Support',
+        href: '/admin/customer-support',
+        icon: Headphones,
+        tier: 'professional'
+      },
+      {
+        title: 'Loyalty',
+        href: '/admin/loyalty-program',
+        icon: Award,
+        tier: 'professional'
       },
       {
         title: 'Pricing & Deals',

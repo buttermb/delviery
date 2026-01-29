@@ -7407,23 +7407,23 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 22 - Analytics Section Navigation Update
 
-### Task: Add Analytics section with Overview, Reports, Advanced Export in sidebar-navigation.ts
+## Agent 23 - Operations Section Enhancement
+
+### Task: Add Operations section with Team Roles, Vendors, Purchase Orders, Locations, Activity Logs
 
 **Completed:**
-- Added "Overview" nav item to Analytics section (first item per convention)
-  - Links to `/admin/analytics`
-  - Uses `BarChart3` icon
-  - No tier restriction (available to all tiers)
-- Added "Reports" nav item to Analytics section
-  - Links to `/admin/analytics-reports`
-  - Uses `FileText` icon
-  - Tier: professional
-- Added "Advanced Export" nav item to Analytics section
-  - Links to `/admin/analytics-advanced-export`
-  - Uses `Database` icon
-  - Tier: enterprise
+- Updated Operations section in sidebar-navigation.ts to include the following items at the top:
+  1. **Team & Roles** - Links to /admin/team-members with UsersRound icon
+  2. **Vendors** - Links to /admin/vendor-management with Building2 icon
+  3. **Purchase Orders** - Links to /admin/purchase-orders with ClipboardCheck icon
+  4. **Locations** - Links to /admin/locations with MapPin icon
+  5. **Activity Logs** - Links to /admin/activity-logs with History icon
+
+- Fixed icon imports:
+  - Added missing imports: Barcode, HelpCircle, Headphones, Award, ClipboardCheck, FileBox
+  - Fixed HeadphonesIcon reference to use Headphones (valid lucide-react icon)
 
 ### Files Changed:
-- `src/components/admin/sidebar-navigation.ts` - Added Overview, Reports, and Advanced Export items to Analytics section
+- `src/components/admin/sidebar-navigation.ts` - Added 5 new nav items to Operations section and fixed icon imports
+
