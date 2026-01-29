@@ -7332,3 +7332,37 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+---
+
+## Agent 7 - Persist Collapsed Section State to localStorage
+
+### Task: Persist collapsed section state to localStorage per section in SidebarContext.tsx
+
+**Problem:**
+The collapsed section state was persisted in `useSidebarPreferences` hook but only when the database mutation fired. If the user's auth context was still loading (no `admin?.userId`), the toggle function was a no-op and localStorage persistence wouldn't happen.
+
+**Solution:**
+Added localStorage persistence directly in `SidebarContext.tsx` to ensure collapsed section state is always persisted immediately, regardless of authentication state:
+
+1. Added local helper functions `getCollapsedSectionsFromStorage()` and `saveCollapsedSectionsToStorage()` using the existing `STORAGE_KEYS.SIDEBAR_COLLAPSED_SECTIONS` constant and safe storage utilities
+
+2. Added local state `localCollapsedSections` initialized from localStorage for instant load on page refresh
+
+3. Added sync effect to merge database preferences with local state when auth context becomes available
+
+4. Created enhanced `toggleCollapsedSection` function that:
+   - Updates local state immediately
+   - Persists to localStorage immediately
+   - Also calls the hook's toggle for database sync (may be no-op if auth not ready, but that's ok)
+
+5. Created `mergedPreferences` object that uses local collapsed sections state, ensuring the UI always reflects the latest state from localStorage
+
+**Benefits:**
+- Collapsed section state persists immediately on toggle
+- Works even when auth context is still loading
+- Instant load from localStorage on page refresh (no flash of wrong state)
+- Still syncs to database when auth is available for cross-device persistence
+
+### Files Changed:
+- `src/components/admin/sidebar/SidebarContext.tsx` - Added localStorage persistence for collapsed sections with local state management
