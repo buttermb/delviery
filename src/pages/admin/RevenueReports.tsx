@@ -84,25 +84,41 @@ export default function RevenueReports() {
   });
 
   // Analytics Processing
+  // Only count completed/delivered orders towards revenue totals
   const analytics = useMemo(() => {
     if (!rawOrders || rawOrders.length === 0) return null;
 
     let totalRevenue = 0;
+    let completedOrderCount = 0;
     const orderCount = rawOrders.length;
     const productSales: Record<string, number> = {};
     const statusCounts: Record<string, number> = {};
     const revenueByDate: Record<string, { date: string; revenue: number; orders: number }> = {};
 
     rawOrders.forEach(order => {
-      // Revenue
       const orderTotal = parseFloat(order.total_amount?.toString() || order.total?.toString() || '0');
-      totalRevenue += orderTotal;
-
-      // Status
       const status = order.status || 'unknown';
+
+      // Status counts include all orders
       statusCounts[status] = (statusCounts[status] || 0) + 1;
 
-      // Products
+      // Revenue and chart data only count completed/delivered orders
+      const isCompleted = status === 'completed' || status === 'delivered';
+
+      if (isCompleted) {
+        totalRevenue += orderTotal;
+        completedOrderCount += 1;
+
+        // Chart Data Grouping - only completed orders contribute to revenue
+        const dateKey = format(parseISO(order.created_at || new Date().toISOString()), 'yyyy-MM-dd');
+        if (!revenueByDate[dateKey]) {
+          revenueByDate[dateKey] = { date: dateKey, revenue: 0, orders: 0 };
+        }
+        revenueByDate[dateKey].revenue += orderTotal;
+        revenueByDate[dateKey].orders += 1;
+      }
+
+      // Products - count all orders for product analytics
       // @ts-ignore - Supabase type inference for join is tricky
       if (order.order_items && Array.isArray(order.order_items)) {
         // @ts-ignore
@@ -111,14 +127,6 @@ export default function RevenueReports() {
           productSales[name] = (productSales[name] || 0) + (item.quantity || 0);
         });
       }
-
-      // Chart Data Grouping
-      const dateKey = format(parseISO(order.created_at || new Date().toISOString()), 'yyyy-MM-dd');
-      if (!revenueByDate[dateKey]) {
-        revenueByDate[dateKey] = { date: dateKey, revenue: 0, orders: 0 };
-      }
-      revenueByDate[dateKey].revenue += orderTotal;
-      revenueByDate[dateKey].orders += 1;
     });
 
     // Format Chart Data
@@ -134,11 +142,13 @@ export default function RevenueReports() {
     const statusData = Object.entries(statusCounts)
       .map(([name, value]) => ({ name, value }));
 
-    const avgOrderValue = totalRevenue / orderCount;
+    // Average order value based on completed orders only
+    const avgOrderValue = completedOrderCount > 0 ? totalRevenue / completedOrderCount : 0;
 
     return {
       totalRevenue,
-      orderCount,
+      orderCount: completedOrderCount, // Show completed order count for revenue context
+      totalOrders: orderCount, // Keep total for reference
       avgOrderValue,
       chartData,
       topProducts,
