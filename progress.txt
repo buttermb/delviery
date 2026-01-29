@@ -7332,3 +7332,42 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 83 - Real-time Email Format Validation with Debounce
+
+### Task: Add real-time email format validation with debounce in SignupPage
+
+**Completed:**
+
+1. **Imported required dependencies**
+   - Added `useEffect` and `useMemo` from React
+   - Added `useDebounce` hook from `@/hooks/useDebounce`
+   - Added `cn` utility from `@/lib/utils`
+   - Added `CheckCircle2` and `AlertCircle` icons from `lucide-react`
+
+2. **Email validation infrastructure**
+   - Added RFC 5322 compliant email regex for format validation
+   - Added `EmailValidationStatus` type with states: 'idle' | 'checking' | 'valid' | 'invalid'
+   - Added `emailValidationStatus` state variable
+
+3. **Debounced validation logic**
+   - Watch email value from form with `step1Form.watch('email')`
+   - Debounce email with 300ms delay using `useDebounce` hook
+   - useEffect validates email format when debounced value changes:
+     - Empty email → 'idle' state
+     - Typing (before debounce) → 'checking' state
+     - Valid format → 'valid' state
+     - Invalid format → 'invalid' state
+
+4. **Visual feedback UI**
+   - Memoized validation indicator component with:
+     - Spinner (Loader2) for 'checking' state
+     - Green checkmark (CheckCircle2) for 'valid' state
+     - Red alert (AlertCircle) for 'invalid' state
+   - Input field border colors:
+     - Green border (`border-green-500`) for valid email
+     - Red border (`border-red-500`) for invalid email
+   - "Valid email format" success message below input when valid
+
+### Files Changed:
+- `src/pages/auth/SignupPage.tsx` - Added real-time debounced email validation with visual feedback
