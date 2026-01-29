@@ -7409,65 +7409,36 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-### Task: Add mobile responsive layouts stacking forms properly on small screens
+## Agent 8 - Preserve Scroll Position (Saving scrollTop Before Navigation)
 
-**Completed:**
-Added mobile-first responsive breakpoints (`grid-cols-1 sm:grid-cols-2`) to form layouts that were using fixed `grid-cols-2` without mobile stacking. This ensures forms stack vertically on small screens and switch to side-by-side layout on screens >= 640px (sm breakpoint).
+### Task: Preserve scroll position saving scrollTop before navigation and restoring after
 
-**Files Changed:**
+**Problem:**
+The existing `useScrollRestoration` hook had a race condition where scroll position was saved **after** navigation started (in the `useEffect` triggered by pathname changes). By the time the effect ran, the scroll position might have already been modified.
 
-1. **ProductForm.tsx** (`src/components/admin/products/ProductForm.tsx`)
-   - Fixed TabsList from `grid-cols-4` to `grid-cols-2 sm:grid-cols-4` for mobile tab stacking
-   - Fixed THC/CBD percentage inputs grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+**Solution - Enhanced `useScrollRestoration` hook:**
 
-2. **CustomerForm.tsx** (`src/pages/admin/CustomerForm.tsx`)
-   - Fixed Basic Information section (first/last name, email/phone, date/status) from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+1. **Continuous scroll tracking** - Added module-level variables (`currentScrollTop`, `lastScrollUpdate`) that are updated on every scroll event (throttled to 100ms). This ensures we always have an accurate scroll position available before navigation.
 
-3. **CheckoutPage.tsx (shop)** (`src/pages/shop/CheckoutPage.tsx`)
-   - Fixed Contact Information section (first/last name) from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
-   - Fixed Address section (city/state) from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
-   - Fixed navigation buttons to use `flex-col-reverse sm:flex-row` with full-width on mobile
+2. **Click event interception** - Added a capture-phase click event listener that detects internal link clicks and saves the scroll position **before** React Router processes the navigation.
 
-4. **AddressBook.tsx** (`src/components/account/AddressBook.tsx`)
-   - Fixed city/state grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
-   - Fixed zip/borough grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+3. **Fallback save on pathname change** - Kept the original save-on-pathname-change logic as a fallback for programmatic navigation or cases the click handler might miss.
 
-5. **AppointmentForm.tsx** (`src/components/admin/appointments/AppointmentForm.tsx`)
-   - Fixed date/duration grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+4. **New `saveScrollPositionForPath` export** - Added a utility function that can be called before programmatic navigation (e.g., `navigate()`) to ensure scroll position is saved.
 
-6. **CreateWholesaleClientDialog.tsx** (`src/components/wholesale/CreateWholesaleClientDialog.tsx`)
-   - Fixed business/contact name grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
-   - Fixed email/phone grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+5. **Deduplication tracking** - Added `lastSavedPathRef` to prevent saving the same path multiple times, avoiding unnecessary sessionStorage writes.
 
-7. **CreateClientDialog.tsx** (`src/components/admin/CreateClientDialog.tsx`)
-   - Fixed business/contact name grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
-   - Fixed phone/email grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
-   - Fixed client type/credit/payment grid from `grid-cols-3` to `grid-cols-1 sm:grid-cols-3`
+### Key Improvements:
+- Scroll position captured BEFORE navigation starts (via click interception)
+- Throttled scroll tracking (100ms) balances accuracy with performance
+- Passive scroll listener for better scroll performance
+- Capture phase click handler ensures we run before React Router
+- New export for programmatic navigation support
 
-8. **EditClientDialog.tsx** (`src/components/admin/EditClientDialog.tsx`)
-   - Fixed business/contact name grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
-   - Fixed phone/email grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
-   - Fixed client type/credit/payment grid from `grid-cols-3` to `grid-cols-1 sm:grid-cols-3`
+### Files Changed:
+- `src/hooks/useScrollRestoration.ts` - Enhanced hook with pre-navigation scroll capture
+- `src/hooks/index.ts` - Added `saveScrollPositionForPath` to exports
 
-9. **AddCourierDialog.tsx** (`src/components/admin/AddCourierDialog.tsx`)
-   - Fixed name/email grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
-   - Fixed phone/license grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
-   - Fixed vehicle make/model/plate grid from `grid-cols-3` to `grid-cols-1 sm:grid-cols-3`
-
-10. **SignUpPage.tsx (customer)** (`src/pages/customer/SignUpPage.tsx`)
-    - Fixed first/last name grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
-
-11. **CheckoutPage.tsx (credits)** (`src/pages/credits/CheckoutPage.tsx`)
-    - Fixed billing city/state grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
-    - Fixed billing postal/country grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
-
-12. **CheckoutPage.tsx (customer)** (`src/pages/customer/CheckoutPage.tsx`)
-    - Fixed new address city/state grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
-    - Fixed new address zip/borough grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
-
-**Pattern Applied:**
-- `grid-cols-2` → `grid-cols-1 sm:grid-cols-2`
-- `grid-cols-3` → `grid-cols-1 sm:grid-cols-3`
-- `grid-cols-4` → `grid-cols-2 sm:grid-cols-4`
-
-This ensures all forms stack properly on mobile devices (< 640px) while maintaining the expected multi-column layout on larger screens.
+### Verification:
+- TypeScript compilation: ✅ Passed
+- ESLint: ✅ Passed
