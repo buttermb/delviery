@@ -958,6 +958,89 @@ export function StorefrontBuilder({
                     onApplyTemplate={builder.applyTemplate}
                     setActiveTab={builder.setActiveTab}
                 />
+
+                {/* Center: Live Preview - uses transform scaling */}
+                <div className="flex-1 bg-muted flex items-start justify-center p-4 overflow-auto relative min-w-0 min-h-0">
+                    <div
+                        className="bg-background shadow-2xl overflow-visible transition-all duration-300 relative"
+                        style={{
+                            ...getPreviewStyle(),
+                            minHeight: '800px',
+                        }}
+                    >
+                        {/* Simulated Header */}
+                        <div className="h-16 border-b flex items-center px-6 justify-between sticky top-0 bg-background/80 backdrop-blur-md z-50">
+                            <span className="font-bold text-lg">{store?.store_name || 'Store Name'}</span>
+                            <div className="hidden md:flex gap-6 text-sm">
+                                <span>Home</span>
+                                <span>Shop</span>
+                                <span>Contact</span>
+                            </div>
+                        </div>
+
+                        {/* Sections Render */}
+                        <div className="min-h-[calc(100%-4rem)] bg-background" style={{ backgroundColor: themeConfig.colors?.background }}>
+                            {layoutConfig.filter(s => s.visible !== false).map((section) => {
+                                const Component = SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.component as React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string }>;
+                                if (!Component) return <div key={section.id} className="p-4 text-destructive">Unknown: {section.type}</div>;
+
+                                return (
+                                    <div
+                                        key={section.id}
+                                        className={`relative group ${selectedSectionId === section.id ? 'ring-2 ring-primary ring-inset z-10' : ''}`}
+                                        onClick={() => handleSelectSection(section.id)}
+                                    >
+                                        <Component content={section.content} styles={section.styles} storeId={store?.id} />
+
+                                        {/* Hover overlay for selection */}
+                                        {selectedSectionId !== section.id && (
+                                            <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors cursor-pointer" />
+                                        )}
+                                    </div>
+                                );
+                            })}
+                            {layoutConfig.length === 0 && (
+                                <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+                                    <Layout className="w-16 h-16 mb-4 opacity-50" />
+                                    <p className="text-lg font-medium mb-2">Your store canvas is empty</p>
+                                    <p className="text-sm mb-6">Get started with a template or add sections manually</p>
+                                    <div className="flex gap-3">
+                                        <Button variant="default" onClick={() => applyTemplate('standard')}>
+                                            <Sparkles className="w-4 h-4 mr-2" />
+                                            Quick Start (Standard)
+                                        </Button>
+                                        <Button variant="outline" onClick={() => setActiveTab('templates')}>
+                                            Browse Templates
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Sidebar: Property Editor - collapsible */}
+                {selectedSection && rightPanelOpen && (
+                    <div className="w-72 bg-background border-l flex flex-col shrink-0 z-10 animate-in slide-in-from-right-10 duration-200">
+                        <div className="p-4 border-b flex items-center justify-between">
+                            <div>
+                                <h3 className="font-semibold text-xs uppercase text-muted-foreground mb-1">Editing</h3>
+                                <p className="font-medium text-sm">{SECTION_TYPES[selectedSection.type as keyof typeof SECTION_TYPES]?.label}</p>
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setRightPanelOpen(false)}>
+                                <X className="w-4 h-4" />
+                            </Button>
+                        </div>
+                        <ScrollArea className="flex-1 p-4">
+                            <SectionEditor
+                                section={selectedSection}
+                                onUpdateContent={(key, value) => updateSection(selectedSection.id, 'content', key, value)}
+                                onUpdateStyles={(key, value) => updateSection(selectedSection.id, 'styles', key, value)}
+                                onUpdateResponsive={(device, key, value) => updateSectionResponsive(selectedSection.id, device, key, value)}
+                            />
+                        </ScrollArea>
+                    </div>
+                )}
             </div>
 
             {/* Create Store Dialog */}
