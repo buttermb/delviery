@@ -8,10 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import {
-  MapPin, Truck, Layers, Map as MapIcon, Search,
+  MapPin, Truck, Search,
   Phone, Navigation, Clock, Users, Activity,
-  ChevronRight, RefreshCw, Maximize2, Minimize2, UserPlus, AlertCircle,
-  CheckCircle, XCircle, Car, Focus
+  ChevronRight, RefreshCw, Maximize2, Minimize2, AlertCircle,
+  CheckCircle, XCircle, Car, Focus, Package
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -33,16 +33,32 @@ interface CourierLocation {
   last_updated?: string;
 }
 
+interface ActiveDelivery {
+  id: string;
+  order_id: string;
+  courier_id: string | null;
+  delivery_address: string;
+  status: string;
+  total_amount: number;
+  courier_name?: string;
+  courier_phone?: string;
+  destination_lat?: number;
+  destination_lng?: number;
+}
+
 export default function LiveMap() {
   const { tenant } = useTenantAdminAuth();
   const [couriers, setCouriers] = useState<CourierLocation[]>([]);
   const [allCouriers, setAllCouriers] = useState<CourierLocation[]>([]);
+  const [activeDeliveries, setActiveDeliveries] = useState<ActiveDelivery[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mapStyle, setMapStyle] = useState<'streets' | 'satellite' | 'dark'>('dark');
   const [showHeatmap, setShowHeatmap] = useState(false);
+  const [showDeliveries, setShowDeliveries] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourier, setSelectedCourier] = useState<string | null>(null);
+  const [selectedDelivery, setSelectedDelivery] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showTraffic, setShowTraffic] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
@@ -50,6 +66,7 @@ export default function LiveMap() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<{ [key: string]: mapboxgl.Marker }>({});
+  const deliveryMarkers = useRef<{ [key: string]: { destination: mapboxgl.Marker } }>({});
   const [mapLoaded, setMapLoaded] = useState(false);
 
   const { token: mapboxToken, loading: tokenLoading } = useMapboxToken();
@@ -76,7 +93,62 @@ export default function LiveMap() {
     online: couriers.length,
     active: couriers.filter(c => c.status === 'delivering').length,
     offline: allCouriers.length - couriers.length,
-  }), [couriers, allCouriers]);
+    deliveriesInProgress: activeDeliveries.length,
+  }), [couriers, allCouriers, activeDeliveries]);
+
+  // Load active deliveries - orders that are out for delivery
+  const loadActiveDeliveries = useCallback(async () => {
+    if (!tenant?.id) return;
+
+    try {
+      const { data, error: deliveriesError } = await supabase
+        .from('orders')
+        .select(`
+          id,
+          total_amount,
+          status,
+          delivery_address,
+          delivery_lat,
+          delivery_lng,
+          courier_id,
+          couriers(full_name, phone, current_lat, current_lng)
+        `)
+        .eq('tenant_id', tenant.id)
+        .in('status', ['out_for_delivery', 'in_transit', 'picked_up']);
+
+      if (deliveriesError) {
+        logger.error('Error loading active deliveries', deliveriesError, { component: 'LiveMap' });
+        return;
+      }
+
+      const deliveries: ActiveDelivery[] = (data || []).map((d: {
+        id: string;
+        total_amount: number;
+        status: string;
+        delivery_address: string;
+        delivery_lat?: number;
+        delivery_lng?: number;
+        courier_id: string | null;
+        couriers?: { full_name: string; phone: string; current_lat?: number; current_lng?: number } | null;
+      }) => ({
+        id: d.id,
+        order_id: d.id,
+        courier_id: d.courier_id,
+        delivery_address: d.delivery_address || 'Unknown address',
+        status: d.status,
+        total_amount: d.total_amount || 0,
+        courier_name: d.couriers?.full_name,
+        courier_phone: d.couriers?.phone,
+        destination_lat: d.delivery_lat,
+        destination_lng: d.delivery_lng,
+      }));
+
+      setActiveDeliveries(deliveries);
+      logger.debug('Active deliveries loaded', { count: deliveries.length, component: 'LiveMap' });
+    } catch (err) {
+      logger.error('Error loading active deliveries', err, { component: 'LiveMap' });
+    }
+  }, [tenant?.id]);
 
   // Load couriers - memoized to prevent re-creation
   const loadCourierLocations = useCallback(async () => {
@@ -109,6 +181,9 @@ export default function LiveMap() {
       setCouriers(onlineCouriers);
       setLastRefresh(new Date());
 
+      // Also load active deliveries
+      await loadActiveDeliveries();
+
       if (allData && allData.length === 0) {
         logger.info('No couriers found for tenant', { tenantId: tenant.id, component: 'LiveMap' });
       }
@@ -120,7 +195,7 @@ export default function LiveMap() {
     } finally {
       setLoading(false);
     }
-  }, [tenant?.id]);
+  }, [tenant?.id, loadActiveDeliveries]);
 
   // Initialize map
   useEffect(() => {
@@ -233,8 +308,8 @@ export default function LiveMap() {
   useEffect(() => {
     loadCourierLocations();
 
-    // Set up realtime subscription
-    const channel = supabase
+    // Set up realtime subscription for couriers
+    const couriersChannel = supabase
       .channel('couriers-changes')
       .on(
         'postgres_changes',
@@ -259,16 +334,37 @@ export default function LiveMap() {
         }
       });
 
+    // Set up realtime subscription for orders (active deliveries)
+    const ordersChannel = supabase
+      .channel('orders-delivery-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders'
+        },
+        () => {
+          loadActiveDeliveries();
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          logger.info('Realtime subscription active', { component: 'LiveMap', table: 'orders' });
+        }
+      });
+
     // Auto-refresh every 30 seconds
     const refreshInterval = setInterval(() => {
       loadCourierLocations();
     }, 30000);
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(couriersChannel);
+      supabase.removeChannel(ordersChannel);
       clearInterval(refreshInterval);
     };
-  }, [loadCourierLocations]);
+  }, [loadCourierLocations, loadActiveDeliveries]);
 
   // Focus on a specific courier
   const focusOnCourier = (courier: CourierLocation) => {
@@ -296,10 +392,37 @@ export default function LiveMap() {
     }
   };
 
-  // Center map on all active couriers
+  // Focus on a specific delivery
+  const focusOnDelivery = (delivery: ActiveDelivery) => {
+    if (!delivery.destination_lat || !delivery.destination_lng) {
+      toast.error('No location data available for this delivery');
+      return;
+    }
+
+    setSelectedDelivery(delivery.id);
+    setSelectedCourier(null);
+    if (map.current) {
+      map.current.flyTo({
+        center: [delivery.destination_lng, delivery.destination_lat],
+        zoom: 16,
+        pitch: 60,
+        bearing: Math.random() * 360,
+        duration: 2000,
+        essential: true
+      });
+
+      // Open the popup for this marker
+      const marker = deliveryMarkers.current[delivery.id];
+      if (marker) {
+        marker.destination.togglePopup();
+      }
+    }
+  };
+
+  // Center map on all active couriers and deliveries
   const centerOnActivity = useCallback(() => {
-    if (!map.current || couriers.length === 0) {
-      toast.info('No active couriers to center on');
+    if (!map.current || (couriers.length === 0 && activeDeliveries.length === 0)) {
+      toast.info('No active couriers or deliveries to center on');
       return;
     }
 
@@ -310,6 +433,13 @@ export default function LiveMap() {
       }
     });
 
+    // Include active delivery destinations
+    activeDeliveries.forEach((delivery) => {
+      if (delivery.destination_lat && delivery.destination_lng) {
+        bounds.extend([delivery.destination_lng, delivery.destination_lat]);
+      }
+    });
+
     if (!bounds.isEmpty()) {
       map.current.fitBounds(bounds, {
         padding: 100,
@@ -317,9 +447,11 @@ export default function LiveMap() {
         duration: 1500
       });
       setSelectedCourier(null);
-      toast.success(`Centered on ${couriers.length} active courier${couriers.length > 1 ? 's' : ''}`);
+      setSelectedDelivery(null);
+      const totalItems = couriers.length + activeDeliveries.filter(d => d.destination_lat && d.destination_lng).length;
+      toast.success(`Centered on ${totalItems} location${totalItems > 1 ? 's' : ''}`);
     }
-  }, [couriers]);
+  }, [couriers, activeDeliveries]);
 
   // Toggle fullscreen mode
   const toggleFullscreen = useCallback(() => {
@@ -417,19 +549,191 @@ export default function LiveMap() {
       }
     });
 
-    // Fit bounds to show all couriers
-    if (couriers.length > 0 && !selectedCourier) {
+    // Fit bounds to show all couriers and deliveries
+    if ((couriers.length > 0 || activeDeliveries.length > 0) && !selectedCourier && !selectedDelivery) {
       const bounds = new mapboxgl.LngLatBounds();
       couriers.forEach((courier) => {
         if (courier.current_lat && courier.current_lng) {
           bounds.extend([courier.current_lng, courier.current_lat]);
         }
       });
+      activeDeliveries.forEach((delivery) => {
+        if (delivery.destination_lat && delivery.destination_lng) {
+          bounds.extend([delivery.destination_lng, delivery.destination_lat]);
+        }
+      });
       if (!bounds.isEmpty()) {
         map.current.fitBounds(bounds, { padding: 100, maxZoom: 15 });
       }
     }
-  }, [couriers, mapLoaded, selectedCourier]);
+  }, [couriers, mapLoaded, selectedCourier, selectedDelivery, activeDeliveries]);
+
+  // Update delivery destination markers when active deliveries change
+  useEffect(() => {
+    if (!map.current || !mapLoaded || !showDeliveries) return;
+
+    // Remove markers that no longer exist
+    Object.keys(deliveryMarkers.current).forEach((deliveryId) => {
+      if (!activeDeliveries.find((d) => d.id === deliveryId)) {
+        deliveryMarkers.current[deliveryId].destination.remove();
+        // Remove route layer if exists
+        if (map.current!.getLayer('delivery-route-' + deliveryId)) {
+          map.current!.removeLayer('delivery-route-' + deliveryId);
+        }
+        if (map.current!.getSource('delivery-route-' + deliveryId)) {
+          map.current!.removeSource('delivery-route-' + deliveryId);
+        }
+        delete deliveryMarkers.current[deliveryId];
+      }
+    });
+
+    // Add or update delivery markers
+    activeDeliveries.forEach((delivery) => {
+      if (!delivery.destination_lat || !delivery.destination_lng) return;
+
+      // Find the courier for this delivery
+      const courier = delivery.courier_id
+        ? couriers.find(c => c.id === delivery.courier_id)
+        : null;
+
+      if (deliveryMarkers.current[delivery.id]) {
+        // Update existing marker position
+        deliveryMarkers.current[delivery.id].destination.setLngLat([
+          delivery.destination_lng,
+          delivery.destination_lat
+        ]);
+      } else {
+        // Create new destination marker with enhanced styling
+        const destEl = document.createElement('div');
+        destEl.className = 'delivery-destination-marker';
+        destEl.innerHTML = `
+          <div class="relative">
+            <div class="absolute inset-0 bg-orange-500/20 rounded-full animate-pulse scale-150"></div>
+            <div class="relative bg-gradient-to-br from-orange-400 to-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg shadow-orange-500/30 border-2 border-white/80 hover:scale-110 transition-all duration-300">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+          </div>
+        `;
+
+        const statusLabel = delivery.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const popup = new mapboxgl.Popup({
+          offset: 25,
+          closeButton: false,
+          className: 'delivery-popup'
+        }).setHTML(`
+          <div class="p-4 min-w-[220px]">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/>
+                  <path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <div>
+                <div class="font-semibold text-sm">Delivery Destination</div>
+                <div class="flex items-center gap-1">
+                  <span class="inline-block w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                  <span class="text-xs text-gray-500">${statusLabel}</span>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-2 text-xs text-gray-600 border-t pt-2">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span class="truncate max-w-[150px]" title="${delivery.delivery_address}">${delivery.delivery_address}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="font-medium">$${delivery.total_amount.toFixed(2)}</span>
+              </div>
+              ${delivery.courier_name ? `
+                <div class="flex items-center gap-2 pt-1 border-t">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
+                  <span>${delivery.courier_name}</span>
+                </div>
+              ` : ''}
+              ${delivery.courier_phone ? `
+                <a href="tel:${delivery.courier_phone}" class="flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                  </svg>
+                  Call Driver
+                </a>
+              ` : ''}
+            </div>
+          </div>
+        `);
+
+        const destMarker = new mapboxgl.Marker(destEl)
+          .setLngLat([delivery.destination_lng, delivery.destination_lat])
+          .setPopup(popup)
+          .addTo(map.current!);
+
+        deliveryMarkers.current[delivery.id] = { destination: destMarker };
+      }
+
+      // Draw route line from courier to destination if courier has location
+      if (courier?.current_lat && courier?.current_lng && delivery.destination_lat && delivery.destination_lng) {
+        const routeId = 'delivery-route-' + delivery.id;
+
+        if (map.current!.getSource(routeId)) {
+          // Update existing route
+          (map.current!.getSource(routeId) as mapboxgl.GeoJSONSource).setData({
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: [
+                [courier.current_lng, courier.current_lat],
+                [delivery.destination_lng, delivery.destination_lat]
+              ]
+            }
+          });
+        } else {
+          // Create new route
+          map.current!.addSource(routeId, {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: [
+                  [courier.current_lng, courier.current_lat],
+                  [delivery.destination_lng, delivery.destination_lat]
+                ]
+              }
+            }
+          });
+
+          map.current!.addLayer({
+            id: routeId,
+            type: 'line',
+            source: routeId,
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            paint: {
+              'line-color': '#f97316',
+              'line-width': 3,
+              'line-dasharray': [2, 2],
+              'line-opacity': 0.7
+            }
+          });
+        }
+      }
+    });
+  }, [activeDeliveries, couriers, mapLoaded, showDeliveries]);
 
   // Toggle heatmap
   useEffect(() => {
@@ -636,7 +940,7 @@ export default function LiveMap() {
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
@@ -667,6 +971,17 @@ export default function LiveMap() {
               <div>
                 <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">{stats.active}</div>
                 <div className="text-xs text-amber-600/70">Delivering</div>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-4 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/20 border-orange-200 dark:border-orange-800">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
+                <Package className="h-5 w-5 text-orange-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-orange-700 dark:text-orange-400">{stats.deliveriesInProgress}</div>
+                <div className="text-xs text-orange-600/70">Active Deliveries</div>
               </div>
             </div>
           </Card>
@@ -774,6 +1089,75 @@ export default function LiveMap() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Active Deliveries List */}
+            {activeDeliveries.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Package className="h-4 w-4 text-orange-500" />
+                      Active Deliveries ({activeDeliveries.length})
+                    </CardTitle>
+                    <Button
+                      variant={showDeliveries ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setShowDeliveries(!showDeliveries)}
+                      className="h-7 text-xs"
+                    >
+                      {showDeliveries ? 'Hide' : 'Show'}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-2 space-y-2 max-h-[300px] overflow-y-auto">
+                  {activeDeliveries.map((delivery) => (
+                    <div
+                      key={delivery.id}
+                      className={cn(
+                        "p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md",
+                        selectedDelivery === delivery.id && "border-orange-500 bg-orange-500/10"
+                      )}
+                      onClick={() => delivery.destination_lat && focusOnDelivery(delivery)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white">
+                          <Package className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm truncate" title={delivery.delivery_address}>
+                            {delivery.delivery_address}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Badge variant="outline" className="text-xs py-0 px-1">
+                              {delivery.status.replace('_', ' ')}
+                            </Badge>
+                            <span>${delivery.total_amount.toFixed(2)}</span>
+                          </div>
+                        </div>
+                        {delivery.destination_lat && (
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </div>
+                      {delivery.courier_name && (
+                        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                          <Truck className="h-3 w-3" />
+                          <span>{delivery.courier_name}</span>
+                          {delivery.courier_phone && (
+                            <a
+                              href={`tel:${delivery.courier_phone}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-orange-600 hover:text-orange-700"
+                            >
+                              <Phone className="h-3 w-3" />
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Map Container */}
@@ -822,11 +1206,20 @@ export default function LiveMap() {
                 Traffic
               </Button>
               <Button
+                variant={showDeliveries ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setShowDeliveries(!showDeliveries)}
+                className="gap-1"
+              >
+                <Package className="h-4 w-4" />
+                Deliveries
+              </Button>
+              <Button
                 variant="outline"
                 size="sm"
                 onClick={centerOnActivity}
                 className="gap-1"
-                disabled={couriers.length === 0}
+                disabled={couriers.length === 0 && activeDeliveries.length === 0}
               >
                 <Focus className="h-4 w-4" />
                 Center
@@ -856,39 +1249,48 @@ export default function LiveMap() {
       </div>
 
       <style>{`
-        .courier-marker {
+        .courier-marker,
+        .delivery-destination-marker {
           cursor: pointer;
+          transition: transform 0.2s;
         }
-        
-        .courier-popup .mapboxgl-popup-content {
+
+        .courier-marker:hover,
+        .delivery-destination-marker:hover {
+          transform: scale(1.1);
+        }
+
+        .courier-popup .mapboxgl-popup-content,
+        .delivery-popup .mapboxgl-popup-content {
           padding: 0;
           border-radius: 12px;
           box-shadow: 0 10px 40px rgba(0,0,0,0.2);
           border: 1px solid rgba(0,0,0,0.1);
         }
-        
-        .courier-popup .mapboxgl-popup-tip {
+
+        .courier-popup .mapboxgl-popup-tip,
+        .delivery-popup .mapboxgl-popup-tip {
           border-top-color: white;
         }
-        
+
         @keyframes ping {
           75%, 100% {
             transform: scale(2);
             opacity: 0;
           }
         }
-        
+
         .animate-ping {
           animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
         }
-        
+
         .mapboxgl-ctrl-group {
           background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(8px);
           border-radius: 8px !important;
           box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
         }
-        
+
         .mapboxgl-ctrl-group button {
           border-radius: 6px !important;
         }

@@ -7332,3 +7332,49 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 38 - Connect Fulfillment to Live Map with Active Delivery Markers
+
+### Task: Connect Fulfillment to Live Map showing active deliveries with markers
+
+**Completed:**
+
+1. **Enhanced LiveMap Component (`src/pages/admin/LiveMap.tsx`)**
+   - Added `ActiveDelivery` interface to track delivery information including:
+     - Order ID, courier ID, delivery address, status, total amount
+     - Destination coordinates (lat/lng)
+     - Assigned courier name and phone
+   
+   - Added new state variables:
+     - `activeDeliveries` - List of orders being delivered
+     - `showDeliveries` - Toggle for showing/hiding delivery markers
+     - `selectedDelivery` - Currently focused delivery
+     - `deliveryMarkers` ref - Map of delivery marker objects
+
+2. **Data Loading**
+   - Created `loadActiveDeliveries()` function that fetches orders with status: `out_for_delivery`, `in_transit`, `picked_up`
+   - Integrated with `loadCourierLocations()` to load both data sources
+   - Added real-time subscription to `orders` table for live updates
+
+3. **Delivery Markers**
+   - Orange/red gradient markers for delivery destinations
+   - Markers show delivery address, status badge, order amount
+   - If assigned courier exists, shows courier name with call button
+   - Route lines (dashed orange) connecting courier location to delivery destination
+
+4. **UI Enhancements**
+   - Added "Active Deliveries" stat card in stats row (shows count)
+   - Added "Deliveries" toggle button in map controls
+   - Added "Active Deliveries" list in sidebar showing:
+     - Delivery address (truncated)
+     - Status badge and order amount
+     - Assigned courier name with phone link
+     - Click to focus on delivery location
+   - Updated "Center" button to include delivery locations in bounds
+
+5. **Statistics**
+   - Added `deliveriesInProgress` to stats object
+   - Grid now shows 5 stat cards: Total Couriers, Online, Delivering, Active Deliveries, Offline
+
+### Files Changed:
+- `src/pages/admin/LiveMap.tsx` - Major enhancements to show active deliveries with markers, sidebar list, and real-time updates
