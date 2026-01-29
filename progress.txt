@@ -7332,3 +7332,35 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 31 - Connect Customers to Invoices
+
+### Task: Connect Customers to Invoices so customer invoices appear in profile tab
+
+**Completed:**
+- Created `useCustomerInvoices` hook to fetch invoices for a specific customer
+  - Queries `customer_invoices` table filtered by `customer_id` and `tenant_id`
+  - Uses TanStack Query with proper caching and error handling
+  - Added `invoices` key to `queryKeys.customers` factory
+- Created `CustomerInvoicesTab` component to display invoices
+  - Shows summary stats: Total Invoiced, Paid, Outstanding
+  - Lists all invoices with status badges, due dates, and amounts
+  - Actions: View, Send, Record Payment
+  - Empty state with "Create Invoice" CTA
+- Added "Invoices" tab to `CustomerDetails` page
+  - New tab between "Purchase History" and "Communications"
+  - Integrated with existing navigation to invoice creation
+
+### Files Created:
+- `src/hooks/useCustomerInvoices.ts` - Hook for fetching customer invoices
+- `src/components/admin/customers/CustomerInvoicesTab.tsx` - Tab component for displaying invoices
+
+### Files Modified:
+- `src/lib/queryKeys.ts` - Added `invoices` key to customers query key factory
+- `src/pages/admin/CustomerDetails.tsx` - Added Invoices tab with CustomerInvoicesTab component
+
+### Technical Notes:
+- Uses `customer_invoices` table (legacy) with `tenant_id` filtering
+- Follows existing patterns from `useCustomerStats` hook and `CustomerStatsCard` component
+- TypeScript passes, ESLint passes on new files
+- Pre-existing build issue (missing `papaparse` dependency) is unrelated to this change
