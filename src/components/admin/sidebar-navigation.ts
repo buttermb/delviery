@@ -635,27 +635,34 @@ export const navigationSections: NavSection[] = [
     title: 'Finance',
     items: [
       {
-        title: 'Financial Center',
-        href: '/admin/financial-center',
-        icon: Landmark,
-        tier: 'professional'
+        title: 'Dashboard',
+        href: '/admin/finance/dashboard',
+        icon: LayoutDashboard
       },
       {
         title: 'Revenue',
-        href: '/admin/revenue',
-        icon: TrendingUp,
-        tier: 'professional'
+        href: '/admin/finance/revenue',
+        icon: TrendingUp
       },
       {
         title: 'Expenses',
-        href: '/admin/expenses',
-        icon: TrendingDown,
-        tier: 'professional'
+        href: '/admin/finance/expenses',
+        icon: TrendingDown
       },
       {
-        title: 'Payments & Invoices',
-        href: '/admin/invoice-management',
-        icon: Receipt,
+        title: 'Invoices',
+        href: '/admin/finance/invoices',
+        icon: Receipt
+      },
+      {
+        title: 'Payouts',
+        href: '/admin/finance/payouts',
+        icon: CreditCard
+      },
+      {
+        title: 'Financial Center',
+        href: '/admin/financial-center',
+        icon: Landmark,
         tier: 'professional'
       },
       {
@@ -699,12 +706,6 @@ export const navigationSections: NavSection[] = [
         title: 'Collections',
         href: '/admin/collection-mode',
         icon: Wallet,
-        tier: 'professional'
-      },
-      {
-        title: 'Payouts',
-        href: '/admin/payouts',
-        icon: CreditCard,
         tier: 'professional'
       }
     ]
