@@ -7407,55 +7407,34 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 30 - Connect Customers to CRM
+## Agent 31 - Connect Customers to Invoices
 
-### Task: Connect Customers to CRM so customer updates sync to CRM timeline records
+### Task: Connect Customers to Invoices so customer invoices appear in profile tab
 
 **Completed:**
+- Created `useCustomerInvoices` hook to fetch invoices for a specific customer
+  - Queries `customer_invoices` table filtered by `customer_id` and `tenant_id`
+  - Uses TanStack Query with proper caching and error handling
+  - Added `invoices` key to `queryKeys.customers` factory
+- Created `CustomerInvoicesTab` component to display invoices
+  - Shows summary stats: Total Invoiced, Paid, Outstanding
+  - Lists all invoices with status badges, due dates, and amounts
+  - Actions: View, Send, Record Payment
+  - Empty state with "Create Invoice" CTA
+- Added "Invoices" tab to `CustomerDetails` page
+  - New tab between "Purchase History" and "Communications"
+  - Integrated with existing navigation to invoice creation
 
-1. **Database Migration** (`supabase/migrations/20260128000001_customer_crm_sync.sql`)
-   - Extended `crm_activity_log` table with `contact_id` column for customer references
-   - Added `metadata` JSONB column for storing rich activity context
-   - Created `crm_customer_links` table to link unified contacts to CRM clients
-   - Implemented `log_customer_crm_activity()` function to log customer activities to CRM timeline
-   - Created `sync_contact_update_to_crm()` trigger function for automatic sync on contact updates
-   - Added `link_customer_to_crm()` and `unlink_customer_from_crm()` functions
-   - Created `get_customer_crm_timeline()` function for fetching customer activities
-   - Added `contacts_with_crm_links` view for easy querying
-   - Full RLS policies for tenant isolation
+### Files Created:
+- `src/hooks/useCustomerInvoices.ts` - Hook for fetching customer invoices
+- `src/components/admin/customers/CustomerInvoicesTab.tsx` - Tab component for displaying invoices
 
-2. **TypeScript Types** (`src/types/crm.ts`)
-   - Added `CRMActivityType` union type with all supported activity types including:
-     - Original CRM activities (pre_order_created, invoice_created, etc.)
-     - Customer sync activities (customer_created, customer_updated, customer_linked, etc.)
-   - Extended `CRMActivityLog` interface with `contact_id` and `metadata` fields
-   - Added `CRMCustomerLink` interface for customer-CRM links
-   - Added `LinkCustomerToCRMInput` and `CustomerCRMTimelineEntry` types
+### Files Modified:
+- `src/lib/queryKeys.ts` - Added `invoices` key to customers query key factory
+- `src/pages/admin/CustomerDetails.tsx` - Added Invoices tab with CustomerInvoicesTab component
 
-3. **React Hook** (`src/hooks/crm/useSyncCustomerToCRM.ts`)
-   - `useContactCRMLinks()` - Fetch CRM links for a contact
-   - `useCRMClientContacts()` - Fetch contacts linked to a CRM client
-   - `useCustomerCRMTimeline()` - Fetch CRM activity timeline for a contact
-   - `useLinkCustomerToCRM()` - Link a customer to a CRM client
-   - `useUnlinkCustomerFromCRM()` - Unlink a customer from a CRM client
-   - `useToggleCRMSync()` - Enable/disable sync for a link
-   - `useLogCustomerCRMActivity()` - Manually log activities
-   - `useIsContactLinkedToCRM()` - Check if contact has CRM links
-
-4. **Activity Timeline Component** (`src/components/crm/ActivityTimeline.tsx`)
-   - Added icons for customer sync activities (Users, RefreshCw, Link2, Unlink, Star, ShoppingCart)
-   - Added color coding for customer activities (emerald, sky, indigo, orange, amber, cyan)
-   - Added metadata changes display for customer_updated activities showing field changes
-   - Properly typed activities using CRMActivityLog interface
-
-### How It Works:
-1. When a contact is linked to a CRM client via `link_customer_to_crm()`, a link record is created
-2. Database trigger `sync_contact_update_to_crm()` automatically logs activities when linked contacts are updated
-3. Activities appear in the CRM client's timeline with proper icons, colors, and change details
-4. Frontend hooks allow fetching customer timeline, managing links, and manual activity logging
-
-### Files Changed:
-- `supabase/migrations/20260128000001_customer_crm_sync.sql` (new)
-- `src/types/crm.ts` (updated)
-- `src/hooks/crm/useSyncCustomerToCRM.ts` (new)
-- `src/components/crm/ActivityTimeline.tsx` (updated)
+### Technical Notes:
+- Uses `customer_invoices` table (legacy) with `tenant_id` filtering
+- Follows existing patterns from `useCustomerStats` hook and `CustomerStatsCard` component
+- TypeScript passes, ESLint passes on new files
+- Pre-existing build issue (missing `papaparse` dependency) is unrelated to this change
