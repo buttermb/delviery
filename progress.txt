@@ -7332,3 +7332,59 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+---
+
+## Task: Connect Analytics to Export generating CSV PDF reports on button click
+
+### What was done:
+
+1. **Created new Analytics Export Utility (`src/lib/utils/analyticsExport.ts`)**
+   - `exportAnalyticsToCSV()` - Generates well-formatted CSV reports with:
+     - Report header with title, date range, and generation timestamp
+     - Key metrics section with values and change percentages
+     - Chart data exported as tabular data
+     - Custom tables with headers and rows
+     - BOM support for Excel UTF-8 compatibility
+   - `exportAnalyticsToPDF()` - Generates professional PDF reports using jsPDF with:
+     - Styled header with title and date range (blue banner)
+     - Key metrics displayed in a 2-column card grid
+     - Chart data rendered as formatted tables
+     - Custom tables with headers and data rows
+     - Page numbers and footer on each page
+     - Automatic page breaks for long content
+   - Helper functions: `formatCurrencyForReport()`, `formatNumberForReport()`
+
+2. **Updated AdvancedAnalytics Page (`src/pages/admin/AdvancedAnalytics.tsx`)**
+   - Added export dropdown button in the page header
+   - Export options: CSV and PDF formats
+   - Exports include:
+     - Key metrics (Total Revenue, Total Orders, Total Customers, Avg Order Value)
+     - Revenue by Month chart data
+     - Customer Segments table
+   - Loading state while exporting
+   - Success/error toast notifications
+   - Proper disabled state during export
+
+3. **Updated SelfHostedAnalytics Component (`src/components/admin/analytics/SelfHostedAnalytics.tsx`)**
+   - Connected existing "Export Data" button to actual export functionality
+   - Added dropdown menu with CSV and PDF export options
+   - Exports include:
+     - Key metrics (Total Views, Unique Visitors, Page Views, Avg Session)
+     - Daily Views chart data
+     - Top Pages table
+     - Traffic Sources table
+   - Loading state while exporting
+   - Success/error toast notifications
+
+### Files Changed:
+- `src/lib/utils/analyticsExport.ts` (new)
+- `src/pages/admin/AdvancedAnalytics.tsx` (modified)
+- `src/components/admin/analytics/SelfHostedAnalytics.tsx` (modified)
+
+### Technical Notes:
+- Uses jsPDF library (already in package.json) for PDF generation
+- Uses existing exportUtils.ts for file download helpers
+- Reports are generated client-side for instant download
+- Report filenames include timestamps (e.g., `analytics-dashboard-report_2026-01-29.csv`)
+- TypeScript strict mode compliant, no new lint errors introduced
