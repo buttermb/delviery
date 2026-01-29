@@ -24,11 +24,21 @@ import {
   Mail,
   Phone,
   Calendar,
-  TrendingUp
+  TrendingUp,
+  RefreshCw,
+  Link2,
+  CheckCircle2
 } from 'lucide-react';
 import { ExportButton } from '@/components/ui/ExportButton';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import { useMarketplaceCustomerSync } from '@/hooks/useMarketplaceCustomerSync';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   Table,
   TableBody,
@@ -68,6 +78,9 @@ export default function StorefrontCustomers() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<string>(preferences.sortBy || 'total_spent');
+
+  // Marketplace customer sync hook
+  const { sync: syncCustomers, isSyncing, syncResult } = useMarketplaceCustomerSync();
 
   // Persist sort preference
   useEffect(() => {
@@ -231,11 +244,36 @@ export default function StorefrontCustomers() {
             {stats.totalCustomers} customers · {formatCurrency(stats.totalRevenue)} total revenue
           </p>
         </div>
-        <ExportButton
-          data={filteredCustomers}
-          filename="storefront-customers"
-          columns={exportColumns}
-        />
+        <div className="flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  onClick={() => store?.id && syncCustomers(store.id)}
+                  disabled={isSyncing || !store?.id}
+                >
+                  {isSyncing ? (
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  ) : syncResult?.synced_count ? (
+                    <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
+                  ) : (
+                    <Link2 className="w-4 h-4 mr-2" />
+                  )}
+                  Sync to CRM
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Sync storefront customers to your Customer Hub for unified CRM management</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <ExportButton
+            data={filteredCustomers}
+            filename="storefront-customers"
+            columns={exportColumns}
+          />
+        </div>
       </div>
 
       {/* Stats Cards */}
