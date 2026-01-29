@@ -5,7 +5,7 @@
  * Step 3: Tenant Selection or Creation
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,12 +24,16 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
+import { useDebounce } from '@/hooks/useDebounce';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
+import { cn } from '@/lib/utils';
 import {
   Loader2,
   ArrowRight,
   ArrowLeft,
   CheckCircle,
+  CheckCircle2,
+  AlertCircle,
   Eye,
   EyeOff,
   Mail,
@@ -96,6 +100,11 @@ type Step3Data = z.infer<typeof step3Schema>;
 
 const TOTAL_STEPS = 3;
 
+// Email validation regex - RFC 5322 compliant (simplified)
+const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+
+type EmailValidationStatus = 'idle' | 'checking' | 'valid' | 'invalid';
+
 export function SignupPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -103,7 +112,7 @@ export function SignupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [signupError, setSignupError] = useState<string | null>(null);
+  const [emailValidationStatus, setEmailValidationStatus] = useState<EmailValidationStatus>('idle');
 
   // Store data from completed steps
   const [step1Data, setStep1Data] = useState<Step1Data | null>(null);
@@ -142,7 +151,57 @@ export function SignupPage() {
   });
 
   const watchedPassword = step1Form.watch('password');
+  const watchedEmail = step1Form.watch('email');
   const watchedTenantMode = step3Form.watch('tenantMode');
+
+  // Debounce email for validation (300ms delay)
+  const debouncedEmail = useDebounce(watchedEmail, 300);
+
+  // Real-time email format validation with debounce
+  useEffect(() => {
+    // If email is empty, reset to idle state
+    if (!debouncedEmail || debouncedEmail.trim() === '') {
+      setEmailValidationStatus('idle');
+      return;
+    }
+
+    // Show checking state while waiting for debounce
+    if (watchedEmail !== debouncedEmail) {
+      setEmailValidationStatus('checking');
+      return;
+    }
+
+    // Validate the debounced email
+    const trimmedEmail = debouncedEmail.trim().toLowerCase();
+    const isValidFormat = EMAIL_REGEX.test(trimmedEmail);
+
+    setEmailValidationStatus(isValidFormat ? 'valid' : 'invalid');
+  }, [debouncedEmail, watchedEmail]);
+
+  // Memoized validation indicator component
+  const emailValidationIndicator = useMemo(() => {
+    if (emailValidationStatus === 'idle') return null;
+
+    if (emailValidationStatus === 'checking') {
+      return (
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      );
+    }
+
+    if (emailValidationStatus === 'valid') {
+      return (
+        <CheckCircle2 className="h-4 w-4 text-green-600" />
+      );
+    }
+
+    if (emailValidationStatus === 'invalid') {
+      return (
+        <AlertCircle className="h-4 w-4 text-red-500" />
+      );
+    }
+
+    return null;
+  }, [emailValidationStatus]);
 
   const handleStep1Submit = (data: Step1Data) => {
     setStep1Data(data);
@@ -335,13 +394,26 @@ export function SignupPage() {
                               {...field}
                               type="email"
                               placeholder="you@company.com"
-                              className="pl-9 h-11"
+                              className={cn(
+                                "pl-9 pr-9 h-11",
+                                emailValidationStatus === 'valid' && "border-green-500 focus-visible:ring-green-500",
+                                emailValidationStatus === 'invalid' && "border-red-500 focus-visible:ring-red-500"
+                              )}
                               autoComplete="email"
                               autoFocus
                               disabled={isSubmitting}
                             />
+                            <div className="absolute right-3 top-3">
+                              {emailValidationIndicator}
+                            </div>
                           </div>
                         </FormControl>
+                        {emailValidationStatus === 'valid' && (
+                          <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                            <CheckCircle2 className="h-3 w-3" />
+                            Valid email format
+                          </p>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
