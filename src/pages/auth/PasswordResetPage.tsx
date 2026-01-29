@@ -13,7 +13,7 @@ import { usePasswordBreachCheck } from "@/hooks/usePasswordBreachCheck";
 import { PasswordBreachWarning } from "@/components/auth/PasswordBreachWarning";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
 
-export function PasswordResetPage() {
+export default function PasswordResetPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
@@ -292,33 +292,18 @@ export function PasswordResetPage() {
           <form onSubmit={handleSubmit} className="space-y-4" aria-label="Password reset form">
             <div className="space-y-2">
               <Label htmlFor="password" className={theme.text}>New Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter new password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                  minLength={8}
-                  className={`${theme.input} min-h-[44px] pr-10`}
-                  aria-describedby="password-strength password-requirements"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {password && (
-                <div id="password-strength" role="status" aria-live="polite">
-                  <PasswordStrengthIndicator password={password} />
-                </div>
-              )}
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading}
+                minLength={8}
+                className={theme.input}
+              />
+              <PasswordStrengthIndicator password={password} className="mt-2" />
               {password.length >= 8 && (
                 <PasswordBreachWarning
                   checking={breachChecking}

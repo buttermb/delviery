@@ -7408,49 +7408,38 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
 
-## Agent 76 - Remember Me Checkbox Implementation
+## Agent 77 - Visual Password Strength Meter
 
-### Task: Add remember me checkbox that extends session duration in LoginPage
+### Task: Add visual password strength meter (Weak/Medium/Strong) in SignupPage and ResetPage
 
 **Completed:**
 
-1. **Added REMEMBER_ME storage key constant**
-   - File: `src/constants/storageKeys.ts`
-   - Added `REMEMBER_ME: 'remember_me'` to STORAGE_KEYS constant
+1. **Updated PasswordStrengthIndicator Component** (`src/components/auth/PasswordStrengthIndicator.tsx`)
+   - Redesigned to use 3-level strength meter: Weak, Medium, Strong
+   - Added visual 3-bar meter that fills progressively based on strength
+   - Weak (red): 0-2 password criteria met
+   - Medium (yellow): 3-4 password criteria met
+   - Strong (green): All 5 password criteria met
+   - Added `showRequirements` prop to optionally hide detailed checklist
+   - Exported `calculatePasswordStrength` function for reuse
+   - Added proper ARIA attributes for accessibility
 
-2. **Updated edge function validation schema**
-   - File: `supabase/functions/tenant-admin-auth/validation.ts`
-   - Added `rememberMe: z.boolean().optional().default(false)` to loginSchema
+2. **Updated PasswordResetPage** (`src/pages/auth/PasswordResetPage.tsx`)
+   - Removed inline password strength implementation
+   - Now uses shared `PasswordStrengthIndicator` component
+   - Consistent visual appearance with SignupPage
 
-3. **Updated edge function to extend session duration**
-   - File: `supabase/functions/tenant-admin-auth/index.ts`
-   - Cookie Max-Age now uses 30 days when rememberMe is true, 7 days otherwise
-   - Session duration dynamically calculated based on rememberMe preference
+3. **SignupPage** (`src/pages/auth/SignupPage.tsx`)
+   - Already using `PasswordStrengthIndicator` component
+   - Now benefits from the updated Weak/Medium/Strong labels
 
-4. **Updated TenantAdminAuthContext**
-   - File: `src/contexts/TenantAdminAuthContext.tsx`
-   - Login function signature updated to accept optional `rememberMe` parameter
-   - Login API request now includes `rememberMe` in request body
-
-5. **Updated LoginPage files with Remember Me functionality**
-   - `src/pages/auth/LoginPage.tsx` - Passes rememberMe to login function
-   - `src/pages/saas/LoginPage.tsx` - Passes rememberMe to edge function API
-   - `src/pages/tenant-admin/LoginPage.tsx` - Added Checkbox UI and state, passes rememberMe to login
-
-6. **UI Improvements**
-   - Added title tooltip on all Remember Me checkboxes explaining duration
-   - Proper accessibility with htmlFor/id attributes on checkboxes
-
-### Session Duration:
-- **Without Remember Me**: 7 days cookie expiration (default)
-- **With Remember Me checked**: 30 days cookie expiration (extended)
+### Password Strength Criteria:
+- At least 8 characters
+- Contains lowercase letter
+- Contains uppercase letter
+- Contains number
+- Contains special character
 
 ### Files Changed:
-- `src/constants/storageKeys.ts`
-- `supabase/functions/tenant-admin-auth/validation.ts`
-- `supabase/functions/tenant-admin-auth/index.ts`
-- `src/contexts/TenantAdminAuthContext.tsx`
-- `src/pages/auth/LoginPage.tsx`
-- `src/pages/saas/LoginPage.tsx`
-- `src/pages/tenant-admin/LoginPage.tsx`
-
+- `src/components/auth/PasswordStrengthIndicator.tsx` - Unified component with Weak/Medium/Strong levels
+- `src/pages/auth/PasswordResetPage.tsx` - Now uses shared PasswordStrengthIndicator component
