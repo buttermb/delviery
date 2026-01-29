@@ -85,6 +85,7 @@ const STREET_TIER: TierPreset = {
 
   dashboardWidgets: [
     'street-tips',
+    'live-orders',
     'todays-revenue',
     'top-5-products',
     'pending-orders',
@@ -134,6 +135,7 @@ const TRAP_TIER: TierPreset = {
   subscriptionTier: 'starter',
 
   dashboardWidgets: [
+    'live-orders',
     'team-activity',
     'revenue-trend',
     'top-products',
@@ -188,6 +190,7 @@ const BLOCK_TIER: TierPreset = {
   subscriptionTier: 'professional',
 
   dashboardWidgets: [
+    'live-orders',
     'location-overview',
     'team-activity',
     'weekly-trends',
@@ -248,6 +251,7 @@ const HOOD_TIER: TierPreset = {
   subscriptionTier: 'professional',
 
   dashboardWidgets: [
+    'live-orders',
     'executive-summary',
     'location-overview',
     'team-activity',
@@ -314,6 +318,7 @@ const EMPIRE_TIER: TierPreset = {
   subscriptionTier: 'enterprise',
 
   dashboardWidgets: [
+    'live-orders',
     'executive-summary',
     'location-overview',
     'team-activity',

@@ -73,6 +73,7 @@ import { LocationOverviewWidget } from './widgets/LocationOverviewWidget';
 import { ExecutiveSummaryWidget } from './widgets/ExecutiveSummaryWidget';
 import { StrategicDecisionsWidget } from './widgets/StrategicDecisionsWidget';
 import { WeeklyTrendsWidget } from './widgets/WeeklyTrendsWidget';
+import { LiveOrdersWidget } from './widgets/LiveOrdersWidget';
 
 // Type definitions
 interface PulseMetric {
@@ -513,6 +514,13 @@ export function HotboxDashboard() {
       {/* Tier-specific sections - Dynamic Rendering */}
 
       <div className="space-y-6">
+        {/* Live Orders Widget - Real-time order queue */}
+        {hasWidget('live-orders') && (
+          <ErrorBoundary>
+            <LiveOrdersWidget />
+          </ErrorBoundary>
+        )}
+
         {/* Street Tier Tips */}
         {hasWidget('street-tips') && (
           <ErrorBoundary>
