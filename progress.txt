@@ -7332,3 +7332,59 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 72 - AuthConfirmPage Enhancement
+
+### Task: Build AuthConfirmPage handling various confirmations with success error states
+
+**Completed:**
+
+1. **Enhanced AuthConfirmPage with comprehensive confirmation type support**
+   - Added support for all Supabase OTP verification types:
+     - `email`: Email verification after signup
+     - `signup`: Alternative signup confirmation
+     - `recovery`: Password reset confirmation (redirects to password change)
+     - `invite`: Team/organization invitation acceptance
+     - `magiclink`: Magic link passwordless login
+     - `email_change`: Email address change confirmation
+
+2. **Implemented type-specific configuration system**
+   - Created `ConfirmationConfig` interface for standardized UI across types
+   - Added `CONFIRMATION_CONFIG` constant with unique titles, messages, icons, and loading messages for each type
+   - Dynamic icon rendering based on verification type (CheckCircle, UserPlus, Key, ShieldCheck, Mail)
+
+3. **Enhanced error handling with specialized states**
+   - `expired`: Shows resend form with type-appropriate messaging
+   - `invalid`: Shows re-request option with context
+   - `already_confirmed`: New state for tokens already used
+   - `generic`: Fallback with recovery options
+   - Type-specific error messages (recovery links get password reset instructions, invites direct to admin)
+
+4. **Improved redirect logic based on verification type**
+   - Recovery type redirects to `/auth/secure-account` for password change
+   - Email change redirects to appropriate settings page based on user type
+   - Invite redirects to organization dashboard
+   - Standard verification redirects to user-type appropriate dashboard
+
+5. **Added password reset request functionality**
+   - New `handleRequestPasswordReset` function for expired recovery links
+   - Proper `resetPasswordForEmail` Supabase call with redirect URL
+
+6. **Enhanced resend email functionality**
+   - Type-aware resend with `getResendType()` helper
+   - Proper handling of `email_change` vs `signup` resend types
+   - Invite type shows admin contact message instead of resend form
+
+7. **Improved success states with contextual information**
+   - Recovery success shows password change hint
+   - Invite success shows organization access message
+   - Dynamic messages based on verified type
+
+### TypeScript Validation:
+- ESLint passes with no errors
+- Full project `tsc --noEmit --skipLibCheck` passes
+- Note: Full build has pre-existing papaparse dependency issue unrelated to this change
+
+### Files Changed:
+- `src/pages/auth/AuthConfirmPage.tsx` - Enhanced with comprehensive confirmation handling
+- `progress.txt` - Added this implementation report
