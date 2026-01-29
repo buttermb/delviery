@@ -1,58 +1,25 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, CheckCircle2, XCircle, Key } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Key, Eye, EyeOff } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { verifyResetToken, resetPasswordWithToken } from "@/utils/passwordReset";
 import { handleError } from "@/utils/errorHandling/handlers";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { usePasswordBreachCheck } from "@/hooks/usePasswordBreachCheck";
 import { PasswordBreachWarning } from "@/components/auth/PasswordBreachWarning";
+import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
 
-interface PasswordStrength {
-  score: 0 | 1 | 2 | 3 | 4;
-  label: string;
-  color: string;
-}
-
-function calculatePasswordStrength(password: string): PasswordStrength {
-  if (!password) {
-    return { score: 0, label: "", color: "" };
-  }
-
-  let score = 0;
-
-  // Length checks
-  if (password.length >= 8) score++;
-  if (password.length >= 12) score++;
-
-  // Character variety checks
-  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
-  if (/\d/.test(password)) score++;
-  if (/[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/`~]/.test(password)) score++;
-
-  // Cap score at 4
-  const finalScore = Math.min(score, 4) as 0 | 1 | 2 | 3 | 4;
-
-  const strengthMap: Record<0 | 1 | 2 | 3 | 4, { label: string; color: string }> = {
-    0: { label: "", color: "" },
-    1: { label: "Weak", color: "bg-red-500" },
-    2: { label: "Fair", color: "bg-orange-500" },
-    3: { label: "Good", color: "bg-yellow-500" },
-    4: { label: "Strong", color: "bg-green-500" },
-  };
-
-  return { score: finalScore, ...strengthMap[finalScore] };
-}
-
-export default function PasswordResetPage() {
+export function PasswordResetPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(true);
   const [valid, setValid] = useState(false);
@@ -63,9 +30,6 @@ export default function PasswordResetPage() {
 
   // Password breach checking
   const { checking: breachChecking, result: breachResult, suggestPassword } = usePasswordBreachCheck(password);
-
-  // Password strength calculation
-  const passwordStrength = useMemo(() => calculatePasswordStrength(password), [password]);
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -325,47 +289,34 @@ export default function PasswordResetPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" aria-label="Password reset form">
             <div className="space-y-2">
               <Label htmlFor="password" className={theme.text}>New Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-                minLength={8}
-                className={theme.input}
-              />
-              <p className={`text-xs ${theme.textLight}`}>
-                Must be at least 8 characters
-              </p>
-              {password.length > 0 && (
-                <div className="space-y-1">
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4].map((level) => (
-                      <div
-                        key={level}
-                        className={`h-1.5 flex-1 rounded-full transition-colors duration-200 ${
-                          level <= passwordStrength.score
-                            ? passwordStrength.color
-                            : "bg-gray-200"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  {passwordStrength.label && (
-                    <p className={`text-xs font-medium ${
-                      passwordStrength.score === 1 ? "text-red-600" :
-                      passwordStrength.score === 2 ? "text-orange-600" :
-                      passwordStrength.score === 3 ? "text-yellow-600" :
-                      "text-green-600"
-                    }`}>
-                      Password strength: {passwordStrength.label}
-                    </p>
-                  )}
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter new password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  minLength={8}
+                  className={`${theme.input} min-h-[44px] pr-10`}
+                  aria-describedby="password-strength password-requirements"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {password && (
+                <div id="password-strength" role="status" aria-live="polite">
+                  <PasswordStrengthIndicator password={password} />
                 </div>
               )}
               {password.length >= 8 && (
@@ -382,19 +333,36 @@ export default function PasswordResetPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className={theme.text}>Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                disabled={loading}
-                minLength={8}
-                className={theme.input}
-              />
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  minLength={8}
+                  className={`${theme.input} min-h-[44px] pr-10`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {confirmPassword && password !== confirmPassword && (
+                <p className="text-xs text-red-600" role="alert">Passwords do not match</p>
+              )}
             </div>
-            <Button type="submit" className={`w-full ${theme.button}`} disabled={loading}>
+            <Button
+              type="submit"
+              className={`w-full min-h-[44px] ${theme.button}`}
+              disabled={loading || password.length < 8 || password !== confirmPassword || breachResult?.blocked}
+            >
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -413,3 +381,6 @@ export default function PasswordResetPage() {
     </div>
   );
 }
+
+// Default export for lazy loading compatibility
+export default PasswordResetPage;
