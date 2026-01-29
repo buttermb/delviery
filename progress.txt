@@ -7409,151 +7409,99 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: Connect Reports to Data Sources Enabling Custom Report Queries (Agent 64)
-
-### Date: 2026-01-28
+## Task: Connect Settings to All Features Applying Global Config Changes
 
 ### What was done:
 
-Implemented a comprehensive custom report query system that connects reports to multiple data sources, enabling users to build flexible reports with custom queries.
+1. **Created `useGlobalSettings` hook** (`src/hooks/useGlobalSettings.ts`)
+   - Centralized hook for accessing all global configuration settings
+   - Aggregates settings from multiple sources: account, security, notifications
+   - Provides mutations for updating general, security, and notification settings
+   - Derives settings from account metadata and account_settings table
+   - Exposes convenience hooks: `useNotificationEnabled`, `useSecuritySettings`, `useSessionTimeout`, `useTwoFactorEnabled`
 
-#### 1. Database Migration (`supabase/migrations/20260128120000_add_custom_reports_data_sources.sql`)
-Created a new migration that:
-- Added new columns to `custom_reports` table:
-  - `data_sources TEXT[]` - Array of data source table names
-  - `metrics TEXT[]` - Array of calculated metrics
-  - `dimensions TEXT[]` - Array of grouping dimensions
-  - `report_type TEXT` - Type classification (sales, inventory, customer, etc.)
-  - `filters JSONB` - Complex filter configuration with conditions and date ranges
-  - `visualization_type TEXT` - Chart/table type
-  - `chart_config JSONB` - Chart customization settings
-  - `created_by UUID` - User who created the report
-  - `last_run_at TIMESTAMPTZ` - Last execution timestamp
-  - `is_template BOOLEAN` - Whether this is a reusable template
+2. **Created `GlobalSettingsContext`** (`src/contexts/GlobalSettingsContext.tsx`)
+   - Context provider for centralized settings access throughout the application
+   - Aggregates settings from: account, sidebar preferences, payment settings, storefront settings
+   - Provides real-time updates when settings change
+   - Feature flags derived from settings (isTwoFactorEnabled, isEmailNotificationsEnabled, etc.)
+   - Exposes convenience hooks: `useGlobalSettingsContext`, `useFeatureEnabled`, `useNotificationSettings`, `useSecuritySettingsContext`, `useIsNotificationEnabled`
 
-- Created `report_data_sources` table for managing available data sources:
-  - Defines available fields, metrics, and dimensions per source
-  - Pre-populated with 9 data sources: orders, products, customers, wholesale_orders, wholesale_clients, inventory, pos_transactions, pos_shifts, marketplace_orders
-  - RLS enabled with read access for authenticated users
+3. **Updated `ThemeContext`** (`src/contexts/ThemeContext.tsx`)
+   - Added `setTheme` method for programmatic theme setting
+   - Exposed method for settings sync integration
+   - Maintains backward compatibility with existing `toggleTheme`
 
-- Created `report_executions` table for tracking report generation history:
-  - Logs every report execution with filters, results, and timing
-  - Tenant-isolated via RLS policies
+4. **Created `useNotificationGate` hook** (`src/hooks/useNotificationGate.ts`)
+   - Gateway for features to check notification settings before sending notifications
+   - Respects user notification preferences from account settings
+   - Channel-aware notification sending (email, SMS, push, toast)
+   - Convenience methods: `notifyLowStock`, `notifyNewOrder`, `notifyOverduePayment`
+   - `useIsNotificationEnabled` hook for conditional UI rendering
 
-- Created `get_report_data_sources()` RPC function for easy data source retrieval
+5. **Created `useSecuritySettings` hook** (`src/hooks/useSecuritySettings.ts`)
+   - Security settings enforcement throughout the application
+   - Session timeout monitoring with automatic logout
+   - Password validation based on global minimum length setting
+   - 2FA status checking
+   - Activity tracking for session management
+   - Convenience hooks: `useTwoFactorRequired`, `useSessionTimeout`, `usePasswordMinLength`, `usePasswordValidator`
 
-#### 2. Type Definitions (`src/lib/constants/reportDataSources.ts`)
-Created comprehensive TypeScript types and constants:
-- `ReportDataSource` - Full data source configuration interface
-- `DataSourceField`, `DataSourceMetric`, `DataSourceDimension` - Field definitions
-- `ReportConfig`, `ReportFilter` - Report configuration types
-- `FilterOperator` - 12 different filter operators (equals, contains, greater_than, etc.)
-- `DateRangePreset` - 11 preset date ranges (today, this_week, this_month, etc.)
-- `VisualizationType` - 6 visualization types (table, bar_chart, line_chart, etc.)
-- `DEFAULT_DATA_SOURCES` - Fallback data source definitions
-- `DATE_RANGE_PRESETS`, `VISUALIZATION_TYPES`, `FILTER_OPERATORS` - UI constants
-- `getOperatorsForFieldType()` - Helper to filter operators by field type
+6. **Created `useSettingsSync` hook** (`src/hooks/useSettingsSync.ts`)
+   - Unified access to all settings across the application
+   - Cross-feature settings synchronization
+   - Combined loading state management
+   - Convenience hooks for specific feature settings:
+     - `useSidebarSettingsSync` - Sidebar preferences access
+     - `useThemeSettingsSync` - Theme settings with sync capabilities
+   - `refreshAll` method to invalidate all settings queries
 
-#### 3. Data Fetching Hook (`src/hooks/useReportDataSources.ts`)
-Created custom React hooks for data source management:
-- `useReportDataSources()` - Fetches available data sources from database with fallback to defaults
-- `useDataSourceFields(selectedSources)` - Returns combined fields, metrics, and dimensions for selected sources
-- `useDataSource(sourceName)` - Gets a single data source by name
-- Implements caching with 5-minute stale time
-- Graceful error handling with fallback to hardcoded defaults
+7. **Fixed `SettingsPage`** (`src/pages/admin/SettingsPage.tsx`)
+   - Added missing `formsInitialized` state declaration
 
-#### 4. Updated ReportBuilder Component (`src/components/admin/reporting/ReportBuilder.tsx`)
-Completely redesigned the report builder UI:
-- **Data Sources Section**: Multi-select checkboxes for choosing data sources
-- **Fields & Metrics Section**: 
-  - Checkbox grid for selecting report fields
-  - Metric selection with aggregation types
-  - Dimension/group-by selection
-- **Filters & Date Range Section**:
-  - Date range presets with custom range option
-  - Dynamic filter builder with field, operator, and value inputs
-  - Add/remove filters functionality
-- **Visualization Section**: Visual selection of chart/table types
-- Uses accordion layout for organized step-by-step configuration
-- Real-time badge counts showing selected items
-- Proper loading and disabled states
+### Files Created:
+- `src/hooks/useGlobalSettings.ts`
+- `src/hooks/useNotificationGate.ts`
+- `src/hooks/useSecuritySettings.ts`
+- `src/hooks/useSettingsSync.ts`
+- `src/contexts/GlobalSettingsContext.tsx`
 
-#### 5. ReportQueryBuilder Component (`src/components/admin/reporting/ReportQueryBuilder.tsx`)
-Created a new component for previewing and executing report queries:
-- **Run Query** button to execute report against data sources
-- Date range calculation from presets
-- Dynamic query building with:
-  - Tenant isolation
-  - Date filters
-  - Custom condition filters
-  - Multiple data source support
-- **Results Table**: Displays query results with:
-  - Auto-detected field labels
-  - Currency formatting for amount fields
-  - Date formatting for timestamp fields
-  - Pagination showing first 100 rows
-- **Metrics Display**: Calculated aggregates (count, sum, avg)
-- **CSV Export**: Download results as CSV file
+### Files Modified:
+- `src/contexts/ThemeContext.tsx` - Added `setTheme` method
+- `src/pages/admin/SettingsPage.tsx` - Fixed missing state declaration
 
-#### 6. Updated Edge Function (`supabase/functions/generate-custom-report/index.ts`)
-Significantly enhanced the report generation function:
-- **Security**: Whitelist of allowed tables to prevent SQL injection
-- **Tenant Isolation**: Proper tenant_id filtering with support for both tenant_id and store_id based tables
-- **Dynamic Queries**: Builds Supabase queries based on report configuration
-- **Filter Application**: Supports all 12 filter operators
-- **Metrics Calculation**: 
-  - Count, sum, and average aggregations
-  - Handles average calculations correctly across multiple data sources
-- **Execution Logging**: Records report runs in report_executions table
-- **Error Handling**: Graceful handling of missing tables or query errors
+### How to Use:
 
-#### 7. Updated Query Keys (`src/lib/queryKeys.ts`)
-Extended the reporting query keys:
-- Added `dataSources()` for caching data source queries
-- Added `executions(reportId?)` for report execution history
+**For notification gating:**
+```typescript
+import { useNotificationGate } from '@/hooks/useNotificationGate';
 
-### Files Created/Modified:
-- `supabase/migrations/20260128120000_add_custom_reports_data_sources.sql` (new)
-- `src/lib/constants/reportDataSources.ts` (new)
-- `src/hooks/useReportDataSources.ts` (new)
-- `src/components/admin/reporting/ReportBuilder.tsx` (rewritten)
-- `src/components/admin/reporting/ReportQueryBuilder.tsx` (new)
-- `supabase/functions/generate-custom-report/index.ts` (enhanced)
-- `supabase/functions/generate-custom-report/validation.ts` (updated)
-- `src/lib/queryKeys.ts` (updated)
+const { canSendNotification, notifyLowStock } = useNotificationGate();
 
-### Verification:
-- ESLint passes on all new/modified files
-- TypeScript compilation passes for new code
-- No new lint errors introduced
+if (canSendNotification('lowStockAlerts')) {
+  notifyLowStock('Product Name', 5);
+}
+```
 
-### Available Data Sources:
-1. **Orders** - Customer orders and transactions
-2. **Products** - Product catalog and inventory
-3. **Customers** - Customer records and metrics
-4. **Wholesale Orders** - B2B wholesale order transactions
-5. **Wholesale Clients** - B2B client accounts
-6. **Inventory** - Stock levels and movements
-7. **POS Transactions** - Point of sale records
-8. **POS Shifts** - POS shift and drawer management
-9. **Marketplace Orders** - Storefront marketplace orders
+**For security settings:**
+```typescript
+import { useSecuritySettings } from '@/hooks/useSecuritySettings';
 
-### Supported Metrics:
-- Total Revenue (sum of amounts)
-- Order Count (count of records)
-- Average Order Value
-- Customer Count
-- Product Count
-- Total Stock
-- Average Price
-- Shift Count
-- Transaction Count
+const { validatePassword, is2FARequired } = useSecuritySettings();
 
-### Supported Filter Operators:
-- equals, not_equals
-- contains, not_contains
-- greater_than, less_than
-- greater_or_equal, less_or_equal
-- is_null, is_not_null
-- in, not_in
+const { valid, errors } = validatePassword(password);
+if (is2FARequired()) {
+  // Show 2FA prompt
+}
+```
 
+**For unified settings access:**
+```typescript
+import { useSettingsSync } from '@/hooks/useSettingsSync';
+
+const { general, security, notifications, sidebar, refreshAll } = useSettingsSync();
+```
+
+### Build Status:
+- TypeScript compilation: ✅ No errors
+- ESLint: ✅ Only warnings (React fast refresh)
