@@ -7407,20 +7407,21 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 19 - Finance Section Update
+## Agent 21 - Sidebar Navigation Update
 
-### Task: Add Finance section with Dashboard, Revenue, Expenses, Invoices, Payouts in sidebar-navigation.ts
+### Task: Add Marketing section with Storefront, Reviews, Coupons, Live Chat in sidebar-navigation.ts
 
 **Completed:**
-- Added core Finance navigation items at the top of the Finance section:
-  - "Dashboard" - links to /admin/finance/dashboard, uses LayoutDashboard icon
-  - "Revenue" - links to /admin/finance/revenue, uses TrendingUp icon
-  - "Expenses" - links to /admin/finance/expenses, uses TrendingDown icon
-  - "Invoices" - links to /admin/finance/invoices, uses Receipt icon
-  - "Payouts" - links to /admin/finance/payouts, uses CreditCard icon
-- Removed duplicate Payouts entry from the bottom of the Finance section
-- Updated routes to use consistent /admin/finance/* path structure
+- Added "Storefront" nav item to existing Marketing section
+  - Links to `/admin/storefront`
+  - Uses `Store` icon
+- Verified Marketing section already contains:
+  - Marketing Hub
+  - Loyalty Program
+  - Coupons (links to `/admin/marketing-hub?tab=coupons`)
+  - Campaigns
+  - Live Chat (links to `/admin/marketing-hub?tab=live-chat`)
+  - Reviews (links to `/admin/marketing-hub?tab=reviews`)
 
 ### Files Changed:
-- `src/components/admin/sidebar-navigation.ts` - Added Dashboard, Revenue, Expenses, Invoices, Payouts items to Finance section
-
+- `src/components/admin/sidebar-navigation.ts` - Added Storefront item to Marketing section
