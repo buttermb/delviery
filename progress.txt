@@ -7332,3 +7332,47 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+---
+
+## Task: Connect Live Chat to Support - Create Tickets from Customer Conversations
+
+### What was done:
+
+1. **Created `CreateTicketFromChatDialog` component** (`src/components/admin/support/CreateTicketFromChatDialog.tsx`)
+   - Dialog modal for creating support tickets from active chat sessions
+   - Auto-generates ticket subject from first customer message
+   - Auto-generates description with conversation summary
+   - Chat preview showing first 5 messages with sender badges
+   - Option to include full chat transcript in ticket description
+   - Priority selection (low, medium, high, urgent)
+   - Category selection (general, technical, billing, feature, bug, account)
+   - Stores chat session linkage in ticket metadata:
+     - `source: 'live_chat'`
+     - `chat_session_id`: Links back to the original chat
+     - `chat_mode`: Whether AI or human assisted
+     - `customer_identifier`: User ID or guest ID
+     - `message_count`: Number of messages in conversation
+     - `created_from_chat_at`: Timestamp of ticket creation
+   - Graceful degradation if support_tickets table doesn't exist
+
+2. **Updated `AdminLiveChat` page** (`src/pages/admin/AdminLiveChat.tsx`)
+   - Added "Create Ticket" button in chat window header when a session is selected
+   - Added close button (X) to deselect current chat session
+   - Integrated CreateTicketFromChatDialog component
+   - State management for ticket dialog visibility
+   - Success toast notification when ticket is created
+
+### Files Changed:
+- `src/components/admin/support/CreateTicketFromChatDialog.tsx` (new)
+- `src/pages/admin/AdminLiveChat.tsx` (modified - added ticket creation functionality)
+
+### How it works:
+1. Admin selects an active chat session in Live Chat
+2. "Create Ticket" button appears in the chat window header
+3. Clicking opens dialog with pre-filled subject and description from chat
+4. Admin can adjust details, priority, and category
+5. Optionally include full chat transcript in ticket
+6. On submit, ticket is created with metadata linking to chat session
+7. Support Tickets page shows all tickets, including those from chat
+
