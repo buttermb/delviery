@@ -22,7 +22,7 @@ export function VerifyEmailPage() {
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
 
-  const { verifyEmail, isVerifying: isValidatingEmail } = useEmailVerification();
+  const { isVerifying: isValidatingEmail } = useEmailVerification();
 
   const token = searchParams.get('token') || searchParams.get('token_hash');
   const type = searchParams.get('type') || 'email';

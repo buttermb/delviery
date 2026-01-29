@@ -165,7 +165,7 @@ const ForgotPasswordPage = lazy(() => import("./pages/auth/ForgotPasswordPage").
 const SignupSuccessPage = lazy(() => import("./pages/auth/SignupSuccessPage").then(m => ({ default: m.SignupSuccessPage })));
 const AccountSettingsPage = lazy(() => import("./pages/auth/AccountSettingsPage").then(m => ({ default: m.AccountSettingsPage })));
 const ChangePasswordPage = lazy(() => import("./pages/auth/ChangePasswordPage").then(m => ({ default: m.ChangePasswordPage })));
-const TenantAdminForgotPasswordPage = lazy(() => import("./pages/auth/ForgotPasswordPage").then(m => ({ default: m.ForgotPasswordPage })));
+const AuthVerifyEmailPage = lazy(() => import("./pages/auth/VerifyEmailPage").then(m => ({ default: m.VerifyEmailPage })));
 
 // Tenant Admin Pages
 const TenantAdminLoginPage = lazy(() => import("./pages/tenant-admin/LoginPage"));
@@ -617,8 +617,7 @@ const App = () => {
                                       <Route path="/signup-success" element={<SignupSuccessPage />} />
                                       <Route path="/auth/confirm" element={<AuthConfirmPage />} />
                                       <Route path="/auth/secure-account" element={<SecureAccountPage />} />
-                                      <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
-                                      <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+                                      <Route path="/auth/verify-email" element={<AuthVerifyEmailPage />} />
 
 
                                       {/* Redirect admin routes without tenant slug - go directly to business login */}
