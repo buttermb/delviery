@@ -21,6 +21,7 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { SearchInput } from '@/components/shared/SearchInput';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { AssignToFleetDialog } from '@/components/admin/AssignToFleetDialog';
 
 interface Delivery {
   id: string;
@@ -50,6 +51,12 @@ export default function DeliveryManagement() {
   const { tenant } = useTenantAdminAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [fleetDialogOpen, setFleetDialogOpen] = useState(false);
+  const [selectedDeliveryForFleet, setSelectedDeliveryForFleet] = useState<{
+    id: string;
+    orderNumber: string;
+    address: string;
+  } | null>(null);
 
   // Fetch Deliveries
   const { data: deliveries = [], isLoading: loadingDeliveries, refetch } = useQuery({
@@ -241,38 +248,56 @@ export default function DeliveryManagement() {
       cell: (d) => (
         <div className="flex gap-2 justify-end">
           {!d.courier_id ? (
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="sm" variant="outline">
-                  <User className="w-4 h-4 mr-2" />
-                  Assign
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Assign Courier</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-3">
-                  {couriers.map(courier => (
-                    <div
-                      key={courier.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:border-primary cursor-pointer"
-                      onClick={() => assignCourier(d.id, courier.id)}
-                    >
-                      <div>
-                        <p className="font-medium">{courier.full_name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {courier.vehicle_type} • {courier.phone}
-                        </p>
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-emerald-500/50 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+                onClick={() => {
+                  setSelectedDeliveryForFleet({
+                    id: d.id,
+                    orderNumber: d.order_id.slice(0, 8),
+                    address: d.address,
+                  });
+                  setFleetDialogOpen(true);
+                }}
+              >
+                <Truck className="w-4 h-4 mr-2" />
+                Fleet
+              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    <User className="w-4 h-4 mr-2" />
+                    Courier
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Assign Courier</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    {couriers.map(courier => (
+                      <div
+                        key={courier.id}
+                        className="flex items-center justify-between p-3 border rounded-lg hover:border-primary cursor-pointer"
+                        onClick={() => assignCourier(d.id, courier.id)}
+                      >
+                        <div>
+                          <p className="font-medium">{courier.full_name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {courier.vehicle_type} • {courier.phone}
+                          </p>
+                        </div>
+                        {courier.is_online && (
+                          <Badge variant="default">Online</Badge>
+                        )}
                       </div>
-                      {courier.is_online && (
-                        <Badge variant="default">Online</Badge>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </DialogContent>
-            </Dialog>
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </>
           ) : (
             <Button
               size="sm"
@@ -535,6 +560,21 @@ export default function DeliveryManagement() {
           />
         </TabsContent>
       </Tabs>
+
+      {/* Fleet Assignment Dialog */}
+      {selectedDeliveryForFleet && (
+        <AssignToFleetDialog
+          open={fleetDialogOpen}
+          onOpenChange={(open) => {
+            setFleetDialogOpen(open);
+            if (!open) setSelectedDeliveryForFleet(null);
+          }}
+          orderId={selectedDeliveryForFleet.id}
+          orderNumber={selectedDeliveryForFleet.orderNumber}
+          isWholesale={false}
+          deliveryAddress={selectedDeliveryForFleet.address}
+        />
+      )}
     </div>
   );
 }

@@ -7332,3 +7332,57 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 36 - Connect Fulfillment to Fleet (Assigning Deliveries to Vehicles)
+
+### Task: Connect Fulfillment to Fleet assigning deliveries to available vehicles
+
+**Completed:**
+
+1. **Created useAvailableRunners hook** (`src/hooks/useAvailableRunners.ts`)
+   - Fetches available fleet runners/vehicles for delivery assignment
+   - Supports filtering by availability status
+   - Uses tenant context for multi-tenant isolation
+   - Integrates with query key factory for proper cache management
+
+2. **Created AssignToFleetDialog component** (`src/components/admin/AssignToFleetDialog.tsx`)
+   - Reusable dialog for assigning orders to available fleet runners
+   - Shows runner details: name, phone, vehicle type, rating, total deliveries
+   - Visual selection with status indicators
+   - Supports both wholesale orders (via edge function) and regular orders
+   - Proper error handling with toast notifications
+   - Invalidates relevant queries on successful assignment
+
+3. **Updated LiveOrdersKanban component** (`src/components/admin/live-orders/LiveOrdersKanban.tsx`)
+   - Added "Fleet" button for orders in ready_for_pickup status
+   - Integrates AssignToFleetDialog for seamless fleet assignment
+   - Updated LiveOrder interface to include delivery_address field
+
+4. **Updated DeliveryManagement page** (`src/pages/admin/DeliveryManagement.tsx`)
+   - Added "Fleet" button alongside "Courier" button in delivery queue
+   - Allows operators to choose between fleet runners or couriers
+   - Fleet assignment dialog integrated with proper state management
+
+5. **Updated query keys** (`src/lib/queryKeys.ts`)
+   - Added `runners.available()` query key for available runners
+   - Maintains consistency with existing query key patterns
+
+### Integration Flow:
+1. Orders reach "Ready for Pickup" status in Live Orders Kanban
+2. Operators click "Fleet" button to open assignment dialog
+3. Dialog shows available runners with their stats (rating, vehicle, deliveries)
+4. Selecting a runner and confirming creates delivery assignment:
+   - For wholesale: Uses `wholesale-delivery-assign` edge function
+   - For regular orders: Updates courier_id and status directly
+5. Query cache is invalidated to refresh fleet status and order lists
+
+### Files Changed:
+- `src/hooks/useAvailableRunners.ts` (NEW) - Hook for fetching available fleet runners
+- `src/components/admin/AssignToFleetDialog.tsx` (NEW) - Fleet assignment dialog component
+- `src/components/admin/live-orders/LiveOrdersKanban.tsx` - Added fleet button and dialog
+- `src/pages/admin/DeliveryManagement.tsx` - Added fleet button to delivery queue
+- `src/lib/queryKeys.ts` - Added available runners query key
+
+### TypeScript Verification:
+- `npx tsc --noEmit` passes with no errors
+- All new code follows project conventions (named exports, @/ imports, logger usage)
