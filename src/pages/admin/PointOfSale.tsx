@@ -3,14 +3,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, CreditCard, Maximize2, Minimize2, Share2, Receipt } from 'lucide-react';
+import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, Maximize2, Minimize2, Share2, Receipt } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
@@ -20,6 +19,7 @@ import { PendingPickupsPanel } from '@/components/pos/PendingPickupsPanel';
 import { PendingOrder } from '@/hooks/usePendingOrders';
 import { orderFlowManager } from '@/lib/orders/orderFlowManager';
 import { QuickMenuWizard } from '@/components/pos/QuickMenuWizard';
+import { POSCustomerSelector, type POSCustomer } from '@/components/pos/POSCustomerSelector';
 import { useInventorySync } from '@/hooks/useInventorySync';
 import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
 import { cn } from '@/lib/utils';
@@ -42,14 +42,6 @@ export interface CartItem extends Product {
   subtotal: number;
 }
 
-interface Customer {
-  id: string;
-  first_name: string;
-  last_name: string;
-  customer_type: string;
-  loyalty_points: number;
-}
-
 export default function PointOfSale() {
   const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
@@ -60,8 +52,9 @@ export default function PointOfSale() {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<POSCustomer | null>(null);
+  const [customers, setCustomers] = useState<POSCustomer[]>([]);
+  const [customersLoading, setCustomersLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [paymentMethod, setPaymentMethod] = useState<string>('cash');
@@ -145,27 +138,40 @@ export default function PointOfSale() {
     if (!tenantId) return;
 
     try {
+      setCustomersLoading(true);
       const { data, error } = await supabase
         .from('customers')
-        .select('id, first_name, last_name, customer_type, loyalty_points')
+        .select('id, first_name, last_name, customer_type, loyalty_points, email, phone')
         .eq('tenant_id', tenantId)
+        .eq('status', 'active')
         .order('first_name');
 
       if (error) throw error;
 
-      // Map to our Customer interface with proper type checking
-      const mappedCustomers: Customer[] = (data || []).map((c) => ({
+      // Map to POSCustomer interface with proper type checking
+      const mappedCustomers: POSCustomer[] = (data || []).map((c) => ({
         id: c.id,
         first_name: c.first_name || '',
         last_name: c.last_name || '',
-        customer_type: c.customer_type || null,
-        loyalty_points: typeof c.loyalty_points === 'number' ? c.loyalty_points : 0
+        customer_type: c.customer_type || 'recreational',
+        loyalty_points: typeof c.loyalty_points === 'number' ? c.loyalty_points : 0,
+        email: c.email || null,
+        phone: c.phone || null,
       }));
 
       setCustomers(mappedCustomers);
     } catch (error) {
       logger.error('Error loading customers', error, { component: 'PointOfSale', tenantId });
+    } finally {
+      setCustomersLoading(false);
     }
+  };
+
+  // Handle customer created from quick create dialog
+  const handleCustomerCreated = (newCustomer: POSCustomer) => {
+    setCustomers((prev) => [...prev, newCustomer].sort((a, b) =>
+      a.first_name.localeCompare(b.first_name)
+    ));
   };
 
   const filterProducts = () => {
@@ -666,32 +672,16 @@ export default function PointOfSale() {
             </Button>
           </div>
 
-          {/* Customer Selector */}
+          {/* Customer Selector with Search & Quick Create */}
           <div className="mb-4 space-y-2 flex-shrink-0">
-            <Select
-              value={selectedCustomer?.id || 'walk-in'}
-              onValueChange={(value) => {
-                if (value === 'walk-in') {
-                  setSelectedCustomer(null);
-                } else {
-                  const customer = customers.find(c => c.id === value);
-                  setSelectedCustomer(customer || null);
-                }
-              }}
-            >
-              <SelectTrigger className="h-12 text-base">
-                <SelectValue placeholder="Select Customer" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="walk-in">Walk-in Customer</SelectItem>
-                {customers.map(customer => (
-                  <SelectItem key={customer.id} value={customer.id}>
-                    {customer.first_name} {customer.last_name}
-                    {customer.customer_type === 'medical' && <Badge className="ml-2" variant="secondary">Med</Badge>}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <POSCustomerSelector
+              customers={customers}
+              selectedCustomer={selectedCustomer}
+              onSelectCustomer={setSelectedCustomer}
+              onCustomerCreated={handleCustomerCreated}
+              isLoading={customersLoading}
+              tenantId={tenantId}
+            />
             {selectedCustomer && (
               <div className="flex justify-between items-center px-2 text-sm text-muted-foreground">
                 <span>Verified Customer</span>
