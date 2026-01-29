@@ -1,16 +1,16 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, CreditCard, Maximize2, Minimize2, Share2, Receipt, Wallet } from 'lucide-react';
+import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, CreditCard, Maximize2, Minimize2, Share2, Receipt } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
@@ -20,17 +20,12 @@ import { PendingPickupsPanel } from '@/components/pos/PendingPickupsPanel';
 import { PendingOrder } from '@/hooks/usePendingOrders';
 import { orderFlowManager } from '@/lib/orders/orderFlowManager';
 import { QuickMenuWizard } from '@/components/pos/QuickMenuWizard';
-import { POSCustomerSelector, type POSCustomer } from '@/components/pos/POSCustomerSelector';
 import { useInventorySync } from '@/hooks/useInventorySync';
 import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
 import { cn } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
-import { ShiftManager } from '@/components/pos/ShiftManager';
-import { CashDrawerPanel } from '@/components/pos/CashDrawerPanel';
-import { queryKeys } from '@/lib/queryKeys';
-import { useRealtimeShifts, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 
 export interface Product {
   id: string;
@@ -47,6 +42,14 @@ export interface CartItem extends Product {
   subtotal: number;
 }
 
+interface Customer {
+  id: string;
+  first_name: string;
+  last_name: string;
+  customer_type: string;
+  loyalty_points: number;
+}
+
 export default function PointOfSale() {
   const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
@@ -57,9 +60,8 @@ export default function PointOfSale() {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<POSCustomer | null>(null);
-  const [customers, setCustomers] = useState<POSCustomer[]>([]);
-  const [customersLoading, setCustomersLoading] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [paymentMethod, setPaymentMethod] = useState<string>('cash');
@@ -73,9 +75,6 @@ export default function PointOfSale() {
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const { dialogState, confirm, closeDialog, setLoading: setDialogLoading } = useConfirmDialog();
   const [pendingLoadOrder, setPendingLoadOrder] = useState<PendingOrder | null>(null);
-  const [lowStockWarnings, setLowStockWarnings] = useState<LowStockWarningItem[]>([]);
-  const [lowStockDialogOpen, setLowStockDialogOpen] = useState(false);
-  const [lastTransactionNumber, setLastTransactionNumber] = useState<string | undefined>();
 
   // Handle image load error - fall back to placeholder
   const handleImageError = useCallback((productId: string) => {
@@ -90,30 +89,6 @@ export default function PointOfSale() {
     tables: ['wholesale_orders', 'products'],
     enabled: !!tenantId,
   });
-
-  // Query active shift for cash drawer tracking
-  const { data: activeShift } = useQuery({
-    queryKey: queryKeys.pos.shifts.active(tenantId),
-    queryFn: async () => {
-      if (!tenantId) return null;
-      const { data, error } = await supabase
-        .from('pos_shifts')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .eq('status', 'open')
-        .order('started_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      return data;
-    },
-    enabled: !!tenantId,
-  });
-
-  // Enable realtime updates for shifts and cash drawer
-  useRealtimeShifts(tenantId);
-  useRealtimeCashDrawer(activeShift?.id);
 
   useEffect(() => {
     if (tenantId) {
@@ -170,40 +145,27 @@ export default function PointOfSale() {
     if (!tenantId) return;
 
     try {
-      setCustomersLoading(true);
       const { data, error } = await supabase
         .from('customers')
-        .select('id, first_name, last_name, customer_type, loyalty_points, email, phone')
+        .select('id, first_name, last_name, customer_type, loyalty_points')
         .eq('tenant_id', tenantId)
-        .eq('status', 'active')
         .order('first_name');
 
       if (error) throw error;
 
-      // Map to POSCustomer interface with proper type checking
-      const mappedCustomers: POSCustomer[] = (data || []).map((c) => ({
+      // Map to our Customer interface with proper type checking
+      const mappedCustomers: Customer[] = (data || []).map((c) => ({
         id: c.id,
         first_name: c.first_name || '',
         last_name: c.last_name || '',
-        customer_type: c.customer_type || 'recreational',
-        loyalty_points: typeof c.loyalty_points === 'number' ? c.loyalty_points : 0,
-        email: c.email || null,
-        phone: c.phone || null,
+        customer_type: c.customer_type || null,
+        loyalty_points: typeof c.loyalty_points === 'number' ? c.loyalty_points : 0
       }));
 
       setCustomers(mappedCustomers);
     } catch (error) {
       logger.error('Error loading customers', error, { component: 'PointOfSale', tenantId });
-    } finally {
-      setCustomersLoading(false);
     }
-  };
-
-  // Handle customer created from quick create dialog
-  const handleCustomerCreated = (newCustomer: POSCustomer) => {
-    setCustomers((prev) => [...prev, newCustomer].sort((a, b) =>
-      a.first_name.localeCompare(b.first_name)
-    ));
   };
 
   const filterProducts = () => {
@@ -358,40 +320,13 @@ export default function PointOfSale() {
           if (transactionError) throw transactionError;
           transactionId = transaction?.id;
 
-          // Update inventory and check for low stock
-          const fallbackWarnings: LowStockWarningItem[] = [];
+          // Update inventory 
           for (const item of cart) {
-            const newStock = item.stock_quantity - item.quantity;
-
-            // Update inventory
             await supabase
               .from('products')
-              .update({
-                stock_quantity: newStock,
-                available_quantity: Math.max(0, newStock),
-                in_stock: newStock > 0
-              })
+              .update({ stock_quantity: item.stock_quantity - item.quantity })
               .eq('id', item.id)
               .eq('tenant_id', tenantId);
-
-            // Check low stock (default threshold of 10)
-            const threshold = 10;
-            if (newStock <= threshold) {
-              fallbackWarnings.push({
-                product_id: item.id,
-                product_name: item.name,
-                previous_stock: item.stock_quantity,
-                new_stock: newStock,
-                threshold,
-                alert_level: newStock <= 0 ? 'out_of_stock' : newStock <= threshold * 0.25 ? 'critical' : 'warning'
-              });
-            }
-          }
-
-          // Set low stock warnings for fallback path
-          if (fallbackWarnings.length > 0) {
-            setLowStockWarnings(fallbackWarnings);
-            setLastTransactionNumber(transactionNumber);
           }
 
           // Update loyalty
@@ -407,22 +342,9 @@ export default function PointOfSale() {
           throw rpcError;
         }
       } else {
-        const result = rpcResult as {
-          success: boolean;
-          transaction_id: string;
-          transaction_number: string;
-          total: number;
-          low_stock_warnings?: LowStockWarningItem[];
-          has_low_stock_warnings?: boolean;
-        };
+        const result = rpcResult as { success: boolean; transaction_id: string; transaction_number: string; total: number };
         transactionId = result.transaction_id;
         transactionNumber = result.transaction_number;
-
-        // Check for low stock warnings from the atomic transaction
-        if (result.has_low_stock_warnings && result.low_stock_warnings && result.low_stock_warnings.length > 0) {
-          setLowStockWarnings(result.low_stock_warnings);
-          setLastTransactionNumber(result.transaction_number);
-        }
       }
 
       // Log activity
@@ -493,11 +415,6 @@ export default function PointOfSale() {
       clearCart();
       loadProducts();
       loadCustomers();
-
-      // Show low stock warning dialog if there are warnings
-      if (lowStockWarnings.length > 0) {
-        setLowStockDialogOpen(true);
-      }
     } catch (error) {
       logger.error('Error completing sale', error, { component: 'PointOfSale', tenantId });
       toast({
@@ -599,25 +516,8 @@ export default function PointOfSale() {
           <Badge variant={activeOrderId ? "default" : "outline"} className="hidden sm:flex">
             {activeOrderId ? "Online Order Active" : "Walk-In Mode"}
           </Badge>
-          {activeShift && (
-            <Badge variant="secondary" className="hidden md:flex items-center gap-1.5 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
-              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              Shift Active
-            </Badge>
-          )}
         </div>
         <div className="flex items-center gap-2">
-          {!isFullScreen && activeShift && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setActiveTab('shift')}
-              className="hidden lg:flex items-center gap-2"
-            >
-              <Wallet className="h-4 w-4" />
-              ${((activeShift.opening_cash || 0) + (activeShift.cash_sales || 0)).toFixed(2)}
-            </Button>
-          )}
           {!isFullScreen && (
             <Button variant="outline" onClick={() => navigateToAdmin('order-management')}>
               View History
@@ -642,10 +542,6 @@ export default function PointOfSale() {
             <TabsList className="mb-4">
               <TabsTrigger value="register" className="px-6 py-2">Here & Now</TabsTrigger>
               <TabsTrigger value="pickups" className="px-6 py-2">Pending Pickups</TabsTrigger>
-              <TabsTrigger value="shift" className="px-6 py-2 flex items-center gap-2">
-                <Wallet className="h-4 w-4" />
-                Shift & Drawer
-              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="register" className="flex-1 flex flex-col min-h-0 data-[state=active]:flex">
@@ -752,27 +648,6 @@ export default function PointOfSale() {
                 )}
               </ScrollArea>
             </TabsContent>
-
-            <TabsContent value="shift" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
-              <ScrollArea className="flex-1 pr-4">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-4">
-                  {/* Shift Manager */}
-                  <div className="lg:col-span-2">
-                    <ShiftManager />
-                  </div>
-
-                  {/* Cash Drawer Panel */}
-                  {activeShift && (
-                    <CashDrawerPanel
-                      shiftId={activeShift.id}
-                      openingCash={activeShift.opening_cash || 0}
-                      expectedCash={(activeShift.opening_cash || 0) + (activeShift.cash_sales || 0)}
-                      className="lg:col-span-1"
-                    />
-                  )}
-                </div>
-              </ScrollArea>
-            </TabsContent>
           </Tabs>
         </div>
 
@@ -791,16 +666,32 @@ export default function PointOfSale() {
             </Button>
           </div>
 
-          {/* Customer Selector with Search & Quick Create */}
+          {/* Customer Selector */}
           <div className="mb-4 space-y-2 flex-shrink-0">
-            <POSCustomerSelector
-              customers={customers}
-              selectedCustomer={selectedCustomer}
-              onSelectCustomer={setSelectedCustomer}
-              onCustomerCreated={handleCustomerCreated}
-              isLoading={customersLoading}
-              tenantId={tenantId}
-            />
+            <Select
+              value={selectedCustomer?.id || 'walk-in'}
+              onValueChange={(value) => {
+                if (value === 'walk-in') {
+                  setSelectedCustomer(null);
+                } else {
+                  const customer = customers.find(c => c.id === value);
+                  setSelectedCustomer(customer || null);
+                }
+              }}
+            >
+              <SelectTrigger className="h-12 text-base">
+                <SelectValue placeholder="Select Customer" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="walk-in">Walk-in Customer</SelectItem>
+                {customers.map(customer => (
+                  <SelectItem key={customer.id} value={customer.id}>
+                    {customer.first_name} {customer.last_name}
+                    {customer.customer_type === 'medical' && <Badge className="ml-2" variant="secondary">Med</Badge>}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {selectedCustomer && (
               <div className="flex justify-between items-center px-2 text-sm text-muted-foreground">
                 <span>Verified Customer</span>
@@ -944,20 +835,6 @@ export default function PointOfSale() {
         itemType={dialogState.itemType}
         onConfirm={dialogState.onConfirm}
         isLoading={dialogState.isLoading}
-      />
-
-      <POSLowStockWarningDialog
-        open={lowStockDialogOpen}
-        onOpenChange={(open) => {
-          setLowStockDialogOpen(open);
-          if (!open) {
-            // Clear warnings when dialog is closed
-            setLowStockWarnings([]);
-            setLastTransactionNumber(undefined);
-          }
-        }}
-        warnings={lowStockWarnings}
-        transactionNumber={lastTransactionNumber}
       />
     </div>
   );
