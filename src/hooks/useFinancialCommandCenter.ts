@@ -9,15 +9,17 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { 
-  startOfDay, 
-  endOfDay, 
-  startOfWeek, 
-  endOfWeek, 
-  startOfMonth, 
-  endOfMonth, 
+import { logger } from '@/lib/logger';
+import {
+  startOfDay,
+  endOfDay,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
   subMonths,
   subDays,
   differenceInDays,
@@ -158,13 +160,13 @@ export const useQuickStats = () => {
           .eq('tenant_id', tenant.id)
           .gte('created_at', startOfToday.toISOString()),
 
-        // Today's orders (revenue)
+        // Today's orders (revenue) - only count completed or delivered orders
         supabase
           .from('wholesale_orders')
           .select('total_amount')
           .eq('tenant_id', tenant.id)
           .gte('created_at', startOfToday.toISOString())
-          .neq('status', 'cancelled'),
+          .in('status', ['completed', 'delivered']),
 
         // Outstanding AR
         supabase
@@ -234,31 +236,31 @@ export const useCashFlowPulse = () => {
           .gte('created_at', startOfToday.toISOString())
           .lte('created_at', endOfToday.toISOString()),
 
-        // Today's orders (outgoing product)
+        // Today's orders (outgoing product) - only count completed/delivered for revenue
         supabase
           .from('wholesale_orders')
           .select('total_amount, created_at')
           .eq('tenant_id', tenant.id)
           .gte('created_at', startOfToday.toISOString())
           .lte('created_at', endOfToday.toISOString())
-          .neq('status', 'cancelled'),
+          .in('status', ['completed', 'delivered']),
 
-        // This week's orders (for forecast)
+        // This week's orders (for forecast) - only count completed/delivered
         supabase
           .from('wholesale_orders')
           .select('total_amount, created_at')
           .eq('tenant_id', tenant.id)
           .gte('created_at', weekStart.toISOString())
           .lte('created_at', weekEnd.toISOString())
-          .neq('status', 'cancelled'),
+          .in('status', ['completed', 'delivered']),
 
-        // Last 30 days for burn rate calculation
+        // Last 30 days for burn rate calculation - only count completed/delivered
         supabase
           .from('wholesale_orders')
           .select('total_amount')
           .eq('tenant_id', tenant.id)
           .gte('created_at', subDays(today, 30).toISOString())
-          .neq('status', 'cancelled')
+          .in('status', ['completed', 'delivered'])
       ]);
       
       const todayIn = todayPaymentsResult.data?.reduce((sum, p) => sum + Number(p.amount || 0), 0) || 0;
@@ -502,25 +504,25 @@ export const usePerformancePulse = () => {
       
       if (!tenant?.id) throw new Error('No tenant');
 
-      // Parallel fetch
+      // Parallel fetch - only count completed/delivered orders for revenue
       const [thisMonthResult, lastMonthResult, clientsResult, trendResult] = await Promise.all([
-        // This month orders
+        // This month orders - only completed/delivered
         supabase
           .from('wholesale_orders')
           .select('total_amount, client_id')
           .eq('tenant_id', tenant.id)
           .gte('created_at', thisMonthStart.toISOString())
           .lte('created_at', thisMonthEnd.toISOString())
-          .neq('status', 'cancelled'),
+          .in('status', ['completed', 'delivered']),
 
-        // Last month orders
+        // Last month orders - only completed/delivered
         supabase
           .from('wholesale_orders')
           .select('total_amount')
           .eq('tenant_id', tenant.id)
           .gte('created_at', lastMonthStart.toISOString())
           .lte('created_at', lastMonthEnd.toISOString())
-          .neq('status', 'cancelled'),
+          .in('status', ['completed', 'delivered']),
 
         // Client names for top clients
         supabase
@@ -528,13 +530,13 @@ export const usePerformancePulse = () => {
           .select('id, business_name')
           .eq('tenant_id', tenant.id),
 
-        // Last 90 days for trend
+        // Last 90 days for trend - only completed/delivered
         supabase
           .from('wholesale_orders')
           .select('total_amount, created_at')
           .eq('tenant_id', tenant.id)
           .gte('created_at', subDays(now, 90).toISOString())
-          .neq('status', 'cancelled')
+          .in('status', ['completed', 'delivered'])
       ]);
       
       // Calculate this month metrics
@@ -766,6 +768,66 @@ export const useFrontedActions = () => {
   };
 };
 
+/**
+ * Hook to subscribe to order status changes (especially completed/delivered)
+ * Invalidates all financial queries when order status changes to completed/delivered
+ */
+export const useOrderStatusSubscription = () => {
+  const { tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!tenant?.id) return;
+
+    const channel = supabase
+      .channel('financial-order-status-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'wholesale_orders',
+          filter: `tenant_id=eq.${tenant.id}`
+        },
+        (payload) => {
+          const newStatus = (payload.new as { status?: string })?.status;
+          const oldStatus = (payload.old as { status?: string })?.status;
+
+          // Invalidate financial queries when order status changes to/from completed/delivered
+          // This ensures revenue dashboards update in real-time
+          if (
+            newStatus === 'completed' ||
+            newStatus === 'delivered' ||
+            oldStatus === 'completed' ||
+            oldStatus === 'delivered'
+          ) {
+            logger.debug('Order completed/delivered - invalidating financial queries', {
+              component: 'useOrderStatusSubscription',
+              newStatus,
+              oldStatus
+            });
+
+            // Invalidate all financial command center queries
+            queryClient.invalidateQueries({ queryKey: ['financial-quick-stats'] });
+            queryClient.invalidateQueries({ queryKey: ['financial-cash-flow-pulse'] });
+            queryClient.invalidateQueries({ queryKey: ['financial-performance-pulse'] });
+            queryClient.invalidateQueries({ queryKey: ['revenue-reports'] });
+            queryClient.invalidateQueries({ queryKey: ['revenue-chart'] });
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          logger.error('Order status subscription error', { status, component: 'useOrderStatusSubscription' });
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tenant?.id, queryClient]);
+};
+
 // Combined hook for all data
 export const useFinancialCommandCenter = () => {
   const quickStats = useQuickStats();
@@ -775,7 +837,10 @@ export const useFinancialCommandCenter = () => {
   const performance = usePerformancePulse();
   const collectionActions = useCollectionActions();
   const frontedActions = useFrontedActions();
-  
+
+  // Subscribe to order status changes to update revenue when orders complete
+  useOrderStatusSubscription();
+
   return {
     quickStats,
     cashFlow,
