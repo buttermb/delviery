@@ -4,11 +4,31 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 
+/**
+ * Comprehensive Dashboard KPIs pulled from Orders, Inventory, and Revenue
+ */
 export interface DashboardStats {
+  // Orders KPIs
   pendingOrders: number;
+  totalOrdersToday: number;
+  totalOrdersMTD: number;
+  completedOrdersToday: number;
+  avgOrderValue: number;
+
+  // Inventory KPIs
+  totalProducts: number;
   lowStockItems: number;
+  outOfStockItems: number;
+  totalInventoryValue: number;
+
+  // Revenue KPIs
+  revenueToday: number;
+  revenueMTD: number;
+  revenueGrowthPercent: number;
+
+  // Customer KPIs
   newCustomers: number;
-  revenue: number;
+  totalCustomers: number;
   activeSessions: number;
 }
 
@@ -22,23 +42,49 @@ export function useDashboardStats() {
       if (!tenantId) {
         return {
           pendingOrders: 0,
+          totalOrdersToday: 0,
+          totalOrdersMTD: 0,
+          completedOrdersToday: 0,
+          avgOrderValue: 0,
+          totalProducts: 0,
           lowStockItems: 0,
+          outOfStockItems: 0,
+          totalInventoryValue: 0,
+          revenueToday: 0,
+          revenueMTD: 0,
+          revenueGrowthPercent: 0,
           newCustomers: 0,
-          revenue: 0,
+          totalCustomers: 0,
           activeSessions: 0,
         };
       }
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      // Date calculations
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       const [
+        // Orders queries
         pendingOrdersResult,
-        lowStockResult,
+        todayOrdersResult,
+        mtdOrdersResult,
+        completedTodayResult,
+
+        // Inventory queries
+        productsResult,
+
+        // Revenue queries - MTD
+        revenueMTDResult,
+        revenueLastMonthResult,
+
+        // Customer queries
         newCustomersResult,
-        revenueResult,
+        totalCustomersResult,
         activeSessionsResult,
       ] = await Promise.allSettled([
         // Pending orders: orders with status 'pending' or 'confirmed'
@@ -48,12 +94,52 @@ export function useDashboardStats() {
           .eq('tenant_id', tenantId)
           .in('status', ['pending', 'confirmed']),
 
-        // Low stock items: products where stock_quantity <= low_stock_alert (or <= 10 default)
+        // Total orders today
+        supabase
+          .from('orders')
+          .select('id, total_amount', { count: 'exact' })
+          .eq('tenant_id', tenantId)
+          .gte('created_at', today.toISOString())
+          .not('status', 'in', '("cancelled","rejected","refunded")'),
+
+        // Total orders MTD
+        supabase
+          .from('orders')
+          .select('id', { count: 'exact', head: true })
+          .eq('tenant_id', tenantId)
+          .gte('created_at', startOfMonth.toISOString())
+          .not('status', 'in', '("cancelled","rejected","refunded")'),
+
+        // Completed orders today
+        supabase
+          .from('orders')
+          .select('id', { count: 'exact', head: true })
+          .eq('tenant_id', tenantId)
+          .gte('created_at', today.toISOString())
+          .in('status', ['completed', 'delivered']),
+
+        // All products with stock info
         supabase
           .from('products')
-          .select('id, stock_quantity, low_stock_alert')
+          .select('id, stock_quantity, low_stock_alert, price, in_stock')
+          .eq('tenant_id', tenantId),
+
+        // Revenue MTD (sum of completed/delivered orders)
+        supabase
+          .from('orders')
+          .select('total_amount')
           .eq('tenant_id', tenantId)
-          .gt('stock_quantity', -1),
+          .gte('created_at', startOfMonth.toISOString())
+          .in('status', ['completed', 'delivered']),
+
+        // Revenue last month (for growth calculation)
+        supabase
+          .from('orders')
+          .select('total_amount')
+          .eq('tenant_id', tenantId)
+          .gte('created_at', startOfLastMonth.toISOString())
+          .lt('created_at', endOfLastMonth.toISOString())
+          .in('status', ['completed', 'delivered']),
 
         // New customers in the last 30 days
         supabase
@@ -62,13 +148,11 @@ export function useDashboardStats() {
           .eq('tenant_id', tenantId)
           .gte('created_at', thirtyDaysAgo.toISOString()),
 
-        // Revenue: sum of completed orders today
+        // Total customers
         supabase
-          .from('orders')
-          .select('total_amount')
-          .eq('tenant_id', tenantId)
-          .in('status', ['completed', 'delivered'])
-          .gte('created_at', today.toISOString()),
+          .from('customers')
+          .select('id', { count: 'exact', head: true })
+          .eq('tenant_id', tenantId),
 
         // Active sessions: online customers (approximate via recent activity)
         supabase
@@ -89,21 +173,114 @@ export function useDashboardStats() {
         }
       }
 
-      // Extract low stock items
-      let lowStockItems = 0;
-      if (lowStockResult.status === 'fulfilled') {
-        const { data, error } = lowStockResult.value;
-        if (!error && data) {
-          const DEFAULT_LOW_STOCK_THRESHOLD = 10;
-          lowStockItems = data.filter((item) => {
-            const threshold = (item.low_stock_alert as number | null) ?? DEFAULT_LOW_STOCK_THRESHOLD;
-            const qty = (item.stock_quantity as number | null) ?? 0;
-            return qty <= threshold;
-          }).length;
-        } else if (error) {
-          logger.warn('Failed to fetch low stock items', error, { component: 'useDashboardStats' });
+      // Extract today orders and revenue
+      let totalOrdersToday = 0;
+      let revenueToday = 0;
+      if (todayOrdersResult.status === 'fulfilled') {
+        const { data, count, error } = todayOrdersResult.value;
+        if (!error) {
+          totalOrdersToday = count ?? 0;
+          if (data) {
+            revenueToday = data.reduce(
+              (sum, order) => sum + (Number(order.total_amount) || 0),
+              0
+            );
+          }
+        } else {
+          logger.warn('Failed to fetch today orders', error, { component: 'useDashboardStats' });
         }
       }
+
+      // Extract MTD orders count
+      let totalOrdersMTD = 0;
+      if (mtdOrdersResult.status === 'fulfilled') {
+        const { count, error } = mtdOrdersResult.value;
+        if (!error) {
+          totalOrdersMTD = count ?? 0;
+        } else {
+          logger.warn('Failed to fetch MTD orders', error, { component: 'useDashboardStats' });
+        }
+      }
+
+      // Extract completed orders today
+      let completedOrdersToday = 0;
+      if (completedTodayResult.status === 'fulfilled') {
+        const { count, error } = completedTodayResult.value;
+        if (!error) {
+          completedOrdersToday = count ?? 0;
+        } else {
+          logger.warn('Failed to fetch completed orders today', error, { component: 'useDashboardStats' });
+        }
+      }
+
+      // Extract inventory metrics
+      let totalProducts = 0;
+      let lowStockItems = 0;
+      let outOfStockItems = 0;
+      let totalInventoryValue = 0;
+      const DEFAULT_LOW_STOCK_THRESHOLD = 10;
+
+      if (productsResult.status === 'fulfilled') {
+        const { data, error } = productsResult.value;
+        if (!error && data) {
+          totalProducts = data.length;
+          data.forEach((item) => {
+            const qty = (item.stock_quantity as number | null) ?? 0;
+            const threshold = (item.low_stock_alert as number | null) ?? DEFAULT_LOW_STOCK_THRESHOLD;
+            const price = (item.price as number | null) ?? 0;
+            const inStock = item.in_stock ?? true;
+
+            // Calculate inventory value
+            totalInventoryValue += qty * price;
+
+            // Out of stock check
+            if (qty <= 0 || !inStock) {
+              outOfStockItems++;
+            } else if (qty <= threshold) {
+              // Low stock check (but not out of stock)
+              lowStockItems++;
+            }
+          });
+        } else if (error) {
+          logger.warn('Failed to fetch products', error, { component: 'useDashboardStats' });
+        }
+      }
+
+      // Extract revenue MTD
+      let revenueMTD = 0;
+      if (revenueMTDResult.status === 'fulfilled') {
+        const { data, error } = revenueMTDResult.value;
+        if (!error && data) {
+          revenueMTD = data.reduce(
+            (sum, order) => sum + (Number(order.total_amount) || 0),
+            0
+          );
+        } else if (error) {
+          logger.warn('Failed to fetch MTD revenue', error, { component: 'useDashboardStats' });
+        }
+      }
+
+      // Extract last month revenue for growth calculation
+      let revenueLastMonth = 0;
+      if (revenueLastMonthResult.status === 'fulfilled') {
+        const { data, error } = revenueLastMonthResult.value;
+        if (!error && data) {
+          revenueLastMonth = data.reduce(
+            (sum, order) => sum + (Number(order.total_amount) || 0),
+            0
+          );
+        } else if (error) {
+          logger.warn('Failed to fetch last month revenue', error, { component: 'useDashboardStats' });
+        }
+      }
+
+      // Calculate revenue growth percentage
+      const revenueGrowthPercent = revenueLastMonth > 0
+        ? ((revenueMTD - revenueLastMonth) / revenueLastMonth) * 100
+        : 0;
+
+      // Calculate average order value
+      const avgOrderValue = totalOrdersMTD > 0 ? revenueMTD / totalOrdersMTD : 0;
 
       // Extract new customers count
       let newCustomers = 0;
@@ -116,17 +293,14 @@ export function useDashboardStats() {
         }
       }
 
-      // Extract revenue
-      let revenue = 0;
-      if (revenueResult.status === 'fulfilled') {
-        const { data, error } = revenueResult.value;
-        if (!error && data) {
-          revenue = data.reduce(
-            (sum, order) => sum + (Number(order.total_amount) || 0),
-            0
-          );
-        } else if (error) {
-          logger.warn('Failed to fetch revenue', error, { component: 'useDashboardStats' });
+      // Extract total customers count
+      let totalCustomers = 0;
+      if (totalCustomersResult.status === 'fulfilled') {
+        const { count, error } = totalCustomersResult.value;
+        if (!error) {
+          totalCustomers = count ?? 0;
+        } else {
+          logger.warn('Failed to fetch total customers', error, { component: 'useDashboardStats' });
         }
       }
 
@@ -143,10 +317,27 @@ export function useDashboardStats() {
       }
 
       return {
+        // Orders KPIs
         pendingOrders,
+        totalOrdersToday,
+        totalOrdersMTD,
+        completedOrdersToday,
+        avgOrderValue,
+
+        // Inventory KPIs
+        totalProducts,
         lowStockItems,
+        outOfStockItems,
+        totalInventoryValue,
+
+        // Revenue KPIs
+        revenueToday,
+        revenueMTD,
+        revenueGrowthPercent,
+
+        // Customer KPIs
         newCustomers,
-        revenue,
+        totalCustomers,
         activeSessions,
       };
     },
