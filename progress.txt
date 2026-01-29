@@ -7407,81 +7407,60 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 5 - Context-Aware Hot Items Enhancement
+## Agent 52 - Connect POS to Inventory with Low Stock Warning
 
-### Task: Add context-aware hot items showing different items based on time of day
+### Task: Connect POS to Inventory so sale decrements stock with low stock warning
 
-**Completed:**
+### Date: 2026-01-28
 
-Enhanced the existing context-aware hot items feature to show different product recommendations based on both:
-1. **Time of day** (morning, afternoon, evening, night)
-2. **Day type** (weekday vs weekend)
+### What was implemented:
 
-### Changes Made:
+#### 1. Enhanced Atomic POS Transaction Function
+- **Migration:** `supabase/migrations/20260128100000_pos_low_stock_warnings.sql`
+- Updated `create_pos_transaction_atomic()` function to:
+  - Track stock levels before and after sale for each item
+  - Check if items fall at or below their `low_stock_alert` threshold after sale
+  - Return `low_stock_warnings` array with detailed warnings
+  - Include `has_low_stock_warnings` boolean for quick checking
+  - Each warning includes: product_id, product_name, previous_stock, new_stock, threshold, alert_level
+  - Alert levels: 'out_of_stock' (0), 'critical' (<=25% of threshold), 'warning' (<=threshold)
+  - Also updates `in_stock` flag to false when stock reaches 0
 
-#### 1. Enhanced `src/hooks/useContextAwareHotItems.ts`
+#### 2. POSLowStockWarningDialog Component
+- **File:** `src/components/pos/POSLowStockWarningDialog.tsx`
+- New dialog component that displays after POS sale completion
+- Features:
+  - Summary badges showing count of out_of_stock, critical, and warning items
+  - Scrollable list of affected products sorted by severity
+  - Visual indicators with color-coded borders and icons per severity
+  - Shows previous stock -> new stock with threshold
+  - Action buttons: Dismiss, View Inventory, Stock Alerts (navigates to respective pages)
+  - Uses tenant-aware navigation
 
-**Added Weekend-Specific Configurations:**
-- `WEEKEND_CONFIGS` - Separate product recommendation configs for weekends:
-  - **Weekend Morning**: "Weekend Wake & Bake" - Gentle, relaxed start with coffee icon, emerald accent
-  - **Weekend Afternoon**: "Weekend Social Picks" - Party/social strains with star icon, orange accent
-  - **Weekend Evening**: "Weekend Unwind" - Chill picks with moon icon, purple accent
-  - **Weekend Night**: "Saturday Night Special" - Deep relaxation with sparkles icon, indigo accent
+#### 3. PointOfSale Integration
+- **File:** `src/pages/admin/PointOfSale.tsx`
+- Added state management for low stock warnings:
+  - `lowStockWarnings`: Array of warning items
+  - `lowStockDialogOpen`: Dialog visibility state
+  - `lastTransactionNumber`: Transaction reference for display
+- Integrated with atomic RPC response to capture warnings
+- Added fallback low stock detection for non-atomic path (when RPC doesn't exist):
+  - Calculates new stock after sale
+  - Uses default threshold of 10
+  - Generates warnings for items falling below threshold
+- Dialog automatically shown after successful sale if warnings exist
+- Warnings cleared when dialog is dismissed
 
-**Enhanced Scoring Algorithm (`calculateMatchScore`):**
-- Added weekend-specific boosts:
-  - Edibles get +15 on weekends (more leisure time for onset)
-  - Social strains get +10 on weekend afternoons
-  - Balanced hybrids get +8 on weekend mornings
-- Added weekday-specific boosts:
-  - Vapes get +8 on weekday mornings/afternoons (quick, discreet)
-  - Focus strains get +8 on weekday mornings
-
-**Enhanced Reason Generation (`getHotReason`):**
-- Added weekend-specific reasons:
-  - "Great for weekend hangouts" (social strains on weekend afternoons)
-  - "Perfect for a lazy weekend morning" (hybrids on weekend mornings)
-  - "Take your time this weekend" (edibles)
-- Weekend strain match reasons: "Weekend wake-up favorite", "Perfect for weekend vibes", etc.
-- Weekday strain match reasons: "Great for morning energy", "Perfect afternoon balance", etc.
-
-**New Exports:**
-- `WEEKEND_CONFIGS` - Weekend-specific configurations
-- `getTimeConfig(timePeriod, isWeekend)` - Get appropriate config based on day type
-- Updated `useCurrentTimeContext` to be weekend-aware
-
-**Updated Query Cache:**
-- Query key now includes `isWeekend` for proper cache separation between weekday/weekend
-
-#### 2. Created `src/hooks/__tests__/useContextAwareHotItems.test.ts` (26 tests)
-
-**Test Coverage:**
-- `getTimePeriod` function: Boundary testing for all time periods
-- `getStorefrontContext` function: Weekday/weekend detection, time period calculation
-- `getTimeConfig` function: Weekday vs weekend config selection
-- `TIME_PERIOD_CONFIGS` legacy compatibility
-- `WEEKDAY_CONFIGS` validation: All four time periods with correct properties
-- `WEEKEND_CONFIGS` validation: All four time periods with correct properties
-- Config consistency validation: Structure and format checks
-
-### Time Period Definitions:
-
-| Time Period | Hours | Weekday Focus | Weekend Focus |
-|-------------|-------|---------------|---------------|
-| Morning | 6am-12pm | Energizing sativas, focus strains | Gentle wake-up, social hybrids |
-| Afternoon | 12pm-5pm | Balanced hybrids, productivity | Social hybrids, party strains |
-| Evening | 5pm-9pm | Relaxing indicas, wind-down | Chill indica-leaning hybrids |
-| Night | 9pm-6am | Sleep aids, heavy indicas | Deep relaxation |
-
-### Weekend-Specific Enhancements:
-
-1. **Different UI Themes**: Weekend configs use different accent colors and icons
-2. **Social Focus**: Weekend afternoons prioritize social, talkative, giggly effects
-3. **Leisure Time Consideration**: Edibles boosted on weekends (longer onset time acceptable)
-4. **Relaxed Morning**: Weekend mornings favor hybrids over pure sativas
+### How it works:
+1. Customer adds items to cart and completes sale
+2. `create_pos_transaction_atomic()` processes the sale atomically
+3. For each item, stock is decremented and checked against `low_stock_alert` threshold
+4. If any items are now at/below threshold, warnings are returned
+5. PointOfSale component receives warnings and shows dialog
+6. Cashier can dismiss, view inventory, or go to stock alerts
 
 ### Files Changed:
-- `src/hooks/useContextAwareHotItems.ts` - Enhanced with weekend awareness
-- `src/hooks/__tests__/useContextAwareHotItems.test.ts` - New test file (26 tests)
+- `supabase/migrations/20260128100000_pos_low_stock_warnings.sql` (new)
+- `src/components/pos/POSLowStockWarningDialog.tsx` (new)
+- `src/pages/admin/PointOfSale.tsx` (modified)
 
-### Tests: All 26 tests passing
