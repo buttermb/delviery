@@ -7407,36 +7407,46 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 26 - Connect Orders to Inventory
+## Agent 27 - Connect Orders to Customer Profile
 
-### Task: Connect Orders to Inventory so order creation triggers stock decrement mutation
+### Task: Connect Orders to Customer so orders appear in customer profile order history
 
 **Completed:**
 
-1. **Created Database Migration** (`supabase/migrations/20260128000001_unified_orders_inventory_sync.sql`)
-   - Added `sync_unified_order_inventory()` trigger function that:
-     - Decrements `products.stock_quantity` and `products.available_quantity` when unified orders are confirmed
-     - Decrements `wholesale_inventory.quantity_lbs` or `quantity_units` for wholesale items
-     - Restores inventory when orders are cancelled (only if previously confirmed)
-     - Creates audit log entries in `activity_logs` for all inventory changes
-   - Created two triggers on `unified_orders`:
-     - `trigger_sync_unified_order_inventory_insert` - fires when order is created with status 'confirmed'
-     - `trigger_sync_unified_order_inventory_update` - fires when status changes to 'confirmed' or 'cancelled'
-   - Updated `create_unified_order()` RPC with optional `p_auto_confirm` parameter
-   - Added `sync_order_inventory_manual()` helper RPC for manual inventory sync
+1. **Created `useCustomerPortalOrders` hook** (`src/hooks/useCustomerPortalOrders.ts`)
+   - Fetches order history for authenticated customers using email matching
+   - Queries `marketplace_orders` table by `customer_email` and `seller_tenant_id`
+   - Returns order list, loading state, error state, and order statistics
+   - Provides helper functions for status display and order filtering
+   - Uses TanStack Query for caching and refetching
 
-2. **Updated Frontend Hooks** (`src/hooks/useUnifiedOrders.ts`)
-   - Added import for `queryKeys` from `@/lib/queryKeys`
-   - Updated `useCreateUnifiedOrder` to invalidate `products.all` and `inventory.all` queries on settlement
-   - Updated `useUpdateOrderStatus` to invalidate inventory queries when status changes to 'confirmed' or 'cancelled'
-   - Updated `useCancelOrder` to invalidate inventory queries on settlement
+2. **Updated `CustomerPortal` page** (`src/pages/customer/CustomerPortal.tsx`)
+   - Integrated `useCustomerPortalOrders` hook to fetch real orders
+   - Added order statistics cards showing:
+     - Active orders count
+     - Total orders count
+     - Total spent amount
+   - Implemented order list display with:
+     - Order number and date
+     - Status badges with color coding
+     - Order total amount
+     - Item details (up to 3 items shown)
+     - "Track Order" button for orders with tracking tokens
+   - Added loading and error states
+   - Added refresh button for manual order list refresh
+   - Updated profile tab to show customer user data
 
-### Architecture:
-- **Database-driven**: Inventory sync happens via PostgreSQL triggers for reliability
-- **UI-synced**: Frontend hooks invalidate relevant TanStack Query caches to reflect changes
-- **Audit-logged**: All inventory changes are logged to `activity_logs` table
-- **Multi-table support**: Works with both `products` table and `wholesale_inventory` table
+**Technical Details:**
+- Orders are connected via email matching since customer authentication (`customer_users`) and marketplace orders use different customer tables (`marketplace_customers`)
+- The `marketplace_orders` table already has `customer_email` field that stores the email used when placing orders
+- The `customer_users` table stores authenticated customer emails
+- By matching on email and tenant_id, we link the authentication system to order history
 
 ### Files Changed:
-- `supabase/migrations/20260128000001_unified_orders_inventory_sync.sql` - New migration
-- `src/hooks/useUnifiedOrders.ts` - Added inventory query invalidation
+- `src/hooks/useCustomerPortalOrders.ts` - New hook for fetching customer portal orders
+- `src/pages/customer/CustomerPortal.tsx` - Updated to display order history
+
+### Verification:
+- TypeScript type checking passes without errors
+- ESLint passes without errors
+- No breaking changes to existing functionality
