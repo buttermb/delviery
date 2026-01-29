@@ -958,61 +958,7 @@ export function StorefrontBuilder({
                     onApplyTemplate={builder.applyTemplate}
                     setActiveTab={builder.setActiveTab}
                 />
-
-                {/* Right Panel: Section Settings */}
-                <div className="flex-1 bg-muted flex items-start justify-center p-4 overflow-auto relative min-w-0 min-h-0">
-                    <div
-                        className="bg-background shadow-2xl overflow-visible transition-all duration-300 relative"
-                        style={{
-                            ...getPreviewStyle(),
-                            minHeight: '800px',
-                        }}
-                    >
-                        {/* Simulated Header */}
-                        <div className="h-16 border-b flex items-center px-6 justify-between sticky top-0 bg-background/80 backdrop-blur-md z-50">
-                            <span className="font-bold text-lg">{store?.store_name || 'Store Name'}</span>
-                            <div className="hidden md:flex gap-6 text-sm">
-                                <span>Home</span>
-                                <span>Shop</span>
-                                <span>Contact</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right Sidebar: Property Editor - Narrower */}
-                    {selectedSection && rightPanelOpen && (
-                        <div className="w-64 bg-background border-l flex flex-col shrink-0 z-10 animate-in slide-in-from-right-10 duration-200">
-                            <div className="p-3 border-b flex items-center justify-between">
-                                <div>
-                                    <h3 className="font-semibold text-xs uppercase text-muted-foreground">Editing</h3>
-                                    <p className="font-medium text-xs">{SECTION_TYPES[selectedSection.type as keyof typeof SECTION_TYPES]?.label}</p>
-                                </div>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setRightPanelOpen(false)}>
-                                    <X className="w-3 h-3" />
-                                </Button>
-                            </div>
-                            <ScrollArea className="flex-1 p-3">
-                                <SectionEditor
-                                    section={selectedSection}
-                                    onUpdateContent={(key, value) => updateSection(selectedSection.id, 'content', key, value)}
-                                    onUpdateStyles={(key, value) => updateSection(selectedSection.id, 'styles', key, value)}
-                                    onUpdateResponsive={(device, key, value) => updateSectionResponsive(selectedSection.id, device, key, value)}
-                                />
-                            </ScrollArea>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Mode Switch Warning Dialog */}
-            <ModeSwitchWarningDialog
-                open={showModeSwitchWarning}
-                onOpenChange={setShowModeSwitchWarning}
-                direction={pendingModeSwitch === 'simple' ? 'advanced-to-simple' : 'simple-to-advanced'}
-                customizations={advancedCustomizations}
-                onConfirm={confirmModeSwitch}
-                onCancel={cancelModeSwitch}
-            />
+            </div>
 
             {/* Create Store Dialog */}
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>

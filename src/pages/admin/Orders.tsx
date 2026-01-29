@@ -497,7 +497,7 @@ export default function Orders() {
     setExportDialogOpen(false);
   };
 
-  const handlePrintOrderFunc = (order: Order) => {
+  const handlePrintOrder = (order: Order) => {
     // Open print dialog with order details
     const printWindow = window.open('', '_blank');
     if (printWindow) {
