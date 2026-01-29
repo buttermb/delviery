@@ -88,6 +88,12 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
                 >
                   Shop
                 </Link>
+                <Link
+                  to={`/shop/${storeSlug}/deals${previewParam}`}
+                  className="text-sm font-bold text-white/90 hover:text-white hover:underline decoration-[#0EC7BA] underline-offset-4 transition-all"
+                >
+                  Deals
+                </Link>
                 {!isPreviewMode && (
                   <>
                     <Link
@@ -212,6 +218,15 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
               >
                 Shop Collection
                 <span className="bg-[#0EC7BA] w-2 h-2 rounded-full"></span>
+              </Link>
+
+              <Link
+                to={`/shop/${storeSlug}/deals${previewParam}`}
+                className="flex items-center justify-between text-lg text-white/90 font-medium py-2 border-b border-white/10"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Deals & Promos
+                <span className="bg-[#0EC7BA] w-2 h-2 rounded-full animate-pulse"></span>
               </Link>
 
               {!isPreviewMode && (

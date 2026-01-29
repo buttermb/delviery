@@ -11,6 +11,9 @@ import { logger } from '@/lib/logger';
 import { LuxuryProductGridSection } from '@/components/shop/sections/LuxuryProductGridSection';
 import { LuxuryFeaturesSection } from '@/components/shop/sections/LuxuryFeaturesSection';
 import { HotItemsSection } from '@/components/shop/sections/HotItemsSection';
+import { PromotionsBannerSection } from '@/components/shop/sections/PromotionsBannerSection';
+import { DealsHighlightSection } from '@/components/shop/sections/DealsHighlightSection';
+import { AnnouncementBar } from '@/components/shop/sections/AnnouncementBar';
 
 // Map section types to components
 const SECTION_COMPONENTS: Record<string, any> = {
@@ -18,6 +21,9 @@ const SECTION_COMPONENTS: Record<string, any> = {
   features: FeaturesSection,
   product_grid: LuxuryProductGridSection, // Use luxury grid as default for better UX
   hot_items: HotItemsSection, // Context-aware hot items based on time of day
+  // Marketing sections
+  promotions_banner: PromotionsBannerSection,
+  deals_highlight: DealsHighlightSection,
   // Luxury theme sections (kept for backwards compatibility)
   luxury_hero: LuxuryHeroSection,
   luxury_products: LuxuryProductGridSection,
@@ -54,6 +60,8 @@ export default function StorefrontPage() {
   const layoutConfig = store.layout_config;
   const hasValidLayout = Array.isArray(layoutConfig) && layoutConfig.length > 0;
 
+  const accentColor = store.theme_config?.colors?.accent || store.accent_color || '#10b981';
+
   const sections = hasValidLayout
     ? layoutConfig
     : [
@@ -74,6 +82,20 @@ export default function StorefrontPage() {
           background_gradient_end: '#022c22',
           text_color: '#ffffff',
           accent_color: '#34d399'
+        }
+      },
+      // Marketing: Deals Highlight Section
+      {
+        id: 'default-deals-highlight',
+        type: 'deals_highlight',
+        content: {
+          heading: 'Current Deals',
+          subheading: 'Don\'t miss out on these limited-time offers',
+          max_deals: 3,
+          show_view_all: true
+        },
+        styles: {
+          accent_color: accentColor
         }
       },
       {
@@ -105,6 +127,12 @@ export default function StorefrontPage() {
 
   return (
     <div className="min-h-dvh bg-background">
+      {/* Announcement Bar - shows latest promotions/deals at top */}
+      <AnnouncementBar
+        storeId={store.id}
+        accentColor={accentColor}
+      />
+
       {sections.map((section: any) => {
         const Component = SECTION_COMPONENTS[section.type];
         if (!Component) {

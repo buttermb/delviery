@@ -490,6 +490,12 @@ export default function ShopLayout() {
                 >
                   Products
                 </Link>
+                <Link
+                  to={`/shop/${storeSlug}/deals${isPreviewMode ? '?preview=true' : ''}`}
+                  className={`text-sm font-medium transition-colors ${isLuxuryTheme ? 'text-white/70 hover:text-white' : 'hover:text-primary'}`}
+                >
+                  Deals
+                </Link>
                 {!isStoreOpen() && !isPreviewMode && (
                   <Badge variant="secondary" className={isLuxuryTheme ? 'bg-white/10 text-white/70' : 'bg-yellow-100 text-yellow-800'}>
                     <Clock className="w-3 h-3 mr-1" />
@@ -548,6 +554,13 @@ export default function ShopLayout() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Products
+                  </Link>
+                  <Link
+                    to={`/shop/${storeSlug}/deals${isPreviewMode ? '?preview=true' : ''}`}
+                    className="py-3 px-4 rounded-lg hover:bg-muted min-h-[44px] flex items-center touch-manipulation active:scale-[0.98]"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Deals & Promos
                   </Link>
                   {!isPreviewMode && (
                     <>
