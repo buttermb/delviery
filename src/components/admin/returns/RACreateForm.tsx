@@ -24,6 +24,7 @@ import {
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
+import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
 
 interface ReturnItem {
   product_name: string;
@@ -177,6 +178,25 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.returns.lists() });
       toast.success(`Return ${data.ra_number} created successfully. Refund: $${data.refund_amount}`);
+
+      // Log activity for audit trail
+      if (tenant?.id) {
+        logActivityAuto(
+          tenant.id,
+          ActivityActions.CREATE_RETURN,
+          'return_authorization',
+          data.return_id || data.ra_number,
+          {
+            ra_number: data.ra_number,
+            order_id: formData.order_id,
+            order_number: formData.order_number,
+            reason: formData.reason,
+            refund_amount: data.refund_amount,
+            items_count: items.length,
+          }
+        );
+      }
+
       onSuccess?.();
     },
     onError: (error: unknown) => {

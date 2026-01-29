@@ -32,6 +32,7 @@ import {
 import { SupplierForm } from "@/components/admin/suppliers/SupplierForm";
 import { SupplierDetail } from "@/components/admin/suppliers/SupplierDetail";
 import { queryKeys } from "@/lib/queryKeys";
+import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
 import type { Database } from "@/integrations/supabase/types";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
@@ -82,22 +83,37 @@ export default function SupplierManagementPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, supplierName }: { id: string; supplierName: string }) => {
       if (!tenant?.id) throw new Error("Tenant ID required");
-      
+
       const deleteQuery = supabase
         .from("wholesale_suppliers")
-        .delete() as any;
-      
+        .delete() as unknown as { eq: (col: string, val: string) => { eq: (col: string, val: string) => Promise<{ error: Error | null }> } };
+
       const { error } = await deleteQuery
         .eq("id", id)
         .eq("tenant_id", tenant.id);
 
       if (error) throw error;
+      return { id, supplierName };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.lists() });
       toast.success("Supplier deleted successfully");
+
+      // Log activity for audit trail
+      if (tenant?.id) {
+        logActivityAuto(
+          tenant.id,
+          ActivityActions.DELETE_SUPPLIER,
+          'supplier',
+          data.id,
+          {
+            supplier_name: data.supplierName,
+            deleted_at: new Date().toISOString(),
+          }
+        );
+      }
     },
     onError: (error: unknown) => {
       logger.error('Failed to delete supplier', error, { component: 'SupplierManagementPage' });
@@ -138,7 +154,10 @@ export default function SupplierManagementPage() {
       onConfirm: async () => {
         setLoading(true);
         try {
-          await deleteMutation.mutateAsync(supplier.id);
+          await deleteMutation.mutateAsync({
+            id: supplier.id,
+            supplierName: supplier.supplier_name || 'Unknown',
+          });
           closeDialog();
         } finally {
           setLoading(false);
