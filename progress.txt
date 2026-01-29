@@ -7332,3 +7332,53 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+
+---
+
+## Task: Connect Disposable Menus to Orders Hub - Menu Source Tag
+
+### What was done:
+
+1. **Updated `useUnifiedOrders` hook** (`src/hooks/useUnifiedOrders.ts`)
+   - Added `menu` relation to the UnifiedOrder interface for menu info (id, name)
+   - Updated query selects to include `menu:disposable_menus(id, name)` in orders list and detail queries
+   - Orders from disposable menus now have their source menu name available
+
+2. **Created MenuSourceBadge component** (`src/components/admin/orders/MenuSourceBadge.tsx`)
+   - Reusable badge component showing menu name for orders from disposable menus
+   - Uses orange color scheme consistent with existing menu source styling
+   - Supports compact mode for space-constrained layouts
+   - Shows tooltip with full menu name on hover
+
+3. **Updated LiveOrders.tsx**
+   - Fixed duplicate comment block
+   - Updated menu_orders query to select menu `name` field (in addition to existing `title`)
+   - Updated menu_title display to prefer `name` over `title`
+
+4. **Updated OrdersHubPage.tsx CSV export**
+   - Added `menu_source` column to export data showing the source menu name
+   - Fixed duplicate papaparse import
+
+5. **Fixed pre-existing build errors**
+   - Fixed StorefrontBuilder.tsx orphaned code between BuilderPreview and right sidebar
+   - Fixed CashRegister.tsx duplicate tenantSlug variable
+   - Fixed Orders.tsx duplicate handler functions (handlePrintOrder, handleGenerateInvoice, handleCancelOrder)
+   - Fixed ProductManagement.tsx duplicate loadProducts function
+   - Added missing sanitize functions to `src/lib/utils/sanitize.ts`:
+     - sanitizeFormInput, sanitizeEmail, sanitizePhoneInput
+     - sanitizeCouponCode, sanitizeTextareaInput, sanitizeUrlInput
+     - sanitizeWithLineBreaks, sanitizeSkuInput, sanitizeSlugInput, sanitizeColor
+   - Installed missing papaparse and @types/papaparse dependencies
+
+### Files Changed:
+- `src/hooks/useUnifiedOrders.ts` - Added menu relation to interface and queries
+- `src/components/admin/orders/MenuSourceBadge.tsx` - New component
+- `src/pages/admin/LiveOrders.tsx` - Updated menu display
+- `src/pages/admin/hubs/OrdersHubPage.tsx` - Added menu_source to CSV export
+- `src/pages/admin/Orders.tsx` - Fixed duplicate functions, added imports
+- `src/pages/admin/storefront/StorefrontBuilder.tsx` - Fixed orphaned code
+- `src/pages/admin/CashRegister.tsx` - Fixed duplicate variable
+- `src/pages/admin/ProductManagement.tsx` - Fixed duplicate function
+- `src/lib/utils/sanitize.ts` - Added missing sanitization functions
+

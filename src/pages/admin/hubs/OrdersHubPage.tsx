@@ -30,7 +30,6 @@ import { useAdminBadgeCounts } from '@/hooks/useAdminBadgeCounts';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { useUnifiedOrders, type UnifiedOrder } from '@/hooks/useUnifiedOrders';
 import { toast } from 'sonner';
-import Papa from 'papaparse';
 
 // Lazy load tab content for performance
 const WholesaleOrdersPage = lazy(() => import('@/pages/admin/WholesaleOrdersPage'));
@@ -75,6 +74,7 @@ function exportToCSV(orders: UnifiedOrder[], filename: string = 'orders-export')
         order_number: order.order_number,
         order_type: order.order_type,
         source: order.source,
+        menu_source: order.menu?.name || '',
         status: order.status,
         payment_status: order.payment_status,
         payment_method: order.payment_method || '',

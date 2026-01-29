@@ -883,6 +883,27 @@ export function StorefrontBuilder() {
                     setActiveTab={builder.setActiveTab}
                 />
 
+                {/* Right Sidebar */}
+                <div className="w-80 border-l bg-background overflow-hidden flex flex-col">
+                    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BuilderTab)} className="flex-1 overflow-hidden flex flex-col">
+                        <TabsList className="grid w-full grid-cols-3 rounded-none border-b px-2 py-6">
+                            <TabsTrigger value="layout" className="text-xs">
+                                <Layout className="w-4 h-4 mr-1" />
+                                Layout
+                            </TabsTrigger>
+                            <TabsTrigger value="theme" className="text-xs">
+                                <Palette className="w-4 h-4 mr-1" />
+                                Theme
+                            </TabsTrigger>
+                            <TabsTrigger value="seo" className="text-xs">
+                                <Settings className="w-4 h-4 mr-1" />
+                                SEO
+                            </TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="layout" className="flex-1 overflow-hidden flex flex-col m-0 p-4">
+                            <ScrollArea className="flex-1">
+                                <div className="space-y-4">
                                     <Separator />
 
                                     <div className="space-y-2">
