@@ -63,7 +63,11 @@ import {
   UserCheck,
   Flame,
   Brain,
-  Star
+  Star,
+  Award,
+  Barcode,
+  Headphones,
+  HelpCircle
 } from 'lucide-react';
 
 export interface NavItem {
@@ -332,14 +336,9 @@ export const navigationSections: NavSection[] = [
     title: 'Customers',
     items: [
       {
-        title: 'Customers',
+        title: 'All Customers',
         href: '/admin/customers',
         icon: Users
-      },
-      {
-        title: 'Customer Details',
-        href: '/admin/customer-details',
-        icon: UserCheck
       },
       {
         title: 'CRM',
@@ -354,15 +353,21 @@ export const navigationSections: NavSection[] = [
         tier: 'professional'
       },
       {
-        title: 'Customer Insights',
-        href: '/admin/customer-hub?tab=insights',
-        icon: Target,
+        title: 'Support',
+        href: '/admin/customer-support',
+        icon: Headphones,
         tier: 'professional'
       },
       {
-        title: 'Customer Reports',
-        href: '/admin/customer-reports',
-        icon: FileSpreadsheet,
+        title: 'Loyalty',
+        href: '/admin/loyalty-program',
+        icon: Award,
+        tier: 'professional'
+      },
+      {
+        title: 'Analytics',
+        href: '/admin/customer-hub?tab=analytics',
+        icon: BarChart3,
         tier: 'professional'
       }
     ]
@@ -377,18 +382,6 @@ export const navigationSections: NavSection[] = [
         href: '/admin/disposable-menus',
         icon: FileText,
         badge: '🔥'
-      },
-      {
-        title: 'Support',
-        href: '/admin/customer-support',
-        icon: HeadphonesIcon,
-        tier: 'professional'
-      },
-      {
-        title: 'Loyalty',
-        href: '/admin/loyalty-program',
-        icon: Award,
-        tier: 'professional'
       },
       {
         title: 'Pricing & Deals',

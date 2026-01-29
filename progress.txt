@@ -7332,3 +7332,22 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+
+## Agent 18 - Sidebar Navigation Update
+
+### Task: Add Customers section with All Customers, CRM, Invoices, Support, Loyalty, Analytics in sidebar-navigation.ts
+
+**Completed:**
+- Updated the Customers section in sidebar navigation with the following items:
+  - **All Customers** - Links to `/admin/customers`, uses `Users` icon
+  - **CRM** - Links to `/admin/crm/clients`, uses `UsersRound` icon, professional tier
+  - **Invoices** - Links to `/admin/crm/invoices`, uses `Receipt` icon, professional tier
+  - **Support** - Links to `/admin/customer-support`, uses `Headphones` icon, professional tier
+  - **Loyalty** - Links to `/admin/loyalty-program`, uses `Award` icon, professional tier
+  - **Analytics** - Links to `/admin/customer-hub?tab=analytics`, uses `BarChart3` icon, professional tier
+- Added missing icon imports: `Award`, `Barcode`, `Headphones`, `HelpCircle`
+- Cleaned up Sales & Menu section (removed duplicate items created by previous edits)
+
+### Files Changed:
+- `src/components/admin/sidebar-navigation.ts` - Updated Customers section and icon imports
