@@ -136,7 +136,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="business_name">Business Name *</Label>
                 <Input
@@ -160,7 +160,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone *</Label>
                 <Input
@@ -195,7 +195,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="client_type">Client Type</Label>
                 <Select

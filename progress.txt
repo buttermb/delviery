@@ -7407,89 +7407,67 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 80 - Keyboard Navigation Implementation
+---
 
-### Task: Add keyboard navigation with proper tab order and Enter to submit
+### Task: Add mobile responsive layouts stacking forms properly on small screens
 
 **Completed:**
+Added mobile-first responsive breakpoints (`grid-cols-1 sm:grid-cols-2`) to form layouts that were using fixed `grid-cols-2` without mobile stacking. This ensures forms stack vertically on small screens and switch to side-by-side layout on screens >= 640px (sm breakpoint).
 
-1. **Created `useKeyboardNavigation` hook** (`src/hooks/useKeyboardNavigation.ts`)
-   - Comprehensive keyboard navigation support for forms and interactive components
-   - `useKeyboardNavigation()` - Main hook with Enter/Escape/Tab handling and focus trap
-   - `useInitialFocus()` - Manages initial focus when components mount with focus restoration
-   - `useEnterSubmit()` - Enter key submission handler for individual inputs
-   - `useTabOrder()` - Tab order management for complex forms
-   - `getFocusableElements()` - Utility to find all focusable elements in a container
-   - `focusFirstElement()` / `focusElement()` - Focus management utilities
-   - Supports focus trap for modal dialogs
-   - Arrow key navigation support for lists
+**Files Changed:**
 
-2. **Enhanced LoginForm** (`src/components/auth/LoginForm.tsx`)
-   - Added auto-focus on email input when form mounts
-   - Added `aria-describedby` linking inputs to their error messages
-   - Added error message IDs for screen reader accessibility
-   - Improved form field accessibility with proper ARIA attributes
+1. **ProductForm.tsx** (`src/components/admin/products/ProductForm.tsx`)
+   - Fixed TabsList from `grid-cols-4` to `grid-cols-2 sm:grid-cols-4` for mobile tab stacking
+   - Fixed THC/CBD percentage inputs grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
 
-3. **Enhanced SignupForm** (`src/components/auth/SignupForm.tsx`)
-   - Added auto-focus on first input (Full Name) when form mounts
-   - Added `aria-describedby` for all form fields:
-     - Full Name, Email, Phone, Password, Confirm Password
-   - Password field links to password requirements for screen readers
-   - Improved accessibility for all form validation messages
+2. **CustomerForm.tsx** (`src/pages/admin/CustomerForm.tsx`)
+   - Fixed Basic Information section (first/last name, email/phone, date/status) from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
 
-4. **Enhanced Dialog component** (`src/components/ui/dialog.tsx`)
-   - Added `autoFocus` prop (default: true) for automatic initial focus
-   - Added `initialFocusSelector` prop for custom focus target
-   - Auto-focuses first content element when dialog opens (skips close button)
-   - Supports `data-autofocus` attribute for marking focus target
-   - Restores focus to previously focused element when dialog closes
-   - Improved focus management for better keyboard navigation
+3. **CheckoutPage.tsx (shop)** (`src/pages/shop/CheckoutPage.tsx`)
+   - Fixed Contact Information section (first/last name) from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed Address section (city/state) from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed navigation buttons to use `flex-col-reverse sm:flex-row` with full-width on mobile
 
-5. **Exported hooks from barrel file** (`src/hooks/index.ts`)
-   - Added exports for all new keyboard navigation utilities
-   - Makes hooks easily importable from `@/hooks`
+4. **AddressBook.tsx** (`src/components/account/AddressBook.tsx`)
+   - Fixed city/state grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed zip/borough grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
 
-### Files Changed:
-- `src/hooks/useKeyboardNavigation.ts` (NEW) - Keyboard navigation hook
-- `src/components/auth/LoginForm.tsx` - Auto-focus and ARIA improvements
-- `src/components/auth/SignupForm.tsx` - Auto-focus and ARIA improvements
-- `src/components/ui/dialog.tsx` - Focus management enhancements
-- `src/hooks/index.ts` - Added exports for new hooks
+5. **AppointmentForm.tsx** (`src/components/admin/appointments/AppointmentForm.tsx`)
+   - Fixed date/duration grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
 
-### Usage Examples:
+6. **CreateWholesaleClientDialog.tsx** (`src/components/wholesale/CreateWholesaleClientDialog.tsx`)
+   - Fixed business/contact name grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed email/phone grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
 
-```tsx
-// Auto-focus first element in form
-useKeyboardNavigation({
-  onEnter: () => form.handleSubmit(onSubmit)(),
-  onEscape: () => setIsOpen(false),
-});
+7. **CreateClientDialog.tsx** (`src/components/admin/CreateClientDialog.tsx`)
+   - Fixed business/contact name grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed phone/email grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed client type/credit/payment grid from `grid-cols-3` to `grid-cols-1 sm:grid-cols-3`
 
-// Modal with focus trap
-const containerRef = useKeyboardNavigation({
-  trapFocus: true,
-  onEscape: () => setIsOpen(false),
-});
+8. **EditClientDialog.tsx** (`src/components/admin/EditClientDialog.tsx`)
+   - Fixed business/contact name grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed phone/email grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed client type/credit/payment grid from `grid-cols-3` to `grid-cols-1 sm:grid-cols-3`
 
-// Enter key submission on specific input
-const handleKeyDown = useEnterSubmit(handleSubmit);
-<Input onKeyDown={handleKeyDown} />
+9. **AddCourierDialog.tsx** (`src/components/admin/AddCourierDialog.tsx`)
+   - Fixed name/email grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed phone/license grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed vehicle make/model/plate grid from `grid-cols-3` to `grid-cols-1 sm:grid-cols-3`
 
-// Dialog with custom focus target
-<DialogContent initialFocusSelector="#email-input">
-  <Input id="email-input" />
-</DialogContent>
+10. **SignUpPage.tsx (customer)** (`src/pages/customer/SignUpPage.tsx`)
+    - Fixed first/last name grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
 
-// Or using data-autofocus attribute
-<DialogContent>
-  <Input data-autofocus />
-</DialogContent>
-```
+11. **CheckoutPage.tsx (credits)** (`src/pages/credits/CheckoutPage.tsx`)
+    - Fixed billing city/state grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+    - Fixed billing postal/country grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
 
-### Accessibility Improvements:
-- Screen readers now properly announce error messages
-- Tab order follows natural form flow
-- Enter key submits forms (except in textareas)
-- Escape key closes dialogs
-- Focus is restored when dialogs close
-- Focus trap keeps keyboard users in modals
+12. **CheckoutPage.tsx (customer)** (`src/pages/customer/CheckoutPage.tsx`)
+    - Fixed new address city/state grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+    - Fixed new address zip/borough grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+
+**Pattern Applied:**
+- `grid-cols-2` → `grid-cols-1 sm:grid-cols-2`
+- `grid-cols-3` → `grid-cols-1 sm:grid-cols-3`
+- `grid-cols-4` → `grid-cols-2 sm:grid-cols-4`
+
+This ensures all forms stack properly on mobile devices (< 640px) while maintaining the expected multi-column layout on larger screens.

@@ -412,7 +412,7 @@ export default function CheckoutPage() {
                                 className="border-[hsl(var(--customer-border))]"
                               />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="new-city" className="text-[hsl(var(--customer-text))]">City</Label>
                                 <Input
@@ -434,7 +434,7 @@ export default function CheckoutPage() {
                                 />
                               </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="new-zip" className="text-[hsl(var(--customer-text))]">ZIP Code</Label>
                                 <Input
