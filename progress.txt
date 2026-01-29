@@ -7407,56 +7407,54 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 36 - Connect Fulfillment to Fleet (Assigning Deliveries to Vehicles)
+## Agent 37 - Connect Fulfillment to Couriers showing availability status for assignment
 
-### Task: Connect Fulfillment to Fleet assigning deliveries to available vehicles
+### Task: Connect Fulfillment to Couriers showing availability status for assignment
 
 **Completed:**
 
-1. **Created useAvailableRunners hook** (`src/hooks/useAvailableRunners.ts`)
-   - Fetches available fleet runners/vehicles for delivery assignment
-   - Supports filtering by availability status
-   - Uses tenant context for multi-tenant isolation
-   - Integrates with query key factory for proper cache management
+1. **Created CourierAvailabilityPanel component** (`src/components/admin/fulfillment/CourierAvailabilityPanel.tsx`)
+   - Shows courier availability status for order assignment in the fulfillment workflow
+   - Displays online/offline couriers with clear availability indicators
+   - Three availability stats: Available (green, ready for assignment), Offline (not currently active), Total
+   - Courier cards show:
+     - Availability status with animated "Available" badge for online couriers
+     - Vehicle type
+     - Star rating
+     - GPS location indicator (if current location is available)
+     - Total deliveries count
+   - Auto-refreshes every 30 seconds for real-time availability
+   - Manual refresh button
+   - Link to view all couriers tab
+   - Configurable maximum courier display count
+   - Optional `onSelectCourier` callback for direct assignment
 
-2. **Created AssignToFleetDialog component** (`src/components/admin/AssignToFleetDialog.tsx`)
-   - Reusable dialog for assigning orders to available fleet runners
-   - Shows runner details: name, phone, vehicle type, rating, total deliveries
-   - Visual selection with status indicators
-   - Supports both wholesale orders (via edge function) and regular orders
-   - Proper error handling with toast notifications
-   - Invalidates relevant queries on successful assignment
+2. **Integrated CourierAvailabilityPanel into FulfillmentHubPage Dashboard tab**
+   - Added panel to DeliveryManagement.tsx (shown in Dashboard tab of FulfillmentHubPage)
+   - Panel appears after stats cards for quick visibility of courier availability
+   - Shows 4 couriers by default
 
-3. **Updated LiveOrdersKanban component** (`src/components/admin/live-orders/LiveOrdersKanban.tsx`)
-   - Added "Fleet" button for orders in ready_for_pickup status
-   - Integrates AssignToFleetDialog for seamless fleet assignment
-   - Updated LiveOrder interface to include delivery_address field
-
-4. **Updated DeliveryManagement page** (`src/pages/admin/DeliveryManagement.tsx`)
-   - Added "Fleet" button alongside "Courier" button in delivery queue
-   - Allows operators to choose between fleet runners or couriers
-   - Fleet assignment dialog integrated with proper state management
-
-5. **Updated query keys** (`src/lib/queryKeys.ts`)
-   - Added `runners.available()` query key for available runners
-   - Maintains consistency with existing query key patterns
-
-### Integration Flow:
-1. Orders reach "Ready for Pickup" status in Live Orders Kanban
-2. Operators click "Fleet" button to open assignment dialog
-3. Dialog shows available runners with their stats (rating, vehicle, deliveries)
-4. Selecting a runner and confirming creates delivery assignment:
-   - For wholesale: Uses `wholesale-delivery-assign` edge function
-   - For regular orders: Updates courier_id and status directly
-5. Query cache is invalidated to refresh fleet status and order lists
+3. **Enhanced Couriers.tsx page with availability features**
+   - Updated stats cards to show "Available" count instead of generic "Online Now"
+   - Added availability status function to determine courier state: available, offline, inactive, unverified
+   - Enhanced status column in courier table to show:
+     - Animated "Available" badge with pulse indicator for ready couriers
+     - "Offline" badge with clock icon
+     - "Inactive" badge for disabled accounts
+     - "Unverified" badge for couriers needing age verification
+     - GPS location indicator (MapPin icon) when location is available
+   - Added "Assign to Orders" button in header linking to fulfillment pending orders
+   - Added subtitle showing count of couriers available for assignment
+   - Updated mobile renderer with same availability status display
 
 ### Files Changed:
-- `src/hooks/useAvailableRunners.ts` (NEW) - Hook for fetching available fleet runners
-- `src/components/admin/AssignToFleetDialog.tsx` (NEW) - Fleet assignment dialog component
-- `src/components/admin/live-orders/LiveOrdersKanban.tsx` - Added fleet button and dialog
-- `src/pages/admin/DeliveryManagement.tsx` - Added fleet button to delivery queue
-- `src/lib/queryKeys.ts` - Added available runners query key
+- `src/components/admin/fulfillment/CourierAvailabilityPanel.tsx` (NEW) - Courier availability panel component
+- `src/pages/admin/DeliveryManagement.tsx` - Added CourierAvailabilityPanel import and component
+- `src/pages/admin/Couriers.tsx` - Enhanced availability status display and added assignment workflow link
 
-### TypeScript Verification:
-- `npx tsc --noEmit` passes with no errors
-- All new code follows project conventions (named exports, @/ imports, logger usage)
+### Technical Notes:
+- Uses existing `queryKeys.couriers.list()` for proper query caching
+- Filters available couriers by: `is_online && is_active && age_verified`
+- TypeScript compliant with strict mode
+- Follows FloraIQ patterns for multi-tenant isolation (filters by tenant_id)
+- No new dependencies required
