@@ -785,6 +785,7 @@ export default function SignUpPage() {
                                 <Input
                                   type="email"
                                   placeholder="you@business.com"
+                                  autoComplete="email"
                                   {...field}
                                   className={cn(
                                     "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
@@ -815,6 +816,7 @@ export default function SignUpPage() {
                                 <Input
                                   type={showPassword ? "text" : "password"}
                                   placeholder="••••••••"
+                                  autoComplete="new-password"
                                   {...field}
                                   className="h-12 pr-10 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
                                 />

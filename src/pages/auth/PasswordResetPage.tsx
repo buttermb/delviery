@@ -337,6 +337,7 @@ export default function PasswordResetPage() {
                 required
                 disabled={loading}
                 minLength={8}
+                autoComplete="new-password"
                 className={theme.input}
               />
               <p className={`text-xs ${theme.textLight}`}>
@@ -391,6 +392,7 @@ export default function PasswordResetPage() {
                 required
                 disabled={loading}
                 minLength={8}
+                autoComplete="new-password"
                 className={theme.input}
               />
             </div>
