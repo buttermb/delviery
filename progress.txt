@@ -7332,3 +7332,51 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 3 - Implement Favorites Sync to Database with useMutation
+
+### Task: Implement favorites sync to database with useMutation in SidebarFavorites.tsx
+
+**Date:** 2026-01-28
+
+**Completed:**
+
+1. **Fixed duplicate import bug**
+   - Removed duplicate `useSidebar` import (was imported twice on lines 14 and 18)
+
+2. **Added search query filtering for favorites**
+   - Added `filteredFavoriteItems` useMemo that filters favorites by search query
+   - Uses `matchesSearchQuery` utility from SidebarSearch for consistent filtering
+   - Favorites section now hides when no favorites match the search query
+
+3. **Verified useMutation integration**
+   - `SidebarFavorites` component uses `toggleFavorite` from `SidebarContext`
+   - `SidebarContext` exposes `toggleFavorite` from `useSidebarPreferences` hook
+   - `useSidebarPreferences` implements `toggleFavoriteMutation` with:
+     - **Optimistic updates**: Cache is updated immediately before server response
+     - **Database sync**: Calls `sidebar_preferences` table via Supabase upsert
+     - **Error rollback**: Reverts to previous state on mutation failure
+     - **Query invalidation**: Refreshes sidebar-config queries on success
+
+### Architecture Summary:
+
+```
+SidebarFavorites.tsx
+    ↓ uses
+SidebarContext.tsx (provides toggleFavorite)
+    ↓ uses
+useSidebarPreferences.ts (toggleFavoriteMutation with useMutation)
+    ↓ calls
+Supabase sidebar_preferences table (tenant_id, user_id, favorites[])
+```
+
+### Features Working:
+- [x] Favorites displayed from database via TanStack Query
+- [x] Toggle favorite triggers useMutation with optimistic updates
+- [x] Search filtering works on favorites section
+- [x] Favorites section hides when empty or no search matches
+- [x] Error handling with rollback on failure
+- [x] TypeScript passes with no errors
+
+### Files Changed:
+- `src/components/admin/sidebar/SidebarFavorites.tsx` - Fixed duplicate import, added filteredFavoriteItems
