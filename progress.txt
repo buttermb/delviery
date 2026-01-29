@@ -7332,3 +7332,40 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 10 - Tooltip on Collapsed Sidebar Verification
+
+### Task: Add Tooltip component on hover when sidebar collapsed in SidebarMenuItem.tsx
+
+### Date: 2026-01-28
+
+**Analysis:**
+The tooltip functionality for collapsed sidebar menu items is already fully implemented in the codebase.
+
+### Implementation Details:
+
+1. **SidebarMenuButton in `src/components/ui/sidebar.tsx` (lines 529-568)**:
+   - Accepts a `tooltip` prop (string or TooltipContent props)
+   - When tooltip is provided, wraps the button in Radix UI Tooltip components
+   - Uses `hidden={state !== "collapsed" || isMobile}` on TooltipContent (line 564)
+   - This means tooltips are ONLY shown when sidebar is collapsed AND not on mobile
+
+2. **SidebarMenuItem in `src/components/admin/sidebar/SidebarMenuItem.tsx`**:
+   - Line 92-93: Locked items pass `tooltip={item.name}` to SidebarMenuButton
+   - Line 113: Regular items pass `tooltip={item.name}` to SidebarMenuButton
+   - Both cases already have tooltip support
+
+3. **Tooltip Provider**:
+   - `SidebarProvider` component wraps children in `<TooltipProvider delayDuration={0}>` (line 189)
+   - This enables tooltips across all sidebar menu items
+
+### Behavior:
+- When sidebar is **expanded**: Tooltips are hidden (full text is visible)
+- When sidebar is **collapsed**: Hovering over icon-only menu items shows tooltip with item name
+- On **mobile**: Tooltips are disabled (full sheet/drawer is used instead)
+
+### Conclusion:
+No changes required. The feature was already implemented correctly in the existing codebase.
+
+### Files Changed:
+- None (feature already exists)
