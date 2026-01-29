@@ -731,6 +731,11 @@ export const navigationSections: NavSection[] = [
     title: 'Analytics',
     items: [
       {
+        title: 'Overview',
+        href: '/admin/analytics',
+        icon: BarChart3
+      },
+      {
         title: 'Analytics Dashboard',
         href: '/admin/analytics-dashboard',
         icon: BarChart3,
@@ -780,10 +785,22 @@ export const navigationSections: NavSection[] = [
         tier: 'enterprise'
       },
       {
+        title: 'Reports',
+        href: '/admin/analytics-reports',
+        icon: FileText,
+        tier: 'professional'
+      },
+      {
         title: 'Export',
         href: '/admin/data-export',
         icon: FileSpreadsheet,
         tier: 'professional'
+      },
+      {
+        title: 'Advanced Export',
+        href: '/admin/analytics-advanced-export',
+        icon: Database,
+        tier: 'enterprise'
       }
     ]
   },
