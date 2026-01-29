@@ -619,4 +619,22 @@ export const queryKeys = {
     byKey: (tenantId: string, settingsKey: string) =>
       [...queryKeys.settingsVersions.byTenant(tenantId), settingsKey] as const,
   },
+
+  // Locations
+  locations: {
+    all: ['locations'] as const,
+    lists: () => [...queryKeys.locations.all, 'list'] as const,
+    list: (tenantId?: string, filters?: Record<string, unknown>) =>
+      [...queryKeys.locations.lists(), { tenantId, ...filters }] as const,
+    details: () => [...queryKeys.locations.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.locations.details(), id] as const,
+    operationsSummary: (tenantId: string, locationId?: string) =>
+      [...queryKeys.locations.all, 'operations-summary', tenantId, locationId] as const,
+    inventory: (locationId: string) =>
+      [...queryKeys.locations.detail(locationId), 'inventory'] as const,
+    receiving: (locationId: string) =>
+      [...queryKeys.locations.detail(locationId), 'receiving'] as const,
+    runners: (locationId: string) =>
+      [...queryKeys.locations.detail(locationId), 'runners'] as const,
+  },
 } as const;
