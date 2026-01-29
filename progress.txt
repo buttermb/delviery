@@ -7332,3 +7332,20 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 16 - Sidebar Navigation Update
+
+### Task: Add Orders section with All Orders, B2B Orders, Store Orders in sidebar-navigation.ts
+
+**Completed:**
+- Added "Store Orders" nav item to the existing Orders section
+  - Links to `/admin/orders/store`
+  - Uses `Store` icon (already imported)
+  
+The Orders section now contains:
+1. **All Orders** - `/admin/orders` with `ShoppingCart` icon
+2. **B2B Orders** - `/admin/orders/b2b` with `Building2` icon
+3. **Store Orders** - `/admin/orders/store` with `Store` icon (NEW)
+
+### Files Changed:
+- `src/components/admin/sidebar-navigation.ts` - Added Store Orders item to Orders section
