@@ -356,6 +356,8 @@ export const queryKeys = {
     all: ['reporting'] as const,
     custom: () => [...queryKeys.reporting.all, 'custom'] as const,
     scheduled: () => [...queryKeys.reporting.all, 'scheduled'] as const,
+    dataSources: () => [...queryKeys.reporting.all, 'data-sources'] as const,
+    executions: (reportId?: string) => [...queryKeys.reporting.all, 'executions', reportId] as const,
   },
 
   // Vendor
