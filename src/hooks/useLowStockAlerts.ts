@@ -1,7 +1,8 @@
 /**
  * Low Stock Alerts Hook
  *
- * Fetches products that are below their low stock threshold for a given tenant.
+ * Fetches stock alerts from the stock_alerts table for a given tenant.
+ * Falls back to products-based calculation if the table doesn't exist.
  * Used by the LowStockBanner component and order forms to identify
  * out-of-stock and low-stock products.
  */
@@ -42,25 +43,61 @@ function getAlertLevel(available: number, threshold: number): LowStockProduct['a
   return 'warning';
 }
 
+function severityToAlertLevel(severity: string): LowStockProduct['alertLevel'] {
+  if (severity === 'critical') return 'critical';
+  if (severity === 'warning') return 'warning';
+  return 'warning';
+}
+
 export function useLowStockAlerts(): LowStockAlertsSummary {
   const { tenant } = useTenantAdminAuth();
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: queryKeys.inventory.lowStockAlerts(tenant?.id),
+    queryKey: queryKeys.stockAlerts.active(tenant?.id),
     queryFn: async (): Promise<LowStockProduct[]> => {
       if (!tenant?.id) return [];
 
-      // Fetch products where stock is at or below their low stock threshold
-      // Uses low_stock_alert column as the threshold (default 10 if not set)
+      // First try to fetch from stock_alerts table
+      const { data: alerts, error: alertError } = await supabase
+        .from('stock_alerts')
+        .select('id, product_id, product_name, current_quantity, threshold, severity')
+        .eq('tenant_id', tenant.id)
+        .eq('status', 'active')
+        .order('current_quantity', { ascending: true });
+
+      // If stock_alerts table exists and has data, use it
+      if (!alertError && alerts && alerts.length > 0) {
+        return alerts.map((alert) => {
+          const alertLevel = alert.current_quantity <= 0
+            ? 'out_of_stock'
+            : severityToAlertLevel(alert.severity);
+
+          return {
+            id: alert.product_id,
+            name: alert.product_name,
+            stockQuantity: alert.current_quantity,
+            availableQuantity: alert.current_quantity,
+            lowStockThreshold: alert.threshold,
+            category: '', // Category not stored in alerts
+            alertLevel,
+          };
+        });
+      }
+
+      // If table doesn't exist or no alerts, fall back to products query
+      if (alertError && alertError.code !== '42P01') {
+        logger.error('Error fetching stock alerts', { error: alertError });
+      }
+
+      // Fallback: fetch from products table
       const { data: products, error: fetchError } = await supabase
         .from('products')
         .select('id, name, stock_quantity, available_quantity, low_stock_alert, category')
         .eq('tenant_id', tenant.id)
-        .or('stock_quantity.lte.low_stock_alert,stock_quantity.eq.0,available_quantity.eq.0')
         .order('stock_quantity', { ascending: true });
 
       if (fetchError) {
-        logger.error('Failed to fetch low stock alerts', { error: fetchError });
+        logger.error('Failed to fetch low stock products', { error: fetchError });
         throw fetchError;
       }
 

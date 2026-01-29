@@ -7332,3 +7332,60 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+---
+
+## Agent 29 - Connect Inventory to Stock Alerts
+
+### Task: Connect Inventory to Stock Alerts so low stock threshold triggers alert creation
+
+**Completed:**
+
+1. **Created stock_alerts database table and trigger** (`supabase/migrations/20260128000001_stock_alerts_integration.sql`)
+   - Created `stock_alerts` table with tenant isolation (RLS enabled)
+   - Fields: id, tenant_id, product_id, product_name, current_quantity, threshold, severity, status
+   - Alert lifecycle: active → acknowledged → resolved
+   - Created `check_and_create_stock_alert()` trigger function that:
+     - Automatically creates alerts when product's `available_quantity` drops below `low_stock_alert` threshold
+     - Updates existing alerts when stock changes
+     - Auto-resolves alerts when stock goes back above threshold
+   - Created trigger on `products` table for INSERT/UPDATE of stock columns
+   - Created `acknowledge_stock_alert(UUID)` RPC for acknowledging alerts without resolving
+   - Created `get_active_stock_alerts(UUID)` RPC for fetching active alerts
+   - Initialized alerts for existing low-stock products
+
+2. **Updated query keys** (`src/lib/queryKeys.ts`)
+   - Added `stockAlerts` query key factory with `all`, `lists`, `list`, `active`, and `detail` keys
+
+3. **Updated StockAlerts page** (`src/pages/admin/StockAlerts.tsx`)
+   - Now queries the `stock_alerts` table directly
+   - Added acknowledge button to acknowledge alerts
+   - Improved quick restock functionality
+   - Maintains fallback to products-based calculation for backwards compatibility
+
+4. **Updated useLowStockAlerts hook** (`src/hooks/useLowStockAlerts.ts`)
+   - Prioritizes `stock_alerts` table when available
+   - Falls back to products-based calculation if table doesn't exist
+   - Uses new query key from `queryKeys.stockAlerts`
+
+5. **Updated tenant-admin StockAlertsPage** (`src/pages/tenant-admin/StockAlertsPage.tsx`)
+   - Same pattern: queries `stock_alerts` table first, falls back to products
+
+6. **Updated StockAlert type** (`src/types/admin.ts`)
+   - Added new fields: status, updated_at, acknowledged_by, acknowledged_at, resolved_at
+   - Made product_id and tenant_id required
+
+### How it works:
+- When a product's `available_quantity` or `stock_quantity` is updated below the `low_stock_alert` threshold, a database trigger automatically creates a stock alert record
+- Alerts are classified as 'critical' (<=0 or <=50% of threshold) or 'warning' (below threshold)
+- When stock is restocked above the threshold, the alert is automatically resolved
+- Users can acknowledge alerts to indicate they've seen them without resolving
+- The frontend queries the `stock_alerts` table for fast, accurate alert display
+
+### Files Changed:
+- `supabase/migrations/20260128000001_stock_alerts_integration.sql` (new)
+- `src/lib/queryKeys.ts` (added stockAlerts keys)
+- `src/pages/admin/StockAlerts.tsx` (refactored to use stock_alerts table)
+- `src/hooks/useLowStockAlerts.ts` (refactored to use stock_alerts table)
+- `src/pages/tenant-admin/StockAlertsPage.tsx` (refactored to use stock_alerts table)
+- `src/types/admin.ts` (updated StockAlert interface)
