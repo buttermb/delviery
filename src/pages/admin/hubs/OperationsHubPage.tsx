@@ -26,6 +26,7 @@ import {
     Calendar,
     Headphones,
     MapPin,
+    Truck,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -44,6 +45,7 @@ const AppointmentSchedulerPage = lazy(() => import('@/pages/admin/AppointmentSch
 const SupportTicketsPage = lazy(() => import('@/pages/admin/SupportTicketsPage'));
 const LocationsManagement = lazy(() => import('@/pages/admin/LocationsManagement'));
 const CompliancePage = lazy(() => import('@/pages/tenant-admin/CompliancePage'));
+const POReceivingPage = lazy(() => import('@/pages/admin/operations/POReceivingPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -60,6 +62,7 @@ const tabs = [
     // Supply Chain
     { id: 'suppliers', label: 'Vendors', icon: Building2, group: 'Supply' },
     { id: 'purchase-orders', label: 'POs', icon: FileText, group: 'Supply' },
+    { id: 'receiving', label: 'Receiving', icon: Truck, group: 'Supply' },
     { id: 'returns', label: 'Returns', icon: ArrowLeftRight, group: 'Supply' },
     // Compliance & Quality
     { id: 'compliance', label: 'Compliance', icon: Shield, group: 'Compliance' },
@@ -133,6 +136,13 @@ export default function OperationsHubPage() {
                 <TabsContent value="purchase-orders" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <PurchaseOrdersPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Receiving Tab */}
+                <TabsContent value="receiving" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <POReceivingPage />
                     </Suspense>
                 </TabsContent>
 
