@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import {
   AlertDialog,
@@ -247,9 +248,8 @@ export function AccountDangerZone({
                 <Label htmlFor="danger-zone-password">
                   Enter your password to continue
                 </Label>
-                <Input
+                <PasswordInput
                   id="danger-zone-password"
-                  type="password"
                   placeholder="Your current password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

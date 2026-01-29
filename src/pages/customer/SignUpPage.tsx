@@ -5,6 +5,7 @@ import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { ShoppingBag, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -321,9 +322,8 @@ export default function CustomerSignUpPage() {
               <Label htmlFor="password" className="text-sm font-medium text-slate-200">
                 Password
               </Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -348,9 +348,8 @@ export default function CustomerSignUpPage() {
               <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-200">
                 Confirm Password
               </Label>
-              <Input
+              <PasswordInput
                 id="confirmPassword"
-                type="password"
                 placeholder="••••••••"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}

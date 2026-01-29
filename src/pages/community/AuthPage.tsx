@@ -8,6 +8,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -210,9 +211,8 @@ export function AuthPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="login-password">Password</Label>
-                    <Input
+                    <PasswordInput
                       id="login-password"
-                      type="password"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
                       required
@@ -262,9 +262,8 @@ export function AuthPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
-                    <Input
+                    <PasswordInput
                       id="signup-password"
-                      type="password"
                       placeholder="At least 6 characters"
                       value={signupPassword}
                       onChange={(e) => setSignupPassword(e.target.value)}
@@ -276,9 +275,8 @@ export function AuthPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="signup-password-confirm">Confirm Password</Label>
-                    <Input
+                    <PasswordInput
                       id="signup-password-confirm"
-                      type="password"
                       placeholder="Confirm your password"
                       value={signupPasswordConfirm}
                       onChange={(e) => setSignupPasswordConfirm(e.target.value)}

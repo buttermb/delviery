@@ -2,6 +2,7 @@ import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -324,9 +325,8 @@ export function TwoFactorSetup() {
                 >
                     <div className="space-y-2">
                         <Label htmlFor="password-confirm">Password</Label>
-                        <Input
+                        <PasswordInput
                             id="password-confirm"
-                            type="password"
                             value={password}
                             onChange={(e) => {
                                 setPassword(e.target.value);

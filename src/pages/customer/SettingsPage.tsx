@@ -2,6 +2,7 @@ import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Settings, Key, User, Bell, Trash2, Download, AlertTriangle } from "lucide-react";
@@ -301,9 +302,8 @@ export default function CustomerSettingsPage() {
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--customer-text))]">Current Password</Label>
-                <Input 
-                  type="password" 
-                  placeholder="Current Password" 
+                <PasswordInput
+                  placeholder="Current Password"
                   required
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
@@ -312,9 +312,8 @@ export default function CustomerSettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--customer-text))]">New Password</Label>
-                <Input 
-                  type="password" 
-                  placeholder="New Password (min. 8 characters)" 
+                <PasswordInput
+                  placeholder="New Password (min. 8 characters)"
                   required
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
@@ -334,9 +333,8 @@ export default function CustomerSettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--customer-text))]">Confirm New Password</Label>
-                <Input 
-                  type="password" 
-                  placeholder="Confirm New Password" 
+                <PasswordInput
+                  placeholder="Confirm New Password"
                   required
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}

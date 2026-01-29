@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, CheckCircle2, XCircle, Key, Eye, EyeOff } from "lucide-react";
@@ -292,9 +292,8 @@ export default function PasswordResetPage() {
           <form onSubmit={handleSubmit} className="space-y-4" aria-label="Password reset form">
             <div className="space-y-2">
               <Label htmlFor="password" className={theme.text}>New Password</Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -319,9 +318,8 @@ export default function PasswordResetPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className={theme.text}>Confirm Password</Label>
-              <Input
+              <PasswordInput
                 id="confirmPassword"
-                type="password"
                 placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
