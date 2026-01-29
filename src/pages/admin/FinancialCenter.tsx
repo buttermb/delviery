@@ -19,10 +19,10 @@ export default function FinancialCenter() {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const tenantId = tenant?.id;
 
-  // Enable realtime sync for payments and earnings
+  // Enable realtime sync for payments, earnings, and orders (for revenue updates)
   useRealtimeSync({
     tenantId,
-    tables: ['wholesale_payments', 'courier_earnings'],
+    tables: ['wholesale_payments', 'courier_earnings', 'orders', 'wholesale_orders'],
     enabled: !!tenantId,
   });
   const { navigateToAdmin } = useTenantNavigation();
@@ -100,21 +100,38 @@ export default function FinancialCenter() {
         <p className="text-sm text-muted-foreground mt-1">November 30, 2024</p>
       </div>
 
-      {/* Today's Snapshot */}
+      {/* Today's Snapshot - Real-time Completed Orders Data */}
       <div>
-        <h2 className="text-lg font-semibold mb-3">📊 Today's Snapshot</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold">📊 Today's Snapshot</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigateToAdmin('reports/revenue')}
+            className="text-xs"
+          >
+            View Full Reports →
+          </Button>
+        </div>
         <div className="grid grid-cols-3 gap-4">
           <Card className="p-4">
-            <div className="text-sm text-muted-foreground mb-1">Revenue</div>
+            <div className="text-sm text-muted-foreground mb-1">Completed Revenue</div>
             <div className="text-3xl font-bold text-emerald-500">
               ${todaySnapshot.revenue.toLocaleString()}
             </div>
-            <div className="text-xs text-muted-foreground mt-1">{todaySnapshot.deals} deals</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {(todaySnapshot as { completedDeals?: number }).completedDeals || todaySnapshot.deals} completed orders
+            </div>
+            {(todaySnapshot as { pendingRevenue?: number }).pendingRevenue !== undefined && (todaySnapshot as { pendingRevenue?: number }).pendingRevenue! > 0 && (
+              <div className="text-xs text-amber-500 mt-1">
+                +${((todaySnapshot as { pendingRevenue?: number }).pendingRevenue || 0).toLocaleString()} pending
+              </div>
+            )}
           </Card>
           <Card className="p-4">
-            <div className="text-sm text-muted-foreground mb-1">Cost</div>
+            <div className="text-sm text-muted-foreground mb-1">Cost (COGS)</div>
             <div className="text-3xl font-bold">${todaySnapshot.cost.toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground mt-1">COGS</div>
+            <div className="text-xs text-muted-foreground mt-1">Estimated from completed</div>
           </Card>
           <Card className="p-4">
             <div className="text-sm text-muted-foreground mb-1">Net Profit</div>
@@ -254,12 +271,17 @@ export default function FinancialCenter() {
       </Card>
 
 
-      {/* Monthly Performance */}
+      {/* Monthly Performance - Real-time from Completed Orders */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <TrendingUp className="h-5 w-5" />
-          This Month Performance
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            This Month Performance
+          </h2>
+          <Badge variant="outline" className="text-xs">
+            Real-time from completed orders
+          </Badge>
+        </div>
 
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-3">
@@ -267,6 +289,9 @@ export default function FinancialCenter() {
               <span className="text-muted-foreground">Revenue:</span>
               <div className="text-right">
                 <div className="font-mono font-bold">${monthlyData.revenue.toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">
+                  from {(monthlyData as { completedDeals?: number }).completedDeals || monthlyData.deals} completed
+                </div>
               </div>
             </div>
             <div className="flex justify-between">
@@ -288,7 +313,7 @@ export default function FinancialCenter() {
 
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Deals:</span>
+              <span className="text-muted-foreground">Total Orders:</span>
               <span className="font-mono font-bold">{monthlyData.deals} orders</span>
             </div>
             <div className="flex justify-between">
@@ -299,8 +324,11 @@ export default function FinancialCenter() {
         </div>
 
         <div className="flex gap-2 mt-6">
-          <Button variant="outline" onClick={() => navigateToAdmin("reports")}>
-            Detailed Reports
+          <Button variant="outline" onClick={() => navigateToAdmin("reports/revenue")}>
+            Revenue Reports
+          </Button>
+          <Button variant="ghost" onClick={() => navigateToAdmin("reports")}>
+            All Reports
           </Button>
         </div>
       </Card>

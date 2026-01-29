@@ -7332,3 +7332,64 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 33 - Connect Finance to Revenue Reports
+
+### Task: Connect Finance to Revenue reports pulling real-time data from completed orders
+
+**Summary:**
+Connected the Finance module to Revenue reports by implementing real-time data fetching from completed orders across both `orders` and `wholesale_orders` tables.
+
+**Completed:**
+
+1. **Created useCompletedOrdersRevenue hook** (`src/hooks/useCompletedOrdersRevenue.ts`)
+   - New hook for fetching and calculating revenue from completed orders
+   - Supports multiple date ranges: today, 7d, 30d, 90d, month, ytd, all
+   - Fetches from both `orders` and `wholesale_orders` tables for comprehensive data
+   - Real-time subscriptions for order status changes
+   - Calculates stats: totalRevenue, orderCount, avgOrderValue, completedCount, pendingCount, cancelledCount
+   - Exports convenience hooks: `useTodayRevenueSnapshot()` and `useMonthlyRevenueSnapshot()`
+
+2. **Added finance query keys** (`src/lib/queryKeys.ts`)
+   - Added `finance` namespace with query keys for:
+     - `snapshot` - Today's financial snapshot
+     - `completedOrders` - Completed orders by tenant and date range
+     - `revenueByPeriod` - Revenue aggregated by period
+     - `monthlyPerformance` - Monthly performance metrics
+     - `cashFlow` - Cash flow data
+     - `creditOut` - Credit/AR data
+
+3. **Updated useFinancialData.ts hooks**
+   - `useFinancialSnapshot`: Now fetches from both `orders` and `wholesale_orders`
+   - Calculates revenue only from completed/delivered orders (real recognized revenue)
+   - Returns additional data: `pendingRevenue`, `completedDeals`, `pendingDeals`
+   - Updated query keys to use the new `queryKeys.finance.*` factory
+   - Reduced staleTime for more real-time updates
+   - `useMonthlyPerformance`: Same improvements - fetches from both tables, completed-only revenue
+
+4. **Updated FinancialCenter component** (`src/pages/admin/FinancialCenter.tsx`)
+   - Real-time sync now includes `orders` and `wholesale_orders` tables
+   - Today's Snapshot section shows "Completed Revenue" with pending revenue indicator
+   - Added "View Full Reports" link to revenue reports
+   - Monthly Performance section shows completed deals count
+   - Added "Real-time from completed orders" badge
+   - Added direct links to revenue reports
+
+5. **Updated useRealtimeSync hook** (`src/hooks/useRealtimeSync.ts`)
+   - Added `['finance']` and `['revenue-reports']` invalidation for orders changes
+   - Added same invalidation for wholesale_orders changes
+   - Ensures Finance dashboard updates when orders are completed
+
+**Files Changed:**
+- `src/hooks/useCompletedOrdersRevenue.ts` (NEW) - Real-time completed orders revenue hook
+- `src/lib/queryKeys.ts` - Added finance query keys namespace
+- `src/hooks/useFinancialData.ts` - Updated to use real completed orders data
+- `src/hooks/useRealtimeSync.ts` - Added finance query invalidation
+- `src/pages/admin/FinancialCenter.tsx` - Connected to real-time revenue data
+
+**Technical Notes:**
+- Revenue is now calculated only from completed/delivered orders (accurate accounting)
+- Pending revenue is tracked separately for visibility
+- Real-time subscriptions ensure immediate updates when orders are completed
+- Both retail (orders table) and wholesale (wholesale_orders table) are aggregated
+- Estimated COGS (62-63.5%) is still used pending product cost integration

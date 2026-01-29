@@ -143,6 +143,9 @@ export function useRealtimeSync({
                     queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
                     queryClient.invalidateQueries({ queryKey: ['orders'] });
                     queryClient.invalidateQueries({ queryKey: ['dashboard-orders'] });
+                    // Invalidate finance queries for real-time revenue updates
+                    queryClient.invalidateQueries({ queryKey: ['finance'] });
+                    queryClient.invalidateQueries({ queryKey: ['revenue-reports'] });
                     // Also invalidate related queries
                     if (payload.new && hasId(payload.new)) {
                       queryClient.invalidateQueries({ queryKey: ['order', payload.new.id] });
@@ -203,6 +206,9 @@ export function useRealtimeSync({
                     queryClient.invalidateQueries({ queryKey: ['live-orders'] });
                     queryClient.invalidateQueries({ queryKey: ['dashboard-orders'] });
                     queryClient.invalidateQueries({ queryKey: ['pending-orders'] });
+                    // Invalidate finance queries for real-time revenue updates
+                    queryClient.invalidateQueries({ queryKey: ['finance'] });
+                    queryClient.invalidateQueries({ queryKey: ['revenue-reports'] });
                     if (payload.new && hasId(payload.new)) {
                       queryClient.invalidateQueries({ queryKey: ['order', payload.new.id] });
                     }
