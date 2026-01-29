@@ -88,6 +88,17 @@ export const queryKeys = {
       [...queryKeys.inventory.all, 'locations', tenantId] as const,
   },
 
+  // Stock Alerts
+  stockAlerts: {
+    all: ['stock-alerts'] as const,
+    lists: () => [...queryKeys.stockAlerts.all, 'list'] as const,
+    list: (tenantId?: string) =>
+      [...queryKeys.stockAlerts.lists(), { tenantId }] as const,
+    active: (tenantId?: string) =>
+      [...queryKeys.stockAlerts.all, 'active', tenantId] as const,
+    detail: (id: string) => [...queryKeys.stockAlerts.all, id] as const,
+  },
+
   // Cart
   cart: {
     all: ['cart'] as const,

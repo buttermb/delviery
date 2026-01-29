@@ -7407,55 +7407,59 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 28 - Connect Orders to Finance for Revenue Dashboard
+---
 
-### Task: Connect Orders to Finance so completed orders add to revenue dashboard totals
+## Agent 29 - Connect Inventory to Stock Alerts
+
+### Task: Connect Inventory to Stock Alerts so low stock threshold triggers alert creation
 
 **Completed:**
 
-1. **Updated `useFinancialCommandCenter.ts` hooks to filter by completed/delivered orders**
-   - Modified `useQuickStats()` to only count orders with status `completed` or `delivered` for revenue calculations
-   - Modified `useCashFlowPulse()` to filter orders by completed/delivered status for:
-     - Today's orders
-     - This week's orders (for forecast)
-     - Last 30 days (for burn rate calculation)
-   - Modified `usePerformancePulse()` to filter orders by completed/delivered status for:
-     - This month's orders
-     - Last month's orders
-     - 90-day trend data
+1. **Created stock_alerts database table and trigger** (`supabase/migrations/20260128000001_stock_alerts_integration.sql`)
+   - Created `stock_alerts` table with tenant isolation (RLS enabled)
+   - Fields: id, tenant_id, product_id, product_name, current_quantity, threshold, severity, status
+   - Alert lifecycle: active → acknowledged → resolved
+   - Created `check_and_create_stock_alert()` trigger function that:
+     - Automatically creates alerts when product's `available_quantity` drops below `low_stock_alert` threshold
+     - Updates existing alerts when stock changes
+     - Auto-resolves alerts when stock goes back above threshold
+   - Created trigger on `products` table for INSERT/UPDATE of stock columns
+   - Created `acknowledge_stock_alert(UUID)` RPC for acknowledging alerts without resolving
+   - Created `get_active_stock_alerts(UUID)` RPC for fetching active alerts
+   - Initialized alerts for existing low-stock products
 
-2. **Created database migration for dashboard_metrics materialized view**
-   - Created `supabase/migrations/20260128000001_update_dashboard_metrics_completed_orders.sql`
-   - Updated view to filter `today_revenue` by completed/delivered orders only
-   - Updated view to filter `last_week_revenue` by completed/delivered orders only
-   - Added new `this_month_revenue` column also filtered by completed/delivered orders
-   - Kept `active_orders` unfiltered (pending, assigned, in_transit)
+2. **Updated query keys** (`src/lib/queryKeys.ts`)
+   - Added `stockAlerts` query key factory with `all`, `lists`, `list`, `active`, and `detail` keys
 
-3. **Added realtime subscription for completed order changes**
-   - Created `useOrderStatusSubscription()` hook that subscribes to `wholesale_orders` table changes
-   - When order status changes to/from completed/delivered, invalidates all financial queries:
-     - `financial-quick-stats`
-     - `financial-cash-flow-pulse`
-     - `financial-performance-pulse`
-     - `revenue-reports`
-     - `revenue-chart`
-   - Integrated subscription into `useFinancialCommandCenter()` combined hook
+3. **Updated StockAlerts page** (`src/pages/admin/StockAlerts.tsx`)
+   - Now queries the `stock_alerts` table directly
+   - Added acknowledge button to acknowledge alerts
+   - Improved quick restock functionality
+   - Maintains fallback to products-based calculation for backwards compatibility
 
-4. **Updated `RevenueReports.tsx` to filter by completed/delivered orders**
-   - Modified analytics processing to only count completed/delivered orders for:
-     - `totalRevenue` calculation
-     - `revenueByDate` chart data
-     - `avgOrderValue` (now based on completed orders only)
-   - Status distribution still shows all orders for visibility
-   - Product sales still count all orders for analytics context
+4. **Updated useLowStockAlerts hook** (`src/hooks/useLowStockAlerts.ts`)
+   - Prioritizes `stock_alerts` table when available
+   - Falls back to products-based calculation if table doesn't exist
+   - Uses new query key from `queryKeys.stockAlerts`
+
+5. **Updated tenant-admin StockAlertsPage** (`src/pages/tenant-admin/StockAlertsPage.tsx`)
+   - Same pattern: queries `stock_alerts` table first, falls back to products
+
+6. **Updated StockAlert type** (`src/types/admin.ts`)
+   - Added new fields: status, updated_at, acknowledged_by, acknowledged_at, resolved_at
+   - Made product_id and tenant_id required
+
+### How it works:
+- When a product's `available_quantity` or `stock_quantity` is updated below the `low_stock_alert` threshold, a database trigger automatically creates a stock alert record
+- Alerts are classified as 'critical' (<=0 or <=50% of threshold) or 'warning' (below threshold)
+- When stock is restocked above the threshold, the alert is automatically resolved
+- Users can acknowledge alerts to indicate they've seen them without resolving
+- The frontend queries the `stock_alerts` table for fast, accurate alert display
 
 ### Files Changed:
-- `src/hooks/useFinancialCommandCenter.ts` - Added completed/delivered status filters to all revenue queries + realtime subscription
-- `src/pages/admin/RevenueReports.tsx` - Added completed/delivered status filter for revenue analytics
-- `supabase/migrations/20260128000001_update_dashboard_metrics_completed_orders.sql` - New migration for dashboard metrics view
-
-### Technical Notes:
-- Revenue is now recognized only when orders reach `completed` or `delivered` status
-- Pending, processing, and in-transit orders are excluded from revenue totals
-- Real-time updates ensure finance dashboards refresh immediately when order status changes
-- Pre-existing build issues in codebase (missing papaparse dependency, StorefrontBuilder.tsx JSX errors) are unrelated to these changes
+- `supabase/migrations/20260128000001_stock_alerts_integration.sql` (new)
+- `src/lib/queryKeys.ts` (added stockAlerts keys)
+- `src/pages/admin/StockAlerts.tsx` (refactored to use stock_alerts table)
+- `src/hooks/useLowStockAlerts.ts` (refactored to use stock_alerts table)
+- `src/pages/tenant-admin/StockAlertsPage.tsx` (refactored to use stock_alerts table)
+- `src/types/admin.ts` (updated StockAlert interface)
