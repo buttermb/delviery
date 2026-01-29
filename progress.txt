@@ -1,3 +1,65 @@
+## Task: Connect Operations to Roles - Role Creation and Permission Matrix
+
+### Completed
+
+#### 1. Created Database Migration for Tenant-Specific Roles (`supabase/migrations/20260128000001_tenant_roles.sql`)
+- Created `roles` table with tenant isolation (tenant_id foreign key)
+- Created `tenant_role_permissions` junction table for role-permission mapping
+- Enabled RLS with policies for:
+  - Read: Any tenant user can view their tenant's roles
+  - Create/Update: Only owners and admins can manage roles
+  - Delete: Only owners and admins can delete non-system roles
+- Added indexes for performance optimization
+- Created `update_roles_updated_at` trigger for automatic timestamps
+- Created `tenant_has_role_permission()` helper function for permission checks
+
+#### 2. Enhanced Permission System (`src/lib/permissions/rolePermissions.ts`)
+- Added `PERMISSION_CATEGORIES` constant organizing all permissions by functional area
+- Categories include: Orders, Products, Inventory, Customers, Menus, Wholesale, Finance, Team, Settings, Reports, Fleet, API
+- Each permission includes key, label, and description for UI display
+- Added `getAllPermissions()` function to get flat list of all permissions
+- Added `getPermissionLabel()` function to resolve permission keys to human-readable labels
+
+#### 3. Added Query Keys (`src/lib/queryKeys.ts`)
+- Added `roles` query key factory with:
+  - `roles.all` - Base key for all role queries
+  - `roles.lists()` - For role list queries
+  - `roles.list(tenantId)` - For tenant-specific role lists
+  - `roles.details()` - For role detail queries
+  - `roles.detail(id)` - For specific role details
+  - `roles.permissions(roleId)` - For role permissions
+
+#### 4. Enhanced RoleManagement Page (`src/pages/admin/RoleManagement.tsx`)
+- Complete rewrite with improved UX:
+  - Role listing with responsive table showing name, description, permissions count
+  - Create/Edit dialog with permission matrix UI
+  - Delete confirmation dialog with warning about permission loss
+  - Loading and error states
+- Permission Matrix Features:
+  - Permissions organized by category with accordion UI
+  - Category-level select all/none with indeterminate state
+  - Individual permission checkboxes with labels and descriptions
+  - Permission count badge for each category
+  - Total selected permissions counter
+- CRUD Operations:
+  - Create role with name, description, and permissions
+  - Edit role (update name, description, permissions)
+  - Delete role with confirmation (only non-system roles)
+- Uses proper TanStack Query patterns with queryKeys
+- Tenant isolation enforced on all database operations
+
+### Files Changed:
+- `supabase/migrations/20260128000001_tenant_roles.sql` (new)
+- `src/lib/permissions/rolePermissions.ts` (enhanced)
+- `src/lib/queryKeys.ts` (added roles query keys)
+- `src/pages/admin/RoleManagement.tsx` (rewritten)
+
+### Build Status:
+- TypeScript: Compiles with no errors (`npx tsc --noEmit` passes)
+- Note: Pre-existing build issues exist in StorefrontBuilder.tsx unrelated to these changes
+
+---
+
 ## Complete Storefront Order Management - Progress
 
 ### Completed

@@ -619,4 +619,16 @@ export const queryKeys = {
     byKey: (tenantId: string, settingsKey: string) =>
       [...queryKeys.settingsVersions.byTenant(tenantId), settingsKey] as const,
   },
+
+  // Roles Management
+  roles: {
+    all: ['roles'] as const,
+    lists: () => [...queryKeys.roles.all, 'list'] as const,
+    list: (tenantId?: string) =>
+      [...queryKeys.roles.lists(), { tenantId }] as const,
+    details: () => [...queryKeys.roles.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.roles.details(), id] as const,
+    permissions: (roleId: string) =>
+      [...queryKeys.roles.detail(roleId), 'permissions'] as const,
+  },
 } as const;
