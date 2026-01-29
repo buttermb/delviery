@@ -2,7 +2,20 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
-import { Mail, Loader2, AlertCircle, ArrowLeft, RefreshCw } from 'lucide-react';
+import { SEOHead } from '@/components/SEOHead';
+import {
+  Mail,
+  Loader2,
+  AlertCircle,
+  ArrowLeft,
+  RefreshCw,
+  CheckCircle2,
+  Rocket,
+  BookOpen,
+  Users,
+  Settings,
+  Sparkles
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
@@ -198,6 +211,10 @@ export function SignupSuccessPage() {
 
   return (
     <ForceLightMode>
+      <SEOHead
+        title="Verify Your Email - FloraIQ"
+        description="Check your email to verify your FloraIQ account and get started with your cannabis operations platform."
+      />
       <div className="min-h-screen flex w-full bg-background">
         {/* LEFT SIDE - CONTENT */}
         <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:flex-none lg:w-[45%] xl:w-[40%] bg-background relative z-10">
@@ -212,8 +229,21 @@ export function SignupSuccessPage() {
           </Button>
 
           <div className="mx-auto w-full max-w-sm">
-            <div className="mb-10">
+            {/* Welcome Message */}
+            <div className="mb-8">
               <FloraIQLogo size="lg" className="mb-6" />
+              <div className="rounded-xl bg-primary/5 border border-primary/10 p-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-full text-primary">
+                    <Sparkles className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">Welcome to FloraIQ!</p>
+                    <p className="text-sm text-muted-foreground">Your account has been created successfully.</p>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-primary/10 rounded-full text-primary">
                   <Mail className="h-6 w-6" />
@@ -230,6 +260,17 @@ export function SignupSuccessPage() {
             </div>
 
             <div className="space-y-6">
+              {/* Email Reminder Alert */}
+              <div className="rounded-xl bg-blue-50/50 border border-blue-100 p-4 flex items-start gap-3">
+                <Mail className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+                <div className="text-sm text-blue-800">
+                  <p className="font-medium mb-1">Email Reminder</p>
+                  <p className="text-blue-700/80">
+                    Look for an email from <span className="font-medium">noreply@floraiq.com</span> with the subject &quot;Verify your FloraIQ account&quot;. The link expires in 24 hours.
+                  </p>
+                </div>
+              </div>
+
               {/* Resend Button with Cooldown */}
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
@@ -288,33 +329,87 @@ export function SignupSuccessPage() {
           </div>
         </div>
 
-        {/* RIGHT SIDE - BRANDING */}
+        {/* RIGHT SIDE - BRANDING & NEXT STEPS */}
         <div className="hidden lg:flex w-[60%] bg-primary relative overflow-hidden items-center justify-center p-12">
           <div className="absolute inset-0 z-0">
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1628126235206-5260b9ea6441?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center opacity-40 mix-blend-overlay filter blur-[1px]" />
             <div className="absolute inset-0 bg-gradient-to-br from-primary/90 to-primary-dark/95" />
           </div>
 
-          <div className="relative z-10 max-w-md text-center text-white">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm mb-8">
-              <Mail className="h-10 w-10" />
+          <div className="relative z-10 max-w-lg text-white">
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm mb-6">
+                <CheckCircle2 className="h-10 w-10" />
+              </div>
+              <h2 className="text-3xl font-bold mb-3">Almost There!</h2>
+              <p className="text-lg text-white/80">
+                Just one more step to unlock your FloraIQ dashboard.
+              </p>
             </div>
-            <h2 className="text-3xl font-bold mb-4">Almost There!</h2>
-            <p className="text-lg text-white/80 mb-6">
-              Just one more step to unlock your FloraIQ dashboard. Verify your email and you&apos;re all set.
-            </p>
-            <div className="flex flex-col gap-3 text-sm text-white/70">
-              <div className="flex items-center gap-2 justify-center">
-                <div className="w-2 h-2 rounded-full bg-accent" />
-                <span>Free credits to get started</span>
+
+            {/* Next Steps Section */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-8">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Rocket className="h-5 w-5" />
+                What&apos;s Next?
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">
+                    1
+                  </div>
+                  <div>
+                    <p className="font-medium">Verify your email</p>
+                    <p className="text-sm text-white/70">Click the link in the email we just sent</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">
+                    2
+                  </div>
+                  <div>
+                    <p className="font-medium">Complete your profile</p>
+                    <p className="text-sm text-white/70">Add your business details and preferences</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">
+                    3
+                  </div>
+                  <div>
+                    <p className="font-medium">Set up your store</p>
+                    <p className="text-sm text-white/70">Add products and configure your storefront</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">
+                    4
+                  </div>
+                  <div>
+                    <p className="font-medium">Start selling</p>
+                    <p className="text-sm text-white/70">Invite your team and process your first order</p>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2 justify-center">
-                <div className="w-2 h-2 rounded-full bg-accent" />
-                <span>Full access to all features</span>
+            </div>
+
+            {/* Quick Benefits */}
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="flex items-center gap-2 bg-white/5 rounded-lg p-3">
+                <BookOpen className="h-4 w-4 text-accent" />
+                <span>Getting started guides</span>
               </div>
-              <div className="flex items-center gap-2 justify-center">
-                <div className="w-2 h-2 rounded-full bg-accent" />
-                <span>No credit card required</span>
+              <div className="flex items-center gap-2 bg-white/5 rounded-lg p-3">
+                <Users className="h-4 w-4 text-accent" />
+                <span>Team collaboration</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/5 rounded-lg p-3">
+                <Settings className="h-4 w-4 text-accent" />
+                <span>Easy configuration</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/5 rounded-lg p-3">
+                <Sparkles className="h-4 w-4 text-accent" />
+                <span>14-day free trial</span>
               </div>
             </div>
           </div>
