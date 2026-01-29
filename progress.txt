@@ -7407,41 +7407,33 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 83 - Real-time Email Format Validation with Debounce
+## Agent 84 - Rate Limit Countdown Display
 
-### Task: Add real-time email format validation with debounce in SignupPage
+### Task: Add rate limit countdown display showing "Try again in X seconds" in ForgotPassword
 
 **Completed:**
+- Added rate limit countdown to `ForgotPasswordDialog.tsx`:
+  - Added state for `rateLimited` and `cooldownRemaining`
+  - Implemented `startCooldown` and `isRateLimited` functions
+  - Configured rate limiting: 3 requests per minute with 30s cooldown
+  - Displays countdown in both error message and button text
+  - Disables input and button during cooldown
+  - Added Clock icon for visual feedback
 
-1. **Imported required dependencies**
-   - Added `useEffect` and `useMemo` from React
-   - Added `useDebounce` hook from `@/hooks/useDebounce`
-   - Added `cn` utility from `@/lib/utils`
-   - Added `CheckCircle2` and `AlertCircle` icons from `lucide-react`
+- Added rate limit countdown to `pages/customer/ForgotPasswordPage.tsx`:
+  - Same rate limiting logic as ForgotPasswordDialog
+  - Shows "Try again in X seconds" message above button
+  - Button displays countdown when rate limited
+  - Input field disabled during cooldown
+  - Proper cleanup of timers on component unmount
 
-2. **Email validation infrastructure**
-   - Added RFC 5322 compliant email regex for format validation
-   - Added `EmailValidationStatus` type with states: 'idle' | 'checking' | 'valid' | 'invalid'
-   - Added `emailValidationStatus` state variable
+**Rate Limiting Configuration:**
+- RATE_LIMIT_WINDOW_MS: 60,000ms (1 minute)
+- MAX_REQUESTS_PER_WINDOW: 3
+- COOLDOWN_MS: 30,000ms (30 second cooldown)
 
-3. **Debounced validation logic**
-   - Watch email value from form with `step1Form.watch('email')`
-   - Debounce email with 300ms delay using `useDebounce` hook
-   - useEffect validates email format when debounced value changes:
-     - Empty email → 'idle' state
-     - Typing (before debounce) → 'checking' state
-     - Valid format → 'valid' state
-     - Invalid format → 'invalid' state
-
-4. **Visual feedback UI**
-   - Memoized validation indicator component with:
-     - Spinner (Loader2) for 'checking' state
-     - Green checkmark (CheckCircle2) for 'valid' state
-     - Red alert (AlertCircle) for 'invalid' state
-   - Input field border colors:
-     - Green border (`border-green-500`) for valid email
-     - Red border (`border-red-500`) for invalid email
-   - "Valid email format" success message below input when valid
+**Note:** pages/auth/ForgotPasswordPage.tsx already had rate limit countdown implemented.
 
 ### Files Changed:
-- `src/pages/auth/SignupPage.tsx` - Added real-time debounced email validation with visual feedback
+- `src/components/auth/ForgotPasswordDialog.tsx` - Added rate limit countdown display
+- `src/pages/customer/ForgotPasswordPage.tsx` - Added rate limit countdown display
