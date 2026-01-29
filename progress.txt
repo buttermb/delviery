@@ -7332,3 +7332,40 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+---
+
+## Task: Connect Integrations to Local AI showing AI assistant settings
+
+### What was done:
+
+1. **Added AI Assistant section to IntegrationsSettings page** (`src/pages/tenant-admin/settings/IntegrationsSettings.tsx`)
+   - Added new "AI Assistant" section after the "Available Integrations" section
+   - Shows Local AI integration card with purple Brain icon
+   - Displays "Demo Mode" badge to indicate current implementation status
+   - Lists available AI features: Sentiment Analysis, Text Summarization, Message Classification, Translation
+   - Includes informational text about local AI processing benefits (privacy, no API fees)
+   - Added "Open AI Assistant" button that navigates to the Integrations Hub AI tab
+   - Added "Documentation" button placeholder for future documentation links
+
+2. **Added required imports and types**
+   - Imported `Brain` icon from lucide-react
+   - Imported `useNavigate` from react-router-dom
+   - Created `AIIntegration` interface for type safety
+   - Used `tenantSlug` from `useTenantAdminAuth()` for proper tenant-aware navigation
+
+3. **Navigation integration**
+   - Clicking "Open AI Assistant" navigates to `/${tenantSlug}/admin/integrations-hub?tab=ai`
+   - This correctly opens the IntegrationsHubPage with the Local AI tab selected
+
+### Files Changed:
+- `src/pages/tenant-admin/settings/IntegrationsSettings.tsx` (modified)
+  - Added Brain icon import
+  - Added useNavigate import
+  - Added AIIntegration interface
+  - Added aiAssistant configuration object
+  - Added AI Assistant SettingsSection with card showing features and navigation button
+
+### Build Status:
+- TypeScript compilation passes (`npx tsc --noEmit`)
+- Note: Full build has pre-existing issue with missing `papaparse` dependency (unrelated to this change)
