@@ -14,6 +14,7 @@ import { Breadcrumbs } from "@/components/admin/Breadcrumbs";
 import InstallPWA from "@/components/InstallPWA";
 import { Suspense } from "react";
 import { LoadingFallback } from "@/components/LoadingFallback";
+import { useEventNotifications } from "@/hooks/useEventNotifications";
 
 import { AdminNotificationCenter } from "@/components/admin/AdminNotificationCenter";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
@@ -61,6 +62,13 @@ const AdminLayout = () => {
 
   // Sidebar mode toggle (Classic vs Optimized)
   const { isOptimized } = useSidebarMode();
+
+  // Enable real-time event notifications for orders and stock alerts
+  useEventNotifications({
+    enabled: true,
+    playSound: true,
+    showBrowserNotification: true,
+  });
 
   // Force module refresh
   const moduleVersion = "2.2.0";
