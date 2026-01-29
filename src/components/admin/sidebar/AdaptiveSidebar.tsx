@@ -45,6 +45,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CreditBalance } from '@/components/credits';
 import { useCommandPaletteStore } from '@/components/tenant-admin/CommandPalette';
 
+/**
+ * Static preset display names - hoisted outside component to avoid recreation on every render
+ * This is a performance optimization as these values never change
+ */
+const PRESET_DISPLAY_NAMES: Record<string, string> = {
+  default: 'Default',
+  minimal: 'Minimal',
+  sales_focus: 'Sales',
+  operations_focus: 'Operations',
+  financial_focus: 'Financial',
+  full_featured: 'Full'
+};
+
 interface AdaptiveSidebarInnerProps {
   collapsible?: "offcanvas" | "icon" | "none";
 }
@@ -65,18 +78,20 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   useSidebarMigration();
 
   const currentPreset = preferences?.layoutPreset || 'default';
-  const presetNames: Record<string, string> = useMemo(() => ({
-    default: 'Default',
-    minimal: 'Minimal',
-    sales_focus: 'Sales',
-    operations_focus: 'Operations',
-    financial_focus: 'Financial',
-    full_featured: 'Full'
-  }), []);
 
-  // Memoize navigation items to prevent unnecessary re-renders
-  // Dependencies: sidebarConfig, hotItems, favorites from useSidebarConfig hook
+  /**
+   * Memoize navigation items to prevent unnecessary re-renders
+   *
+   * Dependencies explained:
+   * - sidebarConfig: The main navigation configuration from useSidebarConfig
+   * - hotItems: Quick access items based on business context
+   * - favorites: User's favorited navigation items
+   *
+   * All three come from useSidebarConfig() which already memoizes them internally,
+   * but we memoize the derived booleans here to avoid recalculating on each render
+   */
   const navItems = useMemo(() => {
+    // Defensive: ensure arrays are valid (useSidebarConfig should already return arrays)
     const safeHotItems = Array.isArray(hotItems) ? hotItems : [];
     const safeFavorites = Array.isArray(favorites) ? favorites : [];
     const safeSidebarConfig = Array.isArray(sidebarConfig) ? sidebarConfig : [];
@@ -85,16 +100,21 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
       sidebarConfig: safeSidebarConfig,
       hotItems: safeHotItems,
       favorites: safeFavorites,
+      // Pre-compute boolean checks to avoid recalculating in JSX
       hasHotItems: safeHotItems.length > 0,
       hasFavorites: safeFavorites.length > 0,
       hasSections: safeSidebarConfig.length > 0,
     };
   }, [sidebarConfig, hotItems, favorites]);
 
-  // Memoize preset display name to avoid recalculation on each render
-  const currentPresetDisplayName = useMemo(() =>
-    presetNames[currentPreset] || currentPreset,
-    [presetNames, currentPreset]
+  /**
+   * Memoize preset display name
+   * Dependencies: currentPreset (derived from preferences?.layoutPreset)
+   * Uses hoisted PRESET_DISPLAY_NAMES constant (no dependency needed for static values)
+   */
+  const currentPresetDisplayName = useMemo(
+    () => PRESET_DISPLAY_NAMES[currentPreset] || currentPreset,
+    [currentPreset]
   );
 
   // Guard against missing tenant slug
