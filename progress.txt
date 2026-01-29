@@ -7332,3 +7332,40 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+
+## Agent 77 - Visual Password Strength Meter
+
+### Task: Add visual password strength meter (Weak/Medium/Strong) in SignupPage and ResetPage
+
+**Completed:**
+
+1. **Updated PasswordStrengthIndicator Component** (`src/components/auth/PasswordStrengthIndicator.tsx`)
+   - Redesigned to use 3-level strength meter: Weak, Medium, Strong
+   - Added visual 3-bar meter that fills progressively based on strength
+   - Weak (red): 0-2 password criteria met
+   - Medium (yellow): 3-4 password criteria met
+   - Strong (green): All 5 password criteria met
+   - Added `showRequirements` prop to optionally hide detailed checklist
+   - Exported `calculatePasswordStrength` function for reuse
+   - Added proper ARIA attributes for accessibility
+
+2. **Updated PasswordResetPage** (`src/pages/auth/PasswordResetPage.tsx`)
+   - Removed inline password strength implementation
+   - Now uses shared `PasswordStrengthIndicator` component
+   - Consistent visual appearance with SignupPage
+
+3. **SignupPage** (`src/pages/auth/SignupPage.tsx`)
+   - Already using `PasswordStrengthIndicator` component
+   - Now benefits from the updated Weak/Medium/Strong labels
+
+### Password Strength Criteria:
+- At least 8 characters
+- Contains lowercase letter
+- Contains uppercase letter
+- Contains number
+- Contains special character
+
+### Files Changed:
+- `src/components/auth/PasswordStrengthIndicator.tsx` - Unified component with Weak/Medium/Strong levels
+- `src/pages/auth/PasswordResetPage.tsx` - Now uses shared PasswordStrengthIndicator component
