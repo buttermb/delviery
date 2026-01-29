@@ -63,7 +63,11 @@ import {
   UserCheck,
   Flame,
   Brain,
-  Star
+  Star,
+  HelpCircle,
+  Headphones,
+  Award,
+  Barcode
 } from 'lucide-react';
 
 export interface NavItem {
@@ -381,7 +385,7 @@ export const navigationSections: NavSection[] = [
       {
         title: 'Support',
         href: '/admin/customer-support',
-        icon: HeadphonesIcon,
+        icon: Headphones,
         tier: 'professional'
       },
       {

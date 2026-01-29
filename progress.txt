@@ -7332,3 +7332,27 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 25 - Sidebar Navigation Settings Section Update
+
+### Task: Add Settings section with Settings Help Center Priority Support in sidebar-navigation.ts
+
+**Completed:**
+- Verified Settings section already exists with required items:
+  - General Settings (`/admin/settings`) - Settings icon
+  - White Label (`/admin/white-label`) - Palette icon, ultimate tier
+  - Custom Domain (`/admin/custom-domain`) - Globe icon, ultimate tier
+  - Printing & Labels (`/admin/generate-barcodes`) - Printer icon
+  - Vendor Management (`/admin/vendor-management`) - Building2 icon, enterprise tier
+  - Help Center (`/admin/help-center`) - HelpCircle icon
+  - Priority Support (`/admin/priority-support`) - Headphones icon, professional tier
+
+- Fixed missing icon imports in sidebar-navigation.ts:
+  - Added `HelpCircle` import (used by Help Center)
+  - Added `Headphones` import (used by Priority Support)
+  - Added `Award` import (used by Loyalty in Sales & Menu section)
+  - Added `Barcode` import (used by Barcodes in Operations section)
+  - Fixed `HeadphonesIcon` reference to use correct `Headphones` icon name
+
+### Files Changed:
+- `src/components/admin/sidebar-navigation.ts` - Added missing icon imports and fixed icon reference
