@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, WifiOff, CheckCircle, Truck } from 'lucide-react';
-import { useAdminOrdersRealtime } from '@/hooks/useAdminOrdersRealtime';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -47,6 +46,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
 
 interface Order {
   id: string;
@@ -533,7 +533,7 @@ export default function Orders() {
     triggerHaptic('light');
   };
 
-  const handleCancelOrderFunc = async (order: Order) => {
+  const handleCancelOrder = async (order: Order) => {
     if (!tenant?.id) return;
 
     try {

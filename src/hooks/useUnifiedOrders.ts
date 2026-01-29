@@ -50,6 +50,7 @@ export interface UnifiedOrder {
   customer?: { id: string; first_name: string; last_name: string; email: string } | null;
   client?: { id: string; business_name: string; contact_name: string } | null;
   courier?: { id: string; full_name: string; phone: string } | null;
+  menu?: { id: string; name: string } | null;
 }
 
 export interface UnifiedOrderItem {
@@ -141,7 +142,8 @@ export function useUnifiedOrders(options: UseUnifiedOrdersOptions = {}) {
           items:unified_order_items(*),
           customer:customers(id, first_name, last_name, email),
           client:wholesale_clients(id, business_name, contact_name),
-          courier:couriers(id, full_name, phone)
+          courier:couriers(id, full_name, phone),
+          menu:disposable_menus(id, name)
         `)
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
@@ -214,7 +216,8 @@ export function useUnifiedOrder(orderId: string | undefined) {
           items:unified_order_items(*),
           customer:customers(*),
           client:wholesale_clients(*),
-          courier:couriers(*)
+          courier:couriers(*),
+          menu:disposable_menus(id, name)
         `)
         .eq('id', orderId)
         .eq('tenant_id', tenant.id)

@@ -22,7 +22,8 @@ interface MenuOrderRaw {
   total_amount: number;
   synced_order_id: string | null;
   disposable_menus: {
-    title: string;
+    name: string;
+    title?: string | null;
   } | null;
 }
 
@@ -95,7 +96,7 @@ export default function LiveOrders() {
             .from('menu_orders')
             .select(`
               id, created_at, status, total_amount, synced_order_id,
-              disposable_menus (title)
+              disposable_menus (name, title)
             `)
             .eq('tenant_id', tenant.id)
             .in('status', [
@@ -129,7 +130,6 @@ export default function LiveOrders() {
         }));
 
         // Transform Menu Orders
-        // Transform Menu Orders
         const normMenuOrders: LiveOrder[] = (menuOrdersRes.data as unknown as MenuOrderRaw[] || []).map((mo) => ({
           id: mo.id,
           order_number: 'MENU-' + mo.id.slice(0, 5).toUpperCase(),
@@ -137,7 +137,7 @@ export default function LiveOrders() {
           created_at: mo.created_at,
           user_id: 'guest',
           source: 'menu',
-          menu_title: mo.disposable_menus?.title,
+          menu_title: mo.disposable_menus?.name || mo.disposable_menus?.title || undefined,
           total_amount: Number(mo.total_amount || 0)
         }));
 

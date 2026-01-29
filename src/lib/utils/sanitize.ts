@@ -54,8 +54,7 @@ export function sanitizeHtml(html: string): string {
 export const sanitizeBasicHtml = sanitizeHtml;
 
 /**
- * Sanitizes form input by escaping HTML entities and trimming whitespace.
- * Use for general text inputs that should not contain HTML.
+ * Sanitizes form input by trimming whitespace and escaping HTML entities.
  */
 export function sanitizeFormInput(input: string): string {
   if (!input) return '';
@@ -69,96 +68,83 @@ export function sanitizeFormInput(input: string): string {
 }
 
 /**
- * Sanitizes email input by trimming, lowercasing, and removing invalid characters.
+ * Sanitizes email input - trims and converts to lowercase.
  */
 export function sanitizeEmail(email: string): string {
   if (!email) return '';
-  return email
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9@._+-]/g, '');
+  return email.trim().toLowerCase();
 }
 
 /**
- * Sanitizes phone input by removing non-numeric characters except +, -, (, ), and space.
+ * Sanitizes phone input - removes non-digit characters except + for country code.
  */
 export function sanitizePhoneInput(phone: string): string {
   if (!phone) return '';
-  return phone
-    .trim()
-    .replace(/[^0-9+\-() ]/g, '');
+  // Keep only digits, +, -, (, ), and spaces
+  return phone.trim().replace(/[^\d+\-() ]/g, '');
 }
 
 /**
- * Sanitizes textarea input by escaping HTML entities while preserving newlines.
+ * Sanitizes textarea input - trims and escapes HTML entities.
  */
-export function sanitizeTextareaInput(input: string): string {
-  if (!input) return '';
-  return input
+export function sanitizeTextareaInput(text: string): string {
+  if (!text) return '';
+  return text
     .trim()
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;');
+    .replace(/>/g, '&gt;');
 }
 
 /**
- * Sanitizes coupon code by uppercasing and removing invalid characters.
- * Only allows alphanumeric characters and hyphens/underscores.
+ * Sanitizes coupon code - trims, converts to uppercase, removes special characters.
  */
 export function sanitizeCouponCode(code: string): string {
   if (!code) return '';
   return code
     .trim()
     .toUpperCase()
-    .replace(/[^A-Z0-9_-]/g, '');
+    .replace(/[^A-Z0-9]/g, '');
 }
 
 /**
- * Sanitizes text while preserving line breaks.
- * Escapes HTML entities and converts newlines to <br> tags.
+ * Sanitizes text while preserving line breaks as HTML.
+ * Converts \n to <br> tags after sanitizing other HTML.
  */
-export function sanitizeWithLineBreaks(input: string): string {
-  if (!input) return '';
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\n/g, '<br>');
+export function sanitizeWithLineBreaks(text: string): string {
+  if (!text) return '';
+  const sanitized = sanitizeFormInput(text);
+  return sanitized.replace(/\n/g, '<br>');
 }
 
 /**
- * Sanitizes URL input by trimming whitespace and ensuring valid URL characters.
- * Removes javascript: and data: protocols.
+ * Sanitizes URL input - validates and sanitizes URL format.
  */
 export function sanitizeUrlInput(url: string): string {
   if (!url) return '';
   const trimmed = url.trim();
-  // Block dangerous protocols
+
+  // Block javascript: and data: protocols
   if (/^(javascript|data|vbscript):/i.test(trimmed)) {
     return '';
   }
+
   return trimmed;
 }
 
 /**
- * Sanitizes SKU input by uppercasing and removing invalid characters.
- * Only allows alphanumeric characters, hyphens, and underscores.
+ * Sanitizes SKU input - trims, converts to uppercase, allows alphanumeric and dashes.
  */
 export function sanitizeSkuInput(sku: string): string {
   if (!sku) return '';
   return sku
     .trim()
     .toUpperCase()
-    .replace(/[^A-Z0-9_-]/g, '');
+    .replace(/[^A-Z0-9\-_]/g, '');
 }
 
 /**
- * Sanitizes slug input by lowercasing and replacing spaces with hyphens.
- * Only allows alphanumeric characters and hyphens.
+ * Sanitizes slug input - trims, converts to lowercase, replaces spaces with dashes.
  */
 export function sanitizeSlugInput(slug: string): string {
   if (!slug) return '';
@@ -166,5 +152,20 @@ export function sanitizeSlugInput(slug: string): string {
     .trim()
     .toLowerCase()
     .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '');
+    .replace(/[^a-z0-9\-]/g, '');
+}
+
+/**
+ * Sanitizes color input - validates hex color format.
+ */
+export function sanitizeColor(color: string): string {
+  if (!color) return '';
+  const trimmed = color.trim();
+
+  // Validate hex color format
+  if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(trimmed)) {
+    return trimmed.toLowerCase();
+  }
+
+  return trimmed;
 }
