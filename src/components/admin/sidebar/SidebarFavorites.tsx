@@ -81,7 +81,7 @@ export function SidebarFavorites() {
     toggleFavorite(itemId);
   }, [toggleFavorite]);
 
-  // Early return if no favorites match
+  // Early return if no favorites or no matches in search
   if (filteredFavoriteItems.length === 0) {
     return null;
   }
