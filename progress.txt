@@ -7332,3 +7332,21 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+
+## Agent 60 - Connect Storefront to Analytics Hub
+
+### Task: Connect Storefront to Analytics showing store metrics in analytics hub
+
+**Completed:**
+- Added 'Storefront' tab to Analytics Hub page
+  - Shows store metrics (revenue, orders, conversion rate, AOV)
+  - Reuses existing StorefrontAnalytics component
+  - Includes top selling products, traffic sources, and customer retention charts
+  - Proper lazy loading with Suspense fallback
+- Added storefront query key to queryKeys.ts for analytics caching
+- Tab uses Store icon and is placed in the Metrics group
+
+### Files Changed:
+- `src/pages/admin/hubs/AnalyticsHubPage.tsx` - Added Storefront tab with lazy-loaded StorefrontAnalytics component
+- `src/lib/queryKeys.ts` - Added storefront query key to analytics section
