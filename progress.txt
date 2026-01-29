@@ -7332,3 +7332,58 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+---
+
+## Task: Build VerifyEmailPage with token handling resend button and success redirect
+
+### What was done:
+
+1. **Fixed `src/hooks/useEmailVerification.ts`** - The hook had significant syntax errors with misplaced code from another implementation. Rewrote it properly with:
+   - `verifyEmail` mutation that calls `auth-verify-email` edge function with token
+   - `resendVerification` mutation that calls `auth-signup` with `resend: true` flag
+   - `verificationState` object tracking `isAlreadyVerified`, `isExpired`, `canResend`
+   - Proper TanStack Query v5 mutation patterns
+   - Error handling with `toast.error()` and `logger`
+   - Named export only (per project conventions)
+
+2. **Reviewed `src/pages/auth/VerifyEmailPage.tsx`** - Verified the existing implementation is complete with:
+   - Token handling: Extracts `token` or `token_hash` from URL search params
+   - Type handling: Supports `email`, `signup`, `magiclink` verification types
+   - Supabase OTP verification using `supabase.auth.verifyOtp()`
+   - Multiple UI states: loading, success, already_verified, error (expired/invalid/generic)
+   - Resend button: Email input field + resend button with loading state
+   - Success redirect: "Go to Login" button navigates to `/saas/login`
+   - Proper error classification with different UI for expired vs invalid tokens
+   - Help text with support email contact
+
+3. **Added route in `src/App.tsx`**:
+   - Added lazy import: `const AuthVerifyEmailPage = lazy(() => import("./pages/auth/VerifyEmailPage").then(m => ({ default: m.VerifyEmailPage })))`
+   - Added route: `<Route path="/auth/verify-email" element={<AuthVerifyEmailPage />} />`
+   - Route placed alongside other auth routes (`/auth/confirm`, `/auth/secure-account`)
+
+4. **Fixed lint error**: Removed unused `verifyEmail` destructuring from the component
+
+### Features:
+- [x] Token handling from URL params (`token` or `token_hash`)
+- [x] Automatic verification on page load
+- [x] Loading state with spinner
+- [x] Success state with "Email Verified!" message
+- [x] Already verified state with "Already Verified" message
+- [x] Error states differentiated by type (expired, invalid, generic)
+- [x] Resend button with email input for all error states
+- [x] Loading + disabled states on buttons during async ops
+- [x] Success redirect to login page
+- [x] Help text with support contact
+- [x] Dark theme with glassmorphism design
+- [x] TypeScript strict mode, no `any` types
+- [x] Named export only
+- [x] Uses `logger` from `@/lib/logger` (no console.log)
+- [x] Uses `toast` from `sonner` for user feedback
+- [x] TypeScript check passes with no errors
+- [x] ESLint passes with no errors
+
+### Files Changed:
+- `src/hooks/useEmailVerification.ts` (fixed - rewrote broken hook)
+- `src/pages/auth/VerifyEmailPage.tsx` (minor fix - removed unused variable)
+- `src/App.tsx` (added lazy import and route for AuthVerifyEmailPage)
