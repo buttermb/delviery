@@ -7407,26 +7407,36 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 25 - Sidebar Navigation Settings Section Update
+## Agent 26 - Connect Orders to Inventory
 
-### Task: Add Settings section with Settings Help Center Priority Support in sidebar-navigation.ts
+### Task: Connect Orders to Inventory so order creation triggers stock decrement mutation
 
 **Completed:**
-- Verified Settings section already exists with required items:
-  - General Settings (`/admin/settings`) - Settings icon
-  - White Label (`/admin/white-label`) - Palette icon, ultimate tier
-  - Custom Domain (`/admin/custom-domain`) - Globe icon, ultimate tier
-  - Printing & Labels (`/admin/generate-barcodes`) - Printer icon
-  - Vendor Management (`/admin/vendor-management`) - Building2 icon, enterprise tier
-  - Help Center (`/admin/help-center`) - HelpCircle icon
-  - Priority Support (`/admin/priority-support`) - Headphones icon, professional tier
 
-- Fixed missing icon imports in sidebar-navigation.ts:
-  - Added `HelpCircle` import (used by Help Center)
-  - Added `Headphones` import (used by Priority Support)
-  - Added `Award` import (used by Loyalty in Sales & Menu section)
-  - Added `Barcode` import (used by Barcodes in Operations section)
-  - Fixed `HeadphonesIcon` reference to use correct `Headphones` icon name
+1. **Created Database Migration** (`supabase/migrations/20260128000001_unified_orders_inventory_sync.sql`)
+   - Added `sync_unified_order_inventory()` trigger function that:
+     - Decrements `products.stock_quantity` and `products.available_quantity` when unified orders are confirmed
+     - Decrements `wholesale_inventory.quantity_lbs` or `quantity_units` for wholesale items
+     - Restores inventory when orders are cancelled (only if previously confirmed)
+     - Creates audit log entries in `activity_logs` for all inventory changes
+   - Created two triggers on `unified_orders`:
+     - `trigger_sync_unified_order_inventory_insert` - fires when order is created with status 'confirmed'
+     - `trigger_sync_unified_order_inventory_update` - fires when status changes to 'confirmed' or 'cancelled'
+   - Updated `create_unified_order()` RPC with optional `p_auto_confirm` parameter
+   - Added `sync_order_inventory_manual()` helper RPC for manual inventory sync
+
+2. **Updated Frontend Hooks** (`src/hooks/useUnifiedOrders.ts`)
+   - Added import for `queryKeys` from `@/lib/queryKeys`
+   - Updated `useCreateUnifiedOrder` to invalidate `products.all` and `inventory.all` queries on settlement
+   - Updated `useUpdateOrderStatus` to invalidate inventory queries when status changes to 'confirmed' or 'cancelled'
+   - Updated `useCancelOrder` to invalidate inventory queries on settlement
+
+### Architecture:
+- **Database-driven**: Inventory sync happens via PostgreSQL triggers for reliability
+- **UI-synced**: Frontend hooks invalidate relevant TanStack Query caches to reflect changes
+- **Audit-logged**: All inventory changes are logged to `activity_logs` table
+- **Multi-table support**: Works with both `products` table and `wholesale_inventory` table
 
 ### Files Changed:
-- `src/components/admin/sidebar-navigation.ts` - Added missing icon imports and fixed icon reference
+- `supabase/migrations/20260128000001_unified_orders_inventory_sync.sql` - New migration
+- `src/hooks/useUnifiedOrders.ts` - Added inventory query invalidation
