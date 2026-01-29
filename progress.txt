@@ -7332,3 +7332,51 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 34 - Connect Finance to Expenses
+
+### Task: Connect Finance to Expenses showing categorized expenses in dashboard
+
+### Date: 2026-01-29
+
+### What was implemented:
+
+1. **Created `useExpenseSummary` hook** (`src/hooks/useFinancialData.ts`)
+   - New hook that fetches and aggregates expense data for the Finance dashboard
+   - Returns:
+     - `totalExpenses`: Total of all tracked expenses
+     - `thisMonthExpenses`: Expenses for the current month
+     - `categoryBreakdown`: Array of categories with amounts and percentages
+     - `recentExpenses`: Last 5 expense entries
+     - `topCategory`: Highest spending category
+   - Handles missing `expenses` table gracefully (returns empty data)
+   - Filters by `tenant_id` for multi-tenant isolation
+   - Uses TanStack Query with 60s stale time
+
+2. **Updated FinancialCenterReal dashboard** (`src/pages/admin/FinancialCenterReal.tsx`)
+   - Integrated `useExpenseSummary` hook
+   - **Updated Cash Flow "Outgoing" section** to show real expense data:
+     - This Month Expenses (red highlight)
+     - Top Category with amount
+     - Total Tracked expenses
+   - **Added new "Expense Summary" card** with:
+     - Three stat boxes: Total Expenses, This Month, Categories count
+     - Category breakdown with progress bars and percentages (top 5)
+     - Recent expenses list with badges and formatted dates
+     - "View All Expenses" button linking to `/admin/finance-hub?tab=expenses`
+     - Empty state with "Add First Expense" CTA
+
+### Visual Integration:
+- Expense Summary card uses red border accent (matching expense theme)
+- Category bars use dynamic hue rotation for visual variety
+- Recent expenses show negative amounts in red
+- Consistent with existing dashboard card styling
+
+### Navigation Flow:
+- Finance Hub Dashboard → "View All Expenses" → Expenses tab (`?tab=expenses`)
+- Finance Hub Dashboard → "Add First Expense" → Expenses tab
+- Links use tenant-aware navigation (`/${tenantSlug}/admin/finance-hub?tab=expenses`)
+
+### Files Changed:
+- `src/hooks/useFinancialData.ts` - Added `useExpenseSummary` hook and `ExpenseSummary` interface
+- `src/pages/admin/FinancialCenterReal.tsx` - Integrated expense data display in dashboard

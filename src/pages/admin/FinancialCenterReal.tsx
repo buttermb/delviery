@@ -1,24 +1,26 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, AlertCircle, Loader2, BarChart } from "lucide-react";
+import { DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, AlertCircle, Loader2, BarChart, Receipt, Tag, CreditCard } from "lucide-react";
 import { useWholesaleOrders, useWholesaleClients, useWholesalePayments } from "@/hooks/useWholesaleData";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { format, isToday, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import { format, isToday, startOfMonth, endOfMonth } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
+import { useExpenseSummary } from "@/hooks/useFinancialData";
 
 export default function FinancialCenterReal() {
   const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
-  const { tenant } = useTenantAdminAuth();
+  const { tenantSlug } = useTenantAdminAuth();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<any>(null);
+  const [selectedClient, setSelectedClient] = useState<unknown>(null);
   const { data: orders = [], isLoading: ordersLoading } = useWholesaleOrders();
   const { data: clients = [], isLoading: clientsLoading } = useWholesaleClients();
   const { data: payments = [], isLoading: paymentsLoading } = useWholesalePayments();
+  const { data: expenseSummary } = useExpenseSummary();
 
   if (ordersLoading || clientsLoading || paymentsLoading) {
     return (
@@ -29,8 +31,6 @@ export default function FinancialCenterReal() {
   }
 
   const now = new Date();
-  const weekStart = startOfWeek(now);
-  const weekEnd = endOfWeek(now);
   const monthStart = startOfMonth(now);
   const monthEnd = endOfMonth(now);
 
@@ -161,18 +161,149 @@ export default function FinancialCenterReal() {
 
           {/* Outgoing */}
           <div>
-            <h3 className="font-semibold mb-3 flex items-center gap-2 text-muted-foreground">
+            <h3 className="font-semibold mb-3 flex items-center gap-2 text-red-500">
               <ArrowDownRight className="h-4 w-4" />
               Outgoing
             </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Operating Costs:</span>
-                <span className="font-mono">Track in accounting</span>
+                <span className="text-muted-foreground">This Month Expenses:</span>
+                <span className="font-mono font-semibold text-red-500">
+                  ${expenseSummary?.thisMonthExpenses.toLocaleString() || '0'}
+                </span>
+              </div>
+              {expenseSummary?.topCategory && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Top Category:</span>
+                  <span className="font-mono text-xs">
+                    {expenseSummary.topCategory.name} (${expenseSummary.topCategory.amount.toLocaleString()})
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Total Tracked:</span>
+                <span className="font-mono font-semibold">
+                  ${expenseSummary?.totalExpenses.toLocaleString() || '0'}
+                </span>
               </div>
             </div>
           </div>
         </div>
+      </Card>
+
+      {/* Expense Summary */}
+      <Card className="p-6 border-l-4 border-l-red-500">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <Receipt className="h-5 w-5 text-red-500" />
+            Expense Summary
+          </h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(`/${tenantSlug}/admin/finance-hub?tab=expenses`)}
+          >
+            View All Expenses
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="bg-red-500/10 rounded-lg p-3">
+            <div className="text-sm text-muted-foreground mb-1">Total Expenses</div>
+            <div className="text-2xl font-bold text-red-600">
+              ${expenseSummary?.totalExpenses.toLocaleString() || '0'}
+            </div>
+          </div>
+          <div className="bg-orange-500/10 rounded-lg p-3">
+            <div className="text-sm text-muted-foreground mb-1">This Month</div>
+            <div className="text-2xl font-bold text-orange-600">
+              ${expenseSummary?.thisMonthExpenses.toLocaleString() || '0'}
+            </div>
+          </div>
+          <div className="bg-purple-500/10 rounded-lg p-3">
+            <div className="text-sm text-muted-foreground mb-1">Categories</div>
+            <div className="text-2xl font-bold text-purple-600">
+              {expenseSummary?.categoryBreakdown.length || 0}
+            </div>
+          </div>
+        </div>
+
+        {/* Category Breakdown */}
+        {expenseSummary?.categoryBreakdown && expenseSummary.categoryBreakdown.length > 0 && (
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              Spending by Category
+            </h3>
+            <div className="space-y-2">
+              {expenseSummary.categoryBreakdown.slice(0, 5).map((category, idx) => (
+                <div key={category.name} className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>{category.name}</span>
+                      <span className="font-mono">${category.value.toLocaleString()}</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${category.percentage}%`,
+                          backgroundColor: `hsl(${(idx * 60) % 360}, 70%, 50%)`
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    {category.percentage}%
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recent Expenses */}
+        {expenseSummary?.recentExpenses && expenseSummary.recentExpenses.length > 0 && (
+          <div>
+            <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              Recent Expenses
+            </h3>
+            <div className="space-y-2">
+              {expenseSummary.recentExpenses.map((expense) => (
+                <div key={expense.id} className="flex items-center justify-between text-sm p-2 bg-muted/50 rounded-lg">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium truncate">{expense.description}</div>
+                    <div className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">
+                        {expense.category}
+                      </Badge>
+                      <span>{format(new Date(expense.created_at), "MMM d")}</span>
+                    </div>
+                  </div>
+                  <div className="font-mono font-semibold text-red-600 ml-2">
+                    -${expense.amount.toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(!expenseSummary?.recentExpenses || expenseSummary.recentExpenses.length === 0) && (
+          <div className="text-center py-6 text-muted-foreground">
+            <Receipt className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p>No expenses recorded yet</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2"
+              onClick={() => navigate(`/${tenantSlug}/admin/finance-hub?tab=expenses`)}
+            >
+              Add First Expense
+            </Button>
+          </div>
+        )}
       </Card>
 
       {/* Credit Out (Who Owes You) */}

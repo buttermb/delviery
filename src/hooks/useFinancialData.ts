@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
-import { startOfDay, endOfDay, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 export const useFinancialSnapshot = () => {
@@ -253,5 +253,118 @@ export const useMonthlyPerformance = () => {
     enabled: !!tenant?.id,
     staleTime: 120_000,
     gcTime: 600_000,
+  });
+};
+
+export interface ExpenseSummary {
+  totalExpenses: number;
+  thisMonthExpenses: number;
+  categoryBreakdown: Array<{ name: string; value: number; percentage: number }>;
+  recentExpenses: Array<{
+    id: string;
+    description: string;
+    amount: number;
+    category: string;
+    created_at: string;
+  }>;
+  topCategory: { name: string; amount: number } | null;
+}
+
+export const useExpenseSummary = () => {
+  const { tenant } = useTenantAdminAuth();
+
+  return useQuery({
+    queryKey: ["expense-summary", tenant?.id],
+    queryFn: async (): Promise<ExpenseSummary> => {
+      if (!tenant?.id) throw new Error('No tenant context');
+
+      const monthStart = startOfMonth(new Date());
+      const monthEnd = endOfMonth(new Date());
+
+      // Fetch all expenses for the tenant (using any to avoid type issues with optional table)
+      const expensesQuery: unknown = supabase
+        .from("expenses" as "wholesale_orders")
+        .select("*")
+        .eq("tenant_id", tenant.id)
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      const { data: expenses, error } = await (expensesQuery as ReturnType<typeof supabase.from>);
+
+      // Handle table not existing gracefully
+      if (error && (error as { code?: string }).code === '42P01') {
+        return {
+          totalExpenses: 0,
+          thisMonthExpenses: 0,
+          categoryBreakdown: [],
+          recentExpenses: [],
+          topCategory: null
+        };
+      }
+
+      if (error) throw error;
+
+      const expenseList = (expenses || []) as Array<{
+        id: string;
+        description: string;
+        amount: number | string;
+        category: string;
+        created_at: string;
+      }>;
+
+      // Calculate total expenses
+      const totalExpenses = expenseList.reduce(
+        (sum, e) => sum + Number(e.amount || 0),
+        0
+      );
+
+      // Calculate this month's expenses
+      const thisMonthExpenses = expenseList
+        .filter(e => {
+          const expenseDate = new Date(e.created_at);
+          return expenseDate >= monthStart && expenseDate <= monthEnd;
+        })
+        .reduce((sum, e) => sum + Number(e.amount || 0), 0);
+
+      // Calculate category breakdown
+      const categoryTotals: Record<string, number> = {};
+      expenseList.forEach(e => {
+        const category = e.category || 'Uncategorized';
+        categoryTotals[category] = (categoryTotals[category] || 0) + Number(e.amount || 0);
+      });
+
+      const categoryBreakdown = Object.entries(categoryTotals)
+        .map(([name, value]) => ({
+          name,
+          value,
+          percentage: totalExpenses > 0 ? Math.round((value / totalExpenses) * 100) : 0
+        }))
+        .sort((a, b) => b.value - a.value);
+
+      // Get top category
+      const topCategory = categoryBreakdown.length > 0
+        ? { name: categoryBreakdown[0].name, amount: categoryBreakdown[0].value }
+        : null;
+
+      // Get recent expenses (last 5)
+      const recentExpenses = expenseList.slice(0, 5).map(e => ({
+        id: e.id,
+        description: e.description || 'No description',
+        amount: Number(e.amount || 0),
+        category: e.category || 'Uncategorized',
+        created_at: e.created_at
+      }));
+
+      return {
+        totalExpenses,
+        thisMonthExpenses,
+        categoryBreakdown,
+        recentExpenses,
+        topCategory
+      };
+    },
+    enabled: !!tenant?.id,
+    staleTime: 60_000,
+    gcTime: 300_000,
   });
 };
