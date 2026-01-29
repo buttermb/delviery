@@ -7407,50 +7407,57 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 3 - Implement Favorites Sync to Database with useMutation
+=== Connect Customers to Loyalty (Agent 32) ===
+Date: Wed, Jan 28, 2026  7:49:51 PM
 
-### Task: Implement favorites sync to database with useMutation in SidebarFavorites.tsx
+Implemented automatic loyalty points earning when orders are completed.
 
-**Date:** 2026-01-28
+Changes made:
+1. supabase/functions/storefront-stripe-webhook/index.ts
+   - Added loyalty points awarding when payment completes
+   - Calls add_marketplace_loyalty_points() RPC function
+   - Updates order with loyalty_points_earned
+   - Includes points earned in confirmation email payload
 
-**Completed:**
+2. supabase/migrations/20260128000001_loyalty_points_on_orders.sql
+   - Added loyalty_points_earned column to marketplace_orders
+   - Added loyalty_points_redeemed column for tracking redemptions
+   - Updated storefront_orders view to include loyalty columns
+   - Created trigger as fallback to award points on payment
 
-1. **Fixed duplicate import bug**
-   - Removed duplicate `useSidebar` import (was imported twice on lines 14 and 18)
+3. src/hooks/useLoyaltyPoints.ts (NEW)
+   - useLoyaltyConfig: Fetches store loyalty configuration
+   - useCustomerLoyalty: Gets customer points balance
+   - useRedeemLoyaltyPoints: Mutation to redeem points
+   - useCheckoutLoyalty: Combined hook for checkout
+   - Helper functions for calculating points/values
 
-2. **Added search query filtering for favorites**
-   - Added `filteredFavoriteItems` useMemo that filters favorites by search query
-   - Uses `matchesSearchQuery` utility from SidebarSearch for consistent filtering
-   - Favorites section now hides when no favorites match the search query
+4. src/components/shop/CheckoutLoyalty.tsx
+   - Enhanced from placeholder to full-featured component
+   - Shows current points balance with dollar value
+   - Displays points to be earned on current order
+   - Slider-based redemption UI for applying points
+   - Purple gradient styling for loyalty branding
 
-3. **Verified useMutation integration**
-   - `SidebarFavorites` component uses `toggleFavorite` from `SidebarContext`
-   - `SidebarContext` exposes `toggleFavorite` from `useSidebarPreferences` hook
-   - `useSidebarPreferences` implements `toggleFavoriteMutation` with:
-     - **Optimistic updates**: Cache is updated immediately before server response
-     - **Database sync**: Calls `sidebar_preferences` table via Supabase upsert
-     - **Error rollback**: Reverts to previous state on mutation failure
-     - **Query invalidation**: Refreshes sidebar-config queries on success
+5. supabase/functions/send-order-confirmation/index.ts
+   - Added loyalty_points_earned to email request interface
+   - Added purple gradient section showing points earned
 
-### Architecture Summary:
+6. src/lib/queryKeys.ts
+   - Added loyalty.config and loyalty.customer query keys
 
-```
-SidebarFavorites.tsx
-    ↓ uses
-SidebarContext.tsx (provides toggleFavorite)
-    ↓ uses
-useSidebarPreferences.ts (toggleFavoriteMutation with useMutation)
-    ↓ calls
-Supabase sidebar_preferences table (tenant_id, user_id, favorites[])
-```
+How it works:
+1. Customer places order via storefront checkout
+2. When Stripe webhook confirms payment (checkout.session.completed):
+   - add_marketplace_loyalty_points() is called with store_id, email, total
+   - Points are calculated: FLOOR(order_total * points_per_dollar)
+   - Customer's loyalty_points and lifetime_points are updated
+   - Order record is updated with loyalty_points_earned
+3. Confirmation email shows points earned in a branded section
+4. At next checkout, customer sees their balance and can redeem points
 
-### Features Working:
-- [x] Favorites displayed from database via TanStack Query
-- [x] Toggle favorite triggers useMutation with optimistic updates
-- [x] Search filtering works on favorites section
-- [x] Favorites section hides when empty or no search matches
-- [x] Error handling with rollback on failure
-- [x] TypeScript passes with no errors
+Database trigger provides failsafe:
+- If webhook fails to award points, trigger awards them when
+  payment_status changes to 'paid' and points haven't been awarded yet
 
-### Files Changed:
-- `src/components/admin/sidebar/SidebarFavorites.tsx` - Fixed duplicate import, added filteredFavoriteItems
+Status: COMPLETE
