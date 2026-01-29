@@ -7332,3 +7332,66 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+
+## Agent 74 - Build SessionsPage with Active Session List
+
+### Task: Build SessionsPage with active session list device info and revoke buttons
+
+### Date: 2026-01-28
+
+### What was implemented:
+
+#### 1. Created useAdminSessions hook (src/hooks/useAdminSessions.ts)
+A new hook specifically for admin panel session management that:
+- Uses `useTenantAdminAuth` context for authentication
+- Queries the `user_sessions` table for active sessions
+- Parses device info (browser, OS, device type) from device_info JSONB field
+- Formats location display from location JSONB field and IP address
+- Calculates relative time for last activity
+- Provides `revokeSession` mutation to revoke individual sessions
+- Provides `revokeAllOtherSessions` mutation to revoke all except current
+- Auto-refreshes sessions every 60 seconds
+- Exports `AdminSessionInfo` type for use in components
+
+#### 2. Created SessionsPage component (src/pages/admin/SessionsPage.tsx)
+A full-featured admin panel page that:
+- Displays all active sessions with device icons (mobile/tablet/desktop)
+- Shows browser name, OS, device type for each session
+- Shows location (city/country or IP address)
+- Shows relative time since last activity
+- Highlights current session with badge and visual distinction
+- Current session cannot be revoked from this page
+- Revoke button for each non-current session with loading state
+- "Revoke All Others" button for bulk revocation
+- Confirmation dialog before any revoke action
+- Error state with retry button
+- Loading skeleton while fetching sessions
+- Empty state when no sessions found
+- Security info card explaining session management
+- Responsive design that works on mobile and desktop
+
+### Key Features:
+- **Device Info Display**: Parses user agent and device_info to show:
+  - Device type icon (mobile, tablet, desktop)
+  - Browser name (Chrome, Firefox, Safari, Edge, etc.)
+  - Operating system (Windows, macOS, Linux, Android, iOS)
+- **Session Identification**: Current session marked with badge
+- **Revocation Controls**: 
+  - Individual session revoke with confirmation
+  - Bulk "Revoke All Others" with confirmation
+  - Loading states during revocation
+- **Security Best Practices**:
+  - Cannot revoke current session (must logout instead)
+  - Confirmation dialogs prevent accidental revocation
+  - Security information panel educates users
+
+### Files Changed:
+- `src/hooks/useAdminSessions.ts` (new - Admin sessions hook)
+- `src/pages/admin/SessionsPage.tsx` (new - Admin sessions page)
+
+### Verification:
+- TypeScript compilation passes (`npx tsc --noEmit`)
+- ESLint passes with no errors
+- Note: Build has pre-existing unrelated failure (missing papaparse dependency)
+
