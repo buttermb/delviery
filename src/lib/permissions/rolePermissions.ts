@@ -168,3 +168,162 @@ export function mapSystemRoleToDatabaseRole(systemRole: Role): string {
   return roleMap[systemRole] || 'viewer';
 }
 
+/**
+ * Permission categories for organizing the permission matrix UI
+ */
+export interface PermissionCategory {
+  name: string;
+  description: string;
+  permissions: {
+    key: string;
+    label: string;
+    description: string;
+  }[];
+}
+
+/**
+ * Organized permission categories for the Role Management UI
+ * Groups permissions by functional area with descriptions
+ */
+export const PERMISSION_CATEGORIES: PermissionCategory[] = [
+  {
+    name: 'Orders',
+    description: 'Manage customer orders and order processing',
+    permissions: [
+      { key: 'orders:view', label: 'View Orders', description: 'View order details and history' },
+      { key: 'orders:create', label: 'Create Orders', description: 'Create new orders' },
+      { key: 'orders:edit', label: 'Edit Orders', description: 'Modify existing orders' },
+      { key: 'orders:delete', label: 'Delete Orders', description: 'Permanently delete orders' },
+      { key: 'orders:cancel', label: 'Cancel Orders', description: 'Cancel pending orders' },
+    ],
+  },
+  {
+    name: 'Products',
+    description: 'Manage product catalog and listings',
+    permissions: [
+      { key: 'products:view', label: 'View Products', description: 'View product details' },
+      { key: 'products:create', label: 'Create Products', description: 'Add new products' },
+      { key: 'products:edit', label: 'Edit Products', description: 'Modify product details' },
+      { key: 'products:delete', label: 'Delete Products', description: 'Remove products' },
+    ],
+  },
+  {
+    name: 'Inventory',
+    description: 'Manage stock levels and inventory operations',
+    permissions: [
+      { key: 'inventory:view', label: 'View Inventory', description: 'View stock levels' },
+      { key: 'inventory:edit', label: 'Edit Inventory', description: 'Adjust stock quantities' },
+      { key: 'inventory:transfer', label: 'Transfer Inventory', description: 'Move stock between locations' },
+      { key: 'inventory:receive', label: 'Receive Inventory', description: 'Receive incoming shipments' },
+      { key: 'inventory:delete', label: 'Delete Inventory', description: 'Remove inventory records' },
+    ],
+  },
+  {
+    name: 'Customers',
+    description: 'Manage customer accounts and information',
+    permissions: [
+      { key: 'customers:view', label: 'View Customers', description: 'View customer details' },
+      { key: 'customers:create', label: 'Create Customers', description: 'Add new customers' },
+      { key: 'customers:edit', label: 'Edit Customers', description: 'Modify customer info' },
+      { key: 'customers:delete', label: 'Delete Customers', description: 'Remove customer records' },
+    ],
+  },
+  {
+    name: 'Menus',
+    description: 'Manage disposable menus for distribution',
+    permissions: [
+      { key: 'menus:view', label: 'View Menus', description: 'View menu details' },
+      { key: 'menus:create', label: 'Create Menus', description: 'Create new menus' },
+      { key: 'menus:edit', label: 'Edit Menus', description: 'Modify menu content' },
+      { key: 'menus:delete', label: 'Delete Menus', description: 'Remove menus' },
+      { key: 'menus:share', label: 'Share Menus', description: 'Share menus externally' },
+    ],
+  },
+  {
+    name: 'Wholesale',
+    description: 'Manage B2B wholesale operations',
+    permissions: [
+      { key: 'wholesale-orders:view', label: 'View Wholesale Orders', description: 'View wholesale orders' },
+      { key: 'wholesale-orders:create', label: 'Create Wholesale Orders', description: 'Create wholesale orders' },
+      { key: 'wholesale-orders:edit', label: 'Edit Wholesale Orders', description: 'Modify wholesale orders' },
+      { key: 'wholesale-orders:delete', label: 'Delete Wholesale Orders', description: 'Remove wholesale orders' },
+    ],
+  },
+  {
+    name: 'Finance',
+    description: 'Access financial data and payments',
+    permissions: [
+      { key: 'finance:view', label: 'View Finance', description: 'View financial data' },
+      { key: 'finance:edit', label: 'Edit Finance', description: 'Modify financial records' },
+      { key: 'finance:payments', label: 'Manage Payments', description: 'Process payments' },
+      { key: 'finance:credit', label: 'Manage Credit', description: 'Handle credit operations' },
+      { key: 'finance:reports', label: 'Financial Reports', description: 'View financial reports' },
+    ],
+  },
+  {
+    name: 'Team',
+    description: 'Manage team members and access',
+    permissions: [
+      { key: 'team:view', label: 'View Team', description: 'View team members' },
+      { key: 'team:invite', label: 'Invite Members', description: 'Invite new team members' },
+      { key: 'team:edit', label: 'Edit Members', description: 'Modify member details' },
+      { key: 'team:remove', label: 'Remove Members', description: 'Remove team members' },
+    ],
+  },
+  {
+    name: 'Settings',
+    description: 'Configure system settings',
+    permissions: [
+      { key: 'settings:view', label: 'View Settings', description: 'View system settings' },
+      { key: 'settings:edit', label: 'Edit Settings', description: 'Modify system settings' },
+      { key: 'settings:billing', label: 'Billing Settings', description: 'Manage billing' },
+      { key: 'settings:security', label: 'Security Settings', description: 'Configure security' },
+      { key: 'settings:integrations', label: 'Integrations', description: 'Manage integrations' },
+    ],
+  },
+  {
+    name: 'Reports',
+    description: 'Access reports and analytics',
+    permissions: [
+      { key: 'reports:view', label: 'View Reports', description: 'View reports' },
+      { key: 'reports:export', label: 'Export Reports', description: 'Export report data' },
+    ],
+  },
+  {
+    name: 'Fleet',
+    description: 'Manage delivery fleet operations',
+    permissions: [
+      { key: 'fleet:view', label: 'View Fleet', description: 'View fleet status' },
+      { key: 'fleet:manage', label: 'Manage Fleet', description: 'Configure fleet settings' },
+    ],
+  },
+  {
+    name: 'API',
+    description: 'Manage API access and integrations',
+    permissions: [
+      { key: 'api:view', label: 'View API', description: 'View API settings' },
+      { key: 'api:manage', label: 'Manage API', description: 'Configure API access' },
+    ],
+  },
+];
+
+/**
+ * Get all available permissions as a flat list
+ */
+export function getAllPermissions(): string[] {
+  return PERMISSION_CATEGORIES.flatMap(category =>
+    category.permissions.map(p => p.key)
+  );
+}
+
+/**
+ * Get permission label by key
+ */
+export function getPermissionLabel(key: string): string {
+  for (const category of PERMISSION_CATEGORIES) {
+    const permission = category.permissions.find(p => p.key === key);
+    if (permission) return permission.label;
+  }
+  return key;
+}
+
