@@ -494,63 +494,6 @@ export default function Orders() {
     }
   };
 
-  const handlePrintOrder = (order: Order) => {
-    // Open print dialog with order details
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Order #${order.order_number || order.id.slice(0, 8)}</title>
-            <style>
-              body { font-family: Arial, sans-serif; padding: 20px; }
-              h1 { font-size: 24px; margin-bottom: 20px; }
-              .info { margin-bottom: 10px; }
-              .label { font-weight: bold; }
-            </style>
-          </head>
-          <body>
-            <h1>Order #${order.order_number || order.id.slice(0, 8)}</h1>
-            <div class="info"><span class="label">Status:</span> ${order.status}</div>
-            <div class="info"><span class="label">Customer:</span> ${order.user?.full_name || order.user?.email || 'Unknown'}</div>
-            <div class="info"><span class="label">Total:</span> $${order.total_amount?.toFixed(2)}</div>
-            <div class="info"><span class="label">Date:</span> ${order.created_at ? format(new Date(order.created_at), 'PPpp') : 'N/A'}</div>
-            <div class="info"><span class="label">Delivery Method:</span> ${order.delivery_method || 'N/A'}</div>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.print();
-    }
-    triggerHaptic('light');
-  };
-
-  const handleGenerateInvoice = (order: Order) => {
-    toast.success(`Invoice generated for order #${order.order_number || order.id.slice(0, 8)}`);
-    triggerHaptic('light');
-  };
-
-  const handleCancelOrder = async (order: Order) => {
-    if (!tenant?.id) return;
-
-    try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
-        .eq('id', order.id)
-        .eq('tenant_id', tenant.id);
-
-      if (error) throw error;
-
-      toast.success(`Order #${order.order_number || order.id.slice(0, 8)} cancelled`);
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      triggerHaptic('medium');
-    } catch (error) {
-      logger.error('Error cancelling order', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
-      toast.error("Failed to cancel order");
-    }
-  };
-
   const handleOrderClick = (order: Order) => {
     if (window.innerWidth < 768) {
       setSelectedOrder(order);
