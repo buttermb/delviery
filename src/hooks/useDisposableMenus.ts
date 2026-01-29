@@ -2,16 +2,17 @@ import { logger } from '@/lib/logger';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
+import { invalidateOnEvent } from '@/lib/invalidation';
 
 export const useDisposableMenus = (tenantId?: string) => {
   return useQuery({
     queryKey: ['disposable-menus', tenantId],
     queryFn: async () => {
       // Optimized query - select specific columns, use count for orders
-      let query = supabase
+      let query = (supabase as any)
         .from('disposable_menus')
         .select(`
-          id, tenant_id, name, description, access_code, token, status, expiration_date, never_expires, security_settings, appearance_settings, min_order_quantity, max_order_quantity, encrypted, created_at, updated_at,
+          *,
           disposable_menu_products(id, product_id, custom_price, display_order),
           menu_access_whitelist(count),
           menu_access_logs(count),
@@ -198,14 +199,14 @@ export const useMenuWhitelist = (menuId: string) => {
   return useQuery({
     queryKey: ['menu-whitelist', menuId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('menu_access_whitelist')
-        .select('id, menu_id, client_id, access_token, invited_at, revoked_at, status, customer:wholesale_clients(id, business_name, contact_name, phone, email)')
+        .select('id, menu_id, customer_name, customer_email, customer_phone, unique_access_token, invited_at, last_access_at, view_count, revoked_at, revoked_reason, status')
         .eq('menu_id', menuId)
         .order('invited_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!menuId,
     staleTime: 30 * 1000,
@@ -262,10 +263,10 @@ export const useMenuOrders = (menuId?: string, tenantId?: string) => {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      let query = supabase
+      let query = (supabase as any)
         .from('menu_orders')
         .select(`
-          id, menu_id, tenant_id, customer_name, customer_phone, status, total_amount, items, notes, created_at, updated_at,
+          id, menu_id, tenant_id, contact_phone, status, total_amount, order_data, created_at, updated_at,
           menu:disposable_menus(name)
         `)
         .order('created_at', { ascending: false })
@@ -286,7 +287,7 @@ export const useMenuOrders = (menuId?: string, tenantId?: string) => {
   });
 };
 
-export const useUpdateOrderStatus = () => {
+export const useUpdateOrderStatus = (tenantId?: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -301,9 +302,16 @@ export const useUpdateOrderStatus = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
       showSuccessToast('Order Updated', `Order marked as ${variables.status}`);
+
+      // Cross-panel invalidation - menu order status affects dashboard, orders list
+      if (tenantId) {
+        invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', tenantId, {
+          orderId: variables.orderId,
+        });
+      }
     },
     onError: (error: unknown) => {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';

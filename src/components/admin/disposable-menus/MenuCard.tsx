@@ -34,9 +34,37 @@ import { jsonToString, extractSecuritySetting, jsonToBooleanSafe } from '@/utils
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 import type { DisposableMenu } from '@/types/admin';
+import type { Json } from '@/integrations/supabase/types';
+
+// Extended Menu type with computed/joined fields from queries
+// Simplified interface that accepts what the database actually returns
+interface Menu {
+  id: string;
+  tenant_id: string;
+  name: string;
+  status: string;
+  encrypted_url_token: string;
+  access_code: string | null;
+  description: Json;
+  is_encrypted: boolean;
+  device_locking_enabled: boolean;
+  security_settings: Json;
+  expiration_date: string | null;
+  never_expires: boolean;
+  created_at: string;
+  // Extended properties from joins/computed fields
+  view_count?: number;
+  customer_count?: number;
+  order_count?: number;
+  total_revenue?: number;
+  disposable_menu_products?: Array<unknown>;
+  max_views_per_period?: number;
+  // Allow any additional DB fields
+  [key: string]: unknown;
+}
 
 interface MenuCardProps {
-  menu: DisposableMenu;
+  menu: Menu;
   compact?: boolean;
 }
 
@@ -50,11 +78,10 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
   const [accessDetailsOpen, setAccessDetailsOpen] = useState(false);
   const [paymentSettingsOpen, setPaymentSettingsOpen] = useState(false);
 
-  const viewCount = (menu as any).view_count || 0;
-  const customerCount = (menu as any).customer_count || 0;
-  const orderCount = (menu as any).order_count || 0;
-  const totalRevenue = (menu as any).total_revenue || 0;
-  // @ts-ignore - disposable_menu_products exists in DisposableMenu type
+  const viewCount = menu.view_count || 0;
+  const customerCount = menu.customer_count || 0;
+  const orderCount = menu.order_count || 0;
+  const totalRevenue = menu.total_revenue || 0;
   const productCount = menu.disposable_menu_products?.length || 0;
 
   const isActive = menu.status === 'active';
@@ -88,8 +115,8 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
     securityFeatures.push({ icon: MapPin, label: 'Geofenced' });
   }
   if (menu.device_locking_enabled) securityFeatures.push({ icon: Shield, label: 'Device Lock' });
-  if ((menu as any).max_views_per_period) {
-    securityFeatures.push({ icon: Clock, label: `${(menu as any).max_views_per_period} views` });
+  if (menu.max_views_per_period) {
+    securityFeatures.push({ icon: Clock, label: `${menu.max_views_per_period} views` });
   }
 
   return (
@@ -333,13 +360,13 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
 
       {/* Dialogs */}
       <BurnMenuDialog
-        menu={menu}
+        menu={menu as any}
         open={burnDialogOpen}
         onOpenChange={setBurnDialogOpen}
       />
 
       <ManageAccessDialog
-        menu={menu}
+        menu={menu as any}
         open={manageAccessOpen}
         onOpenChange={setManageAccessOpen}
       />
@@ -352,7 +379,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
       />
 
       <MenuAnalyticsDialog
-        menu={menu}
+        menu={menu as any}
         open={analyticsOpen}
         onOpenChange={setAnalyticsOpen}
       />
@@ -368,7 +395,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
       <CloneMenuDialog
         open={cloneDialogOpen}
         onClose={() => setCloneDialogOpen(false)}
-        menu={menu}
+        menu={menu as any}
         onComplete={() => window.location.reload()}
       />
 
@@ -377,13 +404,13 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
         onOpenChange={setAccessDetailsOpen}
         accessCode={menu.access_code || 'N/A'}
         shareableUrl={menuUrl}
-        menuName={menu.name}
+        menuName={menu.name || 'Menu'}
       />
 
       <MenuPaymentSettingsDialog
         open={paymentSettingsOpen}
         onOpenChange={setPaymentSettingsOpen}
-        menu={menu}
+        menu={menu as any}
       />
     </>
   );

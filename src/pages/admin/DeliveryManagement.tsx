@@ -2,6 +2,7 @@ import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
+import { queryKeys } from '@/lib/queryKeys';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,7 +54,7 @@ export default function DeliveryManagement() {
 
   // Fetch Deliveries
   const { data: deliveries = [], isLoading: loadingDeliveries, refetch } = useQuery({
-    queryKey: ['deliveries', tenant?.id],
+    queryKey: queryKeys.deliveries.list({ tenantId: tenant?.id }),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -99,7 +100,7 @@ export default function DeliveryManagement() {
 
   // Fetch Couriers
   const { data: couriers = [] } = useQuery({
-    queryKey: ['active-couriers', tenant?.id],
+    queryKey: queryKeys.couriers.list({ tenantId: tenant?.id, active: true }),
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data, error } = await supabase

@@ -21,12 +21,13 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCreateClient } from '@/hooks/crm/useClients';
 import { useLogActivity } from '@/hooks/crm/useActivityLog';
-import { useAccountIdSafe } from '@/hooks/crm/useAccountId';
+import { useAccount } from '@/contexts/AccountContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2, AlertTriangle } from 'lucide-react';
 
 const formSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -53,7 +54,13 @@ export function CreateClientDialog({
     const open = isControlled ? controlledOpen : internalOpen;
     const setOpen = isControlled ? setControlledOpen! : setInternalOpen;
 
-    const accountId = useAccountIdSafe();
+    const { account, loading: accountLoading } = useAccount();
+    const accountId = account?.id ?? null;
+    const isContextReady = !accountLoading && !!accountId;
+    const contextError = !accountLoading && !accountId
+        ? 'Account context not available. Please refresh the page or contact support.'
+        : null;
+
     const createClient = useCreateClient();
     const logActivity = useLogActivity();
 
@@ -122,6 +129,12 @@ export function CreateClientDialog({
                         Create a new client profile. You can add more details later.
                     </DialogDescription>
                 </DialogHeader>
+                {contextError && (
+                    <Alert variant="destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertDescription>{contextError}</AlertDescription>
+                    </Alert>
+                )}
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormField
@@ -164,9 +177,14 @@ export function CreateClientDialog({
                             )}
                         />
                         <DialogFooter>
-                            <Button type="submit" disabled={createClient.isPending}>
-                                {createClient.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Create Client
+                            <Button
+                                type="submit"
+                                disabled={createClient.isPending || !isContextReady || accountLoading}
+                            >
+                                {(createClient.isPending || accountLoading) && (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                )}
+                                {accountLoading ? 'Loading...' : 'Create Client'}
                             </Button>
                         </DialogFooter>
                     </form>

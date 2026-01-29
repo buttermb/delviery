@@ -1,14 +1,16 @@
 /**
  * Payment Methods Component
- * Manage saved payment methods
+ * Manage saved payment methods (persisted to Supabase)
  */
 
-import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, Plus, Trash2, Lock, Shield } from 'lucide-react';
+import { CreditCard, Trash2, Lock, Shield, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PaymentMethod {
   id: string;
@@ -18,34 +20,115 @@ interface PaymentMethod {
   is_default: boolean;
 }
 
+// Map database row to component interface
+interface DbPaymentMethod {
+  id: string;
+  payment_type: string;
+  card_brand: string | null;
+  card_last_four: string | null;
+  is_default: boolean | null;
+}
+
+function mapDbToPaymentMethod(row: DbPaymentMethod): PaymentMethod {
+  return {
+    id: row.id,
+    type: row.payment_type as 'cash' | 'bitcoin' | 'card',
+    label: row.card_brand || row.payment_type,
+    last4: row.card_last_four || undefined,
+    is_default: row.is_default ?? false,
+  };
+}
+
 export default function PaymentMethods() {
   const { toast } = useToast();
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
-    {
-      id: '1',
-      type: 'cash',
-      label: 'Cash on Delivery',
-      is_default: true
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Fetch payment methods from database
+  const { data: paymentMethods = [], isLoading } = useQuery({
+    queryKey: ['user-payment-methods', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('payment_methods')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('is_default', { ascending: false });
+      if (error) throw error;
+
+      // If no payment methods, return defaults
+      if (!data || data.length === 0) {
+        return [
+          { id: 'default-cash', type: 'cash' as const, label: 'Cash on Delivery', is_default: true },
+          { id: 'default-bitcoin', type: 'bitcoin' as const, label: 'Bitcoin / USDC', is_default: false },
+        ];
+      }
+      return data.map(mapDbToPaymentMethod);
     },
-    {
-      id: '2',
-      type: 'bitcoin',
-      label: 'Bitcoin / USDC',
-      is_default: false
+    enabled: !!user?.id,
+  });
+
+  // Delete payment method mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      // Don't delete default placeholders
+      if (id.startsWith('default-')) {
+        throw new Error('Cannot delete default payment options');
+      }
+      const { error } = await supabase
+        .from('payment_methods')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-payment-methods'] });
+      toast({ title: 'Payment method removed' });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to remove payment method',
+        variant: 'destructive'
+      });
     }
-  ]);
+  });
+
+  // Set default payment method mutation
+  const setDefaultMutation = useMutation({
+    mutationFn: async (id: string) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      // First, unset all defaults
+      await supabase
+        .from('payment_methods')
+        .update({ is_default: false })
+        .eq('user_id', user.id);
+      // Then set the new default
+      const { error } = await supabase
+        .from('payment_methods')
+        .update({ is_default: true })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-payment-methods'] });
+      toast({ title: 'Default payment method updated' });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to update default',
+        variant: 'destructive'
+      });
+    }
+  });
 
   const handleDelete = (id: string) => {
-    setPaymentMethods(paymentMethods.filter(p => p.id !== id));
-    toast({ title: 'Payment method removed' });
+    deleteMutation.mutate(id);
   };
 
   const handleSetDefault = (id: string) => {
-    setPaymentMethods(paymentMethods.map(p => ({
-      ...p,
-      is_default: p.id === id
-    })));
-    toast({ title: 'Default payment method updated' });
+    setDefaultMutation.mutate(id);
   };
 
   const getMethodIcon = (type: string) => {
@@ -88,6 +171,11 @@ export default function PaymentMethods() {
         </div>
       </CardHeader>
       <CardContent>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
         <div className="space-y-3">
           {paymentMethods.map((method) => (
             <div
@@ -139,6 +227,7 @@ export default function PaymentMethods() {
             </div>
           ))}
         </div>
+        )}
 
         <div className="mt-6 p-4 bg-muted/50 rounded-lg">
           <div className="flex items-center gap-2 text-sm">

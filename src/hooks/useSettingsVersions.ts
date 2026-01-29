@@ -47,7 +47,7 @@ export function useSettingsVersions({
     queryFn: async (): Promise<SettingsVersion[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await supabase.rpc('get_settings_versions', {
+      const { data, error } = await (supabase as any).rpc('get_settings_versions', {
         p_tenant_id: tenantId,
         p_settings_key: settingsKey,
         p_limit: 10,
@@ -58,7 +58,7 @@ export function useSettingsVersions({
         throw error;
       }
 
-      return (data ?? []) as SettingsVersion[];
+      return (data ?? []) as unknown as SettingsVersion[];
     },
     enabled: enabled && !!tenantId,
     staleTime: 30000, // 30 seconds
@@ -74,7 +74,7 @@ export function useSettingsVersions({
       changedByEmail,
       description,
     }: SaveVersionOptions) => {
-      const { data, error } = await supabase.rpc('save_settings_version', {
+      const { data, error } = await (supabase as any).rpc('save_settings_version', {
         p_tenant_id: tid,
         p_settings_key: key,
         p_snapshot: snapshot,

@@ -315,13 +315,13 @@ export async function validateFile(
   if (requiresMagicByteVerification) {
     if (!detectedMimeType) {
       // For some file types, detection might fail but browser type might be correct
-      if (!contextAllowedTypes.includes(file.type)) {
+      if (!(contextAllowedTypes as readonly string[]).includes(file.type)) {
         return {
           isValid: false,
           error: 'Unable to verify file type. Please upload a valid file.',
         };
       }
-    } else if (!contextAllowedTypes.includes(detectedMimeType)) {
+    } else if (!(contextAllowedTypes as readonly string[]).includes(detectedMimeType)) {
       return {
         isValid: false,
         error: `File content does not match expected type. Detected: ${detectedMimeType}`,

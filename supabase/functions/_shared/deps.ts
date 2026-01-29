@@ -11,6 +11,7 @@ export { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 // Supabase client (standardized to latest stable version)
 export { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+export type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 // Zod for validation (standardized version)
 export { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";

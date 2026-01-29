@@ -63,7 +63,7 @@ const TENANT_KEY = STORAGE_KEYS.CUSTOMER_TENANT_DATA;
 
 // Validate environment variables
 const validateEnvironment = (): { valid: boolean; error?: string } => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
 
   if (!supabaseUrl) {
     return { valid: false, error: 'Missing VITE_SUPABASE_URL environment variable' };
@@ -153,7 +153,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(envCheck.error || 'Environment configuration error');
       }
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const { response } = await resilientFetch(
         `${supabaseUrl}/functions/v1/customer-auth?action=verify`,
         {
@@ -209,7 +209,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       // This prevents an attacker from setting tokens before the user authenticates
       clearPreAuthSessionData('customer');
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
 
       const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, {
         email,
@@ -347,7 +347,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       if (token) {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
         await resilientFetch(
           `${supabaseUrl}/functions/v1/customer-auth?action=logout`,
           {
@@ -393,11 +393,8 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     // and refresh it proactively before expiry
     if (!token) return;
 
-    // Use tokenRefreshManager to prevent concurrent verify/refresh calls
-    await tokenRefreshManager.refresh('customer', async () => {
-      await verifyToken(token);
-      return { success: true };
-    });
+    // Verify the token directly
+    await verifyToken(token);
   };
 
   // Token expiration monitoring with visibility-aware refresh timer.

@@ -12,6 +12,7 @@ import { LiveOrdersKanban, type LiveOrder } from '@/components/admin/live-orders
 import { playNewOrderSound, initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
 import { useUndo } from '@/hooks/useUndo';
 import { UndoToast } from '@/components/ui/undo-toast';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Type Definitions matching Supabase response
 interface MenuOrderRaw {
@@ -42,7 +43,7 @@ export default function LiveOrders() {
     timeout: 5000,
     onUndo: () => {
       toast.info('Status change undone');
-      queryClient.invalidateQueries({ queryKey: ['live-orders'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.live(tenant?.id) });
     },
     onCommit: () => {
       // Action is finalized, no additional work needed
@@ -76,7 +77,7 @@ export default function LiveOrders() {
 
   // Fetch Orders Query
   const { data: orders = [], isLoading, refetch } = useQuery({
-    queryKey: ['live-orders', tenant?.id],
+    queryKey: queryKeys.orders.live(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -215,18 +216,20 @@ export default function LiveOrders() {
         execute: async () => {
           await updateStatusInDb(orderId, newStatus, source);
           // Invalidate all related queries to ensure inventory and stats are up to date
-          queryClient.invalidateQueries({ queryKey: ['live-orders'] });
-          queryClient.invalidateQueries({ queryKey: ['products'] });
-          queryClient.invalidateQueries({ queryKey: ['inventory'] }); // Legacy support
+          queryClient.invalidateQueries({ queryKey: queryKeys.orders.live(tenant?.id) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats(tenant?.id) });
           queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
           queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
         },
         undo: async () => {
           await updateStatusInDb(orderId, previousStatus, source);
           // Re-invalidate on undo to restore state
-          queryClient.invalidateQueries({ queryKey: ['live-orders'] });
-          queryClient.invalidateQueries({ queryKey: ['products'] });
-          queryClient.invalidateQueries({ queryKey: ['inventory'] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.orders.live(tenant?.id) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats(tenant?.id) });
           queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
           queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
         },

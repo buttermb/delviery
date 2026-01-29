@@ -219,9 +219,9 @@ export function OrderKanban({ onViewDetails }: OrderKanbanProps) {
               </h3>
             </div>
 
-            {/* Column Content */}
+            {/* Column Content - scrollable */}
             <div className={cn(
-              "space-y-2 min-h-[300px] p-3 rounded-lg border-2 border-dashed",
+              "space-y-2 min-h-[300px] max-h-[500px] overflow-y-auto p-3 rounded-lg border-2 border-dashed",
               column.bgColor, "border-transparent"
             )}>
               {ordersByColumn[column.id].length === 0 ? (

@@ -4,6 +4,7 @@ import type { CRMClient, ClientFormValues } from '@/types/crm';
 import { toast } from 'sonner';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { invalidateOnEvent } from '@/lib/invalidation';
 
 /**
  * Query key factory for CRM clients
@@ -151,8 +152,14 @@ export function useCreateClient() {
             logger.error('Client creation failed', error, { component: 'useCreateClient' });
             toast.error('Client creation failed', { description: errorMessage });
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
             toast.success('Client created successfully');
+            // Cross-panel invalidation - CRM client creation affects dashboard, analytics
+            if (accountId) {
+                invalidateOnEvent(queryClient, 'CUSTOMER_CREATED', accountId, {
+                    customerId: data?.id,
+                });
+            }
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
@@ -229,8 +236,14 @@ export function useUpdateClient() {
             logger.error('Client update failed', error, { component: 'useUpdateClient' });
             toast.error('Client update failed', { description: errorMessage });
         },
-        onSuccess: () => {
+        onSuccess: (data: CRMClient | null) => {
             toast.success('Client updated successfully');
+            // Cross-panel invalidation - CRM client update affects invoices, collections
+            if (accountId && data) {
+                invalidateOnEvent(queryClient, 'CUSTOMER_UPDATED', accountId, {
+                    customerId: data.id,
+                });
+            }
         },
         onSettled: (_data: unknown, _error: unknown, variables: { id: string; values: Partial<ClientFormValues> } | undefined) => {
             queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
@@ -291,8 +304,14 @@ export function useArchiveClient() {
             logger.error('Client archive failed', error, { component: 'useArchiveClient' });
             toast.error('Client archive failed', { description: errorMessage });
         },
-        onSuccess: () => {
+        onSuccess: (data: CRMClient | null) => {
             toast.success('Client archived successfully');
+            // Cross-panel invalidation - CRM client deletion affects analytics
+            if (accountId && data) {
+                invalidateOnEvent(queryClient, 'CUSTOMER_DELETED', accountId, {
+                    customerId: data.id,
+                });
+            }
         },
         onSettled: (_data: unknown, _error: unknown, clientId: string | undefined) => {
             queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });

@@ -110,18 +110,24 @@ export function LogisticsDemo() {
         // Skip animations on mobile
         if (shouldUseStaticFallback) return;
 
+        let cancelled = false;
         const cycle = async () => {
+            if (cancelled) return;
             setStep('approaching');
             await new Promise(r => setTimeout(r, 4000));
+            if (cancelled) return;
             setStep('arrived');
             await new Promise(r => setTimeout(r, 2000));
+            if (cancelled) return;
             setStep('signing');
             await new Promise(r => setTimeout(r, 2000));
+            if (cancelled) return;
             setStep('complete');
             await new Promise(r => setTimeout(r, 4000));
-            cycle();
+            if (!cancelled) cycle();
         };
         cycle();
+        return () => { cancelled = true; };
     }, [shouldUseStaticFallback]);
 
     // Mobile fallback

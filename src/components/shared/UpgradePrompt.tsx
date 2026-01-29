@@ -52,11 +52,11 @@ export function UpgradePrompt({
   const getIcon = () => {
     switch (type) {
       case "trial":
-        return <AlertTriangle className="h-6 w-6 text-yellow-600" />;
+        return <AlertTriangle className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />;
       case "feature":
-        return <Zap className="h-6 w-6 text-blue-600" />;
+        return <Zap className="h-6 w-6 text-blue-600 dark:text-blue-400" />;
       default:
-        return <AlertTriangle className="h-6 w-6 text-orange-600" />;
+        return <AlertTriangle className="h-6 w-6 text-orange-600 dark:text-orange-400" />;
     }
   };
 
@@ -74,14 +74,14 @@ export function UpgradePrompt({
         </DialogHeader>
 
         {type === "limit" && resource && limit && currentUsage !== undefined && (
-          <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+          <div className="bg-gray-50 dark:bg-zinc-800 p-4 rounded-lg space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Current Usage:</span>
+              <span className="text-gray-600 dark:text-zinc-400">Current Usage:</span>
               <span className="font-semibold">
                 {currentUsage} / {limit} {resource}
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-2">
               <div
                 className="bg-orange-500 h-2 rounded-full transition-all"
                 style={{ width: `${(currentUsage / limit) * 100}%` }}

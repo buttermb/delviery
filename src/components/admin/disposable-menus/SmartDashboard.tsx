@@ -747,8 +747,8 @@ export function SmartDashboard() {
             <ResponsiveGrid
               data={filteredMenus}
               isLoading={isLoading}
-              keyExtractor={(menu) => menu.id}
-              renderItem={(menu) => <MenuCard menu={menu} />}
+              keyExtractor={(menu: any) => menu.id}
+              renderItem={(menu: any) => <MenuCard menu={menu} />}
               columns={{ default: 1, md: 2, lg: 3 }}
               emptyState={{
                 icon: LayoutGrid,
@@ -767,7 +767,7 @@ export function SmartDashboard() {
 
           {/* Orders Tab */}
           <TabsContent value="orders" className="mt-0">
-            <OrdersTab tenantId={tenant?.id} />
+            <OrdersTab />
           </TabsContent>
 
           {/* Analytics Tab */}

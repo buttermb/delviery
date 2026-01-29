@@ -11661,6 +11661,7 @@ export type Database = {
           responded_at: string | null
           secure_token: string | null
           severity: string | null
+          status: string | null
           user_id: string
           user_response: string | null
         }
@@ -11681,6 +11682,7 @@ export type Database = {
           responded_at?: string | null
           secure_token?: string | null
           severity?: string | null
+          status?: string | null
           user_id: string
           user_response?: string | null
         }
@@ -11701,6 +11703,7 @@ export type Database = {
           responded_at?: string | null
           secure_token?: string | null
           severity?: string | null
+          status?: string | null
           user_id?: string
           user_response?: string | null
         }
@@ -12644,6 +12647,7 @@ export type Database = {
           last_seen_at: string
           os: string | null
           trust_confirmed_at: string | null
+          user_agent: string | null
           user_id: string
         }
         Insert: {
@@ -12660,6 +12664,7 @@ export type Database = {
           last_seen_at?: string
           os?: string | null
           trust_confirmed_at?: string | null
+          user_agent?: string | null
           user_id: string
         }
         Update: {
@@ -12676,6 +12681,7 @@ export type Database = {
           last_seen_at?: string
           os?: string | null
           trust_confirmed_at?: string | null
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: []

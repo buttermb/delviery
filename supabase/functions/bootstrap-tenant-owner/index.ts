@@ -17,10 +17,10 @@ serve(async (req: Request) => {
     // Validate environment
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const bootstrapSecret = Deno.env.get("BOOTSTRAP_SECRET") || "floraiq-bootstrap-2024";
+    const bootstrapSecret = Deno.env.get("BOOTSTRAP_SECRET");
 
-    if (!supabaseUrl || !serviceRoleKey) {
-      throw new Error("Missing environment variables");
+    if (!supabaseUrl || !serviceRoleKey || !bootstrapSecret) {
+      throw new Error("Missing required environment variables: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, BOOTSTRAP_SECRET");
     }
 
     // Validate bootstrap secret (simple protection)

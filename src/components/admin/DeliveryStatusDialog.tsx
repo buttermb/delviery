@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -6,6 +6,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useUpdateDeliveryStatus } from "@/hooks/useWholesaleData";
 import { Badge } from "@/components/ui/badge";
+
+const STATUS_OPTIONS = [
+  { value: "assigned", label: "📋 Assigned", variant: "secondary" as const },
+  { value: "picked_up", label: "📦 Picked Up", variant: "default" as const },
+  { value: "in_transit", label: "🚚 In Transit", variant: "default" as const },
+  { value: "delivered", label: "✅ Delivered", variant: "default" as const },
+  { value: "failed", label: "❌ Failed", variant: "destructive" as const }
+] as const;
+
+type StatusValue = typeof STATUS_OPTIONS[number]['value'];
 
 interface DeliveryStatusDialogProps {
   deliveryId: string;
@@ -15,24 +25,34 @@ interface DeliveryStatusDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const statusOptions = [
-  { value: "assigned", label: "📋 Assigned", variant: "secondary" as const },
-  { value: "picked_up", label: "📦 Picked Up", variant: "default" as const },
-  { value: "in_transit", label: "🚚 In Transit", variant: "default" as const },
-  { value: "delivered", label: "✅ Delivered", variant: "default" as const },
-  { value: "failed", label: "❌ Failed", variant: "destructive" as const }
-];
+// Validate and normalize status value
+function getValidStatus(status: string): StatusValue {
+  const validValues = STATUS_OPTIONS.map(s => s.value);
+  if (validValues.includes(status as StatusValue)) {
+    return status as StatusValue;
+  }
+  return "assigned"; // Default to assigned if invalid
+}
 
-export function DeliveryStatusDialog({ 
-  deliveryId, 
-  currentStatus, 
-  orderNumber, 
-  open, 
-  onOpenChange 
+export function DeliveryStatusDialog({
+  deliveryId,
+  currentStatus,
+  orderNumber,
+  open,
+  onOpenChange
 }: DeliveryStatusDialogProps) {
-  const [newStatus, setNewStatus] = useState(currentStatus);
+  const validCurrentStatus = getValidStatus(currentStatus);
+  const [newStatus, setNewStatus] = useState<StatusValue>(validCurrentStatus);
   const [notes, setNotes] = useState("");
   const updateStatus = useUpdateDeliveryStatus();
+
+  // Sync status when dialog opens or currentStatus changes
+  useEffect(() => {
+    if (open) {
+      setNewStatus(getValidStatus(currentStatus));
+      setNotes("");
+    }
+  }, [open, currentStatus]);
 
   const handleSubmit = async () => {
     await updateStatus.mutateAsync({
@@ -59,20 +79,20 @@ export function DeliveryStatusDialog({
           <div>
             <Label>Current Status</Label>
             <div className="mt-2">
-              <Badge variant={statusOptions.find(s => s.value === currentStatus)?.variant}>
-                {statusOptions.find(s => s.value === currentStatus)?.label}
+              <Badge variant={STATUS_OPTIONS.find(s => s.value === validCurrentStatus)?.variant ?? "secondary"}>
+                {STATUS_OPTIONS.find(s => s.value === validCurrentStatus)?.label ?? currentStatus}
               </Badge>
             </div>
           </div>
 
           <div>
             <Label htmlFor="status">New Status *</Label>
-            <Select value={newStatus} onValueChange={setNewStatus}>
+            <Select value={newStatus} onValueChange={(v) => setNewStatus(v as StatusValue)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {statusOptions.map((status) => (
+                {STATUS_OPTIONS.map((status) => (
                   <SelectItem key={status.value} value={status.value}>
                     {status.label}
                   </SelectItem>
@@ -96,9 +116,9 @@ export function DeliveryStatusDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Cancel
             </Button>
-            <Button 
-              onClick={handleSubmit} 
-              disabled={newStatus === currentStatus || updateStatus.isPending} 
+            <Button
+              onClick={handleSubmit}
+              disabled={newStatus === validCurrentStatus || updateStatus.isPending}
               className="flex-1"
             >
               {updateStatus.isPending ? "Updating..." : "Update Status"}

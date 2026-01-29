@@ -234,7 +234,7 @@ const createTestQueryClient = () =>
 
 // Wrapper component for tests
 interface TestWrapperProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   initialRoute?: string;
 }
 

@@ -63,8 +63,15 @@ import {
   UserCheck,
   Flame,
   Brain,
-  Star
+  Star,
+  Barcode,
+  Headphones,
+  Award,
+  HelpCircle,
 } from 'lucide-react';
+
+// Aliases for backwards compatibility
+const HeadphonesIcon = Headphones;
 
 export interface NavItem {
   title: string;
@@ -151,7 +158,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'B2B Orders',
-        href: '/admin/orders/b2b',
+        href: '/admin/orders?tab=wholesale',
         icon: Building2
       }
     ]
@@ -282,15 +289,21 @@ export const navigationSections: NavSection[] = [
         tier: 'professional'
       },
       {
-        title: 'Couriers',
-        href: '/admin/couriers',
-        icon: UserCog
+        title: 'Receiving & Packaging',
+        href: '/admin/operations/receiving',
+        icon: ClipboardList
       },
       {
-        title: 'Tracking',
-        href: '/admin/delivery-tracking',
-        icon: Navigation,
+        title: 'Team',
+        href: '/admin/team-members',
+        icon: UsersRound,
         tier: 'professional'
+      },
+      {
+        title: 'Roles',
+        href: '/admin/role-management',
+        icon: Shield,
+        tier: 'enterprise'
       }
     ]
   },
@@ -374,7 +387,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Support',
-        href: '/admin/customer-support',
+        href: '/admin/marketing-hub?tab=live-chat',
         icon: HeadphonesIcon,
         tier: 'professional'
       },
@@ -612,6 +625,18 @@ export const navigationSections: NavSection[] = [
     ]
   },
 
+  // 🚚 FULFILLMENT
+  {
+    title: 'Fulfillment',
+    items: [
+      {
+        title: 'Drivers',
+        href: '/admin/fulfillment-hub?tab=fleet',
+        icon: Car
+      }
+    ]
+  },
+
   // 💵 FINANCE
   {
     title: 'Finance',
@@ -624,13 +649,13 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Revenue',
-        href: '/admin/revenue',
+        href: '/admin/finance-hub?tab=revenue',
         icon: TrendingUp,
         tier: 'professional'
       },
       {
         title: 'Expenses',
-        href: '/admin/expenses',
+        href: '/admin/finance-hub?tab=expenses',
         icon: TrendingDown,
         tier: 'professional'
       },
@@ -778,7 +803,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Export',
-        href: '/admin/analytics-export',
+        href: '/admin/data-export',
         icon: FileSpreadsheet,
         tier: 'professional'
       }
@@ -873,7 +898,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Help Center',
-        href: '/admin/help-center',
+        href: '/admin/priority-support',
         icon: HelpCircle
       },
       {

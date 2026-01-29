@@ -1,15 +1,17 @@
 /**
  * Notification Preferences Component
- * Manage notification settings
+ * Manage notification settings (persisted to Supabase)
  */
 
-import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Bell, Mail, MessageSquare, Package, Gift, Tag, TrendingUp, User, LucideIcon } from 'lucide-react';
+import { Bell, Mail, MessageSquare, Package, Gift, Tag, User, LucideIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NotificationPref {
   id: string;
@@ -20,66 +22,115 @@ interface NotificationPref {
   push: boolean;
 }
 
+// Database schema for notification_preferences
+interface DbNotificationPrefs {
+  id: string;
+  user_id: string;
+  email_enabled: boolean | null;
+  email_all_updates: boolean | null;
+  sms_enabled: boolean | null;
+  sms_all_updates: boolean | null;
+  push_enabled: boolean | null;
+  push_all_updates: boolean | null;
+}
+
+// Default preferences when no database record exists
+const DEFAULT_PREFERENCES: NotificationPref[] = [
+  { id: 'order', category: 'Order Updates', icon: Package, email: true, sms: true, push: true },
+  { id: 'promotion', category: 'Promotions & Deals', icon: Tag, email: true, sms: false, push: true },
+  { id: 'reward', category: 'Rewards & Referrals', icon: Gift, email: true, sms: false, push: true },
+  { id: 'security', category: 'Security Alerts', icon: User, email: true, sms: true, push: true },
+  { id: 'newsletter', category: 'Newsletter', icon: Mail, email: true, sms: false, push: false },
+];
+
+// Map database preferences to component format
+function mapDbToPreferences(db: DbNotificationPrefs | null): NotificationPref[] {
+  if (!db) return DEFAULT_PREFERENCES;
+  return [
+    { id: 'order', category: 'Order Updates', icon: Package, email: db.email_all_updates ?? true, sms: db.sms_all_updates ?? true, push: db.push_all_updates ?? true },
+    { id: 'promotion', category: 'Promotions & Deals', icon: Tag, email: db.email_enabled ?? true, sms: false, push: db.push_enabled ?? true },
+    { id: 'reward', category: 'Rewards & Referrals', icon: Gift, email: db.email_enabled ?? true, sms: false, push: db.push_enabled ?? true },
+    { id: 'security', category: 'Security Alerts', icon: User, email: true, sms: db.sms_enabled ?? true, push: true },
+    { id: 'newsletter', category: 'Newsletter', icon: Mail, email: db.email_enabled ?? true, sms: false, push: false },
+  ];
+}
+
 export default function NotificationPreferences() {
   const { toast } = useToast();
-  const [preferences, setPreferences] = useState<NotificationPref[]>([
-    {
-      id: 'order',
-      category: 'Order Updates',
-      icon: Package,
-      email: true,
-      sms: true,
-      push: true
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Fetch notification preferences from database
+  const { data: preferences = DEFAULT_PREFERENCES, isLoading } = useQuery({
+    queryKey: ['user-notification-preferences', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return DEFAULT_PREFERENCES;
+      const { data, error } = await supabase
+        .from('notification_preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return mapDbToPreferences(data);
     },
-    {
-      id: 'promotion',
-      category: 'Promotions & Deals',
-      icon: Tag,
-      email: true,
-      sms: false,
-      push: true
+    enabled: !!user?.id,
+  });
+
+  // Update preferences mutation
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, type, value }: { id: string; type: 'email' | 'sms' | 'push'; value: boolean }) => {
+      if (!user?.id) throw new Error('Not authenticated');
+
+      // Map preference id and type to database column
+      const columnMap: Record<string, string> = {
+        'order-email': 'email_all_updates',
+        'order-sms': 'sms_all_updates',
+        'order-push': 'push_all_updates',
+        'promotion-email': 'email_enabled',
+        'promotion-push': 'push_enabled',
+        'reward-email': 'email_enabled',
+        'reward-push': 'push_enabled',
+        'security-sms': 'sms_enabled',
+        'newsletter-email': 'email_enabled',
+      };
+
+      const column = columnMap[`${id}-${type}`];
+      if (!column) return; // No database mapping for this toggle
+
+      const updateData = { [column]: value };
+
+      // Upsert the preference record
+      const { error } = await supabase
+        .from('notification_preferences')
+        .upsert({
+          user_id: user.id,
+          ...updateData,
+        }, {
+          onConflict: 'user_id',
+        });
+      if (error) throw error;
     },
-    {
-      id: 'reward',
-      category: 'Rewards & Referrals',
-      icon: Gift,
-      email: true,
-      sms: false,
-      push: true
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-notification-preferences'] });
+      toast({
+        title: 'Preferences updated',
+        description: 'Your notification settings have been saved'
+      });
     },
-    {
-      id: 'security',
-      category: 'Security Alerts',
-      icon: User,
-      email: true,
-      sms: true,
-      push: true
-    },
-    {
-      id: 'newsletter',
-      category: 'Newsletter',
-      icon: Mail,
-      email: true,
-      sms: false,
-      push: false
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to save preferences',
+        variant: 'destructive'
+      });
     }
-  ]);
+  });
 
   const handleToggle = (id: string, type: 'email' | 'sms' | 'push') => {
-    setPreferences(preferences.map(pref => {
-      if (pref.id === id) {
-        return {
-          ...pref,
-          [type]: !pref[type]
-        };
-      }
-      return pref;
-    }));
-
-    toast({ 
-      title: 'Preferences updated',
-      description: 'Your notification settings have been saved'
-    });
+    const pref = preferences.find(p => p.id === id);
+    if (!pref) return;
+    const newValue = !pref[type];
+    updateMutation.mutate({ id, type, value: newValue });
   };
 
   return (
@@ -94,6 +145,11 @@ export default function NotificationPreferences() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
         <div className="space-y-4">
           {preferences.map((pref) => {
             const Icon = pref.icon;
@@ -152,6 +208,7 @@ export default function NotificationPreferences() {
             );
           })}
         </div>
+        )}
       </CardContent>
     </Card>
   );

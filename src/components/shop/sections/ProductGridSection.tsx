@@ -10,6 +10,22 @@ import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
 import { StorefrontProductCard, type MarketplaceProduct } from "@/components/shop/StorefrontProductCard";
 
+// Local product type for data from RPC/queries that gets normalized
+interface LocalProduct {
+    id?: string;
+    product_id?: string;
+    name?: string;
+    product_name?: string;
+    price?: number;
+    base_price?: number;
+    description?: string;
+    images?: string[];
+    category?: string;
+    in_stock?: boolean;
+    strain_type?: string;
+    quantity_available?: number;
+}
+
 export interface ProductGridSectionProps {
     content: {
         heading: string;
@@ -18,6 +34,11 @@ export interface ProductGridSectionProps {
         show_categories: boolean;
         initial_categories_shown: number;
         show_premium_filter: boolean;
+        // Feature toggles from Easy Mode
+        show_sale_badges?: boolean;
+        show_new_badges?: boolean;
+        show_strain_badges?: boolean;
+        show_stock_warnings?: boolean;
     };
     styles: {
         background_color: string;
@@ -34,7 +55,12 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         show_search = true,
         show_categories = true,
         initial_categories_shown = 2,
-        show_premium_filter = true
+        show_premium_filter = true,
+        // Feature toggles - default to true if not specified
+        show_sale_badges = true,
+        show_new_badges = true,
+        show_strain_badges = true,
+        show_stock_warnings = true,
     } = content || {};
 
     const {
@@ -73,8 +99,8 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         });
     };
 
-    // Fetch products
-    const { data: allProducts = [], isLoading, error } = useQuery<any[]>({
+    // Fetch products - normalized to LocalProduct[]
+    const { data: allProducts = [], isLoading, error } = useQuery<LocalProduct[]>({
         queryKey: ["products", storeId],
         queryFn: async () => {
             if (storeId) {
@@ -102,16 +128,18 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                         if (fallbackError) throw fallbackError;
 
                         return ((fallbackData as any[]) || []).map((item: any) => ({
-                            ...item.products,
                             id: item.product_id,
+                            name: item.products?.name,
                             price: item.custom_price || item.products?.price || 0,
                             images: item.products?.images || [],
-                        }));
+                            category: item.products?.category,
+                            description: item.products?.description,
+                            in_stock: item.products?.in_stock,
+                        })) as LocalProduct[];
                     }
 
-                    // Normalize RPC data to match Product interface
+                    // Normalize RPC data to LocalProduct interface
                     return ((data as any[]) || []).map((p: any) => ({
-                        ...p,
                         id: p.product_id || p.id,
                         name: p.product_name || p.name,
                         price: p.base_price || p.price || 0,
@@ -119,8 +147,8 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                         images: p.images || [],
                         category: p.category,
                         in_stock: (p.quantity_available || 0) > 0,
-                        vendor_name: ''
-                    }));
+                        strain_type: p.strain_type || '',
+                    })) as LocalProduct[];
                 } catch (err) {
                     logger.error('Error fetching marketplace products', err);
                     return [];
@@ -133,13 +161,23 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                     .eq("in_stock", true)
                     .limit(20);
                 if (error) throw error;
-                return (data || []) as any[];
+                // Map generic products to LocalProduct shape
+                return (data || []).map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    price: p.price,
+                    description: p.description,
+                    images: p.images,
+                    category: p.category,
+                    in_stock: p.in_stock,
+                    strain_type: p.strain_type || '',
+                })) as LocalProduct[];
             }
         },
         retry: 1,
     });
 
-    const productIds = allProducts.map(p => p.id);
+    const productIds = allProducts.map(p => p.id).filter((id): id is string => !!id);
     const { data: inventoryMap = {} } = useInventoryBatch(productIds);
 
     // Dynamic Categories
@@ -163,12 +201,12 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         desc: "" // Could map descriptions if needed
     }));
 
-    let filteredProducts = searchQuery
+    let filteredProducts: LocalProduct[] = searchQuery
         ? allProducts.filter((p) => {
             const query = searchQuery.toLowerCase();
             return (
-                p.name?.toLowerCase().includes(query) ||
-                p.description?.toLowerCase().includes(query)
+                (p.name || '').toLowerCase().includes(query) ||
+                (p.description || '').toLowerCase().includes(query)
             );
         })
         : allProducts;
@@ -276,19 +314,19 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
 
                                         {/* Horizontal Scrollable Row */}
                                         <div className="relative group">
-                                            <div
+                                        <div
                                                 ref={(el) => scrollContainerRef.current[category.key] = el}
                                                 className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4 px-4 md:px-0"
                                             >
                                                 {products.map((product, index) => (
-                                                    <div key={product.id} className="w-[280px] md:w-[320px] flex-shrink-0">
+                                                    <div key={product.id || index} className="w-[280px] md:w-[320px] flex-shrink-0">
                                                         <StorefrontProductCard
                                                             product={{
-                                                                product_id: product.id,
-                                                                product_name: product.name,
+                                                                product_id: product.id || '',
+                                                                product_name: product.name || '',
                                                                 category: product.category || '',
-                                                                strain_type: product.strain_type || '', // Fallback
-                                                                price: Number(product.price),
+                                                                strain_type: product.strain_type || '',
+                                                                price: Number(product.price) || 0,
                                                                 description: product.description || '',
                                                                 image_url: product.images?.[0] || null,
                                                                 images: product.images || [],
@@ -296,17 +334,21 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                                                 cbd_content: null,
                                                                 is_visible: true,
                                                                 display_order: 0,
-                                                                stock_quantity: product.in_stock ? 100 : 0 // Fallback if accurate quantity unknown
+                                                                stock_quantity: product.in_stock ? 100 : 0
                                                             }}
-                                                            storeSlug="" // Optional or fetch from context if needed for links
+                                                            storeSlug=""
                                                             isPreviewMode={false}
-                                                            onQuickAdd={(e) => handleQuickAdd(e, product)}
+                                                            onQuickAdd={(e) => handleQuickAdd(e, { ...product, id: product.id || '' })}
                                                             isAdded={false}
                                                             onToggleWishlist={() => { }}
                                                             isInWishlist={false}
                                                             onQuickView={() => { }}
                                                             index={index}
                                                             accentColor={accent_color}
+                                                            showSaleBadge={show_sale_badges}
+                                                            showNewBadge={show_new_badges}
+                                                            showStrainBadge={show_strain_badges}
+                                                            showStockWarning={show_stock_warnings}
                                                         />
                                                     </div>
                                                 ))}

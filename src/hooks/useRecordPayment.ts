@@ -17,9 +17,9 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { 
-  paymentService, 
-  PaymentMethod, 
+import {
+  paymentService,
+  PaymentMethod,
   PaymentContext,
   PaymentResult,
   FrontedPaymentResult,
@@ -28,6 +28,7 @@ import {
 import { queryKeys } from '@/lib/queryKeys';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
+import { invalidateOnEvent } from '@/lib/invalidation';
 
 // ============================================================================
 // TYPES
@@ -143,14 +144,21 @@ export function useRecordPayment(): UseRecordPaymentReturn {
     },
     onSuccess: (result, input) => {
       invalidatePaymentQueries(input.clientId);
-      
+
+      // Cross-panel invalidation - payment affects finance, collections, dashboard
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'PAYMENT_RECEIVED', tenant.id, {
+          customerId: input.clientId,
+        });
+      }
+
       if (input.showToast !== false) {
         showSuccessToast(result.message || `Payment of $${input.amount.toFixed(2)} recorded`);
       }
     },
     onError: (error: Error, input) => {
       logger.error('Payment recording failed', error, { clientId: input.clientId });
-      
+
       if (input.showToast !== false) {
         showErrorToast(error.message || 'Failed to record payment');
       }
@@ -221,14 +229,23 @@ export function useRecordPayment(): UseRecordPaymentReturn {
       queryClient.invalidateQueries({ queryKey: ['runner-today-stats'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.deliveries.all });
       invalidatePaymentQueries();
-      
+
+      // Cross-panel invalidation - delivery completion affects orders, fulfillment, finance
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'DELIVERY_STATUS_CHANGED', tenant.id);
+        // Also fire payment event if money was collected
+        if (input.amountCollected > 0) {
+          invalidateOnEvent(queryClient, 'PAYMENT_RECEIVED', tenant.id);
+        }
+      }
+
       if (input.showToast !== false) {
         showSuccessToast('Delivery marked complete');
       }
     },
     onError: (error: Error, input) => {
       logger.error('Delivery completion failed', error, { deliveryId: input.deliveryId });
-      
+
       if (input.showToast !== false) {
         showErrorToast(error.message || 'Failed to complete delivery');
       }

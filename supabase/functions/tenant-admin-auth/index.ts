@@ -74,18 +74,11 @@ serve(secureHeadersMiddleware(async (req) => {
 
     // Health check endpoint - no auth required, verifies function is deployed and running
     if (action === 'health') {
-      const hasSupabaseUrl = !!Deno.env.get('SUPABASE_URL');
-      const hasServiceRoleKey = !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
       return new Response(
         JSON.stringify({
           status: 'ok',
           function: 'tenant-admin-auth',
           timestamp: new Date().toISOString(),
-          env: {
-            SUPABASE_URL: hasSupabaseUrl,
-            SUPABASE_SERVICE_ROLE_KEY: hasServiceRoleKey,
-          },
         }),
         { status: 200, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
       );
@@ -943,7 +936,7 @@ serve(secureHeadersMiddleware(async (req) => {
   } catch (error: any) {
     console.error('Error in tenant-admin-auth:', error);
     return new Response(
-      JSON.stringify({ error: error.message || 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
     );
   }

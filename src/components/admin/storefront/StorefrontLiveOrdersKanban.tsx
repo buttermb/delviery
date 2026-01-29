@@ -46,6 +46,8 @@ interface StorefrontKanbanProps {
     onViewDetails: (orderId: string) => void;
     onNotifyCustomer?: (orderId: string, phone: string, email?: string) => Promise<boolean>;
     isLoading?: boolean;
+    /** ID of order currently being updated (for loading state) */
+    updatingOrderId?: string | null;
 }
 
 // Column Configuration
@@ -125,12 +127,14 @@ function KanbanCard({
     onStatusChange,
     onViewDetails,
     onNotifyCustomer,
+    isUpdating,
 }: {
     order: StorefrontOrder;
     column: typeof COLUMNS[0];
     onStatusChange: StorefrontKanbanProps['onStatusChange'];
     onViewDetails: StorefrontKanbanProps['onViewDetails'];
     onNotifyCustomer?: StorefrontKanbanProps['onNotifyCustomer'];
+    isUpdating?: boolean;
 }) {
     const items = Array.isArray(order.items) ? order.items : [];
     const itemCount = items.length;
@@ -273,12 +277,22 @@ function KanbanCard({
                             e.stopPropagation();
                             onStatusChange(order.id, column.nextStatus!);
                         }}
+                        disabled={isUpdating}
                     >
-                        {column.nextStatus === 'preparing' && 'Start Preparing'}
-                        {column.nextStatus === 'ready' && 'Mark Ready'}
-                        {column.nextStatus === 'out_for_delivery' && 'Out for Delivery'}
-                        {column.nextStatus === 'delivered' && 'Mark Delivered'}
-                        <ChevronRight className="h-3 w-3 ml-1" />
+                        {isUpdating ? (
+                            <>
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                Updating...
+                            </>
+                        ) : (
+                            <>
+                                {column.nextStatus === 'preparing' && 'Start Preparing'}
+                                {column.nextStatus === 'ready' && 'Mark Ready'}
+                                {column.nextStatus === 'out_for_delivery' && 'Out for Delivery'}
+                                {column.nextStatus === 'delivered' && 'Mark Delivered'}
+                                <ChevronRight className="h-3 w-3 ml-1" />
+                            </>
+                        )}
                     </Button>
                 )}
             </CardContent>
@@ -293,6 +307,7 @@ export function StorefrontLiveOrdersKanban({
     onViewDetails,
     onNotifyCustomer,
     isLoading,
+    updatingOrderId,
 }: StorefrontKanbanProps) {
     // Group orders by column
     const ordersByColumn = useMemo(() => {
@@ -331,7 +346,7 @@ export function StorefrontLiveOrdersKanban({
                     <div
                         key={column.id}
                         className={cn(
-                            'rounded-lg p-4 min-h-[400px]',
+                            'rounded-lg p-4 min-h-[400px] flex flex-col',
                             column.color
                         )}
                     >
@@ -347,8 +362,8 @@ export function StorefrontLiveOrdersKanban({
                             </div>
                         </div>
 
-                        {/* Orders */}
-                        <div className="space-y-3">
+                        {/* Orders - scrollable container */}
+                        <div className="space-y-3 flex-1 overflow-y-auto max-h-[calc(100vh-300px)]">
                             {columnOrders.length === 0 ? (
                                 <div className="text-center py-8 text-muted-foreground text-sm">
                                     No orders
@@ -362,6 +377,7 @@ export function StorefrontLiveOrdersKanban({
                                         onStatusChange={onStatusChange}
                                         onViewDetails={onViewDetails}
                                         onNotifyCustomer={onNotifyCustomer}
+                                        isUpdating={updatingOrderId === order.id}
                                     />
                                 ))
                             )}

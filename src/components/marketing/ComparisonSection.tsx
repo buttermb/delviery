@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Check, X, Minus } from 'lucide-react';
 
@@ -65,15 +65,15 @@ export function ComparisonSection() {
 
   const renderValue = (value: boolean | string) => {
     if (value === true) {
-      return <Check className="h-5 w-5 text-emerald-500" />;
+      return <Check className="h-5 w-5 text-emerald-500" aria-label="Supported" />;
     }
     if (value === false) {
-      return <X className="h-5 w-5 text-red-500" />;
+      return <X className="h-5 w-5 text-red-500" aria-label="Not supported" />;
     }
     return <span className="text-sm text-muted-foreground">{value}</span>;
   };
 
-  const visibleFeatures = showAll ? features : features.slice(0, 4);
+  const visibleFeatures = useMemo(() => showAll ? features : features.slice(0, 4), [showAll]);
 
   return (
     <section className="py-20 bg-[hsl(var(--marketing-bg))]">
@@ -97,16 +97,17 @@ export function ComparisonSection() {
           <div className="hidden md:block overflow-x-auto">
             <div className="glass-card rounded-xl border border-[hsl(var(--marketing-border))] overflow-hidden bg-[hsl(var(--marketing-bg-subtle))]">
               <table className="w-full">
+                <caption className="sr-only">Feature comparison between FloraIQ, Competitor A, and Spreadsheets</caption>
                 <thead>
                   <tr className="border-b border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))]">
-                    <th className="text-left p-4 font-semibold text-[hsl(var(--marketing-text))]">Feature</th>
-                    <th className="text-center p-4 font-semibold text-[hsl(var(--marketing-text))] bg-[hsl(var(--marketing-primary))/0.05] rounded-t-xl">
+                    <th scope="col" className="text-left p-4 font-semibold text-[hsl(var(--marketing-text))]">Feature</th>
+                    <th scope="col" className="text-center p-4 font-semibold text-[hsl(var(--marketing-text))] bg-[hsl(var(--marketing-primary))/0.05] rounded-t-xl">
                       <span className="text-[hsl(var(--marketing-primary))]">FloraIQ</span>
                     </th>
-                    <th className="text-center p-4 font-semibold text-[hsl(var(--marketing-text-light))]">
+                    <th scope="col" className="text-center p-4 font-semibold text-[hsl(var(--marketing-text-light))]">
                       Competitor A
                     </th>
-                    <th className="text-center p-4 font-semibold text-[hsl(var(--marketing-text-light))]">
+                    <th scope="col" className="text-center p-4 font-semibold text-[hsl(var(--marketing-text-light))]">
                       Spreadsheets
                     </th>
                   </tr>

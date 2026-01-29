@@ -80,8 +80,8 @@ export function StorefrontDemo() {
                         <span className="hover:text-[hsl(var(--marketing-primary))] cursor-pointer transition-colors">Deals</span>
                     </div>
                     <div className="relative">
-                        <Button size="icon" variant="ghost" className="text-slate-700 hover:bg-slate-100 rounded-full">
-                            <ShoppingBag className="w-5 h-5" />
+                        <Button size="icon" variant="ghost" className="text-slate-700 hover:bg-slate-100 rounded-full" aria-label="Shopping cart">
+                            <ShoppingBag className="w-5 h-5" aria-hidden="true" />
                         </Button>
                         <span className="absolute top-0 right-0 w-2 h-2 bg-[hsl(var(--marketing-primary))] rounded-full border border-white"></span>
                     </div>
@@ -133,8 +133,8 @@ export function StorefrontDemo() {
                                         {product.tag}
                                     </span>
                                 </div>
-                                <Button size="icon" className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-white text-slate-900 shadow-md opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 hover:bg-[hsl(var(--marketing-primary))] hover:text-white">
-                                    <Plus className="w-4 h-4" />
+                                <Button size="icon" className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-white text-slate-900 shadow-md opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 hover:bg-[hsl(var(--marketing-primary))] hover:text-white" aria-label={`Add ${product.name} to cart`}>
+                                    <Plus className="w-4 h-4" aria-hidden="true" />
                                 </Button>
                             </div>
 

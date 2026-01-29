@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
 /**
  * usePermissions Hook
@@ -9,7 +8,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { hasPermission } from '@/lib/permissions/checkPermissions';
-import { ROLES, Role, mapDatabaseRoleToSystemRole, mapSystemRoleToDatabaseRole } from '@/lib/permissions/rolePermissions';
+import { ROLES, Role, Permission, mapDatabaseRoleToSystemRole, mapSystemRoleToDatabaseRole } from '@/lib/permissions/rolePermissions';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 /**
@@ -71,7 +70,7 @@ export function usePermissions() {
         const rolePriority = [ROLES.OWNER, ROLES.ADMIN, ROLES.TEAM_MEMBER, ROLES.VIEWER];
         for (const priorityRole of rolePriority) {
           const dbRole = mapSystemRoleToDatabaseRole(priorityRole);
-          if (userRoles.some((r: any) => r.role === dbRole)) {
+          if (userRoles.some((r: { role: string }) => r.role === dbRole)) {
             return priorityRole;
           }
         }

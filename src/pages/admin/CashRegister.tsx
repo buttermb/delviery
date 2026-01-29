@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { queryKeys } from '@/lib/queryKeys';
+import { invalidateOnEvent } from '@/lib/invalidation';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useCreditGatedAction } from '@/hooks/useCredits';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -103,9 +104,9 @@ interface POSTransactionResult {
 const DEFAULT_TAX_RATE = 0.0825; // 8.25%
 
 function CashRegisterContent() {
-  const { tenant, tenantSlug } = useTenantAdminAuth();
+  const { tenant, tenantSlug: authTenantSlug } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const tenantSlug = tenant?.slug || '';
+  const displaySlug = authTenantSlug || tenant?.slug || '';
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { triggerSuccess, triggerLight, triggerError } = useHapticFeedback();
@@ -199,14 +200,20 @@ function CashRegisterContent() {
       try {
         const { data, error } = await supabase
           .from('customers')
-          .select('id, name, email, phone')
+          .select('id, first_name, last_name, email, phone')
           .eq('tenant_id', tenantId)
-          .order('name', { ascending: true })
+          .order('first_name', { ascending: true })
           .limit(100);
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return (data || []) as Customer[];
+        // Map first_name/last_name to name for Customer interface
+        return ((data || []) as any[]).map(c => ({
+          id: c.id,
+          name: [c.first_name, c.last_name].filter(Boolean).join(' ') || c.email || 'Unknown',
+          email: c.email,
+          phone: c.phone,
+        })) as Customer[];
       } catch (error: unknown) {
         if (error instanceof Error && 'code' in error && (error as { code: string }).code === '42P01') return [];
         throw error;
@@ -222,8 +229,7 @@ function CashRegisterContent() {
       if (!tenantId) return [];
 
       try {
-        // @ts-expect-error pos_transactions table may not exist in all environments
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('pos_transactions')
           .select('*')
           .eq('tenant_id', tenantId)
@@ -297,9 +303,11 @@ function CashRegisterContent() {
       p_shift_id: null
     };
 
+    // Use full Supabase functions URL for offline queue
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     await queueAction(
       'generic',
-      `/api/pos/transaction`,
+      `${supabaseUrl}/functions/v1/api/pos/transaction`,
       'POST',
       payload,
       3
@@ -351,8 +359,7 @@ function CashRegisterContent() {
       }));
 
       // Use atomic RPC - prevents race conditions on inventory
-      // @ts-expect-error RPC function not in auto-generated types
-      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic', {
+      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('create_pos_transaction_atomic', {
         p_tenant_id: tenantId,
         p_items: items,
         p_payment_method: paymentMethod,
@@ -379,7 +386,7 @@ function CashRegisterContent() {
         throw new Error(errorMessage);
       }
 
-      const result = rpcResult as POSTransactionResult;
+      const result = rpcResult as unknown as POSTransactionResult;
 
       if (!result.success) {
         // Handle specific error codes with user-friendly messages
@@ -418,9 +425,16 @@ function CashRegisterContent() {
       setReceiptDialogOpen(true);
 
       resetTransaction();
+
+      // Cross-panel invalidation - POS sale affects inventory, finance, dashboard, analytics
+      if (tenantId) {
+        invalidateOnEvent(queryClient, 'POS_SALE_COMPLETED', tenantId, {
+          customerId: selectedCustomer?.id || undefined,
+        });
+      }
+
+      // Also invalidate POS-specific queries
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.transactions(tenantId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.pos.products(tenantId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
     },
     onError: (error: unknown) => {
       triggerError();
@@ -537,7 +551,7 @@ function CashRegisterContent() {
           </head>
           <body>
             <div class="header">
-              <h2>${tenant?.name || 'Store'}</h2>
+              <h2>${tenant?.business_name || 'Store'}</h2>
               <p>Transaction: ${lastTransaction.transaction_number}</p>
               <p>${new Date(lastTransaction.created_at || '').toLocaleString()}</p>
             </div>

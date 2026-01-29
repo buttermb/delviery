@@ -131,6 +131,7 @@ export function StorefrontLiveOrders() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const previousOrderCountRef = useRef<number>(0);
   const isInitialLoadRef = useRef(true);
 
@@ -269,6 +270,9 @@ export function StorefrontLiveOrders() {
 
       if (error) throw error;
     },
+    onMutate: ({ orderId }) => {
+      setUpdatingOrderId(orderId);
+    },
     onSuccess: (_, { newStatus }) => {
       queryClient.invalidateQueries({ queryKey: ['storefront-live-orders'] });
       toast({
@@ -283,6 +287,9 @@ export function StorefrontLiveOrders() {
         description: 'Failed to update order status',
         variant: 'destructive',
       });
+    },
+    onSettled: () => {
+      setUpdatingOrderId(null);
     },
   });
 
@@ -458,6 +465,7 @@ export function StorefrontLiveOrders() {
           onStatusChange={handleStatusChange}
           onViewDetails={handleViewDetails}
           isLoading={isLoading}
+          updatingOrderId={updatingOrderId}
         />
       ) : (
         /* List View with full order details */

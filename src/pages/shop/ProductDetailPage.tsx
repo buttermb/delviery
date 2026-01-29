@@ -19,7 +19,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import { sanitizeHtml } from '@/lib/utils/sanitize';
+import { sanitizeHtml, safeJsonParse } from '@/lib/utils/sanitize';
+import { queryKeys } from '@/lib/queryKeys';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart,

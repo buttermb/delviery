@@ -31,14 +31,12 @@ import { CreditProvider } from "./contexts/CreditContext";
 import { lazy, Suspense, useEffect } from "react";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { AdminErrorBoundary } from "./components/admin/AdminErrorBoundary";
-import { AuthErrorBoundary } from "./components/auth/AuthErrorBoundary";
 import { SkipToContent } from "./components/SkipToContent";
 import { LoadingFallback } from "./components/LoadingFallback";
 import { SkeletonAdminLayout } from "./components/loading/SkeletonAdminLayout";
 import { SkeletonDashboard } from "./components/loading/SkeletonDashboard";
 import { SmartRootRedirect } from "./components/SmartRootRedirect";
-import { setupGlobalErrorHandlers, handleMutationError } from "./utils/reactErrorHandler";
+import { setupGlobalErrorHandlers } from "./utils/reactErrorHandler";
 import { FeatureProtectedRoute } from "./components/tenant-admin/FeatureProtectedRoute";
 import { SubscriptionGuard } from "./components/tenant-admin/SubscriptionGuard";
 import { PublicOnlyRoute } from "./components/auth/PublicOnlyRoute";
@@ -50,7 +48,6 @@ import { toast } from "./hooks/use-toast";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 
-import { NotificationPreferences } from "./components/NotificationPreferences";
 import OfflineBanner from "./components/OfflineBanner";
 import { UpdateBanner } from "./components/mobile/UpdateBanner";
 import { ScrollToTop } from "./components/ScrollToTop";
@@ -199,33 +196,6 @@ const BoardReportPage = lazy(() => import("./pages/admin/BoardReportPage"));
 const StrategicDashboardPage = lazy(() => import("./pages/admin/StrategicDashboardPage"));
 const ExpansionAnalysisPage = lazy(() => import("./pages/admin/ExpansionAnalysisPage"));
 
-// Built pages missing routes (currently locked in sidebar)
-const TeamManagement = lazy(() => import("./pages/admin/TeamManagement"));
-const FrontedInventory = lazy(() => import("./pages/admin/FrontedInventory"));
-const FrontedInventoryDetails = lazy(() => import("./pages/admin/FrontedInventoryDetails"));
-const CustomerInvoices = lazy(() => import("./pages/admin/CustomerInvoices"));
-const RunnerLocationTracking = lazy(() => import("./pages/admin/RunnerLocationTracking"));
-const LiveMap = lazy(() => import("./pages/admin/LiveMap"));
-const PointOfSale = lazy(() => import("./pages/admin/PointOfSale"));
-const LocationsManagement = lazy(() => import("./pages/admin/LocationsManagement"));
-
-// Hidden gems - pages that exist but aren't in config
-const AdminLiveChat = lazy(() => import("./pages/admin/AdminLiveChat"));
-const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
-// Tenant-admin versions (if they exist)
-const OrderAnalyticsPage = lazy(() => import("./pages/tenant-admin/OrderAnalyticsPage"));
-const SalesDashboardPage = lazy(() => import("./pages/tenant-admin/SalesDashboardPage"));
-const CustomerInsightsPage = lazy(() => import("./pages/tenant-admin/CustomerInsightsPage"));
-const CustomerReports = lazy(() => import("./pages/admin/CustomerReports"));
-const DispatchInventory = lazy(() => import("./pages/admin/DispatchInventory"));
-const FinancialCenter = lazy(() => import("./pages/admin/FinancialCenterReal"));
-const FrontedInventoryAnalytics = lazy(() => import("./pages/admin/FrontedInventoryAnalytics"));
-const SupplierManagementPage = lazy(() => import("./pages/admin/SupplierManagementPage"));
-const PurchaseOrdersPage = lazy(() => import("./pages/admin/PurchaseOrdersPage"));
-const ReturnsManagementPage = lazy(() => import("./pages/admin/ReturnsManagementPage"));
-const LoyaltyProgramPage = lazy(() => import("./pages/admin/LoyaltyProgramPage"));
-const CouponManagementPage = lazy(() => import("./pages/admin/CouponManagementPage"));
-const QualityControlPage = lazy(() => import("./pages/admin/QualityControlPage"));
 const ClientsPage = lazy(() => import("./pages/admin/ClientsPage"));
 const ClientDetailPage = lazy(() => import("./pages/admin/ClientDetailPage"));
 const InvoicesPage = lazy(() => import("./pages/admin/InvoicesPage"));
@@ -236,11 +206,6 @@ const PreOrderDetailPage = lazy(() => import("./pages/admin/PreOrderDetailPage")
 const CRMSettingsPage = lazy(() => import("./pages/admin/CRMSettingsPage"));
 const InvitesPage = lazy(() => import("./pages/admin/InvitesPage"));
 const InvoicePublicPage = lazy(() => import("./pages/portal/InvoicePublicPage"));
-const MarketingAutomationPage = lazy(() => import("./pages/admin/MarketingAutomationPage"));
-const AppointmentSchedulerPage = lazy(() => import("./pages/admin/AppointmentSchedulerPage"));
-const SupportTicketsPage = lazy(() => import("./pages/admin/SupportTicketsPage"));
-const BatchRecallPage = lazy(() => import("./pages/admin/BatchRecallPage"));
-const ComplianceVaultPage = lazy(() => import("./pages/admin/ComplianceVaultPage"));
 const AdvancedReportingPage = lazy(() => import("./pages/admin/AdvancedReportingPage"));
 const VendorLoginPage = lazy(() => import("./pages/vendor/VendorLoginPage").then(m => ({ default: m.VendorLoginPage })));
 const VendorDashboardPage = lazy(() => import("./pages/vendor/VendorDashboardPage"));
@@ -266,6 +231,22 @@ const ReviewsPage = lazy(() => import("./pages/admin/ReviewsPage"));
 
 // GitHub Repos Integration Pages
 const AnalyticsPage = lazy(() => import("./pages/admin/AnalyticsPage"));
+
+// Missing Admin Pages - Added for route completeness
+const TeamManagement = lazy(() => import("./pages/admin/TeamManagement"));
+const FrontedInventory = lazy(() => import("./pages/admin/FrontedInventory"));
+const FrontedInventoryDetails = lazy(() => import("./pages/admin/FrontedInventoryDetails"));
+const CustomerInvoices = lazy(() => import("./pages/admin/CustomerInvoices"));
+const LiveMap = lazy(() => import("./pages/admin/LiveMap"));
+const RunnerLocationTracking = lazy(() => import("./pages/admin/RunnerLocationTracking"));
+const LocationsManagement = lazy(() => import("./pages/admin/LocationsManagement"));
+const AdminLiveChat = lazy(() => import("./pages/admin/AdminLiveChat"));
+const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
+const CustomerReports = lazy(() => import("./pages/admin/CustomerReports"));
+const DispatchInventory = lazy(() => import("./pages/admin/DispatchInventory"));
+const FrontedInventoryAnalytics = lazy(() => import("./pages/admin/FrontedInventoryAnalytics"));
+const OrderAnalyticsPage = lazy(() => import("./pages/tenant-admin/OrderAnalyticsPage"));
+const SalesDashboardPage = lazy(() => import("./pages/tenant-admin/SalesDashboardPage"));
 
 const AdvancedInvoicePage = lazy(() => import("./pages/admin/AdvancedInvoicePage"));
 const LocalAIPage = lazy(() => import("./pages/admin/LocalAIPage"));
@@ -942,6 +923,14 @@ const App = () => {
 
 
                                         <Route path="live-orders" element={<Navigate to="orders?tab=live" replace />} />
+                                        {/* P2 Issue 18 - Broken navigation redirects */}
+                                        <Route path="orders/b2b" element={<Navigate to="orders?tab=wholesale" replace />} />
+                                        <Route path="drivers" element={<Navigate to="fulfillment-hub?tab=fleet" replace />} />
+                                        <Route path="revenue" element={<Navigate to="finance-hub?tab=revenue" replace />} />
+                                        <Route path="expenses" element={<Navigate to="finance-hub?tab=expenses" replace />} />
+                                        <Route path="analytics-export" element={<Navigate to="data-export" replace />} />
+                                        <Route path="customer-support" element={<Navigate to="marketing-hub?tab=live-chat" replace />} />
+                                        <Route path="help-center" element={<ComingSoonPage pageName="Help Center" description="Documentation and support resources" />} />
                                         <Route path="staff-management" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute></RoleProtectedRoute>} />
                                         <Route path="team-members" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute></RoleProtectedRoute>} />
                                         <Route path="team-management" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute></RoleProtectedRoute>} />

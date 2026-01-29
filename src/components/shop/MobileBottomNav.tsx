@@ -41,7 +41,7 @@ export function MobileBottomNav({ cartItemCount, primaryColor }: MobileBottomNav
       role="navigation"
       aria-label="Main"
     >
-      <div className="grid grid-cols-5 h-16">
+      <div className="grid grid-cols-6 h-16">
         {navItems.map(({ path, icon: Icon, label, badge, exact }) => {
           const active = isActive(path, exact);
           return (

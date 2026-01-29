@@ -82,9 +82,9 @@ export function DetailedFeatureSection() {
                                     {feature.title}
                                 </div>
 
-                                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[hsl(var(--marketing-text))] leading-tight">
+                                <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[hsl(var(--marketing-text))] leading-tight">
                                     {feature.title}
-                                </h2>
+                                </h3>
 
                                 <p className="text-xl text-[hsl(var(--marketing-text-light))] leading-relaxed">
                                     {feature.description}

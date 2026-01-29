@@ -81,7 +81,7 @@ export default function OfflineOrderCreate() {
     queryFn: async (): Promise<ProductForOrder[]> => {
       if (isOnline && tenant?.id) {
         // Fetch from Supabase and cache in IndexedDB
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('products')
           .select('id, name, price, sku')
           .eq('tenant_id', tenant.id)

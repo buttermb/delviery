@@ -1,7 +1,5 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
 import { isCancelled } from '@/utils/subscriptionStatus';
-// @ts-nocheck
 /**
  * Tenant Context & Utilities
  * Multi-tenant isolation and management
@@ -306,11 +304,11 @@ export async function trackUsage(
   quantity: number = 1,
   metadata?: Record<string, unknown>
 ): Promise<void> {
-  const { error } = await supabase.from('usage_events').insert({
+  const { error } = await (supabase as any).from('usage_events').insert({
     tenant_id: tenantId,
     event_type: eventType,
     quantity,
-    metadata: metadata || {},
+    metadata: (metadata || {}) as Record<string, unknown>,
   });
 
   if (error) {

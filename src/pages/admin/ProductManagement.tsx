@@ -74,7 +74,13 @@ import CopyButton from "@/components/CopyButton";
 import { ExportButton } from "@/components/ui/ExportButton";
 import { InlineEditableCell } from "@/components/admin/products/InlineEditableCell";
 
-type Product = Database['public']['Tables']['products']['Row'];
+type Product = Database['public']['Tables']['products']['Row'] & {
+  // Add fields that might be missing from generated types or are dynamic
+  metrc_retail_id?: string | null;
+  exclude_from_discounts?: boolean;
+  minimum_price?: number;
+  version?: number;
+};
 type ProductUpdate = Database['public']['Tables']['products']['Update'];
 
 const mapProductToForm = (product: Product): ProductFormData => ({
@@ -95,10 +101,10 @@ const mapProductToForm = (product: Product): ProductFormData => ({
   image_url: product.image_url || "",
 
   low_stock_alert: product.low_stock_alert?.toString() || "10",
-  metrc_retail_id: (product as any).metrc_retail_id || "",
+  metrc_retail_id: product.metrc_retail_id || "",
 
-  exclude_from_discounts: (product as any).exclude_from_discounts || false,
-  minimum_price: (product as any).minimum_price?.toString() || "",
+  exclude_from_discounts: product.exclude_from_discounts || false,
+  minimum_price: product.minimum_price?.toString() || "",
 });
 
 export default function ProductManagement() {
@@ -224,7 +230,7 @@ export default function ProductManagement() {
   });
 
   // Load products
-  const loadProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     if (!tenant?.id) {
       toast.error('Tenant not found. Please refresh.');
       setLoading(false);
@@ -247,33 +253,17 @@ export default function ProductManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenant?.id]);
 
-  // Sync query data into optimistic list state
+  // Load products on mount
   useEffect(() => {
-    if (queryProducts) {
-      setProducts(queryProducts);
+    if (tenant?.id) {
+      fetchProducts();
     }
-  }, [queryProducts, setProducts]);
+  }, [tenant?.id, fetchProducts]);
 
-  // Handle query errors
-  useEffect(() => {
-    if (productsError) {
-      const errorMessage = productsError instanceof Error ? productsError.message : 'Unknown error';
-      logger.error('Error loading products:', { error: errorMessage });
-      toast.error('Failed to load products');
-    }
-  }, [productsError]);
-
-  // Sync loading state
-  useEffect(() => {
-    setLoading(productsLoading);
-  }, [productsLoading]);
-
-  // Helper to reload products (triggers refetch + cache invalidation)
-  const loadProducts = useCallback(async () => {
-    await refetchProducts();
-  }, [refetchProducts]);
+  // Alias for external usage
+  const loadProducts = fetchProducts;
 
   // Derived state for categories
   const categories = useMemo(() => {
@@ -454,7 +444,7 @@ export default function ProductManagement() {
         if (!tenant?.id) throw new Error('No tenant context');
 
         // Use optimistic locking to prevent concurrent edit conflicts
-        const expectedVersion = (editingProduct as any).version || 1;
+        const expectedVersion = editingProduct.version || 1;
         const result = await updateWithLock(editingProduct.id, productData, expectedVersion);
 
         if (!result.success) {
@@ -482,6 +472,19 @@ export default function ProductManagement() {
         toast.success("Product created");
         // Manually update state
         setProducts(prev => [newProduct, ...prev]);
+
+        // Sync to marketplace if store exists (auto-trigger handles marketplace_product_settings,
+        // this handles marketplace_products with additional fields like slug)
+        if (store?.id && newProduct) {
+          const { error: syncError } = await (supabase as any).rpc('sync_product_to_marketplace', {
+            p_product_id: newProduct.id,
+            p_store_id: store.id,
+          });
+          if (syncError) {
+            // Don't block on sync error - product was created successfully
+            logger.warn('Product sync to marketplace failed', { error: syncError, productId: newProduct.id });
+          }
+        }
 
         // Invalidate all product caches so storefront reflects changes instantly
         invalidateProductCaches({

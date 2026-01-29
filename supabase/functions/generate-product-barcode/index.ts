@@ -8,21 +8,69 @@ const RequestSchema = z.object({
   tenant_id: z.string().uuid(),
 });
 
-// Simple Code128 SVG generator (basic implementation)
-function generateCode128SVG(data: string): string {
-  // This is a simplified version - in production, use a proper barcode library
-  // For now, we'll create a basic SVG that can be enhanced later
-  const width = 200;
-  const height = 100;
-  
-  // Basic SVG structure - actual barcode encoding would go here
-  // Using a placeholder that will be replaced with proper barcode generation
+// Simple Code128 SVG generator - fallback when external API fails
+// Note: This generates a visual representation but may not be scanner-readable
+function generateFallbackBarcodeSVG(data: string): string {
+  const width = 250;
+  const height = 80;
+  const barWidth = 2;
+  const barHeight = 50;
+  const startX = 20;
+  const textY = height - 8;
+
+  // Generate pseudo-random bars based on the data string
+  // This creates a visual barcode pattern (not a real Code128 encoding)
+  let bars = '';
+  let x = startX;
+
+  // Start pattern
+  for (let i = 0; i < 3; i++) {
+    bars += `<rect x="${x}" y="10" width="${barWidth}" height="${barHeight}" fill="black"/>`;
+    x += barWidth * 2;
+  }
+  x += barWidth;
+
+  // Data pattern - create bars based on character codes
+  for (let i = 0; i < data.length && x < width - 40; i++) {
+    const charCode = data.charCodeAt(i);
+    // Create varying bar patterns
+    for (let j = 0; j < 4; j++) {
+      const isBar = ((charCode >> j) & 1) === 1;
+      if (isBar) {
+        bars += `<rect x="${x}" y="10" width="${barWidth}" height="${barHeight}" fill="black"/>`;
+      }
+      x += barWidth;
+    }
+    x += barWidth; // Space between characters
+  }
+
+  // End pattern
+  for (let i = 0; i < 3; i++) {
+    bars += `<rect x="${x}" y="10" width="${barWidth}" height="${barHeight}" fill="black"/>`;
+    x += barWidth * 2;
+  }
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
   <rect width="${width}" height="${height}" fill="white"/>
-  <text x="${width/2}" y="${height/2}" text-anchor="middle" font-family="monospace" font-size="14">${data}</text>
-  <text x="${width/2}" y="${height - 10}" text-anchor="middle" font-family="monospace" font-size="12">CODE128</text>
+  ${bars}
+  <text x="${width/2}" y="${textY}" text-anchor="middle" font-family="monospace" font-size="12">${data}</text>
 </svg>`;
+}
+
+// Fetch with timeout helper
+async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
 }
 
 serve(withZenProtection(async (req) => {
@@ -66,29 +114,32 @@ serve(withZenProtection(async (req) => {
 
     const { sku, tenant_id } = validationResult.data;
 
-    // Generate barcode using external API (barcodeapi.org) or create SVG
-    // For MVP, we'll use barcodeapi.org which provides free Code128 barcodes
-    const barcodeApiUrl = `https://barcodeapi.org/api/code128/${sku}`;
-    
+    // Generate barcode using external API (barcodeapi.org) or create SVG fallback
+    const barcodeApiUrl = `https://barcodeapi.org/api/code128/${encodeURIComponent(sku)}`;
+
     let barcodeImageData: Uint8Array;
     let contentType = 'image/png';
-    
+    let isFallback = false;
+
     try {
-      // Try to fetch from barcode API
-      const barcodeResponse = await fetch(barcodeApiUrl);
+      // Try to fetch from barcode API with 5 second timeout
+      const barcodeResponse = await fetchWithTimeout(barcodeApiUrl, 5000);
       if (barcodeResponse.ok) {
         barcodeImageData = new Uint8Array(await barcodeResponse.arrayBuffer());
+        // Verify we got actual image data
+        if (barcodeImageData.length < 100) {
+          throw new Error('Received invalid barcode image data');
+        }
       } else {
-        // Fallback: Generate simple SVG
-        const barcodeSvg = generateCode128SVG(sku);
-        barcodeImageData = new TextEncoder().encode(barcodeSvg);
-        contentType = 'image/svg+xml';
+        throw new Error(`Barcode API returned status ${barcodeResponse.status}`);
       }
     } catch (error) {
-      // Fallback: Generate simple SVG
-      const barcodeSvg = generateCode128SVG(sku);
+      // Fallback: Generate SVG barcode representation
+      console.warn(`Barcode API failed for SKU ${sku}, using SVG fallback:`, error);
+      const barcodeSvg = generateFallbackBarcodeSVG(sku);
       barcodeImageData = new TextEncoder().encode(barcodeSvg);
       contentType = 'image/svg+xml';
+      isFallback = true;
     }
     
     // Upload to Supabase Storage
@@ -133,9 +184,10 @@ serve(withZenProtection(async (req) => {
     const barcodeUrl = urlData.publicUrl;
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         barcode_url: barcodeUrl,
-        sku: sku
+        sku: sku,
+        is_fallback: isFallback,
       }),
       {
         status: 200,

@@ -67,7 +67,7 @@ export const logSuspiciousActivity = async (
   metadata?: Record<string, unknown>
 ): Promise<void> => {
   try {
-    await supabase.from('menu_security_events').insert({
+    await (supabase as any).from('menu_security_events').insert({
       menu_id: menuId,
       event_type: activityType,
       severity: getSeverityForActivity(activityType),
@@ -127,7 +127,7 @@ export const burnMenu = async (
     logger.warn('Initiating menu burn', { menuId, reason, burnType });
 
     // Log the burn event
-    await supabase.from('menu_security_events').insert({
+    await (supabase as any).from('menu_security_events').insert({
       menu_id: menuId,
       event_type: 'auto_burn_triggered',
       severity: 'critical',
@@ -138,11 +138,12 @@ export const burnMenu = async (
       },
     });
 
-    // Update menu status to burned
+    // Update menu status to burned (use hard_burned or soft_burned)
+    const statusValue = burnType === 'hard' ? 'hard_burned' : 'soft_burned';
     const { error } = await supabase
       .from('disposable_menus')
       .update({
-        status: 'burned',
+        status: statusValue,
         burned_at: new Date().toISOString(),
         burn_reason: reason,
       })

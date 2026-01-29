@@ -1,7 +1,6 @@
-// @ts-nocheck
 /**
  * Credit Service
- * 
+ *
  * Core service for managing credits in the freemium system.
  * Handles credit checking, consumption, granting, and purchasing.
  */
@@ -197,7 +196,7 @@ export async function consumeCredits(
     // Get the cost from creditCosts
     const cost = getCreditCost(actionKey);
     
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .rpc('consume_credits', {
         p_tenant_id: tenantId,
         p_amount: cost,
@@ -322,7 +321,7 @@ export async function purchaseCredits(
       return { success: false, error: error.message };
     }
 
-    if (!data || data.length === 0) {
+    if (!data || (Array.isArray(data) && data.length === 0)) {
       return { success: false, error: 'No response from credit purchase' };
     }
 
@@ -392,13 +391,13 @@ export async function getCreditTransactions(
       tenantId: row.tenant_id,
       amount: row.amount,
       balanceAfter: row.balance_after,
-      transactionType: row.transaction_type,
-      actionType: row.action_type,
-      referenceId: row.reference_id,
-      referenceType: row.reference_type,
-      description: row.description,
+      transactionType: row.transaction_type as CreditTransaction['transactionType'],
+      actionType: row.action_type ?? undefined,
+      referenceId: row.reference_id ?? undefined,
+      referenceType: row.reference_type ?? undefined,
+      description: row.description ?? undefined,
       metadata: row.metadata as Record<string, unknown>,
-      createdAt: row.created_at,
+      createdAt: row.created_at ?? '',
     }));
   } catch (err) {
     logger.error('Error getting credit transactions', err as Error, { tenantId });
@@ -421,14 +420,14 @@ export async function trackCreditEvent(
   metadata?: Record<string, unknown>
 ): Promise<void> {
   try {
-    await supabase
+    await (supabase as any)
       .from('credit_analytics')
       .insert({
         tenant_id: tenantId,
         event_type: eventType,
         credits_at_event: creditsAtEvent,
         action_attempted: actionAttempted,
-        metadata: metadata || {},
+        metadata: (metadata || {}) as Record<string, unknown>,
       });
   } catch (err) {
     logger.error('Failed to track credit event', err as Error, { 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { logger } from '@/lib/logger';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import { queryKeys } from '@/lib/queryKeys';
 import {
   Package,
   Warehouse,
@@ -66,7 +67,8 @@ export default function InventoryDashboard() {
           table: 'products'
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.summary(tenantId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
         }
       )
       .subscribe((status) => {
@@ -83,14 +85,15 @@ export default function InventoryDashboard() {
   const handleManualRefresh = async () => {
     setRefreshing(true);
     triggerHaptic('light');
-    await queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
+    await queryClient.invalidateQueries({ queryKey: queryKeys.inventory.summary(tenantId) });
+    await queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
     await new Promise(resolve => setTimeout(resolve, 500));
     setRefreshing(false);
   };
 
   // Fetch inventory summary from products table
   const { data: summary, isLoading: summaryLoading } = useQuery({
-    queryKey: ['inventory-summary', tenantId],
+    queryKey: queryKeys.inventory.summary(tenantId),
     queryFn: async (): Promise<InventorySummary | null> => {
       if (!tenantId) return null;
 
@@ -139,7 +142,7 @@ export default function InventoryDashboard() {
 
   // Fetch locations (warehouses) with product counts
   const { data: locations = [], isLoading: locationsLoading } = useQuery({
-    queryKey: ['inventory-locations', tenantId],
+    queryKey: queryKeys.inventory.locations(tenantId),
     queryFn: async (): Promise<LocationInventory[]> => {
       if (!tenantId) return [];
 

@@ -5,20 +5,33 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Puzzle } from "lucide-react";
+import {
+  ArrowRight,
+  Puzzle,
+  CreditCard,
+  BarChart3,
+  Zap,
+  MessageSquare,
+  Sheet,
+  Smartphone,
+  ShoppingCart,
+  Mail,
+  Link2,
+  type LucideIcon,
+} from "lucide-react";
 
 export function IntegrationEcosystem() {
   // Common, easy-to-integrate tools
-  const integrations = [
-    { name: "Stripe", icon: "💳" },
-    { name: "QuickBooks", icon: "📊" },
-    { name: "Zapier", icon: "⚡" },
-    { name: "Slack", icon: "💬" },
-    { name: "Google Sheets", icon: "📗" },
-    { name: "Twilio", icon: "📱" },
-    { name: "Shopify", icon: "🛒" },
-    { name: "Mailchimp", icon: "📧" },
-    { name: "Webhook API", icon: "🔗" },
+  const integrations: { name: string; icon: LucideIcon }[] = [
+    { name: "Stripe", icon: CreditCard },
+    { name: "QuickBooks", icon: BarChart3 },
+    { name: "Zapier", icon: Zap },
+    { name: "Slack", icon: MessageSquare },
+    { name: "Google Sheets", icon: Sheet },
+    { name: "Twilio", icon: Smartphone },
+    { name: "Shopify", icon: ShoppingCart },
+    { name: "Mailchimp", icon: Mail },
+    { name: "Webhook API", icon: Link2 },
   ];
 
   return (
@@ -51,16 +64,20 @@ export function IntegrationEcosystem() {
 
           {/* Right: Logo Grid */}
           <div className="lg:w-1/2 w-full">
-            <div className="grid grid-cols-3 gap-4">
-              {integrations.map((item, index) => (
-                <div
-                  key={index}
-                  className="aspect-square bg-[hsl(var(--marketing-bg-subtle))] rounded-xl flex flex-col items-center justify-center p-4 hover:scale-105 transition-all duration-300 cursor-pointer border border-[hsl(var(--marketing-border))] hover:shadow-lg hover:bg-white"
-                >
-                  <span className="text-3xl mb-2">{item.icon}</span>
-                  <span className="font-semibold text-[hsl(var(--marketing-text))] text-center text-sm">{item.name}</span>
-                </div>
-              ))}
+            <div className="grid grid-cols-3 gap-4" role="list" aria-label="Integration partners">
+              {integrations.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={item.name}
+                    className="aspect-square bg-[hsl(var(--marketing-bg-subtle))] rounded-xl flex flex-col items-center justify-center p-4 hover:scale-105 transition-all duration-300 cursor-pointer border border-[hsl(var(--marketing-border))] hover:shadow-lg hover:bg-white"
+                    role="listitem"
+                  >
+                    <Icon className="w-8 h-8 mb-2 text-[hsl(var(--marketing-primary))]" aria-hidden="true" />
+                    <span className="font-semibold text-[hsl(var(--marketing-text))] text-center text-sm">{item.name}</span>
+                  </div>
+                );
+              })}
             </div>
             <div className="mt-6 text-center lg:text-left">
               <p className="text-sm font-medium text-[hsl(var(--marketing-text-light))]">

@@ -1,13 +1,16 @@
 import { logger } from '@/lib/logger';
 /**
  * Unified Realtime Sync Hook
- * Subscribes to multiple tables and invalidates TanStack Query caches
+ * Subscribes to multiple tables and uses the invalidation system
+ * for consistent cross-panel data synchronization.
+ *
  * Phase 3: Implement Real-Time Synchronization
  */
 
 import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { invalidateOnEvent, type InvalidationEvent } from '@/lib/invalidation';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface UseRealtimeSyncOptions {
@@ -17,23 +20,30 @@ interface UseRealtimeSyncOptions {
 }
 
 const DEFAULT_TABLES = [
-  'wholesale_orders',
-  'products',
-  'deliveries',
-  'courier_earnings',
-  'storefront_orders',
-  'marketplace_stores',
   'orders',
   'menu_orders',
+  'products',
+  'deliveries',
+  'customers',
+  'payments',
+  'inventory_transfers',
+  'wholesale_orders',
+  'courier_earnings',
+  'storefront_orders',
+  'invoices',
 ];
 
 // Track failed connection attempts per table
 const connectionFailures = new Map<string, number>();
 const MAX_FAILURES = 3; // Disable after 3 failures
 
-// Type guards
+// Type guards for payload inspection
 function hasId(obj: unknown): obj is { id: string } {
   return typeof obj === 'object' && obj !== null && 'id' in obj;
+}
+
+function hasCustomerId(obj: unknown): obj is { customer_id: string } {
+  return typeof obj === 'object' && obj !== null && 'customer_id' in obj;
 }
 
 function hasProductId(obj: unknown): obj is { product_id: string } {
@@ -44,9 +54,211 @@ function hasCourierId(obj: unknown): obj is { courier_id: string } {
   return typeof obj === 'object' && obj !== null && 'courier_id' in obj;
 }
 
+function hasStatus(obj: unknown): obj is { status: string } {
+  return typeof obj === 'object' && obj !== null && 'status' in obj;
+}
+
+// Map table changes to invalidation events
+function getInvalidationEvent(
+  table: string,
+  eventType: 'INSERT' | 'UPDATE' | 'DELETE',
+  oldRecord: unknown,
+  newRecord: unknown
+): { event: InvalidationEvent; metadata?: Record<string, string> } | null {
+  switch (table) {
+    // ============================================================================
+    // ORDERS
+    // ============================================================================
+    case 'orders':
+    case 'menu_orders':
+      if (eventType === 'INSERT') {
+        return {
+          event: 'ORDER_CREATED',
+          metadata: hasCustomerId(newRecord) ? { customerId: newRecord.customer_id } : undefined,
+        };
+      }
+      if (eventType === 'UPDATE') {
+        // Check if status changed
+        if (hasStatus(oldRecord) && hasStatus(newRecord) && oldRecord.status !== newRecord.status) {
+          return {
+            event: 'ORDER_STATUS_CHANGED',
+            metadata: {
+              ...(hasId(newRecord) ? { orderId: newRecord.id } : {}),
+              ...(hasCustomerId(newRecord) ? { customerId: newRecord.customer_id } : {}),
+            },
+          };
+        }
+        return {
+          event: 'ORDER_UPDATED',
+          metadata: hasId(newRecord) ? { orderId: newRecord.id } : undefined,
+        };
+      }
+      if (eventType === 'DELETE') {
+        return { event: 'ORDER_DELETED' };
+      }
+      break;
+
+    // ============================================================================
+    // PRODUCTS & INVENTORY
+    // ============================================================================
+    case 'products':
+      if (eventType === 'INSERT') {
+        return { event: 'PRODUCT_CREATED' };
+      }
+      if (eventType === 'UPDATE') {
+        return {
+          event: 'PRODUCT_UPDATED',
+          metadata: hasId(newRecord) ? { productId: newRecord.id } : undefined,
+        };
+      }
+      if (eventType === 'DELETE') {
+        return { event: 'PRODUCT_DELETED' };
+      }
+      break;
+
+    case 'inventory':
+    case 'inventory_adjustments':
+      return {
+        event: 'INVENTORY_ADJUSTED',
+        metadata: hasProductId(newRecord) ? { productId: newRecord.product_id } : undefined,
+      };
+
+    case 'inventory_transfers':
+      if (hasStatus(newRecord) && newRecord.status === 'completed') {
+        return { event: 'INVENTORY_TRANSFER_COMPLETED' };
+      }
+      return { event: 'INVENTORY_ADJUSTED' };
+
+    // ============================================================================
+    // CUSTOMERS
+    // ============================================================================
+    case 'customers':
+    case 'b2b_clients':
+      if (eventType === 'INSERT') {
+        return { event: 'CUSTOMER_CREATED' };
+      }
+      if (eventType === 'UPDATE') {
+        return {
+          event: 'CUSTOMER_UPDATED',
+          metadata: hasId(newRecord) ? { customerId: newRecord.id } : undefined,
+        };
+      }
+      if (eventType === 'DELETE') {
+        return { event: 'CUSTOMER_DELETED' };
+      }
+      break;
+
+    // ============================================================================
+    // PAYMENTS & FINANCE
+    // ============================================================================
+    case 'payments':
+      if (eventType === 'INSERT') {
+        return {
+          event: 'PAYMENT_RECEIVED',
+          metadata: hasCustomerId(newRecord) ? { customerId: newRecord.customer_id } : undefined,
+        };
+      }
+      break;
+
+    case 'refunds':
+      if (eventType === 'INSERT') {
+        return { event: 'REFUND_PROCESSED' };
+      }
+      break;
+
+    case 'invoices':
+      if (eventType === 'INSERT') {
+        return {
+          event: 'INVOICE_CREATED',
+          metadata: {
+            ...(hasId(newRecord) ? { invoiceId: newRecord.id } : {}),
+            ...(hasCustomerId(newRecord) ? { customerId: newRecord.customer_id } : {}),
+          },
+        };
+      }
+      if (eventType === 'UPDATE' && hasStatus(newRecord) && newRecord.status === 'paid') {
+        return {
+          event: 'INVOICE_PAID',
+          metadata: hasId(newRecord) ? { invoiceId: newRecord.id } : undefined,
+        };
+      }
+      break;
+
+    // ============================================================================
+    // DELIVERIES & FULFILLMENT
+    // ============================================================================
+    case 'deliveries':
+      if (eventType === 'UPDATE') {
+        if (hasCourierId(newRecord) && (!hasCourierId(oldRecord) || oldRecord.courier_id !== newRecord.courier_id)) {
+          return {
+            event: 'DRIVER_ASSIGNED',
+            metadata: { courierId: newRecord.courier_id },
+          };
+        }
+        if (hasStatus(oldRecord) && hasStatus(newRecord) && oldRecord.status !== newRecord.status) {
+          return { event: 'DELIVERY_STATUS_CHANGED' };
+        }
+      }
+      return { event: 'DELIVERY_STATUS_CHANGED' };
+
+    case 'couriers':
+      if (eventType === 'UPDATE') {
+        return {
+          event: 'COURIER_STATUS_CHANGED',
+          metadata: hasId(newRecord) ? { courierId: newRecord.id } : undefined,
+        };
+      }
+      break;
+
+    // ============================================================================
+    // WHOLESALE / B2B
+    // ============================================================================
+    case 'wholesale_orders':
+      if (eventType === 'INSERT') {
+        return { event: 'WHOLESALE_ORDER_CREATED' };
+      }
+      if (eventType === 'UPDATE') {
+        return { event: 'WHOLESALE_ORDER_UPDATED' };
+      }
+      break;
+
+    // ============================================================================
+    // MENUS & STOREFRONT
+    // ============================================================================
+    case 'disposable_menus':
+      if (hasStatus(newRecord) && newRecord.status === 'published') {
+        return { event: 'MENU_PUBLISHED' };
+      }
+      return {
+        event: 'MENU_UPDATED',
+        metadata: hasId(newRecord) ? { menuId: newRecord.id } : undefined,
+      };
+
+    // ============================================================================
+    // POS SHIFTS
+    // ============================================================================
+    case 'pos_shifts':
+      if (eventType === 'INSERT') {
+        return {
+          event: 'SHIFT_STARTED',
+          metadata: hasId(newRecord) ? { shiftId: newRecord.id } : undefined,
+        };
+      }
+      if (eventType === 'UPDATE' && hasStatus(newRecord) && newRecord.status === 'closed') {
+        return {
+          event: 'SHIFT_ENDED',
+          metadata: hasId(newRecord) ? { shiftId: newRecord.id } : undefined,
+        };
+      }
+      break;
+  }
+
+  return null;
+}
+
 /**
  * Unified hook for real-time synchronization across multiple tables
- * Handles INSERT, UPDATE, DELETE events and invalidates relevant query caches
+ * Uses the centralized invalidation system for consistent cache updates
  */
 export function useRealtimeSync({
   tenantId,
@@ -68,23 +280,22 @@ export function useRealtimeSync({
       return;
     }
 
-    // Prevent multiple simultaneous connection attempts using ref
+    // Prevent multiple simultaneous connection attempts
     if (isConnectingRef.current) {
       return;
     }
 
     isConnectingRef.current = true;
 
-    // Cleanup function - silently handle WebSocket errors during cleanup
+    // Cleanup function
     const cleanup = () => {
-      channelsRef.current.forEach(channel => {
+      channelsRef.current.forEach((channel) => {
         try {
-          // Suppress WebSocket errors during cleanup (they're expected when channels close)
           supabase.removeChannel(channel).catch(() => {
-            // Silently ignore cleanup errors - WebSocket disconnects are expected
+            // Silently ignore cleanup errors
           });
-        } catch (error) {
-          // Silently ignore cleanup errors - these are not critical
+        } catch {
+          // Silently ignore cleanup errors
         }
       });
       channelsRef.current = [];
@@ -95,23 +306,24 @@ export function useRealtimeSync({
     // Clear any existing channels first
     cleanup();
 
-    // Subscribe to each table (skip if too many failures)
-    tables.forEach(table => {
+    // Subscribe to each table
+    tables.forEach((table) => {
       const failureKey = `${table}-${tenantId}`;
       const failures = connectionFailures.get(failureKey) || 0;
 
-      // Skip if too many failures (disable realtime for this table)
+      // Skip if too many failures
       if (failures >= MAX_FAILURES) {
-        logger.debug(`Skipping realtime for ${table} (too many failures)`, { failures, component: 'useRealtimeSync' });
+        logger.debug(`Skipping realtime for ${table} (too many failures)`, {
+          failures,
+          component: 'useRealtimeSync',
+        });
         return;
       }
 
       const channelKey = `realtime-sync-${table}-${tenantId}`;
 
-      let channel: RealtimeChannel;
-
       try {
-        channel = supabase
+        const channel = supabase
           .channel(channelKey, {
             config: {
               broadcast: { self: false },
@@ -124,9 +336,9 @@ export function useRealtimeSync({
               event: '*',
               schema: 'public',
               table,
-              // Don't filter by tenant_id if column doesn't exist - this causes 400 errors
-              // The filter will be applied server-side by RLS policies if they exist
-              filter: undefined, // Remove tenant_id filter to avoid 400 errors
+              // Don't filter by tenant_id to avoid 400 errors
+              // RLS policies handle tenant isolation
+              filter: undefined,
             },
             (payload) => {
               try {
@@ -137,156 +349,66 @@ export function useRealtimeSync({
                   component: 'useRealtimeSync',
                 });
 
-                // Invalidate relevant query caches based on table
-                switch (table) {
-                  case 'wholesale_orders':
-                    queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
-                    queryClient.invalidateQueries({ queryKey: ['orders'] });
-                    queryClient.invalidateQueries({ queryKey: ['dashboard-orders'] });
-                    // Also invalidate related queries
-                    if (payload.new && hasId(payload.new)) {
-                      queryClient.invalidateQueries({ queryKey: ['order', payload.new.id] });
-                    }
-                    break;
+                // Get the appropriate invalidation event
+                const invalidation = getInvalidationEvent(
+                  table,
+                  payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE',
+                  payload.old,
+                  payload.new
+                );
 
-                  case 'products':
-                    queryClient.invalidateQueries({ queryKey: ['inventory'] });
-                    queryClient.invalidateQueries({ queryKey: ['products'] });
-                    queryClient.invalidateQueries({ queryKey: ['products-inventory'] });
-                    queryClient.invalidateQueries({ queryKey: ['products-for-wholesale'] });
-                    queryClient.invalidateQueries({ queryKey: ['inventory-alerts'] });
-                    queryClient.invalidateQueries({ queryKey: ['inventory-forecast'] });
-                    queryClient.invalidateQueries({ queryKey: ['low-stock'] });
-                    // Invalidate product-specific queries
-                    if (payload.new && hasId(payload.new)) {
-                      queryClient.invalidateQueries({ queryKey: ['product', payload.new.id] });
-                    }
-                    break;
-
-                  case 'deliveries':
-                    queryClient.invalidateQueries({ queryKey: ['deliveries'] });
-                    queryClient.invalidateQueries({ queryKey: ['active-deliveries'] });
-                    queryClient.invalidateQueries({ queryKey: ['delivery-map'] });
-                    queryClient.invalidateQueries({ queryKey: ['fleet-management'] });
-                    // Invalidate delivery-specific queries
-                    if (payload.new && hasId(payload.new)) {
-                      queryClient.invalidateQueries({ queryKey: ['delivery', payload.new.id] });
-                    }
-                    break;
-
-                  case 'courier_earnings':
-                    queryClient.invalidateQueries({ queryKey: ['courier-earnings'] });
-                    queryClient.invalidateQueries({ queryKey: ['courier-stats'] });
-                    queryClient.invalidateQueries({ queryKey: ['financial-center'] });
-                    queryClient.invalidateQueries({ queryKey: ['revenue-reports'] });
-                    // Invalidate courier-specific queries
-                    if (payload.new && hasCourierId(payload.new)) {
-                      queryClient.invalidateQueries({ queryKey: ['courier', payload.new.courier_id] });
-                    }
-                    break;
-
-                  case 'storefront_orders':
-                    queryClient.invalidateQueries({ queryKey: ['storefront-orders'] });
-                    queryClient.invalidateQueries({ queryKey: ['realtime-sales'] });
-                    queryClient.invalidateQueries({ queryKey: ['multi-channel-orders'] });
-                    queryClient.invalidateQueries({ queryKey: ['storefront-performance'] });
-                    queryClient.invalidateQueries({ queryKey: ['order-tracking'] });
-                    break;
-
-                  case 'marketplace_stores':
-                    queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
-                    queryClient.invalidateQueries({ queryKey: ['storefront-performance'] });
-                    break;
-
-                  case 'orders':
-                    queryClient.invalidateQueries({ queryKey: ['orders'] });
-                    queryClient.invalidateQueries({ queryKey: ['live-orders'] });
-                    queryClient.invalidateQueries({ queryKey: ['dashboard-orders'] });
-                    queryClient.invalidateQueries({ queryKey: ['pending-orders'] });
-                    if (payload.new && hasId(payload.new)) {
-                      queryClient.invalidateQueries({ queryKey: ['order', payload.new.id] });
-                    }
-                    break;
-
-                  case 'menu_orders':
-                    queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
-                    queryClient.invalidateQueries({ queryKey: ['live-orders'] });
-                    queryClient.invalidateQueries({ queryKey: ['pending-orders'] });
-                    queryClient.invalidateQueries({ queryKey: ['orders'] });
-                    if (payload.new && hasId(payload.new)) {
-                      queryClient.invalidateQueries({ queryKey: ['menu-order', payload.new.id] });
-                    }
-                    break;
-
-                  default:
-                    // Generic invalidation for unknown tables
-                    queryClient.invalidateQueries({ queryKey: [table] });
-                    queryClient.invalidateQueries({ queryKey: [table, tenantId] });
+                if (invalidation) {
+                  invalidateOnEvent(
+                    queryClient,
+                    invalidation.event,
+                    tenantId,
+                    invalidation.metadata
+                  );
                 }
-
-                // Also invalidate dashboard and summary queries
-                queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-                queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
-                queryClient.invalidateQueries({ queryKey: ['summary'] });
               } catch (error) {
-                logger.error(`Error processing realtime update for ${table}`, error, { component: 'useRealtimeSync' });
+                logger.error(`Error processing realtime update for ${table}`, error, {
+                  component: 'useRealtimeSync',
+                });
               }
             }
           )
           .subscribe((status) => {
             if (status === 'SUBSCRIBED') {
-              // Reset failure count on successful subscription
               connectionFailures.delete(failureKey);
-              logger.debug(`Realtime subscription active: ${table}`, { tenantId, component: 'useRealtimeSync' });
-            } else if (status === 'CHANNEL_ERROR') {
-              // Increment failure count
-              const currentFailures = connectionFailures.get(failureKey) || 0;
-              connectionFailures.set(failureKey, currentFailures + 1);
-
-              // Only log if not too many failures (to reduce noise)
-              if (currentFailures < MAX_FAILURES) {
-                logger.warn(
-                  `Realtime subscription error: ${table} (tenant: ${tenantId})`,
-                  { table, tenantId, failures: currentFailures + 1, component: 'useRealtimeSync' }
-                );
-              }
-
-              // Invalidate queries to trigger refetch
-              queryClient.invalidateQueries({ queryKey: [table] });
-              queryClient.invalidateQueries({ queryKey: [table, tenantId] });
-            } else if (status === 'TIMED_OUT') {
-              // Increment failure count
+              logger.debug(`Realtime subscription active: ${table}`, {
+                tenantId,
+                component: 'useRealtimeSync',
+              });
+            } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
               const currentFailures = connectionFailures.get(failureKey) || 0;
               connectionFailures.set(failureKey, currentFailures + 1);
 
               if (currentFailures < MAX_FAILURES) {
-                logger.warn(
-                  `Realtime subscription timed out: ${table}`,
-                  { tenantId, table, failures: currentFailures + 1, component: 'useRealtimeSync' }
-                );
+                logger.warn(`Realtime subscription ${status.toLowerCase()}: ${table}`, {
+                  table,
+                  tenantId,
+                  failures: currentFailures + 1,
+                  component: 'useRealtimeSync',
+                });
               }
-
-              // Invalidate queries to trigger refetch
-              queryClient.invalidateQueries({ queryKey: [table] });
-              queryClient.invalidateQueries({ queryKey: [table, tenantId] });
             }
           });
 
         channelsRef.current.push(channel);
       } catch (error) {
-        // Catch any errors during channel creation
         const currentFailures = connectionFailures.get(failureKey) || 0;
         connectionFailures.set(failureKey, currentFailures + 1);
 
         if (currentFailures < MAX_FAILURES) {
-          logger.warn(`Failed to create realtime channel for ${table}`, error, { component: 'useRealtimeSync' });
+          logger.warn(`Failed to create realtime channel for ${table}`, error, {
+            component: 'useRealtimeSync',
+          });
         }
       }
     });
 
     isConnectingRef.current = false;
 
-    // Cleanup function
     return () => {
       if (cleanupRef.current) {
         cleanupRef.current();
@@ -301,4 +423,3 @@ export function useRealtimeSync({
     channelCount: channelsRef.current.length,
   };
 }
-

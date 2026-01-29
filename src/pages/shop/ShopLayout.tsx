@@ -206,17 +206,17 @@ export default function ShopLayout() {
       loadCart();
 
       // Listen for cart updates from useShopCart hook
-      const handleCartUpdate = (event: CustomEvent) => {
+      const handleCartUpdate = ((event: CustomEvent<{ storeId: string; count: number }>) => {
         if (event.detail?.storeId === store.id && typeof event.detail?.count === 'number') {
           setCartItemCount(event.detail.count);
         } else {
           // Fallback: reload from localStorage
           loadCart();
         }
-      };
+      }) as EventListener;
 
-      window.addEventListener('cartUpdated', handleCartUpdate as EventListener);
-      return () => window.removeEventListener('cartUpdated', handleCartUpdate as EventListener);
+      window.addEventListener('cartUpdated', handleCartUpdate);
+      return () => window.removeEventListener('cartUpdated', handleCartUpdate);
     }
   }, [store?.id]);
 

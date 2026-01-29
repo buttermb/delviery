@@ -1,7 +1,7 @@
 // Edge Function: polar-checkout
 // Generates Polar checkout URLs for FloraIQ subscriptions
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { serve } from '../_shared/deps.ts';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',

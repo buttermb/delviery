@@ -45,6 +45,8 @@ export const queryKeys = {
     details: () => [...queryKeys.orders.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.orders.details(), id] as const,
     offline: (tenantId?: string) => [...queryKeys.orders.all, 'offline', tenantId] as const,
+    live: (tenantId?: string, status?: string) =>
+      [...queryKeys.orders.all, 'live', tenantId, status] as const,
   },
 
   // Wholesale Orders
@@ -80,6 +82,10 @@ export const queryKeys = {
       [...queryKeys.inventory.all, 'movements', productId] as const,
     history: (filters?: Record<string, unknown>) =>
       [...queryKeys.inventory.all, 'history', filters] as const,
+    summary: (tenantId?: string) =>
+      [...queryKeys.inventory.all, 'summary', tenantId] as const,
+    locations: (tenantId?: string) =>
+      [...queryKeys.inventory.all, 'locations', tenantId] as const,
   },
 
   // Cart
@@ -149,6 +155,40 @@ export const queryKeys = {
     all: ['dashboard'] as const,
     stats: (tenantId?: string) =>
       [...queryKeys.dashboard.all, 'stats', tenantId] as const,
+    kpis: (tenantId?: string) =>
+      [...queryKeys.dashboard.all, 'kpis', tenantId] as const,
+    liveOrders: (tenantId?: string) =>
+      [...queryKeys.dashboard.all, 'live-orders', tenantId] as const,
+    hotbox: (tenantId?: string) =>
+      [...queryKeys.dashboard.all, 'hotbox', tenantId] as const,
+    recentActivity: (tenantId?: string) =>
+      [...queryKeys.dashboard.all, 'activity', tenantId] as const,
+  },
+
+  // Fulfillment Hub
+  fulfillment: {
+    all: ['fulfillment'] as const,
+    queue: (tenantId?: string) =>
+      [...queryKeys.fulfillment.all, 'queue', tenantId] as const,
+    drivers: (tenantId?: string) =>
+      [...queryKeys.fulfillment.all, 'drivers', tenantId] as const,
+    routes: (tenantId?: string) =>
+      [...queryKeys.fulfillment.all, 'routes', tenantId] as const,
+  },
+
+  // Finance Hub
+  finance: {
+    all: ['finance'] as const,
+    summary: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'summary', tenantId] as const,
+    transactions: (tenantId?: string, filters?: Record<string, unknown>) =>
+      [...queryKeys.finance.all, 'transactions', tenantId, filters] as const,
+    owed: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'owed', tenantId] as const,
+    daily: (tenantId?: string, date?: string) =>
+      [...queryKeys.finance.all, 'daily', tenantId, date] as const,
+    revenue: (tenantId?: string, period?: string) =>
+      [...queryKeys.finance.all, 'revenue', tenantId, period] as const,
   },
 
   // Analytics

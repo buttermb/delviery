@@ -10,17 +10,18 @@ export const useInventoryBatch = (productIds: string[]) => {
     queryFn: async () => {
       if (!productIds.length || !tenant?.id) return {};
 
-      const { data, error } = await (supabase as any)
-        .from("inventory")
-        .select("product_id, stock")
+      // Query products table for stock_quantity
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, stock_quantity")
         .eq("tenant_id", tenant.id)
-        .in("product_id", productIds);
+        .in("id", productIds);
 
       if (error) throw error;
 
-      // Convert array to object keyed by product_id
+      // Convert array to object keyed by product id
       return (data || []).reduce((acc, item) => {
-        acc[item.product_id] = item.stock;
+        acc[item.id] = item.stock_quantity ?? 0;
         return acc;
       }, {} as Record<string, number>);
     },

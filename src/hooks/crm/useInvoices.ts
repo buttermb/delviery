@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { crmClientKeys } from './useClients';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
+import { invalidateOnEvent } from '@/lib/invalidation';
 
 export const crmInvoiceKeys = {
     all: ['crm-invoices'] as const,
@@ -14,12 +15,15 @@ export const crmInvoiceKeys = {
     byClient: (clientId: string) => [...crmInvoiceKeys.all, 'client', clientId] as const,
 };
 
-const normalizeInvoice = (row: Record<string, unknown>): CRMInvoice => ({
-    ...(row as CRMInvoice),
-    line_items: Array.isArray(row.line_items) ? (row.line_items as unknown as LineItem[]) : [],
-    issue_date: row.invoice_date as string,
-    tax: row.tax_amount as number,
-});
+const normalizeInvoice = (row: unknown): CRMInvoice => {
+    const data = row as Record<string, unknown>;
+    return {
+        ...(data as unknown as CRMInvoice),
+        line_items: Array.isArray(data.line_items) ? (data.line_items as unknown as LineItem[]) : [],
+        issue_date: data.invoice_date as string,
+        tax: data.tax_amount as number,
+    };
+};
 
 export function useInvoices() {
     const accountId = useAccountIdSafe();
@@ -28,13 +32,13 @@ export function useInvoices() {
         queryKey: crmInvoiceKeys.lists(),
         queryFn: async () => {
             if (!accountId) return [];
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('crm_invoices')
-                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, notes, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
+                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                 .eq('account_id', accountId)
                 .order('created_at', { ascending: false });
             if (error) throw error;
-            return (data || []).map(normalizeInvoice);
+            return (data || []).map((row: Record<string, unknown>) => normalizeInvoice(row));
         },
         enabled: !!accountId,
         staleTime: 30_000,
@@ -44,13 +48,13 @@ export function useInvoices() {
     const useInvoiceQuery = (id: string) => useQuery({
         queryKey: crmInvoiceKeys.detail(id),
         queryFn: async () => {
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('crm_invoices')
-                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, notes, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
+                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                 .eq('id', id)
                 .maybeSingle();
             if (error) throw error;
-            return normalizeInvoice(data);
+            return data ? normalizeInvoice(data as Record<string, unknown>) : null;
         },
         enabled: !!id,
         staleTime: 30_000,
@@ -66,7 +70,17 @@ export function useInvoices() {
                 if (error) throw error;
                 return normalizeInvoice(data);
             },
-            onSuccess: () => { queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all }); toast.success('Invoice marked as paid'); },
+            onSuccess: (data) => {
+                queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
+                toast.success('Invoice marked as paid');
+                // Cross-panel invalidation - invoice payment affects finance, collections, dashboard
+                if (accountId) {
+                    invalidateOnEvent(queryClient, 'INVOICE_PAID', accountId, {
+                        invoiceId: data?.id,
+                        customerId: data?.client_id,
+                    });
+                }
+            },
             onError: (error: Error) => { logger.error('Failed to mark invoice as paid', { error }); toast.error('Failed to mark invoice as paid'); },
         });
     };
@@ -141,7 +155,7 @@ export function useInvoices() {
                 const dueDate = new Date();
                 dueDate.setDate(dueDate.getDate() + 30);
 
-                const { data, error } = await supabase
+                const { data, error } = await (supabase as any)
                     .from('crm_invoices')
                     .insert({
                         account_id: original.account_id,
@@ -153,7 +167,6 @@ export function useInvoices() {
                         tax_rate: original.tax_rate,
                         tax_amount: original.tax_amount,
                         total: original.total,
-                        notes: original.notes,
                         status: 'draft',
                     })
                     .select('*, client:crm_clients(*)')
@@ -185,14 +198,14 @@ export function useClientInvoices(clientId: string | undefined) {
         queryKey: crmInvoiceKeys.byClient(clientId || ''),
         queryFn: async () => {
             if (!clientId || !accountId) return [];
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('crm_invoices')
-                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, notes, line_items, paid_at, created_at, updated_at')
+                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, line_items, paid_at, created_at, updated_at')
                 .eq('client_id', clientId)
                 .eq('account_id', accountId)
                 .order('created_at', { ascending: false });
             if (error) throw error;
-            return (data || []).map(normalizeInvoice);
+            return (data || []).map((row: unknown) => normalizeInvoice(row));
         },
         enabled: !!clientId && !!accountId,
         staleTime: 30_000,
@@ -207,11 +220,21 @@ export function useCreateInvoice() {
         mutationFn: async (values: InvoiceFormValues & { account_id?: string }) => {
             const finalAccountId = values.account_id || accountId;
             if (!finalAccountId) throw new Error('Account ID required');
-            const { data, error } = await supabase.from('crm_invoices').insert({ ...values, account_id: finalAccountId, line_items: values.line_items as unknown as Json[] }).select('*, client:crm_clients(*)').maybeSingle();
+            const { data, error } = await (supabase as any).from('crm_invoices').insert({ ...values, account_id: finalAccountId, line_items: values.line_items as unknown as Json[] }).select('*, client:crm_clients(*)').maybeSingle();
             if (error) throw error;
             return normalizeInvoice(data as unknown as Record<string, unknown>);
         },
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all }); toast.success('Invoice created'); },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
+            toast.success('Invoice created');
+            // Cross-panel invalidation - invoice creation affects finance, collections, dashboard
+            if (accountId) {
+                invalidateOnEvent(queryClient, 'INVOICE_CREATED', accountId, {
+                    invoiceId: data?.id,
+                    customerId: data?.client_id,
+                });
+            }
+        },
         onError: (error: Error) => { logger.error('Create failed', error); toast.error(error.message); },
     });
 }

@@ -149,6 +149,30 @@ function getWarningMessage(threshold: number, balance: number): { title: string;
   }
 }
 
+// Safe wrapper to get tenant without throwing
+function useTenantSafe() {
+  try {
+    const { tenant } = useTenantAdminAuth();
+    return tenant;
+  } catch {
+    return null;
+  }
+}
+
+// Fetch credits balance from edge function
+async function fetchCreditsBalance(tenantId: string): Promise<CreditsBalanceResponse> {
+  const { data, error } = await supabase.functions.invoke('credits-balance', {
+    body: { tenant_id: tenantId },
+  });
+
+  if (error) {
+    logger.error('Failed to fetch credits balance', error, { tenantId });
+    throw error;
+  }
+
+  return data as CreditsBalanceResponse;
+}
+
 export function useCredits(): UseCreditsReturn {
   const tenant = useTenantSafe();
   const queryClient = useQueryClient();

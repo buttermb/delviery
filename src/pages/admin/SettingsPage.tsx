@@ -73,6 +73,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [loading, setLoading] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [formsInitialized, setFormsInitialized] = useState(false);
 
   // --- General Form ---
   const generalForm = useForm<GeneralFormValues>({
@@ -255,8 +256,8 @@ export default function SettingsPage() {
             billing_email: generalData.email || account.billing_email,
             metadata: {
               ...(((account as unknown as Record<string, unknown>).metadata as object) || {}),
-              phone: generalData.phone ?? ((account as unknown as Record<string, unknown>).metadata as Record<string, unknown>)?.phone,
-              address: generalData.address ?? ((account as unknown as Record<string, unknown>).metadata as Record<string, unknown>)?.address,
+              phone: (generalData.phone ?? ((account as unknown as Record<string, unknown>).metadata as Record<string, unknown>)?.phone) as string | null,
+              address: (generalData.address ?? ((account as unknown as Record<string, unknown>).metadata as Record<string, unknown>)?.address) as string | null,
             }
           })
           .eq('id', account.id);
