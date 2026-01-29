@@ -21,6 +21,7 @@ import {
   Shield,
   ScrollText,
   PieChart,
+  LineChart,
   Activity,
   Map,
   FileSpreadsheet,
@@ -36,11 +37,14 @@ import {
   Calculator,
   Wallet,
   Landmark,
+  UserPlus,
+  Lock,
   History,
   FileCheck,
   Target,
   Rocket,
   Route,
+  Navigation,
   Code,
   Webhook,
   Puzzle,
@@ -51,6 +55,7 @@ import {
   TrendingDown,
   BarChart2,
   Store,
+  Clock,
   Search,
   Bell,
   PackageOpen,
@@ -59,14 +64,18 @@ import {
   Flame,
   Brain,
   Star,
-  HelpCircle,
+  Barcode,
   Headphones,
+  HelpCircle,
   Award,
-  Barcode
+  Tv,
+  Command,
+  CalendarDays,
+  Key,
+  Briefcase,
+  Send,
+  Timer
 } from 'lucide-react';
-
-// Aliases for backwards compatibility
-const HeadphonesIcon = Headphones;
 
 export interface NavItem {
   title: string;
@@ -93,10 +102,30 @@ export const navigationSections: NavSection[] = [
         icon: LayoutDashboard
       },
       {
+        title: 'Dashboard Hub',
+        href: '/admin/dashboard-hub',
+        icon: LayoutDashboard,
+        tier: 'professional'
+      },
+      {
+        title: 'TV Dashboard',
+        href: '/admin/tv-dashboard',
+        icon: Tv,
+        badge: 'NEW',
+        tier: 'enterprise'
+      },
+      {
+        title: 'Command Center',
+        href: '/admin/command-center',
+        icon: Command,
+        tier: 'enterprise'
+      },
+      {
         title: 'Hotbox',
         href: '/admin/hotbox',
         icon: Flame,
-        badge: 'HOT'
+        badge: 'HOT',
+        tier: 'professional'
       },
       {
         title: 'Live Orders',
@@ -106,9 +135,9 @@ export const navigationSections: NavSection[] = [
         tier: 'professional'
       },
       {
-        title: 'POS',
-        href: '/admin/pos-system',
-        icon: Store,
+        title: 'Real-Time Dashboard',
+        href: '/admin/realtime-dashboard',
+        icon: Activity,
         tier: 'enterprise'
       },
       {
@@ -116,6 +145,12 @@ export const navigationSections: NavSection[] = [
         href: '/admin/live-map',
         icon: Map,
         badge: 'LIVE',
+        tier: 'enterprise'
+      },
+      {
+        title: 'POS',
+        href: '/admin/pos-system',
+        icon: Store,
         tier: 'enterprise'
       }
     ]
@@ -132,13 +167,8 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'B2B Orders',
-        href: '/admin/orders?tab=wholesale',
+        href: '/admin/orders/b2b',
         icon: Building2
-      },
-      {
-        title: 'Store Orders',
-        href: '/admin/orders/store',
-        icon: Store
       }
     ]
   },
@@ -147,31 +177,6 @@ export const navigationSections: NavSection[] = [
   {
     title: 'Operations',
     items: [
-      {
-        title: 'Team & Roles',
-        href: '/admin/team-members',
-        icon: UsersRound
-      },
-      {
-        title: 'Vendors',
-        href: '/admin/vendor-management',
-        icon: Building2
-      },
-      {
-        title: 'Purchase Orders',
-        href: '/admin/purchase-orders',
-        icon: ClipboardCheck
-      },
-      {
-        title: 'Locations',
-        href: '/admin/locations',
-        icon: MapPin
-      },
-      {
-        title: 'Activity Logs',
-        href: '/admin/activity-logs',
-        icon: History
-      },
       {
         title: 'Orders',
         href: '/admin/orders',
@@ -203,7 +208,7 @@ export const navigationSections: NavSection[] = [
       {
         title: 'Barcodes',
         href: '/admin/generate-barcodes',
-        icon: QrCode
+        icon: Barcode
       },
       {
         title: 'Transfers & Delivery',
@@ -238,18 +243,6 @@ export const navigationSections: NavSection[] = [
         title: 'Receiving & Packaging',
         href: '/admin/operations/receiving',
         icon: ClipboardList
-      },
-      {
-        title: 'Team',
-        href: '/admin/operations-hub?tab=team',
-        icon: UsersRound,
-        tier: 'professional'
-      },
-      {
-        title: 'Roles',
-        href: '/admin/operations-hub?tab=roles',
-        icon: Shield,
-        tier: 'enterprise'
       }
     ]
   },
@@ -259,14 +252,9 @@ export const navigationSections: NavSection[] = [
     title: 'Inventory',
     items: [
       {
-        title: 'Products',
-        href: '/admin/inventory/products',
+        title: 'Inventory Hub',
+        href: '/admin/inventory-hub',
         icon: Package
-      },
-      {
-        title: 'Menus',
-        href: '/admin/inventory/menus',
-        icon: Menu
       },
       {
         title: 'Stock Levels',
@@ -274,21 +262,22 @@ export const navigationSections: NavSection[] = [
         icon: Boxes
       },
       {
-        title: 'Alerts',
+        title: 'Stock Alerts',
         href: '/admin/stock-alerts',
         icon: AlertTriangle,
         tier: 'professional'
       },
       {
-        title: 'Transfers',
+        title: 'Inventory Transfers',
         href: '/admin/inventory-transfers',
         icon: ArrowLeftRight,
         tier: 'professional'
       },
       {
-        title: 'Barcodes',
-        href: '/admin/generate-barcodes',
-        icon: QrCode
+        title: 'Advanced Inventory',
+        href: '/admin/advanced-inventory',
+        icon: Database,
+        tier: 'professional'
       }
     ]
   },
@@ -359,9 +348,14 @@ export const navigationSections: NavSection[] = [
     title: 'Customers',
     items: [
       {
-        title: 'All Customers',
+        title: 'Customers',
         href: '/admin/customers',
         icon: Users
+      },
+      {
+        title: 'Customer Details',
+        href: '/admin/customer-details',
+        icon: UserCheck
       },
       {
         title: 'CRM',
@@ -376,21 +370,15 @@ export const navigationSections: NavSection[] = [
         tier: 'professional'
       },
       {
-        title: 'Support',
-        href: '/admin/customer-support',
-        icon: Headphones,
+        title: 'Customer Insights',
+        href: '/admin/customer-hub?tab=insights',
+        icon: Target,
         tier: 'professional'
       },
       {
-        title: 'Loyalty',
-        href: '/admin/loyalty-program',
-        icon: Award,
-        tier: 'professional'
-      },
-      {
-        title: 'Analytics',
-        href: '/admin/customer-hub?tab=analytics',
-        icon: BarChart3,
+        title: 'Customer Reports',
+        href: '/admin/customer-reports',
+        icon: FileSpreadsheet,
         tier: 'professional'
       }
     ]
@@ -407,9 +395,26 @@ export const navigationSections: NavSection[] = [
         badge: '🔥'
       },
       {
-        title: 'Support',
-        href: '/admin/customer-support',
-        icon: Headphones,
+        title: 'Menu Analytics',
+        href: '/admin/menu-analytics',
+        icon: BarChart3,
+        tier: 'professional'
+      },
+      {
+        title: 'Menu Migration',
+        href: '/admin/menu-migration',
+        icon: ArrowLeftRight,
+        tier: 'professional'
+      },
+      {
+        title: 'Pricing & Deals',
+        href: '/admin/sales/pricing',
+        icon: Tags
+      },
+      {
+        title: 'Wholesale Pricing',
+        href: '/admin/wholesale-pricing-tiers',
+        icon: DollarSign,
         tier: 'professional'
       },
       {
@@ -417,11 +422,6 @@ export const navigationSections: NavSection[] = [
         href: '/admin/loyalty-program',
         icon: Award,
         tier: 'professional'
-      },
-      {
-        title: 'Pricing & Deals',
-        href: '/admin/sales/pricing',
-        icon: Tags
       }
     ]
   },
@@ -435,11 +435,6 @@ export const navigationSections: NavSection[] = [
         href: '/admin/marketing-hub',
         icon: Target,
         badge: 'NEW'
-      },
-      {
-        title: 'Storefront',
-        href: '/admin/storefront',
-        icon: Store
       },
       {
         title: 'Loyalty Program',
@@ -657,7 +652,7 @@ export const navigationSections: NavSection[] = [
     items: [
       {
         title: 'Drivers',
-        href: '/admin/fulfillment-hub?tab=fleet',
+        href: '/admin/drivers',
         icon: Car
       }
     ]
@@ -668,34 +663,33 @@ export const navigationSections: NavSection[] = [
     title: 'Finance',
     items: [
       {
-        title: 'Dashboard',
-        href: '/admin/finance/dashboard',
-        icon: LayoutDashboard
-      },
-      {
-        title: 'Revenue',
-        href: '/admin/finance/revenue',
-        icon: TrendingUp
-      },
-      {
-        title: 'Expenses',
-        href: '/admin/finance/expenses',
-        icon: TrendingDown
-      },
-      {
-        title: 'Invoices',
-        href: '/admin/finance/invoices',
-        icon: Receipt
-      },
-      {
-        title: 'Payouts',
-        href: '/admin/finance/payouts',
-        icon: CreditCard
+        title: 'Finance Hub',
+        href: '/admin/finance-hub',
+        icon: Landmark,
+        tier: 'professional'
       },
       {
         title: 'Financial Center',
         href: '/admin/financial-center',
         icon: Landmark,
+        tier: 'professional'
+      },
+      {
+        title: 'Revenue',
+        href: '/admin/revenue',
+        icon: TrendingUp,
+        tier: 'professional'
+      },
+      {
+        title: 'Expenses',
+        href: '/admin/expenses',
+        icon: TrendingDown,
+        tier: 'professional'
+      },
+      {
+        title: 'Payments & Invoices',
+        href: '/admin/invoice-management',
+        icon: Receipt,
         tier: 'professional'
       },
       {
@@ -736,9 +730,27 @@ export const navigationSections: NavSection[] = [
         tier: 'enterprise'
       },
       {
+        title: 'POS Shifts',
+        href: '/admin/pos-shifts',
+        icon: Timer,
+        tier: 'enterprise'
+      },
+      {
+        title: 'Z-Reports',
+        href: '/admin/z-reports',
+        icon: FileCheck,
+        tier: 'enterprise'
+      },
+      {
         title: 'Collections',
         href: '/admin/collection-mode',
         icon: Wallet,
+        tier: 'professional'
+      },
+      {
+        title: 'Payouts',
+        href: '/admin/payouts',
+        icon: CreditCard,
         tier: 'professional'
       }
     ]
@@ -780,9 +792,10 @@ export const navigationSections: NavSection[] = [
     title: 'Analytics',
     items: [
       {
-        title: 'Overview',
-        href: '/admin/analytics',
-        icon: BarChart3
+        title: 'Analytics Hub',
+        href: '/admin/analytics-hub',
+        icon: BarChart3,
+        tier: 'professional'
       },
       {
         title: 'Analytics Dashboard',
@@ -834,22 +847,28 @@ export const navigationSections: NavSection[] = [
         tier: 'enterprise'
       },
       {
-        title: 'Reports',
-        href: '/admin/analytics-reports',
-        icon: FileText,
-        tier: 'professional'
+        title: 'Strategic Dashboard',
+        href: '/admin/strategic-dashboard',
+        icon: Target,
+        tier: 'enterprise'
+      },
+      {
+        title: 'Board Report',
+        href: '/admin/board-report',
+        icon: Briefcase,
+        tier: 'enterprise'
+      },
+      {
+        title: 'Expansion Analysis',
+        href: '/admin/expansion',
+        icon: TrendingUp,
+        tier: 'enterprise'
       },
       {
         title: 'Export',
-        href: '/admin/data-export',
+        href: '/admin/analytics-export',
         icon: FileSpreadsheet,
         tier: 'professional'
-      },
-      {
-        title: 'Advanced Export',
-        href: '/admin/analytics-advanced-export',
-        icon: Database,
-        tier: 'enterprise'
       }
     ]
   },
@@ -859,9 +878,20 @@ export const navigationSections: NavSection[] = [
     title: 'Reports',
     items: [
       {
+        title: 'Chain of Custody',
+        href: '/admin/reports',
+        icon: FileCheck
+      },
+      {
         title: 'Custom Reports',
         href: '/admin/custom-reports',
         icon: FileText,
+        tier: 'enterprise'
+      },
+      {
+        title: 'Advanced Reporting',
+        href: '/admin/advanced-reporting',
+        icon: FileSpreadsheet,
         tier: 'enterprise'
       },
       {
@@ -869,11 +899,6 @@ export const navigationSections: NavSection[] = [
         href: '/admin/data-export',
         icon: Database,
         tier: 'enterprise'
-      },
-      {
-        title: 'Chain of Custody',
-        href: '/admin/reports',
-        icon: FileCheck
       }
     ]
   },
@@ -942,7 +967,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Help Center',
-        href: '/admin/priority-support',
+        href: '/admin/help-center',
         icon: HelpCircle
       },
       {
@@ -986,12 +1011,6 @@ export const navigationSections: NavSection[] = [
     title: 'Integrations',
     items: [
       {
-        title: 'Webhooks',
-        href: '/admin/webhooks',
-        icon: Webhook,
-        tier: 'professional'
-      },
-      {
         title: 'Local AI',
         href: '/admin/local-ai',
         icon: Brain,
@@ -1002,12 +1021,25 @@ export const navigationSections: NavSection[] = [
         title: 'Custom Integrations',
         href: '/admin/custom-integrations',
         icon: Puzzle,
+        tier: 'ultimate'
+      }
+    ]
+  },
+
+  // 🚀 ENTERPRISE
+  {
+    title: 'Integrations',
+    items: [
+      {
+        title: 'Integrations',
+        href: '/admin/custom-integrations',
+        icon: Puzzle,
         tier: 'professional'
       },
       {
-        title: 'Developer Tools',
-        href: '/admin/developer-tools',
-        icon: Code,
+        title: 'Webhooks',
+        href: '/admin/webhooks',
+        icon: Webhook,
         tier: 'professional'
       },
       {
@@ -1015,6 +1047,12 @@ export const navigationSections: NavSection[] = [
         href: '/admin/compliance',
         icon: Shield,
         tier: 'ultimate'
+      },
+      {
+        title: 'Developer Tools',
+        href: '/admin/developer-tools',
+        icon: Code,
+        tier: 'professional'
       }
     ]
   }
