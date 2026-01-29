@@ -7409,46 +7409,37 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: Connect Integrations to Webhooks showing webhook configuration and logs
+## Task: Connect Integrations to Local AI showing AI assistant settings
 
 ### What was done:
 
-1. **Created `webhook_logs` table migration** (`supabase/migrations/20260128000001_create_webhook_logs.sql`)
-   - New `webhook_logs` table to track webhook delivery attempts
-   - Columns: id, tenant_id, webhook_id, event_type, payload, response_status, response_body, error_message, duration_ms, status, created_at, completed_at
-   - RLS policies for tenant isolation
-   - Added `integration_id` column to `webhooks` table to link webhooks to custom integrations
+1. **Added AI Assistant section to IntegrationsSettings page** (`src/pages/tenant-admin/settings/IntegrationsSettings.tsx`)
+   - Added new "AI Assistant" section after the "Available Integrations" section
+   - Shows Local AI integration card with purple Brain icon
+   - Displays "Demo Mode" badge to indicate current implementation status
+   - Lists available AI features: Sentiment Analysis, Text Summarization, Message Classification, Translation
+   - Includes informational text about local AI processing benefits (privacy, no API fees)
+   - Added "Open AI Assistant" button that navigates to the Integrations Hub AI tab
+   - Added "Documentation" button placeholder for future documentation links
 
-2. **Created `WebhookLogs` component** (`src/components/integrations/WebhookLogs.tsx`)
-   - Displays webhook delivery history with expandable log entries
-   - Shows status (pending/success/failed), HTTP status codes, duration
-   - Expandable details with timestamp, error messages, payload, and response body
-   - Refresh functionality with loading states
-   - Relative timestamps ("2 minutes ago")
+2. **Added required imports and types**
+   - Imported `Brain` icon from lucide-react
+   - Imported `useNavigate` from react-router-dom
+   - Created `AIIntegration` interface for type safety
+   - Used `tenantSlug` from `useTenantAdminAuth()` for proper tenant-aware navigation
 
-3. **Created `IntegrationWebhooks` component** (`src/components/integrations/IntegrationWebhooks.tsx`)
-   - Lists webhooks linked to a specific integration
-   - Create/edit/delete webhook functionality
-   - Event selection (order.created, order.updated, etc.)
-   - Click webhook to view its delivery logs via WebhookLogs component
-
-4. **Updated `CustomIntegrations` page** (`src/pages/admin/CustomIntegrations.tsx`)
-   - Added detail view when clicking an integration
-   - Shows integration header with type badge and status
-   - Displays IntegrationWebhooks component for managing webhooks per integration
-   - Back button to return to integration list
-   - Added update mutation for editing integrations
-   - Cards now show "Click to manage webhooks" hint
-
-5. **Updated `Webhooks` page** (`src/pages/admin/Webhooks.tsx`)
-   - Clicking a webhook card now shows its delivery logs
-   - Selected webhook is highlighted
-   - Added WebhookLogs component import
-   - Fixed unused imports and type issues
+3. **Navigation integration**
+   - Clicking "Open AI Assistant" navigates to `/${tenantSlug}/admin/integrations-hub?tab=ai`
+   - This correctly opens the IntegrationsHubPage with the Local AI tab selected
 
 ### Files Changed:
-- `supabase/migrations/20260128000001_create_webhook_logs.sql` (new)
-- `src/components/integrations/WebhookLogs.tsx` (new)
-- `src/components/integrations/IntegrationWebhooks.tsx` (new)
-- `src/pages/admin/CustomIntegrations.tsx` (modified)
-- `src/pages/admin/Webhooks.tsx` (modified)
+- `src/pages/tenant-admin/settings/IntegrationsSettings.tsx` (modified)
+  - Added Brain icon import
+  - Added useNavigate import
+  - Added AIIntegration interface
+  - Added aiAssistant configuration object
+  - Added AI Assistant SettingsSection with card showing features and navigation button
+
+### Build Status:
+- TypeScript compilation passes (`npx tsc --noEmit`)
+- Note: Full build has pre-existing issue with missing `papaparse` dependency (unrelated to this change)
