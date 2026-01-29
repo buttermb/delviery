@@ -102,12 +102,8 @@ export function LoginPage() {
     try {
       const email = data.email.toLowerCase().trim();
 
-      await login(email, data.password, tenantSlug);
-
-      if (data.rememberMe) {
-        safeStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN,
-          safeStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN) || '');
-      }
+      // Pass rememberMe to extend session duration (30 days vs 7 days)
+      await login(email, data.password, tenantSlug, data.rememberMe);
 
       const destination = redirectTo || `/${tenantSlug}/admin/dashboard`;
       navigate(destination, { replace: true });
@@ -206,12 +202,17 @@ export function LoginPage() {
                     <FormItem className="flex items-center space-x-2 space-y-0">
                       <FormControl>
                         <Checkbox
+                          id="remember-me"
                           checked={field.value}
                           onCheckedChange={field.onChange}
                           disabled={isSubmitting}
                         />
                       </FormControl>
-                      <FormLabel className="text-sm font-normal cursor-pointer">
+                      <FormLabel
+                        htmlFor="remember-me"
+                        className="text-sm font-normal cursor-pointer"
+                        title="Stay signed in for 30 days instead of 7 days"
+                      >
                         Remember me
                       </FormLabel>
                     </FormItem>

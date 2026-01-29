@@ -91,7 +91,7 @@ interface TenantAdminAuthContextType {
   isAuthenticated: boolean; // New: cookie-based authentication state
   connectionStatus: ConnectionStatus; // Network connection status
   loading: boolean;
-  login: (email: string, password: string, tenantSlug: string) => Promise<void>;
+  login: (email: string, password: string, tenantSlug: string, rememberMe?: boolean) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuthToken: () => Promise<boolean>;
   refreshTenant: () => Promise<void>; // Refresh tenant data from database
@@ -1177,7 +1177,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     }
   };
 
-  const login = async (email: string, password: string, tenantSlug: string) => {
+  const login = async (email: string, password: string, tenantSlug: string, rememberMe: boolean = false) => {
     const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { email, tenantSlug });
 
     try {
@@ -1198,7 +1198,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, tenantSlug }),
+        body: JSON.stringify({ email, password, tenantSlug, rememberMe }),
         timeout: 30000, // 30 seconds for login
         retryConfig: {
           maxRetries: 3,

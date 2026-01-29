@@ -110,6 +110,9 @@ export const STORAGE_KEYS = {
 
   // Navigation
   SCROLL_POSITIONS: 'scroll_positions',
+
+  // Session preferences
+  REMEMBER_ME: 'remember_me',
 } as const;
 
 /**

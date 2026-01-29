@@ -248,6 +248,7 @@ export default function LoginPage() {
           email: data.email,
           password: data.password,
           tenantSlug: tenant.slug.toLowerCase(),
+          rememberMe: data.rememberMe,
         }),
         timeout: 30000,
         retryConfig: { maxRetries: 3, initialDelay: 1000 },
@@ -421,9 +422,14 @@ export default function LoginPage() {
                               checked={field.value}
                               onCheckedChange={field.onChange}
                               disabled={isSubmitting}
+                              id="remember-me"
                             />
                           </FormControl>
-                          <FormLabel className="text-sm font-normal text-foreground/80 hover:text-primary cursor-pointer transition-colors">
+                          <FormLabel
+                            htmlFor="remember-me"
+                            className="text-sm font-normal text-foreground/80 hover:text-primary cursor-pointer transition-colors"
+                            title="Stay signed in for 30 days instead of 7 days"
+                          >
                             Remember me
                           </FormLabel>
                         </FormItem>

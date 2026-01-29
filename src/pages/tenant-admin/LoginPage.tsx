@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Building2, Loader2, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -30,6 +31,7 @@ export default function TenantAdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
@@ -99,7 +101,7 @@ export default function TenantAdminLoginPage() {
     setLoading(true);
 
     try {
-      await login(email, password, tenantSlug);
+      await login(email, password, tenantSlug, rememberMe);
 
       toast({
         title: "Welcome back!",
@@ -328,6 +330,23 @@ export default function TenantAdminLoginPage() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+            </div>
+
+            {/* Remember Me */}
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="remember-me"
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(checked === true)}
+                disabled={loading}
+              />
+              <Label
+                htmlFor="remember-me"
+                className="text-sm font-normal text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                title="Stay signed in for 30 days instead of 7 days"
+              >
+                Remember me
+              </Label>
             </div>
 
             <Button
