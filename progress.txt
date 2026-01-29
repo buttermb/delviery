@@ -7407,37 +7407,19 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
----
+## Agent 15 - Command Center Section Consolidation
 
-## Agent 14 - Sidebar Loading Skeleton
-
-### Task: Add sidebar loading skeleton while navigation config loads
+### Task: Add Command Center section with Dashboard, Hotbox, Live Orders, POS, Live Map in sidebar-navigation.ts
 
 **Completed:**
-
-1. **Created `SidebarLoadingSkeleton` component** (`src/components/admin/sidebar/SidebarLoadingSkeleton.tsx`)
-   - New component that displays a skeleton loading state matching the sidebar structure
-   - Uses `SidebarMenuSkeleton` from ui/sidebar for menu item skeletons
-   - Includes skeleton for header (tenant dropdown), search bar, quick actions, menu sections, and footer
-   - Properly uses the Sidebar component structure for consistent styling
-
-2. **Updated `useSidebarConfig` hook** (`src/hooks/useSidebarConfig.ts`)
-   - Aggregates loading states from `useOperationSize`, `useSidebarPreferences`, and `useBusinessTier`
-   - Exposes new `isLoading` property that is true while any dependent hook is still loading
-   - Allows components to show loading UI while navigation configuration is being fetched
-
-3. **Integrated skeleton into `AdaptiveSidebar`** (`src/components/admin/sidebar/AdaptiveSidebar.tsx`)
-   - Added import for `SidebarLoadingSkeleton`
-   - Uses `isLoading` from `useSidebarConfig` hook
-   - Shows `SidebarLoadingSkeleton` when loading, otherwise shows full sidebar
-   - Skeleton appears after tenantSlug check but before main content renders
+- Consolidated three redundant "Command Center" sections into a single, well-organized section
+- The Command Center section now includes:
+  1. **Dashboard** - Links to `/admin/dashboard`, uses `LayoutDashboard` icon
+  2. **Hotbox** - Links to `/admin/hotbox`, uses `Flame` icon with 'HOT' badge
+  3. **Live Orders** - Links to `/admin/orders?tab=live`, uses `Activity` icon with 'LIVE' badge (professional tier)
+  4. **POS** - Links to `/admin/pos-system`, uses `Store` icon (enterprise tier)
+  5. **Live Map** - Links to `/admin/live-map`, uses `Map` icon with 'LIVE' badge (enterprise tier)
+- Added missing icon imports: `Barcode`, `Headphones`, `HeadphonesIcon`, `Award`, `HelpCircle`
 
 ### Files Changed:
-- `src/components/admin/sidebar/SidebarLoadingSkeleton.tsx` (new)
-- `src/hooks/useSidebarConfig.ts` (modified)
-- `src/components/admin/sidebar/AdaptiveSidebar.tsx` (modified)
-
-### Testing:
-- TypeScript compilation passes with no errors
-- Skeleton component structure matches real sidebar layout
-- Loading state properly aggregates from all dependent hooks
+- `src/components/admin/sidebar-navigation.ts` - Consolidated Command Center sections and added missing icon imports
