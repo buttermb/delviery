@@ -358,7 +358,18 @@ export const queryKeys = {
     scheduled: () => [...queryKeys.reporting.all, 'scheduled'] as const,
   },
 
-  // Vendor
+  // Vendors (list management)
+  vendors: {
+    all: ['vendors'] as const,
+    lists: () => [...queryKeys.vendors.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) =>
+      [...queryKeys.vendors.lists(), filters] as const,
+    details: () => [...queryKeys.vendors.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.vendors.details(), id] as const,
+    orders: (vendorId: string) => [...queryKeys.vendors.detail(vendorId), 'orders'] as const,
+  },
+
+  // Vendor (legacy - single vendor operations)
   vendor: {
     all: ['vendor'] as const,
     purchaseOrders: (vendorId: string) => [...queryKeys.vendor.all, 'purchase-orders', vendorId] as const,
