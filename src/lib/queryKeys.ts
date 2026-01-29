@@ -274,10 +274,12 @@ export const queryKeys = {
   runners: {
     all: ['runners'] as const,
     lists: () => [...queryKeys.runners.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.runners.lists(), filters] as const,
+    available: (tenantId?: string) =>
+      [...queryKeys.runners.all, 'available', { tenantId }] as const,
     detail: (id: string) => [...queryKeys.runners.all, id] as const,
-    deliveries: (runnerId: string) => 
+    deliveries: (runnerId: string) =>
       [...queryKeys.runners.detail(runnerId), 'deliveries'] as const,
   },
 
