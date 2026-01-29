@@ -1,73 +1,424 @@
-/**
- * useCustomerInvoices Hook
- *
- * Fetches invoices for a specific customer from the customer_invoices table.
- * Used in the customer profile to display their invoice history.
- */
-
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+
+export interface CustomerInvoiceLineItem {
+  id?: string;
+  description: string;
+  quantity: number;
+  unit_price: number;
+  total: number;
+}
 
 export interface CustomerInvoice {
   id: string;
-  invoice_number: string;
+  tenant_id: string;
   customer_id: string;
-  status: string | null;
+  invoice_number: string;
+  status: 'draft' | 'unpaid' | 'paid' | 'overdue' | 'cancelled';
   subtotal: number;
-  tax: number | null;
-  discount: number | null;
+  tax: number;
   total: number;
-  due_date: string;
+  amount_paid: number;
+  amount_due: number;
+  due_date: string | null;
+  issue_date: string | null;
   paid_at: string | null;
-  payment_method: string | null;
   notes: string | null;
-  order_id: string | null;
-  created_at: string | null;
+  line_items: CustomerInvoiceLineItem[] | null;
+  created_at: string;
+  updated_at: string;
+  customer?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone?: string;
+  };
 }
 
-export function useCustomerInvoices(customerId: string | undefined) {
+export interface CreateInvoiceInput {
+  customer_id: string;
+  subtotal: number;
+  tax: number;
+  total: number;
+  due_date?: string;
+  notes?: string;
+  line_items?: CustomerInvoiceLineItem[];
+}
+
+export interface RecordPaymentInput {
+  invoiceId: string;
+  amount: number;
+  paymentMethod?: string;
+  notes?: string;
+}
+
+export function useCustomerInvoices() {
+  const { tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
+
+  const useInvoicesQuery = (filters?: { status?: string; search?: string }) =>
+    useQuery({
+      queryKey: queryKeys.customerInvoices.list(tenant?.id, filters),
+      queryFn: async () => {
+        if (!tenant?.id) return [];
+
+        let query = supabase
+          .from('customer_invoices')
+          .select(`
+            *,
+            customer:customers(id, first_name, last_name, email, phone)
+          `)
+          .eq('tenant_id', tenant.id)
+          .order('created_at', { ascending: false });
+
+        if (filters?.status && filters.status !== 'all') {
+          query = query.eq('status', filters.status);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        return (data || []) as CustomerInvoice[];
+      },
+      enabled: !!tenant?.id,
+      staleTime: 30_000,
+      gcTime: 300_000,
+    });
+
+  const useInvoiceQuery = (id: string) =>
+    useQuery({
+      queryKey: queryKeys.customerInvoices.detail(id),
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('customer_invoices')
+          .select(`
+            *,
+            customer:customers(id, first_name, last_name, email, phone)
+          `)
+          .eq('id', id)
+          .maybeSingle();
+        if (error) throw error;
+        return data as CustomerInvoice | null;
+      },
+      enabled: !!id,
+      staleTime: 30_000,
+    });
+
+  const useInvoiceStatsQuery = () =>
+    useQuery({
+      queryKey: queryKeys.customerInvoices.stats(tenant?.id),
+      queryFn: async () => {
+        if (!tenant?.id) return null;
+
+        const { data, error } = await supabase
+          .from('customer_invoices')
+          .select('id, status, total, amount_paid, paid_at, created_at')
+          .eq('tenant_id', tenant.id);
+
+        if (error) throw error;
+
+        const invoices = data || [];
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const totalRevenue = invoices
+          .filter((i) => i.status === 'paid')
+          .reduce((sum, i) => sum + (i.total || 0), 0);
+
+        const paidThisMonth = invoices
+          .filter((i) => i.status === 'paid' && i.paid_at && new Date(i.paid_at) >= monthStart)
+          .reduce((sum, i) => sum + (i.total || 0), 0);
+
+        const paidThisMonthCount = invoices.filter(
+          (i) => i.status === 'paid' && i.paid_at && new Date(i.paid_at) >= monthStart
+        ).length;
+
+        const outstandingAmount = invoices
+          .filter((i) => i.status === 'unpaid' || i.status === 'overdue')
+          .reduce((sum, i) => sum + ((i.total || 0) - (i.amount_paid || 0)), 0);
+
+        const overdueCount = invoices.filter((i) => i.status === 'overdue').length;
+        const unpaidCount = invoices.filter((i) => i.status === 'unpaid').length;
+        const draftCount = invoices.filter((i) => i.status === 'draft').length;
+        const paidCount = invoices.filter((i) => i.status === 'paid').length;
+
+        return {
+          totalRevenue,
+          paidThisMonth,
+          paidThisMonthCount,
+          outstandingAmount,
+          overdueCount,
+          unpaidCount,
+          draftCount,
+          paidCount,
+          totalInvoices: invoices.length,
+        };
+      },
+      enabled: !!tenant?.id,
+      staleTime: 60_000,
+    });
+
+  const useCreateInvoice = () =>
+    useMutation({
+      mutationFn: async (input: CreateInvoiceInput) => {
+        if (!tenant?.id) throw new Error('Tenant ID required');
+
+        // Generate invoice number
+        let invoiceNumber = `INV-${Date.now()}`;
+        try {
+          const { data: genNum, error: genErr } = await (supabase as unknown as { rpc: (fn: string, params: Record<string, unknown>) => Promise<{ data: string | null; error: Error | null }> }).rpc('generate_invoice_number', {
+            tenant_id: tenant.id,
+          });
+          if (!genErr && typeof genNum === 'string' && genNum.trim()) {
+            invoiceNumber = genNum;
+          }
+        } catch {
+          // Fallback to timestamp-based number
+        }
+
+        const { data, error } = await supabase
+          .from('customer_invoices')
+          .insert({
+            tenant_id: tenant.id,
+            customer_id: input.customer_id,
+            invoice_number: invoiceNumber,
+            subtotal: input.subtotal,
+            tax: input.tax,
+            total: input.total,
+            amount_paid: 0,
+            amount_due: input.total,
+            status: 'unpaid',
+            issue_date: new Date().toISOString().split('T')[0],
+            due_date: input.due_date || null,
+            notes: input.notes || null,
+            line_items: input.line_items || null,
+          } as Record<string, unknown>)
+          .select(`
+            *,
+            customer:customers(id, first_name, last_name, email, phone)
+          `)
+          .maybeSingle();
+
+        if (error) throw error;
+        return data as CustomerInvoice;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
+        toast.success('Invoice created successfully');
+      },
+      onError: (error: Error) => {
+        logger.error('Failed to create invoice', error, { component: 'useCustomerInvoices' });
+        toast.error('Failed to create invoice', { description: error.message });
+      },
+    });
+
+  const useMarkAsPaid = () =>
+    useMutation({
+      mutationFn: async (invoiceId: string) => {
+        if (!tenant?.id) throw new Error('Tenant ID required');
+
+        const { data, error } = await supabase
+          .from('customer_invoices')
+          .update({
+            status: 'paid',
+            paid_at: new Date().toISOString(),
+            amount_paid: supabase.rpc ? undefined : 0, // Will be set from total
+          })
+          .eq('id', invoiceId)
+          .eq('tenant_id', tenant.id)
+          .select(`
+            *,
+            customer:customers(id, first_name, last_name, email, phone)
+          `)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        // Update amount_paid to equal total
+        if (data) {
+          const { error: updateErr } = await supabase
+            .from('customer_invoices')
+            .update({ amount_paid: data.total, amount_due: 0 })
+            .eq('id', invoiceId);
+          if (updateErr) throw updateErr;
+        }
+
+        return data as CustomerInvoice;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
+        toast.success('Invoice marked as paid');
+      },
+      onError: (error: Error) => {
+        logger.error('Failed to mark invoice as paid', error, { component: 'useCustomerInvoices' });
+        toast.error('Failed to mark invoice as paid');
+      },
+    });
+
+  const useRecordPayment = () =>
+    useMutation({
+      mutationFn: async ({ invoiceId, amount, notes }: RecordPaymentInput) => {
+        if (!tenant?.id) throw new Error('Tenant ID required');
+
+        // Get current invoice
+        const { data: invoice, error: fetchErr } = await supabase
+          .from('customer_invoices')
+          .select('*')
+          .eq('id', invoiceId)
+          .eq('tenant_id', tenant.id)
+          .maybeSingle();
+
+        if (fetchErr) throw fetchErr;
+        if (!invoice) throw new Error('Invoice not found');
+
+        const newAmountPaid = (invoice.amount_paid || 0) + amount;
+        const newAmountDue = (invoice.total || 0) - newAmountPaid;
+        const isPaidInFull = newAmountDue <= 0;
+
+        const { data, error } = await supabase
+          .from('customer_invoices')
+          .update({
+            amount_paid: newAmountPaid,
+            amount_due: Math.max(0, newAmountDue),
+            status: isPaidInFull ? 'paid' : invoice.status,
+            paid_at: isPaidInFull ? new Date().toISOString() : invoice.paid_at,
+            notes: notes ? `${invoice.notes || ''}\n\nPayment recorded: $${amount.toFixed(2)}` : invoice.notes,
+          })
+          .eq('id', invoiceId)
+          .eq('tenant_id', tenant.id)
+          .select(`
+            *,
+            customer:customers(id, first_name, last_name, email, phone)
+          `)
+          .maybeSingle();
+
+        if (error) throw error;
+        return data as CustomerInvoice;
+      },
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
+        if (data?.status === 'paid') {
+          toast.success('Payment recorded - Invoice fully paid');
+        } else {
+          toast.success('Payment recorded successfully');
+        }
+      },
+      onError: (error: Error) => {
+        logger.error('Failed to record payment', error, { component: 'useCustomerInvoices' });
+        toast.error('Failed to record payment');
+      },
+    });
+
+  const useMarkAsSent = () =>
+    useMutation({
+      mutationFn: async (invoiceId: string) => {
+        if (!tenant?.id) throw new Error('Tenant ID required');
+
+        const { data, error } = await supabase
+          .from('customer_invoices')
+          .update({ status: 'unpaid' })
+          .eq('id', invoiceId)
+          .eq('tenant_id', tenant.id)
+          .select()
+          .maybeSingle();
+
+        if (error) throw error;
+        return data as CustomerInvoice;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
+        toast.success('Invoice marked as sent');
+      },
+      onError: (error: Error) => {
+        logger.error('Failed to mark invoice as sent', error, { component: 'useCustomerInvoices' });
+        toast.error('Failed to mark invoice as sent');
+      },
+    });
+
+  const useVoidInvoice = () =>
+    useMutation({
+      mutationFn: async (invoiceId: string) => {
+        if (!tenant?.id) throw new Error('Tenant ID required');
+
+        const { data, error } = await supabase
+          .from('customer_invoices')
+          .update({ status: 'cancelled' })
+          .eq('id', invoiceId)
+          .eq('tenant_id', tenant.id)
+          .select()
+          .maybeSingle();
+
+        if (error) throw error;
+        return data as CustomerInvoice;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
+        toast.success('Invoice voided');
+      },
+      onError: (error: Error) => {
+        logger.error('Failed to void invoice', error, { component: 'useCustomerInvoices' });
+        toast.error('Failed to void invoice');
+      },
+    });
+
+  const useDeleteInvoice = () =>
+    useMutation({
+      mutationFn: async (invoiceId: string) => {
+        if (!tenant?.id) throw new Error('Tenant ID required');
+
+        const { error } = await supabase
+          .from('customer_invoices')
+          .delete()
+          .eq('id', invoiceId)
+          .eq('tenant_id', tenant.id);
+
+        if (error) throw error;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
+        toast.success('Invoice deleted');
+      },
+      onError: (error: Error) => {
+        logger.error('Failed to delete invoice', error, { component: 'useCustomerInvoices' });
+        toast.error('Failed to delete invoice');
+      },
+    });
+
+  return {
+    useInvoicesQuery,
+    useInvoiceQuery,
+    useInvoiceStatsQuery,
+    useCreateInvoice,
+    useMarkAsPaid,
+    useRecordPayment,
+    useMarkAsSent,
+    useVoidInvoice,
+    useDeleteInvoice,
+  };
+}
+
+export function useCustomersList() {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: queryKeys.customers.invoices(customerId ?? ''),
-    queryFn: async (): Promise<CustomerInvoice[]> => {
-      if (!tenant?.id || !customerId) {
-        throw new Error('Missing tenant or customer ID');
-      }
+    queryKey: queryKeys.customers.list({ tenantId: tenant?.id }),
+    queryFn: async () => {
+      if (!tenant?.id) return [];
 
-      // Query customer_invoices table filtered by customer_id
-      // The table uses tenant_id for multi-tenant isolation
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (columns: string) => {
-            eq: (column: string, value: string) => {
-              eq: (column: string, value: string) => {
-                order: (column: string, options: { ascending: boolean }) => Promise<{
-                  data: CustomerInvoice[] | null;
-                  error: { message: string } | null;
-                }>;
-              };
-            };
-          };
-        };
-      })
-        .from('customer_invoices')
-        .select('*')
-        .eq('customer_id', customerId)
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, first_name, last_name, email, phone')
         .eq('tenant_id', tenant.id)
-        .order('created_at', { ascending: false });
+        .order('first_name', { ascending: true });
 
-      if (error) {
-        logger.error('Failed to fetch customer invoices', { error, customerId });
-        throw new Error(error.message);
-      }
-
-      return data ?? [];
+      if (error) throw error;
+      return data || [];
     },
-    enabled: !!tenant?.id && !!customerId,
-    staleTime: 60000,
+    enabled: !!tenant?.id,
+    staleTime: 60_000,
   });
 }
