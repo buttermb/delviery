@@ -7407,56 +7407,72 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
+## Agent 59 - Connect Storefront to Customers: Syncing Store Signups to Customer Hub
 
-## Agent 58 - Connect Storefront to Orders Hub
+### Task: Implement automatic synchronization of storefront customer signups to the admin Customer Hub
 
-### Task: Connect Storefront to Orders showing store orders in orders hub
+### Date: 2026-01-28
 
-**Completed:**
-- Created new `OrdersHubPage.tsx` for the storefront at `src/pages/shop/OrdersHubPage.tsx`
-  - Hub-style layout with tabs for All Orders, Active, Delivered, and Cancelled
-  - Search functionality for order numbers and product names
-  - Date range filtering (All Time, Last 7/30/90 Days)
-  - Order statistics showing total orders, active, delivered, and total spent
-  - Expandable order cards with item details
-  - Quick reorder functionality
-  - Track order links
-  - Proper authentication check with redirect to sign-in
-  - Luxury theme support using `useLuxuryTheme` hook
-  - Uses existing `useStorefrontOrders` hook for data fetching
+### Problem Solved:
+Previously, the FloraIQ platform had two separate customer systems:
+1. **Marketplace Customers** (`marketplace_customers` table) - Created when customers sign up or checkout on the storefront
+2. **Admin Customers** (`customers` table) - Managed by admin staff in the Customer Hub
 
-- Updated routing in `src/App.tsx`:
-  - Added lazy import for `ShopOrdersHubPage`
-  - Changed `/shop/:storeSlug/orders` route to use new OrdersHubPage instead of AccountPage
+These systems were not connected, meaning storefront signups were invisible in the admin CRM.
 
-**Additional Fixes (Pre-existing Build Issues):**
-- Fixed duplicate Papa import in `OrdersHubPage.tsx` (admin)
-- Installed missing `papaparse` dependency
-- Fixed orphaned JSX code in `StorefrontBuilder.tsx`
-- Fixed duplicate `tenantSlug` declaration in `CashRegister.tsx`
-- Fixed duplicate `loadProducts` function in `ProductManagement.tsx`
-- Fixed duplicate handler functions in `Orders.tsx`
-- Added missing sanitize functions in `src/lib/utils/sanitize.ts`:
-  - `sanitizeFormInput`
-  - `sanitizeEmail`
-  - `sanitizePhoneInput`
-  - `sanitizeTextareaInput`
-  - `sanitizeCouponCode`
-  - `sanitizeWithLineBreaks`
-  - `sanitizeUrlInput`
-  - `sanitizeSlugInput`
-  - `sanitizeSkuInput`
-  - `sanitizeColor`
+### Solution Implemented:
+
+#### 1. Database Migration: `20260128000001_sync_storefront_customers_to_hub.sql`
+- **Automatic Sync Trigger**: Created `trigger_sync_marketplace_customer` that fires on INSERT/UPDATE of `marketplace_customers`
+- **Sync Function**: `sync_marketplace_customer_to_customers()` handles the upsert logic:
+  - Gets tenant_id from marketplace_profiles via store_id
+  - Gets account_id for the tenant
+  - Checks if customer already exists by email + tenant_id
+  - Either updates existing customer or inserts new one
+  - New customers are created with:
+    - `customer_type: 'recreational'` (default for storefront)
+    - `status: 'active'`
+    - `loyalty_points: 0`, `loyalty_tier: 'bronze'`
+    - `referral_source: 'storefront'` (to track origin)
+- **Manual Sync RPC**: `sync_all_marketplace_customers_to_hub(p_store_id)` for bulk syncing existing customers
+- **Link Column**: Added `marketplace_customer_id` FK to `customers` table for bi-directional tracking
+- **Indexes**: Added indexes for performance on `marketplace_customer_id` and `referral_source = 'storefront'`
+
+#### 2. Frontend Hook: `src/hooks/useMarketplaceCustomerSync.ts`
+- React Query mutation hook for triggering manual sync
+- Calls `sync_all_marketplace_customers_to_hub` RPC
+- Invalidates both `marketplaceCustomers` and `customers` query caches
+- Provides success/error toast notifications with sync statistics
+
+#### 3. Query Keys: `src/lib/queryKeys.ts`
+- Added `marketplaceCustomers` query key factory:
+  - `marketplaceCustomers.all`
+  - `marketplaceCustomers.list(storeId)`
+  - `marketplaceCustomers.detail(id)`
+  - `marketplaceCustomers.byStore(storeId)`
+  - `marketplaceCustomers.sync(storeId)`
+
+#### 4. UI Integration: `src/pages/admin/storefront/StorefrontCustomers.tsx`
+- Added "Sync to CRM" button in the header
+- Shows loading spinner while syncing
+- Shows green checkmark after successful sync
+- Tooltip explains the feature purpose
+- Uses `useMarketplaceCustomerSync` hook
+
+### How It Works:
+1. **Automatic Sync**: When a customer places an order on the storefront, `create_marketplace_order` RPC upserts them into `marketplace_customers`, which triggers our sync to `customers` table automatically.
+2. **Manual Sync**: Admins can click "Sync to CRM" button on the Storefront Customers page to sync any missed customers.
+3. **Unified View**: Once synced, storefront customers appear in the Customer Hub (CustomerManagement.tsx) with `referral_source = 'storefront'`.
 
 ### Files Changed:
-- `src/pages/shop/OrdersHubPage.tsx` (NEW) - Customer orders hub page
-- `src/App.tsx` - Added route for new orders hub page
-- `src/pages/admin/hubs/OrdersHubPage.tsx` - Removed duplicate Papa import
-- `src/pages/admin/storefront/StorefrontBuilder.tsx` - Removed orphaned JSX code
-- `src/pages/admin/CashRegister.tsx` - Fixed duplicate tenantSlug declaration
-- `src/pages/admin/ProductManagement.tsx` - Fixed duplicate loadProducts function
-- `src/pages/admin/Orders.tsx` - Fixed duplicate handler functions
-- `src/lib/utils/sanitize.ts` - Added missing sanitize functions
+- `supabase/migrations/20260128000001_sync_storefront_customers_to_hub.sql` (new)
+- `src/hooks/useMarketplaceCustomerSync.ts` (new)
+- `src/lib/queryKeys.ts` (modified - added marketplaceCustomers keys)
+- `src/pages/admin/storefront/StorefrontCustomers.tsx` (modified - added sync button)
 
-### Build Status: ✅ PASSING
-
+### Acceptance Criteria Met:
+- [x] New storefront signups automatically sync to customers table
+- [x] Manual sync available for existing customers
+- [x] Customers linked via marketplace_customer_id
+- [x] Admin can identify storefront customers via referral_source
+- [x] TypeScript compiles with no errors

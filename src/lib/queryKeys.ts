@@ -680,11 +680,14 @@ export const queryKeys = {
     byTenant: (tenantId: string) => [...queryKeys.storefrontSettings.all, 'tenant', tenantId] as const,
   },
 
-  // Storefront Marketing (banners, deals for shop-facing)
-  storefront: {
-    all: ['storefront-marketing'] as const,
-    banners: (storeId?: string) => [...queryKeys.storefront.all, 'banners', storeId] as const,
-    deals: (storeId?: string) => [...queryKeys.storefront.all, 'deals', storeId] as const,
+  // Marketplace Customers (storefront signups)
+  marketplaceCustomers: {
+    all: ['marketplace-customers'] as const,
+    lists: () => [...queryKeys.marketplaceCustomers.all, 'list'] as const,
+    list: (storeId?: string) => [...queryKeys.marketplaceCustomers.lists(), { storeId }] as const,
+    detail: (id: string) => [...queryKeys.marketplaceCustomers.all, id] as const,
+    byStore: (storeId: string) => [...queryKeys.marketplaceCustomers.all, 'store', storeId] as const,
+    sync: (storeId?: string) => [...queryKeys.marketplaceCustomers.all, 'sync', storeId] as const,
   },
 
   // Activity Feed
