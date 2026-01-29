@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
@@ -25,6 +26,7 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  Truck,
 } from "lucide-react";
 import {
   Table,
@@ -66,6 +68,7 @@ const STATUS_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 
 export default function PurchaseOrdersPage() {
   const { tenant } = useTenantAdminAuth();
+  const [, setSearchParams] = useSearchParams();
   const { deletePurchaseOrder, updatePurchaseOrderStatus } = usePurchaseOrders();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -171,13 +174,23 @@ export default function PurchaseOrdersPage() {
             Create and manage purchase orders from suppliers
           </p>
         </div>
-        <Button
-          className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation"
-          onClick={handleCreate}
-        >
-          <Plus className="h-4 w-4 sm:mr-2" />
-          <span className="text-sm sm:text-base">New Purchase Order</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="min-h-[44px] touch-manipulation"
+            onClick={() => setSearchParams({ tab: 'receiving' })}
+          >
+            <Truck className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline text-sm sm:text-base">Receiving</span>
+          </Button>
+          <Button
+            className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation"
+            onClick={handleCreate}
+          >
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="text-sm sm:text-base">New Purchase Order</span>
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
