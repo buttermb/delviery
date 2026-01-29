@@ -128,7 +128,7 @@ export function useAnalyticsData(filters: AnalyticsFilters = {}) {
   } = filters;
 
   return useQuery({
-    queryKey: queryKeys.analytics.all.concat(['unified', tenantId, startDate?.toISOString(), endDate?.toISOString(), orderType]),
+    queryKey: [...queryKeys.analytics.all, 'unified', tenantId, startDate?.toISOString(), endDate?.toISOString(), orderType],
     queryFn: async (): Promise<UnifiedAnalyticsData> => {
       if (!tenantId) {
         throw new Error('No tenant context');
@@ -315,7 +315,7 @@ async function fetchOrdersData(
 }
 
 async function fetchProductsData(tenantId: string): Promise<Omit<InventoryAnalytics, 'recentMovements'>> {
-  const { data: products, error } = await supabase
+  const { data: products, error } = await (supabase as any)
     .from('products')
     .select('id, name, sku, stock_quantity, low_stock_alert, price, category, is_active')
     .eq('tenant_id', tenantId);
@@ -325,7 +325,16 @@ async function fetchProductsData(tenantId: string): Promise<Omit<InventoryAnalyt
     throw error;
   }
 
-  const productsList = products ?? [];
+  const productsList = (products ?? []) as Array<{
+    id: string;
+    name: string;
+    sku?: string;
+    stock_quantity?: number;
+    low_stock_alert?: number;
+    price?: number;
+    category?: string;
+    is_active?: boolean;
+  }>;
 
   const totalProducts = productsList.length;
   const activeProducts = productsList.filter(p => p.is_active !== false).length;

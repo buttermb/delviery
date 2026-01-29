@@ -17,12 +17,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAccount } from '@/contexts/AccountContext';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
-import { useTenantPaymentSettings } from '@/hooks/usePaymentSettings';
-import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
+import { useTenantPaymentSettings, type PaymentSettings } from '@/hooks/usePaymentSettings';
+import { useStorefrontSettings, type StorefrontSettings } from '@/hooks/useStorefrontSettings';
 import { logger } from '@/lib/logger';
 import type { SidebarPreferences } from '@/types/sidebar';
-import type { PaymentSettings } from '@/hooks/usePaymentSettings';
-import type { StorefrontSettings } from '@/hooks/useStorefrontSettings';
 
 // Types
 export interface SecuritySettings {
@@ -213,7 +211,7 @@ export function GlobalSettingsProvider({ children }: GlobalSettingsProviderProps
     security,
     notifications,
     sidebar: sidebarPrefs,
-    payment: paymentSettings || null,
+    payment: (paymentSettings as PaymentSettings) || null,
     storefront: storefrontSettings || null,
     theme,
     isLoading,

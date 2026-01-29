@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { useCustomerInvoices } from '@/hooks/useCustomerInvoices';
+import { useCRMInvoices } from '@/hooks/useCRMInvoices';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { FileText, Calendar, DollarSign, Mail, Eye, Plus, CheckCircle } from 'lucide-react';
@@ -54,7 +54,11 @@ function getStatusLabel(status: string | null): string {
 }
 
 export function CustomerInvoicesTab({ customerId, onCreateInvoice }: CustomerInvoicesTabProps) {
-  const { data: invoices, isLoading, isError } = useCustomerInvoices(customerId);
+  const { useInvoicesQuery } = useCRMInvoices();
+  const { data: invoices, isLoading, isError } = useInvoicesQuery();
+  
+  // Filter invoices for this customer
+  const customerInvoices = invoices?.filter(inv => inv.contact_id === customerId) || [];
   const { navigateToAdmin } = useTenantNavigation();
 
   if (isLoading) {
@@ -97,12 +101,12 @@ export function CustomerInvoicesTab({ customerId, onCreateInvoice }: CustomerInv
   }
 
   // Calculate summary stats
-  const totalInvoiced = invoices?.reduce((sum, inv) => sum + inv.total, 0) ?? 0;
-  const paidInvoices = invoices?.filter((inv) => inv.status?.toLowerCase() === 'paid') ?? [];
+  const totalInvoiced = customerInvoices.reduce((sum, inv) => sum + inv.total, 0);
+  const paidInvoices = customerInvoices.filter((inv) => inv.status?.toLowerCase() === 'paid');
   const totalPaid = paidInvoices.reduce((sum, inv) => sum + inv.total, 0);
-  const unpaidInvoices = invoices?.filter(
+  const unpaidInvoices = customerInvoices.filter(
     (inv) => inv.status?.toLowerCase() === 'unpaid' || inv.status?.toLowerCase() === 'pending' || inv.status?.toLowerCase() === 'overdue'
-  ) ?? [];
+  );
   const totalUnpaid = unpaidInvoices.reduce((sum, inv) => sum + inv.total, 0);
 
   return (
@@ -125,13 +129,13 @@ export function CustomerInvoicesTab({ customerId, onCreateInvoice }: CustomerInv
       </CardHeader>
       <CardContent>
         {/* Summary Stats */}
-        {invoices && invoices.length > 0 && (
+        {customerInvoices.length > 0 && (
           <>
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="border rounded-lg p-4">
                 <p className="text-sm text-muted-foreground">Total Invoiced</p>
                 <p className="text-2xl font-bold">{formatCurrency(totalInvoiced)}</p>
-                <p className="text-xs text-muted-foreground mt-1">{invoices.length} invoice{invoices.length !== 1 ? 's' : ''}</p>
+                <p className="text-xs text-muted-foreground mt-1">{customerInvoices.length} invoice{customerInvoices.length !== 1 ? 's' : ''}</p>
               </div>
               <div className="border rounded-lg p-4">
                 <p className="text-sm text-muted-foreground">Paid</p>
@@ -150,7 +154,7 @@ export function CustomerInvoicesTab({ customerId, onCreateInvoice }: CustomerInv
 
         {/* Invoice List */}
         <div className="space-y-4">
-          {!invoices || invoices.length === 0 ? (
+          {customerInvoices.length === 0 ? (
             <EnhancedEmptyState
               icon={FileText}
               title="No Invoices Yet"
@@ -169,7 +173,7 @@ export function CustomerInvoicesTab({ customerId, onCreateInvoice }: CustomerInv
               compact
             />
           ) : (
-            invoices.map((invoice) => (
+            customerInvoices.map((invoice) => (
               <div key={invoice.id} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
                 <div className="flex items-start justify-between mb-3">
                   <div>

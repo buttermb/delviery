@@ -220,6 +220,8 @@ export const queryKeys = {
       [...queryKeys.pos.all, 'products', { tenantId }] as const,
     transactions: (tenantId?: string) =>
       [...queryKeys.pos.all, 'transactions', { tenantId }] as const,
+    cashDrawer: (tenantId?: string) =>
+      [...queryKeys.pos.all, 'cash-drawer', { tenantId }] as const,
     shifts: {
       all: () => [...queryKeys.pos.all, 'shifts'] as const,
       active: (tenantId?: string) =>
@@ -234,6 +236,25 @@ export const queryKeys = {
         [...queryKeys.pos.shifts.all(), 'summary', tenantId] as const,
     },
   },
+
+  // Finance
+  finance: {
+    all: ['finance'] as const,
+    revenue: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'revenue', { tenantId }] as const,
+    completedOrders: (tenantId?: string, dateRange?: string) =>
+      [...queryKeys.finance.all, 'completed-orders', { tenantId, dateRange }] as const,
+  },
+
+  // Storefront
+  storefront: {
+    all: ['storefront'] as const,
+    banners: (storeId?: string) =>
+      [...queryKeys.storefront.all, 'banners', { storeId }] as const,
+    settings: (tenantId?: string) =>
+      [...queryKeys.storefront.all, 'settings', { tenantId }] as const,
+  },
+
 
   // Batches
   batches: {

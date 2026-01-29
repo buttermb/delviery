@@ -128,13 +128,13 @@ export function useAdminBadgeCounts() {
         unreadMessages: messagesResult.count || 0,
         pendingShipments: shipmentsResult.count || 0,
         overduePayments: 0,
-        inventoryAlerts: inventoryAlertCount,
+        inventoryAlerts: alertsCount,
       });
 
       logger.debug('Badge counts fetched', {
-        pendingOrders: wholesaleOrderCount + menuOrderCount,
+        pendingOrders: wholesaleCount + menuCount,
         lowStockItems: stockResult.count,
-        inventoryAlerts: inventoryAlertCount,
+        inventoryAlerts: alertsCount,
         component: 'useAdminBadgeCounts',
       });
     } catch (error) {
