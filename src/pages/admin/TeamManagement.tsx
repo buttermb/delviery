@@ -1,8 +1,10 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { queryKeys } from '@/lib/queryKeys';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,164 +19,194 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Users, Plus, Edit, Trash2, Mail, Shield, AlertTriangle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Users, Plus, MoreHorizontal, Shield, AlertTriangle, UserCheck, UserX, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { SEOHead } from '@/components/SEOHead';
 import { PendingInvitations } from '@/components/admin/PendingInvitations';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
-import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default function TeamManagement() {
+interface TeamMember {
+  id: string;
+  user_id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  full_name: string | null;
+  role: 'owner' | 'admin' | 'member' | 'viewer';
+  status: 'active' | 'suspended' | 'deleted';
+  avatar_url: string | null;
+  created_at: string;
+  last_login_at: string | null;
+  is_owner?: boolean;
+}
+
+interface Invitation {
+  id: string;
+  email: string;
+  role: string;
+  created_at: string;
+  expires_at: string;
+  token: string;
+}
+
+interface InviteFormData {
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: 'admin' | 'member' | 'viewer';
+}
+
+const initialFormData: InviteFormData = {
+  email: '',
+  first_name: '',
+  last_name: '',
+  role: 'member',
+};
+
+export function TeamManagement() {
   const { tenant, loading: authLoading } = useTenantAdminAuth();
-  const { toast } = useToast();
-  const [teamMembers, setTeamMembers] = useState<any[]>([]);
-  const [pendingInvitations, setPendingInvitations] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(null);
-  const [isRemoving, setIsRemoving] = useState(false);
+  const [formData, setFormData] = useState<InviteFormData>(initialFormData);
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof InviteFormData, string>>>({});
 
-  // Invite Form
-  const [formData, setFormData] = useState({
-    email: '',
-    full_name: '',
-    role: 'team_member'
-  });
+  // Fetch team members with TanStack Query
+  const {
+    data: teamMembers = [],
+    isLoading: loadingMembers,
+    error: membersError,
+  } = useQuery({
+    queryKey: queryKeys.team.members.list(tenant?.id),
+    queryFn: async () => {
+      if (!tenant?.id) throw new Error('No tenant');
 
-  useEffect(() => {
-    if (tenant) {
-      loadTeamMembers();
-      loadPendingInvitations();
-    }
-  }, [tenant]);
-
-  const loadTeamMembers = async () => {
-    if (!tenant) return;
-
-    try {
-      const { data: tenantUsers, error: tenantUsersError } = await supabase
+      const { data: tenantUsers, error } = await supabase
         .from('tenant_users')
         .select('*')
         .eq('tenant_id', tenant.id)
-        .eq('status', 'active')
+        .neq('status', 'deleted')
         .order('created_at', { ascending: false });
-
-      if (tenantUsersError) throw tenantUsersError;
-
-      // Get tenant owner info - use slug as identifier since owner_email may not exist
-      const ownerData = {
-        user_id: 'owner',
-        email: tenant.slug,
-        full_name: 'Business Owner',
-        role: 'owner',
-        status: 'active',
-        is_owner: true
-      };
-
-      // Filter out owner from tenantUsers if they are already there to avoid duplicates, 
-      // or just assume they are separate. Usually owner is a separate concept or has a role 'owner' in tenant_users.
-      // Based on previous code, it appended owner manually. We will stick to that.
-      setTeamMembers([ownerData, ...(tenantUsers || [])]);
-    } catch (error) {
-      logger.error('Error loading team members', error, { component: 'TeamManagement' });
-      toast({
-        title: 'Error',
-        description: 'Failed to load team members',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!tenant) return;
-
-    try {
-      const { data, error } = await supabase.functions.invoke('tenant-invite', {
-        body: {
-          action: 'send_invitation',
-          tenantId: tenant.id,
-          email: formData.email,
-          role: formData.role,
-        }
-      });
 
       if (error) throw error;
 
-      if (data && typeof data === 'object' && 'error' in data && data.error) {
-        throw new Error(typeof data.error === 'string' ? data.error : 'Failed to send invitation');
-      }
+      // Add owner as first member
+      const ownerData: TeamMember = {
+        id: 'owner',
+        user_id: 'owner',
+        email: tenant.slug,
+        first_name: 'Business',
+        last_name: 'Owner',
+        full_name: 'Business Owner',
+        role: 'owner',
+        status: 'active',
+        avatar_url: null,
+        created_at: tenant.created_at || new Date().toISOString(),
+        last_login_at: null,
+        is_owner: true,
+      };
 
-      toast({
-        title: 'Invitation Sent',
-        description: `Invitation sent to ${formData.email}.`
-      });
+      const members = (tenantUsers || []).map((user): TeamMember => ({
+        id: user.id,
+        user_id: user.user_id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        full_name: user.first_name && user.last_name
+          ? `${user.first_name} ${user.last_name}`
+          : user.first_name || user.last_name || null,
+        role: user.role as TeamMember['role'],
+        status: user.status as TeamMember['status'],
+        avatar_url: user.avatar_url,
+        created_at: user.created_at,
+        last_login_at: user.last_login_at,
+        is_owner: false,
+      }));
 
-      // Log activity for audit trail
-      logActivityAuto(
-        tenant.id,
-        ActivityActions.INVITE_TEAM_MEMBER,
-        'team_member',
-        undefined,
-        {
-          email: formData.email,
-          role: formData.role,
-          full_name: formData.full_name || undefined,
-        }
-      );
+      return [ownerData, ...members];
+    },
+    enabled: !!tenant?.id,
+  });
 
-      setIsDialogOpen(false);
-      setFormData({ email: '', full_name: '', role: 'team_member' });
-      loadTeamMembers();
-      loadPendingInvitations();
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to send invitation';
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive'
-      });
-    }
-  };
+  // Fetch pending invitations
+  const {
+    data: pendingInvitations = [],
+    isLoading: loadingInvitations,
+  } = useQuery({
+    queryKey: queryKeys.team.invitations.pending(tenant?.id),
+    queryFn: async () => {
+      if (!tenant?.id) return [];
 
-  const loadPendingInvitations = async () => {
-    if (!tenant) return;
-    try {
       const { data, error } = await supabase.functions.invoke('tenant-invite', {
         body: {
           action: 'list_invitations',
           tenantId: tenant.id,
-        }
+        },
       });
 
       if (error) throw error;
-      if (data && typeof data === 'object' && 'error' in data && data.error) {
-        throw new Error(typeof data.error === 'string' ? data.error : 'Failed to load invitations');
-      }
+      if (data?.error) throw new Error(data.error);
 
-      setPendingInvitations(data?.invitations || []);
-    } catch (error) {
-      logger.error('Error loading pending invitations', error, { component: 'TeamManagement' });
-    }
-  };
+      return (data?.invitations || []) as Invitation[];
+    },
+    enabled: !!tenant?.id,
+  });
 
-  const handleUpdateRole = async (userId: string, newRole: string) => {
-    if (!tenant) return;
+  // Invite mutation
+  const inviteMutation = useMutation({
+    mutationFn: async (data: InviteFormData) => {
+      if (!tenant?.id) throw new Error('No tenant');
 
-    // Get current member info for audit logging
-    const member = teamMembers.find(m => m.user_id === userId);
-    const previousRole = member?.role;
+      const { data: response, error } = await supabase.functions.invoke('tenant-invite', {
+        body: {
+          action: 'send_invitation',
+          tenantId: tenant.id,
+          email: data.email,
+          firstName: data.first_name,
+          lastName: data.last_name,
+          role: data.role,
+        },
+      });
 
-    try {
+      if (error) throw error;
+      if (response?.error) throw new Error(response.error);
+
+      return response;
+    },
+    onSuccess: () => {
+      toast.success('Invitation sent successfully');
+      setIsDialogOpen(false);
+      setFormData(initialFormData);
+      setFormErrors({});
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.invitations.all() });
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to send invitation', error, { component: 'TeamManagement' });
+      toast.error(error.message || 'Failed to send invitation');
+    },
+  });
+
+  // Update role mutation
+  const updateRoleMutation = useMutation({
+    mutationFn: async ({ userId, newRole }: { userId: string; newRole: string }) => {
+      if (!tenant?.id) throw new Error('No tenant');
+
       const { error } = await supabase
         .from('tenant_users')
         .update({ role: newRole })
@@ -182,28 +214,86 @@ export default function TeamManagement() {
         .eq('tenant_id', tenant.id);
 
       if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Role updated successfully');
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members.all() });
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to update role', error, { component: 'TeamManagement' });
+      toast.error(error.message || 'Failed to update role');
+    },
+  });
 
-      toast({ title: 'Success', description: 'Role updated successfully' });
+  // Update status mutation
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ userId, newStatus }: { userId: string; newStatus: 'active' | 'suspended' }) => {
+      if (!tenant?.id) throw new Error('No tenant');
 
-      // Log activity for audit trail
-      logActivityAuto(
-        tenant.id,
-        ActivityActions.UPDATE_TEAM_MEMBER_ROLE,
-        'team_member',
-        userId,
-        {
-          email: member?.email,
-          full_name: member?.full_name,
-          previous_role: previousRole,
-          new_role: newRole,
-        }
-      );
+      const { error } = await supabase
+        .from('tenant_users')
+        .update({ status: newStatus })
+        .eq('user_id', userId)
+        .eq('tenant_id', tenant.id);
 
-      loadTeamMembers();
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update role';
-      toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
+      if (error) throw error;
+    },
+    onSuccess: (_, { newStatus }) => {
+      toast.success(newStatus === 'suspended' ? 'Member suspended' : 'Member reactivated');
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members.all() });
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to update status', error, { component: 'TeamManagement' });
+      toast.error(error.message || 'Failed to update status');
+    },
+  });
+
+  // Remove member mutation
+  const removeMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      if (!tenant?.id) throw new Error('No tenant');
+
+      const { error } = await supabase
+        .from('tenant_users')
+        .delete()
+        .eq('user_id', userId)
+        .eq('tenant_id', tenant.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Team member removed');
+      setDeleteDialogOpen(false);
+      setMemberToRemove(null);
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members.all() });
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to remove member', error, { component: 'TeamManagement' });
+      toast.error(error.message || 'Failed to remove team member');
+    },
+  });
+
+  const validateForm = (): boolean => {
+    const errors: Partial<Record<keyof InviteFormData, string>> = {};
+
+    if (!formData.email) {
+      errors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = 'Invalid email format';
     }
+
+    if (!formData.role) {
+      errors.role = 'Role is required';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleInvite = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    inviteMutation.mutate(formData);
   };
 
   const handleRemoveClick = (userId: string, name: string) => {
@@ -211,163 +301,227 @@ export default function TeamManagement() {
     setDeleteDialogOpen(true);
   };
 
-  const handleRemove = async () => {
-    if (!memberToRemove || !tenant) return;
+  const handleRemove = () => {
+    if (memberToRemove) {
+      removeMutation.mutate(memberToRemove.userId);
+    }
+  };
 
-    // Get member info for audit logging before deletion
-    const member = teamMembers.find(m => m.user_id === memberToRemove.userId);
-
-    try {
-      setIsRemoving(true);
-      const { error } = await supabase
-        .from('tenant_users')
-        .delete()
-        .eq('user_id', memberToRemove.userId)
-        .eq('tenant_id', tenant.id);
-
-      if (error) throw error;
-
-      toast({ title: 'Success', description: 'Team member removed successfully' });
-
-      // Log activity for audit trail
-      logActivityAuto(
-        tenant.id,
-        ActivityActions.REMOVE_TEAM_MEMBER,
-        'team_member',
-        memberToRemove.userId,
-        {
-          email: member?.email,
-          full_name: member?.full_name || memberToRemove.name,
-          role: member?.role,
-          removed_at: new Date().toISOString(),
-        }
-      );
-
-      loadTeamMembers();
-      setDeleteDialogOpen(false);
-      setMemberToRemove(null);
-    } catch (error: unknown) {
-      logger.error('Failed to remove team member', error, { component: 'TeamManagement' });
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to remove team member',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsRemoving(false);
+  const getRoleBadgeVariant = (role: string): 'default' | 'secondary' | 'outline' => {
+    switch (role) {
+      case 'owner':
+      case 'admin':
+        return 'default';
+      case 'member':
+        return 'secondary';
+      default:
+        return 'outline';
     }
   };
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case 'owner': return 'bg-purple-500/10 text-purple-600 border-purple-500/20';
-      case 'admin': return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
-      case 'member': return 'bg-green-500/10 text-green-600 border-green-500/20';
-      default: return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+      case 'owner':
+        return 'bg-purple-500/10 text-purple-600 border-purple-500/20';
+      case 'admin':
+        return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
+      case 'member':
+        return 'bg-green-500/10 text-green-600 border-green-500/20';
+      case 'viewer':
+        return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+      default:
+        return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return (
+          <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
+            <UserCheck className="h-3 w-3 mr-1" />
+            Active
+          </Badge>
+        );
+      case 'suspended':
+        return (
+          <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
+            <UserX className="h-3 w-3 mr-1" />
+            Suspended
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="outline" className="bg-gray-500/10 text-gray-600 border-gray-500/20">
+            {status}
+          </Badge>
+        );
     }
   };
 
   const getRoleLabel = (role: string) => {
-    return role.split('_').map(word =>
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+    return role.split('_').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
-  // --- Columns ---
-  const columns = useMemo<ResponsiveColumn<any>[]>(() => [
-    {
-      header: "Name",
-      cell: (row) => (
-        <div className="flex items-center gap-3">
-          <div className={`h-9 w-9 rounded-full flex items-center justify-center ${row.is_owner ? 'bg-purple-500/10' : 'bg-primary/10'}`}>
-            <Users className={`h-4 w-4 ${row.is_owner ? 'text-purple-500' : 'text-primary'}`} />
-          </div>
-          <div>
-            <div className="font-medium flex items-center gap-2">
-              {row.full_name || 'No Name'}
-              {row.is_owner && <Badge variant="outline" className="text-xs bg-purple-500/10 text-purple-600 border-purple-500/20">Owner</Badge>}
+  const columns = useMemo<ResponsiveColumn<TeamMember>[]>(
+    () => [
+      {
+        header: 'Name',
+        cell: (row) => (
+          <div className="flex items-center gap-3">
+            <div
+              className={`h-9 w-9 rounded-full flex items-center justify-center ${
+                row.is_owner ? 'bg-purple-500/10' : 'bg-primary/10'
+              }`}
+            >
+              <Users className={`h-4 w-4 ${row.is_owner ? 'text-purple-500' : 'text-primary'}`} />
             </div>
-            <div className="text-xs text-muted-foreground">{row.email}</div>
+            <div>
+              <div className="font-medium flex items-center gap-2">
+                {row.full_name || row.email}
+                {row.is_owner && (
+                  <Badge variant="outline" className="text-xs bg-purple-500/10 text-purple-600 border-purple-500/20">
+                    Owner
+                  </Badge>
+                )}
+              </div>
+              <div className="text-xs text-muted-foreground">{row.email}</div>
+            </div>
           </div>
-        </div>
-      )
-    },
-    {
-      header: "Role",
-      cell: (row) => (
-        <Badge className={getRoleBadgeColor(row.role)} variant="outline">
-          <Shield className="h-3 w-3 mr-1" />
-          {getRoleLabel(row.role)}
-        </Badge>
-      )
-    },
-    {
-      header: "Joined",
-      accessorKey: "created_at",
-      cell: (row) => row.created_at ? new Date(row.created_at).toLocaleDateString() : 'N/A'
-    },
-    {
-      header: "Actions",
-      cell: (row) => {
-        if (row.role === 'owner' || row.user_id === 'owner' || row.is_owner) {
-          return <span className="text-xs text-muted-foreground italic">Cannot modify owner</span>;
-        }
+        ),
+      },
+      {
+        header: 'Role',
+        cell: (row) => (
+          <Badge className={getRoleBadgeColor(row.role)} variant="outline">
+            <Shield className="h-3 w-3 mr-1" />
+            {getRoleLabel(row.role)}
+          </Badge>
+        ),
+      },
+      {
+        header: 'Status',
+        cell: (row) => getStatusBadge(row.status),
+      },
+      {
+        header: 'Joined',
+        accessorKey: 'created_at',
+        cell: (row) => (row.created_at ? new Date(row.created_at).toLocaleDateString() : 'N/A'),
+      },
+      {
+        header: 'Actions',
+        cell: (row) => {
+          if (row.is_owner) {
+            return <span className="text-xs text-muted-foreground italic">Cannot modify owner</span>;
+          }
 
-        return (
-          <div className="flex items-center gap-2">
-            <Select
-              value={row.role}
-              onValueChange={(value) => handleUpdateRole(row.user_id, value)}
-            >
-              <SelectTrigger className="h-8 w-[130px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="member">Member</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
-              onClick={() => handleRemoveClick(row.user_id, row.full_name || row.email)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        )
-      }
-    }
-  ], []);
+          const isUpdating = updateRoleMutation.isPending || updateStatusMutation.isPending;
 
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" disabled={isUpdating}>
+                  {isUpdating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <MoreHorizontal className="h-4 w-4" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'admin' })}
+                  disabled={row.role === 'admin'}
+                >
+                  <Shield className="h-4 w-4 mr-2" />
+                  Make Admin
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'member' })}
+                  disabled={row.role === 'member'}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Make Member
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'viewer' })}
+                  disabled={row.role === 'viewer'}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Make Viewer
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {row.status === 'active' ? (
+                  <DropdownMenuItem
+                    onClick={() => updateStatusMutation.mutate({ userId: row.user_id, newStatus: 'suspended' })}
+                    className="text-amber-600"
+                  >
+                    <UserX className="h-4 w-4 mr-2" />
+                    Suspend Member
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem
+                    onClick={() => updateStatusMutation.mutate({ userId: row.user_id, newStatus: 'active' })}
+                    className="text-green-600"
+                  >
+                    <UserCheck className="h-4 w-4 mr-2" />
+                    Reactivate Member
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => handleRemoveClick(row.user_id, row.full_name || row.email)}
+                  className="text-destructive"
+                >
+                  Remove Member
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+    ],
+    [updateRoleMutation.isPending, updateStatusMutation.isPending]
+  );
 
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="space-y-6 p-6">
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-6 w-72" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (membersError) {
+    return (
+      <div className="p-6">
+        <Card className="border-destructive p-6">
+          <p className="text-destructive">Failed to load team members. Please try again.</p>
+        </Card>
       </div>
     );
   }
 
   // Calculate limits
-  const activeUserCount = teamMembers.filter(m => m.status !== 'deleted' && m.status !== 'suspended').length;
-  const userLimit = (tenant?.limits as any)?.users || (tenant?.limits as any)?.team_members || 3;
+  const activeUserCount = teamMembers.filter((m) => m.status === 'active').length;
+  const userLimit =
+    (tenant?.limits as Record<string, unknown>)?.users ||
+    (tenant?.limits as Record<string, unknown>)?.team_members ||
+    3;
   const isEnterprise = tenant?.subscription_plan === 'enterprise';
-  const isLimitReached = !isEnterprise && activeUserCount >= userLimit;
+  const isLimitReached = !isEnterprise && activeUserCount >= (userLimit as number);
 
   return (
     <div className="space-y-6">
-      <SEOHead
-        title="Team Management"
-        description="Manage your team members and permissions"
-      />
+      <SEOHead title="Team Management" description="Manage your team members and permissions" />
 
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Team</h1>
           <p className="text-muted-foreground">
-            Manage your team members and roles
+            Manage your team members, roles, and permissions
             {!isEnterprise && (
               <span className="ml-2 text-sm">
                 ({activeUserCount}/{userLimit} users)
@@ -392,56 +546,116 @@ export default function TeamManagement() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Invite Team Member</DialogTitle>
+              <DialogDescription>
+                Send an invitation to add a new member to your team.
+              </DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handleInvite} className="space-y-4">
               <div>
-                <Label htmlFor="email">Email Address *</Label>
+                <Label htmlFor="email">
+                  Email Address <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="member@company.com"
-                  required
+                  className={formErrors.email ? 'border-destructive' : ''}
                 />
+                {formErrors.email && (
+                  <p className="text-sm text-destructive mt-1">{formErrors.email}</p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="first_name">First Name</Label>
+                  <Input
+                    id="first_name"
+                    value={formData.first_name}
+                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                    placeholder="John"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="last_name">Last Name</Label>
+                  <Input
+                    id="last_name"
+                    value={formData.last_name}
+                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                    placeholder="Doe"
+                  />
+                </div>
               </div>
 
               <div>
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  value={formData.full_name}
-                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                  placeholder="John Doe"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="role">Role</Label>
+                <Label htmlFor="role">
+                  Role <span className="text-destructive">*</span>
+                </Label>
                 <Select
                   value={formData.role}
-                  onValueChange={(value) => setFormData({ ...formData, role: value })}
+                  onValueChange={(value: 'admin' | 'member' | 'viewer') =>
+                    setFormData({ ...formData, role: value })
+                  }
                 >
-                  <SelectTrigger>
-                    <SelectValue />
+                  <SelectTrigger className={formErrors.role ? 'border-destructive' : ''}>
+                    <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="member">Member</SelectItem>
+                    <SelectItem value="admin">
+                      <div className="flex flex-col">
+                        <span>Admin</span>
+                        <span className="text-xs text-muted-foreground">
+                          Full access to manage settings and team
+                        </span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="member">
+                      <div className="flex flex-col">
+                        <span>Member</span>
+                        <span className="text-xs text-muted-foreground">
+                          Can manage orders, inventory, and customers
+                        </span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="viewer">
+                      <div className="flex flex-col">
+                        <span>Viewer</span>
+                        <span className="text-xs text-muted-foreground">Read-only access to data</span>
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
+                {formErrors.role && (
+                  <p className="text-sm text-destructive mt-1">{formErrors.role}</p>
+                )}
               </div>
 
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-2 pt-4">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsDialogOpen(false)}
+                  onClick={() => {
+                    setIsDialogOpen(false);
+                    setFormData(initialFormData);
+                    setFormErrors({});
+                  }}
+                  disabled={inviteMutation.isPending}
                 >
                   Cancel
                 </Button>
-                <Button type="submit">Send Invitation</Button>
+                <Button type="submit" disabled={inviteMutation.isPending}>
+                  {inviteMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    'Send Invitation'
+                  )}
+                </Button>
               </div>
             </form>
           </DialogContent>
@@ -449,33 +663,44 @@ export default function TeamManagement() {
       </div>
 
       {/* Pending Invitations */}
-      <PendingInvitations
-        invitations={pendingInvitations}
-        tenantId={tenant?.id || ''}
-        onInvitationsChange={loadPendingInvitations}
-      />
+      {!loadingInvitations && pendingInvitations.length > 0 && (
+        <PendingInvitations
+          invitations={pendingInvitations}
+          tenantId={tenant?.id || ''}
+          onInvitationsChange={() =>
+            queryClient.invalidateQueries({ queryKey: queryKeys.team.invitations.all() })
+          }
+        />
+      )}
 
       {/* Team Members */}
       <Card>
         <div className="p-4 border-b">
           <h3 className="font-semibold flex items-center gap-2">
             <Users className="h-4 w-4" />
-            Active Users
+            Team Members
           </h3>
         </div>
-        <ResponsiveTable
-          columns={columns}
-          data={teamMembers}
-          keyExtractor={(item) => item.user_id}
-          emptyState={{
-            title: "No team members",
-            description: "Invite your first team member to get started.",
-            icon: Users
-          }}
-          className="border-0 rounded-none"
-        />
+        {loadingMembers ? (
+          <div className="p-6 space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
+        ) : (
+          <ResponsiveTable
+            columns={columns}
+            data={teamMembers}
+            keyExtractor={(item) => item.id}
+            emptyState={{
+              title: 'No team members',
+              description: 'Invite your first team member to get started.',
+              icon: Users,
+            }}
+            className="border-0 rounded-none"
+          />
+        )}
       </Card>
-
 
       <ConfirmDeleteDialog
         open={deleteDialogOpen}
@@ -483,7 +708,7 @@ export default function TeamManagement() {
         onConfirm={handleRemove}
         itemName={memberToRemove?.name}
         itemType="team member"
-        isLoading={isRemoving}
+        isLoading={removeMutation.isPending}
       />
     </div>
   );
