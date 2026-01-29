@@ -1,19 +1,18 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Webhook, Plus, Edit, Loader2, History } from 'lucide-react';
+import { Webhook, Plus, Edit, Trash2, Loader2, Link2, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { WebhookLogs } from './WebhookLogs';
 import { handleError } from '@/utils/errorHandling/handlers';
-import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
-import { WebhookLogs } from '@/components/integrations/WebhookLogs';
 
 interface WebhookConfig {
   id: string;
@@ -22,10 +21,13 @@ interface WebhookConfig {
   events: string[];
   secret: string | null;
   status: string;
-  is_active?: boolean;
-  last_triggered_at?: string | null;
-  integration_id?: string | null;
+  integration_id: string | null;
   created_at: string;
+}
+
+interface IntegrationWebhooksProps {
+  integrationId: string;
+  integrationName: string;
 }
 
 const WEBHOOK_EVENTS = [
@@ -39,13 +41,7 @@ const WEBHOOK_EVENTS = [
   'payment.failed',
 ];
 
-import { type Database } from '@/integrations/supabase/types';
-
-// Workaround for missing table types
-type TableKey = keyof Database['public']['Tables'];
-const TABLE_WEBHOOKS = 'webhooks' as unknown as TableKey;
-
-export default function Webhooks() {
+export function IntegrationWebhooks({ integrationId, integrationName }: IntegrationWebhooksProps) {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
@@ -58,30 +54,30 @@ export default function Webhooks() {
     url: '',
     events: [] as string[],
     secret: '',
-    status: 'active',
   });
 
   const { data: webhooks, isLoading } = useQuery({
-    queryKey: ['webhooks', tenantId],
+    queryKey: ['integration-webhooks', tenantId, integrationId],
     queryFn: async () => {
       if (!tenantId) return [];
 
       try {
         const { data, error } = await supabase
-          .from(TABLE_WEBHOOKS)
+          .from('webhooks')
           .select('*')
           .eq('tenant_id', tenantId)
+          .eq('integration_id', integrationId)
           .order('created_at', { ascending: false });
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        return (data || []) as WebhookConfig[];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
       }
     },
-    enabled: !!tenantId,
+    enabled: !!tenantId && !!integrationId,
   });
 
   const createWebhookMutation = useMutation({
@@ -89,14 +85,15 @@ export default function Webhooks() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from(TABLE_WEBHOOKS)
+        .from('webhooks')
         .insert({
           tenant_id: tenantId,
+          integration_id: integrationId,
           name: webhook.name,
           url: webhook.url,
           events: webhook.events || [],
           secret: webhook.secret || null,
-          status: webhook.status || 'active',
+          status: 'active',
         })
         .select()
         .maybeSingle();
@@ -110,15 +107,15 @@ export default function Webhooks() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webhooks', tenantId] });
-      toast({ title: 'Webhook created', description: 'Webhook has been created successfully.' });
+      queryClient.invalidateQueries({ queryKey: ['integration-webhooks', tenantId, integrationId] });
+      toast({ title: 'Webhook created', description: 'Webhook has been linked to this integration.' });
       resetForm();
     },
     onError: (error) => {
       handleError(error, {
-        component: 'Webhooks.createWebhook',
+        component: 'IntegrationWebhooks.createWebhook',
         toastTitle: 'Error',
-        showToast: true
+        showToast: true,
       });
     },
   });
@@ -128,37 +125,57 @@ export default function Webhooks() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from(TABLE_WEBHOOKS)
+        .from('webhooks')
         .update({
           name: webhook.name,
           url: webhook.url,
           events: webhook.events,
           secret: webhook.secret || null,
-          status: webhook.status,
         })
         .eq('id', id)
         .eq('tenant_id', tenantId)
         .select()
         .maybeSingle();
 
-      if (error) {
-        if (error.code === '42P01') {
-          throw new Error('Webhooks table does not exist. Please run database migrations.');
-        }
-        throw error;
-      }
+      if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webhooks', tenantId] });
-      toast({ title: 'Webhook updated', description: 'Webhook has been updated successfully.' });
+      queryClient.invalidateQueries({ queryKey: ['integration-webhooks', tenantId, integrationId] });
+      toast({ title: 'Webhook updated', description: 'Webhook configuration has been updated.' });
       resetForm();
     },
     onError: (error) => {
       handleError(error, {
-        component: 'Webhooks.updateWebhook',
+        component: 'IntegrationWebhooks.updateWebhook',
         toastTitle: 'Error',
-        showToast: true
+        showToast: true,
+      });
+    },
+  });
+
+  const deleteWebhookMutation = useMutation({
+    mutationFn: async (webhookId: string) => {
+      if (!tenantId) throw new Error('Tenant ID required');
+
+      const { error } = await supabase
+        .from('webhooks')
+        .delete()
+        .eq('id', webhookId)
+        .eq('tenant_id', tenantId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['integration-webhooks', tenantId, integrationId] });
+      toast({ title: 'Webhook deleted', description: 'Webhook has been removed from this integration.' });
+      if (selectedWebhookId) setSelectedWebhookId(null);
+    },
+    onError: (error) => {
+      handleError(error, {
+        component: 'IntegrationWebhooks.deleteWebhook',
+        toastTitle: 'Error',
+        showToast: true,
       });
     },
   });
@@ -169,7 +186,6 @@ export default function Webhooks() {
       url: '',
       events: [],
       secret: '',
-      status: 'active',
     });
     setEditingWebhook(null);
     setIsDialogOpen(false);
@@ -182,7 +198,6 @@ export default function Webhooks() {
       url: webhook.url,
       events: webhook.events || [],
       secret: webhook.secret || '',
-      status: webhook.status,
     });
     setIsDialogOpen(true);
   };
@@ -210,102 +225,124 @@ export default function Webhooks() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Webhooks</h1>
-          <p className="text-muted-foreground">Manage webhook integrations</p>
-        </div>
-        <EnhancedLoadingState variant="card" count={3} />
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Webhook className="h-5 w-5" />
+            Webhooks
+          </CardTitle>
+          <CardDescription>Loading webhooks...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Webhooks</h1>
-          <p className="text-muted-foreground">Configure webhook endpoints for real-time events</p>
-        </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Webhook
-        </Button>
-      </div>
-
-      {webhooks && webhooks.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {webhooks.map((webhook: WebhookConfig) => (
-            <Card
-              key={webhook.id}
-              className={`cursor-pointer transition-colors ${
-                selectedWebhookId === webhook.id ? 'border-primary bg-muted/30' : 'hover:border-primary/50'
-              }`}
-              onClick={() => setSelectedWebhookId(webhook.id === selectedWebhookId ? null : webhook.id)}
-            >
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Webhook className="h-5 w-5" />
-                    <CardTitle>{webhook.name}</CardTitle>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(webhook);
-                      }}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <CardDescription>{webhook.url}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Webhook className="h-5 w-5" />
+                Webhooks for {integrationName}
+              </CardTitle>
+              <CardDescription>
+                Configure webhook endpoints to receive events from this integration
+              </CardDescription>
+            </div>
+            <Button onClick={() => setIsDialogOpen(true)} size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Webhook
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {webhooks && webhooks.length > 0 ? (
+            <div className="space-y-3">
+              {webhooks.map((webhook) => (
+                <div
+                  key={webhook.id}
+                  className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                    selectedWebhookId === webhook.id ? 'border-primary bg-muted/30' : 'hover:bg-muted/50'
+                  }`}
+                  onClick={() => setSelectedWebhookId(webhook.id === selectedWebhookId ? null : webhook.id)}
+                >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Status</span>
-                    <Badge variant={webhook.status === 'active' ? 'default' : 'secondary'}>
-                      {webhook.status || 'inactive'}
-                    </Badge>
+                    <div className="flex items-center gap-3">
+                      <Link2 className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <div className="font-medium">{webhook.name}</div>
+                        <div className="text-sm text-muted-foreground flex items-center gap-1">
+                          {webhook.url}
+                          <ExternalLink className="h-3 w-3" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={webhook.status === 'active' ? 'default' : 'secondary'}>
+                        {webhook.status}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(webhook);
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm('Are you sure you want to delete this webhook?')) {
+                            deleteWebhookMutation.mutate(webhook.id);
+                          }
+                        }}
+                        disabled={deleteWebhookMutation.isPending}
+                      >
+                        {deleteWebhookMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-sm font-medium mb-1">Events</div>
-                    <div className="flex flex-wrap gap-1">
-                      {(webhook.events || []).slice(0, 3).map((event: string, idx: number) => (
+                  {webhook.events && webhook.events.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {webhook.events.slice(0, 4).map((event, idx) => (
                         <Badge key={idx} variant="outline" className="text-xs">
                           {event}
                         </Badge>
                       ))}
-                      {(webhook.events || []).length > 3 && (
+                      {webhook.events.length > 4 && (
                         <Badge variant="outline" className="text-xs">
-                          +{(webhook.events || []).length - 3}
+                          +{webhook.events.length - 4}
                         </Badge>
                       )}
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
-                    <History className="h-4 w-4" />
-                    <span>Click to view logs</span>
-                  </div>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center text-muted-foreground">
-              <Webhook className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No webhooks configured. Create your first webhook to get started.</p>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Webhook className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No webhooks configured for this integration.</p>
+              <p className="text-sm">Add a webhook to receive real-time event notifications.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {selectedWebhookId && (
         <WebhookLogs webhookId={selectedWebhookId} limit={20} />
@@ -314,9 +351,9 @@ export default function Webhooks() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingWebhook ? 'Edit Webhook' : 'Create Webhook'}</DialogTitle>
+            <DialogTitle>{editingWebhook ? 'Edit Webhook' : 'Add Webhook'}</DialogTitle>
             <DialogDescription>
-              Configure webhook endpoint and events
+              Configure webhook endpoint for {integrationName}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
@@ -327,6 +364,7 @@ export default function Webhooks() {
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="e.g., Order Notifications"
                   required
                 />
               </div>
@@ -379,7 +417,7 @@ export default function Webhooks() {
                 {(createWebhookMutation.isPending || updateWebhookMutation.isPending) && (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 )}
-                {createWebhookMutation.isPending ? 'Creating...' : updateWebhookMutation.isPending ? 'Updating...' : editingWebhook ? 'Update' : 'Create'}
+                {editingWebhook ? 'Update' : 'Create'}
               </Button>
             </DialogFooter>
           </form>
@@ -388,4 +426,3 @@ export default function Webhooks() {
     </div>
   );
 }
-
