@@ -20,7 +20,11 @@ import {
   Loader2,
   CheckCircle2,
   XCircle,
+  BarChart3,
+  Receipt,
+  List,
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -39,6 +43,8 @@ import {
 import { CouponCreateForm } from "@/components/admin/coupons/CouponCreateForm";
 import { CouponAnalytics } from "@/components/admin/coupons/CouponAnalytics";
 import { BulkCouponGenerator } from "@/components/admin/coupons/BulkCouponGenerator";
+import { CouponUsageStats } from "@/components/admin/coupons/CouponUsageStats";
+import { CouponRedemptionTable } from "@/components/admin/coupons/CouponRedemptionTable";
 import { queryKeys } from "@/lib/queryKeys";
 import type { Database } from "@/integrations/supabase/types";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
@@ -212,10 +218,10 @@ export default function CouponManagementPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
-            🎟️ Coupon Management
+            Coupon Management
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Create and manage discount coupons and promotions
+            Create and manage discount coupons, track usage and redemptions
           </p>
         </div>
         <div className="flex gap-2">
@@ -237,46 +243,59 @@ export default function CouponManagementPage() {
         </div>
       </div>
 
-      {/* Filters */}
-      <Card className="p-3 sm:p-4">
-        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
-          {/* Search */}
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search by code or description..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 min-h-[44px] touch-manipulation"
-              />
+      {/* Usage Stats Overview */}
+      <CouponUsageStats compact />
+
+      <Tabs defaultValue="coupons" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="coupons" className="flex items-center gap-2">
+            <List className="h-4 w-4" />
+            <span className="hidden sm:inline">Coupons</span>
+          </TabsTrigger>
+          <TabsTrigger value="redemptions" className="flex items-center gap-2">
+            <Receipt className="h-4 w-4" />
+            <span className="hidden sm:inline">Redemptions</span>
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Analytics</span>
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Coupons Tab */}
+        <TabsContent value="coupons" className="space-y-4 mt-4">
+          {/* Filters */}
+          <Card className="p-3 sm:p-4">
+            <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
+              {/* Search */}
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    placeholder="Search by code or description..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 min-h-[44px] touch-manipulation"
+                  />
+                </div>
+              </div>
+
+              {/* Status Filter */}
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full lg:w-[200px] min-h-[44px] touch-manipulation">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="expired">Expired</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          </div>
+          </Card>
 
-          {/* Status Filter */}
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full lg:w-[200px] min-h-[44px] touch-manipulation">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-              <SelectItem value="expired">Expired</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Button
-            variant="outline"
-            onClick={() => setIsAnalyticsOpen(true)}
-            className="min-h-[44px] touch-manipulation"
-          >
-            Analytics
-          </Button>
-        </div>
-      </Card>
-
-      {/* Coupons Table */}
+          {/* Coupons Table */}
       <Card>
         <CardHeader>
           <CardTitle>Coupons ({filteredCoupons.length})</CardTitle>
@@ -426,6 +445,18 @@ export default function CouponManagementPage() {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+
+        {/* Redemptions Tab */}
+        <TabsContent value="redemptions" className="mt-4">
+          <CouponRedemptionTable />
+        </TabsContent>
+
+        {/* Analytics Tab */}
+        <TabsContent value="analytics" className="mt-4">
+          <CouponUsageStats />
+        </TabsContent>
+      </Tabs>
 
       {/* Coupon Form Dialog */}
       <CouponCreateForm

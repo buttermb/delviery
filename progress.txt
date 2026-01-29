@@ -7332,3 +7332,71 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 40 - Connect Marketing to Coupons with Usage Stats and Redemption Tracking
+
+### Task: Connect Marketing to Coupons showing usage stats and redemption tracking
+
+**Completed:**
+
+#### 1. Created `useCouponUsageStats` Hook (`src/hooks/useCouponUsageStats.ts`)
+- Custom TanStack Query hook for fetching comprehensive coupon statistics
+- Returns key metrics: total coupons, active coupons, total redemptions, discount given
+- Calculates average discount per redemption and overall redemption rate
+- Provides top 5 performing coupons sorted by redemption count
+- Includes recent redemptions with coupon codes mapped
+- Generates daily redemption aggregates for the last 7 days
+- Tenant-aware filtering for multi-tenant isolation
+- 30-second stale time for optimal cache freshness
+
+#### 2. Created `CouponUsageStats` Component (`src/components/admin/coupons/CouponUsageStats.tsx`)
+- Displays key coupon metrics in a card layout
+- Two display modes: compact (for overview) and full (for detailed view)
+- Shows: Active Coupons, Total Redemptions, Discount Given, Redemption Rate, Avg Discount
+- Includes Top Performing Coupons section with rankings
+- Color-coded icons (green, blue, orange, purple) for visual distinction
+- Loading skeletons and error states
+- Responsive grid layout (1-6 columns based on screen size)
+
+#### 3. Created `CouponRedemptionTable` Component (`src/components/admin/coupons/CouponRedemptionTable.tsx`)
+- Detailed redemption history table with pagination
+- Search by coupon code or order ID
+- Date filter: All Time, Today, Last 7 Days, Last 30 Days
+- Displays: Coupon Code, Discount Type, Amount Saved, Order ID, Timestamp
+- Relative time formatting ("3 hours ago", etc.)
+- Pagination with page navigation (10 records per page)
+- Optional maxRows prop for embedding in overview sections
+- Links to order details (truncated order IDs with external link icon)
+
+#### 4. Created `MarketingOverview` Component (`src/components/admin/marketing/MarketingOverview.tsx`)
+- Summary dashboard for marketing metrics with coupon focus
+- Four metric cards with gradient styling and click-through navigation
+- Top Performing Coupons quick view (top 3)
+- Recent Redemptions activity feed (last 5)
+- Hover animations and visual feedback
+- Tenant-aware navigation to Marketing Hub coupons tab
+- Optional "View All" button for navigation
+
+#### 5. Enhanced `CouponManagementPage` (`src/pages/admin/CouponManagementPage.tsx`)
+- Added compact usage stats overview at the top of the page
+- Reorganized into tabbed interface with three tabs:
+  - **Coupons**: Coupon list with search/filter (existing table)
+  - **Redemptions**: Full redemption history table
+  - **Analytics**: Detailed coupon performance stats
+- Maintains all existing functionality (create, edit, delete, toggle status, bulk generate)
+- Mobile-responsive tab navigation with icons
+- Improved header copy (removed emoji for professional look)
+
+### Files Created:
+- `src/hooks/useCouponUsageStats.ts`
+- `src/components/admin/coupons/CouponUsageStats.tsx`
+- `src/components/admin/coupons/CouponRedemptionTable.tsx`
+- `src/components/admin/marketing/MarketingOverview.tsx`
+
+### Files Modified:
+- `src/pages/admin/CouponManagementPage.tsx` - Added tabs, stats overview, and new components
+
+### Integration Points:
+- Marketing Hub (`/admin/marketing-hub?tab=coupons`) - Full coupon management with stats
+- MarketingOverview component can be used on dashboard or marketing pages
+- All components are tenant-aware and follow FloraIQ patterns
