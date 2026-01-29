@@ -229,33 +229,7 @@ export default function ProductManagement() {
     enabled: !!tenant?.id,
   });
 
-  // Load products
-  const fetchProducts = useCallback(async () => {
-    if (!tenant?.id) {
-      toast.error('Tenant not found. Please refresh.');
-      setLoading(false);
-      return;
-    }
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('tenant_id', tenant!.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setProducts(data || []);
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      logger.error('Error loading products:', { error: errorMessage });
-      toast.error('Failed to load products');
-    } finally {
-      setLoading(false);
-    }
-  }, [tenant?.id]);
-
-  // Load products on mount
+  // Sync query data into optimistic list state
   useEffect(() => {
     if (tenant?.id) {
       fetchProducts();

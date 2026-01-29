@@ -238,6 +238,18 @@ export const navigationSections: NavSection[] = [
         title: 'Receiving & Packaging',
         href: '/admin/operations/receiving',
         icon: ClipboardList
+      },
+      {
+        title: 'Team',
+        href: '/admin/operations-hub?tab=team',
+        icon: UsersRound,
+        tier: 'professional'
+      },
+      {
+        title: 'Roles',
+        href: '/admin/operations-hub?tab=roles',
+        icon: Shield,
+        tier: 'enterprise'
       }
     ]
   },

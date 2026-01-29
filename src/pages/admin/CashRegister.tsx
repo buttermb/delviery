@@ -106,7 +106,6 @@ const DEFAULT_TAX_RATE = 0.0825; // 8.25%
 function CashRegisterContent() {
   const { tenant, tenantSlug: authTenantSlug } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const displaySlug = authTenantSlug || tenant?.slug || '';
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { triggerSuccess, triggerLight, triggerError } = useHapticFeedback();

@@ -498,18 +498,6 @@ export default function Orders() {
     }
   };
 
-  const handleConfirmBulkStatusUpdate = async () => {
-    if (!tenant?.id || selectedOrders.length === 0) return;
-    
-    try {
-      await bulkStatusUpdate.executeBulkUpdate(selectedOrders.map(id => ({ id, order_number: id.slice(0, 8), status: bulkStatusConfirm.targetStatus })), bulkStatusConfirm.targetStatus);
-      setSelectedOrders([]);
-      setBulkStatusConfirm({ open: false, targetStatus: '' });
-    } catch (error) {
-      logger.error('Bulk status update failed', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
-    }
-  };
-
   const handleOrderClick = (order: Order) => {
     if (window.innerWidth < 768) {
       setSelectedOrder(order);

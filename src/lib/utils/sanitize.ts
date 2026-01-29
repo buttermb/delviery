@@ -54,212 +54,117 @@ export function sanitizeHtml(html: string): string {
 export const sanitizeBasicHtml = sanitizeHtml;
 
 /**
- * Strips all HTML tags from a string, returning plain text.
+ * Sanitizes form input by escaping HTML entities and trimming whitespace.
+ * Use for general text inputs that should not contain HTML.
  */
-export function stripHtml(html: string): string {
-  if (!html) return '';
-  return html.replace(/<[^>]*>/g, '').trim();
-}
-
-/**
- * Sanitizes a general form input string.
- * Trims whitespace and removes potentially dangerous characters.
- * @param input - The input string to sanitize
- * @param maxLength - Optional maximum length to truncate to
- */
-export function sanitizeFormInput(input: string, maxLength?: number): string {
+export function sanitizeFormInput(input: string): string {
   if (!input) return '';
-  let sanitized = input
+  return input
     .trim()
-    .replace(/[<>]/g, '') // Remove angle brackets
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+=/gi, ''); // Remove event handlers
-  
-  if (maxLength && sanitized.length > maxLength) {
-    sanitized = sanitized.substring(0, maxLength);
-  }
-  return sanitized;
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
 }
 
 /**
- * Sanitizes an email address.
- * Trims whitespace and converts to lowercase.
- * @param email - The email string to sanitize
- * @param maxLength - Optional maximum length to truncate to
+ * Sanitizes email input by trimming, lowercasing, and removing invalid characters.
  */
-export function sanitizeEmail(email: string, maxLength?: number): string {
+export function sanitizeEmail(email: string): string {
   if (!email) return '';
-  let sanitized = email.trim().toLowerCase();
-  if (maxLength && sanitized.length > maxLength) {
-    sanitized = sanitized.substring(0, maxLength);
-  }
-  return sanitized;
-}
-
-/**
- * Sanitizes a phone number input.
- * Keeps only digits, plus sign, parentheses, hyphens, and spaces.
- * @param phone - The phone string to sanitize
- * @param maxLength - Optional maximum length to truncate to
- */
-export function sanitizePhoneInput(phone: string, maxLength?: number): string {
-  if (!phone) return '';
-  let sanitized = phone.trim().replace(/[^\d+\-() ]/g, '');
-  if (maxLength && sanitized.length > maxLength) {
-    sanitized = sanitized.substring(0, maxLength);
-  }
-  return sanitized;
-}
-
-/**
- * Sanitizes a textarea input.
- * Trims whitespace and removes dangerous HTML/script patterns.
- * @param text - The textarea content to sanitize
- * @param maxLength - Optional maximum length to truncate to
- */
-export function sanitizeTextareaInput(text: string, maxLength?: number): string {
-  if (!text) return '';
-  let sanitized = text
-    .trim()
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    .replace(/on\w+\s*=\s*(['"])[^'"]*\1/gi, '');
-  
-  if (maxLength && sanitized.length > maxLength) {
-    sanitized = sanitized.substring(0, maxLength);
-  }
-  return sanitized;
-}
-
-/**
- * Sanitizes a URL slug input.
- * Converts to lowercase, replaces spaces with hyphens, removes special characters.
- * @param slug - The slug string to sanitize
- * @param maxLength - Optional maximum length to truncate to
- */
-export function sanitizeSlugInput(slug: string, maxLength?: number): string {
-  if (!slug) return '';
-  let sanitized = slug
+  return email
     .trim()
     .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-  
-  if (maxLength && sanitized.length > maxLength) {
-    sanitized = sanitized.substring(0, maxLength);
-  }
-  return sanitized;
+    .replace(/[^a-z0-9@._+-]/g, '');
 }
 
 /**
- * Sanitizes a coupon code input.
- * Converts to uppercase, removes special characters except hyphens.
- * @param code - The coupon code to sanitize
- * @param maxLength - Optional maximum length to truncate to
+ * Sanitizes phone input by removing non-numeric characters except +, -, (, ), and space.
  */
-export function sanitizeCouponCode(code: string, maxLength?: number): string {
+export function sanitizePhoneInput(phone: string): string {
+  if (!phone) return '';
+  return phone
+    .trim()
+    .replace(/[^0-9+\-() ]/g, '');
+}
+
+/**
+ * Sanitizes textarea input by escaping HTML entities while preserving newlines.
+ */
+export function sanitizeTextareaInput(input: string): string {
+  if (!input) return '';
+  return input
+    .trim()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+/**
+ * Sanitizes coupon code by uppercasing and removing invalid characters.
+ * Only allows alphanumeric characters and hyphens/underscores.
+ */
+export function sanitizeCouponCode(code: string): string {
   if (!code) return '';
-  let sanitized = code
+  return code
     .trim()
     .toUpperCase()
-    .replace(/[^A-Z0-9-]/g, '')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-  
-  if (maxLength && sanitized.length > maxLength) {
-    sanitized = sanitized.substring(0, maxLength);
-  }
-  return sanitized;
-}
-
-/**
- * Sanitizes a SKU input.
- * Converts to uppercase, keeps alphanumeric and hyphens.
- * @param sku - The SKU string to sanitize
- * @param maxLength - Optional maximum length to truncate to
- */
-export function sanitizeSkuInput(sku: string, maxLength?: number): string {
-  if (!sku) return '';
-  let sanitized = sku
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9-]/g, '');
-  
-  if (maxLength && sanitized.length > maxLength) {
-    sanitized = sanitized.substring(0, maxLength);
-  }
-  return sanitized;
-}
-
-/**
- * Sanitizes a URL input.
- * Trims whitespace and removes dangerous protocols.
- * @param url - The URL string to sanitize
- * @param maxLength - Optional maximum length to truncate to
- */
-export function sanitizeUrlInput(url: string, maxLength?: number): string {
-  if (!url) return '';
-  let sanitized = url
-    .trim()
-    .replace(/javascript:/gi, '')
-    .replace(/vbscript:/gi, '')
-    .replace(/data:/gi, '');
-  
-  if (maxLength && sanitized.length > maxLength) {
-    sanitized = sanitized.substring(0, maxLength);
-  }
-  return sanitized;
+    .replace(/[^A-Z0-9_-]/g, '');
 }
 
 /**
  * Sanitizes text while preserving line breaks.
- * @param text - The text to sanitize
- * @param maxLength - Optional maximum length to truncate to
+ * Escapes HTML entities and converts newlines to <br> tags.
  */
-export function sanitizeWithLineBreaks(text: string, maxLength?: number): string {
-  if (!text) return '';
-  let sanitized = text
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    .replace(/on\w+\s*=\s*(['"])[^'"]*\1/gi, '')
-    .replace(/[<>]/g, '');
-  
-  if (maxLength && sanitized.length > maxLength) {
-    sanitized = sanitized.substring(0, maxLength);
-  }
-  return sanitized;
+export function sanitizeWithLineBreaks(input: string): string {
+  if (!input) return '';
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\n/g, '<br>');
 }
 
 /**
- * Sanitizes a color value (hex or hsl).
- * @param color - The color string to sanitize
+ * Sanitizes URL input by trimming whitespace and ensuring valid URL characters.
+ * Removes javascript: and data: protocols.
  */
-export function sanitizeColor(color: string): string {
-  if (!color) return '';
-  // Allow hex colors (#fff, #ffffff) and hsl/hsla
-  const hexPattern = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
-  const hslPattern = /^hsla?\(\s*\d+\s*,\s*\d+%?\s*,\s*\d+%?\s*(,\s*[\d.]+)?\s*\)$/;
-  
-  const trimmed = color.trim();
-  if (hexPattern.test(trimmed) || hslPattern.test(trimmed)) {
-    return trimmed;
+export function sanitizeUrlInput(url: string): string {
+  if (!url) return '';
+  const trimmed = url.trim();
+  // Block dangerous protocols
+  if (/^(javascript|data|vbscript):/i.test(trimmed)) {
+    return '';
   }
-  // Return empty for invalid colors
-  return '';
+  return trimmed;
 }
 
 /**
- * Safely parses a JSON string with a fallback value.
- * @param json - The JSON string to parse
- * @param fallback - The fallback value if parsing fails
+ * Sanitizes SKU input by uppercasing and removing invalid characters.
+ * Only allows alphanumeric characters, hyphens, and underscores.
  */
-export function safeJsonParse<T>(json: string | null | undefined, fallback: T): T {
-  if (!json) return fallback;
-  try {
-    return JSON.parse(json) as T;
-  } catch {
-    return fallback;
-  }
+export function sanitizeSkuInput(sku: string): string {
+  if (!sku) return '';
+  return sku
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9_-]/g, '');
+}
+
+/**
+ * Sanitizes slug input by lowercasing and replacing spaces with hyphens.
+ * Only allows alphanumeric characters and hyphens.
+ */
+export function sanitizeSlugInput(slug: string): string {
+  if (!slug) return '';
+  return slug
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
 }
