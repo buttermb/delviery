@@ -20,6 +20,7 @@ import { PendingPickupsPanel } from '@/components/pos/PendingPickupsPanel';
 import { PendingOrder } from '@/hooks/usePendingOrders';
 import { orderFlowManager } from '@/lib/orders/orderFlowManager';
 import { QuickMenuWizard } from '@/components/pos/QuickMenuWizard';
+import { POSLowStockWarningDialog, LowStockWarningItem } from '@/components/pos/POSLowStockWarningDialog';
 import { useInventorySync } from '@/hooks/useInventorySync';
 import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
 import { cn } from '@/lib/utils';
@@ -75,6 +76,9 @@ export default function PointOfSale() {
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const { dialogState, confirm, closeDialog, setLoading: setDialogLoading } = useConfirmDialog();
   const [pendingLoadOrder, setPendingLoadOrder] = useState<PendingOrder | null>(null);
+  const [lowStockWarnings, setLowStockWarnings] = useState<LowStockWarningItem[]>([]);
+  const [lowStockDialogOpen, setLowStockDialogOpen] = useState(false);
+  const [lastTransactionNumber, setLastTransactionNumber] = useState<string | undefined>();
 
   // Handle image load error - fall back to placeholder
   const handleImageError = useCallback((productId: string) => {
@@ -320,13 +324,40 @@ export default function PointOfSale() {
           if (transactionError) throw transactionError;
           transactionId = transaction?.id;
 
-          // Update inventory 
+          // Update inventory and check for low stock
+          const fallbackWarnings: LowStockWarningItem[] = [];
           for (const item of cart) {
+            const newStock = item.stock_quantity - item.quantity;
+
+            // Update inventory
             await supabase
               .from('products')
-              .update({ stock_quantity: item.stock_quantity - item.quantity })
+              .update({
+                stock_quantity: newStock,
+                available_quantity: Math.max(0, newStock),
+                in_stock: newStock > 0
+              })
               .eq('id', item.id)
               .eq('tenant_id', tenantId);
+
+            // Check low stock (default threshold of 10)
+            const threshold = 10;
+            if (newStock <= threshold) {
+              fallbackWarnings.push({
+                product_id: item.id,
+                product_name: item.name,
+                previous_stock: item.stock_quantity,
+                new_stock: newStock,
+                threshold,
+                alert_level: newStock <= 0 ? 'out_of_stock' : newStock <= threshold * 0.25 ? 'critical' : 'warning'
+              });
+            }
+          }
+
+          // Set low stock warnings for fallback path
+          if (fallbackWarnings.length > 0) {
+            setLowStockWarnings(fallbackWarnings);
+            setLastTransactionNumber(transactionNumber);
           }
 
           // Update loyalty
@@ -342,9 +373,22 @@ export default function PointOfSale() {
           throw rpcError;
         }
       } else {
-        const result = rpcResult as { success: boolean; transaction_id: string; transaction_number: string; total: number };
+        const result = rpcResult as {
+          success: boolean;
+          transaction_id: string;
+          transaction_number: string;
+          total: number;
+          low_stock_warnings?: LowStockWarningItem[];
+          has_low_stock_warnings?: boolean;
+        };
         transactionId = result.transaction_id;
         transactionNumber = result.transaction_number;
+
+        // Check for low stock warnings from the atomic transaction
+        if (result.has_low_stock_warnings && result.low_stock_warnings && result.low_stock_warnings.length > 0) {
+          setLowStockWarnings(result.low_stock_warnings);
+          setLastTransactionNumber(result.transaction_number);
+        }
       }
 
       // Log activity
@@ -415,6 +459,11 @@ export default function PointOfSale() {
       clearCart();
       loadProducts();
       loadCustomers();
+
+      // Show low stock warning dialog if there are warnings
+      if (lowStockWarnings.length > 0) {
+        setLowStockDialogOpen(true);
+      }
     } catch (error) {
       logger.error('Error completing sale', error, { component: 'PointOfSale', tenantId });
       toast({
@@ -835,6 +884,20 @@ export default function PointOfSale() {
         itemType={dialogState.itemType}
         onConfirm={dialogState.onConfirm}
         isLoading={dialogState.isLoading}
+      />
+
+      <POSLowStockWarningDialog
+        open={lowStockDialogOpen}
+        onOpenChange={(open) => {
+          setLowStockDialogOpen(open);
+          if (!open) {
+            // Clear warnings when dialog is closed
+            setLowStockWarnings([]);
+            setLastTransactionNumber(undefined);
+          }
+        }}
+        warnings={lowStockWarnings}
+        transactionNumber={lastTransactionNumber}
       />
     </div>
   );
