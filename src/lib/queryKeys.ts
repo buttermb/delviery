@@ -300,6 +300,8 @@ export const queryKeys = {
     all: ['loyalty'] as const,
     rewards: () => [...queryKeys.loyalty.all, 'rewards'] as const,
     analytics: () => [...queryKeys.loyalty.all, 'analytics'] as const,
+    config: (storeId: string) => [...queryKeys.loyalty.all, 'config', storeId] as const,
+    customer: (storeId: string, email: string) => [...queryKeys.loyalty.all, 'customer', storeId, email] as const,
   },
 
   // Coupons
