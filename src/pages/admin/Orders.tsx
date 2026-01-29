@@ -528,7 +528,7 @@ export default function Orders() {
     triggerHaptic('light');
   };
 
-  const handleGenerateInvoiceFunc = (order: Order) => {
+  const handleGenerateInvoice = (order: Order) => {
     toast.success(`Invoice generated for order #${order.order_number || order.id.slice(0, 8)}`);
     triggerHaptic('light');
   };

@@ -2,11 +2,13 @@
  * Unified Shop Cart Hook
  * Single source of truth for cart management in the storefront
  * Syncs with localStorage and ShopLayout context
+ * Includes inventory validation for real-time stock checking
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/logger';
 import { safeStorage } from '@/utils/safeStorage';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface ShopCartItem {
     productId: string;
@@ -287,16 +289,13 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
         if (!storeId || cartItems.length === 0) return null;
 
         try {
-            // Dynamic import to avoid circular deps
-            const { supabase } = await import('@/integrations/supabase/client');
-
             const itemsPayload = cartItems.map(item => ({
                 product_id: item.productId,
                 quantity: item.quantity,
                 price: item.price
             }));
 
-            const { data, error } = await (supabase.rpc as any)('validate_cart_items', {
+            const { data, error } = await (supabase.rpc as unknown as (name: string, params: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>)('validate_cart_items', {
                 p_store_id: storeId,
                 p_items: itemsPayload
             });
@@ -312,6 +311,66 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
         } catch (e) {
             logger.error('Cart validation error', e);
             return null;
+        }
+    }, [storeId, cartItems]);
+
+    // Quick inventory check - validates stock availability without full cart validation
+    const checkInventoryAvailability = useCallback(async (): Promise<{
+        valid: boolean;
+        outOfStock: Array<{ productId: string; name: string; available: number; requested: number }>;
+        lowStock: Array<{ productId: string; name: string; available: number }>;
+    }> => {
+        if (!storeId || cartItems.length === 0) {
+            return { valid: true, outOfStock: [], lowStock: [] };
+        }
+
+        try {
+            const productIds = cartItems.map(item => item.productId);
+
+            // Query products directly for stock info
+            const { data, error } = await supabase
+                .from('products')
+                .select('id, name, stock_quantity, available_quantity')
+                .in('id', productIds);
+
+            if (error) {
+                logger.warn('Failed to check inventory availability', error);
+                // Don't block checkout on validation failure - just log
+                return { valid: true, outOfStock: [], lowStock: [] };
+            }
+
+            const outOfStock: Array<{ productId: string; name: string; available: number; requested: number }> = [];
+            const lowStock: Array<{ productId: string; name: string; available: number }> = [];
+
+            for (const item of cartItems) {
+                const product = data?.find(p => p.id === item.productId);
+                // Use available_quantity if set, otherwise fall back to stock_quantity
+                const available = product?.available_quantity ?? product?.stock_quantity ?? 0;
+
+                if (available < item.quantity) {
+                    outOfStock.push({
+                        productId: item.productId,
+                        name: item.name,
+                        available,
+                        requested: item.quantity,
+                    });
+                } else if (available > 0 && available <= 5) {
+                    lowStock.push({
+                        productId: item.productId,
+                        name: item.name,
+                        available,
+                    });
+                }
+            }
+
+            return {
+                valid: outOfStock.length === 0,
+                outOfStock,
+                lowStock,
+            };
+        } catch (e) {
+            logger.error('Error checking inventory availability', e);
+            return { valid: true, outOfStock: [], lowStock: [] };
         }
     }, [storeId, cartItems]);
 
@@ -407,6 +466,7 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
         // Validation
         validateCart,
         lastValidation,
+        checkInventoryAvailability,
         // Constants
         MAX_QUANTITY_PER_ITEM
     };

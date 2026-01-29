@@ -32,6 +32,7 @@ import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
 
 interface StoreInfo {
   id: string;
+  tenant_id: string;
   store_name: string;
   slug: string;
   tagline: string | null;

@@ -1,6 +1,7 @@
 /**
  * Product Catalog Page
  * Browse all products with search and filters
+ * Includes real-time inventory syncing for stock updates
  */
 
 import { useState, useMemo, useEffect } from 'react';
@@ -24,57 +25,50 @@ import {
 import {
   Search,
   Package,
-  Filter,
   Grid3X3,
   List,
   X,
-  SlidersHorizontal,
   RefreshCw,
-  Eye,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { FilterDrawer, FilterTriggerButton, type FilterState } from '@/components/shop/FilterDrawer';
-import { WishlistButton } from '@/components/shop/WishlistButton';
 import { useWishlist } from '@/hooks/useWishlist';
 import { ProductQuickViewModal } from '@/components/shop/ProductQuickViewModal';
-import { EnhancedPriceSlider } from '@/components/shop/EnhancedPriceSlider';
-import { StockWarning } from '@/components/shop/StockWarning';
 import { useShopCart } from '@/hooks/useShopCart';
 import { StorefrontProductCard, type MarketplaceProduct } from '@/components/shop/StorefrontProductCard';
 import { useToast } from '@/hooks/use-toast';
+import { useStorefrontInventorySync } from '@/hooks/useStorefrontInventorySync';
 
+/**
+ * RPC Product Response from get_marketplace_products
+ * Based on migration 20260112000001_fix_rpc_product_settings.sql
+ */
 interface RpcProduct {
   product_id: string;
   product_name: string;
-  description: string | null;
   category: string | null;
-  brand: string | null;
-  sku: string | null;
+  strain_type: string | null;
   price: number;
   sale_price: number | null;
+  description: string | null;
   image_url: string | null;
   images: string[] | null;
-  is_featured: boolean;
-  is_on_sale: boolean;
-  stock_quantity: number;
-  strain_type: string | null;
   thc_content: number | null;
   cbd_content: number | null;
-  sort_order: number;
-  created_at: string;
+  is_visible: boolean;
+  display_order: number;
+  stock_quantity: number;
+  metrc_retail_id: string | null;
+  exclude_from_discounts: boolean;
+  minimum_price: number | null;
+  effects: string[] | null;
+  slug: string | null;
+  min_expiry_days: number | null;
+  unit_type: string | null;
 }
 
 interface ProductWithSettings {
@@ -93,12 +87,19 @@ interface ProductWithSettings {
   marketplace_category_id: string | null;
   marketplace_category_name: string | null;
   tags: string[];
-  // New fields from RPC
-  brand: string | null;
-  sku: string | null;
+  // Cannabis-specific fields
   strain_type: string | null;
   thc_content: number | null;
   cbd_content: number | null;
+  effects: string[] | null;
+  // Inventory fields
+  stock_quantity: number;
+  metrc_retail_id: string | null;
+  exclude_from_discounts: boolean;
+  minimum_price: number | null;
+  min_expiry_days: number | null;
+  unit_type: string | null;
+  slug: string | null;
 }
 
 // Transform RPC response to component interface
@@ -115,15 +116,22 @@ function transformProduct(rpc: RpcProduct): ProductWithSettings {
     image_url: rpc.image_url,
     images: rpc.images || [],
     in_stock: rpc.stock_quantity > 0,
-    is_featured: rpc.is_featured,
+    is_featured: rpc.display_order === 0, // First items are featured
     marketplace_category_id: null,
     marketplace_category_name: rpc.category,
     tags: [],
-    brand: rpc.brand,
-    sku: rpc.sku,
     strain_type: rpc.strain_type,
     thc_content: rpc.thc_content,
     cbd_content: rpc.cbd_content,
+    effects: rpc.effects,
+    // Inventory data for real-time sync
+    stock_quantity: rpc.stock_quantity,
+    metrc_retail_id: rpc.metrc_retail_id,
+    exclude_from_discounts: rpc.exclude_from_discounts || false,
+    minimum_price: rpc.minimum_price,
+    min_expiry_days: rpc.min_expiry_days,
+    unit_type: rpc.unit_type,
+    slug: rpc.slug,
   };
 }
 
@@ -162,6 +170,16 @@ export function ProductCatalogPage() {
     e.preventDefault();
     e.stopPropagation();
 
+    // Check stock before adding
+    if (product.stock_quantity <= 0) {
+      toast({
+        title: "Out of Stock",
+        description: `${product.name} is currently unavailable.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       addItem({
         productId: product.product_id,
@@ -170,8 +188,10 @@ export function ProductCatalogPage() {
         imageUrl: product.image_url,
         quantity: 1,
         variant: product.strain_type || undefined,
-        metrcRetailId: undefined, // Not available in ProductWithSettings, defaulting
-        excludeFromDiscounts: false,
+        metrcRetailId: product.metrc_retail_id || undefined,
+        excludeFromDiscounts: product.exclude_from_discounts,
+        minimumPrice: product.minimum_price || undefined,
+        minExpiryDays: product.min_expiry_days || undefined,
       });
 
       setAddedProducts(prev => new Set(prev).add(product.product_id));
@@ -193,12 +213,20 @@ export function ProductCatalogPage() {
     }
   };
 
+  // Real-time inventory sync for live stock updates
+  useStorefrontInventorySync({
+    storeId: store?.id,
+    tenantId: store?.tenant_id,
+    enabled: !!store?.id,
+    showNotifications: true,
+  });
+
   // Helper to map ProductWithSettings to MarketplaceProduct
   const mapToMarketplaceProduct = (p: ProductWithSettings): MarketplaceProduct => ({
     product_id: p.product_id,
     product_name: p.name,
     category: p.marketplace_category_name || p.category || 'Uncategorized',
-    strain_type: p.strain_type || '', // Default to empty string if null
+    strain_type: p.strain_type || '',
     price: p.display_price,
     description: p.description || '',
     image_url: p.image_url,
@@ -207,8 +235,12 @@ export function ProductCatalogPage() {
     cbd_content: p.cbd_content,
     is_visible: true,
     display_order: 0,
-    stock_quantity: p.in_stock ? 100 : 0, // Mock stock if boolean is used
-    unit_type: undefined // Not in ProductWithSettings
+    stock_quantity: p.stock_quantity, // Use actual stock quantity from RPC
+    unit_type: p.unit_type || undefined,
+    metrc_retail_id: p.metrc_retail_id || undefined,
+    exclude_from_discounts: p.exclude_from_discounts,
+    minimum_price: p.minimum_price || undefined,
+    min_expiry_days: p.min_expiry_days || undefined,
   });
 
   // Fetch products with error handling
