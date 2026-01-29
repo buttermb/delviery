@@ -7407,19 +7407,19 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 15 - Command Center Section Consolidation
+## Agent 16 - Sidebar Navigation Update
 
-### Task: Add Command Center section with Dashboard, Hotbox, Live Orders, POS, Live Map in sidebar-navigation.ts
+### Task: Add Orders section with All Orders, B2B Orders, Store Orders in sidebar-navigation.ts
 
 **Completed:**
-- Consolidated three redundant "Command Center" sections into a single, well-organized section
-- The Command Center section now includes:
-  1. **Dashboard** - Links to `/admin/dashboard`, uses `LayoutDashboard` icon
-  2. **Hotbox** - Links to `/admin/hotbox`, uses `Flame` icon with 'HOT' badge
-  3. **Live Orders** - Links to `/admin/orders?tab=live`, uses `Activity` icon with 'LIVE' badge (professional tier)
-  4. **POS** - Links to `/admin/pos-system`, uses `Store` icon (enterprise tier)
-  5. **Live Map** - Links to `/admin/live-map`, uses `Map` icon with 'LIVE' badge (enterprise tier)
-- Added missing icon imports: `Barcode`, `Headphones`, `HeadphonesIcon`, `Award`, `HelpCircle`
+- Added "Store Orders" nav item to the existing Orders section
+  - Links to `/admin/orders/store`
+  - Uses `Store` icon (already imported)
+  
+The Orders section now contains:
+1. **All Orders** - `/admin/orders` with `ShoppingCart` icon
+2. **B2B Orders** - `/admin/orders/b2b` with `Building2` icon
+3. **Store Orders** - `/admin/orders/store` with `Store` icon (NEW)
 
 ### Files Changed:
-- `src/components/admin/sidebar-navigation.ts` - Consolidated Command Center sections and added missing icon imports
+- `src/components/admin/sidebar-navigation.ts` - Added Store Orders item to Orders section

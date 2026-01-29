@@ -140,6 +140,11 @@ export const navigationSections: NavSection[] = [
         title: 'B2B Orders',
         href: '/admin/orders?tab=wholesale',
         icon: Building2
+      },
+      {
+        title: 'Store Orders',
+        href: '/admin/orders/store',
+        icon: Store
       }
     ]
   },
