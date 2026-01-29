@@ -163,6 +163,7 @@ const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
 const SignupSuccessPage = lazy(() => import("./pages/auth/SignupSuccessPage").then(m => ({ default: m.SignupSuccessPage })));
 const AccountSettingsPage = lazy(() => import("./pages/auth/AccountSettingsPage").then(m => ({ default: m.AccountSettingsPage })));
 const ChangePasswordPage = lazy(() => import("./pages/auth/ChangePasswordPage").then(m => ({ default: m.ChangePasswordPage })));
+const TenantAdminForgotPasswordPage = lazy(() => import("./pages/auth/ForgotPasswordPage").then(m => ({ default: m.ForgotPasswordPage })));
 
 // Tenant Admin Pages
 const TenantAdminLoginPage = lazy(() => import("./pages/tenant-admin/LoginPage"));
@@ -689,6 +690,7 @@ const App = () => {
 
                                       {/* ==================== LEVEL 2: TENANT ADMIN (Business Owner) ==================== */}
                                       <Route path="/:tenantSlug/admin/login" element={<PublicOnlyRoute portal="tenant-admin"><TenantAdminLoginPage /></PublicOnlyRoute>} />
+                                      <Route path="/:tenantSlug/admin/forgot-password" element={<PublicOnlyRoute portal="tenant-admin"><TenantAdminForgotPasswordPage /></PublicOnlyRoute>} />
                                       <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
                                       <Route path="/:tenantSlug/admin/auth/callback" element={<TenantAdminAuthCallback />} />
                                       <Route path="/:tenantSlug/admin/auth/mfa-challenge" element={<MFAChallengePage portal="tenant-admin" />} />
