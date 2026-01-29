@@ -7332,3 +7332,49 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+---
+
+## Task: Connect Integrations to Webhooks showing webhook configuration and logs
+
+### What was done:
+
+1. **Created `webhook_logs` table migration** (`supabase/migrations/20260128000001_create_webhook_logs.sql`)
+   - New `webhook_logs` table to track webhook delivery attempts
+   - Columns: id, tenant_id, webhook_id, event_type, payload, response_status, response_body, error_message, duration_ms, status, created_at, completed_at
+   - RLS policies for tenant isolation
+   - Added `integration_id` column to `webhooks` table to link webhooks to custom integrations
+
+2. **Created `WebhookLogs` component** (`src/components/integrations/WebhookLogs.tsx`)
+   - Displays webhook delivery history with expandable log entries
+   - Shows status (pending/success/failed), HTTP status codes, duration
+   - Expandable details with timestamp, error messages, payload, and response body
+   - Refresh functionality with loading states
+   - Relative timestamps ("2 minutes ago")
+
+3. **Created `IntegrationWebhooks` component** (`src/components/integrations/IntegrationWebhooks.tsx`)
+   - Lists webhooks linked to a specific integration
+   - Create/edit/delete webhook functionality
+   - Event selection (order.created, order.updated, etc.)
+   - Click webhook to view its delivery logs via WebhookLogs component
+
+4. **Updated `CustomIntegrations` page** (`src/pages/admin/CustomIntegrations.tsx`)
+   - Added detail view when clicking an integration
+   - Shows integration header with type badge and status
+   - Displays IntegrationWebhooks component for managing webhooks per integration
+   - Back button to return to integration list
+   - Added update mutation for editing integrations
+   - Cards now show "Click to manage webhooks" hint
+
+5. **Updated `Webhooks` page** (`src/pages/admin/Webhooks.tsx`)
+   - Clicking a webhook card now shows its delivery logs
+   - Selected webhook is highlighted
+   - Added WebhookLogs component import
+   - Fixed unused imports and type issues
+
+### Files Changed:
+- `supabase/migrations/20260128000001_create_webhook_logs.sql` (new)
+- `src/components/integrations/WebhookLogs.tsx` (new)
+- `src/components/integrations/IntegrationWebhooks.tsx` (new)
+- `src/pages/admin/CustomIntegrations.tsx` (modified)
+- `src/pages/admin/Webhooks.tsx` (modified)
