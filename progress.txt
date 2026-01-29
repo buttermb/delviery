@@ -7407,33 +7407,57 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
-## Agent 84 - Rate Limit Countdown Display
+---
 
-### Task: Add rate limit countdown display showing "Try again in X seconds" in ForgotPassword
+## Task: Add proper redirect after auth actions to dashboard or intended destination
 
-**Completed:**
-- Added rate limit countdown to `ForgotPasswordDialog.tsx`:
-  - Added state for `rateLimited` and `cooldownRemaining`
-  - Implemented `startCooldown` and `isRateLimited` functions
-  - Configured rate limiting: 3 requests per minute with 30s cooldown
-  - Displays countdown in both error message and button text
-  - Disables input and button during cooldown
-  - Added Clock icon for visual feedback
+### What was done:
 
-- Added rate limit countdown to `pages/customer/ForgotPasswordPage.tsx`:
-  - Same rate limiting logic as ForgotPasswordDialog
-  - Shows "Try again in X seconds" message above button
-  - Button displays countdown when rate limited
-  - Input field disabled during cooldown
-  - Proper cleanup of timers on component unmount
+1. **Created `useIntendedDestination` hook (`src/hooks/useIntendedDestination.ts`)**
+   - Hook and utility functions to manage intended destination for auth redirects
+   - Stores intended destination in sessionStorage with 30-minute expiry
+   - `saveIntendedDestination(path)` - saves the current path before redirecting to login
+   - `getIntendedDestination()` - retrieves and clears the stored destination
+   - `consume()` - one-shot get-and-clear operation for use after login
+   - `buildLoginUrlWithRedirect()` - builds login URL with redirect query param for OAuth flows
+   - Automatically excludes auth-related pages from being saved as destinations
 
-**Rate Limiting Configuration:**
-- RATE_LIMIT_WINDOW_MS: 60,000ms (1 minute)
-- MAX_REQUESTS_PER_WINDOW: 3
-- COOLDOWN_MS: 30,000ms (30 second cooldown)
+2. **Updated `TenantAdminProtectedRoute` (`src/components/auth/TenantAdminProtectedRoute.tsx`)**
+   - Saves the current path (including query string) as intended destination before redirecting to login
+   - Uses `intendedDestinationUtils.save()` to persist the destination
+   - Logs the saved destination for debugging
 
-**Note:** pages/auth/ForgotPasswordPage.tsx already had rate limit countdown implemented.
+3. **Updated Tenant Admin Login Page (`src/pages/tenant-admin/LoginPage.tsx`)**
+   - After successful login, checks for intended destination using `intendedDestinationUtils.consume()`
+   - Redirects to intended destination if available, otherwise defaults to dashboard
+   - Applied to all login paths: direct login, queued offline login, and MFA verification
+
+4. **Updated SAAS Login Page (`src/pages/saas/LoginPage.tsx`)**
+   - After successful login, checks for intended destination
+   - Redirects to intended destination if available, otherwise defaults to tenant dashboard
+
+5. **Updated Auth Callback Page (`src/pages/auth/AuthCallbackPage.tsx`)**
+   - After OAuth (Google) login success, checks for intended destination
+   - Validates that the intended destination matches the current portal type (tenant-admin, super-admin, customer)
+   - Redirects to intended destination if valid, otherwise uses default dashboard for portal type
+
+### How it works:
+
+1. User tries to access a protected route (e.g., `/acme-corp/admin/products`)
+2. `TenantAdminProtectedRoute` detects unauthenticated user
+3. Current path is saved to sessionStorage as intended destination
+4. User is redirected to login page
+5. After successful login (email/password, OAuth, or MFA):
+   - System checks for stored intended destination
+   - If found and valid, redirects to that destination
+   - If not found, redirects to default dashboard
+   - Stored destination is cleared after use (one-shot)
 
 ### Files Changed:
-- `src/components/auth/ForgotPasswordDialog.tsx` - Added rate limit countdown display
-- `src/pages/customer/ForgotPasswordPage.tsx` - Added rate limit countdown display
+- `src/hooks/useIntendedDestination.ts` (new)
+- `src/components/auth/TenantAdminProtectedRoute.tsx` (modified)
+- `src/pages/tenant-admin/LoginPage.tsx` (modified)
+- `src/pages/saas/LoginPage.tsx` (modified)
+- `src/pages/auth/AuthCallbackPage.tsx` (modified)
+
+### TypeScript Compilation: ✅ Passes

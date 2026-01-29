@@ -19,7 +19,7 @@ import { useAuthOffline } from "@/hooks/useAuthOffline";
 import { AccountLockedScreen } from "@/components/auth/AccountLockedScreen";
 import { Database } from "@/integrations/supabase/types";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
-import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
+import { intendedDestinationUtils } from "@/hooks/useIntendedDestination";
 
 
 type Tenant = Database['public']['Tables']['tenants']['Row'];
@@ -48,7 +48,12 @@ export default function TenantAdminLoginPage() {
         title: "Welcome back!",
         description: `Logged in to ${tenant?.business_name || tenantSlug}`,
       });
-      navigate(`/${tenantSlug}/admin/dashboard`, { replace: true });
+      // Check for intended destination (user tried to access a protected page before login)
+      const intendedDestination = intendedDestinationUtils.consume();
+      const defaultDashboard = `/${tenantSlug}/admin/dashboard`;
+      const redirectTo = intendedDestination || defaultDashboard;
+      logger.debug('[TenantAdminLogin] Redirecting after queued login', { intendedDestination, redirectTo });
+      navigate(redirectTo, { replace: true });
     }
   );
 
@@ -103,7 +108,12 @@ export default function TenantAdminLoginPage() {
         description: `Logged in to ${tenant?.business_name || tenantSlug}`,
       });
 
-      navigate(`/${tenantSlug}/admin/dashboard`, { replace: true });
+      // Check for intended destination (user tried to access a protected page before login)
+      const intendedDestination = intendedDestinationUtils.consume();
+      const defaultDashboard = `/${tenantSlug}/admin/dashboard`;
+      const redirectTo = intendedDestination || defaultDashboard;
+      logger.debug('[TenantAdminLogin] Redirecting after successful login', { intendedDestination, redirectTo });
+      navigate(redirectTo, { replace: true });
     } catch (error: unknown) {
       logger.error("Tenant admin login error", error, { component: 'TenantAdminLoginPage' });
 
@@ -171,11 +181,16 @@ export default function TenantAdminLoginPage() {
         <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--tenant-surface))] p-8">
           <TwoFactorVerification
             onVerified={() => {
-              // Auth context handles state update and redirect
               toast({
                 title: "Authentication Successful",
                 description: "You have been securely logged in.",
               });
+              // Redirect to intended destination or dashboard after MFA verification
+              const intendedDestination = intendedDestinationUtils.consume();
+              const defaultDashboard = `/${tenantSlug}/admin/dashboard`;
+              const redirectTo = intendedDestination || defaultDashboard;
+              logger.debug('[TenantAdminLogin] Redirecting after MFA verification', { intendedDestination, redirectTo });
+              navigate(redirectTo, { replace: true });
             }}
           />
         </div>
