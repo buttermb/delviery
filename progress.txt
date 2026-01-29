@@ -7332,3 +7332,27 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+
+## Agent 13 - Sidebar Expand/Collapse Animations
+
+### Task: Add expand/collapse animations with framer-motion in sidebar.tsx
+
+**Completed:**
+- Added framer-motion import (`motion`, `AnimatePresence`)
+- Animated chevron icon rotation (0° → 90° on expand)
+- Added smooth height + opacity animation for section expansion/collapse
+  - Duration: 200ms with easeOut easing
+  - Uses AnimatePresence for proper exit animations
+- Added staggered fade-in animation for nav items
+  - Each item slides in from left with 20ms stagger delay
+  - Duration: 150ms per item
+- Removed unused ChevronDown import (replaced with rotating ChevronRight)
+
+### Animation Details:
+- Section toggle: Animates height from 0 to auto with opacity fade
+- Chevron: Rotates 90° clockwise when section is expanded
+- Items: Staggered x: -8 → 0 slide with opacity: 0 → 1
+
+### Files Changed:
+- `src/components/admin/Sidebar.tsx` - Added framer-motion animations for expand/collapse
