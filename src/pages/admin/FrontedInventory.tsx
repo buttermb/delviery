@@ -1,23 +1,28 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import {
   Package, DollarSign, TrendingUp, AlertTriangle,
-  Eye, CreditCard, MessageCircle, Calendar
+  Eye, CreditCard, MessageCircle, Calendar, ShieldAlert,
+  Phone, Mail, FileText, Clock, CheckCircle2, XCircle,
+  Activity, TrendingDown, BarChart3, Target, AlertCircle,
+  History, Send, Filter, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { format } from 'date-fns';
+import { format, differenceInDays, formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { cn } from '@/lib/utils';
 
 interface FrontedItem {
   id: string;
@@ -34,9 +39,39 @@ interface FrontedItem {
   quantity_sold: number;
   quantity_returned: number;
   quantity_damaged: number;
+  cost_per_unit?: number;
   product: {
     name: string;
   };
+  // Risk assessment fields
+  riskScore?: number;
+  riskLevel?: 'low' | 'medium' | 'high' | 'critical';
+  daysOut?: number;
+  daysOverdue?: number;
+  collectionScore?: number;
+}
+
+interface CollectionActivity {
+  id: string;
+  fronted_inventory_id: string;
+  activity_type: 'call' | 'text' | 'email' | 'visit' | 'payment_promise' | 'note';
+  notes?: string;
+  performed_at: string;
+  performed_by?: string;
+  follow_up_date?: string;
+  result?: string;
+}
+
+interface RiskMetrics {
+  totalAtRisk: number;
+  criticalCount: number;
+  highRiskCount: number;
+  mediumRiskCount: number;
+  lowRiskCount: number;
+  averageRiskScore: number;
+  healthScore: number;
+  collectionRate: number;
+  avgDaysOut: number;
 }
 
 export default function FrontedInventory() {
