@@ -282,21 +282,15 @@ export const navigationSections: NavSection[] = [
         tier: 'professional'
       },
       {
-        title: 'Receiving & Packaging',
-        href: '/admin/operations/receiving',
-        icon: ClipboardList
+        title: 'Couriers',
+        href: '/admin/couriers',
+        icon: UserCog
       },
       {
-        title: 'Team',
-        href: '/admin/team-members',
-        icon: UsersRound,
+        title: 'Tracking',
+        href: '/admin/delivery-tracking',
+        icon: Navigation,
         tier: 'professional'
-      },
-      {
-        title: 'Roles',
-        href: '/admin/role-management',
-        icon: Shield,
-        tier: 'enterprise'
       }
     ]
   },
@@ -615,18 +609,6 @@ export const navigationSections: NavSection[] = [
         icon: Route,
         tier: 'enterprise'
       },
-    ]
-  },
-
-  // 🚚 FULFILLMENT
-  {
-    title: 'Fulfillment',
-    items: [
-      {
-        title: 'Drivers',
-        href: '/admin/drivers',
-        icon: Car
-      }
     ]
   },
 
