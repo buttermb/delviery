@@ -39,12 +39,24 @@ export function SidebarSection({
     return section.items.filter((item) => matchesSearchQuery(item.name, searchQuery));
   }, [section.items, searchQuery]);
 
+  // Check if any item in this section is active
+  const hasActiveItem = useMemo(() => {
+    return section.items.some((item) => isActive(item.path));
+  }, [section.items, isActive]);
+
   // Auto-expand section when search matches items
   useEffect(() => {
     if (searchQuery.trim() && filteredItems.length > 0) {
       setIsOpen(true);
     }
   }, [searchQuery, filteredItems.length]);
+
+  // Auto-expand section when it contains the active route
+  useEffect(() => {
+    if (hasActiveItem && !isOpen) {
+      setIsOpen(true);
+    }
+  }, [hasActiveItem, isOpen]);
 
   // Sync with preferences
   useEffect(() => {
@@ -56,10 +68,11 @@ export function SidebarSection({
     const shouldBeCollapsed = collapsedSections.includes(section.section);
     if (section.pinned) {
       setIsOpen(true); // Pinned sections always open
-    } else {
+    } else if (!hasActiveItem) {
+      // Only apply collapsed preference if there's no active item
       setIsOpen(!shouldBeCollapsed);
     }
-  }, [preferences?.collapsedSections, section.section, section.pinned]);
+  }, [preferences?.collapsedSections, section.section, section.pinned, hasActiveItem]);
 
   const handleToggle = () => {
     if (section.pinned) return; // Don't allow collapsing pinned sections

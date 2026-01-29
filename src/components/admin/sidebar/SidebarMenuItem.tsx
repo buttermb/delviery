@@ -40,13 +40,27 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
   const itemRef = useRef<HTMLLIElement>(null);
 
   // Scroll into view when item becomes active
+  // Using requestAnimationFrame to ensure DOM is ready after section expansion
   useEffect(() => {
     if (isActive && itemRef.current) {
-      itemRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'nearest',
+      // Use requestAnimationFrame to wait for any layout changes (e.g., section expansion)
+      const rafId = requestAnimationFrame(() => {
+        // Additional small delay to allow collapsible animations to complete
+        const timeoutId = setTimeout(() => {
+          if (itemRef.current) {
+            itemRef.current.scrollIntoView({
+              behavior: 'smooth',
+              block: 'nearest',
+              inline: 'nearest',
+            });
+          }
+        }, 100);
+
+        // Cleanup timeout on unmount
+        return () => clearTimeout(timeoutId);
       });
+
+      return () => cancelAnimationFrame(rafId);
     }
   }, [isActive]);
 
