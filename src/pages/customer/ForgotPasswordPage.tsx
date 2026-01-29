@@ -2,19 +2,24 @@ import { logger } from '@/lib/logger';
 /**
  * Customer Forgot Password Page
  * Allows customers to request a password reset link
+ * Implements client-side rate limiting to prevent abuse.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Mail, ArrowLeft } from 'lucide-react';
+import { Loader2, Mail, ArrowLeft, Clock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { apiFetch } from '@/lib/utils/apiClient';
 import { useCsrfToken } from '@/hooks/useCsrfToken';
+
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 3;
+const COOLDOWN_MS = 30_000; // 30 second cooldown after hitting limit
 
 function ResendButton({ onResend }: { onResend: () => void }) {
   const [cooldown, setCooldown] = useState(60);
@@ -38,16 +43,69 @@ function ResendButton({ onResend }: { onResend: () => void }) {
   );
 }
 
-export default function CustomerForgotPasswordPage() {
+export function CustomerForgotPasswordPage() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
-  const [tenant, setTenant] = useState<any>(null);
+  const [tenant, setTenant] = useState<{ id: string; slug: string; name: string } | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+  const [rateLimited, setRateLimited] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const { validateToken } = useCsrfToken();
+
+  const requestTimestamps = useRef<number[]>([]);
+  const cooldownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (cooldownTimer.current) {
+        clearInterval(cooldownTimer.current);
+      }
+    };
+  }, []);
+
+  const startCooldown = useCallback(() => {
+    setRateLimited(true);
+    setCooldownRemaining(Math.ceil(COOLDOWN_MS / 1000));
+
+    if (cooldownTimer.current) {
+      clearInterval(cooldownTimer.current);
+    }
+
+    cooldownTimer.current = setInterval(() => {
+      setCooldownRemaining((prev) => {
+        if (prev <= 1) {
+          setRateLimited(false);
+          if (cooldownTimer.current) {
+            clearInterval(cooldownTimer.current);
+            cooldownTimer.current = null;
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
+  const isRateLimited = useCallback((): boolean => {
+    const now = Date.now();
+    // Remove timestamps outside the window
+    requestTimestamps.current = requestTimestamps.current.filter(
+      (ts) => now - ts < RATE_LIMIT_WINDOW_MS
+    );
+
+    if (requestTimestamps.current.length >= MAX_REQUESTS_PER_WINDOW) {
+      logger.debug("Password reset rate limit reached");
+      startCooldown();
+      return true;
+    }
+
+    return false;
+  }, [startCooldown]);
 
   useEffect(() => {
     const fetchTenant = async () => {
@@ -90,6 +148,13 @@ export default function CustomerForgotPasswordPage() {
       });
       return;
     }
+
+    if (isRateLimited()) {
+      return;
+    }
+
+    // Track this request for rate limiting
+    requestTimestamps.current.push(Date.now());
 
     setLoading(true);
 
@@ -193,19 +258,32 @@ export default function CustomerForgotPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoFocus
+                disabled={loading || rateLimited}
                 className="min-h-[44px]"
               />
             </div>
 
+            {rateLimited && (
+              <div className="flex items-center gap-2 text-sm text-destructive" role="alert">
+                <Clock className="h-4 w-4" aria-hidden="true" />
+                <span>Try again in {cooldownRemaining} seconds</span>
+              </div>
+            )}
+
             <Button
               type="submit"
               className="w-full min-h-[44px]"
-              disabled={loading || !email}
+              disabled={loading || !email || rateLimited}
             >
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Sending...
+                </>
+              ) : rateLimited ? (
+                <>
+                  <Clock className="mr-2 h-4 w-4" aria-hidden="true" />
+                  Try again in {cooldownRemaining}s
                 </>
               ) : (
                 'Send Reset Link'
@@ -227,4 +305,7 @@ export default function CustomerForgotPasswordPage() {
     </div>
   );
 }
+
+// Default export for lazy loading compatibility
+export default CustomerForgotPasswordPage;
 
