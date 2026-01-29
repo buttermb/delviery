@@ -11,6 +11,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Types
 export type OrderType = 'retail' | 'wholesale' | 'menu' | 'pos' | 'all';
@@ -341,6 +342,10 @@ export function useCreateUnifiedOrder() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
+      // Inventory is decremented by database trigger when order is confirmed
+      // Invalidate inventory queries to reflect stock changes
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
     },
   });
 }
@@ -431,6 +436,12 @@ export function useUpdateOrderStatus() {
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.detail(variables.orderId) });
+      // Inventory is synced by database trigger when status changes to confirmed/cancelled
+      // Invalidate inventory queries to reflect stock changes
+      if (variables.status === 'confirmed' || variables.status === 'cancelled') {
+        queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+      }
     },
   });
 }
@@ -538,6 +549,10 @@ export function useCancelOrder() {
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.detail(variables.orderId) });
+      // Inventory is restored by database trigger when order is cancelled
+      // Invalidate inventory queries to reflect stock restoration
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
     },
   });
 }
