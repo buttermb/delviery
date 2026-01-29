@@ -56,7 +56,8 @@ export function SidebarFavorites() {
     if (!searchQuery.trim()) {
       return favoriteItems;
     }
-    return favoriteItems.filter(item => matchesSearchQuery(item.name, searchQuery));
+    const query = searchQuery.toLowerCase();
+    return favoriteItems.filter(item => item.name.toLowerCase().includes(query));
   }, [favoriteItems, searchQuery]);
 
   // Check if path is active

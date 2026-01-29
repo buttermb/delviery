@@ -740,3 +740,5 @@ export function RunnerLocationTracking() {
     </>
   );
 }
+
+export default RunnerLocationTracking;
