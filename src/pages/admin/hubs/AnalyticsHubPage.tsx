@@ -5,6 +5,7 @@
  * - Orders: Order analytics
  * - Menu: Menu performance
  * - Delivery: Delivery analytics
+ * - Storefront: Store metrics (revenue, orders, conversion, AOV)
  * - Forecasting: Predictive analytics
  */
 
@@ -22,6 +23,7 @@ import {
     Download,
     Target,
     Presentation,
+    Store,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -39,6 +41,7 @@ const CustomReportsPage = lazy(() => import('@/pages/tenant-admin/CustomReportsP
 const DataExportPage = lazy(() => import('@/pages/tenant-admin/DataExportPage'));
 const StrategicDashboardPage = lazy(() => import('@/pages/admin/StrategicDashboardPage'));
 const BoardReportPage = lazy(() => import('@/pages/admin/BoardReportPage'));
+const StorefrontAnalytics = lazy(() => import('@/pages/admin/storefront/StorefrontAnalytics'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -54,6 +57,7 @@ const tabs = [
     { id: 'orders', label: 'Orders', icon: ShoppingCart, group: 'Metrics' },
     { id: 'menu', label: 'Menu', icon: UtensilsCrossed, group: 'Metrics' },
     { id: 'delivery', label: 'Delivery', icon: Truck, group: 'Metrics' },
+    { id: 'storefront', label: 'Storefront', icon: Store, group: 'Metrics' },
     // Advanced Analysis
     { id: 'forecasting', label: 'Forecasting', icon: TrendingUp, group: 'Analysis' },
     { id: 'advanced', label: 'Advanced', icon: LineChart, group: 'Analysis' },
@@ -140,6 +144,13 @@ export default function AnalyticsHubPage() {
                 <TabsContent value="delivery" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <DeliveryAnalyticsPage />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Storefront Tab */}
+                <TabsContent value="storefront" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <StorefrontAnalytics />
                     </Suspense>
                 </TabsContent>
 
