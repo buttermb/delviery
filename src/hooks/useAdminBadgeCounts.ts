@@ -65,7 +65,14 @@ export function useAdminBadgeCounts() {
     if (!tenant?.id) return;
 
     try {
-      const [ordersResult, menuOrdersResult, stockResult, messagesResult, shipmentsResult] = await Promise.all([
+      const [
+        ordersResult,
+        menuOrdersResult,
+        stockResult,
+        messagesResult,
+        shipmentsResult,
+        alertsResult,
+      ] = await Promise.all([
         // Pending wholesale orders (count only, no data transfer)
         supabase
           .from('wholesale_orders')
@@ -111,12 +118,12 @@ export function useAdminBadgeCounts() {
           .or('snoozed_until.is.null,snoozed_until.lt.now()'),
       ]);
 
-      const wholesaleOrderCount = ordersResult.count || 0;
-      const menuOrderCount = menuOrdersResult.count || 0;
-      const inventoryAlertCount = 0; // inventory_alerts query removed for now
+      const wholesaleCount = ordersResult.count || 0;
+      const menuCount = menuOrdersResult.count || 0;
+      const alertsCount = alertsResult.count || 0;
 
       setCounts({
-        pendingOrders: wholesaleOrderCount + menuOrderCount,
+        pendingOrders: wholesaleCount + menuCount,
         lowStockItems: stockResult.count || 0,
         unreadMessages: messagesResult.count || 0,
         pendingShipments: shipmentsResult.count || 0,
