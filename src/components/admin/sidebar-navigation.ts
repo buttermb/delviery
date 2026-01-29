@@ -21,7 +21,6 @@ import {
   Shield,
   ScrollText,
   PieChart,
-  LineChart,
   Activity,
   Map,
   FileSpreadsheet,
@@ -37,14 +36,11 @@ import {
   Calculator,
   Wallet,
   Landmark,
-  UserPlus,
-  Lock,
   History,
   FileCheck,
   Target,
   Rocket,
   Route,
-  Navigation,
   Code,
   Webhook,
   Puzzle,
@@ -55,7 +51,6 @@ import {
   TrendingDown,
   BarChart2,
   Store,
-  Clock,
   Search,
   Bell,
   PackageOpen,
@@ -63,7 +58,11 @@ import {
   UserCheck,
   Flame,
   Brain,
-  Star
+  Star,
+  Barcode,
+  Headphones,
+  HelpCircle,
+  Award
 } from 'lucide-react';
 
 export interface NavItem {
@@ -381,7 +380,7 @@ export const navigationSections: NavSection[] = [
       {
         title: 'Support',
         href: '/admin/customer-support',
-        icon: HeadphonesIcon,
+        icon: Headphones,
         tier: 'professional'
       },
       {
@@ -935,6 +934,12 @@ export const navigationSections: NavSection[] = [
     title: 'Integrations',
     items: [
       {
+        title: 'Webhooks',
+        href: '/admin/webhooks',
+        icon: Webhook,
+        tier: 'professional'
+      },
+      {
         title: 'Local AI',
         href: '/admin/local-ai',
         icon: Brain,
@@ -945,25 +950,12 @@ export const navigationSections: NavSection[] = [
         title: 'Custom Integrations',
         href: '/admin/custom-integrations',
         icon: Puzzle,
-        tier: 'ultimate'
-      }
-    ]
-  },
-
-  // 🚀 ENTERPRISE
-  {
-    title: 'Integrations',
-    items: [
-      {
-        title: 'Integrations',
-        href: '/admin/custom-integrations',
-        icon: Puzzle,
         tier: 'professional'
       },
       {
-        title: 'Webhooks',
-        href: '/admin/webhooks',
-        icon: Webhook,
+        title: 'Developer Tools',
+        href: '/admin/developer-tools',
+        icon: Code,
         tier: 'professional'
       },
       {
@@ -971,12 +963,6 @@ export const navigationSections: NavSection[] = [
         href: '/admin/compliance',
         icon: Shield,
         tier: 'ultimate'
-      },
-      {
-        title: 'Developer Tools',
-        href: '/admin/developer-tools',
-        icon: Code,
-        tier: 'professional'
       }
     ]
   }

@@ -7332,3 +7332,22 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 24 - Add Integrations Section with Webhooks and Local AI
+
+### Task: Add Integrations section with Webhooks and Local AI in sidebar-navigation.ts
+
+**Completed:**
+1. Consolidated duplicate Integrations sections into a single well-organized section
+2. Added/organized the following nav items in the Integrations section:
+   - **Webhooks** - Links to `/admin/webhooks`, uses `Webhook` icon, tier: professional
+   - **Local AI** - Links to `/admin/local-ai`, uses `Brain` icon, tier: professional, badge: FREE
+   - **Custom Integrations** - Links to `/admin/custom-integrations`, uses `Puzzle` icon, tier: professional
+   - **Developer Tools** - Links to `/admin/developer-tools`, uses `Code` icon, tier: professional
+   - **Compliance** - Links to `/admin/compliance`, uses `Shield` icon, tier: ultimate
+3. Fixed missing icon imports (Barcode, Headphones, HelpCircle, Award)
+4. Fixed HeadphonesIcon -> Headphones reference
+5. Removed unused icon imports (LineChart, UserPlus, Lock, Navigation, Clock)
+
+### Files Changed:
+- `src/components/admin/sidebar-navigation.ts` - Consolidated Integrations sections, added Webhooks and Local AI as primary items, fixed icon imports
