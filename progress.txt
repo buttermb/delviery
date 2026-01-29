@@ -7332,3 +7332,57 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 67 - PasswordResetPage Enhancement
+
+### Task: Build PasswordResetPage with token validation, password inputs, and strength meter
+
+**Completed:**
+Enhanced the existing `PasswordResetPage` component with improved password security features:
+
+1. **Replaced inline password strength meter with standardized `PasswordStrengthIndicator` component**
+   - Uses the reusable component from `@/components/auth/PasswordStrengthIndicator`
+   - Shows visual strength bar with 5 levels (Weak, Fair, Good, Strong, Very Strong)
+   - Displays requirements checklist (8+ chars, lowercase, uppercase, number, special char)
+   - Better consistency with other auth pages in the codebase
+
+2. **Added password visibility toggles**
+   - Both password fields now have eye/eye-off icons to toggle visibility
+   - Improved UX for password entry on all device types
+   - Touch-friendly minimum height (44px) for tap targets
+
+3. **Improved accessibility**
+   - Added `aria-label` on form element
+   - Added `aria-label` attributes on show/hide buttons
+   - Added `role="status"` and `aria-live="polite"` on password strength indicator
+   - Added `role="alert"` on password mismatch error message
+   - Connected password input to strength indicator via `aria-describedby`
+
+4. **Enhanced form validation UX**
+   - Real-time password mismatch feedback below confirm password field
+   - Submit button disabled when: loading, password < 8 chars, passwords don't match, or password is breach-blocked
+   - Better validation state communication
+
+5. **Code quality improvements**
+   - Removed unused inline `calculatePasswordStrength` function (now uses component)
+   - Removed unused `useMemo` import
+   - Added both named and default export for compatibility with lazy loading
+
+### Features already present (maintained):
+- Token validation via `verifyResetToken()` API call on mount
+- Three user types supported: super_admin, tenant_admin, customer
+- User type auto-detection from URL path
+- Password breach checking via `usePasswordBreachCheck` hook
+- Password generation via `PasswordBreachWarning` component
+- CSRF token validation
+- Theme-aware styling for different user portals
+- Success/error states with toasts
+- Auto-redirect to login after successful reset
+
+### Files Changed:
+- `src/pages/auth/PasswordResetPage.tsx` - Enhanced with PasswordStrengthIndicator and visibility toggles
+
+### Verification:
+- TypeScript compilation: ✅ Passed (npx tsc --noEmit)
+- ESLint: ✅ Passed (no errors)
+- Build: ⚠️ Pre-existing issue with missing papaparse dependency (unrelated to this change)
