@@ -7408,19 +7408,61 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
 
 
-## Agent 60 - Connect Storefront to Analytics Hub
+---
 
-### Task: Connect Storefront to Analytics showing store metrics in analytics hub
+## Agent 61 - Connect Dashboard to All Metrics
+
+### Task: Connect Dashboard to all metrics pulling KPIs from Orders, Inventory, Revenue
 
 **Completed:**
-- Added 'Storefront' tab to Analytics Hub page
-  - Shows store metrics (revenue, orders, conversion rate, AOV)
-  - Reuses existing StorefrontAnalytics component
-  - Includes top selling products, traffic sources, and customer retention charts
-  - Proper lazy loading with Suspense fallback
-- Added storefront query key to queryKeys.ts for analytics caching
-- Tab uses Store icon and is placed in the Metrics group
+
+#### 1. Enhanced `useDashboardStats` Hook (`src/hooks/useDashboardStats.ts`)
+Expanded the dashboard stats hook to fetch comprehensive KPIs from multiple data sources:
+
+**Orders KPIs:**
+- `pendingOrders`: Count of orders with 'pending' or 'confirmed' status
+- `totalOrdersToday`: All non-cancelled orders placed today
+- `totalOrdersMTD`: Month-to-date order count
+- `completedOrdersToday`: Delivered/completed orders today
+- `avgOrderValue`: Average order value (MTD revenue / MTD orders)
+
+**Inventory KPIs:**
+- `totalProducts`: Total products in catalog
+- `lowStockItems`: Products below reorder threshold (but not zero)
+- `outOfStockItems`: Products with zero stock or marked not in stock
+- `totalInventoryValue`: Sum of (stock_quantity × price) across all products
+
+**Revenue KPIs:**
+- `revenueToday`: Sum of today's completed/delivered order amounts
+- `revenueMTD`: Month-to-date revenue from completed orders
+- `revenueGrowthPercent`: Percentage growth comparing MTD vs last month
+
+**Customer KPIs:**
+- `newCustomers`: Customers joined in last 30 days
+- `totalCustomers`: Total registered customers
+- `activeSessions`: Customers active in last 15 minutes
+
+#### 2. Updated `DashboardHubPage` (`src/pages/admin/hubs/DashboardHubPage.tsx`)
+Redesigned the dashboard layout to display KPIs in organized sections:
+
+- **Revenue Section** (3 cards): Today's Revenue, Month to Date (with growth trend), Avg Order Value
+- **Orders Section** (4 cards): Pending Orders, Today's Orders, Completed Today, Orders MTD
+- **Inventory Section** (4 cards): Total Products, Low Stock, Out of Stock, Inventory Value
+- **Customers Section** (3 cards): Total Customers, New Customers, Active Sessions
+
+**UI Improvements:**
+- Added section headers with icons for visual organization
+- Added trend indicator showing revenue growth with up/down arrows
+- Added 'destructive' variant for critical metrics (out of stock items)
+- Color-coded icons per section (green for revenue, blue for orders, purple for inventory, indigo for customers)
+
+### Technical Details:
+- Uses `Promise.allSettled` for resilient parallel data fetching
+- 30-second auto-refresh interval for real-time updates
+- Proper tenant isolation (`tenant_id` filtering on all queries)
+- Graceful error handling with warning logs
 
 ### Files Changed:
-- `src/pages/admin/hubs/AnalyticsHubPage.tsx` - Added Storefront tab with lazy-loaded StorefrontAnalytics component
-- `src/lib/queryKeys.ts` - Added storefront query key to analytics section
+- `src/hooks/useDashboardStats.ts` - Enhanced with comprehensive KPI metrics
+- `src/pages/admin/hubs/DashboardHubPage.tsx` - Updated UI with organized KPI sections
+
