@@ -18,6 +18,7 @@ import { useAuthOffline } from "@/hooks/useAuthOffline";
 import { AccountLockedScreen } from "@/components/auth/AccountLockedScreen";
 import { Database } from "@/integrations/supabase/types";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
 
 
 type Tenant = Database['public']['Tables']['tenants']['Row'];
@@ -35,6 +36,7 @@ export default function TenantAdminLoginPage() {
   const [tenantLoading, setTenantLoading] = useState(true);
   const [accountLocked, setAccountLocked] = useState(false);
   const [lockDurationSeconds, setLockDurationSeconds] = useState(0);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const { validateToken } = useCsrfToken();
 
   const { isOnline, hasQueuedAttempt, preventSubmit, queueLoginAttempt } = useAuthOffline(
@@ -72,22 +74,15 @@ export default function TenantAdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoginError(null);
 
     if (!validateToken()) {
-      toast({
-        variant: "destructive",
-        title: "Security Error",
-        description: "Invalid security token. Please refresh the page and try again.",
-      });
+      setLoginError("Invalid security token. Please refresh the page and try again.");
       return;
     }
 
     if (!tenantSlug) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Tenant slug is required",
-      });
+      setLoginError("Business information is missing. Please check the URL and try again.");
       return;
     }
 
@@ -122,7 +117,7 @@ export default function TenantAdminLoginPage() {
         return;
       }
 
-      const errorMessage = error instanceof Error ? error.message : "Invalid credentials";
+      const errorMessage = getAuthErrorMessage(error, "Invalid credentials");
 
       // Check for locked account message from server
       if (
@@ -136,11 +131,7 @@ export default function TenantAdminLoginPage() {
         return;
       }
 
-      toast({
-        variant: "destructive",
-        title: "Login failed",
-        description: errorMessage,
-      });
+      setLoginError(errorMessage);
       setLoading(false);
     }
   };
@@ -279,6 +270,14 @@ export default function TenantAdminLoginPage() {
 
           {/* Offline Indicator */}
           <AuthOfflineIndicator isOnline={isOnline} hasQueuedAttempt={hasQueuedAttempt} className="mb-4" />
+
+          {/* Error Alert */}
+          <AuthErrorAlert
+            message={loginError || ''}
+            type={loginError ? getAuthErrorType(loginError) : 'error'}
+            variant="light"
+            className="mb-4"
+          />
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">

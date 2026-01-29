@@ -15,6 +15,7 @@ import { Loader2, Mail, ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { apiFetch } from '@/lib/utils/apiClient';
 import { useCsrfToken } from '@/hooks/useCsrfToken';
+import { AuthErrorAlert, getAuthErrorMessage } from '@/components/auth/AuthErrorAlert';
 
 function ResendButton({ onResend }: { onResend: () => void }) {
   const [cooldown, setCooldown] = useState(60);
@@ -47,6 +48,7 @@ export default function CustomerForgotPasswordPage() {
   const [sent, setSent] = useState(false);
   const [tenant, setTenant] = useState<any>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+  const [formError, setFormError] = useState<string | null>(null);
   const { validateToken } = useCsrfToken();
 
   useEffect(() => {
@@ -72,22 +74,15 @@ export default function CustomerForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
 
     if (!validateToken()) {
-      toast({
-        variant: 'destructive',
-        title: 'Security Error',
-        description: 'Invalid security token. Please refresh the page and try again.',
-      });
+      setFormError('Invalid security token. Please refresh the page and try again.');
       return;
     }
 
     if (!email) {
-      toast({
-        variant: 'destructive',
-        title: 'Email Required',
-        description: 'Please enter your email address',
-      });
+      setFormError('Please enter your email address.');
       return;
     }
 
@@ -116,11 +111,8 @@ export default function CustomerForgotPasswordPage() {
       });
     } catch (error: unknown) {
       logger.error('Request password reset error', error, { component: 'CustomerForgotPasswordPage' });
-      toast({
-        variant: 'destructive',
-        title: 'Failed to Send',
-        description: error instanceof Error ? error.message : 'Please try again later.',
-      });
+      const errorMessage = getAuthErrorMessage(error, 'Failed to send reset link. Please try again later.');
+      setFormError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -183,6 +175,13 @@ export default function CustomerForgotPasswordPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <AuthErrorAlert
+              message={formError || ''}
+              type="error"
+              variant="light"
+              className="mb-2"
+            />
+
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
               <Input

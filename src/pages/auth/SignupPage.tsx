@@ -38,6 +38,7 @@ import {
   Building2,
   Plus,
 } from 'lucide-react';
+import { AuthErrorAlert, getAuthErrorMessage } from '@/components/auth/AuthErrorAlert';
 
 // Step 1: Email & Password
 const step1Schema = z.object({
@@ -102,6 +103,7 @@ export function SignupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [signupError, setSignupError] = useState<string | null>(null);
 
   // Store data from completed steps
   const [step1Data, setStep1Data] = useState<Step1Data | null>(null);
@@ -153,12 +155,10 @@ export function SignupPage() {
   };
 
   const handleStep3Submit = async (data: Step3Data) => {
+    setSignupError(null);
+
     if (!step1Data || !step2Data) {
-      toast({
-        title: 'Missing information',
-        description: 'Please complete all previous steps',
-        variant: 'destructive',
-      });
+      setSignupError('Please complete all previous steps before continuing.');
       return;
     }
 
@@ -236,11 +236,8 @@ export function SignupPage() {
       });
     } catch (error: unknown) {
       logger.error('Signup error', error, { component: 'SignupPage' });
-      toast({
-        title: 'Signup failed',
-        description: error instanceof Error ? error.message : 'An error occurred. Please try again.',
-        variant: 'destructive',
-      });
+      const errorMessage = getAuthErrorMessage(error, 'An error occurred during signup. Please try again.');
+      setSignupError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -313,6 +310,14 @@ export function SignupPage() {
           </CardHeader>
 
           <CardContent>
+            {/* Error Alert */}
+            <AuthErrorAlert
+              message={signupError || ''}
+              type="error"
+              variant="light"
+              className="mb-4"
+            />
+
             {/* STEP 1: Email & Password */}
             {currentStep === 1 && (
               <Form {...step1Form}>

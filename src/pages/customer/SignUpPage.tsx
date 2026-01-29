@@ -16,6 +16,7 @@ import { PasswordBreachWarning } from "@/components/auth/PasswordBreachWarning";
 import { usePasswordBreachCheck } from "@/hooks/usePasswordBreachCheck";
 import { Tenant } from "@/types/tenant-extended";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { AuthErrorAlert, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
 
 export default function CustomerSignUpPage() {
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ export default function CustomerSignUpPage() {
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+  const [signupError, setSignupError] = useState<string | null>(null);
   const { isLocked, remainingSeconds, recordAttempt, resetOnSuccess } = useAuthRateLimit({
     storageKey: 'floraiq_customer_signup_rate_limit',
   });
@@ -71,13 +73,10 @@ export default function CustomerSignUpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSignupError(null);
 
     if (!validateToken()) {
-      toast({
-        variant: "destructive",
-        title: "Security Error",
-        description: "Invalid security token. Please refresh the page and try again.",
-      });
+      setSignupError("Invalid security token. Please refresh the page and try again.");
       return;
     }
 
@@ -86,38 +85,22 @@ export default function CustomerSignUpPage() {
     }
 
     if (!tenantSlug) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Tenant slug is required",
-      });
+      setSignupError("Store information is missing. Please check the URL and try again.");
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Passwords do not match",
-      });
+      setSignupError("Passwords do not match. Please ensure both password fields are identical.");
       return;
     }
 
     if (formData.password.length < 8) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Password must be at least 8 characters",
-      });
+      setSignupError("Password must be at least 8 characters long.");
       return;
     }
 
     if (breachResult?.blocked) {
-      toast({
-        variant: "destructive",
-        title: "Password not allowed",
-        description: "This password has been found in too many data breaches. Please choose a different password.",
-      });
+      setSignupError("This password has been found in data breaches. Please choose a different, more secure password.");
       return;
     }
 
@@ -161,11 +144,8 @@ export default function CustomerSignUpPage() {
     } catch (error: unknown) {
       recordAttempt();
       logger.error("Customer signup error", error, { component: "CustomerSignUpPage" });
-      toast({
-        variant: "destructive",
-        title: "Signup failed",
-        description: error instanceof Error ? error.message : "Please try again",
-      });
+      const errorMessage = getAuthErrorMessage(error, "Signup failed. Please try again.");
+      setSignupError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -244,6 +224,12 @@ export default function CustomerSignUpPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <RateLimitWarning remainingSeconds={remainingSeconds} variant="dark" />
+            <AuthErrorAlert
+              message={signupError || ''}
+              type="error"
+              variant="dark"
+              className="mb-2"
+            />
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

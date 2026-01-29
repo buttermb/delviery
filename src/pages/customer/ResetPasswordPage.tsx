@@ -18,6 +18,7 @@ import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthInd
 import { useCsrfToken } from '@/hooks/useCsrfToken';
 import { PasswordBreachWarning } from '@/components/auth/PasswordBreachWarning';
 import { usePasswordBreachCheck } from '@/hooks/usePasswordBreachCheck';
+import { AuthErrorAlert, getAuthErrorMessage } from '@/components/auth/AuthErrorAlert';
 
 export default function CustomerResetPasswordPage() {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ export default function CustomerResetPasswordPage() {
   const [reset, setReset] = useState(false);
   const [tenant, setTenant] = useState<any>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+  const [resetError, setResetError] = useState<string | null>(null);
   const { validateToken } = useCsrfToken();
 
   // Password breach checking
@@ -63,58 +65,35 @@ export default function CustomerResetPasswordPage() {
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
+    setResetError(null);
 
     if (!validateToken()) {
-      toast({
-        variant: 'destructive',
-        title: 'Security Error',
-        description: 'Invalid security token. Please refresh the page and try again.',
-      });
+      setResetError('Invalid security token. Please refresh the page and try again.');
       return;
     }
 
     if (!token) {
-      toast({
-        variant: 'destructive',
-        title: 'Invalid Link',
-        description: 'Password reset link is invalid or missing.',
-      });
+      setResetError('Password reset link is invalid or missing. Please request a new one.');
       return;
     }
 
     if (!email) {
-      toast({
-        variant: 'destructive',
-        title: 'Email Required',
-        description: 'Please enter your email address',
-      });
+      setResetError('Please enter your email address.');
       return;
     }
 
     if (newPassword.length < 8) {
-      toast({
-        variant: 'destructive',
-        title: 'Password Too Short',
-        description: 'Password must be at least 8 characters',
-      });
+      setResetError('Password must be at least 8 characters long.');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast({
-        variant: 'destructive',
-        title: 'Passwords Do Not Match',
-        description: 'Please make sure both passwords match',
-      });
+      setResetError('Passwords do not match. Please make sure both passwords are identical.');
       return;
     }
 
     if (breachResult?.blocked) {
-      toast({
-        variant: 'destructive',
-        title: 'Password not allowed',
-        description: 'This password has been found in too many data breaches. Please choose a different password.',
-      });
+      setResetError('This password has been found in data breaches. Please choose a different, more secure password.');
       return;
     }
 
@@ -150,11 +129,8 @@ export default function CustomerResetPasswordPage() {
       }, 3000);
     } catch (error: unknown) {
       logger.error('Password reset error', error, { component: 'CustomerResetPasswordPage' });
-      toast({
-        variant: 'destructive',
-        title: 'Reset Failed',
-        description: error instanceof Error ? error.message : 'Invalid or expired reset link. Please request a new one.',
-      });
+      const errorMessage = getAuthErrorMessage(error, 'Invalid or expired reset link. Please request a new one.');
+      setResetError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -204,6 +180,13 @@ export default function CustomerResetPasswordPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleReset} className="space-y-4">
+            <AuthErrorAlert
+              message={resetError || ''}
+              type="error"
+              variant="light"
+              className="mb-2"
+            />
+
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
               <Input

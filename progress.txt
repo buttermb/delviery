@@ -7332,3 +7332,53 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+## Agent 79 - Consistent Auth Error Message Styling
+
+### Task: Add consistent error message styling with red alert box to all auth forms
+
+**Completed:**
+
+1. **Created reusable AuthErrorAlert component** (`src/components/auth/AuthErrorAlert.tsx`)
+   - Consistent red alert box styling for auth forms
+   - Supports 'light' and 'dark' variants to match different form themes
+   - Error types: 'error', 'warning', 'credentials', 'locked', 'general'
+   - Includes AlertCircle icon for visual consistency
+   - Smooth fade-in/slide-in animation
+   - Helper functions: `getAuthErrorType()` and `getAuthErrorMessage()`
+
+2. **Updated auth forms with AuthErrorAlert:**
+
+   **Login Pages:**
+   - `src/pages/auth/LoginPage.tsx` - Already had good Alert pattern, verified consistent
+   - `src/pages/saas/LoginPage.tsx` - Added inline error display with AuthErrorAlert (light variant)
+   - `src/pages/customer/LoginPage.tsx` - Added inline error display with AuthErrorAlert (dark variant)
+   - `src/pages/super-admin/LoginPage.tsx` - Added inline error display with AuthErrorAlert (light variant)
+   - `src/pages/tenant-admin/LoginPage.tsx` - Added inline error display with AuthErrorAlert (light variant)
+
+   **Signup Pages:**
+   - `src/pages/auth/SignupPage.tsx` - Added inline error display with AuthErrorAlert (light variant)
+   - `src/pages/customer/SignUpPage.tsx` - Added inline error display with AuthErrorAlert (dark variant)
+
+   **Password Reset Pages:**
+   - `src/pages/auth/ResetPasswordPage.tsx` - Added inline error display with AuthErrorAlert
+   - `src/pages/customer/ForgotPasswordPage.tsx` - Added inline error display with AuthErrorAlert
+   - `src/pages/customer/ResetPasswordPage.tsx` - Added inline error display with AuthErrorAlert
+
+3. **Error handling improvements:**
+   - Replaced toast-only errors with inline form error alerts for immediate visibility
+   - Consistent error state management pattern across all forms
+   - Clear, user-friendly error messages
+   - Proper error type detection for styling (credentials, locked, general)
+
+### Files Changed:
+- `src/components/auth/AuthErrorAlert.tsx` (NEW) - Reusable error alert component
+- `src/pages/auth/SignupPage.tsx` - Added AuthErrorAlert for signup errors
+- `src/pages/auth/ResetPasswordPage.tsx` - Added AuthErrorAlert for reset errors
+- `src/pages/saas/LoginPage.tsx` - Added AuthErrorAlert for login errors
+- `src/pages/customer/LoginPage.tsx` - Added AuthErrorAlert for login errors (dark variant)
+- `src/pages/customer/SignUpPage.tsx` - Added AuthErrorAlert for signup errors (dark variant)
+- `src/pages/customer/ForgotPasswordPage.tsx` - Added AuthErrorAlert for form errors
+- `src/pages/customer/ResetPasswordPage.tsx` - Added AuthErrorAlert for reset errors
+- `src/pages/super-admin/LoginPage.tsx` - Added AuthErrorAlert for login errors
+- `src/pages/tenant-admin/LoginPage.tsx` - Added AuthErrorAlert for login errors
