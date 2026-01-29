@@ -7332,3 +7332,68 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ### Files Changed:
 - `src/components/admin/sidebar-navigation.ts` - Added Team and Roles items to Operations section
+
+---
+
+### Task: Add mobile responsive layouts stacking forms properly on small screens
+
+**Completed:**
+Added mobile-first responsive breakpoints (`grid-cols-1 sm:grid-cols-2`) to form layouts that were using fixed `grid-cols-2` without mobile stacking. This ensures forms stack vertically on small screens and switch to side-by-side layout on screens >= 640px (sm breakpoint).
+
+**Files Changed:**
+
+1. **ProductForm.tsx** (`src/components/admin/products/ProductForm.tsx`)
+   - Fixed TabsList from `grid-cols-4` to `grid-cols-2 sm:grid-cols-4` for mobile tab stacking
+   - Fixed THC/CBD percentage inputs grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+
+2. **CustomerForm.tsx** (`src/pages/admin/CustomerForm.tsx`)
+   - Fixed Basic Information section (first/last name, email/phone, date/status) from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+
+3. **CheckoutPage.tsx (shop)** (`src/pages/shop/CheckoutPage.tsx`)
+   - Fixed Contact Information section (first/last name) from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed Address section (city/state) from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed navigation buttons to use `flex-col-reverse sm:flex-row` with full-width on mobile
+
+4. **AddressBook.tsx** (`src/components/account/AddressBook.tsx`)
+   - Fixed city/state grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed zip/borough grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+
+5. **AppointmentForm.tsx** (`src/components/admin/appointments/AppointmentForm.tsx`)
+   - Fixed date/duration grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+
+6. **CreateWholesaleClientDialog.tsx** (`src/components/wholesale/CreateWholesaleClientDialog.tsx`)
+   - Fixed business/contact name grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed email/phone grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+
+7. **CreateClientDialog.tsx** (`src/components/admin/CreateClientDialog.tsx`)
+   - Fixed business/contact name grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed phone/email grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed client type/credit/payment grid from `grid-cols-3` to `grid-cols-1 sm:grid-cols-3`
+
+8. **EditClientDialog.tsx** (`src/components/admin/EditClientDialog.tsx`)
+   - Fixed business/contact name grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed phone/email grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed client type/credit/payment grid from `grid-cols-3` to `grid-cols-1 sm:grid-cols-3`
+
+9. **AddCourierDialog.tsx** (`src/components/admin/AddCourierDialog.tsx`)
+   - Fixed name/email grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed phone/license grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+   - Fixed vehicle make/model/plate grid from `grid-cols-3` to `grid-cols-1 sm:grid-cols-3`
+
+10. **SignUpPage.tsx (customer)** (`src/pages/customer/SignUpPage.tsx`)
+    - Fixed first/last name grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+
+11. **CheckoutPage.tsx (credits)** (`src/pages/credits/CheckoutPage.tsx`)
+    - Fixed billing city/state grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+    - Fixed billing postal/country grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+
+12. **CheckoutPage.tsx (customer)** (`src/pages/customer/CheckoutPage.tsx`)
+    - Fixed new address city/state grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+    - Fixed new address zip/borough grid from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2`
+
+**Pattern Applied:**
+- `grid-cols-2` → `grid-cols-1 sm:grid-cols-2`
+- `grid-cols-3` → `grid-cols-1 sm:grid-cols-3`
+- `grid-cols-4` → `grid-cols-2 sm:grid-cols-4`
+
+This ensures all forms stack properly on mobile devices (< 640px) while maintaining the expected multi-column layout on larger screens.

@@ -153,7 +153,7 @@ export function ProductForm({
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:w-[400px]">
                     <TabsTrigger value="details">
                         <FileText className="h-4 w-4 mr-2 hidden sm:block" /> Details
                     </TabsTrigger>
@@ -420,7 +420,7 @@ export function ProductForm({
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>THC %</Label>
                                 <Input

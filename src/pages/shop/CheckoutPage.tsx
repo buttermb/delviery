@@ -939,7 +939,7 @@ export function CheckoutPage() {
                     className="space-y-4"
                   >
                     <h2 className={`text-xl font-semibold mb-4 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>Contact Information</h2>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First Name *</Label>
                         <Input
@@ -1036,7 +1036,7 @@ export function CheckoutPage() {
                         placeholder="Apt 4B"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="city">City *</Label>
                         <Input
@@ -1213,15 +1213,15 @@ export function CheckoutPage() {
               </AnimatePresence>
 
               {/* Navigation Buttons */}
-              <div className="flex justify-between mt-8">
+              <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-8">
                 {currentStep > 1 ? (
-                  <Button variant="outline" onClick={prevStep}>
+                  <Button variant="outline" onClick={prevStep} className="w-full sm:w-auto">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back
                   </Button>
                 ) : (
-                  <Link to={`/shop/${storeSlug}/cart`}>
-                    <Button variant="outline">
+                  <Link to={`/shop/${storeSlug}/cart`} className="w-full sm:w-auto">
+                    <Button variant="outline" className="w-full sm:w-auto">
                       <ArrowLeft className="w-4 h-4 mr-2" />
                       Back to Cart
                     </Button>
@@ -1232,6 +1232,7 @@ export function CheckoutPage() {
                   <Button
                     onClick={nextStep}
                     style={{ backgroundColor: store.primary_color }}
+                    className="w-full sm:w-auto"
                   >
                     Continue
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -1241,6 +1242,7 @@ export function CheckoutPage() {
                     onClick={handlePlaceOrder}
                     disabled={placeOrderMutation.isPending}
                     style={{ backgroundColor: store.primary_color }}
+                    className="w-full sm:w-auto"
                   >
                     {placeOrderMutation.isPending ? (
                       <>
