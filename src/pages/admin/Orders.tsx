@@ -25,6 +25,7 @@ import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { LastUpdated } from "@/components/shared/LastUpdated";
 import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
 import { OrderBulkStatusConfirmDialog } from "@/components/admin/orders/OrderBulkStatusConfirmDialog";
+import { OrderSMSButton } from "@/components/admin/orders/OrderSMSButton";
 import { BulkOperationProgress } from "@/components/ui/bulk-operation-progress";
 import { useOrderBulkStatusUpdate } from "@/hooks/useOrderBulkStatusUpdate";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -46,7 +47,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
-import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
 
 interface Order {
   id: string;
@@ -686,6 +686,17 @@ export default function Orders() {
       header: "Actions",
       cell: (order) => (
         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <OrderSMSButton
+            order={{
+              id: order.id,
+              order_number: order.order_number,
+              status: order.status,
+              total_amount: order.total_amount,
+              user: order.user,
+            }}
+            tenantId={tenant?.id}
+            className="opacity-0 group-hover:opacity-100 transition-opacity"
+          />
           <Button
             size="sm"
             variant="ghost"
@@ -709,18 +720,18 @@ export default function Orders() {
                 <Eye className="mr-2 h-4 w-4" />
                 View Details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePrintOrderFunc(order)}>
+              <DropdownMenuItem onClick={() => handlePrintOrder(order)}>
                 <Printer className="mr-2 h-4 w-4" />
                 Print Order
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleGenerateInvoiceFunc(order)}>
+              <DropdownMenuItem onClick={() => handleGenerateInvoice(order)}>
                 <FileText className="mr-2 h-4 w-4" />
                 Generate Invoice
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {order.status !== 'cancelled' && (
                 <DropdownMenuItem
-                  onClick={() => handleCancelOrderFunc(order)}
+                  onClick={() => handleCancelOrder(order)}
                   className="text-destructive focus:text-destructive"
                 >
                   <XCircle className="mr-2 h-4 w-4" />
@@ -1078,11 +1089,23 @@ export default function Orders() {
 
               {/* Quick Actions */}
               <div className="border-t pt-3 space-y-2">
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <OrderSMSButton
+                    order={{
+                      id: selectedOrder.id,
+                      order_number: selectedOrder.order_number,
+                      status: selectedOrder.status,
+                      total_amount: selectedOrder.total_amount,
+                      user: selectedOrder.user,
+                    }}
+                    tenantId={tenant?.id}
+                    variant="button"
+                    size="sm"
+                  />
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handlePrintOrderFunc(selectedOrder)}
+                    onClick={() => handlePrintOrder(selectedOrder)}
                   >
                     <Printer className="mr-2 h-4 w-4" />
                     Print
@@ -1090,7 +1113,7 @@ export default function Orders() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleGenerateInvoiceFunc(selectedOrder)}
+                    onClick={() => handleGenerateInvoice(selectedOrder)}
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     Invoice
