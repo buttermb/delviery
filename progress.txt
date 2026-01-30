@@ -7493,52 +7493,31 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-## Task: Build ProductBarcodeGenerator creating scannable barcodes
 
-### Completed
+## Task: Add ProductQRGenerator creating QR codes linking to product
 
-#### 1. Created ProductBarcodeGenerator Component (`src/components/admin/products/ProductBarcodeGenerator.tsx`)
-- Full-featured barcode generator component for product inventory management
-- Supports multiple barcode formats: CODE128 (recommended), CODE39, EAN-13, UPC-A
-- Output types: Barcode only, QR code only, or both together
-- Tenant-aware queries using TanStack Query patterns
-- Follows FloraIQ coding standards (logger, queryKeys, named exports)
+### Summary:
+Created a new ProductQRGenerator component that generates QR codes linking to product storefront pages. The component provides a dialog with download, copy, share, and print functionality.
 
-#### 2. Key Features Implemented
-- **Product Selection**: Multi-select product list with "Select All" and "Clear" options
-- **Format Options**: 
-  - Barcode format selector (CODE128, CODE39, EAN13, UPC)
-  - Output type selector (barcode, QR code, or both)
-  - Quantity per product (1-100)
-- **Include Options**: Toggle SKU and price display on labels
-- **Barcode Generation**: Intelligent barcode value generation using product barcode, SKU, or auto-generated value
-- **Format Validation**: Validates barcodes against format requirements with fallback handling
+### Implementation Details:
+- Created `ProductQRGenerator` component at `src/components/admin/products/ProductQRGenerator.tsx`
+- QR code links to: `/shop/{storeSlug}/products/{productId}`
+- Uses `qrcode.react` (QRCodeSVG) for QR code rendering
+- Follows existing QRCodeDialog pattern from disposable-menus
 
-#### 3. Export and Print Functionality
-- **PDF Download**: Generates printable PDF sheets with barcodes (3x10 grid on US Letter)
-- **Print Support**: Direct print functionality with print-optimized CSS
-- **Copy to Clipboard**: One-click copy of barcode values
+### Features:
+1. **QR Code Display**: Shows product info (image, name, SKU) with QR code
+2. **Download**: Exports QR code as PNG with product name/SKU in filename
+3. **Copy Link**: Copies product URL to clipboard with visual feedback
+4. **Share**: Uses Web Share API on mobile, falls back to copy
+5. **Print**: Opens print-friendly page with product details and QR code
 
-#### 4. UI/UX Implementation
-- Loading skeleton states during data fetch
-- Error state with user-friendly message
-- Empty state when no products available
-- Responsive grid layout (1/2/3 columns)
-- Copy confirmation with visual feedback
-- Button loading states during async operations
+### Files Changed:
+- `src/components/admin/products/ProductQRGenerator.tsx` (NEW)
+- `src/components/admin/index.ts` (added export)
 
-#### 5. Integration Details
-- Uses existing `BarcodeGenerator` component from `@/components/inventory/BarcodeGenerator`
-- Uses `QRCodeSVG` from `qrcode.react` for QR code generation
-- Uses `jsPDF` for PDF generation
-- Integrates with tenant context via `useTenantAdminAuth()`
-- Queries products from Supabase with tenant_id filter
-
-#### 6. TypeScript and Code Quality
-- Full TypeScript strict mode compliance
-- No `any` types used
-- Proper interface definitions for props and data types
-- ESLint compliant with no warnings/errors
-- Uses `logger` for error handling (not console.log)
-- Named export only (no default export)
+### Notes:
+- TypeScript check passes successfully (`npx tsc --noEmit`)
+- Component can be used from admin pages by importing from `@/components/admin` or directly
+- Uses high-resolution (2x) canvas for better QR code download quality
 
