@@ -154,6 +154,9 @@ export function SignupPage() {
   const watchedEmail = step1Form.watch('email');
   const watchedTenantMode = step3Form.watch('tenantMode');
 
+  // State for signup errors
+  const [signupError, setSignupError] = useState<string | null>(null);
+
   // Debounce email for validation (300ms delay)
   const debouncedEmail = useDebounce(watchedEmail, 300);
 

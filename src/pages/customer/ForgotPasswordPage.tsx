@@ -47,6 +47,7 @@ function ResendButton({ onResend }: { onResend: () => void }) {
 export function CustomerForgotPasswordPage() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -118,7 +119,8 @@ export function CustomerForgotPasswordPage() {
           .maybeSingle();
 
         if (data && !error) {
-          setTenant(data);
+          // Cast to match expected tenant shape
+          setTenant({ id: data.id, slug: data.slug, name: data.business_name || data.slug });
         }
         setTenantLoading(false);
       } else {

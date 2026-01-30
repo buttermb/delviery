@@ -85,6 +85,8 @@ export const queryKeys = {
       [...queryKeys.inventory.all, 'summary', tenantId] as const,
     locations: (tenantId?: string) =>
       [...queryKeys.inventory.all, 'locations', tenantId] as const,
+    byLocation: (locationId: string) =>
+      [...queryKeys.inventory.all, 'by-location', locationId] as const,
   },
 
   // Marketplace Customers

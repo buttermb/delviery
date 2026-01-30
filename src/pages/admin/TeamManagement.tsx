@@ -524,7 +524,7 @@ export function TeamManagement() {
             Manage your team members, roles, and permissions
             {!isEnterprise && (
               <span className="ml-2 text-sm">
-                ({activeUserCount}/{userLimit} users)
+                ({String(activeUserCount)}/{String(userLimit)} users)
               </span>
             )}
           </p>
