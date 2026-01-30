@@ -7460,90 +7460,25 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
----
+## DeliveryStatusWidget Implementation
 
-## Task: Build ProductArchiveButton with Soft Delete and Restore
+Created `src/components/admin/dashboard/DeliveryStatusWidget.tsx`
 
-### Completed
+### Features:
+- Shows Active deliveries count (pending + confirmed orders)
+- Shows In-Transit deliveries count (out_for_delivery status)
+- Shows Completed deliveries count (delivered status)
+- Animated count displays with Framer Motion
+- Loading skeleton states
+- Empty state with Package icon
+- Link to delivery management page
+- Tenant-aware data fetching using useTenantAdminAuth()
+- Uses queryKeys.deliveries.list() for consistent caching
+- Auto-refresh every 60 seconds
 
-#### 1. Created Database Migration for Products Soft Delete (`supabase/migrations/20260130000001_products_soft_delete.sql`)
-- Added `deleted_at` TIMESTAMPTZ column to products table with NULL default
-- Created indexes for efficient querying:
-  - `idx_products_active` - For active products (deleted_at IS NULL)
-  - `idx_products_archived` - For archived products (deleted_at IS NOT NULL)
-- Created `archive_product(p_product_id, p_tenant_id)` RPC function with SECURITY DEFINER
-- Created `restore_product(p_product_id, p_tenant_id)` RPC function with SECURITY DEFINER
-- Both functions have proper `SET search_path = public` for security
-- Granted execute permissions to authenticated users
-
-#### 2. Created ProductArchiveButton Component (`src/components/admin/ProductArchiveButton.tsx`)
-- Reusable button component for archive/restore operations
-- Props: product, tenantId, onSuccess, variant, size, showLabel, className
-- Visual feedback with loading spinner and success checkmark
-- Uses Tooltip for accessibility
-- Toast notifications with "Undo" action for archive operations
-- Handles both archive (soft delete) and restore (unarchive) operations
-- Uses sonner for toast notifications
-- Follows DuplicateProductButton pattern for consistency
-
-#### 3. Created ConfirmArchiveDialog Component (`src/components/shared/ConfirmArchiveDialog.tsx`)
-- Standardized confirmation dialog for archive/restore operations
-- Props: open, onOpenChange, onConfirm, title, description, itemName, itemType, isLoading, isRestore
-- Uses AlertDialog from UI components
-- Haptic feedback for user confirmation
-- Different styling for archive (warning) vs restore (primary) actions
-- Clear messaging about the reversible nature of archiving
-
-#### 4. Updated ProductManagement Page (`src/pages/admin/ProductManagement.tsx`)
-- Added `deleted_at` to Product type
-- Added state for archive functionality:
-  - `archiveDialogOpen` - Controls archive dialog visibility
-  - `productToArchive` - Product being archived/restored
-  - `isArchiving` - Loading state for archive operations
-  - `showArchived` - Toggle to show/hide archived products
-- Implemented `fetchProducts` callback with soft delete filtering:
-  - Shows only active products by default (deleted_at IS NULL)
-  - Toggle to show only archived products (deleted_at IS NOT NULL)
-- Added archive/restore handlers:
-  - `handleArchive(id)` - Opens confirmation dialog
-  - `confirmArchive()` - Performs archive/restore operation
-- Updated table dropdown menu:
-  - Replaced "Delete" with "Archive" for active products
-  - Shows "Restore" for archived products
-  - Uses Archive/ArchiveRestore icons from lucide-react
-- Added "Show Archived" toggle in filter section
-- Added ConfirmArchiveDialog at end of component
-- Cache invalidation after archive/restore operations
-
-#### 5. Updated ProductCard Component (`src/components/admin/ProductCard.tsx`)
-- Added `deleted_at` to Product interface
-- Added `onArchive` callback prop
-- Added Archive/ArchiveRestore icons
-- Updated dropdown menu with Archive/Restore option:
-  - Shows "Archive" for active products (warning color)
-  - Shows "Restore" for archived products (primary color)
-- Updated long-press menu for mobile with archive/restore action
-
-#### 6. Fixed Existing Build Issues
-- Removed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
-- Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
-
-### Key Features
-- **Soft Delete**: Products are never permanently deleted from the database
-- **Restore Functionality**: Archived products can be restored at any time
-- **Historical Data Preservation**: Products used in orders remain in the system
-- **UI Toggle**: Users can easily switch between viewing active and archived products
-- **Undo Support**: Toast notifications include "Undo" action for quick reversal
-- **Tenant Isolation**: All operations are scoped to the current tenant
-
-### Files Changed
-- `supabase/migrations/20260130000001_products_soft_delete.sql` (new)
-- `src/components/admin/ProductArchiveButton.tsx` (new)
-- `src/components/shared/ConfirmArchiveDialog.tsx` (new)
-- `src/pages/admin/ProductManagement.tsx` (updated)
-- `src/components/admin/ProductCard.tsx` (updated)
-- `src/lib/utils/sanitize.ts` (updated - added safeJsonParse)
-- `src/pages/auth/PasswordResetPage.tsx` (updated - removed duplicate export)
-
-### Build Status
-- Build passes successfully with no TypeScript errors
+### Patterns followed:
+- Matches existing widget patterns (InventoryAlertsWidget, RecentOrdersWidget)
+- Uses shadcn/ui Card components
+- TanStack Query for data fetching
+- Named exports only (no default export)
+- Added export to src/components/admin/dashboard/index.ts barrel file
