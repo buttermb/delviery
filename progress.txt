@@ -7531,69 +7531,48 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+
 ---
 
-### Task: Add OrderAuditLog showing all changes made to order with user
+### Task: Build ProductsListPage with grid and table view toggle
 
 **Completed:**
 
-1. **Created database migration** (`supabase/migrations/20260129000001_order_audit_log.sql`)
-   - Created `order_audit_log` table with comprehensive schema:
-     - Order reference fields (order_id, order_table, order_number)
-     - Action tracking (created, status_changed, payment_updated, shipping_updated, etc.)
-     - Change details (field_name, old_value, new_value, changes jsonb)
-     - Actor information (actor_id, actor_email, actor_name, actor_type)
-     - Context (ip_address, user_agent, source)
-     - Notes and reason fields
-   - Enabled RLS with tenant isolation policies
-   - Created performance indexes on key columns
-   - Created `log_order_audit()` helper function for programmatic logging
-   - Created `trigger_order_audit_log()` trigger function for automatic logging
-   - Added triggers on `orders`, `unified_orders`, and `marketplace_orders` tables
+1. **Created ProductsListPage component** (`src/pages/admin/ProductsListPage.tsx`)
+   - Clean, focused products list page following FloraIQ patterns
+   - Full grid and table view toggle functionality
+   - Uses TanStack Query for data fetching with proper query keys
+   - Tenant-aware queries filtering by `tenant_id`
+   - Responsive design with mobile and desktop layouts
 
-2. **Added query key** (`src/lib/queryKeys.ts`)
-   - Added `orderAuditLog` query key factory:
-     - `all`, `lists`, `list()`, `byOrder(orderId)`, `byTenant(tenantId)`
+2. **Features implemented:**
+   - **View Toggle**: Grid/Table view switch using Toggle components
+   - **Search**: Debounced search across product name, SKU, and category
+   - **Filters**: Category filter, Stock status filter (All/In Stock/Low Stock/Out of Stock)
+   - **Sorting**: Sort by Name, Price, Stock, or Category
+   - **Stats Cards**: Total Products, Available Units, Inventory Value, Low Stock Items
+   - **Selection**: Multi-select with checkbox in table view
+   - **Actions**: Edit, Delete, Print Label, Publish to Store dropdown menu
+   - **Loading States**: Skeleton loaders for all UI sections
+   - **Error Handling**: Error state with retry button
+   - **Empty States**: Using EnhancedEmptyState with contextual messaging
 
-3. **Created useOrderAuditLog hook** (`src/hooks/useOrderAuditLog.ts`)
-   - Provides filtered access to order audit logs
-   - Supports filtering by order ID and pagination
-   - Includes `logAudit` mutation for manual logging
-   - Exports helper functions:
-     - `getAuditActionLabel()` - Human-readable action labels
-     - `getAuditActionConfig()` - Color configuration for actions
+3. **Component Integration:**
+   - Uses existing ProductCard component for grid view
+   - Uses ResponsiveTable for table view with mobile fallback
+   - Uses InventoryStatusBadge for stock status display
+   - Properly integrates with navigation via useTenantNavigate
 
-4. **Created OrderAuditLog component** (`src/components/admin/orders/OrderAuditLog.tsx`)
-   - Timeline-based display of order changes
-   - Groups entries by date
-   - Shows action icons with color-coded badges
-   - Displays old → new value changes
-   - Shows actor information with avatars
-   - Includes expandable details section for reason/notes/changes
-   - Loading and empty states
-   - Responsive and scrollable
-
-5. **Integrated into order detail pages:**
-   - `src/pages/admin/marketplace/OrderDetailPage.tsx` - Added Activity History section
-   - `src/components/admin/disposable-menus/OrderDetailsDialog.tsx` - Added Activity History section
+4. **Also fixed pre-existing build errors:**
+   - Fixed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
+   - Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
 
 ### Files Changed:
-- `supabase/migrations/20260129000001_order_audit_log.sql` (NEW)
-- `src/lib/queryKeys.ts` (MODIFIED)
-- `src/hooks/useOrderAuditLog.ts` (NEW)
-- `src/components/admin/orders/OrderAuditLog.tsx` (NEW)
-- `src/pages/admin/marketplace/OrderDetailPage.tsx` (MODIFIED)
-- `src/components/admin/disposable-menus/OrderDetailsDialog.tsx` (MODIFIED)
+- `src/pages/admin/ProductsListPage.tsx` (NEW)
+- `src/pages/auth/PasswordResetPage.tsx` (bugfix)
+- `src/lib/utils/sanitize.ts` (added missing function)
 
-### Features:
-- Automatic tracking of order changes via database triggers
-- Status changes tracked with old/new values
-- Payment status changes tracked
-- Courier assignments tracked
-- Shipping updates (tracking number) tracked
-- Notes changes tracked
-- Total amount changes tracked (items modified)
-- Full user attribution (who made the change)
-- Source tracking (admin, storefront, pos, api, etc.)
-- Collapsible details for complex changes
-- Date-grouped timeline view
+### Build Status:
+- TypeScript compilation: PASSED
+- Vite production build: PASSED
+
