@@ -63,8 +63,9 @@ import { BarcodeScanner } from "@/components/admin/BarcodeScanner";
 import { BatchPanel } from "@/components/admin/BatchPanel";
 import { BulkPriceEditor } from "@/components/admin/BulkPriceEditor";
 import { BatchCategoryEditor } from "@/components/admin/BatchCategoryEditor";
-import { ProductBulkImport } from "@/components/admin/products/ProductBulkImport";
-import { Upload } from "lucide-react";
+import { ProductImportDialog } from "@/components/admin/ProductImportDialog";
+import { ProductBulkImportDialog } from "@/components/admin/ProductBulkImportDialog";
+import { Upload, FileUp } from "lucide-react";
 import { ProductForm, type ProductFormData } from "@/components/admin/products/ProductForm";
 import { ProductDuplicateButton } from "@/components/admin/products/ProductDuplicateButton";
 import { useEncryption } from "@/lib/hooks/useEncryption";
@@ -217,6 +218,7 @@ export default function ProductManagement() {
   const [bulkPriceEditorOpen, setBulkPriceEditorOpen] = useState(false);
   const [batchCategoryEditorOpen, setBatchCategoryEditorOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [bulkImportDialogOpen, setBulkImportDialogOpen] = useState(false);
 
   // Optimistic locking for concurrent edit protection
   const { updateWithLock, isUpdating: isLockUpdating } = useOptimisticLock('products');
@@ -1132,6 +1134,15 @@ export default function ProductManagement() {
           <ProductBulkImport
             open={importDialogOpen}
             onOpenChange={setImportDialogOpen}
+            onSuccess={loadProducts}
+          />
+          <Button variant="outline" onClick={() => setBulkImportDialogOpen(true)}>
+            <FileUp className="h-4 w-4 mr-2" />
+            Bulk Import
+          </Button>
+          <ProductBulkImportDialog
+            open={bulkImportDialogOpen}
+            onOpenChange={setBulkImportDialogOpen}
             onSuccess={loadProducts}
           />
 

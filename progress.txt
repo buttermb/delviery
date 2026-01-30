@@ -1,33 +1,77 @@
-## Task: Add ProductCard Component with Image, Name, Price, Stock Badge
+## Task: Build ProductBulkImport from CSV with validation preview
 
 ### Completed
 
-#### Created SimpleProductCard Component (`src/components/SimpleProductCard.tsx`)
-- Created a lightweight, reusable product card component focused on core elements
-- Features:
-  - **Product Image**: Uses existing `ProductImage` component with lazy loading and fallback
-  - **Product Name**: Clean display using `cleanProductName` utility, with line clamping
-  - **Price**: Formatted using `formatCurrency` utility with proper currency display
-  - **Stock Badge**: Dynamic badge showing stock status:
-    - "In Stock" (emerald) - when product is available
-    - "Only X left" (orange) - low stock warning when ≤5 units remain
-    - "Out of Stock" (red) - when product is unavailable
-  - Optional category badge toggle
-  - Sold out overlay for out-of-stock items
-  - Hover effects with subtle scale and shadow transitions
-  - Keyboard accessibility (Enter/Space to click)
-  - ARIA labels for screen readers
+#### 1. Created ProductBulkImportDialog Component (`src/components/admin/ProductBulkImportDialog.tsx`)
+A comprehensive multi-step wizard for bulk importing products from CSV/Excel files with:
 
-#### Technical Implementation
-- TypeScript strict mode compliant with proper interfaces
-- Named export only (following FloraIQ conventions)
-- Uses `memo` for performance optimization
-- Utilizes existing UI components: Card, CardContent, Badge
-- Proper import aliases with `@/` prefix
-- No console.log, uses proper patterns
+**Step 1 - Upload:**
+- Drag-and-drop or click-to-upload interface
+- Supports CSV, XLSX, and XLS file formats
+- Uses xlsx library for parsing
 
-#### Files Created
-- `src/components/SimpleProductCard.tsx` - New lightweight product card component
+**Step 2 - Column Mapping:**
+- Auto-detects and maps file headers to system fields using fuzzy matching
+- Allows manual override of mappings
+- Configurable import options:
+  - Decimal separator (dot/comma for US/European formats)
+  - Treat empty cells as NULL option
+- Tip about formatting SKU columns as text in Excel
+
+**System Fields Supported:**
+- Required: name, SKU, category
+- Optional: wholesale_price, retail_price, cost_per_unit, available_quantity, description, vendor_name, strain_name, strain_type, thc_percent, cbd_percent, batch_number
+
+**Step 3 - Validation Preview:**
+- Summary cards showing total/valid/error/warning counts
+- Filterable table view (all/valid/errors/warnings)
+- Select/deselect individual records or all valid records
+- Row-level validation status badges (Valid/Warning/Error)
+- Detailed error and warning messages for each record
+
+**Validation Rules:**
+- Required field checks (name, SKU, category)
+- Category validation with fuzzy matching (flower, edibles, vapes, concentrates, prerolls, tinctures, topicals, accessories)
+- Numeric field validation (prices, quantities, percentages)
+- THC/CBD percentage range validation (0-100%)
+- Negative price/quantity detection
+- Quantity rounding warnings
+- Scientific notation handling for SKUs (Excel issue)
+
+**Step 4 - Import Execution:**
+- Progress bar with percentage
+- Batch processing (10 records per batch)
+- Error collection for failed records
+
+**Step 5 - Completion:**
+- Summary of imported/failed/skipped records
+- Downloadable error report (CSV format)
+
+**UI Features:**
+- Visual step indicator with progress icons
+- Responsive design for different screen sizes
+- Loading states and animations
+- Back/forward navigation between steps
+- Cancel option at any step
+
+#### 2. Integrated into ProductManagement Page (`src/pages/admin/ProductManagement.tsx`)
+- Added "Bulk Import" button in the page header
+- Button opens the ProductBulkImportDialog
+- On success, refreshes the product list
+
+#### 3. Fixed Pre-existing Build Issues
+- Fixed duplicate `export default` in PasswordResetPage.tsx
+- Added missing `safeJsonParse` function to sanitize.ts
+
+### Files Changed:
+- `src/components/admin/ProductBulkImportDialog.tsx` (new - 960 lines)
+- `src/pages/admin/ProductManagement.tsx` (modified - added import button and dialog)
+- `src/pages/auth/PasswordResetPage.tsx` (fixed duplicate export)
+- `src/lib/utils/sanitize.ts` (added safeJsonParse function)
+
+### Build Status:
+- TypeScript: Compiles with no errors (`npm run build` succeeds)
+- Lint: New component passes lint (pre-existing lint issues in other files remain)
 
 ---
 

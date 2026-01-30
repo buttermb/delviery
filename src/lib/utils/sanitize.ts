@@ -226,16 +226,15 @@ export function sanitizeUrlInput(url: string): string {
 }
 
 /**
- * Safely parses JSON with fallback.
- * Returns the parsed value or the fallback if parsing fails.
+ * Safely parses a JSON string, returning a default value if parsing fails.
  * @param jsonString - The JSON string to parse
- * @param fallback - The fallback value to return if parsing fails
+ * @param defaultValue - The default value to return if parsing fails
  */
-export function safeJsonParse<T>(jsonString: string | null | undefined, fallback: T): T {
-  if (!jsonString) return fallback;
+export function safeJsonParse<T>(jsonString: string | null | undefined, defaultValue: T): T {
+  if (!jsonString) return defaultValue;
   try {
     return JSON.parse(jsonString) as T;
   } catch {
-    return fallback;
+    return defaultValue;
   }
 }
