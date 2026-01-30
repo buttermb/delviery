@@ -46,7 +46,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
-import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
 
 interface Order {
   id: string;
@@ -405,8 +404,11 @@ export default function Orders() {
 
     setBulkStatusConfirm({ open: false, targetStatus: '' });
 
-    // Execute the bulk status update
-    await bulkStatusUpdate.execute(selectedOrders, bulkStatusConfirm.targetStatus);
+    // Execute the bulk status update using the proper method name
+    await bulkStatusUpdate.executeBulkUpdate(
+      selectedOrders.map(id => ({ id, orderNumber: id })),
+      bulkStatusConfirm.targetStatus
+    );
   };
 
   const handleClearFilters = () => {

@@ -342,13 +342,9 @@ export function useCreateUnifiedOrder() {
     },
     onSuccess: (data) => {
       toast.success('Order created successfully');
-      // Cross-panel invalidation
-      if (tenant?.id) {
-        invalidateOnEvent(queryClient, 'ORDER_CREATED', tenant.id, {
-          customerId: data.customer_id || undefined,
-          orderId: data.id,
-        });
-      }
+      // Cross-panel invalidation - invalidate related queries
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
@@ -442,13 +438,9 @@ export function useUpdateOrderStatus() {
     },
     onSuccess: (data) => {
       toast.success(`Order status updated to ${data.status}`);
-      // Cross-panel invalidation
-      if (tenant?.id) {
-        invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', tenant.id, {
-          orderId: data.id,
-          customerId: data.customer_id || undefined,
-        });
-      }
+      // Cross-panel invalidation - invalidate related queries
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
     },
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
@@ -563,12 +555,8 @@ export function useCancelOrder() {
     onSuccess: (data) => {
       toast.success('Order cancelled successfully');
       // Cross-panel invalidation - cancellation affects order lists, customer stats, inventory
-      if (tenant?.id) {
-        invalidateOnEvent(queryClient, 'ORDER_DELETED', tenant.id, {
-          orderId: data.id,
-          customerId: data.customer_id || undefined,
-        });
-      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
     },
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });

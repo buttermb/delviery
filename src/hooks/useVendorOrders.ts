@@ -11,7 +11,7 @@ export interface VendorWithStats {
     contact_email: string | null;
     contact_phone: string | null;
     address: string | null;
-    website: string | null;
+    website?: string | null;
     license_number: string | null;
     notes: string | null;
     status: string | null;
@@ -38,7 +38,7 @@ export function useVendorsWithStats() {
     const { tenant } = useTenantAdminAuth();
 
     return useQuery({
-        queryKey: queryKeys.vendors.list({ tenantId: tenant?.id, withStats: true }),
+        queryKey: [...queryKeys.vendor.all, 'list', { tenantId: tenant?.id, withStats: true }] as const,
         queryFn: async () => {
             if (!tenant?.id) return [];
 
@@ -103,6 +103,7 @@ export function useVendorsWithStats() {
                 const stats = statsMap.get(vendor.id) || { totalOrders: 0, totalSpent: 0, lastOrderDate: null };
                 return {
                     ...vendor,
+                    website: (vendor as any).website ?? null,
                     total_orders: stats.totalOrders,
                     total_spent: stats.totalSpent,
                     last_order_date: stats.lastOrderDate,
@@ -117,7 +118,7 @@ export function useVendorOrders(vendorId: string | null) {
     const { tenant } = useTenantAdminAuth();
 
     return useQuery({
-        queryKey: queryKeys.vendors.orders(vendorId || ''),
+        queryKey: [...queryKeys.vendor.all, 'orders', vendorId || ''] as const,
         queryFn: async () => {
             if (!tenant?.id || !vendorId) return [];
 

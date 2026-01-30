@@ -439,9 +439,9 @@ export default function FinancialCenterReal() {
 
       {selectedClient && (
         <PaymentDialog
-          clientId={selectedClient.id}
-          clientName={selectedClient.business_name}
-          outstandingBalance={Number(selectedClient.outstanding_balance || 0)}
+          clientId={(selectedClient as { id: string; business_name: string; outstanding_balance: number }).id}
+          clientName={(selectedClient as { id: string; business_name: string; outstanding_balance: number }).business_name}
+          outstandingBalance={Number((selectedClient as { id: string; business_name: string; outstanding_balance: number }).outstanding_balance || 0)}
           open={paymentDialogOpen}
           onOpenChange={setPaymentDialogOpen}
         />

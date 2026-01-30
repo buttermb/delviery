@@ -77,8 +77,8 @@ export default function PayoutsPage() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
-          .from('marketplace_payouts' as unknown as 'marketplace_payouts')
+        const { data, error } = await (supabase as any)
+          .from('marketplace_payouts')
           .select('*')
           .eq('seller_tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -104,7 +104,7 @@ export default function PayoutsPage() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('marketplace_orders')
           .select('id, total_amount, platform_fee, status, created_at, delivered_at, payout_id')
           .eq('seller_tenant_id', tenantId)
@@ -117,7 +117,7 @@ export default function PayoutsPage() {
           if (error.code === '42P01') return [];
           throw error;
         }
-        return data || [];
+        return (data || []) as { id: string; total_amount: number; platform_fee: number; status: string; created_at: string; delivered_at: string | null; payout_id: string | null }[];
       } catch (error) {
         logger.error('Failed to fetch pending orders', error, { component: 'PayoutsPage' });
         return [];
