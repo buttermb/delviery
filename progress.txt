@@ -7459,3 +7459,50 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+### Task: Add OrderNotesSection with internal notes and customer notes tabs
+
+**Completed:**
+
+1. **Created OrderNotesSection component** (`src/components/admin/orders/OrderNotesSection.tsx`)
+   - Tabbed interface with "Internal" and "Customer" tabs
+   - Internal notes: Only visible to staff, with lock icon indicator
+   - Customer notes: Visible to customers, with user icon indicator
+   - Inline editing with save/cancel functionality
+   - Loading states with skeleton UI
+   - Empty states with helpful messages
+   - Badge indicators showing when notes exist
+   - Supports multiple table types (marketplace_orders, wholesale_orders, menu_orders)
+   - Configurable field names for different database schemas
+   - Query invalidation support for TanStack Query integration
+
+2. **Created barrel export** (`src/components/admin/orders/index.ts`)
+   - Exports OrderNotesSection component and its TypeScript interface
+   - Includes existing MenuSourceBadge and OrderBulkStatusConfirmDialog exports
+
+### Component Usage Example:
+```tsx
+import { OrderNotesSection } from '@/components/admin/orders';
+
+<OrderNotesSection
+  orderId={order.id}
+  internalNotes={order.internal_notes}
+  customerNotes={order.customer_notes}
+  tableName="marketplace_orders"
+  queryKeysToInvalidate={[['order-detail', orderId]]}
+  additionalFilter={{ field: 'tenant_id', value: tenant.id }}
+/>
+```
+
+### Files Changed:
+- `src/components/admin/orders/OrderNotesSection.tsx` (NEW)
+- `src/components/admin/orders/index.ts` (NEW)
+
+### Notes:
+- TypeScript type checking passes successfully
+- Component follows existing codebase patterns (useTenantAdminAuth, useMutation, toast notifications)
+- Uses shadcn/ui components (Card, Tabs, Button, Textarea, Badge, Skeleton)
+- Pre-existing build error in PasswordResetPage.tsx is unrelated to these changes
