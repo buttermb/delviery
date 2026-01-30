@@ -1,71 +1,33 @@
-## Task: Build OrderCustomerCard Component
+## Task: Add ProductCard Component with Image, Name, Price, Stock Badge
 
 ### Completed
 
-#### Created OrderCustomerCard Component (`src/components/admin/orders/OrderCustomerCard.tsx`)
-- Displays customer information within order context
-- Shows customer avatar with initials fallback
-- Displays contact details (email, phone) with click-to-action links
-- Fetches and displays order history statistics using `useCustomerStats` hook:
-  - Total order count
-  - Total amount spent
-  - Average order value
-- Provides quick action buttons:
-  - "View Profile" - navigates to customer detail page
-  - "New Order" - navigates to wholesale order creation with pre-filled client
-- Supports `compact` prop for different layout contexts
-- Supports `showActions` prop to hide/show action buttons
-- Handles null/undefined customer data gracefully
-- Uses existing UI components (Card, Avatar, Badge, Button, Skeleton, Separator)
-- Follows FloraIQ patterns with tenant-aware navigation
+#### Created SimpleProductCard Component (`src/components/SimpleProductCard.tsx`)
+- Created a lightweight, reusable product card component focused on core elements
+- Features:
+  - **Product Image**: Uses existing `ProductImage` component with lazy loading and fallback
+  - **Product Name**: Clean display using `cleanProductName` utility, with line clamping
+  - **Price**: Formatted using `formatCurrency` utility with proper currency display
+  - **Stock Badge**: Dynamic badge showing stock status:
+    - "In Stock" (emerald) - when product is available
+    - "Only X left" (orange) - low stock warning when ≤5 units remain
+    - "Out of Stock" (red) - when product is unavailable
+  - Optional category badge toggle
+  - Sold out overlay for out-of-stock items
+  - Hover effects with subtle scale and shadow transitions
+  - Keyboard accessibility (Enter/Space to click)
+  - ARIA labels for screen readers
 
-#### Created Index File (`src/components/admin/orders/index.ts`)
-- Added barrel export for order-related components
-- Exports: `MenuSourceBadge`, `OrderBulkStatusConfirmDialog`, `OrderCustomerCard`
+#### Technical Implementation
+- TypeScript strict mode compliant with proper interfaces
+- Named export only (following FloraIQ conventions)
+- Uses `memo` for performance optimization
+- Utilizes existing UI components: Card, CardContent, Badge
+- Proper import aliases with `@/` prefix
+- No console.log, uses proper patterns
 
-### Props Interface
-```typescript
-interface OrderCustomerData {
-  id?: string;
-  customer_id?: string;
-  first_name?: string | null;
-  last_name?: string | null;
-  full_name?: string | null;
-  business_name?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  avatar_url?: string | null;
-}
-
-interface OrderCustomerCardProps {
-  customer: OrderCustomerData | null | undefined;
-  className?: string;
-  showActions?: boolean;  // default: true
-  compact?: boolean;      // default: false
-}
-```
-
-### Usage Example
-```tsx
-import { OrderCustomerCard } from '@/components/admin/orders';
-
-<OrderCustomerCard
-  customer={{
-    customer_id: 'uuid-here',
-    full_name: 'John Doe',
-    email: 'john@example.com',
-    phone: '+1 555-1234',
-  }}
-/>
-```
-
-### Files Changed
-- `src/components/admin/orders/OrderCustomerCard.tsx` (new)
-- `src/components/admin/orders/index.ts` (new)
-
-### Build Status
-- ESLint: Passes with no errors on new files
-- Note: Pre-existing build issues exist unrelated to these changes
+#### Files Created
+- `src/components/SimpleProductCard.tsx` - New lightweight product card component
 
 ---
 
