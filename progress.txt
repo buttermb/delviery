@@ -7459,3 +7459,55 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+### Task: Add ProductVariantsManager for size weight strain options
+
+**Completed:**
+
+1. **Created ProductVariantsManager component** (`src/components/admin/products/ProductVariantsManager.tsx`)
+   - Comprehensive variant management with tabbed interface (Size & Pricing / Strain Info)
+   - Weight/size variant options:
+     - Wholesale presets: QP (Quarter Pound), HP (Half Pound), LB (Pound)
+     - Retail presets: 1g, 3.5g (1/8 oz), 7g (1/4 oz), 14g (1/2 oz), 28g (1 oz)
+     - Custom weight entry support
+     - Price-per-variant management with inline editing
+     - Quick-add preset buttons for common weights
+   - Strain information management:
+     - Strain name with autocomplete integration
+     - Strain type selection (Indica, Sativa, Hybrid, CBD) with descriptions
+     - Strain lineage/genetics entry
+     - THC/CBD percentage inputs
+     - Terpene profile management with common presets (Myrcene, Limonene, etc.)
+     - Custom terpene entry support
+   - Supports different modes: "wholesale", "retail", or "both"
+   - Uses shadcn/ui components (Card, Tabs, Badge, Input, Button, Select)
+   - TypeScript interfaces exported for type safety
+
+2. **Integrated with ProductForm** (`src/components/admin/products/ProductForm.tsx`)
+   - Added new "Variants" tab to the product form
+   - Extended ProductFormData interface with variant fields:
+     - `prices: Record<string, number>` for weight-based pricing
+     - `weight_grams: string` for base unit weight
+     - `strain_lineage: string` for genetics info
+     - `terpenes: Record<string, number>` for terpene profile
+   - Created data transformation between form data and variant manager
+   - Added useCallback handler for variant data changes
+   - Updated tab layout from 4 to 5 columns
+
+3. **Exported types for external use:**
+   - `WeightVariant` - interface for weight variant entries
+   - `StrainOptions` - interface for strain-related fields
+   - `ProductVariantsData` - complete variant data interface
+
+### Files Changed:
+- `src/components/admin/products/ProductVariantsManager.tsx` (NEW)
+- `src/components/admin/products/ProductForm.tsx` (MODIFIED)
+
+### Notes:
+- ESLint passes with only pre-existing warnings
+- Uses useMemo/useCallback for performance optimization
+- Follows FloraIQ patterns with shadcn/ui components
+- Compatible with existing prices JSON field structure used in the database
