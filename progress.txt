@@ -7459,3 +7459,30 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Task: Add OrderEmailButton to send confirmation receipt tracking emails
+
+### Completed
+
+#### 1. Created OrderEmailButton Component (`src/components/admin/orders/OrderEmailButton.tsx`)
+- Reusable button component for sending order confirmation emails
+- Invokes `send-order-confirmation` Supabase Edge Function
+- Props include: orderId, orderNumber, customerEmail, customerName, items, subtotal, deliveryFee, total, storeName, trackingUrl, loyaltyPointsEarned
+- Supports multiple variants (default, outline, secondary, ghost) and sizes (default, sm, lg, icon)
+- Shows loading state with spinner during email send
+- Disabled state when customer email is not available
+- Uses `showSuccessToast` and `showErrorToast` for user feedback
+- Proper error handling with logger for debugging
+
+#### 2. Integrated OrderEmailButton into StorefrontOrders Page (`src/pages/admin/storefront/StorefrontOrders.tsx`)
+- Added OrderEmailButton import
+- Cleaned up unused icon imports (ArrowLeft, Eye, Clock, CheckCircle, XCircle, Truck, Package, Filter)
+- Added email button to order detail Sheet after the Tracking Link section
+- Button automatically populates with order data including items, totals, and tracking URL
+- Full-width button style for better UX in the sheet layout
+
+#### Features
+- One-click email sending from order details view
+- Email includes order receipt with items, totals, and optional tracking link
+- Supports loyalty points earned display in email
+- Uses existing `send-order-confirmation` Edge Function for consistent email formatting

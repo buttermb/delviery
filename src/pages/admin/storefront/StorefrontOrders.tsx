@@ -16,19 +16,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import {
-  ArrowLeft,
   Search,
   ShoppingCart,
-  Eye,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Truck,
-  Package,
-  Filter,
   Download,
   RefreshCw
 } from 'lucide-react';
+import { OrderEmailButton } from '@/components/admin/orders/OrderEmailButton';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import {
@@ -538,6 +531,27 @@ export default function StorefrontOrders() {
                   <code className="text-xs text-muted-foreground break-all">
                     {window.location.origin}/shop/{store?.id}/track/{selectedOrder.tracking_token}
                   </code>
+                </div>
+
+                {/* Send Confirmation Email */}
+                <div className="pt-4">
+                  <OrderEmailButton
+                    orderId={selectedOrder.id}
+                    orderNumber={selectedOrder.order_number}
+                    customerEmail={selectedOrder.customer_email}
+                    customerName={selectedOrder.customer_name}
+                    items={selectedOrder.items.map((item: { name: string; quantity: number; price: number }) => ({
+                      name: item.name,
+                      quantity: item.quantity,
+                      price: item.price,
+                    }))}
+                    subtotal={selectedOrder.subtotal}
+                    deliveryFee={selectedOrder.delivery_fee}
+                    total={selectedOrder.total}
+                    storeName={tenant?.business_name || 'Store'}
+                    trackingUrl={`${window.location.origin}/shop/${store?.id}/track/${selectedOrder.tracking_token}`}
+                    className="w-full"
+                  />
                 </div>
               </div>
             </>
