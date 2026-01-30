@@ -7527,42 +7527,42 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-## StockLevelsPage Implementation
+---
 
-### Task: Build StockLevelsPage with sortable table of all products
+### Task: Build MobileDashboard with stacked single-column layout
 
-### Changes Made:
+**Completed:**
 
-1. **Created StockLevelsPage component** (`src/pages/tenant-admin/StockLevelsPage.tsx`):
-   - Sortable table displaying all products with stock information
-   - Click column headers to sort by: Product name, Category, Stock quantity, Value, Status
-   - Sort order toggles between ascending/descending on repeated clicks
-   - Sort arrow indicators show current sort direction
-   - Search filter for products by name, SKU, or category
-   - Category dropdown filter
-   - Persists sort preferences using `useTablePreferences` hook
-   - Summary cards showing: Total products, Total stock, Total value, Low stock items
-   - Mobile responsive with card view for smaller screens
-   - Stock status badges: IN STOCK, LOW, CRITICAL, OUT OF STOCK
-   - Uses TanStack Query with `queryKeys.inventory.list()` for data fetching
-   - Follows FloraIQ patterns: tenant filtering, ResponsiveTable, formatters
+1. **Created MobileDashboard component** (`src/components/mobile/MobileDashboard.tsx`)
+   - Mobile-optimized dashboard with stacked single-column layout
+   - Pull-to-refresh functionality using existing PullToRefresh component
+   - Collapsible sections for better navigation (Performance, Quick Actions, Stock Alerts)
+   - Touch-friendly KPI cards showing revenue, orders, pending orders, and low stock count
+   - Compact quick action buttons for common tasks (New Order, Add Product, Create Menu, Add Customer)
+   - Low stock alerts with tap-to-navigate to inventory
+   - Haptic feedback on interactions via triggerHaptic utility
+   - Responsive trend indicators comparing to yesterday's data
+   - Wrapped in MobileErrorBoundary for graceful error handling
 
-2. **Added route in App.tsx**:
-   - Added lazy import for StockLevelsPage
-   - Added route at `/admin/stock-levels`
+2. **Integrated into tenant-admin DashboardPage** (`src/pages/tenant-admin/DashboardPage.tsx`)
+   - Added conditional rendering based on screen size using useIsMobile hook
+   - Mobile users (< 768px) see the optimized MobileDashboard
+   - Desktop users see the full-featured dashboard with all widgets
+
+### Key Features:
+- **KPI Cards**: Revenue with trend, Order count with trend, Pending orders, Low stock count
+- **Quick Actions Grid**: 4 most common actions in a compact 4-column layout
+- **Stock Alerts**: Collapsible section showing top 5 low/out-of-stock items
+- **Pull-to-Refresh**: Native-feeling refresh gesture for all dashboard data
+- **Collapsible Sections**: All main sections can be collapsed for better content management
+- **Touch Optimization**: All interactive elements have proper touch targets (min-h-[48px])
 
 ### Files Changed:
-- `src/pages/tenant-admin/StockLevelsPage.tsx` (NEW)
-- `src/App.tsx` (added import and route)
+- `src/components/mobile/MobileDashboard.tsx` (NEW)
+- `src/pages/tenant-admin/DashboardPage.tsx` (Modified - added mobile detection and MobileDashboard import)
 
-### Technical Details:
-- Uses `useTablePreferences` hook for persistent sort state in localStorage
-- Uses `useDebounce` for search input (300ms delay)
-- Filters by tenant_id as required by FloraIQ architecture
-- Stock status calculation based on available_quantity vs low_stock_alert threshold
-- Value calculated from cost_per_unit or wholesale_price
-- TypeScript strict mode compliant with proper types
-
-### Route:
-- Path: `/:tenantSlug/admin/stock-levels`
-- No feature flag required (basic inventory feature)
+### Technical Notes:
+- Uses existing hooks: useIsMobile, useTenantAdminAuth, useQueryClient
+- Uses existing components: PullToRefresh, MobileErrorBoundary, Collapsible
+- Follows FloraIQ patterns: tenant-aware queries, logger usage, TanStack Query for data fetching
+- ESLint passes with no errors on the new MobileDashboard component
