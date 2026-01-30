@@ -7502,76 +7502,56 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+---
 
-## Agent 43 - OrderTrackingTimeline Component
+## Task: Add OrderDuplicateButton creating new order from existing
 
-### Task: Add OrderTrackingTimeline showing all status changes with timestamps
+### Completed
 
-**Completed:**
+#### 1. Created `useOrderDuplicate` Hook (`src/hooks/useOrderDuplicate.ts`)
+- TanStack Query mutation hook for duplicating orders
+- Fetches original order items if not provided
+- Creates new order with:
+  - Same customer info (user_id, customer_id, customer_name, customer_phone)
+  - Same delivery details (address, borough, notes, fee)
+  - Same financial data (subtotal, total, tip, discount)
+  - Same order configuration (payment method, order type, special instructions)
+  - Status reset to 'pending'
+  - Delivery notes prefixed with "[Duplicated from #<order_number>]"
+- Duplicates all order items to the new order
+- Invalidates order queries to refresh lists
+- Toast notifications with success/error feedback
+- Optional navigation to new order
+- Proper tenant isolation using useTenantAdminAuth
 
-1. **Created useOrderStatusHistory hook** (`src/hooks/useOrderStatusHistory.ts`)
-   - TanStack Query wrapper for fetching order status history
-   - Queries the `order_status_history` table by `order_id`
-   - Returns typed `OrderStatusHistoryEntry` array with:
-     - `id`, `order_id`, `old_status`, `new_status`
-     - `changed_by` (customer/courier/admin/merchant/system)
-     - `changed_by_id`, `notes`, `created_at`
-   - Properly typed with exported interfaces for reuse
+#### 2. Created `OrderDuplicateButton` Component (`src/components/admin/OrderDuplicateButton.tsx`)
+- Reusable button component following DuplicateProductButton pattern
+- Loading state with spinner animation
+- Success state with checkmark (2-second display)
+- Tooltip when showLabel is false
+- Configurable props:
+  - variant: 'default' | 'ghost' | 'outline'
+  - size: 'default' | 'sm' | 'icon'
+  - showLabel: boolean
+  - navigateToNew: boolean
+  - onSuccess callback
+- Uses useOrderDuplicate hook internally
 
-2. **Added query key for order status history** (`src/lib/queryKeys.ts`)
-   - Added `statusHistory: (orderId: string) => [...]` to orders query keys
-   - Enables proper caching and invalidation
-
-3. **Created OrderTrackingTimeline component** (`src/components/admin/orders/OrderTrackingTimeline.tsx`)
-   - Visual timeline showing all order status transitions
-   - Features:
-     - Status-specific icons (Clock, CheckCircle, Package, Truck, XCircle, etc.)
-     - Color-coded status badges (yellow/pending, blue/confirmed, green/delivered, red/cancelled)
-     - Shows old status → new status transitions
-     - Displays exact timestamp (formatted) and relative time ("2 hours ago")
-     - Shows who made the change (Customer, Courier, Admin, Merchant, System)
-     - Supports notes field display when present
-     - Loading skeleton for better UX
-     - Empty state with helpful message
-     - Scrollable area with configurable max height
-     - Count badge showing total status updates
-   - Uses existing patterns from ActivityFeedTimeline and InventoryHistoryTimeline
-
-4. **Fixed pre-existing build issues:**
-   - Removed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
-   - Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+#### 3. Integrated into Orders Page (`src/pages/admin/Orders.tsx`)
+- Added import for Copy icon from lucide-react
+- Added import for useOrderDuplicate hook
+- Added hook usage in component with isLoading state
+- Added "Duplicate Order" dropdown menu item in desktop table actions
+- Added "Duplicate" button in mobile drawer Quick Actions (changed grid from 2 to 3 columns)
+- Removed duplicate import of useAdminOrdersRealtime
 
 ### Files Changed:
-- `src/hooks/useOrderStatusHistory.ts` (NEW)
-- `src/components/admin/orders/OrderTrackingTimeline.tsx` (NEW)
-- `src/lib/queryKeys.ts` - Added statusHistory query key
-- `src/pages/auth/PasswordResetPage.tsx` - Fixed duplicate export (pre-existing issue)
-- `src/lib/utils/sanitize.ts` - Added safeJsonParse (pre-existing missing function)
+- `src/hooks/useOrderDuplicate.ts` (NEW)
+- `src/components/admin/OrderDuplicateButton.tsx` (NEW)
+- `src/pages/admin/Orders.tsx` (MODIFIED)
 
-### Usage Example:
-```tsx
-import { OrderTrackingTimeline } from '@/components/admin/orders/OrderTrackingTimeline';
-
-// In an order detail page or dialog:
-<OrderTrackingTimeline orderId={order.id} />
-
-// With custom styling:
-<OrderTrackingTimeline 
-  orderId={order.id} 
-  className="mt-4" 
-  maxHeight="500px" 
-/>
-```
-
-### Status Mappings:
-- `pending` - Yellow clock icon
-- `confirmed` - Blue check icon
-- `preparing` - Orange package icon
-- `processing` - Indigo refresh icon
-- `ready` - Cyan package icon
-- `in_transit` - Blue truck icon
-- `delivered` - Green check icon
-- `completed` - Emerald check icon
-- `cancelled` - Red X icon
-- `rejected` - Red X icon
-- `refunded` - Purple refresh icon
+### Notes:
+- The OrderDuplicateButton component can be used standalone or the useOrderDuplicate hook can be called directly
+- Order duplication resets status to 'pending' to allow review before processing
+- Delivery notes are prefixed to indicate the order was duplicated and show the source order number
+- TypeScript type checking passes successfully

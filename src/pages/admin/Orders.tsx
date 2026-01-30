@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, Copy } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -35,8 +35,8 @@ import { useExport } from "@/hooks/useExport";
 import { ExportOptionsDialog, type ExportField } from "@/components/admin/ExportOptionsDialog";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
-import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
 import { formatSmartDate } from "@/lib/utils/formatDate";
+import { useOrderDuplicate } from "@/hooks/useOrderDuplicate";
 import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
 import {
   DropdownMenu,
@@ -85,6 +85,9 @@ export default function Orders() {
   });
 
   const { exportCSV } = useExport();
+
+  // Order duplication hook
+  const { duplicateOrder, isLoading: isDuplicating } = useOrderDuplicate();
 
   // Real-time subscription for new orders (storefront + regular)
   const { newOrderIds } = useAdminOrdersRealtime({
@@ -719,6 +722,13 @@ export default function Orders() {
                 <FileText className="mr-2 h-4 w-4" />
                 Generate Invoice
               </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => duplicateOrder(order)}
+                disabled={isDuplicating}
+              >
+                <Copy className="mr-2 h-4 w-4" />
+                Duplicate Order
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               {order.status !== 'cancelled' && (
                 <DropdownMenuItem
@@ -1080,7 +1090,7 @@ export default function Orders() {
 
               {/* Quick Actions */}
               <div className="border-t pt-3 space-y-2">
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -1096,6 +1106,15 @@ export default function Orders() {
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     Invoice
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => duplicateOrder(selectedOrder)}
+                    disabled={isDuplicating}
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    Duplicate
                   </Button>
                 </div>
               </div>
