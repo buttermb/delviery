@@ -7459,3 +7459,78 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Agent 36 - BulkOrderActions Component
+
+### Task: Build BulkOrderActions for selecting multiple orders to update status
+
+**Completed:**
+
+1. **Created BulkOrderActions component** (`src/components/admin/orders/BulkOrderActions.tsx`)
+   - Encapsulates all bulk order operations in a reusable component
+   - Provides floating action bar with status update options
+   - Includes confirmation dialogs for status changes and deletions
+   - Shows progress tracking during bulk operations
+   - Proper tenant isolation with `tenant_id` filtering
+
+2. **Component Features:**
+   - **Status Update Actions:**
+     - Confirmed - Mark orders as confirmed (sets `accepted_at` timestamp)
+     - Delivered - Mark orders as delivered (sets `delivered_at` timestamp)
+     - Preparing - Mark orders as being prepared
+     - In Transit - Mark orders as in transit (sets `courier_assigned_at` timestamp)
+     - Cancel - Mark orders as cancelled (destructive action with warning)
+   - **Delete Action:**
+     - Bulk delete with confirmation dialog
+     - Shows count of orders to be deleted
+     - Proper error handling and feedback
+
+3. **Created useOrderSelection hook** for managing order selection state:
+   - `selectAll(checked)` - Select/deselect all orders
+   - `selectOne(orderId, checked)` - Toggle individual order selection
+   - `clearSelection()` - Clear all selections
+   - `isSelected(orderId)` - Check if order is selected
+   - `isAllSelected` - Check if all orders are selected
+   - `isSomeSelected` - Check if some (but not all) orders are selected
+   - `selectedCount` - Get count of selected orders
+
+4. **Integration Points:**
+   - Uses existing `BulkActionsBar` for floating action bar UI
+   - Uses existing `OrderBulkStatusConfirmDialog` for status confirmations
+   - Uses existing `BulkOperationProgress` for progress tracking
+   - Uses existing `ConfirmDeleteDialog` for delete confirmations
+   - Uses existing `useOrderBulkStatusUpdate` hook for batch operations
+
+5. **Type Safety:**
+   - Exports `BulkOrderInfo` interface for order data requirements
+   - Uses `OrderStatus` type from `@/types/order`
+   - Proper TypeScript strict mode compliance
+
+### Usage Example:
+```tsx
+import { BulkOrderActions, useOrderSelection } from '@/components/admin/orders/BulkOrderActions';
+
+function OrdersPage() {
+  const { selectedIds, selectAll, selectOne, clearSelection } = useOrderSelection(orders);
+
+  return (
+    <>
+      {/* Table with checkboxes using selectAll and selectOne */}
+      <BulkOrderActions
+        selectedOrderIds={selectedIds}
+        orders={orders}
+        onClearSelection={clearSelection}
+        onOperationComplete={() => refetch()}
+      />
+    </>
+  );
+}
+```
+
+### Files Changed:
+- `src/components/admin/orders/BulkOrderActions.tsx` (NEW)
+
+### Notes:
+- TypeScript compilation passes successfully
+- Pre-existing build error in `PasswordResetPage.tsx` (duplicate default export) is unrelated to this change
+- Component follows FloraIQ patterns with proper tenant isolation, error handling, and haptic feedback
