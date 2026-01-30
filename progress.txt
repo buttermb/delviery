@@ -1,39 +1,71 @@
-## Task: Add OrderCancelModal with reason selection and restock option
+## Task: Build OrderCustomerCard Component
 
 ### Completed
 
-#### 1. Created OrderCancelModal Component (`src/components/admin/orders/OrderCancelModal.tsx`)
-- New reusable modal component for cancelling orders with proper UI/UX
-- **Reason Selection Dropdown**: 9 predefined cancellation reasons including:
-  - Customer requested cancellation
-  - Product out of stock
-  - Payment failed or declined
-  - Unable to deliver to address
-  - Duplicate order
-  - Pricing error
-  - Compliance issue
-  - Suspected fraudulent order
-  - Other (specify in notes)
-- **Restock Option Checkbox**: Toggle to return items to inventory and reverse balance changes
-- **Optional Notes Textarea**: Additional context for the cancellation
-- **Form Validation**: Uses Zod schema with react-hook-form
-- **Loading States**: Proper disabled/loading states during submission
-- **Integration**: Uses existing `useCancelOrder` hook from `useUnifiedOrders`
-- **Error Handling**: Logs errors with logger, toast notifications via hook
-- **Dialog Pattern**: Follows existing FloraIQ dialog patterns with proper accessibility
+#### Created OrderCustomerCard Component (`src/components/admin/orders/OrderCustomerCard.tsx`)
+- Displays customer information within order context
+- Shows customer avatar with initials fallback
+- Displays contact details (email, phone) with click-to-action links
+- Fetches and displays order history statistics using `useCustomerStats` hook:
+  - Total order count
+  - Total amount spent
+  - Average order value
+- Provides quick action buttons:
+  - "View Profile" - navigates to customer detail page
+  - "New Order" - navigates to wholesale order creation with pre-filled client
+- Supports `compact` prop for different layout contexts
+- Supports `showActions` prop to hide/show action buttons
+- Handles null/undefined customer data gracefully
+- Uses existing UI components (Card, Avatar, Badge, Button, Skeleton, Separator)
+- Follows FloraIQ patterns with tenant-aware navigation
 
-### Component Features:
-- Controlled component with `open` and `onOpenChange` props
-- Accepts `orderId`, optional `orderNumber` for display, and `onSuccess` callback
-- Destructive action styling (red button, warning icon)
-- Form resets on close
-- Auto-focus on reason dropdown when opened
+#### Created Index File (`src/components/admin/orders/index.ts`)
+- Added barrel export for order-related components
+- Exports: `MenuSourceBadge`, `OrderBulkStatusConfirmDialog`, `OrderCustomerCard`
 
-### Files Created:
-- `src/components/admin/orders/OrderCancelModal.tsx` (new)
+### Props Interface
+```typescript
+interface OrderCustomerData {
+  id?: string;
+  customer_id?: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  full_name?: string | null;
+  business_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  avatar_url?: string | null;
+}
 
-### Build Status:
-- TypeScript: No errors for new component
+interface OrderCustomerCardProps {
+  customer: OrderCustomerData | null | undefined;
+  className?: string;
+  showActions?: boolean;  // default: true
+  compact?: boolean;      // default: false
+}
+```
+
+### Usage Example
+```tsx
+import { OrderCustomerCard } from '@/components/admin/orders';
+
+<OrderCustomerCard
+  customer={{
+    customer_id: 'uuid-here',
+    full_name: 'John Doe',
+    email: 'john@example.com',
+    phone: '+1 555-1234',
+  }}
+/>
+```
+
+### Files Changed
+- `src/components/admin/orders/OrderCustomerCard.tsx` (new)
+- `src/components/admin/orders/index.ts` (new)
+
+### Build Status
+- ESLint: Passes with no errors on new files
+- Note: Pre-existing build issues exist unrelated to these changes
 
 ---
 
