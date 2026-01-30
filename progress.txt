@@ -7493,38 +7493,52 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
----
+## Task: Build ProductBarcodeGenerator creating scannable barcodes
 
-### Task: Add ProductStockLevelInput with low stock threshold setting
+### Completed
 
-**Completed:**
+#### 1. Created ProductBarcodeGenerator Component (`src/components/admin/products/ProductBarcodeGenerator.tsx`)
+- Full-featured barcode generator component for product inventory management
+- Supports multiple barcode formats: CODE128 (recommended), CODE39, EAN-13, UPC-A
+- Output types: Barcode only, QR code only, or both together
+- Tenant-aware queries using TanStack Query patterns
+- Follows FloraIQ coding standards (logger, queryKeys, named exports)
 
-1. **Created ProductStockLevelInput component** (`src/components/admin/inventory/ProductStockLevelInput.tsx`)
-   - Full-featured stock level input with low stock threshold setting
-   - Visual stock status indicators (out of stock, critical, warning, healthy)
-   - Real-time status preview showing current stock vs threshold
-   - Help text via FieldHelp component explaining the feature
-   - Input validation with min/max threshold support
+#### 2. Key Features Implemented
+- **Product Selection**: Multi-select product list with "Select All" and "Clear" options
+- **Format Options**: 
+  - Barcode format selector (CODE128, CODE39, EAN13, UPC)
+  - Output type selector (barcode, QR code, or both)
+  - Quantity per product (1-100)
+- **Include Options**: Toggle SKU and price display on labels
+- **Barcode Generation**: Intelligent barcode value generation using product barcode, SKU, or auto-generated value
+- **Format Validation**: Validates barcodes against format requirements with fallback handling
 
-2. **Component exports:**
-   - `ProductStockLevelInput` - Main component with threshold input and status preview card
-   - `CompactStockLevelInput` - Compact version for table rows or inline editing
-   - `StockStatusBadge` - Read-only status badge for display purposes
-   - `getStockStatus` - Helper function to calculate stock status from values
-   - `StockStatus` type export for type-safe status handling
+#### 3. Export and Print Functionality
+- **PDF Download**: Generates printable PDF sheets with barcodes (3x10 grid on US Letter)
+- **Print Support**: Direct print functionality with print-optimized CSS
+- **Copy to Clipboard**: One-click copy of barcode values
 
-3. **Features:**
-   - Stock status levels: out_of_stock (qty <= 0), critical (qty <= threshold * 0.25), warning (qty <= threshold), healthy
-   - Color-coded visual feedback with icons (XCircle, AlertCircle, AlertTriangle, CheckCircle2)
-   - Follows FloraIQ UI patterns with shadcn/ui components
-   - Uses existing FieldHelp component and predefined help texts
-   - Accessible with proper labels and ARIA attributes
-   - Dark mode support with proper color variants
+#### 4. UI/UX Implementation
+- Loading skeleton states during data fetch
+- Error state with user-friendly message
+- Empty state when no products available
+- Responsive grid layout (1/2/3 columns)
+- Copy confirmation with visual feedback
+- Button loading states during async operations
 
-### Files Changed:
-- `src/components/admin/inventory/ProductStockLevelInput.tsx` (NEW)
+#### 5. Integration Details
+- Uses existing `BarcodeGenerator` component from `@/components/inventory/BarcodeGenerator`
+- Uses `QRCodeSVG` from `qrcode.react` for QR code generation
+- Uses `jsPDF` for PDF generation
+- Integrates with tenant context via `useTenantAdminAuth()`
+- Queries products from Supabase with tenant_id filter
 
-### Notes:
-- ESLint passes with only 1 warning about exporting non-components (expected for helper utilities)
-- Component follows the same patterns as existing inventory components (InlineStockEdit, StockAdjustmentDialog)
-- Pre-existing build error in PasswordResetPage.tsx (multiple default exports) is unrelated to these changes
+#### 6. TypeScript and Code Quality
+- Full TypeScript strict mode compliance
+- No `any` types used
+- Proper interface definitions for props and data types
+- ESLint compliant with no warnings/errors
+- Uses `logger` for error handling (not console.log)
+- Named export only (no default export)
+
