@@ -20,6 +20,7 @@ import { PendingTransfersWidget } from './dashboard/PendingTransfersWidget';
 import { RealtimeRevenueChart } from './analytics/RealtimeRevenueChart';
 import { RevenuePredictionWidget } from './dashboard/RevenuePredictionWidget';
 import { TopProductsWidget } from './dashboard/TopProductsWidget';
+import { RecentCustomersWidget } from './dashboard/RecentCustomersWidget';
 import { AutoReorderSuggestionsWidget } from './dashboard/AutoReorderSuggestionsWidget';
 import { LowStockWidget } from './dashboard/LowStockWidget';
 import { ActionableInsights } from '@/components/admin/ActionableInsights';
@@ -196,7 +197,7 @@ export function ModernDashboard() {
         <div className="space-y-4 sm:space-y-6">
           <WeatherWidget />
           <InventoryAlertsWidget />
-          <LowStockWidget />
+          <RecentCustomersWidget />
           <AutoReorderSuggestionsWidget />
           <ActivityFeedWidget />
         </div>
