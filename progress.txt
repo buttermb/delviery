@@ -7463,26 +7463,52 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-### Task: Build DashboardRefreshButton to manually refresh all data
+### Task: Add MenuPreview showing customer-facing view
 
 **Completed:**
 
-1. **Created DashboardRefreshButton component** (`src/components/admin/dashboard/DashboardRefreshButton.tsx`)
-   - Uses TanStack Query's `useQueryClient` to invalidate dashboard queries
-   - Features a RefreshCw icon that animates when refreshing
-   - Shows loading state with "Refreshing..." text during refresh
-   - Displays toast notifications on success/failure
-   - Follows FloraIQ patterns: uses `useTenantAdminAuth`, `queryKeys`, named exports
+1. **Created MenuPreview component** (`src/components/admin/disposable-menus/MenuPreview.tsx`)
+   - Full-screen dialog showing exactly how customers will see the menu
+   - Device-responsive preview modes (desktop/tablet/mobile) with device toggle buttons
+   - Simulated customer header with welcome message and menu description
+   - Product grid displaying: images, names, descriptions, prices, categories
+   - Cannabis-specific information: strain type badges, THC/CBD percentages
+   - Search functionality to filter products by name/description
+   - Category tab filtering
+   - Image zoom capability for product photos
+   - Expiration date display with time-until-expiry formatting
+   - Security feature badges (Encrypted, Geofenced, Device Lock)
+   - Demo "Add to Cart" buttons (disabled, showing preview-only state)
+   - Footer with creation date and preview notice
 
-2. **Integrated into DashboardHubPage** (`src/pages/admin/hubs/DashboardHubPage.tsx`)
-   - Added import for DashboardRefreshButton component
-   - Placed button in header section alongside the "Updated" badge
-   - Button uses outline variant with small size for subtle appearance
+2. **Created useMenuProductsForPreview hook** (`src/hooks/useMenuProductsForPreview.ts`)
+   - Fetches menu products with full product details from wholesale_inventory
+   - Joins disposable_menu_products with wholesale_inventory for product info
+   - Returns: product name, description, price, image, category, strain type, THC/CBD content
+   - Supports custom prices set on menu products
+   - Caches results for 1 minute to reduce database calls
+   - Only fetches when preview is opened (enabled parameter)
+
+3. **Integrated MenuPreview into MenuCard** (`src/components/admin/disposable-menus/MenuCard.tsx`)
+   - Added Monitor icon button in quick actions row for direct access
+   - Added "Customer Preview" option at top of dropdown menu
+   - Tooltip shows "Customer Preview" on hover
+   - Preview opens in full-screen dialog modal
 
 ### Files Changed:
-- `src/components/admin/dashboard/DashboardRefreshButton.tsx` (NEW)
-- `src/pages/admin/hubs/DashboardHubPage.tsx`
+- `src/components/admin/disposable-menus/MenuPreview.tsx` (NEW)
+- `src/hooks/useMenuProductsForPreview.ts` (NEW)
+- `src/components/admin/disposable-menus/MenuCard.tsx` (MODIFIED)
 
-### Notes:
-- ESLint passes with no errors on both changed files
-- Pre-existing build error in `PasswordResetPage.tsx` (multiple default exports) is unrelated to these changes
+### How to Use:
+1. Navigate to the Disposable Menus page in the admin panel
+2. Click the Monitor icon on any menu card, OR
+3. Click the "..." menu and select "Customer Preview"
+4. Use the device toggle buttons to preview mobile/tablet/desktop views
+5. Search and filter products to see how customers will experience the menu
+
+### Technical Notes:
+- Uses TanStack Query for data fetching with caching
+- Follows existing BuilderPreview pattern for device-responsive previews
+- TypeScript strict mode compatible - no `any` types used
+- Imports use `@/` alias as per project conventions
