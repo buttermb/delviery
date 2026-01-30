@@ -348,7 +348,7 @@ const CreditPurchaseCancelledPage = lazy(() => import("./pages/tenant-admin/cred
 const CreditAnalyticsPage = lazy(() => import("./pages/tenant-admin/credits/CreditAnalyticsPage").then(m => ({ default: m.CreditAnalyticsPage })));
 const CustomerDetails = lazy(() => import("./pages/admin/CustomerDetails"));
 const StockAlertsPage = lazy(() => import("./pages/tenant-admin/StockAlertsPage"));
-const StockLevelsPage = lazy(() => import("./pages/tenant-admin/StockLevelsPage"));
+const StockHistoryPage = lazy(() => import("./pages/admin/StockHistoryPage"));
 const InventoryTransfersPage = lazy(() => import("./pages/tenant-admin/InventoryTransfersPage"));
 const CustomerAnalyticsPage = lazy(() => import("./pages/tenant-admin/CustomerAnalyticsPage"));
 const AdvancedAnalyticsPage = lazy(() => import("./pages/tenant-admin/AdvancedAnalyticsPage"));
@@ -1025,7 +1025,7 @@ const App = () => {
 
                                         {/* Coming Soon Pages - Professional & Enterprise Features */}
                                         <Route path="stock-alerts" element={<FeatureProtectedRoute featureId="stock-alerts"><StockAlertsPage /></FeatureProtectedRoute>} />
-                                        <Route path="stock-levels" element={<StockLevelsPage />} />
+                                        <Route path="stock-history" element={<FeatureProtectedRoute featureId="stock-alerts"><StockHistoryPage /></FeatureProtectedRoute>} />
                                         <Route path="inventory-transfers" element={<FeatureProtectedRoute featureId="inventory-transfers"><InventoryTransfersPage /></FeatureProtectedRoute>} />
                                         <Route path="customer-analytics" element={<FeatureProtectedRoute featureId="customer-analytics"><CustomerAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="advanced-analytics" element={<FeatureProtectedRoute featureId="advanced-analytics"><AdvancedAnalyticsPage /></FeatureProtectedRoute>} />
