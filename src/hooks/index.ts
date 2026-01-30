@@ -25,6 +25,7 @@ export { useAuthGuard } from './useAuthGuard';
 
 // Realtime Hooks
 export { useRealtimeSubscription } from './useRealtimeSubscription';
+export { useLiveOrdersCount } from './useLiveOrdersCount';
 
 // Toast Hook
 export { useToast, toast } from './use-toast';
