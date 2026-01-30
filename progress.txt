@@ -7459,3 +7459,32 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+## Task: Add ProductQRGenerator creating QR codes linking to product
+
+### Summary:
+Created a new ProductQRGenerator component that generates QR codes linking to product storefront pages. The component provides a dialog with download, copy, share, and print functionality.
+
+### Implementation Details:
+- Created `ProductQRGenerator` component at `src/components/admin/products/ProductQRGenerator.tsx`
+- QR code links to: `/shop/{storeSlug}/products/{productId}`
+- Uses `qrcode.react` (QRCodeSVG) for QR code rendering
+- Follows existing QRCodeDialog pattern from disposable-menus
+
+### Features:
+1. **QR Code Display**: Shows product info (image, name, SKU) with QR code
+2. **Download**: Exports QR code as PNG with product name/SKU in filename
+3. **Copy Link**: Copies product URL to clipboard with visual feedback
+4. **Share**: Uses Web Share API on mobile, falls back to copy
+5. **Print**: Opens print-friendly page with product details and QR code
+
+### Files Changed:
+- `src/components/admin/products/ProductQRGenerator.tsx` (NEW)
+- `src/components/admin/index.ts` (added export)
+
+### Notes:
+- TypeScript check passes successfully (`npx tsc --noEmit`)
+- Component can be used from admin pages by importing from `@/components/admin` or directly
+- Uses high-resolution (2x) canvas for better QR code download quality
+
