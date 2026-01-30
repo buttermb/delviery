@@ -47,7 +47,7 @@ import { useStorefrontInventorySync } from '@/hooks/useStorefrontInventorySync';
  * RPC Product Response from get_marketplace_products
  * Based on migration 20260112000001_fix_rpc_product_settings.sql
  */
-interface RpcProduct {
+export interface RpcProduct {
   product_id: string;
   product_name: string;
   category: string | null;
@@ -277,7 +277,7 @@ export function ProductCatalogPage() {
           logger.error('Products fetch failed', error, { storeId: store.id });
           throw error;
         }
-        return (data || []).map((item: RpcProduct) => transformProduct(item));
+        return (data || []).map((item: any) => transformProduct(item as RpcProduct));
       } catch (err) {
         logger.error('Error fetching products', err, { storeId: store.id });
         throw err;
@@ -327,7 +327,7 @@ export function ProductCatalogPage() {
           p.name.toLowerCase().includes(query) ||
           p.description?.toLowerCase().includes(query) ||
           p.category?.toLowerCase().includes(query) ||
-          p.brand?.toLowerCase().includes(query) ||
+          (p as any).brand?.toLowerCase().includes(query) ||
           p.strain_type?.toLowerCase().includes(query)
       );
     }

@@ -996,7 +996,7 @@ export function StorefrontBuilder({
                                         <h4 className="text-xs font-semibold uppercase text-muted-foreground">Theme Presets</h4>
                                         <ThemePresetStrip
                                             selectedThemeId={selectedThemeId}
-                                            onSelect={handleThemeSelect}
+                                            onSelectTheme={handleThemeSelect}
                                         />
                                         <Separator className="my-3" />
                                         <h4 className="text-xs font-semibold uppercase text-muted-foreground">Custom Colors</h4>

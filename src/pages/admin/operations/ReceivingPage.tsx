@@ -85,15 +85,18 @@ export default function ReceivingPage() {
           .eq('tenant_id', tenantId)
           .order('received_date', { ascending: false });
 
+        // Cast to any to avoid deep type instantiation
+        let typedQuery = query as any;
+        
         if (filter !== 'all') {
-          query = query.eq('status', filter);
+          typedQuery = typedQuery.eq('status', filter);
         }
 
         if (locationFilter !== 'all') {
-          query = query.eq('location_id', locationFilter);
+          typedQuery = typedQuery.eq('location_id', locationFilter);
         }
 
-        const { data, error } = await query;
+        const { data, error } = await typedQuery;
 
         // Gracefully handle missing table
         if (error && error.code === '42P01') {
@@ -371,7 +374,7 @@ export default function ReceivingPage() {
                         {receipt.location && (
                           <Badge variant="outline" className="ml-2">
                             <MapPin className="h-3 w-3 mr-1" />
-                            {receipt.location.name}
+                            {(receipt.location as any)?.name || 'Unknown'}
                           </Badge>
                         )}
                       </div>
@@ -391,9 +394,9 @@ export default function ReceivingPage() {
                           <div>
                             <p className="text-muted-foreground">Location</p>
                             <p className="font-medium">
-                              {receipt.location.city && receipt.location.state
-                                ? `${receipt.location.city}, ${receipt.location.state}`
-                                : receipt.location.name}
+                              {(receipt.location as any)?.city && (receipt.location as any)?.state
+                                ? `${(receipt.location as any).city}, ${(receipt.location as any).state}`
+                                : (receipt.location as any)?.name || 'Unknown'}
                             </p>
                           </div>
                         )}

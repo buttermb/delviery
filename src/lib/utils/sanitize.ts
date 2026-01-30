@@ -219,3 +219,16 @@ export function stripHtml(html: string): string {
   if (!html) return '';
   return html.replace(/<[^>]*>/g, '');
 }
+
+/**
+ * Safely parse JSON with error handling.
+ * Returns the default value if parsing fails.
+ */
+export function safeJsonParse<T>(json: string | null | undefined, defaultValue: T): T {
+  if (!json) return defaultValue;
+  try {
+    return JSON.parse(json) as T;
+  } catch {
+    return defaultValue;
+  }
+}

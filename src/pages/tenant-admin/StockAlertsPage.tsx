@@ -26,8 +26,8 @@ export default function StockAlertsPage() {
     queryFn: async (): Promise<StockAlertRow[]> => {
       if (!tenant?.id) return [];
 
-      // Query stock_alerts table for active alerts
-      const { data: alertData, error: alertError } = await supabase
+      // Query stock_alerts table for active alerts using any cast
+      const { data: alertData, error: alertError } = await (supabase as any)
         .from('stock_alerts')
         .select('id, product_name, current_quantity, threshold, severity, status, created_at')
         .eq('tenant_id', tenant.id)
@@ -48,9 +48,9 @@ export default function StockAlertsPage() {
 
   // Fallback function to calculate alerts from products table
   async function fetchAlertsFromProducts(tenantId: string): Promise<StockAlertRow[]> {
-    const { data: products, error: prodError } = await supabase
+    const { data: products, error: prodError } = await (supabase as any)
       .from('products')
-      .select('id, name, available_quantity, stock_quantity, low_stock_alert, updated_at')
+      .select('id, name, stock_quantity, low_stock_alert, created_at')
       .eq('tenant_id', tenantId);
 
     if (prodError && prodError.code === '42P01') return [];
@@ -58,13 +58,13 @@ export default function StockAlertsPage() {
 
     const DEFAULT_THRESHOLD = 10;
     return (products || [])
-      .filter((item) => {
-        const currentQty = item.available_quantity ?? item.stock_quantity ?? 0;
+      .filter((item: any) => {
+        const currentQty = item.stock_quantity ?? 0;
         const threshold = item.low_stock_alert ?? DEFAULT_THRESHOLD;
         return currentQty <= threshold;
       })
-      .map((item) => {
-        const currentQty = item.available_quantity ?? item.stock_quantity ?? 0;
+      .map((item: any) => {
+        const currentQty = item.stock_quantity ?? 0;
         const threshold = item.low_stock_alert ?? DEFAULT_THRESHOLD;
         let severity: 'critical' | 'warning' | 'info' = 'warning';
         if (currentQty <= 0 || currentQty <= threshold * 0.5) {
@@ -77,7 +77,7 @@ export default function StockAlertsPage() {
           threshold: threshold,
           severity,
           status: 'active',
-          created_at: item.updated_at || new Date().toISOString(),
+          created_at: item.created_at || new Date().toISOString(),
         };
       });
   }
