@@ -7459,3 +7459,63 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Task: Add PendingOrdersCount badge updating via Supabase realtime
+
+### Completed
+
+#### 1. Enhanced useAdminBadgeCounts Hook (`src/hooks/useAdminBadgeCounts.ts`)
+
+**Added unified_orders realtime subscription:**
+- Added `unifiedOrders` to `SubscriptionStatus` interface to track subscription state
+- Added new Supabase realtime channel for `unified_orders` table (Channel 3)
+- Subscribes to all events (INSERT, UPDATE, DELETE) filtered by tenant_id
+- Uses debounced fetch to prevent rapid-fire requests on multiple events
+
+**Updated fetchCounts to include unified_orders:**
+- Added query to count pending unified orders (status: pending, confirmed, processing)
+- Combined count: pendingOrders = wholesaleOrders + menuOrders + unifiedOrders
+- Enhanced debug logging to show individual counts for each order type
+
+**Changes made:**
+1. Interface `SubscriptionStatus` - Added `unifiedOrders: boolean` field
+2. Initial state - Added `unifiedOrders: false` to subscription status
+3. `fetchCounts` function - Added unified_orders query and combined count
+4. Realtime subscriptions - Added Channel 3 for unified_orders with proper error handling
+5. Renumbered subsequent channels (4-7) for consistency
+6. Updated file header comment to mention unified orders
+
+**Why unified_orders was needed:**
+The existing badge system only subscribed to `wholesale_orders` and `menu_orders` tables. The newer `unified_orders` table (used for POS, retail, and other unified order types) was not being tracked, causing the pending orders badge to miss orders created through the unified order system.
+
+### Technical Details
+
+**Unified Orders Query:**
+```typescript
+supabase
+  .from('unified_orders')
+  .select('*', { count: 'exact', head: true })
+  .eq('tenant_id', tenant.id)
+  .in('status', ['pending', 'confirmed', 'processing'])
+```
+
+**Realtime Channel:**
+```typescript
+supabase
+  .channel(`badge-unified-orders-${tenant.id}`)
+  .on('postgres_changes', {
+    event: '*',
+    schema: 'public',
+    table: 'unified_orders',
+    filter: `tenant_id=eq.${tenant.id}`,
+  }, (payload) => {
+    debouncedFetch(fetchCounts);
+  })
+```
+
+### Files Modified
+- `src/hooks/useAdminBadgeCounts.ts`
+
+### Verification
+- TypeScript compilation passes with no errors
+- Build has pre-existing error in PasswordResetPage.tsx (unrelated to this change)
