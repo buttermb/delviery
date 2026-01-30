@@ -7459,3 +7459,56 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+### Task: Add DashboardNotificationBell with dropdown of recent alerts
+
+**Completed:**
+
+1. **Created DashboardNotificationBell component** (`src/components/dashboard/DashboardNotificationBell.tsx`)
+   - Bell icon with badge showing unread count
+   - Animated pulse badge for critical alerts
+   - Dropdown panel with scrollable alerts list
+   - Displays alerts organized by severity (critical, warning, info)
+   - Shows category icons (inventory, orders, payments, customers, compliance)
+   - Action links to navigate to relevant pages
+   - Dismiss individual alerts or dismiss all
+   - Mark alerts as read on click
+   - "View all alerts" link to full alerts page
+   - Mobile-friendly with 44px minimum touch targets
+
+2. **Created useDashboardAlerts hook** (`src/hooks/useDashboardAlerts.ts`)
+   - Fetches real-time alert data from database
+   - Sources: low stock products, pending orders (>24hrs), overdue invoices
+   - Uses TanStack Query with 60-second refresh interval
+   - Persists dismissed/read state to localStorage per tenant
+   - Returns alerts sorted by severity and urgency
+   - Provides dismiss, dismissAll, and markAsRead functions
+
+3. **Added alerts query keys** (`src/lib/queryKeys.ts`)
+   - Added `alerts.all`, `alerts.dashboard(tenantId)`, `alerts.predictive(tenantId)` query keys
+
+4. **Integrated into Dashboard** (`src/pages/tenant-admin/DashboardPage.tsx`)
+   - Added DashboardNotificationBell to dashboard header
+   - Positioned next to existing SmartNotificationsCenter
+
+5. **Fixed pre-existing build issues:**
+   - Removed duplicate default export in PasswordResetPage.tsx
+   - Added missing safeJsonParse function to sanitize.ts
+
+### Files Changed:
+- `src/components/dashboard/DashboardNotificationBell.tsx` (NEW)
+- `src/hooks/useDashboardAlerts.ts` (NEW)
+- `src/lib/queryKeys.ts` (MODIFIED - added alerts query keys)
+- `src/pages/tenant-admin/DashboardPage.tsx` (MODIFIED - integrated bell component)
+- `src/pages/auth/PasswordResetPage.tsx` (FIXED - removed duplicate export)
+- `src/lib/utils/sanitize.ts` (FIXED - added safeJsonParse function)
+
+### Features:
+- Real-time alerts from inventory, orders, and payments data
+- Severity-based visual indicators (red for critical, amber for warning, blue for info)
+- Action-oriented with direct links to resolve issues
+- Tenant-isolated with persistent dismiss state
+- Responsive design for desktop and mobile
+

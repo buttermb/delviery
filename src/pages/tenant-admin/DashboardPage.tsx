@@ -57,6 +57,7 @@ import { TrialWelcomeModal } from '@/components/onboarding/TrialWelcomeModal';
 import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
 import { QuickActionsWidget } from '@/components/dashboard/QuickActionsWidget';
 import { DashboardQuickActionsPanel } from '@/components/dashboard/DashboardQuickActionsPanel';
+import { DashboardNotificationBell } from '@/components/dashboard/DashboardNotificationBell';
 
 interface DashboardOrderRow {
   total_amount: number | null;
@@ -611,6 +612,7 @@ export default function TenantAdminDashboardPage() {
               variant="outline"
               size="sm"
             />
+            <DashboardNotificationBell />
             <SmartNotificationsCenter />
             {admin && (
               <div className="text-xs sm:text-sm text-muted-foreground hidden md:block truncate max-w-[120px]">
