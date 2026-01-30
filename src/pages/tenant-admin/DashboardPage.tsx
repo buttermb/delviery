@@ -57,6 +57,8 @@ import { TrialWelcomeModal } from '@/components/onboarding/TrialWelcomeModal';
 import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
 import { QuickActionsWidget } from '@/components/dashboard/QuickActionsWidget';
 import { DashboardQuickActionsPanel } from '@/components/dashboard/DashboardQuickActionsPanel';
+import { MobileDashboard } from '@/components/mobile/MobileDashboard';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 interface DashboardOrderRow {
   total_amount: number | null;
@@ -76,6 +78,7 @@ export default function TenantAdminDashboardPage() {
   const location = useLocation();
   const { admin, tenant, logout, loading: authLoading } = useTenantAdminAuth();
   const { getLimit, getCurrent } = useTenantLimits();
+  const isMobile = useIsMobile();
   const { usage, hasPurchasedCredits, hasActiveCredits, limitsApply } = useFreeTierLimits();
   const tenantId = tenant?.id;
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -591,6 +594,11 @@ export default function TenantAdminDashboardPage() {
         </div>
       </div>
     );
+  }
+
+  // Render mobile-optimized dashboard for small screens
+  if (isMobile) {
+    return <MobileDashboard />;
   }
 
   return (
