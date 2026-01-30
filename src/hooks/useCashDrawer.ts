@@ -69,14 +69,14 @@ export function calculateCashCountTotal(count: CashCount): number {
  * Provides queries for drawer state and mutations for drawer events
  */
 export function useCashDrawer(shiftId: string | undefined) {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
 
   // Query for cash drawer events
   const eventsQuery = useQuery({
-    queryKey: queryKeys.pos.cashDrawer.events(shiftId),
+    queryKey: [...queryKeys.pos.cashDrawer(tenantId), 'events', shiftId] as const,
     queryFn: async (): Promise<CashDrawerEvent[]> => {
       if (!shiftId || !tenantId) return [];
 
@@ -143,8 +143,8 @@ export function useCashDrawer(shiftId: string | undefined) {
           event_type: eventType,
           amount,
           reason: reason || null,
-          performed_by: user?.id || null,
-          performed_by_name: user?.email?.split('@')[0] || 'Unknown',
+          performed_by: admin?.userId || null,
+          performed_by_name: admin?.email?.split('@')[0] || 'Unknown',
         })
         .select()
         .maybeSingle();
@@ -157,7 +157,7 @@ export function useCashDrawer(shiftId: string | undefined) {
       return data as CashDrawerEvent;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.pos.cashDrawer.events(shiftId) });
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.pos.cashDrawer(tenantId), 'events', shiftId] });
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.active(tenantId) });
 
       const eventLabels: Record<CashDrawerEventType, string> = {

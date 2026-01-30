@@ -67,7 +67,7 @@ export function useCustomerInvoices() {
       queryFn: async () => {
         if (!tenant?.id) return [];
 
-        let query = supabase
+        let query = (supabase as any)
           .from('customer_invoices')
           .select(`
             *,
@@ -82,7 +82,7 @@ export function useCustomerInvoices() {
 
         const { data, error } = await query;
         if (error) throw error;
-        return (data || []) as CustomerInvoice[];
+        return (data || []) as unknown as CustomerInvoice[];
       },
       enabled: !!tenant?.id,
       staleTime: 30_000,
@@ -93,7 +93,7 @@ export function useCustomerInvoices() {
     useQuery({
       queryKey: queryKeys.customerInvoices.detail(id),
       queryFn: async () => {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('customer_invoices')
           .select(`
             *,
@@ -102,7 +102,7 @@ export function useCustomerInvoices() {
           .eq('id', id)
           .maybeSingle();
         if (error) throw error;
-        return data as CustomerInvoice | null;
+        return data as unknown as CustomerInvoice | null;
       },
       enabled: !!id,
       staleTime: 30_000,
@@ -114,14 +114,14 @@ export function useCustomerInvoices() {
       queryFn: async () => {
         if (!tenant?.id) return null;
 
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('customer_invoices')
-          .select('id, status, total, amount_paid, paid_at, created_at')
+          .select('id, status, total, paid_at, created_at')
           .eq('tenant_id', tenant.id);
 
         if (error) throw error;
 
-        const invoices = data || [];
+        const invoices = (data || []) as Array<{ id: string; status: string; total: number; paid_at: string | null; created_at: string }>;
         const now = new Date();
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -139,7 +139,7 @@ export function useCustomerInvoices() {
 
         const outstandingAmount = invoices
           .filter((i) => i.status === 'unpaid' || i.status === 'overdue')
-          .reduce((sum, i) => sum + ((i.total || 0) - (i.amount_paid || 0)), 0);
+          .reduce((sum, i) => sum + (i.total || 0), 0);
 
         const overdueCount = invoices.filter((i) => i.status === 'overdue').length;
         const unpaidCount = invoices.filter((i) => i.status === 'unpaid').length;
@@ -180,7 +180,7 @@ export function useCustomerInvoices() {
           // Fallback to timestamp-based number
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('customer_invoices')
           .insert({
             tenant_id: tenant.id,
@@ -189,14 +189,10 @@ export function useCustomerInvoices() {
             subtotal: input.subtotal,
             tax: input.tax,
             total: input.total,
-            amount_paid: 0,
-            amount_due: input.total,
             status: 'unpaid',
-            issue_date: new Date().toISOString().split('T')[0],
             due_date: input.due_date || null,
             notes: input.notes || null,
-            line_items: input.line_items || null,
-          } as Record<string, unknown>)
+          })
           .select(`
             *,
             customer:customers(id, first_name, last_name, email, phone)
@@ -204,7 +200,7 @@ export function useCustomerInvoices() {
           .maybeSingle();
 
         if (error) throw error;
-        return data as CustomerInvoice;
+        return data as unknown as CustomerInvoice;
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
@@ -221,12 +217,11 @@ export function useCustomerInvoices() {
       mutationFn: async (invoiceId: string) => {
         if (!tenant?.id) throw new Error('Tenant ID required');
 
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('customer_invoices')
           .update({
             status: 'paid',
             paid_at: new Date().toISOString(),
-            amount_paid: supabase.rpc ? undefined : 0, // Will be set from total
           })
           .eq('id', invoiceId)
           .eq('tenant_id', tenant.id)
@@ -238,16 +233,7 @@ export function useCustomerInvoices() {
 
         if (error) throw error;
 
-        // Update amount_paid to equal total
-        if (data) {
-          const { error: updateErr } = await supabase
-            .from('customer_invoices')
-            .update({ amount_paid: data.total, amount_due: 0 })
-            .eq('id', invoiceId);
-          if (updateErr) throw updateErr;
-        }
-
-        return data as CustomerInvoice;
+        return data as unknown as CustomerInvoice;
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
@@ -265,7 +251,7 @@ export function useCustomerInvoices() {
         if (!tenant?.id) throw new Error('Tenant ID required');
 
         // Get current invoice
-        const { data: invoice, error: fetchErr } = await supabase
+        const { data: invoice, error: fetchErr } = await (supabase as any)
           .from('customer_invoices')
           .select('*')
           .eq('id', invoiceId)
@@ -275,15 +261,11 @@ export function useCustomerInvoices() {
         if (fetchErr) throw fetchErr;
         if (!invoice) throw new Error('Invoice not found');
 
-        const newAmountPaid = (invoice.amount_paid || 0) + amount;
-        const newAmountDue = (invoice.total || 0) - newAmountPaid;
-        const isPaidInFull = newAmountDue <= 0;
+        const isPaidInFull = amount >= (invoice.total || 0);
 
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('customer_invoices')
           .update({
-            amount_paid: newAmountPaid,
-            amount_due: Math.max(0, newAmountDue),
             status: isPaidInFull ? 'paid' : invoice.status,
             paid_at: isPaidInFull ? new Date().toISOString() : invoice.paid_at,
             notes: notes ? `${invoice.notes || ''}\n\nPayment recorded: $${amount.toFixed(2)}` : invoice.notes,
@@ -297,7 +279,7 @@ export function useCustomerInvoices() {
           .maybeSingle();
 
         if (error) throw error;
-        return data as CustomerInvoice;
+        return data as unknown as CustomerInvoice;
       },
       onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
@@ -318,7 +300,7 @@ export function useCustomerInvoices() {
       mutationFn: async (invoiceId: string) => {
         if (!tenant?.id) throw new Error('Tenant ID required');
 
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('customer_invoices')
           .update({ status: 'unpaid' })
           .eq('id', invoiceId)
@@ -327,7 +309,7 @@ export function useCustomerInvoices() {
           .maybeSingle();
 
         if (error) throw error;
-        return data as CustomerInvoice;
+        return data as unknown as CustomerInvoice;
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
@@ -344,7 +326,7 @@ export function useCustomerInvoices() {
       mutationFn: async (invoiceId: string) => {
         if (!tenant?.id) throw new Error('Tenant ID required');
 
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('customer_invoices')
           .update({ status: 'cancelled' })
           .eq('id', invoiceId)
@@ -353,7 +335,7 @@ export function useCustomerInvoices() {
           .maybeSingle();
 
         if (error) throw error;
-        return data as CustomerInvoice;
+        return data as unknown as CustomerInvoice;
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
@@ -370,7 +352,7 @@ export function useCustomerInvoices() {
       mutationFn: async (invoiceId: string) => {
         if (!tenant?.id) throw new Error('Tenant ID required');
 
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('customer_invoices')
           .delete()
           .eq('id', invoiceId)

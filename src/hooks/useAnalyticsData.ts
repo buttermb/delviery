@@ -730,7 +730,7 @@ export function useInventoryAnalytics() {
   const tenantId = tenant?.id;
 
   return useQuery({
-    queryKey: queryKeys.inventory.all.concat(['analytics', tenantId]),
+    queryKey: [...queryKeys.inventory.all, 'analytics', tenantId] as const,
     queryFn: async () => {
       if (!tenantId) throw new Error('No tenant context');
       const products = await fetchProductsData(tenantId);
