@@ -7531,68 +7531,39 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-
 ---
 
-## Task: Add OrderAddressCard with map preview and directions link
+## Task: Add OrderPaymentMethodBadge showing cash card invoice crypto
 
 ### Completed
 
-#### 1. Created OrderAddressCard Component (`src/components/admin/OrderAddressCard.tsx`)
-
-A comprehensive address display card with the following features:
-
-**Address Display:**
-- Street address with optional apartment/unit
-- City, state, ZIP code on second line
-- Borough/neighborhood badge
-- Customer name display
-- Delivery notes section with accent styling
-
-**Map Preview:**
-- Static Mapbox map image showing delivery location
-- Red marker pin on the address location
-- Click to open in Google Maps
-- "Open Map" button overlay
-- Graceful fallback when coordinates unavailable
-- Error handling for map loading failures
-
-**Directions Link:**
-- "Get Directions" primary action button
-- Opens Google Maps with driving directions on non-iOS devices
-- Opens Apple Maps with directions on iOS devices
-- Uses device detection for platform-appropriate maps app
-
-**Additional Features:**
-- Copy address to clipboard with visual feedback
-- External link button to open location in maps
-- Loading skeleton state
-- Support for different address types (delivery, billing, pickup)
-- Proper TypeScript types for all props
-- Uses existing FloraIQ patterns (shadcn/ui Card, Button, Badge, Skeleton)
-
-### Props Interface:
-- `address` (required): Street address line
-- `apartment`: Optional apartment/unit number
-- `city`: City name
-- `state`: State abbreviation
-- `zipCode`: ZIP code
-- `borough`: Borough or neighborhood
-- `latitude`: Latitude for map preview
-- `longitude`: Longitude for map preview
-- `addressType`: 'delivery' | 'billing' | 'pickup'
-- `customerName`: Customer name to display
-- `deliveryNotes`: Special delivery instructions
-- `showMapPreview`: Toggle map preview visibility
-- `mapHeight`: Custom map preview height
-- `className`: Additional CSS classes
-- `isLoading`: Loading state
+Created a new `OrderPaymentMethodBadge` component that displays payment method indicators for orders.
 
 ### Files Changed:
-- `src/components/admin/OrderAddressCard.tsx` (NEW)
+- `src/components/admin/orders/OrderPaymentMethodBadge.tsx` (NEW)
 
-### Notes:
-- Follows FloraIQ code style (named exports, @/ imports, no console.log)
-- Uses existing patterns from EnhancedOrderCard, RouteView, and OrderHoverCard
-- Map preview uses Mapbox Static Images API (same as existing OrderMap setup)
-- Directions link follows pattern from RouteView.tsx
+### Component Features:
+- **Payment Methods Supported**: cash, card, credit, debit, invoice, crypto (with fallback for unknown methods)
+- **Visual Design**:
+  - Cash: Green (emerald) with Banknote icon
+  - Card/Credit/Debit: Blue with CreditCard icon
+  - Invoice: Purple with FileText icon
+  - Crypto: Amber with Bitcoin icon
+- **Configurable Props**:
+  - `paymentMethod`: The payment method to display (string, nullable)
+  - `size`: 'sm' | 'default' | 'lg' for different size variations
+  - `showIcon`: Boolean to show/hide the icon
+  - `className`: Additional CSS classes for customization
+- **Dark mode support** with appropriate color variations
+- **Follows existing badge patterns** from MenuSourceBadge and OrderStatusBadge
+- **Named export only** per project conventions
+
+### Usage Example:
+```tsx
+import { OrderPaymentMethodBadge } from '@/components/admin/orders/OrderPaymentMethodBadge';
+
+<OrderPaymentMethodBadge paymentMethod="cash" />
+<OrderPaymentMethodBadge paymentMethod="card" size="lg" />
+<OrderPaymentMethodBadge paymentMethod="invoice" showIcon={false} />
+<OrderPaymentMethodBadge paymentMethod="crypto" />
+```
