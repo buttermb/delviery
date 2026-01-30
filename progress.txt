@@ -7459,3 +7459,44 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Task: Build OrdersWidget showing last 10 orders with status badges
+
+### Status: COMPLETED
+
+### Summary:
+Created a new dashboard widget component that displays the 10 most recent orders with semantic status badges. The widget follows existing codebase patterns and integrates with the tenant context for proper multi-tenant isolation.
+
+### Implementation Details:
+1. **OrdersWidget Component** (`src/components/admin/dashboard/OrdersWidget.tsx`)
+   - Displays last 10 orders from the `orders` table
+   - Filters orders by `tenant_id` for multi-tenant isolation
+   - Fetches user profiles to show customer names
+   - Uses TanStack Query with proper query keys (`queryKeys.orders.lists()`)
+
+2. **Status Badge System**
+   - Semantic color-coded badges with icons for each status:
+     - `pending`: Yellow with Clock icon
+     - `confirmed`: Blue with CheckCircle icon  
+     - `preparing`: Purple with Package icon
+     - `ready`: Teal with CheckCircle icon
+     - `in_transit`: Indigo with Truck icon
+     - `delivered`: Green with CheckCircle icon
+     - `cancelled`: Red with XCircle icon
+   - Dark mode support with proper color variants
+
+3. **UI Features**
+   - Loading skeleton states while data loads
+   - Empty state with icon when no orders exist
+   - Clickable order rows that navigate to order details
+   - Status dot indicator for quick visual scanning
+   - "View All" button for navigation to full orders page
+   - Responsive layout with proper truncation
+
+### Files Changed:
+- `src/components/admin/dashboard/OrdersWidget.tsx` (NEW)
+
+### Notes:
+- ESLint passes with no errors
+- Build has a pre-existing error in PasswordResetPage.tsx (unrelated to this change)
+- Component follows existing widget patterns from RecentOrdersWidget and ActivityFeedWidget
