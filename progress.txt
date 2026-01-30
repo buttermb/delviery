@@ -7531,79 +7531,63 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+## Task: Add OrderCloneToB2B - Converting Retail Order to Wholesale
 
----
+### Completed
 
-### Task: Build OrderRushButton to expedite order to front of queue
+#### 1. Created OrderCloneToB2BDialog Component (`src/components/admin/orders/OrderCloneToB2BDialog.tsx`)
+- New dialog component for cloning retail orders to B2B/wholesale orders
+- Features:
+  - Wholesale client selection with search functionality
+  - Credit limit and balance display for selected client
+  - Over-credit-limit warning when order would exceed client's credit
+  - Pricing adjustment options:
+    - Keep original retail prices
+    - Apply 15%% wholesale discount
+    - Custom discount percentage
+  - Order items preview with original vs adjusted prices
+  - Delivery address input (pre-filled from client address)
+  - Order total comparison (original vs new B2B total)
+  - Savings calculation display
+- Uses existing `useWholesaleClients` hook for client data
+- Calls `wholesale-order-create` edge function to create the new order
+- Includes source tracking (`source_order_id` and `source_order_type`)
+- Proper loading states and error handling
+- Toast notifications on success with "View Order" action
 
-**Completed:**
+#### 2. Integrated Clone to B2B in Orders Page (`src/pages/admin/Orders.tsx`)
+- Added import for OrderCloneToB2BDialog
+- Added Building2 icon import for menu item
+- Added state variables:
+  - `cloneToB2BDialogOpen` for dialog visibility
+  - `orderToClone` to track which order is being cloned
+- Added `handleCloneToB2B` handler function
+- Added "Clone to B2B" menu item in the order actions dropdown menu
+  - Positioned after "Generate Invoice" option
+  - Uses Building2 icon for visual consistency
+- Added OrderCloneToB2BDialog component rendering with proper props
 
-1. **Created database migration for rush order functionality** (`supabase/migrations/20260129225246_add_order_rush_priority.sql`)
-   - Added `is_rush` boolean column (default false) to orders table
-   - Added `rushed_at` timestamp to track when order was marked as rush
-   - Added `rushed_by` UUID to track who marked the order as rush
-   - Created indexes for efficient querying of rush orders
-   - Added composite index for tenant + rush + created_at for queue ordering
+### How It Works
 
-2. **Created useOrderRush hook** (`src/hooks/useOrderRush.ts`)
-   - `useOrderRush` - Single order rush mutation with:
-     - Toggle rush status with instant UI feedback
-     - Automatic query invalidation
-     - Error handling with toast notifications
-     - Haptic feedback for mobile
-   - `useOrderBulkRush` - Bulk rush operations for multiple orders
+1. User opens the orders list in the admin panel
+2. User clicks the more actions menu (three dots) on any retail order
+3. User selects "Clone to B2B" option
+4. Dialog opens showing:
+   - Original order summary (order number, customer, items count, total)
+   - Client selector (searchable list of wholesale clients)
+   - After selecting a client: credit impact summary and warnings
+   - Pricing adjustment dropdown
+   - Order items with price comparison
+   - New B2B total with savings
+5. User clicks "Create B2B Order"
+6. New wholesale order is created via edge function
+7. User is notified of success and can navigate to view the new order
 
-3. **Created OrderRushButton component** (`src/components/admin/OrderRushButton.tsx`)
-   - `OrderRushButton` - Main button component with:
-     - Toggle rush status with single click
-     - Visual indicator (yellow) when order is rushed
-     - Loading state during mutation
-     - Optional confirmation dialog
-     - Tooltip for icon-only variant
-   - `OrderRushBadge` - Small indicator badge showing rush status
-   - `OrderRushMenuItem` - Context menu item variant for rush action
+### Technical Notes
+- Follows existing patterns from CloneMenuDialog and DuplicateProductButton
+- Uses SmartClientPicker-style UI for client selection (inline, not separate component)
+- Maintains tenant isolation through useTenantAdminAuth context
+- Invalidates relevant queries after order creation
+- Preserves link to source order via metadata fields
 
-4. **Updated OrderRowContextMenu** (`src/components/admin/OrderRowContextMenu.tsx`)
-   - Added 'rush' to OrderContextAction type
-   - Added isRush and showRushAction props
-   - Added Rush Order menu item with Zap icon
-   - Updated useOrderContextActions hook to handle onRush callback
-   - Rush action disabled for cancelled/delivered/completed orders
 
-5. **Updated Order types** (`src/types/order.ts`)
-   - Added is_rush, rushed_at, and rushed_by fields to Order interface
-
-### Files Changed:
-- `supabase/migrations/20260129225246_add_order_rush_priority.sql` (NEW)
-- `src/hooks/useOrderRush.ts` (NEW)
-- `src/components/admin/OrderRushButton.tsx` (NEW)
-- `src/components/admin/OrderRowContextMenu.tsx` (MODIFIED)
-- `src/types/order.ts` (MODIFIED)
-
-### Usage Examples:
-
-```tsx
-// Basic usage
-<OrderRushButton orderId={order.id} orderNumber={order.order_number} isRush={order.is_rush} />
-
-// Icon-only with tooltip
-<OrderRushButton orderId={order.id} isRush={order.is_rush} showLabel={false} size="icon" />
-
-// With confirmation dialog
-<OrderRushButton orderId={order.id} isRush={order.is_rush} showConfirmation />
-
-// Badge for order lists
-<OrderRushBadge isRush={order.is_rush} />
-
-// In context menu
-<OrderRowContextMenu
-  orderId={order.id}
-  isRush={order.is_rush}
-  onAction={(action) => action === 'rush' && toggleRush(order.id)}
-/>
-```
-
-### Notes:
-- TypeScript type checking passes successfully
-- Pre-existing build error (duplicate export in PasswordResetPage.tsx) is unrelated to these changes
-- Rush orders can be sorted to front of queue by ordering with: `ORDER BY is_rush DESC, created_at ASC`
