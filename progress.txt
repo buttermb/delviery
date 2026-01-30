@@ -7481,49 +7481,53 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+
 ---
 
-### Task: Build ProductTagsInput for search and filter tags
+## Task: Build B2BOrdersTab filtering orders by business customers only
 
-**Completed:**
+### Completed
 
-1. **Created ProductTagsInput component** (`src/components/ui/product-tags-input.tsx`)
-   
-   A searchable multi-select input for product tags featuring:
-   
-   - **Search/filter functionality** - Type to filter through available tags using cmdk Command component
-   - **Multi-select with badges** - Selected tags displayed as removable Badge components
-   - **Create new tags inline** - When search doesn't match existing tags, offers option to create new one
-   - **Color picker** - 9 preset colors for new tags (blue, green, yellow, orange, red, violet, pink, cyan, gray)
-   - **Keyboard navigation** - Full keyboard support (Enter to create, Backspace to remove last, Arrow keys in dropdown)
-   - **Flexible data handling** - Works with both string arrays (direct tag names) and ID-based systems (with availableTags lookup)
-   - **Loading state** - Shows spinner when loading tags
-   - **Read-only mode** - For display-only scenarios without edit capability
-   - **Max tags limit** - Optional maximum number of tags with counter display
+#### 1. Created B2BOrdersTab Component (`src/components/admin/orders/B2BOrdersTab.tsx`)
+- Fetches wholesale orders with business customer data from `wholesale_orders` table
+- Includes related `wholesale_clients` data (business_name, contact_name, phone, email, client_type, address)
+- Includes order items from `wholesale_order_items`
 
-2. **TypeScript interfaces:**
-   - `ProductTag` - Tag object with id, name, and optional color
-   - `ProductTagsInputProps` - Full props interface with JSDoc comments
+#### 2. Features Implemented
+- **Stats Dashboard**: Shows total orders, pending, in transit, delivered, unpaid, and total revenue
+- **Filtering**: 
+  - Search by order #, business name, contact name, email, or phone
+  - Filter by order status (pending, confirmed, in_transit, delivered, cancelled)
+  - Filter by payment status (unpaid, partial, paid)
+  - Date range filter with presets
+- **Responsive Table**: 
+  - Desktop view with full details and checkbox selection
+  - Mobile-optimized card view
+  - Business customer info prominently displayed (Building2 icon, business name, contact, client type badge)
+- **Actions**: View order details, row click navigation, bulk selection
+- **Empty States**: Different messages for filtered vs no orders
 
-3. **Props supported:**
-   - `value: string[]` - Selected tag IDs or names
-   - `onChange: (tags: string[]) => void` - Callback when tags change
-   - `availableTags?: ProductTag[]` - Available tags to choose from
-   - `allowCreate?: boolean` - Whether to allow creating new tags (default: true)
-   - `onCreateTag?: (name, color) => Promise<ProductTag | null>` - Async callback for tag creation
-   - `placeholder?: string` - Placeholder text
-   - `disabled?: boolean` - Disabled state
-   - `isLoading?: boolean` - Loading state
-   - `maxTags?: number` - Maximum selectable tags
-   - `className?: string` - Additional CSS classes
-   - `readOnly?: boolean` - Read-only mode
-   - `useIds?: boolean` - Whether to use tag IDs vs plain strings
+#### 3. Data Model
+- Orders are from `wholesale_orders` which represents B2B orders to business customers
+- Each order has a `client_id` referencing `wholesale_clients` (the business customer)
+- Wholesale clients have: business_name, contact_name, client_type, phone, email, address
 
-### Files Changed:
-- `src/components/ui/product-tags-input.tsx` (NEW)
+#### 4. Patterns Used
+- TanStack Query with `queryKeys.wholesaleOrders.list()` factory
+- `useTenantAdminAuth` for tenant context
+- `useTenantNavigate` for tenant-aware navigation
+- Standard FloraIQ component patterns (ResponsiveTable, SearchInput, Cards, Badges)
+- Proper error handling with logger
+- Date filtering with date-fns
 
-### Technical Details:
-- Uses shadcn/ui components: Badge, Button, Popover, Command
-- Uses cmdk library for searchable dropdown
-- Follows FloraIQ patterns with named exports, strict TypeScript, and @/ import aliases
-- ESLint and TypeScript compilation pass successfully
+### Files Changed
+- `src/components/admin/orders/B2BOrdersTab.tsx` (NEW)
+
+### Usage
+```tsx
+import { B2BOrdersTab } from '@/components/admin/orders/B2BOrdersTab';
+
+// In a page or tab
+<B2BOrdersTab onOrderSelect={(order) => handleOrderClick(order)} />
+```
+
