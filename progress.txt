@@ -7459,3 +7459,61 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+## Task: Build MenuProductPicker with search filter and drag ordering
+
+### Completed
+
+#### 1. Created MenuProductPicker Component (`src/components/admin/disposable-menus/MenuProductPicker.tsx`)
+A comprehensive product selection component for disposable menus with the following features:
+
+**Search and Filter:**
+- Text search filtering by product name and category
+- Category-based tab filtering for quick navigation
+- Clear search button when no results found
+
+**Product Selection:**
+- Checkbox-based product selection from scrollable list
+- Product cards showing image, name, price, category, and stock status
+- Out-of-stock products visually disabled
+- Optional maximum product limit with warning message
+
+**Drag-and-Drop Reordering:**
+- Uses @dnd-kit library (already in project dependencies)
+- Drag handle for reordering selected products
+- Visual feedback during drag with DragOverlay
+- Numbered positions for selected products
+- Smooth animations during reorder
+
+**UI/UX:**
+- Loading skeleton state
+- Empty state with search clear option
+- Clear all button for quick deselection
+- Responsive design with proper spacing
+
+#### 2. Fixed Pre-existing Build Issues
+- Removed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
+- Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+
+### Component Interface:
+```typescript
+interface MenuProductPickerProps {
+  selectedIds: string[];           // Array of selected product IDs (ordered)
+  onSelectionChange: (ids: string[]) => void;  // Callback when selection changes
+  maxProducts?: number;            // Optional maximum products limit
+}
+```
+
+### Files Changed:
+- `src/components/admin/disposable-menus/MenuProductPicker.tsx` (NEW)
+- `src/lib/utils/sanitize.ts` (added safeJsonParse)
+- `src/pages/auth/PasswordResetPage.tsx` (fixed duplicate export)
+
+### Notes:
+- Component follows FloraIQ patterns: tenant-aware queries, TanStack Query, shadcn/ui
+- Uses existing @dnd-kit libraries already installed in the project
+- TypeScript build passes successfully
+
