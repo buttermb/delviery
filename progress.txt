@@ -7459,3 +7459,38 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+## Task: Build TopProductsWidget with bar chart of best sellers
+
+### Status: COMPLETED
+
+### Summary:
+Enhanced the TopProductsWidget dashboard component to display best-selling products with a horizontal bar chart visualization using Recharts. The widget now shows:
+- A horizontal bar chart showing top 5 products by revenue
+- Color-coded bars for visual distinction
+- Custom tooltip with detailed product info (revenue, quantity, orders)
+- Product list below the chart with color indicators matching the bars
+- Total revenue summary for the last 30 days
+
+### Features Added:
+1. **Bar Chart Visualization**: Horizontal bar chart using Recharts' BarChart component
+2. **Color Palette**: Distinct emerald-to-blue gradient colors for each product
+3. **Custom Tooltip**: Shows full product name, revenue, quantity (with proper formatting), and order count
+4. **Product List**: Compact list view below the chart with color indicators
+5. **Revenue Summary**: Total revenue display in the header
+6. **Responsive Design**: Chart resizes properly using ResponsiveContainer
+
+### Files Changed:
+- `src/components/admin/dashboard/TopProductsWidget.tsx` - Enhanced with bar chart visualization
+
+### Technical Details:
+- Uses Recharts (existing dependency): ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell
+- Maintains existing data fetching logic from wholesale_orders and wholesale_order_items
+- Preserves navigation functionality to product details and analytics pages
+- Follows existing codebase patterns (named exports, TypeScript, shadcn/ui components)
+
+### Notes:
+- TypeScript and ESLint checks pass for the modified file
+- Pre-existing build error in PasswordResetPage.tsx (duplicate default export) is unrelated to these changes
