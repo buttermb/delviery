@@ -7527,61 +7527,78 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-## Agent 20 - Build StockHistoryLog Component
+---
 
-### Task: Build StockHistoryLog showing all stock changes with reason
+### Task: Add LiveOrdersCounter with pulse animation on new orders
 
 **Completed:**
 
-1. **Created StockHistoryLog Component** (`src/components/admin/inventory/StockHistoryLog.tsx`)
-   - Comprehensive audit log showing all inventory changes
-   - Displays all 8 change types: stock_in, stock_out, transfer, adjustment, sale, return, receiving, disposal
-   - Each change type has distinct color coding and icons for visual clarity
-   - Shows quantity changes with previous → new values
-   - Displays reason (with human-readable labels) and notes for each change
-   - Shows reference type/ID for traceability (orders, transfers, POs, etc.)
-   - Shows performer ID when available
+1. **Created useLiveOrdersCount hook** (`src/hooks/useLiveOrdersCount.ts`)
+   - Real-time counting of active orders across orders, menu_orders, and wholesale_orders tables
+   - Subscribes to Supabase realtime for instant updates on INSERT/UPDATE/DELETE
+   - Tracks `hasNewOrder` state that triggers pulse animation for 3 seconds (configurable)
+   - Detects count increases and triggers pulse automatically
+   - Fallback polling every 60 seconds
+   - Returns: count, isLoading, isError, hasNewOrder, isSubscribed, refetch
 
-2. **Filtering and Search Features:**
-   - Search by product name, SKU, reason, or notes
-   - Filter by change type (dropdown)
-   - Date range filtering with quick presets (Today, Last 7 Days, Last 30 Days, All Time)
-   - Custom date range using calendar pickers
-   - Clear filters button when filters are active
+2. **Created LiveOrdersCounter component** (`src/components/admin/live-orders/LiveOrdersCounter.tsx`)
+   - Three variants: `LiveOrdersCounter` (default), `LiveOrdersCounterCompact` (icon button), `LiveOrdersCounterCard` (dashboard card)
+   - Pulse animation when new orders arrive (`hasNewOrder` state)
+   - Configurable size variants: sm, default, lg
+   - Connection status indicator (green dot = subscribed, yellow = connecting)
+   - Tooltip showing connection status
+   - Accessible with keyboard navigation support
+   - Uses existing Badge, Button, and Tooltip UI components
 
-3. **Pagination Support:**
-   - Server-side pagination with configurable page size
-   - Displays total record count
-   - Previous/Next navigation
-   - Compact mode uses 10 items/page, full mode uses 25 items/page
+3. **Added pulse animations to Tailwind config** (`tailwind.config.ts`)
+   - `pulse-ring`: 2s infinite scale & opacity animation for the counter container
+   - `pulse-dot`: 1.5s infinite opacity animation for the live indicator dot
 
-4. **Component Props:**
-   - `productId` - Optional filter to show history for a specific product
-   - `className` - Custom styling
-   - `showHeader` - Toggle header visibility (default: true)
-   - `compact` - Compact mode with reduced pagination and hidden notes (default: false)
+4. **Created barrel export** (`src/components/admin/live-orders/index.ts`)
+   - Exports LiveOrdersKanban, LiveOrder type (existing)
+   - Exports LiveOrdersCounter, LiveOrdersCounterCompact, LiveOrdersCounterCard, LiveOrdersCounterProps (new)
 
-5. **Created Admin Page** (`src/pages/admin/StockHistoryPage.tsx`)
-   - Simple wrapper page to host the StockHistoryLog component
-   - Proper loading and error states
-   - Tenant context integration
-
-6. **Added Route in App.tsx:**
-   - Route: `/:tenantSlug/admin/stock-history`
-   - Lazy-loaded for performance
-   - Protected by `stock-alerts` feature flag
-   - Added lazy import for StockHistoryPage
-
-### Technical Details:
-- Uses TanStack Query for data fetching with proper query keys
-- Queries `inventory_history` table with product join
-- Uses existing `queryKeys.inventory.history()` pattern
-- Proper tenant isolation with `tenant_id` filter
-- Follows FloraIQ patterns: tenant-aware, RLS-compliant, TanStack Query integration
-- Uses shadcn/ui components (Card, Badge, Button, Input, Select, Popover, Calendar, Skeleton)
-- Responsive design with mobile-friendly layout
+5. **Updated hooks index** (`src/hooks/index.ts`)
+   - Added export for useLiveOrdersCount
 
 ### Files Changed:
-- `src/components/admin/inventory/StockHistoryLog.tsx` (NEW)
-- `src/pages/admin/StockHistoryPage.tsx` (NEW)
-- `src/App.tsx` (added import and route)
+- `src/hooks/useLiveOrdersCount.ts` (NEW)
+- `src/components/admin/live-orders/LiveOrdersCounter.tsx` (NEW)
+- `src/components/admin/live-orders/index.ts` (NEW)
+- `src/hooks/index.ts` (MODIFIED - added export)
+- `tailwind.config.ts` (MODIFIED - added pulse-ring, pulse-dot animations)
+
+### Usage Examples:
+
+```tsx
+// In a header or navigation
+import { LiveOrdersCounter } from '@/components/admin/live-orders';
+
+<LiveOrdersCounter 
+  label="Orders" 
+  onClick={() => navigate(`/${tenantSlug}/admin/live-orders`)} 
+/>
+
+// Compact button for sidebar
+<LiveOrdersCounterCompact 
+  onClick={() => navigate(`/${tenantSlug}/admin/live-orders`)} 
+/>
+
+// Dashboard card
+<LiveOrdersCounterCard 
+  onClick={() => navigate(`/${tenantSlug}/admin/live-orders`)} 
+/>
+
+// Using the hook directly
+import { useLiveOrdersCount } from '@/hooks';
+
+const { count, hasNewOrder, isSubscribed } = useLiveOrdersCount({
+  pulseDuration: 5000, // 5 seconds pulse
+});
+```
+
+### Notes:
+- Active order statuses tracked: pending, confirmed, processing, preparing, ready_for_pickup, ready, in_transit, picked_up, assigned
+- Animation respects the existing codebase patterns (uses Tailwind animations, cn utility)
+- TypeScript strict mode compliant - no `any` types used
+- Pre-existing build error in PasswordResetPage.tsx (duplicate default export) is unrelated to these changes
