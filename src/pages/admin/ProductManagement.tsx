@@ -34,7 +34,8 @@ import {
   MoreVertical,
   Eye,
   EyeOff,
-  Store
+  Store,
+  Download
 } from "lucide-react";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import {
@@ -71,7 +72,7 @@ import { InventoryStatusBadge } from "@/components/admin/InventoryStatusBadge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import CopyButton from "@/components/CopyButton";
-import { ExportButton } from "@/components/ui/ExportButton";
+import { ProductBulkExportDialog } from "@/components/admin/ProductBulkExportDialog";
 import { InlineEditableCell } from "@/components/admin/products/InlineEditableCell";
 
 type Product = Database['public']['Tables']['products']['Row'] & {
@@ -203,6 +204,7 @@ export default function ProductManagement() {
   const [bulkPriceEditorOpen, setBulkPriceEditorOpen] = useState(false);
   const [batchCategoryEditorOpen, setBatchCategoryEditorOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   // Optimistic locking for concurrent edit protection
   const { updateWithLock, isUpdating: isLockUpdating } = useOptimisticLock('products');
@@ -989,19 +991,10 @@ export default function ProductManagement() {
           </p>
         </div>
         <div className="flex gap-2 flex-shrink-0">
-          <ExportButton
-            data={filteredProducts}
-            filename="products"
-            columns={[
-              { key: "name", label: "Name" },
-              { key: "sku", label: "SKU" },
-              { key: "category", label: "Category" },
-              { key: "wholesale_price", label: "Price" },
-              { key: "available_quantity", label: "Stock" },
-              { key: "strain_name", label: "Strain" },
-              { key: "vendor_name", label: "Vendor" },
-            ]}
-          />
+          <Button variant="outline" onClick={() => setExportDialogOpen(true)}>
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
           <Button onClick={() => navigateTenant("/admin/generate-barcodes")}>
             <Barcode className="h-4 w-4 mr-2" />
             Generate Barcodes
@@ -1349,6 +1342,13 @@ export default function ProductManagement() {
         description={batchDeleteDialogState.description}
         itemType={batchDeleteDialogState.itemType}
         isLoading={batchDeleteDialogState.isLoading}
+      />
+
+      {/* Product Bulk Export Dialog */}
+      <ProductBulkExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        products={filteredProducts}
       />
     </div>
   );
