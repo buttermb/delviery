@@ -767,17 +767,15 @@ export const queryKeys = {
       [...queryKeys.customerInvoices.all, 'stats', tenantId] as const,
   },
 
-  // Recurring Orders (subscription-style repeat orders)
-  recurringOrders: {
-    all: ['recurring-orders'] as const,
-    lists: () => [...queryKeys.recurringOrders.all, 'list'] as const,
-    list: (tenantId?: string, filters?: Record<string, unknown>) =>
-      [...queryKeys.recurringOrders.lists(), { tenantId, ...filters }] as const,
-    details: () => [...queryKeys.recurringOrders.all, 'detail'] as const,
-    detail: (id: string) => [...queryKeys.recurringOrders.details(), id] as const,
-    byClient: (clientId: string) =>
-      [...queryKeys.recurringOrders.all, 'client', clientId] as const,
-    upcoming: (tenantId?: string) =>
-      [...queryKeys.recurringOrders.all, 'upcoming', tenantId] as const,
+  // Order Audit Log
+  orderAuditLog: {
+    all: ['order-audit-log'] as const,
+    lists: () => [...queryKeys.orderAuditLog.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) =>
+      [...queryKeys.orderAuditLog.lists(), filters] as const,
+    byOrder: (orderId: string) =>
+      [...queryKeys.orderAuditLog.all, 'order', orderId] as const,
+    byTenant: (tenantId: string) =>
+      [...queryKeys.orderAuditLog.all, 'tenant', tenantId] as const,
   },
 } as const;

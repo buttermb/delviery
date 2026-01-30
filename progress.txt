@@ -7531,63 +7531,69 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-## Task: Add OrderCloneToB2B - Converting Retail Order to Wholesale
+---
 
-### Completed
+### Task: Add OrderAuditLog showing all changes made to order with user
 
-#### 1. Created OrderCloneToB2BDialog Component (`src/components/admin/orders/OrderCloneToB2BDialog.tsx`)
-- New dialog component for cloning retail orders to B2B/wholesale orders
-- Features:
-  - Wholesale client selection with search functionality
-  - Credit limit and balance display for selected client
-  - Over-credit-limit warning when order would exceed client's credit
-  - Pricing adjustment options:
-    - Keep original retail prices
-    - Apply 15%% wholesale discount
-    - Custom discount percentage
-  - Order items preview with original vs adjusted prices
-  - Delivery address input (pre-filled from client address)
-  - Order total comparison (original vs new B2B total)
-  - Savings calculation display
-- Uses existing `useWholesaleClients` hook for client data
-- Calls `wholesale-order-create` edge function to create the new order
-- Includes source tracking (`source_order_id` and `source_order_type`)
-- Proper loading states and error handling
-- Toast notifications on success with "View Order" action
+**Completed:**
 
-#### 2. Integrated Clone to B2B in Orders Page (`src/pages/admin/Orders.tsx`)
-- Added import for OrderCloneToB2BDialog
-- Added Building2 icon import for menu item
-- Added state variables:
-  - `cloneToB2BDialogOpen` for dialog visibility
-  - `orderToClone` to track which order is being cloned
-- Added `handleCloneToB2B` handler function
-- Added "Clone to B2B" menu item in the order actions dropdown menu
-  - Positioned after "Generate Invoice" option
-  - Uses Building2 icon for visual consistency
-- Added OrderCloneToB2BDialog component rendering with proper props
+1. **Created database migration** (`supabase/migrations/20260129000001_order_audit_log.sql`)
+   - Created `order_audit_log` table with comprehensive schema:
+     - Order reference fields (order_id, order_table, order_number)
+     - Action tracking (created, status_changed, payment_updated, shipping_updated, etc.)
+     - Change details (field_name, old_value, new_value, changes jsonb)
+     - Actor information (actor_id, actor_email, actor_name, actor_type)
+     - Context (ip_address, user_agent, source)
+     - Notes and reason fields
+   - Enabled RLS with tenant isolation policies
+   - Created performance indexes on key columns
+   - Created `log_order_audit()` helper function for programmatic logging
+   - Created `trigger_order_audit_log()` trigger function for automatic logging
+   - Added triggers on `orders`, `unified_orders`, and `marketplace_orders` tables
 
-### How It Works
+2. **Added query key** (`src/lib/queryKeys.ts`)
+   - Added `orderAuditLog` query key factory:
+     - `all`, `lists`, `list()`, `byOrder(orderId)`, `byTenant(tenantId)`
 
-1. User opens the orders list in the admin panel
-2. User clicks the more actions menu (three dots) on any retail order
-3. User selects "Clone to B2B" option
-4. Dialog opens showing:
-   - Original order summary (order number, customer, items count, total)
-   - Client selector (searchable list of wholesale clients)
-   - After selecting a client: credit impact summary and warnings
-   - Pricing adjustment dropdown
-   - Order items with price comparison
-   - New B2B total with savings
-5. User clicks "Create B2B Order"
-6. New wholesale order is created via edge function
-7. User is notified of success and can navigate to view the new order
+3. **Created useOrderAuditLog hook** (`src/hooks/useOrderAuditLog.ts`)
+   - Provides filtered access to order audit logs
+   - Supports filtering by order ID and pagination
+   - Includes `logAudit` mutation for manual logging
+   - Exports helper functions:
+     - `getAuditActionLabel()` - Human-readable action labels
+     - `getAuditActionConfig()` - Color configuration for actions
 
-### Technical Notes
-- Follows existing patterns from CloneMenuDialog and DuplicateProductButton
-- Uses SmartClientPicker-style UI for client selection (inline, not separate component)
-- Maintains tenant isolation through useTenantAdminAuth context
-- Invalidates relevant queries after order creation
-- Preserves link to source order via metadata fields
+4. **Created OrderAuditLog component** (`src/components/admin/orders/OrderAuditLog.tsx`)
+   - Timeline-based display of order changes
+   - Groups entries by date
+   - Shows action icons with color-coded badges
+   - Displays old → new value changes
+   - Shows actor information with avatars
+   - Includes expandable details section for reason/notes/changes
+   - Loading and empty states
+   - Responsive and scrollable
 
+5. **Integrated into order detail pages:**
+   - `src/pages/admin/marketplace/OrderDetailPage.tsx` - Added Activity History section
+   - `src/components/admin/disposable-menus/OrderDetailsDialog.tsx` - Added Activity History section
 
+### Files Changed:
+- `supabase/migrations/20260129000001_order_audit_log.sql` (NEW)
+- `src/lib/queryKeys.ts` (MODIFIED)
+- `src/hooks/useOrderAuditLog.ts` (NEW)
+- `src/components/admin/orders/OrderAuditLog.tsx` (NEW)
+- `src/pages/admin/marketplace/OrderDetailPage.tsx` (MODIFIED)
+- `src/components/admin/disposable-menus/OrderDetailsDialog.tsx` (MODIFIED)
+
+### Features:
+- Automatic tracking of order changes via database triggers
+- Status changes tracked with old/new values
+- Payment status changes tracked
+- Courier assignments tracked
+- Shipping updates (tracking number) tracked
+- Notes changes tracked
+- Total amount changes tracked (items modified)
+- Full user attribution (who made the change)
+- Source tracking (admin, storefront, pos, api, etc.)
+- Collapsible details for complex changes
+- Date-grouped timeline view
