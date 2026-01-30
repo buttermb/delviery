@@ -7527,75 +7527,52 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
----
-
-## Task: Build OrderDetailsPage showing full order info with timeline
+## Task: Add OrderStatusStepper showing pending confirmed packed shipped delivered
 
 ### Completed
 
-#### 1. Created OrderDetailsPage Component (`src/pages/admin/OrderDetailsPage.tsx`)
-- Full admin order details view with comprehensive information display
-- Supports both `unified_orders` and legacy `orders` tables with automatic fallback
-- Tenant-isolated queries with proper RLS compliance
+#### 1. Created OrderStatusStepper Component (`src/components/orders/OrderStatusStepper.tsx`)
+- Visual stepper component showing order progression: pending → confirmed → packed → shipped → delivered
+- Features:
+  - Horizontal and vertical orientation support
+  - Three size variants: sm, default, lg
+  - Animated progress line between steps
+  - Current step highlighting with ring effect and scale
+  - Cancelled order state with distinct styling
+  - Status mapping for compatibility with similar statuses (e.g., 'in_transit' maps to 'shipped')
+- Component Props:
+  - `status`: Current order status (OrderStepperStatus or string)
+  - `className`: Optional custom styling
+  - `size`: 'sm' | 'default' | 'lg'
+  - `showLabels`: Boolean to show/hide step labels
+  - `orientation`: 'horizontal' | 'vertical'
+- Exported helpers:
+  - `getOrderStatusLabel()`: Get display label for a status
+  - `getOrderStatusSteps()`: Get the ordered list of step configurations
+  - `OrderStepperStatus` type: 'pending' | 'confirmed' | 'packed' | 'shipped' | 'delivered' | 'cancelled'
 
-#### 2. Order Status Timeline
-- Visual timeline showing order progression through statuses:
-  - Order Placed → Confirmed → Processing → Ready → In Transit → Delivered
-- Animated timeline with motion effects using framer-motion
-- Status steps with icons (Package, CheckCircle, Clock, Truck)
-- Current status highlighted with ring indicator
-- Cancelled/refunded orders show separate terminal state UI
+#### 2. Created Index Export File (`src/components/orders/index.ts`)
+- Barrel export for clean imports from `@/components/orders`
+- Exports: OrderStatusStepper, getOrderStatusLabel, getOrderStatusSteps, OrderStepperStatus
 
-#### 3. Order Information Display
-- **Header Section:**
-  - Order number with status badge
-  - Date placed and order source
-  - Quick actions: Share Tracking, Update Status, Cancel Order
-  
-- **Order Items Table:**
-  - Product images with fallback icons
-  - Product name, variant, quantity, unit price, total
-  - Order totals breakdown: subtotal, discount, tax, delivery fee, total
-  
-- **Delivery Information Card:**
-  - Delivery method, address, notes
-  - Assigned courier with contact info
-  
-- **Sidebar Cards:**
-  - Order Info: number, date, source, payment status
-  - Customer Info: name, email, phone with profile link
-  - Activity Timeline: chronological events from timestamps
-  - Notes section (if present)
+### Usage Examples
+```tsx
+// Basic usage
+<OrderStatusStepper status="confirmed" />
 
-#### 4. Action Dialogs
-- **Update Status Dialog:**
-  - Select dropdown with all status options
-  - Confirmation before status change
-  - Loading state during update
-  
-- **Cancel Order Dialog:**
-  - Cancellation reason textarea
-  - Confirmation with warning message
-  - Proper error handling
+// Large size with labels
+<OrderStatusStepper status="shipped" size="lg" showLabels />
 
-#### 5. Route Configuration (`src/App.tsx`)
-- Added lazy import for OrderDetailsPage
-- Added route: `/:tenantSlug/admin/orders/:orderId`
-- Protected with FeatureProtectedRoute (featureId: "basic-orders")
+// Vertical orientation
+<OrderStatusStepper status="delivered" orientation="vertical" />
 
-### Technical Details
-- Uses TanStack Query with proper queryKeys
-- Optimistic UI patterns with mutation callbacks
-- SwipeBackWrapper for mobile navigation
-- Responsive grid layout (1 col mobile, 3 cols desktop)
-- Uses semantic status colors from statusColors utility
-- Proper TypeScript types for order data
+// Without labels (compact)
+<OrderStatusStepper status="pending" showLabels={false} size="sm" />
+```
 
-### Files Changed:
-- `src/pages/admin/OrderDetailsPage.tsx` (NEW)
-- `src/App.tsx` (added import and route)
-
-### Notes:
-- TypeScript type checking passes successfully
-- Compatible with both unified_orders and orders table structures
-- Timeline automatically builds from timestamp fields (confirmed_at, shipped_at, etc.)
+### Import
+```tsx
+import { OrderStatusStepper } from '@/components/orders';
+// or
+import { OrderStatusStepper, getOrderStatusLabel } from '@/components/orders/OrderStatusStepper';
+```
