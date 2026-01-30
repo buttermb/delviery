@@ -159,8 +159,8 @@ export const queryKeys = {
   // Dashboard Hub
   dashboard: {
     all: ['dashboard'] as const,
-    stats: (tenantId?: string) =>
-      [...queryKeys.dashboard.all, 'stats', tenantId] as const,
+    stats: (tenantId?: string, dateRangeKey?: string) =>
+      [...queryKeys.dashboard.all, 'stats', tenantId, dateRangeKey] as const,
   },
 
   // Analytics

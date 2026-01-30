@@ -7460,55 +7460,48 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-
 ---
 
-### Task: Add MenuPreview showing customer-facing view
+### Task: Add DashboardDatePicker to filter all widgets by date range
 
 **Completed:**
 
-1. **Created MenuPreview component** (`src/components/admin/disposable-menus/MenuPreview.tsx`)
-   - Full-screen dialog showing exactly how customers will see the menu
-   - Device-responsive preview modes (desktop/tablet/mobile) with device toggle buttons
-   - Simulated customer header with welcome message and menu description
-   - Product grid displaying: images, names, descriptions, prices, categories
-   - Cannabis-specific information: strain type badges, THC/CBD percentages
-   - Search functionality to filter products by name/description
-   - Category tab filtering
-   - Image zoom capability for product photos
-   - Expiration date display with time-until-expiry formatting
-   - Security feature badges (Encrypted, Geofenced, Device Lock)
-   - Demo "Add to Cart" buttons (disabled, showing preview-only state)
-   - Footer with creation date and preview notice
+1. **Created DashboardDateRangeContext** (`src/contexts/DashboardDateRangeContext.tsx`)
+   - Provides shared date range state across all dashboard widgets
+   - Default range is "Last 30 Days"
+   - Includes `useDashboardDateRange` hook for consuming the context
+   - Includes `useDashboardDateRangeOptional` hook for widgets that can work with or without filtering
+   - Provides ISO string conversions and stable cache keys for React Query
 
-2. **Created useMenuProductsForPreview hook** (`src/hooks/useMenuProductsForPreview.ts`)
-   - Fetches menu products with full product details from wholesale_inventory
-   - Joins disposable_menu_products with wholesale_inventory for product info
-   - Returns: product name, description, price, image, category, strain type, THC/CBD content
-   - Supports custom prices set on menu products
-   - Caches results for 1 minute to reduce database calls
-   - Only fetches when preview is opened (enabled parameter)
+2. **Created DashboardDatePicker component** (`src/components/admin/dashboard/DashboardDatePicker.tsx`)
+   - Uses existing DateRangePickerWithPresets component
+   - Provides dashboard-specific presets: Today, Yesterday, Last 7/30/90 Days, This Week, This Month, Last Month
+   - Integrates with DashboardDateRangeContext
 
-3. **Integrated MenuPreview into MenuCard** (`src/components/admin/disposable-menus/MenuCard.tsx`)
-   - Added Monitor icon button in quick actions row for direct access
-   - Added "Customer Preview" option at top of dropdown menu
-   - Tooltip shows "Customer Preview" on hover
-   - Preview opens in full-screen dialog modal
+3. **Updated queryKeys** (`src/lib/queryKeys.ts`)
+   - Added `dateRangeKey` parameter to `dashboard.stats()` query key
+   - Enables proper React Query cache invalidation when date range changes
+
+4. **Modified useDashboardStats hook** (`src/hooks/useDashboardStats.ts`)
+   - Now reads date range from DashboardDateRangeContext (optional - falls back to last 30 days)
+   - All order/revenue/customer queries now filter by the selected date range
+   - Comparison period calculated dynamically based on selected range duration
+   - Growth percentage now compares to the previous period of same duration
+
+5. **Integrated DashboardDatePicker into DashboardHubPage** (`src/pages/admin/hubs/DashboardHubPage.tsx`)
+   - Added DashboardDateRangeProvider wrapper
+   - Added DashboardDatePicker in the header area
+   - Updated stat card titles and descriptions to reflect dynamic date range
 
 ### Files Changed:
-- `src/components/admin/disposable-menus/MenuPreview.tsx` (NEW)
-- `src/hooks/useMenuProductsForPreview.ts` (NEW)
-- `src/components/admin/disposable-menus/MenuCard.tsx` (MODIFIED)
+- `src/contexts/DashboardDateRangeContext.tsx` (NEW)
+- `src/components/admin/dashboard/DashboardDatePicker.tsx` (NEW)
+- `src/lib/queryKeys.ts`
+- `src/hooks/useDashboardStats.ts`
+- `src/pages/admin/hubs/DashboardHubPage.tsx`
 
-### How to Use:
-1. Navigate to the Disposable Menus page in the admin panel
-2. Click the Monitor icon on any menu card, OR
-3. Click the "..." menu and select "Customer Preview"
-4. Use the device toggle buttons to preview mobile/tablet/desktop views
-5. Search and filter products to see how customers will experience the menu
-
-### Technical Notes:
-- Uses TanStack Query for data fetching with caching
-- Follows existing BuilderPreview pattern for device-responsive previews
-- TypeScript strict mode compatible - no `any` types used
-- Imports use `@/` alias as per project conventions
+### Notes:
+- TypeScript type checking passes successfully
+- Pre-existing build error in PasswordResetPage.tsx (multiple default exports) is unrelated
+- Widgets that need date filtering can use `useDashboardDateRange()` hook
+- Widgets that work without filtering can use `useDashboardDateRangeOptional()` to gracefully handle missing context

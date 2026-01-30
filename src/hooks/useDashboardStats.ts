@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useDashboardDateRangeOptional } from '@/contexts/DashboardDateRangeContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { subDays, startOfDay, endOfDay } from 'date-fns';
 
 /**
  * Comprehensive Dashboard KPIs pulled from Orders, Inventory, and Revenue
@@ -36,8 +38,20 @@ export function useDashboardStats() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
 
+  // Get date range from context (optional - falls back to defaults if not in provider)
+  const dateRangeContext = useDashboardDateRangeOptional();
+
+  // Default date range: last 30 days if context not available
+  const defaultRange = {
+    from: startOfDay(subDays(new Date(), 29)),
+    to: endOfDay(new Date()),
+  };
+
+  const dateRange = dateRangeContext?.dateRange ?? defaultRange;
+  const dateRangeKey = dateRangeContext?.dateRangeKey ?? 'default';
+
   return useQuery({
-    queryKey: queryKeys.dashboard.stats(tenantId),
+    queryKey: queryKeys.dashboard.stats(tenantId, dateRangeKey),
     queryFn: async (): Promise<DashboardStats> => {
       if (!tenantId) {
         return {
@@ -59,102 +73,111 @@ export function useDashboardStats() {
         };
       }
 
-      // Date calculations
+      // Date calculations - use the date range from context
+      const rangeStart = dateRange.from;
+      const rangeEnd = dateRange.to;
+
+      // For "today" stats, we still use actual today within the range
       const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const today = startOfDay(now);
+
+      // Calculate comparison period (same duration before the selected range)
+      const rangeDurationMs = rangeEnd.getTime() - rangeStart.getTime();
+      const comparisonEnd = new Date(rangeStart.getTime() - 1); // Day before range start
+      const comparisonStart = new Date(comparisonEnd.getTime() - rangeDurationMs);
 
       const [
         // Orders queries
         pendingOrdersResult,
-        todayOrdersResult,
-        mtdOrdersResult,
-        completedTodayResult,
+        rangeOrdersResult,
+        rangeOrdersCountResult,
+        completedRangeResult,
 
         // Inventory queries
         productsResult,
 
-        // Revenue queries - MTD
-        revenueMTDResult,
-        revenueLastMonthResult,
+        // Revenue queries - in selected range
+        revenueRangeResult,
+        revenueComparisonResult,
 
         // Customer queries
         newCustomersResult,
         totalCustomersResult,
         activeSessionsResult,
       ] = await Promise.allSettled([
-        // Pending orders: orders with status 'pending' or 'confirmed'
+        // Pending orders: orders with status 'pending' or 'confirmed' (not filtered by date)
         supabase
           .from('orders')
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenantId)
           .in('status', ['pending', 'confirmed']),
 
-        // Total orders today
+        // Total orders in date range (with amounts for revenue calculation)
         supabase
           .from('orders')
           .select('id, total_amount', { count: 'exact' })
           .eq('tenant_id', tenantId)
-          .gte('created_at', today.toISOString())
+          .gte('created_at', rangeStart.toISOString())
+          .lte('created_at', rangeEnd.toISOString())
           .not('status', 'in', '("cancelled","rejected","refunded")'),
 
-        // Total orders MTD
+        // Total orders count in date range
         supabase
           .from('orders')
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenantId)
-          .gte('created_at', startOfMonth.toISOString())
+          .gte('created_at', rangeStart.toISOString())
+          .lte('created_at', rangeEnd.toISOString())
           .not('status', 'in', '("cancelled","rejected","refunded")'),
 
-        // Completed orders today
+        // Completed orders in date range
         supabase
           .from('orders')
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenantId)
-          .gte('created_at', today.toISOString())
+          .gte('created_at', rangeStart.toISOString())
+          .lte('created_at', rangeEnd.toISOString())
           .in('status', ['completed', 'delivered']),
 
-        // All products with stock info
+        // All products with stock info (not filtered by date)
         supabase
           .from('products')
           .select('id, stock_quantity, low_stock_alert, price, in_stock')
           .eq('tenant_id', tenantId),
 
-        // Revenue MTD (sum of completed/delivered orders)
+        // Revenue in selected range (sum of completed/delivered orders)
         supabase
           .from('orders')
           .select('total_amount')
           .eq('tenant_id', tenantId)
-          .gte('created_at', startOfMonth.toISOString())
+          .gte('created_at', rangeStart.toISOString())
+          .lte('created_at', rangeEnd.toISOString())
           .in('status', ['completed', 'delivered']),
 
-        // Revenue last month (for growth calculation)
+        // Revenue in comparison period (for growth calculation)
         supabase
           .from('orders')
           .select('total_amount')
           .eq('tenant_id', tenantId)
-          .gte('created_at', startOfLastMonth.toISOString())
-          .lt('created_at', endOfLastMonth.toISOString())
+          .gte('created_at', comparisonStart.toISOString())
+          .lte('created_at', comparisonEnd.toISOString())
           .in('status', ['completed', 'delivered']),
 
-        // New customers in the last 30 days
+        // New customers in date range
         supabase
           .from('customers')
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenantId)
-          .gte('created_at', thirtyDaysAgo.toISOString()),
+          .gte('created_at', rangeStart.toISOString())
+          .lte('created_at', rangeEnd.toISOString()),
 
-        // Total customers
+        // Total customers (not filtered by date)
         supabase
           .from('customers')
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenantId),
 
-        // Active sessions: online customers (approximate via recent activity)
+        // Active sessions: online customers (approximate via recent activity, not filtered by date range)
         supabase
           .from('customers')
           .select('id', { count: 'exact', head: true })
@@ -173,43 +196,43 @@ export function useDashboardStats() {
         }
       }
 
-      // Extract today orders and revenue
-      let totalOrdersToday = 0;
-      let revenueToday = 0;
-      if (todayOrdersResult.status === 'fulfilled') {
-        const { data, count, error } = todayOrdersResult.value;
+      // Extract orders in range and revenue
+      let totalOrdersInRange = 0;
+      let revenueInRange = 0;
+      if (rangeOrdersResult.status === 'fulfilled') {
+        const { data, count, error } = rangeOrdersResult.value;
         if (!error) {
-          totalOrdersToday = count ?? 0;
+          totalOrdersInRange = count ?? 0;
           if (data) {
-            revenueToday = data.reduce(
+            revenueInRange = data.reduce(
               (sum, order) => sum + (Number(order.total_amount) || 0),
               0
             );
           }
         } else {
-          logger.warn('Failed to fetch today orders', error, { component: 'useDashboardStats' });
+          logger.warn('Failed to fetch range orders', error, { component: 'useDashboardStats' });
         }
       }
 
-      // Extract MTD orders count
-      let totalOrdersMTD = 0;
-      if (mtdOrdersResult.status === 'fulfilled') {
-        const { count, error } = mtdOrdersResult.value;
+      // Extract total orders count in range
+      let totalOrdersCount = 0;
+      if (rangeOrdersCountResult.status === 'fulfilled') {
+        const { count, error } = rangeOrdersCountResult.value;
         if (!error) {
-          totalOrdersMTD = count ?? 0;
+          totalOrdersCount = count ?? 0;
         } else {
-          logger.warn('Failed to fetch MTD orders', error, { component: 'useDashboardStats' });
+          logger.warn('Failed to fetch range orders count', error, { component: 'useDashboardStats' });
         }
       }
 
-      // Extract completed orders today
-      let completedOrdersToday = 0;
-      if (completedTodayResult.status === 'fulfilled') {
-        const { count, error } = completedTodayResult.value;
+      // Extract completed orders in range
+      let completedOrdersInRange = 0;
+      if (completedRangeResult.status === 'fulfilled') {
+        const { count, error } = completedRangeResult.value;
         if (!error) {
-          completedOrdersToday = count ?? 0;
+          completedOrdersInRange = count ?? 0;
         } else {
-          logger.warn('Failed to fetch completed orders today', error, { component: 'useDashboardStats' });
+          logger.warn('Failed to fetch completed orders in range', error, { component: 'useDashboardStats' });
         }
       }
 
@@ -246,41 +269,41 @@ export function useDashboardStats() {
         }
       }
 
-      // Extract revenue MTD
-      let revenueMTD = 0;
-      if (revenueMTDResult.status === 'fulfilled') {
-        const { data, error } = revenueMTDResult.value;
+      // Extract revenue in selected range
+      let revenueRange = 0;
+      if (revenueRangeResult.status === 'fulfilled') {
+        const { data, error } = revenueRangeResult.value;
         if (!error && data) {
-          revenueMTD = data.reduce(
+          revenueRange = data.reduce(
             (sum, order) => sum + (Number(order.total_amount) || 0),
             0
           );
         } else if (error) {
-          logger.warn('Failed to fetch MTD revenue', error, { component: 'useDashboardStats' });
+          logger.warn('Failed to fetch range revenue', error, { component: 'useDashboardStats' });
         }
       }
 
-      // Extract last month revenue for growth calculation
-      let revenueLastMonth = 0;
-      if (revenueLastMonthResult.status === 'fulfilled') {
-        const { data, error } = revenueLastMonthResult.value;
+      // Extract comparison period revenue for growth calculation
+      let revenueComparison = 0;
+      if (revenueComparisonResult.status === 'fulfilled') {
+        const { data, error } = revenueComparisonResult.value;
         if (!error && data) {
-          revenueLastMonth = data.reduce(
+          revenueComparison = data.reduce(
             (sum, order) => sum + (Number(order.total_amount) || 0),
             0
           );
         } else if (error) {
-          logger.warn('Failed to fetch last month revenue', error, { component: 'useDashboardStats' });
+          logger.warn('Failed to fetch comparison revenue', error, { component: 'useDashboardStats' });
         }
       }
 
-      // Calculate revenue growth percentage
-      const revenueGrowthPercent = revenueLastMonth > 0
-        ? ((revenueMTD - revenueLastMonth) / revenueLastMonth) * 100
+      // Calculate revenue growth percentage (compared to previous period)
+      const revenueGrowthPercent = revenueComparison > 0
+        ? ((revenueRange - revenueComparison) / revenueComparison) * 100
         : 0;
 
       // Calculate average order value
-      const avgOrderValue = totalOrdersMTD > 0 ? revenueMTD / totalOrdersMTD : 0;
+      const avgOrderValue = totalOrdersCount > 0 ? revenueRange / totalOrdersCount : 0;
 
       // Extract new customers count
       let newCustomers = 0;
@@ -319,9 +342,9 @@ export function useDashboardStats() {
       return {
         // Orders KPIs
         pendingOrders,
-        totalOrdersToday,
-        totalOrdersMTD,
-        completedOrdersToday,
+        totalOrdersToday: totalOrdersInRange, // Now represents orders in selected range
+        totalOrdersMTD: totalOrdersCount, // Now represents total orders in selected range
+        completedOrdersToday: completedOrdersInRange, // Now represents completed orders in selected range
         avgOrderValue,
 
         // Inventory KPIs
@@ -331,8 +354,8 @@ export function useDashboardStats() {
         totalInventoryValue,
 
         // Revenue KPIs
-        revenueToday,
-        revenueMTD,
+        revenueToday: revenueInRange, // Now represents revenue in selected range
+        revenueMTD: revenueRange, // Now represents total revenue in selected range
         revenueGrowthPercent,
 
         // Customer KPIs
