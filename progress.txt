@@ -7459,3 +7459,60 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+### Task: Add OrderSearchBar with autocomplete for order number customer phone
+
+**Completed:**
+
+1. **Created OrderSearchBar component** (`src/components/admin/orders/OrderSearchBar.tsx`)
+   - Search autocomplete component for the admin orders page
+   - Searches orders by order number (supports # prefix) or customer phone number
+   - Debounced search with 300ms delay for optimal UX
+   - Tenant-aware queries using `useTenantAdminAuth()` context
+   - Uses TanStack Query for caching (30s stale time)
+
+2. **Features implemented:**
+   - **Order number search**: Searches using ILIKE pattern matching on order_number field
+   - **Phone search**: Searches by extracting phone digits and matching against customer profiles
+   - **Recent searches**: Persisted in localStorage using safe storage utilities
+   - **Keyboard navigation**: Arrow up/down, Enter to select, Escape to close
+   - **Visual feedback**: Loading spinner, highlighted matching text, status badges
+   - **Dropdown UI**: Shows recent searches when empty, search results when typing
+   - **Empty state**: Helpful message when no results found
+
+3. **Component props:**
+   - `onSelectOrder?: (order: OrderSearchResult) => void` - Callback when order is selected
+   - `onSearch?: (query: string) => void` - Callback for search text changes
+   - `placeholder?: string` - Custom placeholder text
+   - `className?: string` - Additional CSS classes
+
+4. **Added storage key** (`src/constants/storageKeys.ts`)
+   - Added `ORDER_SEARCH_RECENT` key for persisting recent order searches
+
+### Files Changed:
+- `src/components/admin/orders/OrderSearchBar.tsx` (NEW)
+- `src/constants/storageKeys.ts` (Added ORDER_SEARCH_RECENT key)
+
+### Usage Example:
+```tsx
+import { OrderSearchBar } from '@/components/admin/orders/OrderSearchBar';
+
+// Basic usage with order selection
+<OrderSearchBar 
+  onSelectOrder={(order) => navigate(`orders/${order.id}`)}
+/>
+
+// With search callback for filtering
+<OrderSearchBar 
+  onSearch={setSearchQuery}
+  placeholder="Find orders..."
+/>
+```
+
+### Notes:
+- Component follows existing FloraIQ patterns (tenant isolation, TanStack Query, safe storage)
+- TypeScript compilation passes successfully
+- Phone search requires minimum 3 characters to filter
+- Order number search requires minimum 2 characters
