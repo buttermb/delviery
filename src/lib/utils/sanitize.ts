@@ -182,13 +182,14 @@ export function sanitizeWithLineBreaks(text: string): string {
 }
 
 /**
- * Safely parses JSON with error handling.
- * Returns the default value if parsing fails.
+ * Safely parses JSON input with validation.
+ * Returns the parsed value or a default if parsing fails.
  */
-export function safeJsonParse<T>(json: string, defaultValue: T): T {
+export function safeJsonParse<T>(json: string | null | undefined, defaultValue: T): T {
   if (!json) return defaultValue;
   try {
-    return JSON.parse(json) as T;
+    const parsed = JSON.parse(json);
+    return parsed as T;
   } catch {
     return defaultValue;
   }
