@@ -419,6 +419,30 @@ export const queryKeys = {
     scheduled: () => [...queryKeys.reporting.all, 'scheduled'] as const,
   },
 
+  // Roles
+  roles: {
+    all: ['roles'] as const,
+    lists: () => [...queryKeys.roles.all, 'list'] as const,
+    list: (tenantId?: string) => [...queryKeys.roles.lists(), { tenantId }] as const,
+    detail: (id: string) => [...queryKeys.roles.all, id] as const,
+  },
+
+  // Team
+  team: {
+    all: ['team'] as const,
+    lists: () => [...queryKeys.team.all, 'list'] as const,
+    list: (tenantId?: string) => [...queryKeys.team.lists(), { tenantId }] as const,
+    detail: (id: string) => [...queryKeys.team.all, id] as const,
+    members: {
+      all: () => [...queryKeys.team.all, 'members'] as const,
+      list: (tenantId?: string) => [...queryKeys.team.members.all(), 'list', { tenantId }] as const,
+    },
+    invitations: {
+      all: () => [...queryKeys.team.all, 'invitations'] as const,
+      pending: (tenantId?: string) => [...queryKeys.team.invitations.all(), 'pending', { tenantId }] as const,
+    },
+  },
+
   // Vendor
   vendor: {
     all: ['vendor'] as const,

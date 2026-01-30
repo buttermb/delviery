@@ -121,15 +121,15 @@ export function TeamManagement() {
         is_owner: true,
       };
 
-      const members = (tenantUsers || []).map((user): TeamMember => ({
+      const members = (tenantUsers || []).map((user: any): TeamMember => ({
         id: user.id,
         user_id: user.user_id,
         email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
+        first_name: user.first_name || user.full_name?.split(' ')[0] || '',
+        last_name: user.last_name || user.full_name?.split(' ').slice(1).join(' ') || '',
         full_name: user.first_name && user.last_name
           ? `${user.first_name} ${user.last_name}`
-          : user.first_name || user.last_name || null,
+          : user.full_name || user.first_name || user.last_name || null,
         role: user.role as TeamMember['role'],
         status: user.status as TeamMember['status'],
         avatar_url: user.avatar_url,

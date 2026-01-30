@@ -67,7 +67,7 @@ export default function Webhooks() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from(TABLE_WEBHOOKS)
           .select('*')
           .eq('tenant_id', tenantId)
@@ -75,7 +75,7 @@ export default function Webhooks() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        return (data || []) as WebhookConfig[];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
@@ -88,7 +88,7 @@ export default function Webhooks() {
     mutationFn: async (webhook: Partial<WebhookConfig>) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(TABLE_WEBHOOKS)
         .insert({
           tenant_id: tenantId,
@@ -127,7 +127,7 @@ export default function Webhooks() {
     mutationFn: async ({ id, ...webhook }: WebhookConfig) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(TABLE_WEBHOOKS)
         .update({
           name: webhook.name,

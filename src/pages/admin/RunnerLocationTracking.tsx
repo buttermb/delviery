@@ -79,21 +79,20 @@ export function RunnerLocationTracking() {
     queryFn: async () => {
       if (!selectedRunnerId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('wholesale_deliveries')
         .select(`
           id,
           status,
           created_at,
-          current_location,
-          order:orders(id, order_number, delivery_address, customer_name)
+          current_location
         `)
         .eq('runner_id', selectedRunnerId)
         .order('created_at', { ascending: false })
         .limit(20);
 
       if (error) throw error;
-      return (data || []) as DeliveryWithETA[];
+      return (data || []) as unknown as DeliveryWithETA[];
     },
     enabled: !!selectedRunnerId,
     refetchInterval: 30000, // Refresh every 30 seconds
