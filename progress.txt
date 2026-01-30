@@ -7462,46 +7462,73 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-### Task: Add DashboardDatePicker to filter all widgets by date range
+## Agent 16 - Build MenuShareModal with Link, QR Code, and Embed Options
+
+### Task: Build MenuShareModal with link QR code and embed options
 
 **Completed:**
 
-1. **Created DashboardDateRangeContext** (`src/contexts/DashboardDateRangeContext.tsx`)
-   - Provides shared date range state across all dashboard widgets
-   - Default range is "Last 30 Days"
-   - Includes `useDashboardDateRange` hook for consuming the context
-   - Includes `useDashboardDateRangeOptional` hook for widgets that can work with or without filtering
-   - Provides ISO string conversions and stable cache keys for React Query
+1. **Created MenuShareModal component** (`src/components/admin/disposable-menus/MenuShareModal.tsx`)
+   - Comprehensive share modal with three tabs: Link, QR Code, and Embed
+   - Uses existing UI patterns from the codebase (Dialog, Tabs, Button, Input, Textarea)
+   - Full TypeScript support with named exports
 
-2. **Created DashboardDatePicker component** (`src/components/admin/dashboard/DashboardDatePicker.tsx`)
-   - Uses existing DateRangePickerWithPresets component
-   - Provides dashboard-specific presets: Today, Yesterday, Last 7/30/90 Days, This Week, This Month, Last Month
-   - Integrates with DashboardDateRangeContext
+2. **Link Tab Features:**
+   - QR code preview (compact 180px size)
+   - Copyable access URL with visual feedback (checkmark icon on copy)
+   - Open in new tab button
+   - Share button (uses native Web Share API with clipboard fallback)
+   - Download QR button
 
-3. **Updated queryKeys** (`src/lib/queryKeys.ts`)
-   - Added `dateRangeKey` parameter to `dashboard.stats()` query key
-   - Enables proper React Query cache invalidation when date range changes
+3. **QR Code Tab Features:**
+   - Large QR code display (280px size)
+   - High error correction level (H) for better scanning
+   - Download QR as PNG button
+   - Print QR button (opens print-friendly page)
 
-4. **Modified useDashboardStats hook** (`src/hooks/useDashboardStats.ts`)
-   - Now reads date range from DashboardDateRangeContext (optional - falls back to last 30 days)
-   - All order/revenue/customer queries now filter by the selected date range
-   - Comparison period calculated dynamically based on selected range duration
-   - Growth percentage now compares to the previous period of same duration
+4. **Embed Tab Features:**
+   - Customizable embed dimensions (width and height inputs)
+   - Auto-generated iframe embed code
+   - Code preview in monospace textarea
+   - Copy embed code button with visual feedback
+   - Helper text explaining usage
 
-5. **Integrated DashboardDatePicker into DashboardHubPage** (`src/pages/admin/hubs/DashboardHubPage.tsx`)
-   - Added DashboardDateRangeProvider wrapper
-   - Added DashboardDatePicker in the header area
-   - Updated stat card titles and descriptions to reflect dynamic date range
+5. **Technical Implementation:**
+   - Uses `qrcode.react` for QR code generation (QRCodeSVG component)
+   - Canvas-based PNG download (converts SVG to canvas to PNG)
+   - Print window generation with styled HTML for QR printing
+   - Native Web Share API with graceful fallback to clipboard copy
+   - Toast notifications for user feedback
+   - Follows FloraIQ code style (named exports, @/ imports, logger usage)
 
-### Files Changed:
-- `src/contexts/DashboardDateRangeContext.tsx` (NEW)
-- `src/components/admin/dashboard/DashboardDatePicker.tsx` (NEW)
-- `src/lib/queryKeys.ts`
-- `src/hooks/useDashboardStats.ts`
-- `src/pages/admin/hubs/DashboardHubPage.tsx`
+### Props Interface:
+```typescript
+interface MenuShareModalProps {
+  open: boolean;
+  onClose: () => void;
+  menuTitle: string;
+  accessUrl: string;
+  menuId: string;
+}
+```
+
+### Usage Example:
+```tsx
+import { MenuShareModal } from '@/components/admin/disposable-menus/MenuShareModal';
+
+<MenuShareModal
+  open={isShareOpen}
+  onClose={() => setIsShareOpen(false)}
+  menuTitle="Summer Menu 2026"
+  accessUrl="https://app.floraiq.com/menu/abc123"
+  menuId="abc123"
+/>
+```
+
+### Files Created:
+- `src/components/admin/disposable-menus/MenuShareModal.tsx` (NEW)
 
 ### Notes:
-- TypeScript type checking passes successfully
-- Pre-existing build error in PasswordResetPage.tsx (multiple default exports) is unrelated
-- Widgets that need date filtering can use `useDashboardDateRange()` hook
-- Widgets that work without filtering can use `useDashboardDateRangeOptional()` to gracefully handle missing context
+- Component is distinct from existing `MenuShareDialog.tsx` (which is for secure/encrypted menu sharing with access codes)
+- ESLint passes with no errors
+- Pre-existing build error in `PasswordResetPage.tsx` (multiple default exports) is unrelated to this task
