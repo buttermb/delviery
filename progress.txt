@@ -7459,3 +7459,42 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Agent 76 - ProductPricingSection Component Implementation
+
+### Task: Build ProductPricingSection with retail, wholesale, and bulk prices
+
+**Completed:**
+
+1. **Created ProductPricingSection component** (`src/components/admin/products/ProductPricingSection.tsx`)
+   - Comprehensive pricing section for products with multiple price types
+   - Supports cost per unit, wholesale price, and retail price inputs
+   - Bulk pricing tiers with dynamic add/remove functionality
+   - Real-time profit margin calculations displayed as badges
+   - Color-coded margin indicators (red < 10%, amber < 20%, yellow < 30%, green >= 30%)
+   - Configurable visibility for retail price, bulk pricing, minimum price, and discount exclusion
+   - Includes exclude from discounts checkbox option
+   - Minimum allowed price field for regulatory compliance
+   - Margin summary card showing all calculated margins
+   - Uses shadcn/ui components (Card, Input, Label, Button, Checkbox, Badge, Tooltip)
+   - Follows FloraIQ patterns with named exports only
+   - TypeScript strict mode compliant with proper interfaces
+
+2. **Component Features:**
+   - `ProductPricingData` interface for form data structure
+   - `BulkPriceTier` interface for bulk pricing tiers
+   - `showRetailPrice` prop to toggle retail price visibility (default: true)
+   - `showBulkPricing` prop to toggle bulk pricing section (default: true)
+   - `showMinimumPrice` prop to toggle minimum price field (default: true)
+   - `showExcludeDiscounts` prop to toggle discount exclusion checkbox (default: true)
+   - Smart defaults for new bulk tiers based on existing tiers
+   - Helpful tooltips explaining each price type
+   - Responsive grid layout for mobile and desktop
+
+### Files Changed:
+- `src/components/admin/products/ProductPricingSection.tsx` (NEW)
+
+### Notes:
+- Build error about PasswordResetPage.tsx duplicate exports is pre-existing and unrelated to these changes
+- Component is ready for integration into ProductForm or standalone use
+- Uses useMemo and useCallback for performance optimization
