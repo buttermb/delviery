@@ -11,6 +11,7 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useOptimisticLock } from "@/hooks/useOptimisticLock";
 import { useProductMutations } from "@/hooks/useProductMutations";
+import { useProductDuplicate } from "@/hooks/useProductDuplicate";
 import { queryKeys } from "@/lib/queryKeys";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,8 @@ import {
   MoreVertical,
   Eye,
   EyeOff,
-  Store
+  Store,
+  Copy
 } from "lucide-react";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import {
@@ -63,6 +65,7 @@ import { BatchCategoryEditor } from "@/components/admin/BatchCategoryEditor";
 import { ProductImportDialog } from "@/components/admin/ProductImportDialog";
 import { Upload } from "lucide-react";
 import { ProductForm, type ProductFormData } from "@/components/admin/products/ProductForm";
+import { ProductDuplicateButton } from "@/components/admin/products/ProductDuplicateButton";
 import { useEncryption } from "@/lib/hooks/useEncryption";
 import type { Database } from "@/integrations/supabase/types";
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
@@ -114,6 +117,11 @@ export default function ProductManagement() {
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
   const queryClient = useQueryClient();
   const { invalidateProductCaches } = useProductMutations();
+  const { duplicateProduct, isPending: isDuplicating } = useProductDuplicate({
+    onSuccess: (newProduct) => {
+      setProducts(prev => [newProduct, ...prev]);
+    }
+  });
 
   // Read URL search params for filtering
   const urlSearch = searchParams.get('search') || '';
@@ -883,6 +891,13 @@ export default function ProductManagement() {
             <DropdownMenuItem onClick={() => { setEditingProduct(product); setIsDialogOpen(true); }}>
               <Edit className="mr-2 h-4 w-4" /> Edit
             </DropdownMenuItem>
+            <ProductDuplicateButton
+              product={product}
+              variant="dropdown"
+              onSuccess={(newProduct) => {
+                setProducts(prev => [newProduct, ...prev]);
+              }}
+            />
             <DropdownMenuItem onClick={() => { setLabelProduct(product); setLabelDialogOpen(true); }}>
               <Printer className="mr-2 h-4 w-4" /> Print Label
             </DropdownMenuItem>
@@ -906,6 +921,7 @@ export default function ProductManagement() {
       product={product}
       onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
       onDelete={() => handleDelete(product.id)}
+      onDuplicate={() => duplicateProduct(product)}
       onPrintLabel={() => { setLabelProduct(product); setLabelDialogOpen(true); }}
       onPublish={() => handlePublish(product.id)}
     />
@@ -1230,6 +1246,7 @@ export default function ProductManagement() {
                       product={product}
                       onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
                       onDelete={() => handleDelete(product.id)}
+                      onDuplicate={() => duplicateProduct(product)}
                       onPrintLabel={() => {
                         setLabelProduct(product);
                         setLabelDialogOpen(true);

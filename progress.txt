@@ -7459,3 +7459,47 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Task: Add ProductDuplicateButton creating copy with new SKU
+
+### What was done:
+
+1. **Created ProductDuplicateButton component** (`src/components/admin/products/ProductDuplicateButton.tsx`)
+   - Reusable button component that can be used as a standalone button or dropdown menu item
+   - Includes loading state with spinner animation
+   - Uses TanStack Query mutation for async handling
+
+2. **Created useProductDuplicate hook** (`src/hooks/useProductDuplicate.ts`)
+   - Reusable hook for product duplication logic
+   - Generates unique SKU for duplicated products (appends -COPY or -COPY-N)
+   - Checks SKU uniqueness against tenant's existing products
+   - Sets initial quantity to 0 for duplicated products
+   - Clears batch_number since it should be unique
+   - Appends "(Copy)" to the product name
+
+3. **Updated ProductCard component** (`src/components/admin/ProductCard.tsx`)
+   - Added `onDuplicate` prop to the interface
+   - Added Copy icon import from lucide-react
+   - Added Duplicate option to dropdown menu
+   - Added Duplicate option to long-press menu for mobile
+
+4. **Updated ProductManagement page** (`src/pages/admin/ProductManagement.tsx`)
+   - Imported useProductDuplicate hook and ProductDuplicateButton
+   - Added Copy icon import
+   - Integrated useProductDuplicate hook with state update callback
+   - Added ProductDuplicateButton to table view dropdown menu
+   - Added onDuplicate handler to both grid view and mobile ProductCard instances
+
+### Files created:
+- `src/components/admin/products/ProductDuplicateButton.tsx`
+- `src/hooks/useProductDuplicate.ts`
+
+### Files modified:
+- `src/components/admin/ProductCard.tsx`
+- `src/pages/admin/ProductManagement.tsx`
+
+### SKU Generation Logic:
+- If original product has no SKU: generates `COPY-{timestamp}`
+- If original product has SKU: generates `{originalSku}-COPY`
+- If SKU already exists: tries `{baseSku}-1`, `{baseSku}-2`, etc.
+- Falls back to timestamp if too many copies exist

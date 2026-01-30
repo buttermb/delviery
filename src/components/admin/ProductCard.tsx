@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  Copy,
   Edit,
   Trash2,
   Package,
@@ -39,6 +40,7 @@ interface ProductCardProps {
   product: Product;
   onEdit?: (productId: string) => void;
   onDelete?: (productId: string) => void;
+  onDuplicate?: (productId: string) => void;
   onAddToMenu?: (productId: string) => void;
   onPrintLabel?: () => void;
   onPublish?: (productId: string) => void;
@@ -48,6 +50,7 @@ export function ProductCard({
   product,
   onEdit,
   onDelete,
+  onDuplicate,
   onAddToMenu,
   onPrintLabel,
   onPublish
@@ -72,6 +75,7 @@ export function ProductCard({
   // Build long-press menu items for mobile
   const longPressItems = [
     ...(onEdit ? [{ label: 'Edit', icon: <Edit className="h-4 w-4" />, onSelect: () => onEdit(product.id) }] : []),
+    ...(onDuplicate ? [{ label: 'Duplicate', icon: <Copy className="h-4 w-4" />, onSelect: () => onDuplicate(product.id) }] : []),
     ...(onAddToMenu ? [{ label: 'Add to Menu', icon: <Package className="h-4 w-4" />, onSelect: () => onAddToMenu(product.id) }] : []),
     ...(onPrintLabel && product.sku ? [{ label: 'Print Label', icon: <Printer className="h-4 w-4" />, onSelect: onPrintLabel }] : []),
     ...(onPublish ? [{ label: 'Publish to Store', icon: <Store className="h-4 w-4" />, onSelect: () => onPublish(product.id) }] : []),
@@ -151,6 +155,12 @@ export function ProductCard({
                 <DropdownMenuItem onClick={() => onEdit(product.id)}>
                   <Edit className="h-4 w-4 mr-2" />
                   Edit
+                </DropdownMenuItem>
+              )}
+              {onDuplicate && (
+                <DropdownMenuItem onClick={() => onDuplicate(product.id)}>
+                  <Copy className="h-4 w-4 mr-2" />
+                  Duplicate
                 </DropdownMenuItem>
               )}
               {onAddToMenu && (
