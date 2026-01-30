@@ -7493,65 +7493,45 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-## Task: Build ProductBulkImport from CSV with validation preview
+---
 
-### Completed
+## AlertsWidget Implementation - 2026-01-29
 
-#### 1. Created ProductBulkImport Component (`src/components/admin/products/ProductBulkImport.tsx`)
-- Multi-step import wizard with 4 stages: Upload, Map, Preview, Import
-- Step indicator showing progress through the wizard
-- CSV/Excel file upload with drag-and-drop support
-- Download template button for easy onboarding
+### Task: Add AlertsWidget showing unread notifications with dismiss action
 
-#### 2. File Parsing and Column Mapping
-- Uses xlsx library for parsing CSV and Excel files
-- Auto-mapping of columns based on header name similarity
-- Support for 14 product fields: name, SKU, category, prices, quantities, descriptions, etc.
-- Configurable decimal separator (dot or comma) for international support
-- Option to treat empty cells as NULL
+### Implementation:
 
-#### 3. Validation Preview System
-- Real-time validation of all records before import
-- Summary cards showing total, valid, and invalid record counts
-- Tabbed view to filter: All records, Valid only, Invalid only
-- Export validation errors report for fixing data externally
+1. **Created AlertsWidget component** (`src/components/admin/dashboard/AlertsWidget.tsx`):
+   - Displays unread/undismissed alerts from `inventory_alerts` table
+   - Shows alerts that haven't been dismissed (`dismissed_at IS NULL`) and aren't resolved
+   - Includes severity indicators (critical, warning, info) with color-coded badges
+   - Real-time updates via Supabase channel subscription
+   - Dismiss individual alerts or dismiss all at once
+   - Navigation to alerts detail page on click
+   - Skeleton loading states while fetching
+   - Empty state when no alerts
 
-#### 4. Row-Level Validation
-- Required field validation (name, SKU, category)
-- Category validation against predefined list
-- Numeric field validation with range checks
-- THC/CBD percentage validation (0-100%)
-- Price warnings when wholesale < cost
-- Detailed error messages with tooltips
+2. **Features:**
+   - TanStack Query for data fetching with proper query keys
+   - Mutations for dismiss actions with optimistic cache invalidation
+   - Toast notifications on success/failure
+   - Tenant-aware navigation using `useTenantAdminAuth` context
+   - Proper error handling and logging
+   - Accessible dismiss buttons with proper title attributes
 
-#### 5. Data Preview Table
-- Scrollable table showing row number, status, name, SKU, category, and issues
-- Visual indicators (badges) for valid/invalid status
-- Tooltips showing all errors/warnings per row
-- Truncation with full details on hover
+3. **UI Components used:**
+   - Card, Badge, Button, Skeleton from shadcn/ui
+   - Icons from lucide-react (Bell, AlertTriangle, Package, Clock, FileWarning, X, CheckCheck, ArrowRight)
+   - date-fns for relative time formatting
 
-#### 6. Bulk Import with Progress
-- Batched insert (10 records at a time) for performance
-- Progress bar showing import percentage
-- Skips invalid records automatically
-- Summary toast with success/failure counts
-- Option to download error report for failed database inserts
+4. **Exported from dashboard index:**
+   - Added export to `src/components/admin/dashboard/index.ts`
 
-#### 7. Updated ProductManagement Page (`src/pages/admin/ProductManagement.tsx`)
-- Added Import CSV button with Upload icon
-- Replaced old ProductImportDialog with new ProductBulkImport component
-- Added missing fetchProducts function for data refresh after import
+### Files Changed:
+- `src/components/admin/dashboard/AlertsWidget.tsx` (NEW)
+- `src/components/admin/dashboard/index.ts` (UPDATED - added AlertsWidget export)
 
-#### Additional Fixes
-- Fixed duplicate default export in PasswordResetPage.tsx
-- Added missing safeJsonParse export to sanitize.ts
-
-### Files Modified
-- `src/components/admin/products/ProductBulkImport.tsx` (new)
-- `src/pages/admin/ProductManagement.tsx` (updated)
-- `src/pages/auth/PasswordResetPage.tsx` (fixed pre-existing bug)
-- `src/lib/utils/sanitize.ts` (added missing export)
-
-### Build Status
-- TypeScript compilation: PASSED
-- Vite production build: PASSED
+### Notes:
+- Uses existing `inventory_alerts` table which already has `dismissed_at`, `dismissed_by`, `is_resolved`, and `severity` fields
+- Follows established widget patterns from InventoryAlertsWidget and ActivityFeedWidget
+- Widget can be integrated into any dashboard page by importing from the dashboard index
