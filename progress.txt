@@ -1,3 +1,45 @@
+## Task: Build OrderRefundModal with partial and full refund options
+
+### Completed
+
+#### Created OrderRefundModal Component (`src/components/admin/orders/OrderRefundModal.tsx`)
+- Full-featured refund modal for admin order management
+- Features:
+  - **Refund Type Selection**: Full or Partial refund with visual radio button cards
+  - **Partial Amount Input**: Validated input with dollar prefix, validates against order total
+  - **Refund Reason Dropdown**: Customer request, duplicate, fraudulent, product issue, shipping issue, other
+  - **Refund Method Selection**: Original payment, store credit, cash, check
+  - **Inventory Restoration Toggle**: Option to restore inventory for refunded items
+  - **Notes Field**: Optional notes for refund documentation
+  - **Order Summary Display**: Shows order total, current status, and item count
+  - **Refund Amount Preview**: Shows calculated refund amount
+- Follows FloraIQ patterns:
+  - Uses `useTenantAdminAuth()` for tenant context
+  - Uses TanStack Query mutation with optimistic updates
+  - Proper error handling with toast notifications
+  - Input sanitization using `sanitizeTextareaInput`
+  - Cross-panel invalidation via `invalidateOnEvent('REFUND_PROCESSED')`
+  - Loading states and disabled buttons during async operations
+
+#### Added Refund Query Keys (`src/lib/queryKeys.ts`)
+- Added `refunds` query key factory with:
+  - `refunds.all` - Base key for refund queries
+  - `refunds.lists()` - For refund list queries
+  - `refunds.list(filters)` - For filtered refund lists
+  - `refunds.details()` - For refund detail queries
+  - `refunds.detail(id)` - For specific refund details
+  - `refunds.byOrder(orderId)` - For order-specific refunds
+
+### Files Changed:
+- `src/components/admin/orders/OrderRefundModal.tsx` (new)
+- `src/lib/queryKeys.ts` (added refunds query keys)
+
+### TypeScript Verification
+- No TypeScript errors in new or modified files
+- Component follows strict TypeScript patterns with proper typing
+
+---
+
 ## Task: Connect Operations to Roles - Role Creation and Permission Matrix
 
 ### Completed
