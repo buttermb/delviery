@@ -7459,3 +7459,56 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+## Agent 3 - ProductCategorySelect with Hierarchical Categories
+
+### Task: Add ProductCategorySelect with hierarchical categories
+
+**Completed:**
+
+1. **Created useCategories hook** (`src/hooks/useCategories.ts`)
+   - Fetches categories from Supabase for a given tenant
+   - Builds hierarchical tree structure from flat category data
+   - Provides multiple data formats:
+     - `categories` - Raw flat array from database
+     - `tree` - Hierarchical CategoryNode[] with children
+     - `flattened` - Flat list with depth and path info
+     - `grouped` - Groups organized by root parent for select dropdowns
+   - Utility functions: `getCategoryById`, `getCategoryPath`, `getAncestorIds`, `getDescendantIds`
+   - Uses queryKeys factory for proper cache management
+   - Handles missing table gracefully (code 42P01)
+
+2. **Created ProductCategorySelect component** (`src/components/admin/products/ProductCategorySelect.tsx`)
+   - Hierarchical dropdown with tree structure display
+   - Expand/collapse functionality for parent categories
+   - Search within categories (filters and auto-expands matching results)
+   - Shows full category path when selected (e.g., "Flower > Indica > OG Kush")
+   - Loading, error, and empty states handled
+   - Integrates with TenantAdminAuthContext for multi-tenant support
+   - Props: value, onChange, placeholder, disabled, showPath, allowParentSelection
+
+3. **Updated ProductForm component** (`src/components/admin/products/ProductForm.tsx`)
+   - Added optional `category_id` field to ProductFormData interface
+   - Uses ProductCategorySelect when hierarchical categories exist
+   - Falls back to simple static select if no categories defined
+   - Maintains backwards compatibility with existing `category` string field
+   - When selecting a hierarchical category, sets both `category_id` and `category` (name)
+
+4. **Fixed pre-existing build issues:**
+   - Removed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
+   - Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+
+### Files Created:
+- `src/hooks/useCategories.ts`
+- `src/components/admin/products/ProductCategorySelect.tsx`
+
+### Files Modified:
+- `src/components/admin/products/ProductForm.tsx` - Integrated ProductCategorySelect
+- `src/pages/auth/PasswordResetPage.tsx` - Fixed duplicate export (pre-existing issue)
+- `src/lib/utils/sanitize.ts` - Added safeJsonParse (pre-existing issue)
+
+### Technical Notes:
+- Database already supports hierarchical categories via `parent_id` self-referential FK
+- Component gracefully degrades to static list if no categories are configured
+- Build passes with no TypeScript errors
