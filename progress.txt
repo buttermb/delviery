@@ -7459,3 +7459,41 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+# Task: Build OrdersListPage with DataTable showing all orders with pagination
+
+## Completed
+
+### Created OrdersListPage Component
+- **File**: `src/pages/admin/OrdersListPage.tsx`
+- Clean DataTable view of all orders with full pagination support
+- Features implemented:
+  - TanStack Query for data fetching with tenant context isolation
+  - DataTable component with built-in pagination (25 items per page default)
+  - Status filtering (all, pending, confirmed, preparing, in_transit, delivered, completed, cancelled)
+  - Search functionality on order number
+  - Column visibility toggle
+  - Row selection for bulk actions
+  - Order stats summary cards (Total, Pending, In Progress, Completed, Cancelled)
+  - Actions dropdown per row (View Details, Print, Generate Invoice, Cancel, Delete)
+  - Status badges with appropriate colors
+  - Source badges (Storefront, Admin, POS, Menu, API)
+  - User profile enrichment for customer names
+
+### Component Architecture
+- Uses `useTenantAdminAuth()` for tenant context (follows FloraIQ patterns)
+- Uses `queryKeys.orders.list()` for proper query key management
+- Uses `useTenantNavigate()` for tenant-aware navigation
+- Mutations for status updates and order deletion
+- Proper loading skeleton states
+- Error handling with toast notifications
+
+### Fixed Pre-existing Build Issues
+- Removed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
+- Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+
+## Build Status
+- Build passes successfully
+- No TypeScript errors related to OrdersListPage
