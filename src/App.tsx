@@ -190,6 +190,7 @@ const MenuAnalytics = lazy(() => import("./pages/admin/MenuAnalytics"));
 const MenuMigration = lazy(() => import("./pages/admin/MenuMigration").then(m => ({ default: m.MenuMigration })));
 const MenusListPage = lazy(() => import("./pages/admin/MenusListPage"));
 // const ProductManagement = lazy(() => import("./pages/admin/ProductManagement")); // Moved to InventoryHub
+const ProductDetailsPage = lazy(() => import("./pages/admin/ProductDetailsPage"));
 const ClientDetail = lazy(() => import("./pages/admin/ClientDetail"));
 const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));
 const NewWholesaleOrder = lazy(() => import("./pages/admin/NewWholesaleOrder"));
@@ -873,6 +874,7 @@ const App = () => {
                                         <Route path="orders/:orderId" element={<FeatureProtectedRoute featureId="basic-orders"><OrderDetailsPage /></FeatureProtectedRoute>} />
 
                                         <Route path="inventory-hub" element={<FeatureProtectedRoute featureId="inventory-dashboard"><InventoryHubPage /></FeatureProtectedRoute>} />
+                                        <Route path="products/:productId" element={<FeatureProtectedRoute featureId="products"><ProductDetailsPage /></FeatureProtectedRoute>} />
                                         <Route path="inventory-dashboard" element={<Navigate to="inventory-hub?tab=stock" replace />} />
                                         <Route path="inventory-monitoring" element={<Navigate to="inventory-hub?tab=monitoring" replace />} />
                                         <Route path="reports" element={<FeatureProtectedRoute featureId="reports"><ReportsPage /></FeatureProtectedRoute>} />
