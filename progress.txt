@@ -7459,3 +7459,55 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Agent 34: Build OrderActionsDropdown Component
+
+### Task
+Build OrderActionsDropdown with edit, cancel, refund, duplicate options
+
+### Implementation
+Created a new reusable dropdown menu component for order-level actions.
+
+### Features
+- **Edit Order**: Opens order editing (disabled for completed/cancelled/refunded orders)
+- **Duplicate Order**: Creates a copy of the order (always available)
+- **Refund Order**: Initiates refund process (disabled for pending/cancelled orders, hidden for already refunded)
+- **Cancel Order**: Cancels the order (disabled for completed/refunded/delivered orders, hidden for already cancelled)
+
+### Component API
+```typescript
+interface OrderActionsDropdownProps {
+  orderId: string;                          // Order identifier
+  orderStatus?: string;                     // Current status affects available actions
+  onAction: (action: OrderAction, orderId: string) => void | Promise<void>;
+  disabledActions?: OrderAction[];          // Explicitly disable specific actions
+  isLoading?: boolean;                      // Show loading state
+  loadingAction?: OrderAction;              // Which action is loading
+  trigger?: React.ReactNode;                // Custom trigger element
+  triggerClassName?: string;                // Styling for trigger
+  align?: 'start' | 'center' | 'end';       // Dropdown alignment
+  size?: 'sm' | 'default';                  // Size variant
+}
+```
+
+### Companion Hook
+Also exported `useOrderActions` hook for handling actions with loading states:
+```typescript
+const { handleAction, loadingAction, loadingOrderId, isLoading } = useOrderActions({
+  onEdit: (orderId) => navigate(`/orders/${orderId}/edit`),
+  onCancel: (orderId) => cancelOrder(orderId),
+  onRefund: (orderId) => openRefundDialog(orderId),
+  onDuplicate: (orderId) => duplicateOrder(orderId),
+});
+```
+
+### Files Changed
+- `src/components/admin/orders/OrderActionsDropdown.tsx` (NEW)
+
+### Notes
+- Follows existing FloraIQ patterns (similar to OrderRowContextMenu)
+- Uses shadcn/ui dropdown-menu components
+- Destructive actions (cancel, refund) have visual distinction with red styling
+- Smart action visibility/disabled states based on order status
+- TypeScript strict mode compliant
+- No ESLint errors (only fast-refresh warning for exported hook)
