@@ -7459,3 +7459,76 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+### Task: Add DashboardSkeleton loading state for all widgets
+
+**Completed:**
+
+1. **Created comprehensive DashboardSkeleton component** (`src/components/loading/DashboardSkeleton.tsx`)
+   - A new file with 490+ lines of widget-specific skeleton components
+   - Matches the widget types from `useDashboardWidgets.ts`
+   - Follows existing FloraIQ skeleton patterns and design system
+
+2. **Widget-specific skeleton components created:**
+   - `QuickActionsSkeleton` - Grid of action button placeholders
+   - `RealtimeSalesSkeleton` - Stats grid with live badge placeholder
+   - `StorefrontSummarySkeleton` - List of storefront summary items
+   - `InventoryForecastSkeleton` - Summary stats + chart + legend placeholders
+   - `RevenueForecastSkeleton` - KPI cards + chart placeholder
+   - `RecentOrdersSkeleton` - Order list items with avatars and badges
+
+3. **Additional utility skeleton components:**
+   - `DashboardSkeleton` - Full dashboard layout skeleton
+   - `DashboardHeaderSkeleton` - Header with breadcrumbs, title, action button
+   - `StatCardSkeleton` - Individual stat card (matches existing StatCard)
+   - `StatCardWithTrendSkeleton` - Stat card with trend indicator
+   - `SectionHeaderSkeleton` - Section headers (Revenue, Orders, etc.)
+   - `StatsSectionSkeleton` - Full section with header + card grid
+   - `ChartSkeleton` - Area/bar chart placeholder
+   - `PieChartSkeleton` - Pie/donut chart with legend
+   - `MobileStatsCarouselSkeleton` - Mobile-optimized horizontal scroll skeleton
+   - `DashboardHubSkeleton` - Matches DashboardHubPage layout exactly
+   - `WidgetSkeleton` - Renders appropriate skeleton by widget ID
+   - `WidgetListSkeleton` - Renders multiple widget skeletons
+
+4. **Updated SkeletonDashboard.tsx** (`src/components/loading/SkeletonDashboard.tsx`)
+   - Added re-exports for all new skeleton components
+   - Maintained backward compatibility with existing SkeletonDashboard
+   - Added accessibility attributes (role="status", aria-label)
+   - Updated array patterns from [...Array(n)] to Array.from({ length: n })
+
+### Files Changed:
+- `src/components/loading/DashboardSkeleton.tsx` (NEW - 490+ lines)
+- `src/components/loading/SkeletonDashboard.tsx` (UPDATED - re-exports)
+
+### Usage Examples:
+
+```tsx
+// Full dashboard skeleton
+import { DashboardSkeleton } from '@/components/loading/SkeletonDashboard';
+<DashboardSkeleton />
+
+// Specific widget skeletons
+import { QuickActionsSkeleton, RecentOrdersSkeleton } from '@/components/loading/SkeletonDashboard';
+<QuickActionsSkeleton />
+<RecentOrdersSkeleton count={5} />
+
+// Widget by ID (for dynamic widget rendering)
+import { WidgetSkeleton } from '@/components/loading/SkeletonDashboard';
+<WidgetSkeleton widgetId="inventory_forecast" />
+
+// Multiple widgets
+import { WidgetListSkeleton } from '@/components/loading/SkeletonDashboard';
+<WidgetListSkeleton widgetIds={['quick_actions', 'realtime_sales', 'recent_orders']} />
+
+// Dashboard hub page skeleton
+import { DashboardHubSkeleton } from '@/components/loading/SkeletonDashboard';
+<DashboardHubSkeleton />
+```
+
+### Notes:
+- TypeScript compilation passes
+- Build error about PasswordResetPage default export is pre-existing and unrelated
+- All skeleton components follow FloraIQ patterns with proper accessibility attributes
