@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,10 +13,10 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
-import { Loader2, Package, DollarSign, Image as ImageIcon, FileText, Barcode } from "lucide-react";
+import { Loader2, Package, DollarSign, Image as ImageIcon, FileText, Barcode, Scale } from "lucide-react";
 import { toast } from "sonner";
+import { ProductVariantsManager, type ProductVariantsData } from "./ProductVariantsManager";
 
 // Define the shape of form data
 export interface ProductFormData {
@@ -26,6 +26,7 @@ export interface ProductFormData {
     vendor_name: string;
     strain_name: string;
     strain_type: string;
+    strain_lineage: string;
     thc_percent: string;
     cbd_percent: string;
     batch_number: string;
@@ -39,6 +40,10 @@ export interface ProductFormData {
     metrc_retail_id: string;
     exclude_from_discounts: boolean;
     minimum_price: string;
+    // Variant fields
+    prices: Record<string, number>;
+    weight_grams: string;
+    terpenes: Record<string, number>;
 }
 
 interface ProductFormProps {
@@ -57,6 +62,7 @@ const DEFAULT_FORM_DATA: ProductFormData = {
     vendor_name: "",
     strain_name: "",
     strain_type: "",
+    strain_lineage: "",
     thc_percent: "",
     cbd_percent: "",
     batch_number: "",
@@ -70,6 +76,10 @@ const DEFAULT_FORM_DATA: ProductFormData = {
     metrc_retail_id: "",
     exclude_from_discounts: false,
     minimum_price: "",
+    // Variant defaults
+    prices: {},
+    weight_grams: "",
+    terpenes: {},
 };
 
 export function ProductForm({
@@ -150,12 +160,42 @@ export function ProductForm({
         return (((priceNum - costNum) / priceNum) * 100).toFixed(1);
     };
 
+    // Handler for variant data changes from ProductVariantsManager
+    const handleVariantDataChange = useCallback((variantData: Partial<ProductVariantsData>) => {
+        setFormData(prev => ({
+            ...prev,
+            ...(variantData.prices !== undefined && { prices: variantData.prices }),
+            ...(variantData.weight_grams !== undefined && { weight_grams: variantData.weight_grams?.toString() ?? "" }),
+            ...(variantData.strain_name !== undefined && { strain_name: variantData.strain_name }),
+            ...(variantData.strain_type !== undefined && { strain_type: variantData.strain_type }),
+            ...(variantData.strain_lineage !== undefined && { strain_lineage: variantData.strain_lineage }),
+            ...(variantData.thc_percent !== undefined && { thc_percent: variantData.thc_percent?.toString() ?? "" }),
+            ...(variantData.cbd_percent !== undefined && { cbd_percent: variantData.cbd_percent?.toString() ?? "" }),
+            ...(variantData.terpenes !== undefined && { terpenes: variantData.terpenes }),
+        }));
+    }, []);
+
+    // Convert form data to variant data for the manager
+    const variantData: Partial<ProductVariantsData> = {
+        prices: formData.prices || {},
+        weight_grams: formData.weight_grams ? parseFloat(formData.weight_grams) : null,
+        strain_name: formData.strain_name,
+        strain_type: formData.strain_type,
+        strain_lineage: formData.strain_lineage,
+        thc_percent: formData.thc_percent ? parseFloat(formData.thc_percent) : null,
+        cbd_percent: formData.cbd_percent ? parseFloat(formData.cbd_percent) : null,
+        terpenes: formData.terpenes || {},
+    };
+
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:w-[400px]">
+                <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 lg:w-[500px]">
                     <TabsTrigger value="details">
                         <FileText className="h-4 w-4 mr-2 hidden sm:block" /> Details
+                    </TabsTrigger>
+                    <TabsTrigger value="variants">
+                        <Scale className="h-4 w-4 mr-2 hidden sm:block" /> Variants
                     </TabsTrigger>
                     <TabsTrigger value="pricing">
                         <DollarSign className="h-4 w-4 mr-2 hidden sm:block" /> Pricing
@@ -252,6 +292,15 @@ export function ProductForm({
                                 />
                             </div>
                         </div>
+                    </TabsContent>
+
+                    {/* Variants Tab */}
+                    <TabsContent value="variants" className="space-y-4">
+                        <ProductVariantsManager
+                            data={variantData}
+                            onChange={handleVariantDataChange}
+                            mode="both"
+                        />
                     </TabsContent>
 
                     {/* Pricing Tab */}
