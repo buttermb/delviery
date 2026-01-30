@@ -767,10 +767,17 @@ export const queryKeys = {
       [...queryKeys.customerInvoices.all, 'stats', tenantId] as const,
   },
 
-  // Alerts
-  alerts: {
-    all: ['alerts'] as const,
-    dashboard: (tenantId: string) => [...queryKeys.alerts.all, 'dashboard', tenantId] as const,
-    predictive: (tenantId: string) => [...queryKeys.alerts.all, 'predictive', tenantId] as const,
+  // Recurring Orders (subscription-style repeat orders)
+  recurringOrders: {
+    all: ['recurring-orders'] as const,
+    lists: () => [...queryKeys.recurringOrders.all, 'list'] as const,
+    list: (tenantId?: string, filters?: Record<string, unknown>) =>
+      [...queryKeys.recurringOrders.lists(), { tenantId, ...filters }] as const,
+    details: () => [...queryKeys.recurringOrders.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.recurringOrders.details(), id] as const,
+    byClient: (clientId: string) =>
+      [...queryKeys.recurringOrders.all, 'client', clientId] as const,
+    upcoming: (tenantId?: string) =>
+      [...queryKeys.recurringOrders.all, 'upcoming', tenantId] as const,
   },
 } as const;

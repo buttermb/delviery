@@ -7533,37 +7533,90 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: Add OrderPaymentMethodBadge showing cash card invoice crypto
+## Task: Build RecurringOrderSetup for subscription-style repeat orders
 
 ### Completed
 
-Created a new `OrderPaymentMethodBadge` component that displays payment method indicators for orders.
+#### 1. Created Query Keys for Recurring Orders (`src/lib/queryKeys.ts`)
+- Added `recurringOrders` query key factory with:
+  - `recurringOrders.all` - Base key for all recurring order queries
+  - `recurringOrders.lists()` - For recurring order list queries
+  - `recurringOrders.list(tenantId, filters)` - For tenant-specific recurring order lists
+  - `recurringOrders.details()` - For recurring order detail queries
+  - `recurringOrders.detail(id)` - For specific recurring order details
+  - `recurringOrders.byClient(clientId)` - For client-specific recurring orders
+  - `recurringOrders.upcoming(tenantId)` - For upcoming recurring orders
 
-### Files Changed:
-- `src/components/admin/orders/OrderPaymentMethodBadge.tsx` (NEW)
+#### 2. Created useRecurringOrders Hook (`src/hooks/useRecurringOrders.ts`)
+- Full-featured hook for managing recurring order schedules:
+  - **Types**: `RecurringOrderItem`, `RecurringOrderFrequency`, `RecurringOrderSchedule`, `CreateRecurringOrderInput`, `UpdateRecurringOrderInput`
+  - **Query**: Fetches all recurring order schedules with client and runner data joined
+  - **Mutations**:
+    - `createSchedule` - Create new recurring order schedule
+    - `updateSchedule` - Update existing schedule
+    - `toggleActive` - Pause/resume a schedule
+    - `deleteSchedule` - Remove a schedule
+    - `triggerOrderNow` - Manually trigger an order from a schedule
+  - **Computed Values**:
+    - `activeSchedules` - Filter for active schedules only
+    - `upcomingCount` - Count of schedules due within 7 days
+    - `totalMonthlyValue` - Estimated monthly revenue from all active schedules
+- Uses TanStack Query with proper query key patterns
+- Includes toast notifications for success/error states
+- Proper error logging with component context
 
-### Component Features:
-- **Payment Methods Supported**: cash, card, credit, debit, invoice, crypto (with fallback for unknown methods)
-- **Visual Design**:
-  - Cash: Green (emerald) with Banknote icon
-  - Card/Credit/Debit: Blue with CreditCard icon
-  - Invoice: Purple with FileText icon
-  - Crypto: Amber with Bitcoin icon
-- **Configurable Props**:
-  - `paymentMethod`: The payment method to display (string, nullable)
-  - `size`: 'sm' | 'default' | 'lg' for different size variations
-  - `showIcon`: Boolean to show/hide the icon
-  - `className`: Additional CSS classes for customization
-- **Dark mode support** with appropriate color variations
-- **Follows existing badge patterns** from MenuSourceBadge and OrderStatusBadge
-- **Named export only** per project conventions
+#### 3. Created RecurringOrderSetup Component (`src/components/admin/recurring-orders/RecurringOrderSetup.tsx`)
+- Comprehensive form for creating/editing recurring order schedules:
+  - **Basic Info Section**: Schedule name, client selection with outstanding balance display
+  - **Schedule Settings Section**:
+    - Frequency options: Weekly, Bi-Weekly, Monthly, Quarterly
+    - First order date picker
+    - Day of week preference (for weekly/biweekly)
+    - Day of month preference (for monthly/quarterly)
+  - **Order Items Section**:
+    - Dynamic product list with add/remove functionality
+    - Product selection from wholesale inventory
+    - Quantity and price inputs per item
+    - Running total calculation
+  - **Delivery & Automation Section**:
+    - Delivery address with auto-fill from client
+    - Delivery notes
+    - Auto-confirm orders toggle
+    - Auto-assign runner toggle with preferred runner selection
+  - **Summary Card**: Natural language preview of the schedule configuration
+- Uses SafeModal for unsaved changes protection
+- Zod validation schema for form data
+- React Hook Form integration
+- Supports both create and edit modes
 
-### Usage Example:
-```tsx
-import { OrderPaymentMethodBadge } from '@/components/admin/orders/OrderPaymentMethodBadge';
+#### 4. Created RecurringOrdersList Component (`src/components/admin/recurring-orders/RecurringOrdersList.tsx`)
+- Dashboard-style list view for recurring order schedules:
+  - **Summary Stats** (when not filtered by client):
+    - Active schedules count
+    - Schedules due this week
+    - Estimated monthly value
+  - **Schedule Cards** showing:
+    - Schedule name and client
+    - Frequency and next order date with status badges
+    - Product count and order value
+    - Product preview badges
+    - Automation status badges (auto-confirm, auto-assign)
+  - **Actions Menu**:
+    - Create order now (manual trigger)
+    - Edit schedule
+    - Pause/Resume schedule
+    - Delete schedule with confirmation
+  - **Empty State**: Helpful message with create button
+- Supports filtering by client ID
+- Compact mode for embedded usage
 
-<OrderPaymentMethodBadge paymentMethod="cash" />
-<OrderPaymentMethodBadge paymentMethod="card" size="lg" />
-<OrderPaymentMethodBadge paymentMethod="invoice" showIcon={false} />
-<OrderPaymentMethodBadge paymentMethod="crypto" />
-```
+#### 5. Created Index Export (`src/components/admin/recurring-orders/index.ts`)
+- Clean exports for `RecurringOrderSetup` and `RecurringOrdersList`
+
+### Additional Fixes (Pre-existing Issues)
+- Fixed duplicate `export default` in `src/pages/auth/PasswordResetPage.tsx`
+- Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+
+### Build Status
+- ✅ TypeScript compilation successful
+- ✅ Production build passes
