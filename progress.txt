@@ -7530,62 +7530,46 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: Build OrderTotalsCard showing subtotal tax discount total
+### Task: Add OrderNotesSection with internal notes and customer notes tabs
 
-### Implementation:
-Created a new reusable OrderTotalsCard component for displaying order pricing breakdowns.
+**Completed:**
 
-### Component Location:
-- `src/components/admin/orders/OrderTotalsCard.tsx`
+1. **Created OrderNotesSection component** (`src/components/admin/orders/OrderNotesSection.tsx`)
+   - Tabbed interface with "Internal" and "Customer" tabs
+   - Internal notes: Only visible to staff, with lock icon indicator
+   - Customer notes: Visible to customers, with user icon indicator
+   - Inline editing with save/cancel functionality
+   - Loading states with skeleton UI
+   - Empty states with helpful messages
+   - Badge indicators showing when notes exist
+   - Supports multiple table types (marketplace_orders, wholesale_orders, menu_orders)
+   - Configurable field names for different database schemas
+   - Query invalidation support for TanStack Query integration
 
-### Features:
-1. **Displays key order pricing fields:**
-   - Subtotal
-   - Tax (with optional tax rate percentage display)
-   - Discount (only shown when > 0, with optional custom label)
-   - Total (highlighted as primary color)
+2. **Created barrel export** (`src/components/admin/orders/index.ts`)
+   - Exports OrderNotesSection component and its TypeScript interface
+   - Includes existing MenuSourceBadge and OrderBulkStatusConfirmDialog exports
 
-2. **Two display modes:**
-   - **Full mode** (default): Card with header, icons, and full styling
-   - **Compact mode**: Minimal layout for embedding in other components
-
-3. **Props interface:**
-   - `subtotal: number` - Pre-tax amount
-   - `tax: number` - Tax amount
-   - `discount?: number` - Discount amount (optional, defaults to 0)
-   - `total: number` - Final total
-   - `taxRate?: number` - Optional tax rate for display (e.g., 0.085 for 8.5%)
-   - `discountLabel?: string` - Optional custom label for discount line
-   - `className?: string` - Additional CSS classes
-   - `compact?: boolean` - Use compact layout (default: false)
-
-4. **Styling:**
-   - Uses shadcn/ui Card, Separator components
-   - Lucide icons (Receipt, Percent, Tag)
-   - Green color for discount (indicates savings)
-   - Primary color for total amount
-   - Dark mode support
-
-### Usage Examples:
+### Component Usage Example:
 ```tsx
-// Full card mode
-<OrderTotalsCard
-  subtotal={120.00}
-  tax={10.20}
-  discount={15.00}
-  total={115.20}
-  taxRate={0.085}
-  discountLabel="Promo Code: SAVE15"
-/>
+import { OrderNotesSection } from '@/components/admin/orders';
 
-// Compact mode for embedding
-<OrderTotalsCard
-  subtotal={120.00}
-  tax={10.20}
-  total={130.20}
-  compact
+<OrderNotesSection
+  orderId={order.id}
+  internalNotes={order.internal_notes}
+  customerNotes={order.customer_notes}
+  tableName="marketplace_orders"
+  queryKeysToInvalidate={[['order-detail', orderId]]}
+  additionalFilter={{ field: 'tenant_id', value: tenant.id }}
 />
 ```
 
 ### Files Changed:
-- `src/components/admin/orders/OrderTotalsCard.tsx` (NEW)
+- `src/components/admin/orders/OrderNotesSection.tsx` (NEW)
+- `src/components/admin/orders/index.ts` (NEW)
+
+### Notes:
+- TypeScript type checking passes successfully
+- Component follows existing codebase patterns (useTenantAdminAuth, useMutation, toast notifications)
+- Uses shadcn/ui components (Card, Tabs, Button, Textarea, Badge, Skeleton)
+- Pre-existing build error in PasswordResetPage.tsx is unrelated to these changes
