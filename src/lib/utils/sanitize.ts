@@ -211,3 +211,24 @@ export function sanitizeUrlInput(url: string): string {
     return trimmed.replace(/[<>"']/g, '');
   }
 }
+
+/**
+ * Safely parses JSON with optional type validation.
+ * Returns null if parsing fails or validation fails.
+ * @param json - The JSON string to parse
+ * @param validator - Optional type guard to validate the parsed data
+ */
+export function safeJsonParse<T>(
+  json: string,
+  validator?: (data: unknown) => data is T
+): T | null {
+  try {
+    const parsed = JSON.parse(json);
+    if (validator && !validator(parsed)) {
+      return null;
+    }
+    return parsed as T;
+  } catch {
+    return null;
+  }
+}

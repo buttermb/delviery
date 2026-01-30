@@ -353,6 +353,3 @@ export default function PasswordResetPage() {
     </div>
   );
 }
-
-// Default export for lazy loading compatibility
-export default PasswordResetPage;
