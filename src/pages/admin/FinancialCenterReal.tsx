@@ -10,6 +10,7 @@ import { useState } from "react";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useExpenseSummary } from "@/hooks/useFinancialData";
+import { RealtimeRevenueChart } from "@/components/admin/analytics/RealtimeRevenueChart";
 
 export default function FinancialCenterReal() {
   const navigate = useNavigate();
@@ -129,6 +130,9 @@ export default function FinancialCenterReal() {
           </Card>
         </div>
       </div>
+
+      {/* Real-time Revenue Chart */}
+      <RealtimeRevenueChart />
 
       {/* Cash Flow */}
       <Card className="p-6">

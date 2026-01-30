@@ -17,7 +17,7 @@ import { ActivityFeedWidget } from './dashboard/ActivityFeedWidget';
 import { QuickActionsBar } from './dashboard/QuickActionsBar';
 import { LocationMapWidget } from './dashboard/LocationMapWidget';
 import { PendingTransfersWidget } from './dashboard/PendingTransfersWidget';
-import { RevenueChartWidget } from './dashboard/RevenueChartWidget';
+import { RealtimeRevenueChart } from './analytics/RealtimeRevenueChart';
 import { RevenuePredictionWidget } from './dashboard/RevenuePredictionWidget';
 import { TopProductsWidget } from './dashboard/TopProductsWidget';
 import { AutoReorderSuggestionsWidget } from './dashboard/AutoReorderSuggestionsWidget';
@@ -209,7 +209,7 @@ export function ModernDashboard() {
 
       {/* Additional Widgets Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <RevenueChartWidget />
+        <RealtimeRevenueChart />
         <TopProductsWidget />
       </div>
 
