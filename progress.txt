@@ -7459,3 +7459,40 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+## Task: Add OrderPaymentMethodBadge showing cash card invoice crypto
+
+### Completed
+
+Created a new `OrderPaymentMethodBadge` component that displays payment method indicators for orders.
+
+### Files Changed:
+- `src/components/admin/orders/OrderPaymentMethodBadge.tsx` (NEW)
+
+### Component Features:
+- **Payment Methods Supported**: cash, card, credit, debit, invoice, crypto (with fallback for unknown methods)
+- **Visual Design**:
+  - Cash: Green (emerald) with Banknote icon
+  - Card/Credit/Debit: Blue with CreditCard icon
+  - Invoice: Purple with FileText icon
+  - Crypto: Amber with Bitcoin icon
+- **Configurable Props**:
+  - `paymentMethod`: The payment method to display (string, nullable)
+  - `size`: 'sm' | 'default' | 'lg' for different size variations
+  - `showIcon`: Boolean to show/hide the icon
+  - `className`: Additional CSS classes for customization
+- **Dark mode support** with appropriate color variations
+- **Follows existing badge patterns** from MenuSourceBadge and OrderStatusBadge
+- **Named export only** per project conventions
+
+### Usage Example:
+```tsx
+import { OrderPaymentMethodBadge } from '@/components/admin/orders/OrderPaymentMethodBadge';
+
+<OrderPaymentMethodBadge paymentMethod="cash" />
+<OrderPaymentMethodBadge paymentMethod="card" size="lg" />
+<OrderPaymentMethodBadge paymentMethod="invoice" showIcon={false} />
+<OrderPaymentMethodBadge paymentMethod="crypto" />
+```
