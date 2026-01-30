@@ -115,10 +115,10 @@ tasks:
     completed: true
   - title: Add OrderSearchBar with autocomplete for order number customer phone
     parallel_group: 4
-    completed: false
+    completed: true
   - title: Build B2BOrdersTab filtering orders by business customers only
     parallel_group: 4
-    completed: false
+    completed: true
   - title: Add StoreOrdersTab showing orders from storefront
     parallel_group: 5
     completed: false

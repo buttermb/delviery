@@ -7482,52 +7482,64 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
 
----
-
-## Task: Build B2BOrdersTab filtering orders by business customers only
+## Task: Add StoreOrdersTab showing orders from storefront
 
 ### Completed
 
-#### 1. Created B2BOrdersTab Component (`src/components/admin/orders/B2BOrdersTab.tsx`)
-- Fetches wholesale orders with business customer data from `wholesale_orders` table
-- Includes related `wholesale_clients` data (business_name, contact_name, phone, email, client_type, address)
-- Includes order items from `wholesale_order_items`
+Created a new **StoreOrdersTab** component that displays storefront orders. This component can be used as a reusable tab in store management pages.
 
-#### 2. Features Implemented
-- **Stats Dashboard**: Shows total orders, pending, in transit, delivered, unpaid, and total revenue
-- **Filtering**: 
-  - Search by order #, business name, contact name, email, or phone
-  - Filter by order status (pending, confirmed, in_transit, delivered, cancelled)
-  - Filter by payment status (unpaid, partial, paid)
-  - Date range filter with presets
-- **Responsive Table**: 
-  - Desktop view with full details and checkbox selection
-  - Mobile-optimized card view
-  - Business customer info prominently displayed (Building2 icon, business name, contact, client type badge)
-- **Actions**: View order details, row click navigation, bulk selection
-- **Empty States**: Different messages for filtered vs no orders
+### Features:
+1. **Order Display:**
+   - Shows all orders from the storefront
+   - Displays order number, customer info, items count, total, payment status, order status, and date
+   - Supports search by order number, customer name, email, or phone
 
-#### 3. Data Model
-- Orders are from `wholesale_orders` which represents B2B orders to business customers
-- Each order has a `client_id` referencing `wholesale_clients` (the business customer)
-- Wholesale clients have: business_name, contact_name, client_type, phone, email, address
+2. **Status Management:**
+   - Quick filter buttons for filtering by order status
+   - Inline status change dropdown on each order row
+   - Status badges with color-coded indicators
 
-#### 4. Patterns Used
-- TanStack Query with `queryKeys.wholesaleOrders.list()` factory
-- `useTenantAdminAuth` for tenant context
-- `useTenantNavigate` for tenant-aware navigation
-- Standard FloraIQ component patterns (ResponsiveTable, SearchInput, Cards, Badges)
-- Proper error handling with logger
-- Date filtering with date-fns
+3. **Statistics Dashboard:**
+   - Pending orders count
+   - In-progress orders count
+   - Delivered orders count
+   - Total revenue calculation
 
-### Files Changed
-- `src/components/admin/orders/B2BOrdersTab.tsx` (NEW)
+4. **Order Details Sheet:**
+   - Customer information (name, email, phone)
+   - Delivery address and notes
+   - Order items with quantities and prices
+   - Order totals (subtotal, discounts, delivery fee, tips, total)
+   - Payment method and status
+   - Tracking link for customers
 
-### Usage
+### Props:
+- `storeId` (optional) - If not provided, fetches store by tenant ID
+- `showHeader` (optional) - Whether to show the header section (default: true)
+- `maxHeight` (optional) - Max height for the orders table scroll area
+
+### File Created:
+- `src/pages/admin/storefront/StoreOrdersTab.tsx`
+
+### Usage Example:
 ```tsx
-import { B2BOrdersTab } from '@/components/admin/orders/B2BOrdersTab';
+import { StoreOrdersTab } from '@/pages/admin/storefront/StoreOrdersTab';
 
-// In a page or tab
-<B2BOrdersTab onOrderSelect={(order) => handleOrderClick(order)} />
+// Basic usage
+<StoreOrdersTab />
+
+// With specific store ID
+<StoreOrdersTab storeId="store-uuid-here" />
+
+// Without header
+<StoreOrdersTab showHeader={false} />
+
+// With max height
+<StoreOrdersTab maxHeight="500px" />
 ```
+
+### Notes:
+- Uses the same patterns as existing StorefrontOrders component
+- Queries the `marketplace_orders` table filtered by `seller_profile_id`
+- Follows FloraIQ project conventions (named exports, no default exports as the primary export, TanStack Query, etc.)
 
