@@ -7459,3 +7459,39 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Agent 76 - Low Stock Widget Implementation
+
+### Task: Add LowStockWidget displaying products below threshold with reorder button
+
+**Completed:**
+
+1. **Created LowStockWidget component** (`src/components/admin/dashboard/LowStockWidget.tsx`)
+   - Uses the existing `useLowStockAlerts` hook for data fetching
+   - Displays products below their low stock threshold
+   - Shows alert levels: Out of Stock, Critical, Warning (with color-coded badges)
+   - Shows current quantity vs threshold for each product
+   - Includes "Reorder" button that creates a purchase order
+   - Loading state with skeleton placeholders
+   - Empty state when no low stock products exist
+   - "View All Inventory" link at the bottom
+
+2. **Widget Features:**
+   - Displays up to 5 products, prioritized by severity (out of stock > critical > warning)
+   - Reorder button has loading state during async operation
+   - Suggested order quantity: 2x threshold minus current stock
+   - Uses tenant-aware navigation for the "View All Inventory" button
+   - Follows existing widget patterns (Card wrapper, consistent styling)
+   - Error handling with toast notifications
+
+3. **Integrated widget into ModernDashboard:**
+   - Added import for LowStockWidget
+   - Placed in the sidebar widgets section between InventoryAlertsWidget and AutoReorderSuggestionsWidget
+
+### Files Changed:
+- `src/components/admin/dashboard/LowStockWidget.tsx` (NEW)
+- `src/components/admin/ModernDashboard.tsx` - Added import and widget to layout
+
+### Notes:
+- Pre-existing build error in PasswordResetPage.tsx (duplicate default export) is unrelated to these changes
+- LowStockWidget.tsx passes ESLint with no errors
