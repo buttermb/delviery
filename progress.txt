@@ -7460,46 +7460,69 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-## Task: Add ProductDuplicateButton creating copy with new SKU
+---
 
-### What was done:
+## Add TeamActivityFeed showing recent actions by team members
 
-1. **Created ProductDuplicateButton component** (`src/components/admin/products/ProductDuplicateButton.tsx`)
-   - Reusable button component that can be used as a standalone button or dropdown menu item
-   - Includes loading state with spinner animation
-   - Uses TanStack Query mutation for async handling
+### Summary:
+Created a new TeamActivityFeed component that displays recent actions performed by team members in a timeline format with real-time updates.
 
-2. **Created useProductDuplicate hook** (`src/hooks/useProductDuplicate.ts`)
-   - Reusable hook for product duplication logic
-   - Generates unique SKU for duplicated products (appends -COPY or -COPY-N)
-   - Checks SKU uniqueness against tenant's existing products
-   - Sets initial quantity to 0 for duplicated products
-   - Clears batch_number since it should be unique
-   - Appends "(Copy)" to the product name
+### Implementation Details:
 
-3. **Updated ProductCard component** (`src/components/admin/ProductCard.tsx`)
-   - Added `onDuplicate` prop to the interface
-   - Added Copy icon import from lucide-react
-   - Added Duplicate option to dropdown menu
-   - Added Duplicate option to long-press menu for mobile
+1. **Added team query keys to queryKeys.ts:**
+   - Added `team` section with `members`, `invitations`, and `activity` subsections
+   - Follows existing queryKeys factory pattern for type-safe query keys
 
-4. **Updated ProductManagement page** (`src/pages/admin/ProductManagement.tsx`)
-   - Imported useProductDuplicate hook and ProductDuplicateButton
-   - Added Copy icon import
-   - Integrated useProductDuplicate hook with state update callback
-   - Added ProductDuplicateButton to table view dropdown menu
-   - Added onDuplicate handler to both grid view and mobile ProductCard instances
+2. **Created useTeamActivity hook (`src/hooks/useTeamActivity.ts`):**
+   - Fetches activity logs filtered to only team member actions (user_id not null)
+   - Enriches activities with team member info from tenant_users table
+   - Supports filtering by category and limit
+   - Implements real-time updates via Supabase realtime subscription
+   - Handles errors gracefully including table-not-found scenarios
 
-### Files created:
-- `src/components/admin/products/ProductDuplicateButton.tsx`
-- `src/hooks/useProductDuplicate.ts`
+3. **Created TeamActivityFeed component (`src/components/admin/TeamActivityFeed.tsx`):**
+   - Displays team activity in a grouped timeline (by date)
+   - Shows team member avatar, name, role, and action details
+   - Includes category icons with color coding (order, inventory, payment, CRM, etc.)
+   - Features:
+     - Live badge indicator
+     - Category filter dropdown
+     - Manual refresh button
+     - Grouped by date with sticky headers
+     - Hover effects with relative timestamps
+     - Loading skeletons
+     - Empty state with helpful messaging
+     - Error handling with retry button
+   - Props:
+     - `limit`: Number of activities to fetch (default: 20)
+     - `maxHeight`: Scrollable area height (default: 500px)
+     - `showFilters`: Toggle category filter (default: true)
+     - `showHeader`: Toggle card header (default: true)
+     - `className`: Additional CSS classes
 
-### Files modified:
-- `src/components/admin/ProductCard.tsx`
-- `src/pages/admin/ProductManagement.tsx`
+### Files Changed:
+- `src/lib/queryKeys.ts` - Added team query keys
+- `src/hooks/useTeamActivity.ts` (NEW) - Hook for fetching team activity
+- `src/components/admin/TeamActivityFeed.tsx` (NEW) - Team activity feed component
 
-### SKU Generation Logic:
-- If original product has no SKU: generates `COPY-{timestamp}`
-- If original product has SKU: generates `{originalSku}-COPY`
-- If SKU already exists: tries `{baseSku}-1`, `{baseSku}-2`, etc.
-- Falls back to timestamp if too many copies exist
+### Usage Example:
+```tsx
+import { TeamActivityFeed } from '@/components/admin/TeamActivityFeed';
+
+// Basic usage
+<TeamActivityFeed />
+
+// With customization
+<TeamActivityFeed 
+  limit={30} 
+  maxHeight="600px" 
+  showFilters={true}
+/>
+```
+
+### Notes:
+- TypeScript type checking passes successfully
+- ESLint validation passes
+- Component follows existing FloraIQ admin panel patterns
+- Uses shadcn/ui components (Card, Badge, Button, Avatar, Select, ScrollArea, Skeleton)
+- Integrates with existing activity_logs table and tenant_users table
