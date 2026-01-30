@@ -188,6 +188,7 @@ const DisposableMenus = lazy(() => import("./pages/admin/DisposableMenus"));
 const DisposableMenuAnalytics = lazy(() => import("./pages/admin/DisposableMenuAnalytics"));
 const MenuAnalytics = lazy(() => import("./pages/admin/MenuAnalytics"));
 const MenuMigration = lazy(() => import("./pages/admin/MenuMigration").then(m => ({ default: m.MenuMigration })));
+const MenusListPage = lazy(() => import("./pages/admin/MenusListPage"));
 // const ProductManagement = lazy(() => import("./pages/admin/ProductManagement")); // Moved to InventoryHub
 const ClientDetail = lazy(() => import("./pages/admin/ClientDetail"));
 const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));
@@ -843,6 +844,7 @@ const App = () => {
                                         <Route path="analytics-hub" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsHubPage /></FeatureProtectedRoute>} />
                                         <Route path="analytics/comprehensive" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="disposable-menus" element={<FeatureProtectedRoute featureId="disposable-menus"><DisposableMenus /></FeatureProtectedRoute>} />
+                                        <Route path="menus" element={<FeatureProtectedRoute featureId="disposable-menus"><MenusListPage /></FeatureProtectedRoute>} />
                                         <Route path="menu-migration" element={<FeatureProtectedRoute featureId="menu-migration"><MenuMigration /></FeatureProtectedRoute>} />
                                         <Route path="orders" element={<FeatureProtectedRoute featureId="basic-orders"><OrdersHubPage /></FeatureProtectedRoute>} />
 

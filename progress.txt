@@ -7459,3 +7459,32 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Task: Build MenusListPage showing all product menus
+
+### Completed:
+1. Created MenusListPage component (src/pages/admin/MenusListPage.tsx)
+   - Shows all product menus with filtering by status (all/active/soft_burned/hard_burned)
+   - Search functionality by menu name and description
+   - Stats cards showing: Active Menus, Total Views, Total Orders, Total Revenue
+   - Grid/List view toggle with responsive design
+   - Pagination using StandardPagination component
+   - Uses existing MenuCard component for menu display
+   - Create Menu button with CreateMenuDialog
+   - Mobile-friendly responsive layout
+
+2. Added routing in App.tsx
+   - Added lazy import for MenusListPage
+   - Added route at /menus under tenant admin (feature-protected with disposable-menus)
+
+3. Fixed pre-existing build errors:
+   - Removed duplicate default export in PasswordResetPage.tsx
+   - Added missing safeJsonParse export to src/lib/utils/sanitize.ts
+
+### Files Modified:
+- src/pages/admin/MenusListPage.tsx (new)
+- src/App.tsx (routing changes)
+- src/pages/auth/PasswordResetPage.tsx (bugfix)
+- src/lib/utils/sanitize.ts (bugfix)
+
+### Build Status: SUCCESS

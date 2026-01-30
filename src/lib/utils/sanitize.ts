@@ -211,3 +211,21 @@ export function sanitizeUrlInput(url: string): string {
     return trimmed.replace(/[<>"']/g, '');
   }
 }
+
+/**
+ * Safely parse JSON with validation
+ */
+export function safeJsonParse<T>(
+  json: string,
+  validator?: (data: unknown) => data is T
+): T | null {
+  try {
+    const parsed = JSON.parse(json);
+    if (validator && !validator(parsed)) {
+      return null;
+    }
+    return parsed as T;
+  } catch {
+    return null;
+  }
+}
