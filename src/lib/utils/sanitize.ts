@@ -226,22 +226,19 @@ export function sanitizeUrlInput(url: string): string {
 }
 
 /**
- * Strips all HTML tags from a string, returning plain text.
+ * Safely parse JSON with validation
  */
-export function stripHtml(html: string): string {
-  if (!html) return '';
-  return html.replace(/<[^>]*>/g, '');
-}
-
-/**
- * Safely parse JSON with error handling.
- * Returns the default value if parsing fails.
- */
-export function safeJsonParse<T>(json: string | null | undefined, defaultValue: T): T {
-  if (!json) return defaultValue;
+export function safeJsonParse<T>(
+  json: string,
+  validator?: (data: unknown) => data is T
+): T | null {
   try {
-    return JSON.parse(json) as T;
+    const parsed = JSON.parse(json);
+    if (validator && !validator(parsed)) {
+      return null;
+    }
+    return parsed as T;
   } catch {
-    return defaultValue;
+    return null;
   }
 }
