@@ -86,7 +86,7 @@ const STREET_TIER: TierPreset = {
   dashboardWidgets: [
     'street-tips',
     'live-orders',
-    'ready-for-pickup',
+    'courier-status',
     'todays-revenue',
     'top-5-products',
     'pending-orders',
@@ -137,7 +137,7 @@ const TRAP_TIER: TierPreset = {
 
   dashboardWidgets: [
     'live-orders',
-    'ready-for-pickup',
+    'courier-status',
     'team-activity',
     'revenue-trend',
     'top-products',
@@ -193,7 +193,7 @@ const BLOCK_TIER: TierPreset = {
 
   dashboardWidgets: [
     'live-orders',
-    'ready-for-pickup',
+    'courier-status',
     'location-overview',
     'team-activity',
     'weekly-trends',
@@ -255,7 +255,7 @@ const HOOD_TIER: TierPreset = {
 
   dashboardWidgets: [
     'live-orders',
-    'ready-for-pickup',
+    'courier-status',
     'executive-summary',
     'location-overview',
     'team-activity',
@@ -323,7 +323,7 @@ const EMPIRE_TIER: TierPreset = {
 
   dashboardWidgets: [
     'live-orders',
-    'ready-for-pickup',
+    'courier-status',
     'executive-summary',
     'location-overview',
     'team-activity',
