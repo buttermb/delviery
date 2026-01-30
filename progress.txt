@@ -7527,49 +7527,54 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+## Agent 34: Build OrderActionsDropdown Component
 
----
+### Task
+Build OrderActionsDropdown with edit, cancel, refund, duplicate options
 
-### Task: Add OrderNotesSection with internal notes and customer notes tabs
+### Implementation
+Created a new reusable dropdown menu component for order-level actions.
 
-**Completed:**
+### Features
+- **Edit Order**: Opens order editing (disabled for completed/cancelled/refunded orders)
+- **Duplicate Order**: Creates a copy of the order (always available)
+- **Refund Order**: Initiates refund process (disabled for pending/cancelled orders, hidden for already refunded)
+- **Cancel Order**: Cancels the order (disabled for completed/refunded/delivered orders, hidden for already cancelled)
 
-1. **Created OrderNotesSection component** (`src/components/admin/orders/OrderNotesSection.tsx`)
-   - Tabbed interface with "Internal" and "Customer" tabs
-   - Internal notes: Only visible to staff, with lock icon indicator
-   - Customer notes: Visible to customers, with user icon indicator
-   - Inline editing with save/cancel functionality
-   - Loading states with skeleton UI
-   - Empty states with helpful messages
-   - Badge indicators showing when notes exist
-   - Supports multiple table types (marketplace_orders, wholesale_orders, menu_orders)
-   - Configurable field names for different database schemas
-   - Query invalidation support for TanStack Query integration
-
-2. **Created barrel export** (`src/components/admin/orders/index.ts`)
-   - Exports OrderNotesSection component and its TypeScript interface
-   - Includes existing MenuSourceBadge and OrderBulkStatusConfirmDialog exports
-
-### Component Usage Example:
-```tsx
-import { OrderNotesSection } from '@/components/admin/orders';
-
-<OrderNotesSection
-  orderId={order.id}
-  internalNotes={order.internal_notes}
-  customerNotes={order.customer_notes}
-  tableName="marketplace_orders"
-  queryKeysToInvalidate={[['order-detail', orderId]]}
-  additionalFilter={{ field: 'tenant_id', value: tenant.id }}
-/>
+### Component API
+```typescript
+interface OrderActionsDropdownProps {
+  orderId: string;                          // Order identifier
+  orderStatus?: string;                     // Current status affects available actions
+  onAction: (action: OrderAction, orderId: string) => void | Promise<void>;
+  disabledActions?: OrderAction[];          // Explicitly disable specific actions
+  isLoading?: boolean;                      // Show loading state
+  loadingAction?: OrderAction;              // Which action is loading
+  trigger?: React.ReactNode;                // Custom trigger element
+  triggerClassName?: string;                // Styling for trigger
+  align?: 'start' | 'center' | 'end';       // Dropdown alignment
+  size?: 'sm' | 'default';                  // Size variant
+}
 ```
 
-### Files Changed:
-- `src/components/admin/orders/OrderNotesSection.tsx` (NEW)
-- `src/components/admin/orders/index.ts` (NEW)
+### Companion Hook
+Also exported `useOrderActions` hook for handling actions with loading states:
+```typescript
+const { handleAction, loadingAction, loadingOrderId, isLoading } = useOrderActions({
+  onEdit: (orderId) => navigate(`/orders/${orderId}/edit`),
+  onCancel: (orderId) => cancelOrder(orderId),
+  onRefund: (orderId) => openRefundDialog(orderId),
+  onDuplicate: (orderId) => duplicateOrder(orderId),
+});
+```
 
-### Notes:
-- TypeScript type checking passes successfully
-- Component follows existing codebase patterns (useTenantAdminAuth, useMutation, toast notifications)
-- Uses shadcn/ui components (Card, Tabs, Button, Textarea, Badge, Skeleton)
-- Pre-existing build error in PasswordResetPage.tsx is unrelated to these changes
+### Files Changed
+- `src/components/admin/orders/OrderActionsDropdown.tsx` (NEW)
+
+### Notes
+- Follows existing FloraIQ patterns (similar to OrderRowContextMenu)
+- Uses shadcn/ui dropdown-menu components
+- Destructive actions (cancel, refund) have visual distinction with red styling
+- Smart action visibility/disabled states based on order status
+- TypeScript strict mode compliant
+- No ESLint errors (only fast-refresh warning for exported hook)
