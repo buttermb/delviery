@@ -7459,3 +7459,65 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+### Task: Build ProductTagsInput for search and filter tags
+
+**Completed:**
+
+1. **Created useProductTags hook** (`src/hooks/useProductTags.ts`)
+   - `useProductTags()` - Fetches all tags for the current tenant
+   - `useSearchProductTags(searchTerm)` - Search tags by name with filtering
+   - `useCreateProductTag()` - Create new tags with name, color, and description
+   - `useProductTagsByIds(tagIds)` - Fetch specific tags by their IDs
+   - Reuses the existing `tags` table which is tenant-scoped
+   - Proper tenant isolation with `useTenantAdminAuth()`
+   - Integrated with existing `queryKeys.tags` for cache management
+
+2. **Built ProductTagsInput component** (`src/components/admin/ProductTagsInput.tsx`)
+   - Multi-select tag input for filtering products
+   - Two display variants:
+     - `dropdown` (default) - Full dropdown with search, tag list, and create form
+     - `chips` - Compact inline badges with add button
+   - Features:
+     - Real-time search/filter through available tags
+     - Color-coded tag badges
+     - Inline tag creation with color picker (9 preset colors)
+     - Keyboard navigation (Enter to create, Escape to cancel)
+     - Loading states and error handling
+     - Clear all / remove individual tags
+     - Optional max tags limit
+     - Read-only mode support
+     - Size variants (sm, default)
+   - Follows existing patterns from TagManager and SearchableFilterDropdown
+
+### Files Created:
+- `src/hooks/useProductTags.ts`
+- `src/components/admin/ProductTagsInput.tsx`
+
+### Usage Example:
+```tsx
+import { ProductTagsInput } from '@/components/admin/ProductTagsInput';
+
+// Dropdown variant (full filter interface)
+<ProductTagsInput
+  value={selectedTagIds}
+  onChange={setSelectedTagIds}
+  placeholder="Filter by tags..."
+/>
+
+// Chips variant (compact inline display)
+<ProductTagsInput
+  value={selectedTagIds}
+  onChange={setSelectedTagIds}
+  variant="chips"
+  allowCreate={true}
+/>
+```
+
+### Notes:
+- TypeScript type checking passes successfully (`npx tsc --noEmit`)
+- Build error in PasswordResetPage.tsx is pre-existing (duplicate default export) and unrelated to this task
+- Component reuses existing `tags` table and follows FloraIQ patterns
+- Integrated with TanStack Query for caching and invalidation
