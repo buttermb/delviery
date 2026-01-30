@@ -7459,3 +7459,45 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+## Task: Build DashboardLayoutCustomizer to drag and drop widgets
+
+### Implementation Summary:
+Created a comprehensive DashboardLayoutCustomizer component with full drag-and-drop functionality for dashboard widget management.
+
+### What was built:
+1. **DashboardLayoutCustomizer Component** (`src/components/admin/dashboard/DashboardLayoutCustomizer.tsx`)
+   - Full drag-and-drop widget reordering using @dnd-kit library
+   - Widget visibility toggles via Switch components
+   - Layout preset selection (Default, Sales Focus, Inventory Focus)
+   - Reset to default layout functionality
+   - Responsive Sheet-based UI that slides in from the right
+   - Badge showing visible/total widget count
+   - Keyboard accessibility via KeyboardSensor
+
+### Key Features:
+- **Drag and Drop**: Uses @dnd-kit with SortableContext and verticalListSortingStrategy
+- **DragOverlay**: Shows preview of widget being dragged with elevated styling
+- **Visibility Toggles**: Each widget has an eye icon and Switch to toggle visibility
+- **Preset Layouts**: 
+  - Default: All widgets visible in standard order
+  - Sales Focus: Prioritizes sales/revenue widgets
+  - Inventory Focus: Prioritizes inventory/transfer widgets
+- **Custom Layout Detection**: When user reorders or toggles widgets, preset becomes 'custom'
+- **Persistence**: Automatically saves to localStorage per tenant via useDashboardLayout hook
+- **Accessibility**: Full keyboard support, ARIA labels on drag handles and switches
+
+### Integration:
+- Uses existing `useDashboardLayout` hook for state management
+- Uses existing UI components: Sheet, Button, Badge, Switch, Separator, Label
+- Follows FloraIQ patterns for admin components
+- TypeScript strict mode compliant with no any types
+
+### Files Created:
+- `src/components/admin/dashboard/DashboardLayoutCustomizer.tsx` (NEW)
+
+### Verification:
+- TypeScript type checking passes without errors
+- Component follows all shadcn/ui and FloraIQ coding standards
