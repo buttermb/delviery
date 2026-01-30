@@ -14,12 +14,9 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
-import { ProductCategorySelect } from "@/components/admin/products/ProductCategorySelect";
-import { useCategories } from "@/hooks/useCategories";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { Loader2, Package, DollarSign, Image as ImageIcon, FileText, Barcode } from "lucide-react";
+import { Loader2, Package, DollarSign, Image as ImageIcon, FileText, Barcode, Layers } from "lucide-react";
 import { toast } from "sonner";
-import { ProductVariantsManager, type ProductVariantsData } from "./ProductVariantsManager";
+import { ProductVariantsManager } from "@/components/admin/products/ProductVariantsManager";
 
 // Define the shape of form data
 export interface ProductFormData {
@@ -56,7 +53,8 @@ interface ProductFormProps {
     onCancel: () => void;
     isLoading: boolean;
     isEditMode: boolean;
-    storeSettings?: any; // Pass in settings for potency limits
+    storeSettings?: Record<string, unknown>; // Pass in settings for potency limits
+    productId?: string; // Required for variants tab when editing
 }
 
 const DEFAULT_FORM_DATA: ProductFormData = {
@@ -94,6 +92,7 @@ export function ProductForm({
     isLoading,
     isEditMode,
     storeSettings,
+    productId,
 }: ProductFormProps) {
     const { tenant } = useTenantAdminAuth();
     const { categories, getCategoryById } = useCategories(tenant?.id);
@@ -199,7 +198,7 @@ export function ProductForm({
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 lg:w-[500px]">
+                <TabsList className={`grid w-full ${isEditMode && productId ? 'grid-cols-2 sm:grid-cols-5 lg:w-[500px]' : 'grid-cols-2 sm:grid-cols-4 lg:w-[400px]'}`}>
                     <TabsTrigger value="details">
                         <FileText className="h-4 w-4 mr-2 hidden sm:block" /> Details
                     </TabsTrigger>
@@ -215,6 +214,11 @@ export function ProductForm({
                     <TabsTrigger value="media">
                         <ImageIcon className="h-4 w-4 mr-2 hidden sm:block" /> Media
                     </TabsTrigger>
+                    {isEditMode && productId && (
+                        <TabsTrigger value="variants">
+                            <Layers className="h-4 w-4 mr-2 hidden sm:block" /> Variants
+                        </TabsTrigger>
+                    )}
                 </TabsList>
 
                 <div className="mt-4 h-[60vh] overflow-y-auto pr-1">
@@ -556,6 +560,13 @@ export function ProductForm({
                             )}
                         </div>
                     </TabsContent>
+
+                    {/* Variants Tab (only shown when editing existing product) */}
+                    {isEditMode && productId && (
+                        <TabsContent value="variants" className="space-y-4">
+                            <ProductVariantsManager productId={productId} />
+                        </TabsContent>
+                    )}
                 </div>
             </Tabs >
 

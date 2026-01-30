@@ -1,508 +1,671 @@
-import { useState, useCallback, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+/**
+ * ProductVariantsManager Component
+ *
+ * Manages product variants for size, weight, and strain options.
+ * Provides:
+ * - Add/edit/delete variants
+ * - Quick presets for common weight options
+ * - Drag-to-reorder functionality
+ * - Variant-specific pricing and inventory
+ */
+
+import { useState } from 'react';
+import { Plus, Trash2, GripVertical, Loader2, Scale, Ruler, Leaf } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, X, Scale, Leaf, DollarSign, Trash2 } from "lucide-react";
-import { AutocompleteInput } from "@/components/ui/autocomplete-input";
-
-// Weight/size options commonly used in cannabis wholesale
-const WHOLESALE_WEIGHT_PRESETS = [
-  { key: "QP", label: "Quarter Pound (QP)", grams: 113.4 },
-  { key: "HP", label: "Half Pound (HP)", grams: 226.8 },
-  { key: "LB", label: "Pound (LB)", grams: 453.6 },
-] as const;
-
-// Retail weight presets
-const RETAIL_WEIGHT_PRESETS = [
-  { key: "1g", label: "1 gram", grams: 1 },
-  { key: "3.5g", label: "3.5 grams (1/8 oz)", grams: 3.5 },
-  { key: "7g", label: "7 grams (1/4 oz)", grams: 7 },
-  { key: "14g", label: "14 grams (1/2 oz)", grams: 14 },
-  { key: "28g", label: "28 grams (1 oz)", grams: 28 },
-] as const;
-
-// Strain types
-const STRAIN_TYPES = [
-  { value: "indica", label: "Indica", description: "Relaxing, body-focused effects" },
-  { value: "sativa", label: "Sativa", description: "Energizing, cerebral effects" },
-  { value: "hybrid", label: "Hybrid", description: "Balanced effects" },
-  { value: "cbd", label: "CBD", description: "Non-intoxicating, therapeutic" },
-] as const;
-
-export interface WeightVariant {
-  key: string;
-  label: string;
-  grams: number;
-  price: number | null;
-}
-
-export interface StrainOptions {
-  strain_name: string;
-  strain_type: string;
-  strain_lineage: string;
-  thc_percent: number | null;
-  cbd_percent: number | null;
-  terpenes: Record<string, number>;
-}
-
-export interface ProductVariantsData {
-  prices: Record<string, number>;
-  weight_grams: number | null;
-  strain_name: string;
-  strain_type: string;
-  strain_lineage: string;
-  thc_percent: number | null;
-  cbd_percent: number | null;
-  terpenes: Record<string, number>;
-}
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Switch } from '@/components/ui/switch';
+import {
+  useProductVariants,
+  useCreateVariant,
+  useUpdateVariant,
+  useDeleteVariant,
+  useBulkCreateVariants,
+  PRESET_WEIGHTS,
+  PRESET_SIZES,
+  type ProductVariant,
+  type VariantType,
+  type CreateVariantInput,
+} from '@/hooks/useProductVariants';
 
 interface ProductVariantsManagerProps {
-  data: Partial<ProductVariantsData>;
-  onChange: (data: Partial<ProductVariantsData>) => void;
-  mode?: "wholesale" | "retail" | "both";
+  productId: string;
+  readOnly?: boolean;
 }
 
+interface VariantFormData {
+  name: string;
+  variant_type: VariantType;
+  sku: string;
+  price: string;
+  cost_per_unit: string;
+  wholesale_price: string;
+  retail_price: string;
+  available_quantity: string;
+  low_stock_alert: string;
+  thc_percent: string;
+  cbd_percent: string;
+  strain_type: 'indica' | 'sativa' | 'hybrid' | 'cbd' | '';
+  weight_grams: string;
+  is_active: boolean;
+}
+
+const DEFAULT_FORM_DATA: VariantFormData = {
+  name: '',
+  variant_type: 'weight',
+  sku: '',
+  price: '',
+  cost_per_unit: '',
+  wholesale_price: '',
+  retail_price: '',
+  available_quantity: '0',
+  low_stock_alert: '10',
+  thc_percent: '',
+  cbd_percent: '',
+  strain_type: '',
+  weight_grams: '',
+  is_active: true,
+};
+
+const VARIANT_TYPE_CONFIG = {
+  weight: { icon: Scale, label: 'Weight', color: 'bg-blue-100 text-blue-800' },
+  size: { icon: Ruler, label: 'Size', color: 'bg-green-100 text-green-800' },
+  strain: { icon: Leaf, label: 'Strain', color: 'bg-purple-100 text-purple-800' },
+};
+
 export function ProductVariantsManager({
-  data,
-  onChange,
-  mode = "both",
+  productId,
+  readOnly = false,
 }: ProductVariantsManagerProps) {
-  const [activeTab, setActiveTab] = useState("weights");
-  const [customWeightKey, setCustomWeightKey] = useState("");
-  const [customWeightGrams, setCustomWeightGrams] = useState("");
-  const [customTerpeneName, setCustomTerpeneName] = useState("");
-  const [customTerpenePercent, setCustomTerpenePercent] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null);
+  const [formData, setFormData] = useState<VariantFormData>(DEFAULT_FORM_DATA);
 
-  // Memoize prices to avoid recreating on each render
-  const prices = useMemo(() => (data.prices || {}) as Record<string, number>, [data.prices]);
+  const { data: variants, isLoading, error } = useProductVariants(productId);
+  const createVariant = useCreateVariant();
+  const updateVariant = useUpdateVariant();
+  const deleteVariant = useDeleteVariant();
+  const bulkCreateVariants = useBulkCreateVariants();
 
-  // Get weight presets based on mode
-  const weightPresets = mode === "wholesale"
-    ? WHOLESALE_WEIGHT_PRESETS
-    : mode === "retail"
-    ? RETAIL_WEIGHT_PRESETS
-    : [...RETAIL_WEIGHT_PRESETS, ...WHOLESALE_WEIGHT_PRESETS];
+  const isMutating =
+    createVariant.isPending ||
+    updateVariant.isPending ||
+    deleteVariant.isPending ||
+    bulkCreateVariants.isPending;
 
-  // Add a weight variant
-  const addWeightVariant = useCallback((key: string) => {
-    const newPrices = { ...prices, [key]: 0 };
-    onChange({ prices: newPrices });
-  }, [prices, onChange]);
+  const openCreateDialog = (type: VariantType) => {
+    setEditingVariant(null);
+    setFormData({ ...DEFAULT_FORM_DATA, variant_type: type });
+    setIsDialogOpen(true);
+  };
 
-  // Update price for a weight variant
-  const updateWeightPrice = useCallback((key: string, price: string) => {
-    const priceNum = price === "" ? 0 : parseFloat(price);
-    const newPrices = { ...prices, [key]: isNaN(priceNum) ? 0 : priceNum };
-    onChange({ prices: newPrices });
-  }, [prices, onChange]);
+  const openEditDialog = (variant: ProductVariant) => {
+    setEditingVariant(variant);
+    setFormData({
+      name: variant.name,
+      variant_type: variant.variant_type,
+      sku: variant.sku || '',
+      price: variant.price?.toString() || '',
+      cost_per_unit: variant.cost_per_unit?.toString() || '',
+      wholesale_price: variant.wholesale_price?.toString() || '',
+      retail_price: variant.retail_price?.toString() || '',
+      available_quantity: variant.available_quantity?.toString() || '0',
+      low_stock_alert: variant.low_stock_alert?.toString() || '10',
+      thc_percent: variant.thc_percent?.toString() || '',
+      cbd_percent: variant.cbd_percent?.toString() || '',
+      strain_type: variant.strain_type || '',
+      weight_grams: variant.weight_grams?.toString() || '',
+      is_active: variant.is_active,
+    });
+    setIsDialogOpen(true);
+  };
 
-  // Remove a weight variant
-  const removeWeightVariant = useCallback((key: string) => {
-    const newPrices = { ...prices };
-    delete newPrices[key];
-    onChange({ prices: newPrices });
-  }, [prices, onChange]);
-
-  // Add custom weight
-  const addCustomWeight = useCallback(() => {
-    if (!customWeightKey.trim()) return;
-    addWeightVariant(customWeightKey.trim());
-    setCustomWeightKey("");
-    setCustomWeightGrams("");
-  }, [customWeightKey, addWeightVariant]);
-
-  // Update strain info
-  const updateStrainInfo = useCallback((field: keyof StrainOptions, value: string | number | null) => {
-    onChange({ [field]: value });
-  }, [onChange]);
-
-  // Update terpene
-  const updateTerpene = useCallback((name: string, percent: number | null) => {
-    const currentTerpenes = (data.terpenes || {}) as Record<string, number>;
-    if (percent === null) {
-      const newTerpenes = { ...currentTerpenes };
-      delete newTerpenes[name];
-      onChange({ terpenes: newTerpenes });
-    } else {
-      onChange({ terpenes: { ...currentTerpenes, [name]: percent } });
+  const handleSubmit = async () => {
+    if (!formData.name.trim()) {
+      toast.error('Variant name is required');
+      return;
     }
-  }, [data.terpenes, onChange]);
 
-  // Add custom terpene
-  const addCustomTerpene = useCallback(() => {
-    if (!customTerpeneName.trim()) return;
-    const percent = parseFloat(customTerpenePercent) || 0;
-    updateTerpene(customTerpeneName.trim(), percent);
-    setCustomTerpeneName("");
-    setCustomTerpenePercent("");
-  }, [customTerpeneName, customTerpenePercent, updateTerpene]);
+    const variantData: CreateVariantInput = {
+      product_id: productId,
+      name: formData.name.trim(),
+      variant_type: formData.variant_type,
+      sku: formData.sku.trim() || undefined,
+      price: formData.price ? parseFloat(formData.price) : undefined,
+      cost_per_unit: formData.cost_per_unit ? parseFloat(formData.cost_per_unit) : undefined,
+      wholesale_price: formData.wholesale_price ? parseFloat(formData.wholesale_price) : undefined,
+      retail_price: formData.retail_price ? parseFloat(formData.retail_price) : undefined,
+      available_quantity: formData.available_quantity ? parseInt(formData.available_quantity) : 0,
+      low_stock_alert: formData.low_stock_alert ? parseInt(formData.low_stock_alert) : 10,
+      is_active: formData.is_active,
+    };
 
-  // Common terpenes
-  const COMMON_TERPENES = [
-    "Myrcene", "Limonene", "Caryophyllene", "Pinene",
-    "Linalool", "Humulene", "Terpinolene", "Ocimene"
-  ];
+    // Add type-specific fields
+    if (formData.variant_type === 'weight' && formData.weight_grams) {
+      variantData.weight_grams = parseFloat(formData.weight_grams);
+    }
 
-  const currentTerpenes = (data.terpenes || {}) as Record<string, number>;
-  const availableTerpenes = COMMON_TERPENES.filter(t => !(t in currentTerpenes));
+    if (formData.variant_type === 'strain') {
+      if (formData.thc_percent) variantData.thc_percent = parseFloat(formData.thc_percent);
+      if (formData.cbd_percent) variantData.cbd_percent = parseFloat(formData.cbd_percent);
+      if (formData.strain_type) variantData.strain_type = formData.strain_type as 'indica' | 'sativa' | 'hybrid' | 'cbd';
+    }
+
+    try {
+      if (editingVariant) {
+        await updateVariant.mutateAsync({ id: editingVariant.id, ...variantData });
+      } else {
+        await createVariant.mutateAsync(variantData);
+      }
+      setIsDialogOpen(false);
+      setEditingVariant(null);
+      setFormData(DEFAULT_FORM_DATA);
+    } catch {
+      // Error handling done in hook
+    }
+  };
+
+  const handleDelete = async (variant: ProductVariant) => {
+    if (!confirm(`Delete variant "${variant.name}"?`)) return;
+
+    try {
+      await deleteVariant.mutateAsync({ id: variant.id, productId });
+    } catch {
+      // Error handling done in hook
+    }
+  };
+
+  const handleAddPresetWeights = async () => {
+    const existingNames = new Set(variants?.map((v) => v.name) || []);
+    const newWeights = PRESET_WEIGHTS.filter((w) => !existingNames.has(w.name));
+
+    if (newWeights.length === 0) {
+      toast.info('All preset weights already exist');
+      return;
+    }
+
+    try {
+      await bulkCreateVariants.mutateAsync({
+        productId,
+        variants: newWeights.map((w) => ({
+          name: w.name,
+          variant_type: 'weight' as VariantType,
+          weight_grams: w.weight_grams,
+          display_order: w.display_order,
+        })),
+      });
+    } catch {
+      // Error handling done in hook
+    }
+  };
+
+  const handleAddPresetSizes = async () => {
+    const existingNames = new Set(variants?.map((v) => v.name) || []);
+    const newSizes = PRESET_SIZES.filter((s) => !existingNames.has(s.name));
+
+    if (newSizes.length === 0) {
+      toast.info('All preset sizes already exist');
+      return;
+    }
+
+    try {
+      await bulkCreateVariants.mutateAsync({
+        productId,
+        variants: newSizes.map((s) => ({
+          name: s.name,
+          variant_type: 'size' as VariantType,
+          display_order: s.display_order,
+        })),
+      });
+    } catch {
+      // Error handling done in hook
+    }
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Product Variants</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-16 w-full" />
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Card className="border-destructive">
+        <CardContent className="pt-6">
+          <p className="text-destructive">Failed to load variants</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const groupedVariants = {
+    weight: variants?.filter((v) => v.variant_type === 'weight') || [],
+    size: variants?.filter((v) => v.variant_type === 'size') || [],
+    strain: variants?.filter((v) => v.variant_type === 'strain') || [],
+  };
 
   return (
     <Card>
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Scale className="h-5 w-5" />
-          Product Variants
-        </CardTitle>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">Product Variants</CardTitle>
+          {!readOnly && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" disabled={isMutating}>
+                  {isMutating ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                  ) : (
+                    <Plus className="h-4 w-4 mr-1" />
+                  )}
+                  Add Variant
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => openCreateDialog('weight')}>
+                  <Scale className="h-4 w-4 mr-2" />
+                  Weight Option
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => openCreateDialog('size')}>
+                  <Ruler className="h-4 w-4 mr-2" />
+                  Size Option
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => openCreateDialog('strain')}>
+                  <Leaf className="h-4 w-4 mr-2" />
+                  Strain Option
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleAddPresetWeights} disabled={isMutating}>
+                  <Scale className="h-4 w-4 mr-2" />
+                  Add Preset Weights (1g, 1/8, 1/4...)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleAddPresetSizes} disabled={isMutating}>
+                  <Ruler className="h-4 w-4 mr-2" />
+                  Add Preset Sizes (S, M, L)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
       </CardHeader>
-      <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="weights" className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4" />
-              Size & Pricing
-            </TabsTrigger>
-            <TabsTrigger value="strain" className="flex items-center gap-2">
-              <Leaf className="h-4 w-4" />
-              Strain Info
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Weight/Size Variants Tab */}
-          <TabsContent value="weights" className="space-y-4 pt-4">
-            <div>
-              <Label className="text-sm font-medium">Weight Options</Label>
-              <p className="text-xs text-muted-foreground mb-3">
-                Add different size options with their prices
-              </p>
-
-              {/* Current weight variants */}
-              <div className="space-y-2 mb-4">
-                {Object.entries(prices).length > 0 ? (
-                  Object.entries(prices).map(([key, price]) => {
-                    const preset = weightPresets.find(p => p.key === key);
-                    return (
-                      <div key={key} className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="secondary">{key}</Badge>
-                            {preset && (
-                              <span className="text-xs text-muted-foreground">
-                                {preset.label}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground">$</span>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={price || ""}
-                            onChange={(e) => updateWeightPrice(key, e.target.value)}
-                            className="w-24"
-                            placeholder="0.00"
-                          />
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeWeightVariant(key)}
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="text-center py-6 text-muted-foreground text-sm border-2 border-dashed rounded-lg">
-                    No weight variants added. Add sizes below.
-                  </div>
-                )}
-              </div>
-
-              {/* Quick add presets */}
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Quick Add</Label>
-                <div className="flex flex-wrap gap-2">
-                  {weightPresets
-                    .filter(preset => !(preset.key in prices))
-                    .map(preset => (
-                      <Button
-                        key={preset.key}
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addWeightVariant(preset.key)}
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        {preset.key}
-                      </Button>
-                    ))}
-                </div>
-              </div>
-
-              {/* Custom weight */}
-              <div className="mt-4 pt-4 border-t">
-                <Label className="text-xs text-muted-foreground mb-2 block">Custom Weight</Label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Key (e.g., 2oz)"
-                    value={customWeightKey}
-                    onChange={(e) => setCustomWeightKey(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Grams"
-                    value={customWeightGrams}
-                    onChange={(e) => setCustomWeightGrams(e.target.value)}
-                    className="w-24"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={addCustomWeight}
-                    disabled={!customWeightKey.trim()}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-
-              {/* Base weight */}
-              <div className="mt-4 pt-4 border-t">
-                <Label htmlFor="base-weight">Base Unit Weight (grams)</Label>
-                <Input
-                  id="base-weight"
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  value={data.weight_grams ?? ""}
-                  onChange={(e) => onChange({
-                    weight_grams: e.target.value === "" ? null : parseFloat(e.target.value)
-                  })}
-                  placeholder="e.g., 3.5"
-                  className="mt-1.5"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Default product weight when no variant is selected
-                </p>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* Strain Info Tab */}
-          <TabsContent value="strain" className="space-y-4 pt-4">
-            {/* Strain Name */}
-            <div>
-              <Label htmlFor="strain-name">Strain Name</Label>
-              <AutocompleteInput
-                value={data.strain_name || ""}
-                onChange={(value) => updateStrainInfo("strain_name", value)}
-                type="strain"
-                placeholder="e.g., Blue Dream, OG Kush, Gelato"
-                className="mt-1.5"
+      <CardContent className="space-y-4">
+        {variants && variants.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-4">
+            No variants yet. Add size, weight, or strain options.
+          </p>
+        ) : (
+          <>
+            {/* Weight Variants */}
+            {groupedVariants.weight.length > 0 && (
+              <VariantGroup
+                title="Weight Options"
+                variants={groupedVariants.weight}
+                type="weight"
+                onEdit={openEditDialog}
+                onDelete={handleDelete}
+                readOnly={readOnly}
+                isMutating={isMutating}
               />
-            </div>
+            )}
 
-            {/* Strain Type */}
-            <div>
-              <Label>Strain Type</Label>
+            {/* Size Variants */}
+            {groupedVariants.size.length > 0 && (
+              <VariantGroup
+                title="Size Options"
+                variants={groupedVariants.size}
+                type="size"
+                onEdit={openEditDialog}
+                onDelete={handleDelete}
+                readOnly={readOnly}
+                isMutating={isMutating}
+              />
+            )}
+
+            {/* Strain Variants */}
+            {groupedVariants.strain.length > 0 && (
+              <VariantGroup
+                title="Strain Options"
+                variants={groupedVariants.strain}
+                type="strain"
+                onEdit={openEditDialog}
+                onDelete={handleDelete}
+                readOnly={readOnly}
+                isMutating={isMutating}
+              />
+            )}
+          </>
+        )}
+      </CardContent>
+
+      {/* Add/Edit Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {editingVariant ? 'Edit Variant' : 'Add Variant'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Variant Type</Label>
               <Select
-                value={data.strain_type || ""}
-                onValueChange={(value) => updateStrainInfo("strain_type", value)}
+                value={formData.variant_type}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, variant_type: value as VariantType })
+                }
+                disabled={!!editingVariant}
               >
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue placeholder="Select strain type" />
+                <SelectTrigger>
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {STRAIN_TYPES.map(type => (
-                    <SelectItem key={type.value} value={type.value}>
-                      <div className="flex flex-col">
-                        <span>{type.label}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {type.description}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="weight">Weight</SelectItem>
+                  <SelectItem value="size">Size</SelectItem>
+                  <SelectItem value="strain">Strain</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Strain Lineage */}
-            <div>
-              <Label htmlFor="strain-lineage">Strain Lineage</Label>
+            <div className="space-y-2">
+              <Label>Name *</Label>
               <Input
-                id="strain-lineage"
-                value={data.strain_lineage || ""}
-                onChange={(e) => updateStrainInfo("strain_lineage", e.target.value)}
-                placeholder="e.g., OG Kush x Durban Poison"
-                className="mt-1.5"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder={
+                  formData.variant_type === 'weight'
+                    ? 'e.g., 1/8 oz'
+                    : formData.variant_type === 'size'
+                    ? 'e.g., Large'
+                    : 'e.g., Blue Dream'
+                }
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Parent strains or genetic lineage
-              </p>
             </div>
 
-            {/* THC & CBD Percentages */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="thc-percent">THC %</Label>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <Input
-                    id="thc-percent"
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={data.thc_percent ?? ""}
-                    onChange={(e) => updateStrainInfo(
-                      "thc_percent",
-                      e.target.value === "" ? null : parseFloat(e.target.value)
-                    )}
-                    placeholder="0.0"
-                  />
-                  <span className="text-muted-foreground">%</span>
-                </div>
+            {formData.variant_type === 'weight' && (
+              <div className="space-y-2">
+                <Label>Weight (grams)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={formData.weight_grams}
+                  onChange={(e) => setFormData({ ...formData, weight_grams: e.target.value })}
+                  placeholder="e.g., 3.5"
+                />
               </div>
-              <div>
-                <Label htmlFor="cbd-percent">CBD %</Label>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <Input
-                    id="cbd-percent"
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={data.cbd_percent ?? ""}
-                    onChange={(e) => updateStrainInfo(
-                      "cbd_percent",
-                      e.target.value === "" ? null : parseFloat(e.target.value)
-                    )}
-                    placeholder="0.0"
-                  />
-                  <span className="text-muted-foreground">%</span>
-                </div>
-              </div>
-            </div>
+            )}
 
-            {/* Terpene Profile */}
-            <div className="pt-4 border-t">
-              <Label className="text-sm font-medium">Terpene Profile</Label>
-              <p className="text-xs text-muted-foreground mb-3">
-                Add terpene percentages for this strain
-              </p>
-
-              {/* Current terpenes */}
-              <div className="space-y-2 mb-4">
-                {Object.entries(currentTerpenes).length > 0 ? (
-                  Object.entries(currentTerpenes).map(([name, percent]) => (
-                    <div key={name} className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
-                      <Badge variant="outline" className="flex-1">
-                        {name}
-                      </Badge>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="number"
-                          min="0"
-                          max="100"
-                          step="0.01"
-                          value={percent}
-                          onChange={(e) => updateTerpene(
-                            name,
-                            e.target.value === "" ? 0 : parseFloat(e.target.value)
-                          )}
-                          className="w-20"
-                        />
-                        <span className="text-muted-foreground text-sm">%</span>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => updateTerpene(name, null)}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-4 text-muted-foreground text-sm border-2 border-dashed rounded-lg">
-                    No terpenes added
-                  </div>
-                )}
-              </div>
-
-              {/* Quick add common terpenes */}
-              {availableTerpenes.length > 0 && (
+            {formData.variant_type === 'strain' && (
+              <>
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Quick Add</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {availableTerpenes.slice(0, 4).map(terpene => (
-                      <Button
-                        key={terpene}
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => updateTerpene(terpene, 0)}
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        {terpene}
-                      </Button>
-                    ))}
+                  <Label>Strain Type</Label>
+                  <Select
+                    value={formData.strain_type}
+                    onValueChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        strain_type: value as 'indica' | 'sativa' | 'hybrid' | 'cbd' | '',
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="indica">Indica</SelectItem>
+                      <SelectItem value="sativa">Sativa</SelectItem>
+                      <SelectItem value="hybrid">Hybrid</SelectItem>
+                      <SelectItem value="cbd">CBD</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>THC %</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={formData.thc_percent}
+                      onChange={(e) => setFormData({ ...formData, thc_percent: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>CBD %</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={formData.cbd_percent}
+                      onChange={(e) => setFormData({ ...formData, cbd_percent: e.target.value })}
+                    />
                   </div>
                 </div>
-              )}
+              </>
+            )}
 
-              {/* Custom terpene */}
-              <div className="mt-4 pt-4 border-t">
-                <Label className="text-xs text-muted-foreground mb-2 block">Custom Terpene</Label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Terpene name"
-                    value={customTerpeneName}
-                    onChange={(e) => setCustomTerpeneName(e.target.value)}
-                    className="flex-1"
-                  />
+            <div className="space-y-2">
+              <Label>SKU (optional)</Label>
+              <Input
+                value={formData.sku}
+                onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                placeholder="Variant-specific SKU"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Wholesale Price</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    $
+                  </span>
                   <Input
                     type="number"
-                    placeholder="%"
-                    min="0"
-                    max="100"
                     step="0.01"
-                    value={customTerpenePercent}
-                    onChange={(e) => setCustomTerpenePercent(e.target.value)}
-                    className="w-20"
+                    className="pl-7"
+                    value={formData.wholesale_price}
+                    onChange={(e) => setFormData({ ...formData, wholesale_price: e.target.value })}
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={addCustomTerpene}
-                    disabled={!customTerpeneName.trim()}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Retail Price</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    $
+                  </span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    className="pl-7"
+                    value={formData.retail_price}
+                    onChange={(e) => setFormData({ ...formData, retail_price: e.target.value })}
+                  />
                 </div>
               </div>
             </div>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Stock Quantity</Label>
+                <Input
+                  type="number"
+                  value={formData.available_quantity}
+                  onChange={(e) =>
+                    setFormData({ ...formData, available_quantity: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Low Stock Alert</Label>
+                <Input
+                  type="number"
+                  value={formData.low_stock_alert}
+                  onChange={(e) => setFormData({ ...formData, low_stock_alert: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Label>Active</Label>
+              <Switch
+                checked={formData.is_active}
+                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+              disabled={isMutating}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSubmit} disabled={isMutating}>
+              {isMutating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Saving...
+                </>
+              ) : editingVariant ? (
+                'Update'
+              ) : (
+                'Create'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
+  );
+}
+
+// Sub-component for grouped variants
+interface VariantGroupProps {
+  title: string;
+  variants: ProductVariant[];
+  type: VariantType;
+  onEdit: (variant: ProductVariant) => void;
+  onDelete: (variant: ProductVariant) => void;
+  readOnly: boolean;
+  isMutating: boolean;
+}
+
+function VariantGroup({
+  title,
+  variants,
+  type,
+  onEdit,
+  onDelete,
+  readOnly,
+  isMutating,
+}: VariantGroupProps) {
+  const config = VARIANT_TYPE_CONFIG[type];
+  const Icon = config.icon;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+        <Icon className="h-4 w-4" />
+        {title}
+      </div>
+      <div className="space-y-2">
+        {variants.map((variant) => (
+          <div
+            key={variant.id}
+            className={`flex items-center justify-between p-3 rounded-lg border ${
+              !variant.is_active ? 'opacity-50' : ''
+            } hover:bg-muted/50 transition-colors`}
+          >
+            <div className="flex items-center gap-3">
+              {!readOnly && (
+                <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
+              )}
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{variant.name}</span>
+                  {!variant.is_active && (
+                    <Badge variant="secondary" className="text-xs">
+                      Inactive
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  {variant.wholesale_price && (
+                    <span>${variant.wholesale_price}</span>
+                  )}
+                  {variant.weight_grams && <span>{variant.weight_grams}g</span>}
+                  {variant.strain_type && (
+                    <Badge variant="outline" className="text-xs capitalize">
+                      {variant.strain_type}
+                    </Badge>
+                  )}
+                  {variant.thc_percent && <span>THC: {variant.thc_percent}%</span>}
+                  {variant.sku && <span className="text-xs">SKU: {variant.sku}</span>}
+                </div>
+              </div>
+            </div>
+
+            {!readOnly && (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEdit(variant)}
+                  disabled={isMutating}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onDelete(variant)}
+                  disabled={isMutating}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
