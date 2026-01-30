@@ -7459,3 +7459,50 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+### Task: Build ProductTagsInput for search and filter tags
+
+**Completed:**
+
+1. **Created ProductTagsInput component** (`src/components/ui/product-tags-input.tsx`)
+   
+   A searchable multi-select input for product tags featuring:
+   
+   - **Search/filter functionality** - Type to filter through available tags using cmdk Command component
+   - **Multi-select with badges** - Selected tags displayed as removable Badge components
+   - **Create new tags inline** - When search doesn't match existing tags, offers option to create new one
+   - **Color picker** - 9 preset colors for new tags (blue, green, yellow, orange, red, violet, pink, cyan, gray)
+   - **Keyboard navigation** - Full keyboard support (Enter to create, Backspace to remove last, Arrow keys in dropdown)
+   - **Flexible data handling** - Works with both string arrays (direct tag names) and ID-based systems (with availableTags lookup)
+   - **Loading state** - Shows spinner when loading tags
+   - **Read-only mode** - For display-only scenarios without edit capability
+   - **Max tags limit** - Optional maximum number of tags with counter display
+
+2. **TypeScript interfaces:**
+   - `ProductTag` - Tag object with id, name, and optional color
+   - `ProductTagsInputProps` - Full props interface with JSDoc comments
+
+3. **Props supported:**
+   - `value: string[]` - Selected tag IDs or names
+   - `onChange: (tags: string[]) => void` - Callback when tags change
+   - `availableTags?: ProductTag[]` - Available tags to choose from
+   - `allowCreate?: boolean` - Whether to allow creating new tags (default: true)
+   - `onCreateTag?: (name, color) => Promise<ProductTag | null>` - Async callback for tag creation
+   - `placeholder?: string` - Placeholder text
+   - `disabled?: boolean` - Disabled state
+   - `isLoading?: boolean` - Loading state
+   - `maxTags?: number` - Maximum selectable tags
+   - `className?: string` - Additional CSS classes
+   - `readOnly?: boolean` - Read-only mode
+   - `useIds?: boolean` - Whether to use tag IDs vs plain strings
+
+### Files Changed:
+- `src/components/ui/product-tags-input.tsx` (NEW)
+
+### Technical Details:
+- Uses shadcn/ui components: Badge, Button, Popover, Command
+- Uses cmdk library for searchable dropdown
+- Follows FloraIQ patterns with named exports, strict TypeScript, and @/ import aliases
+- ESLint and TypeScript compilation pass successfully
