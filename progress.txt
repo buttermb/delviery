@@ -7459,3 +7459,53 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Task: Add OrderStatusStepper showing pending confirmed packed shipped delivered
+
+### Completed
+
+#### 1. Created OrderStatusStepper Component (`src/components/orders/OrderStatusStepper.tsx`)
+- Visual stepper component showing order progression: pending → confirmed → packed → shipped → delivered
+- Features:
+  - Horizontal and vertical orientation support
+  - Three size variants: sm, default, lg
+  - Animated progress line between steps
+  - Current step highlighting with ring effect and scale
+  - Cancelled order state with distinct styling
+  - Status mapping for compatibility with similar statuses (e.g., 'in_transit' maps to 'shipped')
+- Component Props:
+  - `status`: Current order status (OrderStepperStatus or string)
+  - `className`: Optional custom styling
+  - `size`: 'sm' | 'default' | 'lg'
+  - `showLabels`: Boolean to show/hide step labels
+  - `orientation`: 'horizontal' | 'vertical'
+- Exported helpers:
+  - `getOrderStatusLabel()`: Get display label for a status
+  - `getOrderStatusSteps()`: Get the ordered list of step configurations
+  - `OrderStepperStatus` type: 'pending' | 'confirmed' | 'packed' | 'shipped' | 'delivered' | 'cancelled'
+
+#### 2. Created Index Export File (`src/components/orders/index.ts`)
+- Barrel export for clean imports from `@/components/orders`
+- Exports: OrderStatusStepper, getOrderStatusLabel, getOrderStatusSteps, OrderStepperStatus
+
+### Usage Examples
+```tsx
+// Basic usage
+<OrderStatusStepper status="confirmed" />
+
+// Large size with labels
+<OrderStatusStepper status="shipped" size="lg" showLabels />
+
+// Vertical orientation
+<OrderStatusStepper status="delivered" orientation="vertical" />
+
+// Without labels (compact)
+<OrderStatusStepper status="pending" showLabels={false} size="sm" />
+```
+
+### Import
+```tsx
+import { OrderStatusStepper } from '@/components/orders';
+// or
+import { OrderStatusStepper, getOrderStatusLabel } from '@/components/orders/OrderStatusStepper';
+```
