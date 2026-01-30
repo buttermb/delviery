@@ -7499,75 +7499,41 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
----
+## Task: Build OrderSourceBadge showing POS storefront phone manual source
 
-## Task: Add OrderTagsInput for custom categorization of orders
+### Summary:
+Created a reusable OrderSourceBadge component that displays the origin of an order
+with appropriate icons and color-coded badges for each source type.
 
-### Completed
+### Implementation Details:
 
-#### 1. Created Database Migration (`supabase/migrations/20260129000001_order_tags_system.sql`)
-- Created `order_tags` junction table for many-to-many relationship between unified_orders and tags
-- Reuses existing `tags` table for tag definitions (shared with customer tags)
-- Fields: id, tenant_id, order_id, tag_id, created_at
-- Unique constraint on (order_id, tag_id) to prevent duplicate assignments
-- Indexes for performance:
-  - idx_order_tags_tenant_id
-  - idx_order_tags_order_id
-  - idx_order_tags_tag_id
-  - idx_order_tags_tenant_tag (composite for tag-based filtering)
-- RLS policies for tenant isolation (select, insert, delete)
+1. **Created new component:** src/components/admin/orders/OrderSourceBadge.tsx
+   - Supports 7 order sources: pos, storefront, phone, manual, admin, menu, api
+   - Each source has a unique icon and color scheme
+   - Props: source, className, compact (icon only), labelOnly (no icon)
+   - Defaults to 'admin' if source is not provided
+   - Includes dark mode support
+   - Helper functions: getOrderSourceLabel, isValidOrderSource
 
-#### 2. Added Query Keys (`src/lib/queryKeys.ts`)
-- Added `orderTags` query key factory:
-  - `orderTags.all` - Base key for all order tag queries
-  - `orderTags.byOrder(orderId)` - For order-specific tag queries
-  - `orderTags.byTag(tagId)` - For tag-based order queries
+2. **Updated Orders page:** src/pages/admin/Orders.tsx
+   - Removed inline getSourceBadge function
+   - Replaced with OrderSourceBadge component in table and mobile view
+   - Cleaned up unused icon imports (Store, Monitor, Utensils, Zap)
 
-#### 3. Created `useOrderTags` Hook (`src/hooks/useOrderTags.ts`)
-- `useOrderTags(orderId)` - Fetch tags for a specific order with tag details
-- `useAssignOrderTag()` - Assign a tag to an order
-- `useRemoveOrderTag()` - Remove a tag from an order
-- `useBatchAssignOrderTags()` - Bulk assign tags to multiple orders
-- `useBatchRemoveOrderTags()` - Bulk remove tags from multiple orders
-- All hooks follow TanStack Query patterns with proper cache invalidation
-- Tenant isolation enforced on all operations
-
-#### 4. Created `OrderTagsInput` Component (`src/components/admin/orders/OrderTagsInput.tsx`)
-- Tag management UI for order categorization
-- Features:
-  - View assigned tags as color-coded badges
-  - Remove tags with X button on each badge
-  - Popover UI for adding tags with available tags list
-  - Create new tags inline with color picker (9 preset colors)
-  - Keyboard support (Enter to create and assign)
-  - Loading and mutation states with visual feedback
-  - Toast notifications for success/error feedback
-- Props:
-  - `orderId: string` - Required order ID
-  - `readOnly?: boolean` - Disable editing when true
-  - `compact?: boolean` - Smaller size variant for table cells
-- Follows existing TagManager patterns from customer tags system
+### Source Configurations:
+- pos: ShoppingCart icon, green badge
+- storefront: Store icon, purple badge
+- phone: Phone icon, blue badge
+- manual: FileEdit icon, slate badge
+- admin: Monitor icon, indigo badge
+- menu: Utensils icon, orange badge
+- api: Zap icon, cyan badge
 
 ### Files Changed:
-- `supabase/migrations/20260129000001_order_tags_system.sql` (new)
-- `src/lib/queryKeys.ts` (added orderTags query keys)
-- `src/hooks/useOrderTags.ts` (new)
-- `src/components/admin/orders/OrderTagsInput.tsx` (new)
+- src/components/admin/orders/OrderSourceBadge.tsx (NEW)
+- src/pages/admin/Orders.tsx
 
-### Build Status:
-- TypeScript: Compiles with no errors (`npx tsc --noEmit` passes)
-- Note: Pre-existing build issue in PasswordResetPage.tsx (duplicate default export) unrelated to these changes
-
-### Usage Example:
-```tsx
-import { OrderTagsInput } from '@/components/admin/orders/OrderTagsInput';
-
-// In order detail page or table row
-<OrderTagsInput orderId={order.id} />
-
-// Read-only mode for display
-<OrderTagsInput orderId={order.id} readOnly />
-
-// Compact mode for table cells
-<OrderTagsInput orderId={order.id} compact />
-```
+### Notes:
+- TypeScript type checking passes successfully
+- Component follows existing badge patterns (similar to MenuSourceBadge)
+- Supports dark mode with proper color contrasts
