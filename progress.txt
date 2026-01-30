@@ -7530,47 +7530,69 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-### Task: Add real-time revenue chart with daily/weekly/monthly toggle using Recharts
+## ProductPricingSection Component Implementation
 
-**Completed:**
+**Date:** 2026-01-30 15:59:39 UTC
 
-1. **Created RealtimeRevenueChart component** (`src/components/admin/analytics/RealtimeRevenueChart.tsx`)
-   - Built with Recharts (AreaChart) for smooth revenue visualization
-   - Daily/Weekly/Monthly toggle using ToggleGroup component
-   - Real-time updates via Supabase realtime subscriptions
-   - Live indicator badge showing connection status
-   - Auto-refreshes every 60 seconds when live
-   - Shows percentage change vs previous period
-   - Aggregates data from both 'orders' and 'wholesale_orders' tables
-   - Responsive design with proper loading and error states
+### Summary
+Created a new `ProductPricingSection` component that provides a comprehensive pricing interface for products with retail, wholesale, and bulk pricing capabilities.
 
-2. **Features:**
-   - **Daily view**: Last 30 days of revenue data
-   - **Weekly view**: Last 12 weeks of aggregated revenue
-   - **Monthly view**: Last 12 months of aggregated revenue
-   - Gradient fill area chart with emerald color theme
-   - Tooltip showing revenue and period details
-   - Shows total revenue, order count, and trend indicators
+### Features Implemented
+1. **Base Pricing Section**
+   - Cost per unit input (internal cost tracking)
+   - Retail price with margin calculation
+   - Wholesale price with margin calculation
+   - Real-time profit margin display with color-coded feedback (green >40%, yellow >20%, red <20%)
 
-3. **Integrated into:**
-   - `src/pages/admin/FinancialCenterReal.tsx` - Financial Command Center page
-   - `src/components/admin/ModernDashboard.tsx` - Modern Dashboard (replaced placeholder RevenueChartWidget)
+2. **Bulk Pricing Section**
+   - Toggle to enable/disable bulk pricing
+   - Dynamic tier management (add/remove tiers)
+   - Each tier includes: min quantity, max quantity, unit price
+   - Automatic discount percentage calculation vs base price
+   - Visual discount badges
 
-4. **Fixed pre-existing build issues:**
-   - Removed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
-   - Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+3. **Pricing Controls**
+   - Minimum allowed price (regulatory compliance)
+   - Exclude from discounts checkbox
+   - Validation warnings when prices fall below minimum
 
-### Files Changed:
-- `src/components/admin/analytics/RealtimeRevenueChart.tsx` (NEW)
-- `src/pages/admin/FinancialCenterReal.tsx` (MODIFIED - added chart import and usage)
-- `src/components/admin/ModernDashboard.tsx` (MODIFIED - replaced RevenueChartWidget with RealtimeRevenueChart)
-- `src/pages/auth/PasswordResetPage.tsx` (FIXED - removed duplicate export)
-- `src/lib/utils/sanitize.ts` (FIXED - added safeJsonParse function)
+### Component Location
+`src/components/admin/product-form/ProductPricingSection.tsx`
 
-### Technical Details:
-- Uses TanStack Query with queryKeys.analytics.revenue for caching
-- Supabase realtime subscription listens to 'orders' and 'wholesale_orders' tables
-- Groups orders by completed/delivered status for accurate revenue
-- Calculates previous period comparison for trend display
-- Uses date-fns for date manipulation and formatting
+### Interface
+```typescript
+interface BulkPriceTier {
+  id: string;
+  minQuantity: number;
+  maxQuantity: number | null;
+  price: number;
+  discountPercent?: number;
+}
+
+interface ProductPricingData {
+  cost_per_unit: string;
+  retail_price: string;
+  wholesale_price: string;
+  minimum_price: string;
+  exclude_from_discounts: boolean;
+  bulk_pricing_enabled: boolean;
+  bulk_price_tiers: BulkPriceTier[];
+}
+
+interface ProductPricingSectionProps {
+  formData: ProductPricingData;
+  updateFormData: (data: Partial<ProductPricingData>) => void;
+}
+```
+
+### UI Components Used
+- Card, CardContent, CardHeader, CardTitle, CardDescription
+- Input, Label, Button, Checkbox, Badge
+- Lucide icons: DollarSign, TrendingUp, Package, Store, Building2, Plus, Trash2, AlertCircle
+
+### Notes
+- ESLint passes with no errors
+- Follows existing codebase patterns from PricingStep.tsx and ProductForm.tsx
+- Uses shadcn/ui components consistently
+- Named export only (per project conventions)
 
