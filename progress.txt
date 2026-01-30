@@ -7527,43 +7527,55 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-## Task: Build OrdersWidget showing last 10 orders with status badges
 
-### Status: COMPLETED
+## Agent 3 - ProductCategorySelect with Hierarchical Categories
 
-### Summary:
-Created a new dashboard widget component that displays the 10 most recent orders with semantic status badges. The widget follows existing codebase patterns and integrates with the tenant context for proper multi-tenant isolation.
+### Task: Add ProductCategorySelect with hierarchical categories
 
-### Implementation Details:
-1. **OrdersWidget Component** (`src/components/admin/dashboard/OrdersWidget.tsx`)
-   - Displays last 10 orders from the `orders` table
-   - Filters orders by `tenant_id` for multi-tenant isolation
-   - Fetches user profiles to show customer names
-   - Uses TanStack Query with proper query keys (`queryKeys.orders.lists()`)
+**Completed:**
 
-2. **Status Badge System**
-   - Semantic color-coded badges with icons for each status:
-     - `pending`: Yellow with Clock icon
-     - `confirmed`: Blue with CheckCircle icon  
-     - `preparing`: Purple with Package icon
-     - `ready`: Teal with CheckCircle icon
-     - `in_transit`: Indigo with Truck icon
-     - `delivered`: Green with CheckCircle icon
-     - `cancelled`: Red with XCircle icon
-   - Dark mode support with proper color variants
+1. **Created useCategories hook** (`src/hooks/useCategories.ts`)
+   - Fetches categories from Supabase for a given tenant
+   - Builds hierarchical tree structure from flat category data
+   - Provides multiple data formats:
+     - `categories` - Raw flat array from database
+     - `tree` - Hierarchical CategoryNode[] with children
+     - `flattened` - Flat list with depth and path info
+     - `grouped` - Groups organized by root parent for select dropdowns
+   - Utility functions: `getCategoryById`, `getCategoryPath`, `getAncestorIds`, `getDescendantIds`
+   - Uses queryKeys factory for proper cache management
+   - Handles missing table gracefully (code 42P01)
 
-3. **UI Features**
-   - Loading skeleton states while data loads
-   - Empty state with icon when no orders exist
-   - Clickable order rows that navigate to order details
-   - Status dot indicator for quick visual scanning
-   - "View All" button for navigation to full orders page
-   - Responsive layout with proper truncation
+2. **Created ProductCategorySelect component** (`src/components/admin/products/ProductCategorySelect.tsx`)
+   - Hierarchical dropdown with tree structure display
+   - Expand/collapse functionality for parent categories
+   - Search within categories (filters and auto-expands matching results)
+   - Shows full category path when selected (e.g., "Flower > Indica > OG Kush")
+   - Loading, error, and empty states handled
+   - Integrates with TenantAdminAuthContext for multi-tenant support
+   - Props: value, onChange, placeholder, disabled, showPath, allowParentSelection
 
-### Files Changed:
-- `src/components/admin/dashboard/OrdersWidget.tsx` (NEW)
+3. **Updated ProductForm component** (`src/components/admin/products/ProductForm.tsx`)
+   - Added optional `category_id` field to ProductFormData interface
+   - Uses ProductCategorySelect when hierarchical categories exist
+   - Falls back to simple static select if no categories defined
+   - Maintains backwards compatibility with existing `category` string field
+   - When selecting a hierarchical category, sets both `category_id` and `category` (name)
 
-### Notes:
-- ESLint passes with no errors
-- Build has a pre-existing error in PasswordResetPage.tsx (unrelated to this change)
-- Component follows existing widget patterns from RecentOrdersWidget and ActivityFeedWidget
+4. **Fixed pre-existing build issues:**
+   - Removed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
+   - Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+
+### Files Created:
+- `src/hooks/useCategories.ts`
+- `src/components/admin/products/ProductCategorySelect.tsx`
+
+### Files Modified:
+- `src/components/admin/products/ProductForm.tsx` - Integrated ProductCategorySelect
+- `src/pages/auth/PasswordResetPage.tsx` - Fixed duplicate export (pre-existing issue)
+- `src/lib/utils/sanitize.ts` - Added safeJsonParse (pre-existing issue)
+
+### Technical Notes:
+- Database already supports hierarchical categories via `parent_id` self-referential FK
+- Component gracefully degrades to static list if no categories are configured
+- Build passes with no TypeScript errors

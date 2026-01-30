@@ -14,7 +14,10 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
-import { Loader2, Package, DollarSign, Image as ImageIcon, FileText, Barcode, Scale } from "lucide-react";
+import { ProductCategorySelect } from "@/components/admin/products/ProductCategorySelect";
+import { useCategories } from "@/hooks/useCategories";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { Loader2, Package, DollarSign, Image as ImageIcon, FileText, Barcode } from "lucide-react";
 import { toast } from "sonner";
 import { ProductVariantsManager, type ProductVariantsData } from "./ProductVariantsManager";
 
@@ -23,6 +26,7 @@ export interface ProductFormData {
     name: string;
     sku: string;
     category: string;
+    category_id?: string; // Optional hierarchical category reference
     vendor_name: string;
     strain_name: string;
     strain_type: string;
@@ -58,7 +62,8 @@ interface ProductFormProps {
 const DEFAULT_FORM_DATA: ProductFormData = {
     name: "",
     sku: "",
-    category: "flower",
+    category: "",
+    category_id: undefined,
     vendor_name: "",
     strain_name: "",
     strain_type: "",
@@ -90,6 +95,10 @@ export function ProductForm({
     isEditMode,
     storeSettings,
 }: ProductFormProps) {
+    const { tenant } = useTenantAdminAuth();
+    const { categories, getCategoryById } = useCategories(tenant?.id);
+    const hasHierarchicalCategories = categories.length > 0;
+
     const [formData, setFormData] = useState<ProductFormData>(DEFAULT_FORM_DATA);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -224,24 +233,41 @@ export function ProductForm({
 
                             <div className="space-y-2">
                                 <Label>Category *</Label>
-                                <Select
-                                    value={formData.category}
-                                    onValueChange={(value) => setFormData({ ...formData, category: value })}
-                                    required
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select category" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="flower">Flower</SelectItem>
-                                        <SelectItem value="edibles">Edibles</SelectItem>
-                                        <SelectItem value="vapes">Vapes</SelectItem>
-                                        <SelectItem value="concentrates">Concentrates</SelectItem>
-                                        <SelectItem value="pre-rolls">Pre-Rolls</SelectItem>
-                                        <SelectItem value="topicals">Topicals</SelectItem>
-                                        <SelectItem value="gear">Gear</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                {hasHierarchicalCategories ? (
+                                    <ProductCategorySelect
+                                        value={formData.category_id}
+                                        onChange={(categoryId) => {
+                                            const category = getCategoryById(categoryId);
+                                            setFormData({
+                                                ...formData,
+                                                category_id: categoryId,
+                                                // Also set the category string for backwards compatibility
+                                                category: category?.name.toLowerCase() || '',
+                                            });
+                                        }}
+                                        placeholder="Select category"
+                                        disabled={isLoading}
+                                    />
+                                ) : (
+                                    <Select
+                                        value={formData.category}
+                                        onValueChange={(value) => setFormData({ ...formData, category: value })}
+                                        required
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select category" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="flower">Flower</SelectItem>
+                                            <SelectItem value="edibles">Edibles</SelectItem>
+                                            <SelectItem value="vapes">Vapes</SelectItem>
+                                            <SelectItem value="concentrates">Concentrates</SelectItem>
+                                            <SelectItem value="pre-rolls">Pre-Rolls</SelectItem>
+                                            <SelectItem value="topicals">Topicals</SelectItem>
+                                            <SelectItem value="gear">Gear</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                )}
                             </div>
 
                             <div className="space-y-2">
