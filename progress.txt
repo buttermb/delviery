@@ -7459,3 +7459,39 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+### Task: Add OrderExport button generating CSV of filtered orders
+
+**Completed:**
+
+1. **Created OrderExportButton component** (`src/components/admin/orders/OrderExportButton.tsx`)
+   - Reusable button component for exporting orders to CSV
+   - Supports configurable export fields (customer name, email, phone, line items)
+   - Works with various order data structures (regular orders, marketplace orders)
+   - Integrates with ExportOptionsDialog for field selection
+   - Has quick export mode (without dialog) and full options dialog mode
+   - Properly handles order items flattening (one row per item when line_items selected)
+   - Uses the existing useExport hook for CSV generation
+
+2. **Integrated into StorefrontOrders page** (`src/pages/admin/storefront/StorefrontOrders.tsx`)
+   - Replaced non-functional Export button with the new OrderExportButton
+   - Button now exports filtered orders based on search query and status filter
+   - Exports to file named `storefront-orders-YYYY-MM-DD.csv`
+
+3. **Fixed pre-existing build issues:**
+   - Removed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
+   - Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+
+### Files Changed:
+- `src/components/admin/orders/OrderExportButton.tsx` (NEW)
+- `src/pages/admin/storefront/StorefrontOrders.tsx` (MODIFIED)
+- `src/pages/auth/PasswordResetPage.tsx` (FIXED - duplicate export)
+- `src/lib/utils/sanitize.ts` (FIXED - added missing function)
+
+### Notes:
+- The main Orders page already had export functionality inline; the new component can be used to replace that as well for consistency
+- Build passes successfully
+

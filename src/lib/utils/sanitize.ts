@@ -211,3 +211,18 @@ export function sanitizeUrlInput(url: string): string {
     return trimmed.replace(/[<>"']/g, '');
   }
 }
+
+/**
+ * Safely parses JSON with a fallback value.
+ * Returns the fallback if parsing fails or input is null/undefined.
+ * @param json - The JSON string to parse
+ * @param fallback - The fallback value to return on error (default: null)
+ */
+export function safeJsonParse<T>(json: string | null | undefined, fallback: T | null = null): T | null {
+  if (!json) return fallback;
+  try {
+    return JSON.parse(json) as T;
+  } catch {
+    return fallback;
+  }
+}
