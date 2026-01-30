@@ -7531,103 +7531,79 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-# OrderHoldButton Feature Implementation
 
-## Task
-Add OrderHoldButton to pause order processing with reason
+---
 
-## Completed Work
+### Task: Build OrderRushButton to expedite order to front of queue
 
-### 1. Created `useOrderHold` Hook (`src/hooks/useOrderHold.ts`)
-- `useHoldOrder()` mutation: Places an order on hold with a required reason
-  - Stores hold metadata (hold_reason, held_at, held_by, previous_status) in the order's metadata JSONB field
-  - Updates order status to 'on_hold'
-  - Invalidates order-related queries on success
-- `useResumeOrder()` mutation: Resumes a held order
-  - Retrieves the previous status from metadata and restores it
-  - Stores resume metadata (resumed_at, resumed_by)
-  - Validates that order is actually on hold before resuming
-- `useOrderHold()` combined hook: Provides both hold and resume operations with loading states
+**Completed:**
 
-### 2. Created `OrderHoldButton` Component (`src/components/admin/orders/OrderHoldButton.tsx`)
-- Full-featured button component with dialog UI
-- Features:
-  - Toggle between Hold and Resume actions based on current order status
-  - Preset hold reasons for quick selection (e.g., "Pending customer verification", "Payment issue", "Out of stock")
-  - Custom reason text area when "Other" is selected
-  - Shows hold information when resuming (reason, duration, previous status)
-  - Loading states and disabled states during async operations
-  - Warning message about hold implications
-- Variants: `default`, `outline`, `ghost`, `icon`
-- Also includes `OrderHoldAction` compact variant for tables/menus
+1. **Created database migration for rush order functionality** (`supabase/migrations/20260129225246_add_order_rush_priority.sql`)
+   - Added `is_rush` boolean column (default false) to orders table
+   - Added `rushed_at` timestamp to track when order was marked as rush
+   - Added `rushed_by` UUID to track who marked the order as rush
+   - Created indexes for efficient querying of rush orders
+   - Added composite index for tenant + rush + created_at for queue ordering
 
-### 3. Added 'on_hold' Status to Order Types
-- Updated `OrderStatus` type in `OrderRowContextMenu.tsx`
-- Added 'on_hold' to `STATUS_OPTIONS` array with appropriate icon (Ban/PauseCircle)
-- Added 'on_hold' status config in `OrderBulkStatusConfirmDialog.tsx`
-- Added 'on_hold' to status color utilities in `statusColors.ts`
+2. **Created useOrderRush hook** (`src/hooks/useOrderRush.ts`)
+   - `useOrderRush` - Single order rush mutation with:
+     - Toggle rush status with instant UI feedback
+     - Automatic query invalidation
+     - Error handling with toast notifications
+     - Haptic feedback for mobile
+   - `useOrderBulkRush` - Bulk rush operations for multiple orders
 
-### 4. Integrated Hold/Resume Actions into Order Views
+3. **Created OrderRushButton component** (`src/components/admin/OrderRushButton.tsx`)
+   - `OrderRushButton` - Main button component with:
+     - Toggle rush status with single click
+     - Visual indicator (yellow) when order is rushed
+     - Loading state during mutation
+     - Optional confirmation dialog
+     - Tooltip for icon-only variant
+   - `OrderRushBadge` - Small indicator badge showing rush status
+   - `OrderRushMenuItem` - Context menu item variant for rush action
 
-#### OrderRowContextMenu (`src/components/admin/OrderRowContextMenu.tsx`)
-- Added 'hold' and 'resume' action types
-- Added Hold Order menu item (visible when not on_hold, cancelled, completed, or delivered)
-- Added Resume Order menu item (visible when on_hold)
-- Added keyboard shortcuts (H for Hold, R for Resume)
-- Updated `useOrderContextActions` hook with `onHold` and `onResume` callbacks
+4. **Updated OrderRowContextMenu** (`src/components/admin/OrderRowContextMenu.tsx`)
+   - Added 'rush' to OrderContextAction type
+   - Added isRush and showRushAction props
+   - Added Rush Order menu item with Zap icon
+   - Updated useOrderContextActions hook to handle onRush callback
+   - Rush action disabled for cancelled/delivered/completed orders
 
-#### LiveOrdersKanban (`src/components/admin/live-orders/LiveOrdersKanban.tsx`)
-- Added new "ON HOLD" column to the Kanban board
-- Added Hold Order dropdown menu option for non-hold orders
-- Added Resume Order dropdown menu option for on_hold orders
-- Uses amber/warning color scheme for hold column
+5. **Updated Order types** (`src/types/order.ts`)
+   - Added is_rush, rushed_at, and rushed_by fields to Order interface
 
-## Files Modified
-- `src/hooks/useOrderHold.ts` (NEW)
-- `src/components/admin/orders/OrderHoldButton.tsx` (NEW)
-- `src/components/admin/OrderRowContextMenu.tsx`
-- `src/components/admin/orders/OrderBulkStatusConfirmDialog.tsx`
-- `src/components/admin/live-orders/LiveOrdersKanban.tsx`
-- `src/lib/utils/statusColors.ts`
+### Files Changed:
+- `supabase/migrations/20260129225246_add_order_rush_priority.sql` (NEW)
+- `src/hooks/useOrderRush.ts` (NEW)
+- `src/components/admin/OrderRushButton.tsx` (NEW)
+- `src/components/admin/OrderRowContextMenu.tsx` (MODIFIED)
+- `src/types/order.ts` (MODIFIED)
 
-## Usage Examples
+### Usage Examples:
 
-### Using OrderHoldButton in a component:
 ```tsx
-import { OrderHoldButton } from '@/components/admin/orders/OrderHoldButton';
+// Basic usage
+<OrderRushButton orderId={order.id} orderNumber={order.order_number} isRush={order.is_rush} />
 
-<OrderHoldButton
+// Icon-only with tooltip
+<OrderRushButton orderId={order.id} isRush={order.is_rush} showLabel={false} size="icon" />
+
+// With confirmation dialog
+<OrderRushButton orderId={order.id} isRush={order.is_rush} showConfirmation />
+
+// Badge for order lists
+<OrderRushBadge isRush={order.is_rush} />
+
+// In context menu
+<OrderRowContextMenu
   orderId={order.id}
-  orderNumber={order.order_number}
-  currentStatus={order.status}
-  tenantId={tenantId}
-  metadata={order.metadata}
-  onComplete={() => refetch()}
+  isRush={order.is_rush}
+  onAction={(action) => action === 'rush' && toggleRush(order.id)}
 />
 ```
 
-### Using the hook directly:
-```tsx
-import { useOrderHold } from '@/hooks/useOrderHold';
-
-const { holdOrder, resumeOrder, isProcessing } = useOrderHold();
-
-// Hold an order
-holdOrder({
-  orderId: '...',
-  reason: 'Customer requested delay',
-  tenantId: '...',
-  previousStatus: 'confirmed',
-});
-
-// Resume an order
-resumeOrder({
-  orderId: '...',
-  tenantId: '...',
-});
-```
-
-## Testing Notes
-- TypeScript compilation passes with no errors
-- Hold metadata is stored in the existing `metadata` JSONB field (no database migration needed)
-- The previous status is stored when holding so orders can be restored to their prior state
+### Notes:
+- TypeScript type checking passes successfully
+- Pre-existing build error (duplicate export in PasswordResetPage.tsx) is unrelated to these changes
+- Rush orders can be sorted to front of queue by ordering with: `ORDER BY is_rush DESC, created_at ASC`
