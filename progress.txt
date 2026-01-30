@@ -7459,3 +7459,115 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+## Task: Build DashboardSearchBar with Global Search Across All Modules
+
+### Completed
+
+#### 1. Created `DashboardSearchBar` Component (`src/components/admin/dashboard/DashboardSearchBar.tsx`)
+A comprehensive global search bar component for the admin dashboard with the following features:
+
+**Search Capabilities:**
+- Searches across all major modules simultaneously:
+  - Customers (profiles)
+  - Orders
+  - Products
+  - Wholesale clients
+  - Wholesale orders
+  - Suppliers
+  - Couriers
+- Real-time search with 300ms debouncing
+- Minimum 2 characters to trigger search
+- Results limited to 5 per category for performance
+
+**UI/UX Features:**
+- Popover-based search interface with Command component
+- Categorized results with module-specific icons and colors
+- Visual badges showing result type
+- "View all results" option for full search
+- Loading state with spinner
+- Empty state with helpful messaging
+- Responsive design (compact and default variants)
+
+**Keyboard Shortcuts:**
+- Cmd/Ctrl+K to open search from anywhere
+- Escape to close
+- Arrow keys for navigation
+- Enter to select result
+
+**Recent Searches:**
+- Persisted to localStorage
+- Maximum 5 recent items tracked
+- Quick access when search is empty
+- Clear all button
+
+**Navigation:**
+- Results link directly to relevant admin pages
+- Uses tenant-aware navigation via `useTenantNavigate`
+
+#### 2. Created `useGlobalSearch` Hook (`src/hooks/useGlobalSearch.ts`)
+A reusable hook for global search functionality:
+
+**Features:**
+- TanStack Query integration with proper caching
+- Parallel database queries for performance
+- Configurable options:
+  - `minChars`: Minimum characters before search (default: 2)
+  - `limitPerCategory`: Max results per type (default: 5)
+  - `categories`: Which modules to search
+  - `enabled`: Toggle search on/off
+- Returns both flat and grouped results
+- Error handling with logger
+- Tenant-aware queries with proper filtering
+
+**Search Types:**
+- customer
+- order
+- product
+- invoice
+- supplier
+- courier
+- wholesale_client
+- wholesale_order
+- menu
+
+#### 3. Updated Dashboard Exports (`src/components/admin/dashboard/index.ts`)
+- Added export for `DashboardSearchBar` component
+- Added type exports for `GlobalSearchResult` and `SearchResultType`
+
+### Usage Example
+
+```tsx
+import { DashboardSearchBar } from '@/components/admin/dashboard';
+
+// In dashboard header
+<DashboardSearchBar 
+  placeholder="Search customers, orders, products..."
+  variant="default" // or "compact"
+/>
+
+// Or use the hook directly
+import { useGlobalSearch } from '@/hooks/useGlobalSearch';
+
+const { results, isSearching, search } = useGlobalSearch({
+  categories: ['customer', 'order', 'product'],
+  limitPerCategory: 10
+});
+```
+
+### Files Created/Changed:
+- `src/components/admin/dashboard/DashboardSearchBar.tsx` (NEW)
+- `src/hooks/useGlobalSearch.ts` (NEW)
+- `src/components/admin/dashboard/index.ts` (MODIFIED - added exports)
+
+### Build Status:
+- TypeScript: Compiles with no errors (`npx tsc --noEmit` passes)
+- Note: Pre-existing build issues exist in `PasswordResetPage.tsx` (duplicate default export) unrelated to these changes
+
+### Technical Notes:
+- Uses proper FloraIQ patterns (TanStack Query, tenant context, logger)
+- Follows project code style (named exports, @/ imports)
+- Keyboard shortcuts follow standard conventions (Cmd+K)
+- Recent searches use localStorage with proper error handling
