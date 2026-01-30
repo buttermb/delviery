@@ -7531,39 +7531,73 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-## Task: Add RecentCustomersWidget showing new signups this week
+---
 
-### Completed
+### Task: Build ProductBarcodeGenerator creating scannable barcodes
 
-#### 1. Created RecentCustomersWidget Component (`src/components/admin/dashboard/RecentCustomersWidget.tsx`)
-- New dashboard widget displaying customer signups from the past week
-- Features:
-  - Displays up to 5 most recent customers with avatar initials, name, email
-  - Shows relative signup time (e.g., "2 days ago") using date-fns
-  - Loading skeleton state during data fetch
-  - Empty state when no new signups this week
-  - Summary footer showing total new customers count
-  - Click navigation to individual customer CRM pages
-  - "View All" button links to CRM clients page
-- Uses TanStack Query with queryKeys pattern for data fetching
-- Tenant-aware with proper tenant_id filtering
-- Follows existing widget patterns (Card, Badge, Button, Skeleton)
+**Completed:**
 
-#### 2. Updated Dashboard Layout Configuration (`src/hooks/useDashboardLayout.ts`)
-- Added 'recent-customers' to WidgetId type
-- Added widget to DEFAULT_WIDGETS array with medium size
-- Added widget to SALES_PRESET (visible) - relevant for sales tracking
-- Added widget to INVENTORY_PRESET (hidden) - not relevant for inventory focus
+1. **Created ProductBarcodeGenerator component** (`src/components/admin/products/ProductBarcodeGenerator.tsx`)
+   - Full-featured barcode generator for products
+   - Generates scannable barcodes using JsBarcode library
+   - Supports both dialog and inline rendering modes
+   - Tenant-aware with proper context integration
 
-#### 3. Integrated Widget into ModernDashboard (`src/components/admin/ModernDashboard.tsx`)
-- Imported RecentCustomersWidget component
-- Added widget to the right sidebar section alongside InventoryAlertsWidget
+2. **Multiple Barcode Format Support:**
+   - CODE128 (recommended - supports any ASCII characters)
+   - CODE39 (alphanumeric with special characters)
+   - EAN13 (13 numeric digits)
+   - UPC (12 numeric digits)
+   - Each format has validation to ensure proper input
 
-#### 4. Exported Widget from Dashboard Index (`src/components/admin/dashboard/index.ts`)
-- Added named export for RecentCustomersWidget
+3. **Product Integration:**
+   - Product selection dropdown for tenants
+   - Uses existing barcode/SKU from products when available
+   - Custom barcode value option for flexibility
+   - Support for generating multiple barcodes at once (up to 100)
 
-### Technical Details
-- Query key: `['customers', 'recent-week', tenant?.id]`
-- Data source: `customers` table filtered by `tenant_id` and `created_at >= 7 days ago`
-- Stale time: 30 seconds for reasonable refresh rate
-- Widget size: medium (fits in sidebar)
+4. **Download/Print Functionality:**
+   - Download individual barcodes as PNG images
+   - Download all generated barcodes as a single image sheet
+   - Print functionality with proper print-optimized layout
+   - Copy barcode value to clipboard with visual feedback
+
+5. **Optional QR Code Generation:**
+   - Toggle to include QR codes with product data
+   - QR codes contain product SKU, barcode value, and name
+
+6. **Additional Fixes:**
+   - Fixed duplicate default export in `PasswordResetPage.tsx`
+   - Added missing `safeJsonParse` function to `sanitize.ts`
+
+### Files Changed:
+- `src/components/admin/products/ProductBarcodeGenerator.tsx` (NEW)
+- `src/pages/auth/PasswordResetPage.tsx` (Fixed duplicate export)
+- `src/lib/utils/sanitize.ts` (Added safeJsonParse function)
+
+### Component Usage:
+```tsx
+import { ProductBarcodeGenerator } from '@/components/admin/products/ProductBarcodeGenerator';
+
+// As a dialog (default)
+<ProductBarcodeGenerator
+  open={isOpen}
+  onOpenChange={setIsOpen}
+  product={selectedProduct}  // optional
+/>
+
+// Inline mode
+<ProductBarcodeGenerator mode="inline" />
+```
+
+### Features:
+- Validates barcode values for each format before generation
+- Error handling with user-friendly messages
+- Loading states during generation
+- Grid/list view for generated barcodes
+- Responsive layout supporting mobile and desktop
+
+### Notes:
+- Build passes successfully with TypeScript strict mode
+- Component follows FloraIQ admin patterns (useTenantAdminAuth, queryKeys)
+- Uses shadcn/ui components for consistent styling
