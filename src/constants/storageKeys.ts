@@ -113,6 +113,10 @@ export const STORAGE_KEYS = {
 
   // Session preferences
   REMEMBER_ME: 'remember_me',
+
+  // Weather widget
+  WEATHER_LOCATION: 'weather_location',
+  WEATHER_UNIT: 'weather_unit',
 } as const;
 
 /**

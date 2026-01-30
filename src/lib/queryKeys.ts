@@ -698,6 +698,17 @@ export const queryKeys = {
     plans: () => ['subscription-plans'] as const,
   },
 
+  // Weather (for delivery planning)
+  weather: {
+    all: ['weather'] as const,
+    current: (location?: string) =>
+      [...queryKeys.weather.all, 'current', location] as const,
+    forecast: (location?: string, days?: number) =>
+      [...queryKeys.weather.all, 'forecast', location, days] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.weather.all, 'tenant', tenantId] as const,
+  },
+
   // Settings Versions
   settingsVersions: {
     all: ['settings-versions'] as const,

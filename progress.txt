@@ -7460,31 +7460,92 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-## Task: Build MenusListPage showing all product menus
 
-### Completed:
-1. Created MenusListPage component (src/pages/admin/MenusListPage.tsx)
-   - Shows all product menus with filtering by status (all/active/soft_burned/hard_burned)
-   - Search functionality by menu name and description
-   - Stats cards showing: Active Menus, Total Views, Total Orders, Total Revenue
-   - Grid/List view toggle with responsive design
-   - Pagination using StandardPagination component
-   - Uses existing MenuCard component for menu display
-   - Create Menu button with CreateMenuDialog
-   - Mobile-friendly responsive layout
+## Task: Build WeatherWidget for delivery planning with API integration
 
-2. Added routing in App.tsx
-   - Added lazy import for MenusListPage
-   - Added route at /menus under tenant admin (feature-protected with disposable-menus)
+### Completed
 
-3. Fixed pre-existing build errors:
-   - Removed duplicate default export in PasswordResetPage.tsx
-   - Added missing safeJsonParse export to src/lib/utils/sanitize.ts
+#### 1. Added Weather Query Keys (`src/lib/queryKeys.ts`)
+- Added `weather` query key factory with:
+  - `weather.all` - Base key for all weather queries
+  - `weather.current(location)` - For current weather data
+  - `weather.forecast(location, days)` - For forecast queries
+  - `weather.byTenant(tenantId)` - For tenant-specific weather settings
 
-### Files Modified:
-- src/pages/admin/MenusListPage.tsx (new)
-- src/App.tsx (routing changes)
-- src/pages/auth/PasswordResetPage.tsx (bugfix)
-- src/lib/utils/sanitize.ts (bugfix)
+#### 2. Added Weather Storage Keys (`src/constants/storageKeys.ts`)
+- Added `WEATHER_LOCATION` - For persisting user's weather location
+- Added `WEATHER_UNIT` - For persisting temperature unit preference (metric/imperial)
 
-### Build Status: SUCCESS
+#### 3. Created fetch-weather Edge Function (`supabase/functions/fetch-weather/index.ts`)
+- Full OpenWeatherMap API integration for current weather and 5-day forecast
+- Request validation using Zod schema (latitude, longitude, units)
+- Comprehensive weather condition assessment for delivery planning:
+  - Temperature extremes (heat warnings, freezing conditions)
+  - Wind speed analysis (high wind, dangerous wind warnings)
+  - Precipitation detection (rain, snow, thunderstorms)
+  - Visibility conditions (fog, mist)
+  - Forecast-based alerts for incoming weather changes
+- Delivery condition severity ratings: good, moderate, poor, severe
+- Auto-generated delivery recommendations based on conditions
+- Mock data fallback when API key not configured (demo mode)
+- Proper CORS handling and error responses
+
+#### 4. Created useWeatherData Hook (`src/hooks/useWeatherData.ts`)
+- Custom TanStack Query hook for weather data fetching
+- TypeScript interfaces for all weather data types:
+  - WeatherSeverity, WeatherCondition, CurrentWeather
+  - ForecastHour, DeliveryAlert, WeatherData, WeatherLocation
+- Helper functions exported:
+  - `getWeatherIconName()` - Map condition codes to icon names
+  - `getSeverityColor()` - Get color class for severity level
+  - `getSeverityVariant()` - Get Badge variant for severity
+  - `formatTemperature()` - Format temp with unit (F/C)
+  - `formatWindSpeed()` - Format wind with unit (mph/m/s)
+  - `getSavedLocation()` / `saveLocation()` - localStorage persistence
+- Query configuration:
+  - 10 minute stale time for weather data
+  - 30 minute auto-refetch interval
+  - Automatic retry on failure (2 retries)
+
+#### 5. Created WeatherWidget Component (`src/components/admin/dashboard/WeatherWidget.tsx`)
+- Full-featured weather dashboard widget with:
+  - Current conditions display (temperature, description, location)
+  - Dynamic weather icons based on condition codes
+  - Weather details grid (feels like, wind, humidity, visibility)
+  - Delivery conditions banner with severity badge and recommendation
+  - Weather alerts section with severity-colored icons
+  - Hourly forecast scrollable strip (next 6 hours)
+- State management:
+  - Auto-requests browser geolocation on mount
+  - Falls back to Los Angeles if geolocation denied
+  - Persists location in localStorage
+  - Manual refresh button with loading spinner
+- Comprehensive loading, error, and empty states
+- Responsive design with proper shadcn/ui components
+
+#### 6. Integrated Widget into Dashboard
+- Added 'weather' to WidgetId type union in `useDashboardLayout.ts`
+- Added WeatherWidget to all dashboard presets:
+  - Default preset: visible, order 5, size medium
+  - Sales preset: hidden (order 7)
+  - Inventory preset: visible, order 5 (useful for delivery planning)
+- Added WeatherWidget import and render to `ModernDashboard.tsx`
+- Widget appears in right sidebar above inventory alerts
+
+### Technical Notes
+- Uses named exports only (no default exports) per codebase conventions
+- All imports use `@/` alias
+- Logging uses `logger` from `@/lib/logger`
+- Storage uses constants from `@/constants/storageKeys`
+- Edge function imports from `_shared/deps.ts`
+- TypeScript strict mode compliant
+- ESLint clean with no warnings
+
+### Files Changed
+- `src/lib/queryKeys.ts` - Added weather query keys
+- `src/constants/storageKeys.ts` - Added weather storage keys
+- `src/hooks/useWeatherData.ts` - New hook (created)
+- `src/hooks/useDashboardLayout.ts` - Added weather widget to layout
+- `src/components/admin/dashboard/WeatherWidget.tsx` - New component (created)
+- `src/components/admin/ModernDashboard.tsx` - Added widget to render
+- `supabase/functions/fetch-weather/index.ts` - New edge function (created)

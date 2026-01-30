@@ -21,6 +21,7 @@ import { RevenueChartWidget } from './dashboard/RevenueChartWidget';
 import { RevenuePredictionWidget } from './dashboard/RevenuePredictionWidget';
 import { TopProductsWidget } from './dashboard/TopProductsWidget';
 import { AutoReorderSuggestionsWidget } from './dashboard/AutoReorderSuggestionsWidget';
+import { WeatherWidget } from './dashboard/WeatherWidget';
 import { ActionableInsights } from '@/components/admin/ActionableInsights';
 import { DashboardLayoutEditor } from './dashboard/DashboardLayoutEditor';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -193,6 +194,7 @@ export function ModernDashboard() {
         </div>
 
         <div className="space-y-4 sm:space-y-6">
+          <WeatherWidget />
           <InventoryAlertsWidget />
           <AutoReorderSuggestionsWidget />
           <ActivityFeedWidget />
