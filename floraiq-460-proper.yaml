@@ -151,28 +151,28 @@ tasks:
     completed: true
   - title: Add OrderTagsInput for custom categorization of orders
     parallel_group: 6
-    completed: false
+    completed: true
   - title: Build OrderSourceBadge showing POS storefront phone manual source
     parallel_group: 6
-    completed: false
+    completed: true
   - title: Add OrderPriorityFlag with high normal low indicators
     parallel_group: 6
-    completed: false
+    completed: true
   - title: Build OrderDeliveryWindow showing scheduled time slot
     parallel_group: 6
-    completed: false
+    completed: true
   - title: Add OrderAddressCard with map preview and directions link
     parallel_group: 6
-    completed: false
+    completed: true
   - title: Build OrderCustomerCard showing customer info and order history count
     parallel_group: 6
-    completed: false
+    completed: true
   - title: Add OrderPaymentMethodBadge showing cash card invoice crypto
     parallel_group: 6
-    completed: false
+    completed: true
   - title: Build RecurringOrderSetup for subscription-style repeat orders
     parallel_group: 6
-    completed: false
+    completed: true
   - title: Add OrderSplitButton to split order into multiple shipments
     parallel_group: 6
     completed: false

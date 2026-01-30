@@ -7533,90 +7533,65 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: Build RecurringOrderSetup for subscription-style repeat orders
+### Task: Add OrderSplitButton to split order into multiple shipments
 
-### Completed
+**Completed:**
 
-#### 1. Created Query Keys for Recurring Orders (`src/lib/queryKeys.ts`)
-- Added `recurringOrders` query key factory with:
-  - `recurringOrders.all` - Base key for all recurring order queries
-  - `recurringOrders.lists()` - For recurring order list queries
-  - `recurringOrders.list(tenantId, filters)` - For tenant-specific recurring order lists
-  - `recurringOrders.details()` - For recurring order detail queries
-  - `recurringOrders.detail(id)` - For specific recurring order details
-  - `recurringOrders.byClient(clientId)` - For client-specific recurring orders
-  - `recurringOrders.upcoming(tenantId)` - For upcoming recurring orders
+1. **Created useOrderSplit hook** (`src/hooks/useOrderSplit.ts`)
+   - Handles splitting an order into multiple shipments
+   - Creates new orders from the original order with allocated items
+   - Distributes delivery fees, discounts, and tips proportionally across shipments
+   - Updates original order status to 'split' after successful split
+   - Invalidates relevant TanStack Query caches
+   - Provides loading state, error handling, and haptic feedback
+   - Exports `OrderItem` and `ShipmentAllocation` types for reuse
 
-#### 2. Created useRecurringOrders Hook (`src/hooks/useRecurringOrders.ts`)
-- Full-featured hook for managing recurring order schedules:
-  - **Types**: `RecurringOrderItem`, `RecurringOrderFrequency`, `RecurringOrderSchedule`, `CreateRecurringOrderInput`, `UpdateRecurringOrderInput`
-  - **Query**: Fetches all recurring order schedules with client and runner data joined
-  - **Mutations**:
-    - `createSchedule` - Create new recurring order schedule
-    - `updateSchedule` - Update existing schedule
-    - `toggleActive` - Pause/resume a schedule
-    - `deleteSchedule` - Remove a schedule
-    - `triggerOrderNow` - Manually trigger an order from a schedule
-  - **Computed Values**:
-    - `activeSchedules` - Filter for active schedules only
-    - `upcomingCount` - Count of schedules due within 7 days
-    - `totalMonthlyValue` - Estimated monthly revenue from all active schedules
-- Uses TanStack Query with proper query key patterns
-- Includes toast notifications for success/error states
-- Proper error logging with component context
+2. **Created OrderSplitDialog component** (`src/components/admin/OrderSplitDialog.tsx`)
+   - Dialog for allocating order items across multiple shipments
+   - Configurable number of shipments (2-5)
+   - Auto-distribute feature to evenly allocate items
+   - Real-time shipment summaries showing item count and subtotal
+   - Validation for proper item allocation
+   - Color-coded shipment columns for visual clarity
+   - Responsive with scroll area for many items
 
-#### 3. Created RecurringOrderSetup Component (`src/components/admin/recurring-orders/RecurringOrderSetup.tsx`)
-- Comprehensive form for creating/editing recurring order schedules:
-  - **Basic Info Section**: Schedule name, client selection with outstanding balance display
-  - **Schedule Settings Section**:
-    - Frequency options: Weekly, Bi-Weekly, Monthly, Quarterly
-    - First order date picker
-    - Day of week preference (for weekly/biweekly)
-    - Day of month preference (for monthly/quarterly)
-  - **Order Items Section**:
-    - Dynamic product list with add/remove functionality
-    - Product selection from wholesale inventory
-    - Quantity and price inputs per item
-    - Running total calculation
-  - **Delivery & Automation Section**:
-    - Delivery address with auto-fill from client
-    - Delivery notes
-    - Auto-confirm orders toggle
-    - Auto-assign runner toggle with preferred runner selection
-  - **Summary Card**: Natural language preview of the schedule configuration
-- Uses SafeModal for unsaved changes protection
-- Zod validation schema for form data
-- React Hook Form integration
-- Supports both create and edit modes
+3. **Created OrderSplitButton component** (`src/components/admin/OrderSplitButton.tsx`)
+   - Trigger button to open the split dialog
+   - Can accept order data directly or fetch by orderId
+   - Validates order status before allowing split (prevents re-splitting)
+   - Supports various button variants and sizes
+   - Icon-only mode with tooltip support
+   - Loading state while fetching order data
 
-#### 4. Created RecurringOrdersList Component (`src/components/admin/recurring-orders/RecurringOrdersList.tsx`)
-- Dashboard-style list view for recurring order schedules:
-  - **Summary Stats** (when not filtered by client):
-    - Active schedules count
-    - Schedules due this week
-    - Estimated monthly value
-  - **Schedule Cards** showing:
-    - Schedule name and client
-    - Frequency and next order date with status badges
-    - Product count and order value
-    - Product preview badges
-    - Automation status badges (auto-confirm, auto-assign)
-  - **Actions Menu**:
-    - Create order now (manual trigger)
-    - Edit schedule
-    - Pause/Resume schedule
-    - Delete schedule with confirmation
-  - **Empty State**: Helpful message with create button
-- Supports filtering by client ID
-- Compact mode for embedded usage
+4. **Updated admin components index** (`src/components/admin/index.ts`)
+   - Exported OrderSplitButton and OrderSplitDialog
 
-#### 5. Created Index Export (`src/components/admin/recurring-orders/index.ts`)
-- Clean exports for `RecurringOrderSetup` and `RecurringOrdersList`
+### Files Created/Changed:
+- `src/hooks/useOrderSplit.ts` (NEW)
+- `src/components/admin/OrderSplitDialog.tsx` (NEW)
+- `src/components/admin/OrderSplitButton.tsx` (NEW)
+- `src/components/admin/index.ts` (MODIFIED)
 
-### Additional Fixes (Pre-existing Issues)
-- Fixed duplicate `export default` in `src/pages/auth/PasswordResetPage.tsx`
-- Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+### Usage Example:
+```tsx
+// With order data
+<OrderSplitButton
+  order={orderData}
+  onSuccess={(newOrderIds) => console.log('Split into:', newOrderIds)}
+/>
 
-### Build Status
-- ✅ TypeScript compilation successful
-- ✅ Production build passes
+// With orderId only (fetches order data)
+<OrderSplitButton
+  orderId={orderId}
+  variant="ghost"
+  size="icon"
+  showLabel={false}
+/>
+```
+
+### Features:
+- Multi-tenant aware (uses tenant context for isolation)
+- Proper error handling with toast notifications
+- Prevents splitting of delivered, cancelled, or already-split orders
+- Creates properly numbered split orders (e.g., "ORD-123-1", "ORD-123-2")
+- Adds delivery notes documenting the split relationship
