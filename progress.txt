@@ -7499,55 +7499,63 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-
 ---
 
-### Task: Add ProductStockLevelInput with low stock threshold setting
+### Task: Build OrderSMSButton to send status updates via Twilio
 
 **Completed:**
 
-1. **Created ProductStockLevelInput component** (`src/components/admin/products/ProductStockLevelInput.tsx`)
-   - Combined input for stock quantity and low stock threshold
-   - Visual status indicator showing stock status (out of stock, critical, low stock, in stock)
-   - Color-coded feedback: red for out/critical, yellow/amber for low, green for ok
-   - Bell icon for threshold input to indicate alert functionality
-   - Configurable to show/hide quantity input via `showQuantityInput` prop
-   - Helper text explaining threshold behavior
+1. **Created useSendOrderSMS hook** (`src/hooks/useSendOrderSMS.ts`)
+   - Integrates with existing `send-sms` edge function via Supabase functions
+   - Provides order-specific SMS templates for different statuses (confirmed, preparing, ready, in_transit, delivered, cancelled)
+   - Helper functions to extract customer name and phone from various order formats
+   - Proper authentication via session token
+   - Uses TanStack Query mutation for loading states and error handling
 
-2. **Component Features:**
-   - `StockLevelValue` interface with `quantity` and `lowStockThreshold` fields
-   - `getStockStatus()` function that calculates stock status based on quantity vs threshold
-   - Four stock status levels: out (0 units), critical (<=50% of threshold), low (<=threshold), ok
-   - Real-time visual feedback as values change
-   - Explanation panel showing alert level thresholds
-   - Disabled state support
-   - Follows FloraIQ design patterns and uses shadcn/ui components
+2. **Created OrderSMSButton component** (`src/components/admin/orders/OrderSMSButton.tsx`)
+   - Popover-based UI with template selection dropdown
+   - Pre-fills message based on order status and customer info
+   - Custom message option for personalized communications
+   - SMS character count indicator with multipart message warning
+   - Loading state while sending, success/error toasts
+   - Disabled state when no phone number is available
+   - Supports both icon-only and button variants
 
-3. **Stock Status Logic:**
-   - Out of Stock: quantity === 0
-   - Critical: quantity <= threshold * 0.5
-   - Low Stock: quantity <= threshold
-   - In Stock: quantity > threshold
+3. **Integrated into Orders.tsx page**
+   - Added SMS button in the table row actions (visible on hover)
+   - Added SMS button in the mobile drawer quick actions (grid layout)
+   - Button passes order data and tenant ID for proper SMS logging
+   - Fixed pre-existing bugs: renamed incorrect function references (handlePrintOrderFunc → handlePrintOrder, etc.)
+   - Removed duplicate import of useAdminOrdersRealtime
+
+4. **Fixed pre-existing build issues**
+   - Removed duplicate default export in PasswordResetPage.tsx
+   - Added missing `safeJsonParse` function to sanitize.ts
 
 ### Files Changed:
-- `src/components/admin/products/ProductStockLevelInput.tsx` (NEW)
+- `src/hooks/useSendOrderSMS.ts` (NEW)
+- `src/components/admin/orders/OrderSMSButton.tsx` (NEW)
+- `src/pages/admin/Orders.tsx` (modified - added SMS button, fixed function references)
+- `src/lib/utils/sanitize.ts` (modified - added safeJsonParse)
+- `src/pages/auth/PasswordResetPage.tsx` (modified - fixed duplicate export)
 
-### Usage Example:
-```tsx
-import { ProductStockLevelInput, StockLevelValue } from '@/components/admin/products/ProductStockLevelInput';
+### SMS Template Messages:
+- **Current Status Update**: Generic message with current order status
+- **Confirmed**: "Your order has been confirmed and is being processed"
+- **Preparing**: "Your order is now being prepared"
+- **Ready**: "Your order is ready for pickup"
+- **In Transit**: "Your order is on its way, driver en route"
+- **Delivered**: "Your order has been delivered"
+- **Cancelled**: "Your order has been cancelled"
+- **Custom**: Blank template for personalized messages
 
-const [stockValue, setStockValue] = useState<StockLevelValue>({
-  quantity: '50',
-  lowStockThreshold: '10'
-});
-
-<ProductStockLevelInput
-  value={stockValue}
-  onChange={setStockValue}
-/>
-```
+### Integration Points:
+- Uses existing `send-sms` Supabase edge function (Twilio integration)
+- Leverages `getSMSCharInfo` from smsValidation utility for character counting
+- Follows existing QuickMessageButton UI patterns
+- Compatible with multiple order formats (orders, unified_orders, etc.)
 
 ### Notes:
-- Component can be integrated into ProductForm to replace the separate low_stock_alert input
-- Visual feedback helps users understand how thresholds affect stock status
-- ESLint passes successfully
+- Build passes successfully with no TypeScript errors
+- Button gracefully handles missing phone numbers (disabled with tooltip)
+- Templates automatically substitute customer name and order number
