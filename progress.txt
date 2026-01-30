@@ -7459,3 +7459,50 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+### Task: Add OrderPriorityFlag with high normal low indicators
+
+**Completed:**
+
+1. **Created OrderPriorityFlag component** (`src/components/admin/orders/OrderPriorityFlag.tsx`)
+   - Displays a badge indicating the priority level of an order
+   - Supports three priority levels: high, normal, low
+   - Uses semantic colors from the design system:
+     - High: destructive/red with AlertTriangle icon (includes pulse animation)
+     - Normal: info/blue with Flag icon
+     - Low: success/green with CheckCircle2 icon
+   - Follows existing badge component patterns (InventoryStatusBadge, MenuSourceBadge)
+   - Configurable props:
+     - `priority`: 'high' | 'normal' | 'low' (required)
+     - `className`: optional additional classes
+     - `showIcon`: boolean, default true
+     - `showLabel`: boolean, default true
+     - `size`: 'sm' | 'default' | 'lg'
+   - Includes proper TypeScript types with exported `OrderPriority` type
+   - Dark mode support with appropriate color adjustments
+   - Hover tooltip with full priority label
+
+### Files Changed:
+- `src/components/admin/orders/OrderPriorityFlag.tsx` (NEW)
+
+### Usage Example:
+```tsx
+import { OrderPriorityFlag } from '@/components/admin/orders/OrderPriorityFlag';
+
+// Basic usage
+<OrderPriorityFlag priority="high" />
+
+// Icon only (compact)
+<OrderPriorityFlag priority="normal" showLabel={false} />
+
+// Large size
+<OrderPriorityFlag priority="low" size="lg" />
+```
+
+### Notes:
+- TypeScript type checking passes successfully
+- ESLint passes with no errors
+- Pre-existing build error in PasswordResetPage.tsx (multiple default exports) is unrelated
+- Component ready for integration into order list/detail views
