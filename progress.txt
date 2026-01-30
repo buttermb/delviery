@@ -7459,3 +7459,63 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+## Task: Build CreateOrderForm with Customer Selection and Product Picker
+
+### Completed
+
+#### 1. Created CreateOrderForm Component (`src/components/crm/CreateOrderForm.tsx`)
+- Comprehensive order creation form with customer selection and product picker
+- Uses existing `ClientSelector` component for customer selection with search and create functionality
+- Uses existing `LineItemsEditor` component for product picking with stock indicators
+- Features:
+  - Order type selector (Standard Order, Pre-Order, Invoice)
+  - Date picker for expected/due dates
+  - Notes/instructions field
+  - Real-time order summary with subtotal and total calculations
+  - Responsive two-column layout
+  - Loading and disabled states on submit button
+- Props interface for flexibility:
+  - `onSubmit` - Callback with order data
+  - `onCancel` - Cancel action callback
+  - `isSubmitting` - Loading state control
+  - `defaultOrderType` - Default order type selection
+  - `showOrderTypeSelector` - Toggle order type visibility
+  - `selectedClient` - Pre-select a client
+  - `title` and `submitLabel` - Customizable text
+
+#### 2. Created useCreateCRMOrder Hook (`src/hooks/crm/useCreateCRMOrder.ts`)
+- Unified hook for creating CRM orders as pre-orders or invoices
+- Handles both order types with appropriate database operations:
+  - Pre-Orders: Creates in `crm_pre_orders` table with pending status
+  - Invoices: Creates in `crm_invoices` table with draft status
+- Returns typed result with order type and data
+- Includes optimistic updates and query invalidation
+- Proper error handling with toast notifications and logging
+
+#### 3. Created CreateOrderPage (`src/pages/admin/CreateOrderPage.tsx`)
+- Admin page that uses the CreateOrderForm component
+- Handles tenant context validation with loading and error states
+- Logs activity after order creation (pre_order_created or invoice_created)
+- Navigates to appropriate detail page after successful creation
+
+#### 4. Updated Component Exports (`src/components/crm/index.ts`)
+- Added exports for CreateOrderForm, ClientSelector, CreateClientDialog, and LineItemsEditor
+
+#### 5. Fixed Pre-existing Build Issues
+- Removed duplicate default export in `PasswordResetPage.tsx`
+- Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+
+### Files Changed
+- `src/components/crm/CreateOrderForm.tsx` (new)
+- `src/hooks/crm/useCreateCRMOrder.ts` (new)
+- `src/pages/admin/CreateOrderPage.tsx` (new)
+- `src/components/crm/index.ts` (updated exports)
+- `src/pages/auth/PasswordResetPage.tsx` (fixed duplicate export)
+- `src/lib/utils/sanitize.ts` (added safeJsonParse)
+
+### Build Status
+- Build passes with no TypeScript errors
