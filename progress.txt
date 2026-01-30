@@ -7459,3 +7459,80 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+### Task: Build OrderRushButton to expedite order to front of queue
+
+**Completed:**
+
+1. **Created database migration for rush order functionality** (`supabase/migrations/20260129225246_add_order_rush_priority.sql`)
+   - Added `is_rush` boolean column (default false) to orders table
+   - Added `rushed_at` timestamp to track when order was marked as rush
+   - Added `rushed_by` UUID to track who marked the order as rush
+   - Created indexes for efficient querying of rush orders
+   - Added composite index for tenant + rush + created_at for queue ordering
+
+2. **Created useOrderRush hook** (`src/hooks/useOrderRush.ts`)
+   - `useOrderRush` - Single order rush mutation with:
+     - Toggle rush status with instant UI feedback
+     - Automatic query invalidation
+     - Error handling with toast notifications
+     - Haptic feedback for mobile
+   - `useOrderBulkRush` - Bulk rush operations for multiple orders
+
+3. **Created OrderRushButton component** (`src/components/admin/OrderRushButton.tsx`)
+   - `OrderRushButton` - Main button component with:
+     - Toggle rush status with single click
+     - Visual indicator (yellow) when order is rushed
+     - Loading state during mutation
+     - Optional confirmation dialog
+     - Tooltip for icon-only variant
+   - `OrderRushBadge` - Small indicator badge showing rush status
+   - `OrderRushMenuItem` - Context menu item variant for rush action
+
+4. **Updated OrderRowContextMenu** (`src/components/admin/OrderRowContextMenu.tsx`)
+   - Added 'rush' to OrderContextAction type
+   - Added isRush and showRushAction props
+   - Added Rush Order menu item with Zap icon
+   - Updated useOrderContextActions hook to handle onRush callback
+   - Rush action disabled for cancelled/delivered/completed orders
+
+5. **Updated Order types** (`src/types/order.ts`)
+   - Added is_rush, rushed_at, and rushed_by fields to Order interface
+
+### Files Changed:
+- `supabase/migrations/20260129225246_add_order_rush_priority.sql` (NEW)
+- `src/hooks/useOrderRush.ts` (NEW)
+- `src/components/admin/OrderRushButton.tsx` (NEW)
+- `src/components/admin/OrderRowContextMenu.tsx` (MODIFIED)
+- `src/types/order.ts` (MODIFIED)
+
+### Usage Examples:
+
+```tsx
+// Basic usage
+<OrderRushButton orderId={order.id} orderNumber={order.order_number} isRush={order.is_rush} />
+
+// Icon-only with tooltip
+<OrderRushButton orderId={order.id} isRush={order.is_rush} showLabel={false} size="icon" />
+
+// With confirmation dialog
+<OrderRushButton orderId={order.id} isRush={order.is_rush} showConfirmation />
+
+// Badge for order lists
+<OrderRushBadge isRush={order.is_rush} />
+
+// In context menu
+<OrderRowContextMenu
+  orderId={order.id}
+  isRush={order.is_rush}
+  onAction={(action) => action === 'rush' && toggleRush(order.id)}
+/>
+```
+
+### Notes:
+- TypeScript type checking passes successfully
+- Pre-existing build error (duplicate export in PasswordResetPage.tsx) is unrelated to these changes
+- Rush orders can be sorted to front of queue by ordering with: `ORDER BY is_rush DESC, created_at ASC`

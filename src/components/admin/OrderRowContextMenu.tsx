@@ -28,6 +28,7 @@ import {
   Clock,
   Package,
   ChevronRight,
+  Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -39,7 +40,8 @@ export type OrderContextAction =
   | 'send_update'
   | 'print_packing_slip'
   | 'cancel'
-  | 'status_change';
+  | 'status_change'
+  | 'rush';
 
 export type OrderStatus =
   | 'pending'
@@ -57,11 +59,13 @@ interface OrderRowContextMenuProps {
   children: ReactNode;
   orderId: string;
   currentStatus?: OrderStatus | string;
+  isRush?: boolean;
   onAction: (action: OrderContextAction, data?: { status?: string }) => void;
   disabledActions?: OrderContextAction[];
   showStatusSubmenu?: boolean;
   showInvoiceAction?: boolean;
   showPrintAction?: boolean;
+  showRushAction?: boolean;
   className?: string;
 }
 
@@ -81,11 +85,13 @@ export function OrderRowContextMenu({
   children,
   orderId,
   currentStatus,
+  isRush = false,
   onAction,
   disabledActions = [],
   showStatusSubmenu = true,
   showInvoiceAction = true,
   showPrintAction = true,
+  showRushAction = true,
   className,
 }: OrderRowContextMenuProps) {
   const isDisabled = (action: OrderContextAction) => disabledActions.includes(action);
@@ -114,6 +120,19 @@ export function OrderRowContextMenu({
           Edit Order
           <ContextMenuShortcut>E</ContextMenuShortcut>
         </ContextMenuItem>
+
+        {/* Rush Order Action */}
+        {showRushAction && (
+          <ContextMenuItem
+            onClick={() => onAction('rush')}
+            disabled={isDisabled('rush') || currentStatus === 'cancelled' || currentStatus === 'delivered' || currentStatus === 'completed'}
+            className={cn(isRush && 'text-yellow-600 dark:text-yellow-400')}
+          >
+            <Zap className={cn('mr-2 h-4 w-4', isRush && 'fill-yellow-500 text-yellow-500')} />
+            {isRush ? 'Remove Rush Status' : 'Rush Order'}
+            <ContextMenuShortcut>R</ContextMenuShortcut>
+          </ContextMenuItem>
+        )}
 
         {/* Status Submenu */}
         {showStatusSubmenu && (
@@ -219,6 +238,7 @@ export function useOrderContextActions(options: {
   onPrintPackingSlip?: (orderId: string) => void;
   onCancel?: (orderId: string) => void;
   onStatusChange?: (orderId: string, status: string) => Promise<void> | void;
+  onRush?: (orderId: string) => void;
 }) {
   const handleAction = (
     orderId: string,
@@ -251,6 +271,9 @@ export function useOrderContextActions(options: {
         if (data?.status) {
           options.onStatusChange?.(orderId, data.status);
         }
+        break;
+      case 'rush':
+        options.onRush?.(orderId);
         break;
     }
   };
