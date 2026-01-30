@@ -244,6 +244,8 @@ export const queryKeys = {
       [...queryKeys.finance.all, 'revenue', { tenantId }] as const,
     completedOrders: (tenantId?: string, dateRange?: string) =>
       [...queryKeys.finance.all, 'completed-orders', { tenantId, dateRange }] as const,
+    revenueGoal: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'revenue-goal', { tenantId }] as const,
   },
 
   // Storefront
