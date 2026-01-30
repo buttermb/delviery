@@ -7527,70 +7527,42 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+## StockLevelsPage Implementation
 
----
+### Task: Build StockLevelsPage with sortable table of all products
 
-## Task: Add DashboardExportButton to export current view as PDF
+### Changes Made:
 
-### Implementation Summary:
-Created a reusable `DashboardExportButton` component that allows users to export dashboard views as PDF, CSV, or Excel.
+1. **Created StockLevelsPage component** (`src/pages/tenant-admin/StockLevelsPage.tsx`):
+   - Sortable table displaying all products with stock information
+   - Click column headers to sort by: Product name, Category, Stock quantity, Value, Status
+   - Sort order toggles between ascending/descending on repeated clicks
+   - Sort arrow indicators show current sort direction
+   - Search filter for products by name, SKU, or category
+   - Category dropdown filter
+   - Persists sort preferences using `useTablePreferences` hook
+   - Summary cards showing: Total products, Total stock, Total value, Low stock items
+   - Mobile responsive with card view for smaller screens
+   - Stock status badges: IN STOCK, LOW, CRITICAL, OUT OF STOCK
+   - Uses TanStack Query with `queryKeys.inventory.list()` for data fetching
+   - Follows FloraIQ patterns: tenant filtering, ResponsiveTable, formatters
 
-### Component Features:
-1. **PDF Export (Primary):** Uses html2canvas + jsPDF to capture the current dashboard view as a screenshot and save as PDF
-   - Supports multi-page documents for long content
-   - Automatic orientation detection (portrait/landscape)
-   - High-resolution capture (2x scale)
-   
-2. **CSV Export:** Exports structured data (metrics or table data) to CSV format
-   - UTF-8 BOM for Excel compatibility
-   - Proper escaping of special characters
-   
-3. **Excel Export:** Exports to XLSX format using the xlsx library
-   - Auto-sized columns
-   - Support for both metrics and table data
-
-### Component API:
-```typescript
-interface DashboardExportButtonProps {
-  targetRef: RefObject<HTMLElement | null>;  // Ref to element to capture
-  filename?: string;                          // Base filename (default: "dashboard-export")
-  title?: string;                             // Export title
-  data?: DashboardExportData;                 // Optional structured data for CSV/Excel
-  variant?: "default" | "outline" | "ghost" | "secondary";
-  size?: "default" | "sm" | "lg" | "icon";
-}
-```
-
-### Usage Example:
-```tsx
-import { useRef } from "react";
-import { DashboardExportButton } from "@/components/admin/DashboardExportButton";
-
-const MyDashboard = () => {
-  const dashboardRef = useRef<HTMLDivElement>(null);
-  
-  return (
-    <div ref={dashboardRef}>
-      <DashboardExportButton 
-        targetRef={dashboardRef}
-        filename="my-dashboard"
-        title="My Dashboard"
-        data={{
-          metrics: { "Total Sales": 1234, "Orders": 56 }
-        }}
-      />
-      {/* Dashboard content */}
-    </div>
-  );
-};
-```
+2. **Added route in App.tsx**:
+   - Added lazy import for StockLevelsPage
+   - Added route at `/admin/stock-levels`
 
 ### Files Changed:
-- `src/components/admin/DashboardExportButton.tsx` (NEW)
+- `src/pages/tenant-admin/StockLevelsPage.tsx` (NEW)
+- `src/App.tsx` (added import and route)
 
-### Technical Notes:
-- Uses existing dependencies: jsPDF, html2canvas, xlsx (already in package.json)
-- Follows FloraIQ patterns: named exports, @/ imports, logger for errors, toast for feedback
-- Includes loading state with button spinner during PDF generation
-- TypeScript strict mode compliant
+### Technical Details:
+- Uses `useTablePreferences` hook for persistent sort state in localStorage
+- Uses `useDebounce` for search input (300ms delay)
+- Filters by tenant_id as required by FloraIQ architecture
+- Stock status calculation based on available_quantity vs low_stock_alert threshold
+- Value calculated from cost_per_unit or wholesale_price
+- TypeScript strict mode compliant with proper types
 
+### Route:
+- Path: `/:tenantSlug/admin/stock-levels`
+- No feature flag required (basic inventory feature)
