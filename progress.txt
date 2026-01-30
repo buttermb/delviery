@@ -7459,3 +7459,81 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+## Task: Build OrderAssignCourier modal with available courier list
+
+### Completed
+
+#### Created OrderAssignCourier component
+- Location: `src/components/admin/OrderAssignCourier.tsx`
+- A comprehensive modal for assigning couriers to orders
+
+#### Features Implemented
+1. **TanStack Query Integration**
+   - Uses `useQuery` for fetching available couriers
+   - Uses `useMutation` for the assign courier action
+   - Proper query key management via `queryKeys.couriers.list()`
+   - Query invalidation on success for orders and deliveries
+
+2. **Visual Courier List**
+   - Displays couriers in a scrollable list (not just a dropdown)
+   - Shows courier avatar, name, status badge, vehicle info
+   - Displays phone, rating, and total deliveries
+   - Location indicator when GPS data is available
+   - Separates online and offline couriers into sections
+
+3. **Selection & Assignment**
+   - Click to select a courier from the list
+   - Visual selection indicator (checkmark + border highlight)
+   - "Assign Selected" button in DialogFooterActions
+   - Auto-assign nearest courier option
+
+4. **Multi-tenant Isolation**
+   - Uses `useTenantAdminAuth()` for tenant context
+   - Filters couriers by `tenant_id`
+   - Query only enabled when tenant is available
+
+5. **Loading & Error States**
+   - Skeleton loading state while fetching couriers
+   - Error state with retry messaging
+   - Empty state when no couriers available
+   - Button disabled states during async operations
+
+6. **Proper Patterns**
+   - Uses `logger` from `@/lib/logger` (not console.log)
+   - Uses `toast` from sonner for notifications
+   - Uses `DialogFooterActions` for consistent button layout
+   - Named exports only (no default exports)
+   - TypeScript strict mode compliant
+
+#### Props Interface
+```typescript
+interface OrderAssignCourierProps {
+  orderId: string;
+  orderAddress: string;
+  orderNumber?: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
+}
+```
+
+#### Usage Example
+```tsx
+import { OrderAssignCourier } from '@/components/admin/OrderAssignCourier';
+
+<OrderAssignCourier
+  orderId={order.id}
+  orderAddress={order.delivery_address}
+  orderNumber={order.tracking_code}
+  open={assignModalOpen}
+  onOpenChange={setAssignModalOpen}
+  onSuccess={() => refetchOrders()}
+/>
+```
+
+#### TypeScript Verification
+- `npx tsc --noEmit` passes with no errors
+- Component follows FloraIQ TypeScript patterns
