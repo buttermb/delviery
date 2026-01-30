@@ -12,11 +12,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  ShoppingBag, 
-  User, 
-  Phone, 
-  Mail, 
+import {
+  ShoppingBag,
+  User,
+  Phone,
+  Mail,
   MapPin,
   Package,
   Clock,
@@ -31,6 +31,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { useSendNotification } from '@/hooks/useNotifications';
+import { OrderAuditLog } from '@/components/admin/orders/OrderAuditLog';
 
 interface OrderItem {
   product_name?: string;
@@ -340,6 +341,11 @@ export const OrderDetailsDialog = ({
                 </div>
               )}
             </div>
+
+            <Separator />
+
+            {/* Activity History */}
+            <OrderAuditLog orderId={order.id} maxHeight="200px" />
           </div>
         </ScrollArea>
       </DialogContent>

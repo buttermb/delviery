@@ -655,4 +655,16 @@ export const queryKeys = {
     stats: (tenantId?: string) =>
       [...queryKeys.customerInvoices.all, 'stats', tenantId] as const,
   },
+
+  // Order Audit Log
+  orderAuditLog: {
+    all: ['order-audit-log'] as const,
+    lists: () => [...queryKeys.orderAuditLog.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) =>
+      [...queryKeys.orderAuditLog.lists(), filters] as const,
+    byOrder: (orderId: string) =>
+      [...queryKeys.orderAuditLog.all, 'order', orderId] as const,
+    byTenant: (tenantId: string) =>
+      [...queryKeys.orderAuditLog.all, 'tenant', tenantId] as const,
+  },
 } as const;

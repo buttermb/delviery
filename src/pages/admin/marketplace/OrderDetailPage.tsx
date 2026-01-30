@@ -42,6 +42,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { OrderAuditLog } from '@/components/admin/orders/OrderAuditLog';
 
 export default function OrderDetailPage() {
     const { orderId } = useParams<{ orderId: string }>();
@@ -714,6 +715,11 @@ export default function OrderDetailPage() {
                             </div>
                         </CardContent>
                     </Card>
+
+                    {/* Activity History */}
+                    {orderId && (
+                        <OrderAuditLog orderId={orderId} maxHeight="300px" />
+                    )}
                 </div>
             </div>
 
