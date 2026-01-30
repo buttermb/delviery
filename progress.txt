@@ -7459,3 +7459,26 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## DeliveryStatusWidget Implementation
+
+Created `src/components/admin/dashboard/DeliveryStatusWidget.tsx`
+
+### Features:
+- Shows Active deliveries count (pending + confirmed orders)
+- Shows In-Transit deliveries count (out_for_delivery status)
+- Shows Completed deliveries count (delivered status)
+- Animated count displays with Framer Motion
+- Loading skeleton states
+- Empty state with Package icon
+- Link to delivery management page
+- Tenant-aware data fetching using useTenantAdminAuth()
+- Uses queryKeys.deliveries.list() for consistent caching
+- Auto-refresh every 60 seconds
+
+### Patterns followed:
+- Matches existing widget patterns (InventoryAlertsWidget, RecentOrdersWidget)
+- Uses shadcn/ui Card components
+- TanStack Query for data fetching
+- Named exports only (no default export)
+- Added export to src/components/admin/dashboard/index.ts barrel file
