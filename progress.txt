@@ -7459,3 +7459,51 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+### Task: Add real-time revenue chart with daily/weekly/monthly toggle using Recharts
+
+**Completed:**
+
+1. **Created RealtimeRevenueChart component** (`src/components/admin/analytics/RealtimeRevenueChart.tsx`)
+   - Built with Recharts (AreaChart) for smooth revenue visualization
+   - Daily/Weekly/Monthly toggle using ToggleGroup component
+   - Real-time updates via Supabase realtime subscriptions
+   - Live indicator badge showing connection status
+   - Auto-refreshes every 60 seconds when live
+   - Shows percentage change vs previous period
+   - Aggregates data from both 'orders' and 'wholesale_orders' tables
+   - Responsive design with proper loading and error states
+
+2. **Features:**
+   - **Daily view**: Last 30 days of revenue data
+   - **Weekly view**: Last 12 weeks of aggregated revenue
+   - **Monthly view**: Last 12 months of aggregated revenue
+   - Gradient fill area chart with emerald color theme
+   - Tooltip showing revenue and period details
+   - Shows total revenue, order count, and trend indicators
+
+3. **Integrated into:**
+   - `src/pages/admin/FinancialCenterReal.tsx` - Financial Command Center page
+   - `src/components/admin/ModernDashboard.tsx` - Modern Dashboard (replaced placeholder RevenueChartWidget)
+
+4. **Fixed pre-existing build issues:**
+   - Removed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
+   - Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+
+### Files Changed:
+- `src/components/admin/analytics/RealtimeRevenueChart.tsx` (NEW)
+- `src/pages/admin/FinancialCenterReal.tsx` (MODIFIED - added chart import and usage)
+- `src/components/admin/ModernDashboard.tsx` (MODIFIED - replaced RevenueChartWidget with RealtimeRevenueChart)
+- `src/pages/auth/PasswordResetPage.tsx` (FIXED - removed duplicate export)
+- `src/lib/utils/sanitize.ts` (FIXED - added safeJsonParse function)
+
+### Technical Details:
+- Uses TanStack Query with queryKeys.analytics.revenue for caching
+- Supabase realtime subscription listens to 'orders' and 'wholesale_orders' tables
+- Groups orders by completed/delivered status for accurate revenue
+- Calculates previous period comparison for trend display
+- Uses date-fns for date manipulation and formatting
+
