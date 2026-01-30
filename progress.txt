@@ -7459,3 +7459,49 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+### Task: Add DashboardDatePicker to filter all widgets by date range
+
+**Completed:**
+
+1. **Created DashboardDateRangeContext** (`src/contexts/DashboardDateRangeContext.tsx`)
+   - Provides shared date range state across all dashboard widgets
+   - Default range is "Last 30 Days"
+   - Includes `useDashboardDateRange` hook for consuming the context
+   - Includes `useDashboardDateRangeOptional` hook for widgets that can work with or without filtering
+   - Provides ISO string conversions and stable cache keys for React Query
+
+2. **Created DashboardDatePicker component** (`src/components/admin/dashboard/DashboardDatePicker.tsx`)
+   - Uses existing DateRangePickerWithPresets component
+   - Provides dashboard-specific presets: Today, Yesterday, Last 7/30/90 Days, This Week, This Month, Last Month
+   - Integrates with DashboardDateRangeContext
+
+3. **Updated queryKeys** (`src/lib/queryKeys.ts`)
+   - Added `dateRangeKey` parameter to `dashboard.stats()` query key
+   - Enables proper React Query cache invalidation when date range changes
+
+4. **Modified useDashboardStats hook** (`src/hooks/useDashboardStats.ts`)
+   - Now reads date range from DashboardDateRangeContext (optional - falls back to last 30 days)
+   - All order/revenue/customer queries now filter by the selected date range
+   - Comparison period calculated dynamically based on selected range duration
+   - Growth percentage now compares to the previous period of same duration
+
+5. **Integrated DashboardDatePicker into DashboardHubPage** (`src/pages/admin/hubs/DashboardHubPage.tsx`)
+   - Added DashboardDateRangeProvider wrapper
+   - Added DashboardDatePicker in the header area
+   - Updated stat card titles and descriptions to reflect dynamic date range
+
+### Files Changed:
+- `src/contexts/DashboardDateRangeContext.tsx` (NEW)
+- `src/components/admin/dashboard/DashboardDatePicker.tsx` (NEW)
+- `src/lib/queryKeys.ts`
+- `src/hooks/useDashboardStats.ts`
+- `src/pages/admin/hubs/DashboardHubPage.tsx`
+
+### Notes:
+- TypeScript type checking passes successfully
+- Pre-existing build error in PasswordResetPage.tsx (multiple default exports) is unrelated
+- Widgets that need date filtering can use `useDashboardDateRange()` hook
+- Widgets that work without filtering can use `useDashboardDateRangeOptional()` to gracefully handle missing context

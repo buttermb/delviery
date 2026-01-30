@@ -7,6 +7,7 @@
  * - Customers (new, total, active sessions)
  *
  * Uses TanStack Query with 30s refetch interval for live data.
+ * Supports date range filtering via DashboardDatePicker.
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,7 +29,9 @@ import {
 } from 'lucide-react';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { DashboardDateRangeProvider } from '@/contexts/DashboardDateRangeContext';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { DashboardDatePicker } from '@/components/admin/dashboard/DashboardDatePicker';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 interface StatCardProps {
@@ -92,7 +95,7 @@ function StatCardSkeleton() {
   );
 }
 
-export function DashboardHubPage() {
+function DashboardHubContent() {
   const { tenant } = useTenantAdminAuth();
   const { data: stats, isLoading, error, dataUpdatedAt } = useDashboardStats();
 
@@ -120,18 +123,21 @@ export function DashboardHubPage() {
         hubHref="dashboard"
       />
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground text-sm">
-            Real-time overview of your operations
+            Overview of your operations
           </p>
         </div>
-        {lastUpdated && (
-          <Badge variant="secondary" className="text-xs">
-            Updated {lastUpdated}
-          </Badge>
-        )}
+        <div className="flex items-center gap-3">
+          <DashboardDatePicker className="w-[280px]" />
+          {lastUpdated && (
+            <Badge variant="secondary" className="text-xs whitespace-nowrap">
+              Updated {lastUpdated}
+            </Badge>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -156,28 +162,28 @@ export function DashboardHubPage() {
           ) : (
             <>
               <StatCard
-                title="Today's Revenue"
+                title="Period Revenue"
                 value={formatCurrency(stats?.revenueToday ?? 0)}
                 icon={<DollarSign className="h-5 w-5" />}
-                description="Completed orders today"
+                description="From all orders in period"
                 variant="success"
               />
               <StatCard
-                title="Month to Date"
+                title="Total Revenue"
                 value={formatCurrency(stats?.revenueMTD ?? 0)}
                 icon={<TrendingUp className="h-5 w-5" />}
-                description="Revenue this month"
+                description="Completed orders in period"
                 variant="success"
                 trend={stats?.revenueGrowthPercent !== undefined ? {
                   value: stats.revenueGrowthPercent,
-                  label: 'vs last month'
+                  label: 'vs previous period'
                 } : undefined}
               />
               <StatCard
                 title="Avg Order Value"
                 value={formatCurrency(stats?.avgOrderValue ?? 0)}
                 icon={<ShoppingCart className="h-5 w-5" />}
-                description="Per order this month"
+                description="Per order in period"
                 variant="default"
               />
             </>
@@ -204,24 +210,24 @@ export function DashboardHubPage() {
                 variant={stats?.pendingOrders && stats.pendingOrders > 0 ? 'warning' : 'default'}
               />
               <StatCard
-                title="Today's Orders"
+                title="Orders"
                 value={stats?.totalOrdersToday ?? 0}
                 icon={<ShoppingCart className="h-5 w-5" />}
-                description="Orders placed today"
+                description="Orders in selected period"
                 variant="default"
               />
               <StatCard
-                title="Completed Today"
+                title="Completed"
                 value={stats?.completedOrdersToday ?? 0}
                 icon={<CheckCircle2 className="h-5 w-5" />}
-                description="Successfully delivered"
+                description="Delivered in period"
                 variant="success"
               />
               <StatCard
-                title="Orders (MTD)"
+                title="Total Orders"
                 value={stats?.totalOrdersMTD ?? 0}
                 icon={<ShoppingCart className="h-5 w-5" />}
-                description="Total this month"
+                description="All orders in period"
                 variant="default"
               />
             </>
@@ -295,7 +301,7 @@ export function DashboardHubPage() {
                 title="New Customers"
                 value={stats?.newCustomers ?? 0}
                 icon={<UserPlus className="h-5 w-5" />}
-                description="Joined in the last 30 days"
+                description="Joined in selected period"
                 variant="success"
               />
               <StatCard
@@ -310,5 +316,13 @@ export function DashboardHubPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export function DashboardHubPage() {
+  return (
+    <DashboardDateRangeProvider>
+      <DashboardHubContent />
+    </DashboardDateRangeProvider>
   );
 }
