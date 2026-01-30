@@ -7459,3 +7459,57 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+## Task: Add OrderDuplicateButton creating new order from existing
+
+### Completed
+
+#### 1. Created `useOrderDuplicate` Hook (`src/hooks/useOrderDuplicate.ts`)
+- TanStack Query mutation hook for duplicating orders
+- Fetches original order items if not provided
+- Creates new order with:
+  - Same customer info (user_id, customer_id, customer_name, customer_phone)
+  - Same delivery details (address, borough, notes, fee)
+  - Same financial data (subtotal, total, tip, discount)
+  - Same order configuration (payment method, order type, special instructions)
+  - Status reset to 'pending'
+  - Delivery notes prefixed with "[Duplicated from #<order_number>]"
+- Duplicates all order items to the new order
+- Invalidates order queries to refresh lists
+- Toast notifications with success/error feedback
+- Optional navigation to new order
+- Proper tenant isolation using useTenantAdminAuth
+
+#### 2. Created `OrderDuplicateButton` Component (`src/components/admin/OrderDuplicateButton.tsx`)
+- Reusable button component following DuplicateProductButton pattern
+- Loading state with spinner animation
+- Success state with checkmark (2-second display)
+- Tooltip when showLabel is false
+- Configurable props:
+  - variant: 'default' | 'ghost' | 'outline'
+  - size: 'default' | 'sm' | 'icon'
+  - showLabel: boolean
+  - navigateToNew: boolean
+  - onSuccess callback
+- Uses useOrderDuplicate hook internally
+
+#### 3. Integrated into Orders Page (`src/pages/admin/Orders.tsx`)
+- Added import for Copy icon from lucide-react
+- Added import for useOrderDuplicate hook
+- Added hook usage in component with isLoading state
+- Added "Duplicate Order" dropdown menu item in desktop table actions
+- Added "Duplicate" button in mobile drawer Quick Actions (changed grid from 2 to 3 columns)
+- Removed duplicate import of useAdminOrdersRealtime
+
+### Files Changed:
+- `src/hooks/useOrderDuplicate.ts` (NEW)
+- `src/components/admin/OrderDuplicateButton.tsx` (NEW)
+- `src/pages/admin/Orders.tsx` (MODIFIED)
+
+### Notes:
+- The OrderDuplicateButton component can be used standalone or the useOrderDuplicate hook can be called directly
+- Order duplication resets status to 'pending' to allow review before processing
+- Delivery notes are prefixed to indicate the order was duplicated and show the source order number
+- TypeScript type checking passes successfully
