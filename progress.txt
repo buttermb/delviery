@@ -7459,3 +7459,129 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+## Task: Build OrderPrintView with thermal receipt and packing slip layouts
+
+### Completed
+
+#### 1. Created OrderPrintView Component (`src/components/admin/orders/OrderPrintView.tsx`)
+- Multi-layout print component with three format options:
+  - **Thermal 58mm Receipt**: Compact layout for 58mm thermal printers
+  - **Thermal 80mm Receipt**: Standard thermal receipt width
+  - **Packing Slip**: Full-page format for warehouse fulfillment
+- Features:
+  - ForwardRef support for print triggering
+  - Configurable price display (showPrices prop)
+  - Business information header (name, address, phone, license)
+  - Customer information section
+  - Delivery address display
+  - Line items with quantity, price, and notes
+  - Totals section (subtotal, discount, tax, delivery, total)
+  - Order notes section
+  - Proper monospace formatting for thermal receipts
+  - Packing slip includes checkbox column for fulfillment verification
+  - Signature area for packer on packing slip
+
+#### 2. Created OrderPrintDialog Component (`src/components/admin/orders/OrderPrintDialog.tsx`)
+- Print dialog with layout selection and preview:
+  - Tab-based layout selector (58mm, 80mm, packing slip)
+  - Show/hide prices toggle option
+  - Order summary display
+  - Live preview with appropriate scaling per layout
+  - Print button that opens browser print dialog
+- Print implementation:
+  - Opens new window with styled content
+  - Includes comprehensive CSS for print media
+  - Proper thermal printer width handling
+  - Error handling with toast notifications
+  - Loading state during print preparation
+
+#### 3. Created Index Export File (`src/components/admin/orders/index.ts`)
+- Centralized exports for order components
+- Exports types: OrderPrintData, OrderPrintItem, PrintLayout
+- Exports components: OrderPrintView, OrderPrintDialog, MenuSourceBadge, OrderBulkStatusConfirmDialog
+
+#### 4. Fixed Pre-existing Build Issues
+- Removed duplicate default export in `PasswordResetPage.tsx`
+- Added missing `safeJsonParse` function to `sanitize.ts`
+
+### Type Definitions
+
+```typescript
+interface OrderPrintItem {
+  product_name: string;
+  quantity: number;
+  price: number;
+  sku?: string;
+  notes?: string;
+}
+
+interface OrderPrintData {
+  id: string;
+  order_number: string;
+  created_at: string;
+  status: string;
+  total_amount: number;
+  subtotal?: number;
+  tax_amount?: number;
+  discount_amount?: number;
+  delivery_fee?: number;
+  delivery_method?: string;
+  payment_method?: string;
+  payment_status?: string;
+  notes?: string;
+  customer: {
+    name: string;
+    email?: string;
+    phone?: string;
+  };
+  delivery_address?: {
+    street: string;
+    city?: string;
+    state?: string;
+    zip_code?: string;
+  };
+  items: OrderPrintItem[];
+  business?: {
+    name: string;
+    address?: string;
+    phone?: string;
+    email?: string;
+    license?: string;
+  };
+}
+
+type PrintLayout = 'thermal-58mm' | 'thermal-80mm' | 'packing-slip';
+```
+
+### Usage Example
+
+```tsx
+import { OrderPrintDialog } from '@/components/admin/orders';
+
+function OrderActions({ order }) {
+  const [printOpen, setPrintOpen] = useState(false);
+
+  return (
+    <>
+      <Button onClick={() => setPrintOpen(true)}>
+        <Printer className="mr-2 h-4 w-4" />
+        Print Order
+      </Button>
+      <OrderPrintDialog
+        open={printOpen}
+        onOpenChange={setPrintOpen}
+        order={orderPrintData}
+        defaultLayout="thermal-80mm"
+      />
+    </>
+  );
+}
+```
+
+### Build Verification
+- Successfully ran `npm run build`
+- All TypeScript types verified
+- No errors in new components
+
