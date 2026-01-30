@@ -91,28 +91,28 @@ tasks:
     completed: true
   - title: Add OrderItemsTable with quantity price discount columns
     parallel_group: 4
-    completed: false
+    completed: true
   - title: Build OrderTotalsCard showing subtotal tax discount total
     parallel_group: 4
-    completed: false
+    completed: true
   - title: Add OrderNotesSection with internal notes and customer notes tabs
     parallel_group: 4
-    completed: false
+    completed: true
   - title: Build OrderActionsDropdown with edit cancel refund duplicate options
     parallel_group: 4
-    completed: false
+    completed: true
   - title: Add OrderPaymentStatus badge showing paid pending partial refunded
     parallel_group: 4
-    completed: false
+    completed: true
   - title: Build BulkOrderActions for selecting multiple orders to update status
     parallel_group: 4
-    completed: false
+    completed: true
   - title: Add OrderExport button generating CSV of filtered orders
     parallel_group: 4
-    completed: false
+    completed: true
   - title: Build OrderPrintView with thermal receipt and packing slip layouts
     parallel_group: 4
-    completed: false
+    completed: true
   - title: Add OrderSearchBar with autocomplete for order number customer phone
     parallel_group: 4
     completed: false

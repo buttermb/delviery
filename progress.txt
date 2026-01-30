@@ -7481,128 +7481,59 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+---
 
-## Task: Build OrderPrintView with thermal receipt and packing slip layouts
+### Task: Add OrderSearchBar with autocomplete for order number customer phone
 
-### Completed
+**Completed:**
 
-#### 1. Created OrderPrintView Component (`src/components/admin/orders/OrderPrintView.tsx`)
-- Multi-layout print component with three format options:
-  - **Thermal 58mm Receipt**: Compact layout for 58mm thermal printers
-  - **Thermal 80mm Receipt**: Standard thermal receipt width
-  - **Packing Slip**: Full-page format for warehouse fulfillment
-- Features:
-  - ForwardRef support for print triggering
-  - Configurable price display (showPrices prop)
-  - Business information header (name, address, phone, license)
-  - Customer information section
-  - Delivery address display
-  - Line items with quantity, price, and notes
-  - Totals section (subtotal, discount, tax, delivery, total)
-  - Order notes section
-  - Proper monospace formatting for thermal receipts
-  - Packing slip includes checkbox column for fulfillment verification
-  - Signature area for packer on packing slip
+1. **Created OrderSearchBar component** (`src/components/admin/orders/OrderSearchBar.tsx`)
+   - Search autocomplete component for the admin orders page
+   - Searches orders by order number (supports # prefix) or customer phone number
+   - Debounced search with 300ms delay for optimal UX
+   - Tenant-aware queries using `useTenantAdminAuth()` context
+   - Uses TanStack Query for caching (30s stale time)
 
-#### 2. Created OrderPrintDialog Component (`src/components/admin/orders/OrderPrintDialog.tsx`)
-- Print dialog with layout selection and preview:
-  - Tab-based layout selector (58mm, 80mm, packing slip)
-  - Show/hide prices toggle option
-  - Order summary display
-  - Live preview with appropriate scaling per layout
-  - Print button that opens browser print dialog
-- Print implementation:
-  - Opens new window with styled content
-  - Includes comprehensive CSS for print media
-  - Proper thermal printer width handling
-  - Error handling with toast notifications
-  - Loading state during print preparation
+2. **Features implemented:**
+   - **Order number search**: Searches using ILIKE pattern matching on order_number field
+   - **Phone search**: Searches by extracting phone digits and matching against customer profiles
+   - **Recent searches**: Persisted in localStorage using safe storage utilities
+   - **Keyboard navigation**: Arrow up/down, Enter to select, Escape to close
+   - **Visual feedback**: Loading spinner, highlighted matching text, status badges
+   - **Dropdown UI**: Shows recent searches when empty, search results when typing
+   - **Empty state**: Helpful message when no results found
 
-#### 3. Created Index Export File (`src/components/admin/orders/index.ts`)
-- Centralized exports for order components
-- Exports types: OrderPrintData, OrderPrintItem, PrintLayout
-- Exports components: OrderPrintView, OrderPrintDialog, MenuSourceBadge, OrderBulkStatusConfirmDialog
+3. **Component props:**
+   - `onSelectOrder?: (order: OrderSearchResult) => void` - Callback when order is selected
+   - `onSearch?: (query: string) => void` - Callback for search text changes
+   - `placeholder?: string` - Custom placeholder text
+   - `className?: string` - Additional CSS classes
 
-#### 4. Fixed Pre-existing Build Issues
-- Removed duplicate default export in `PasswordResetPage.tsx`
-- Added missing `safeJsonParse` function to `sanitize.ts`
+4. **Added storage key** (`src/constants/storageKeys.ts`)
+   - Added `ORDER_SEARCH_RECENT` key for persisting recent order searches
 
-### Type Definitions
+### Files Changed:
+- `src/components/admin/orders/OrderSearchBar.tsx` (NEW)
+- `src/constants/storageKeys.ts` (Added ORDER_SEARCH_RECENT key)
 
-```typescript
-interface OrderPrintItem {
-  product_name: string;
-  quantity: number;
-  price: number;
-  sku?: string;
-  notes?: string;
-}
-
-interface OrderPrintData {
-  id: string;
-  order_number: string;
-  created_at: string;
-  status: string;
-  total_amount: number;
-  subtotal?: number;
-  tax_amount?: number;
-  discount_amount?: number;
-  delivery_fee?: number;
-  delivery_method?: string;
-  payment_method?: string;
-  payment_status?: string;
-  notes?: string;
-  customer: {
-    name: string;
-    email?: string;
-    phone?: string;
-  };
-  delivery_address?: {
-    street: string;
-    city?: string;
-    state?: string;
-    zip_code?: string;
-  };
-  items: OrderPrintItem[];
-  business?: {
-    name: string;
-    address?: string;
-    phone?: string;
-    email?: string;
-    license?: string;
-  };
-}
-
-type PrintLayout = 'thermal-58mm' | 'thermal-80mm' | 'packing-slip';
-```
-
-### Usage Example
-
+### Usage Example:
 ```tsx
-import { OrderPrintDialog } from '@/components/admin/orders';
+import { OrderSearchBar } from '@/components/admin/orders/OrderSearchBar';
 
-function OrderActions({ order }) {
-  const [printOpen, setPrintOpen] = useState(false);
+// Basic usage with order selection
+<OrderSearchBar 
+  onSelectOrder={(order) => navigate(`orders/${order.id}`)}
+/>
 
-  return (
-    <>
-      <Button onClick={() => setPrintOpen(true)}>
-        <Printer className="mr-2 h-4 w-4" />
-        Print Order
-      </Button>
-      <OrderPrintDialog
-        open={printOpen}
-        onOpenChange={setPrintOpen}
-        order={orderPrintData}
-        defaultLayout="thermal-80mm"
-      />
-    </>
-  );
-}
+// With search callback for filtering
+<OrderSearchBar 
+  onSearch={setSearchQuery}
+  placeholder="Find orders..."
+/>
 ```
 
-### Build Verification
-- Successfully ran `npm run build`
-- All TypeScript types verified
-- No errors in new components
-
+### Notes:
+- Component follows existing FloraIQ patterns (tenant isolation, TanStack Query, safe storage)
+- TypeScript compilation passes successfully
+- Phone search requires minimum 3 characters to filter
+- Order number search requires minimum 2 characters
