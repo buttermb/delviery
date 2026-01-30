@@ -226,7 +226,10 @@ export function sanitizeUrlInput(url: string): string {
 }
 
 /**
- * Safely parse JSON with validation
+ * Safely parses JSON with optional type validation.
+ * Returns null if parsing fails or validation fails.
+ * @param json - The JSON string to parse
+ * @param validator - Optional type guard to validate the parsed data
  */
 export function safeJsonParse<T>(
   json: string,
