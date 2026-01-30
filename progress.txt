@@ -7459,3 +7459,68 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+### Task: Add OrderSplitButton to split order into multiple shipments
+
+**Completed:**
+
+1. **Created useOrderSplit hook** (`src/hooks/useOrderSplit.ts`)
+   - Handles splitting an order into multiple shipments
+   - Creates new orders from the original order with allocated items
+   - Distributes delivery fees, discounts, and tips proportionally across shipments
+   - Updates original order status to 'split' after successful split
+   - Invalidates relevant TanStack Query caches
+   - Provides loading state, error handling, and haptic feedback
+   - Exports `OrderItem` and `ShipmentAllocation` types for reuse
+
+2. **Created OrderSplitDialog component** (`src/components/admin/OrderSplitDialog.tsx`)
+   - Dialog for allocating order items across multiple shipments
+   - Configurable number of shipments (2-5)
+   - Auto-distribute feature to evenly allocate items
+   - Real-time shipment summaries showing item count and subtotal
+   - Validation for proper item allocation
+   - Color-coded shipment columns for visual clarity
+   - Responsive with scroll area for many items
+
+3. **Created OrderSplitButton component** (`src/components/admin/OrderSplitButton.tsx`)
+   - Trigger button to open the split dialog
+   - Can accept order data directly or fetch by orderId
+   - Validates order status before allowing split (prevents re-splitting)
+   - Supports various button variants and sizes
+   - Icon-only mode with tooltip support
+   - Loading state while fetching order data
+
+4. **Updated admin components index** (`src/components/admin/index.ts`)
+   - Exported OrderSplitButton and OrderSplitDialog
+
+### Files Created/Changed:
+- `src/hooks/useOrderSplit.ts` (NEW)
+- `src/components/admin/OrderSplitDialog.tsx` (NEW)
+- `src/components/admin/OrderSplitButton.tsx` (NEW)
+- `src/components/admin/index.ts` (MODIFIED)
+
+### Usage Example:
+```tsx
+// With order data
+<OrderSplitButton
+  order={orderData}
+  onSuccess={(newOrderIds) => console.log('Split into:', newOrderIds)}
+/>
+
+// With orderId only (fetches order data)
+<OrderSplitButton
+  orderId={orderId}
+  variant="ghost"
+  size="icon"
+  showLabel={false}
+/>
+```
+
+### Features:
+- Multi-tenant aware (uses tenant context for isolation)
+- Proper error handling with toast notifications
+- Prevents splitting of delivered, cancelled, or already-split orders
+- Creates properly numbered split orders (e.g., "ORD-123-1", "ORD-123-2")
+- Adds delivery notes documenting the split relationship

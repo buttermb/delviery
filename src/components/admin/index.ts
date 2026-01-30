@@ -29,3 +29,7 @@ export { LocalAIIntegration } from './ai/LocalAIIntegration';
 export { WorkflowBuilder } from './workflow/WorkflowBuilder';
 export { AdvancedWorkflowBuilder } from './workflow/AdvancedWorkflowBuilder';
 
+// Order Operations
+export { OrderSplitButton } from './OrderSplitButton';
+export { OrderSplitDialog } from './OrderSplitDialog';
+
