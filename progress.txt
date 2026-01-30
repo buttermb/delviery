@@ -7537,70 +7537,48 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-## Agent 9 - RevenueGoalProgress Component Implementation
+---
 
-### Task: Build RevenueGoalProgress showing monthly target vs actual
+### Task: Add ProductBulkExport to CSV with selected fields
 
 **Completed:**
 
-1. **Created `useRevenueGoalProgress` hook** (`src/hooks/useRevenueGoalProgress.ts`)
-   - Fetches current month revenue from both retail orders and wholesale orders
-   - Only counts completed/delivered orders (no pending revenue)
-   - Calculates progress percentage toward monthly target
-   - Computes remaining amount, days left, daily target needed
-   - Determines if on-track based on current daily average projection
-   - Month-over-month comparison with last month's revenue
-   - Real-time updates via Supabase subscription for order status changes
-   - Configurable target revenue (defaults to last month's revenue)
-   - Returns comprehensive `RevenueGoalData` interface with:
-     - actualRevenue, targetRevenue, progressPercent
-     - remainingAmount, daysRemaining, dailyTargetNeeded
-     - currentDailyAverage, isOnTrack, isExceeded
-     - lastMonthRevenue, monthOverMonthChange
-     - currentMonthLabel, orderCount
+1. **Created ProductBulkExportDialog component** (`src/components/admin/ProductBulkExportDialog.tsx`)
+   - Full-featured export dialog with field selection UI
+   - Fields organized into 7 logical groups:
+     - Basic Information (name, SKU, barcode, category, description)
+     - Pricing & Costs (cost, wholesale, retail, sale price, price per lb)
+     - Inventory (available, reserved, fronted, total, stock quantity, low stock alert)
+     - Cannabis-Specific (strain name/type/info/lineage, vendor, batch number, weight)
+     - Lab & Potency (THC%, CBD%, THCA%, test date, lab name, COA URLs)
+     - Marketing & Display (image URL, menu visibility, rating, review count)
+     - Metadata (product ID, created date, version)
+   - Toggle individual fields or entire groups
+   - Quick select buttons: Recommended, All, None
+   - Export format options: CSV, Excel (XLSX), JSON
+   - Shows product count and selected field count
+   - Proper type formatting for currency, dates, percentages, booleans
+   - Uses existing exportUtils.ts utilities for consistent CSV generation
 
-2. **Created `RevenueGoalProgress` component** (`src/components/financial/RevenueGoalProgress.tsx`)
-   - Matches existing Financial Command Center patterns (CashFlowPulse, PerformancePulse)
-   - Main progress card showing:
-     - Actual revenue vs target with large display
-     - Progress bar with color coding (emerald=exceeded, blue=on-track, amber=behind)
-     - Stats grid: Remaining, Days Left, Needed/Day, Orders
-   - Status & Trends card showing:
-     - On-track indicator with badge
-     - Daily average display
-     - Month-over-month comparison with trend indicator
-     - Insight message with projected surplus or required increase
-   - Skeleton loading state
-   - Dark theme styling consistent with Financial Command Center
-   - Responsive design (2-column to 4-column grid on stats)
-
-3. **Added query key** (`src/lib/queryKeys.ts`)
-   - Added `finance.revenueGoal(tenantId)` query key factory
-
-4. **Exported from financial components index** (`src/components/financial/index.ts`)
-   - Added export for `RevenueGoalProgress`
-
-### Usage Example:
-```tsx
-import { RevenueGoalProgress } from '@/components/financial';
-
-// Default: uses last month's revenue as target
-<RevenueGoalProgress />
-
-// Custom target
-<RevenueGoalProgress targetRevenue={50000} />
-```
-
-### Features:
-- Real-time updates when orders complete/deliver
-- Color-coded progress bar (green=exceeded, blue=on-track, amber=behind pace)
-- Shows remaining amount and days to hit goal
-- Daily run rate and target calculations
-- Month-over-month comparison
-- Insights about projected outcome
+2. **Integrated into ProductManagement page** (`src/pages/admin/ProductManagement.tsx`)
+   - Replaced simple ExportButton with new Export button that opens dialog
+   - Added exportDialogOpen state management
+   - Dialog receives filtered products for export
+   - Added Download icon import from lucide-react
 
 ### Files Changed:
-- `src/hooks/useRevenueGoalProgress.ts` (NEW)
-- `src/components/financial/RevenueGoalProgress.tsx` (NEW)
-- `src/lib/queryKeys.ts` (added revenueGoal key)
-- `src/components/financial/index.ts` (added export)
+- `src/components/admin/ProductBulkExportDialog.tsx` (NEW)
+- `src/pages/admin/ProductManagement.tsx` (MODIFIED)
+
+### Features:
+- **Field Selection**: Users can select exactly which fields to include in export
+- **Field Groups**: Fields organized logically for easy bulk selection
+- **Recommended Fields**: Pre-selected common fields (name, SKU, category, price, stock, strain, vendor, THC%)
+- **Multiple Formats**: Supports CSV, Excel (XLSX), and JSON export
+- **Type-Aware Formatting**: Currency values formatted properly, dates formatted, booleans as Yes/No
+- **Responsive UI**: Scrollable field list, clear count indicators
+
+### Notes:
+- TypeScript type checking passes successfully (0 errors)
+- Build has pre-existing error in PasswordResetPage.tsx (duplicate default export) unrelated to this feature
+- Leverages existing export infrastructure (exportUtils.ts) for consistency
