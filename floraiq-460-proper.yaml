@@ -145,10 +145,10 @@ tasks:
     completed: true
   - title: Add OrderEmailButton to send confirmation receipt tracking emails
     parallel_group: 5
-    completed: false
+    completed: true
   - title: Build OrderSMSButton to send status updates via Twilio
     parallel_group: 5
-    completed: false
+    completed: true
   - title: Add OrderTagsInput for custom categorization of orders
     parallel_group: 6
     completed: false

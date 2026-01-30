@@ -7501,61 +7501,73 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-### Task: Build OrderSMSButton to send status updates via Twilio
+## Task: Add OrderTagsInput for custom categorization of orders
 
-**Completed:**
+### Completed
 
-1. **Created useSendOrderSMS hook** (`src/hooks/useSendOrderSMS.ts`)
-   - Integrates with existing `send-sms` edge function via Supabase functions
-   - Provides order-specific SMS templates for different statuses (confirmed, preparing, ready, in_transit, delivered, cancelled)
-   - Helper functions to extract customer name and phone from various order formats
-   - Proper authentication via session token
-   - Uses TanStack Query mutation for loading states and error handling
+#### 1. Created Database Migration (`supabase/migrations/20260129000001_order_tags_system.sql`)
+- Created `order_tags` junction table for many-to-many relationship between unified_orders and tags
+- Reuses existing `tags` table for tag definitions (shared with customer tags)
+- Fields: id, tenant_id, order_id, tag_id, created_at
+- Unique constraint on (order_id, tag_id) to prevent duplicate assignments
+- Indexes for performance:
+  - idx_order_tags_tenant_id
+  - idx_order_tags_order_id
+  - idx_order_tags_tag_id
+  - idx_order_tags_tenant_tag (composite for tag-based filtering)
+- RLS policies for tenant isolation (select, insert, delete)
 
-2. **Created OrderSMSButton component** (`src/components/admin/orders/OrderSMSButton.tsx`)
-   - Popover-based UI with template selection dropdown
-   - Pre-fills message based on order status and customer info
-   - Custom message option for personalized communications
-   - SMS character count indicator with multipart message warning
-   - Loading state while sending, success/error toasts
-   - Disabled state when no phone number is available
-   - Supports both icon-only and button variants
+#### 2. Added Query Keys (`src/lib/queryKeys.ts`)
+- Added `orderTags` query key factory:
+  - `orderTags.all` - Base key for all order tag queries
+  - `orderTags.byOrder(orderId)` - For order-specific tag queries
+  - `orderTags.byTag(tagId)` - For tag-based order queries
 
-3. **Integrated into Orders.tsx page**
-   - Added SMS button in the table row actions (visible on hover)
-   - Added SMS button in the mobile drawer quick actions (grid layout)
-   - Button passes order data and tenant ID for proper SMS logging
-   - Fixed pre-existing bugs: renamed incorrect function references (handlePrintOrderFunc → handlePrintOrder, etc.)
-   - Removed duplicate import of useAdminOrdersRealtime
+#### 3. Created `useOrderTags` Hook (`src/hooks/useOrderTags.ts`)
+- `useOrderTags(orderId)` - Fetch tags for a specific order with tag details
+- `useAssignOrderTag()` - Assign a tag to an order
+- `useRemoveOrderTag()` - Remove a tag from an order
+- `useBatchAssignOrderTags()` - Bulk assign tags to multiple orders
+- `useBatchRemoveOrderTags()` - Bulk remove tags from multiple orders
+- All hooks follow TanStack Query patterns with proper cache invalidation
+- Tenant isolation enforced on all operations
 
-4. **Fixed pre-existing build issues**
-   - Removed duplicate default export in PasswordResetPage.tsx
-   - Added missing `safeJsonParse` function to sanitize.ts
+#### 4. Created `OrderTagsInput` Component (`src/components/admin/orders/OrderTagsInput.tsx`)
+- Tag management UI for order categorization
+- Features:
+  - View assigned tags as color-coded badges
+  - Remove tags with X button on each badge
+  - Popover UI for adding tags with available tags list
+  - Create new tags inline with color picker (9 preset colors)
+  - Keyboard support (Enter to create and assign)
+  - Loading and mutation states with visual feedback
+  - Toast notifications for success/error feedback
+- Props:
+  - `orderId: string` - Required order ID
+  - `readOnly?: boolean` - Disable editing when true
+  - `compact?: boolean` - Smaller size variant for table cells
+- Follows existing TagManager patterns from customer tags system
 
 ### Files Changed:
-- `src/hooks/useSendOrderSMS.ts` (NEW)
-- `src/components/admin/orders/OrderSMSButton.tsx` (NEW)
-- `src/pages/admin/Orders.tsx` (modified - added SMS button, fixed function references)
-- `src/lib/utils/sanitize.ts` (modified - added safeJsonParse)
-- `src/pages/auth/PasswordResetPage.tsx` (modified - fixed duplicate export)
+- `supabase/migrations/20260129000001_order_tags_system.sql` (new)
+- `src/lib/queryKeys.ts` (added orderTags query keys)
+- `src/hooks/useOrderTags.ts` (new)
+- `src/components/admin/orders/OrderTagsInput.tsx` (new)
 
-### SMS Template Messages:
-- **Current Status Update**: Generic message with current order status
-- **Confirmed**: "Your order has been confirmed and is being processed"
-- **Preparing**: "Your order is now being prepared"
-- **Ready**: "Your order is ready for pickup"
-- **In Transit**: "Your order is on its way, driver en route"
-- **Delivered**: "Your order has been delivered"
-- **Cancelled**: "Your order has been cancelled"
-- **Custom**: Blank template for personalized messages
+### Build Status:
+- TypeScript: Compiles with no errors (`npx tsc --noEmit` passes)
+- Note: Pre-existing build issue in PasswordResetPage.tsx (duplicate default export) unrelated to these changes
 
-### Integration Points:
-- Uses existing `send-sms` Supabase edge function (Twilio integration)
-- Leverages `getSMSCharInfo` from smsValidation utility for character counting
-- Follows existing QuickMessageButton UI patterns
-- Compatible with multiple order formats (orders, unified_orders, etc.)
+### Usage Example:
+```tsx
+import { OrderTagsInput } from '@/components/admin/orders/OrderTagsInput';
 
-### Notes:
-- Build passes successfully with no TypeScript errors
-- Button gracefully handles missing phone numbers (disabled with tooltip)
-- Templates automatically substitute customer name and order number
+// In order detail page or table row
+<OrderTagsInput orderId={order.id} />
+
+// Read-only mode for display
+<OrderTagsInput orderId={order.id} readOnly />
+
+// Compact mode for table cells
+<OrderTagsInput orderId={order.id} compact />
+```
