@@ -7459,3 +7459,43 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## StockLevelsPage Implementation
+
+### Task: Build StockLevelsPage with sortable table of all products
+
+### Changes Made:
+
+1. **Created StockLevelsPage component** (`src/pages/tenant-admin/StockLevelsPage.tsx`):
+   - Sortable table displaying all products with stock information
+   - Click column headers to sort by: Product name, Category, Stock quantity, Value, Status
+   - Sort order toggles between ascending/descending on repeated clicks
+   - Sort arrow indicators show current sort direction
+   - Search filter for products by name, SKU, or category
+   - Category dropdown filter
+   - Persists sort preferences using `useTablePreferences` hook
+   - Summary cards showing: Total products, Total stock, Total value, Low stock items
+   - Mobile responsive with card view for smaller screens
+   - Stock status badges: IN STOCK, LOW, CRITICAL, OUT OF STOCK
+   - Uses TanStack Query with `queryKeys.inventory.list()` for data fetching
+   - Follows FloraIQ patterns: tenant filtering, ResponsiveTable, formatters
+
+2. **Added route in App.tsx**:
+   - Added lazy import for StockLevelsPage
+   - Added route at `/admin/stock-levels`
+
+### Files Changed:
+- `src/pages/tenant-admin/StockLevelsPage.tsx` (NEW)
+- `src/App.tsx` (added import and route)
+
+### Technical Details:
+- Uses `useTablePreferences` hook for persistent sort state in localStorage
+- Uses `useDebounce` for search input (300ms delay)
+- Filters by tenant_id as required by FloraIQ architecture
+- Stock status calculation based on available_quantity vs low_stock_alert threshold
+- Value calculated from cost_per_unit or wholesale_price
+- TypeScript strict mode compliant with proper types
+
+### Route:
+- Path: `/:tenantSlug/admin/stock-levels`
+- No feature flag required (basic inventory feature)
