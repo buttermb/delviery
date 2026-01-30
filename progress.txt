@@ -7493,75 +7493,64 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-## Agent 73 - ProductCategorySelect with Hierarchical Categories
+---
 
-### Task: Add ProductCategorySelect with hierarchical categories
+### Task: Build ProductTagsInput for search and filter tags
 
 **Completed:**
 
-1. **Created useCategories hook** (`src/hooks/useCategories.ts`)
-   - `useCategories()` - Fetches all categories for the current tenant
-   - `useCategoryTree()` - Returns categories as a hierarchical tree structure
-   - `useFlattenedCategories()` - Returns flattened categories with depth info for select inputs
-   - Exports TypeScript interfaces: `Category`, `CategoryTreeNode`, `FlattenedCategory`
-   - Gracefully handles missing categories table (error code 42P01)
-   - Uses queryKeys factory pattern for TanStack Query
-   - Respects tenant isolation via `useTenantAdminAuth()`
+1. **Created useProductTags hook** (`src/hooks/useProductTags.ts`)
+   - `useProductTags()` - Fetches all tags for the current tenant
+   - `useSearchProductTags(searchTerm)` - Search tags by name with filtering
+   - `useCreateProductTag()` - Create new tags with name, color, and description
+   - `useProductTagsByIds(tagIds)` - Fetch specific tags by their IDs
+   - Reuses the existing `tags` table which is tenant-scoped
+   - Proper tenant isolation with `useTenantAdminAuth()`
+   - Integrated with existing `queryKeys.tags` for cache management
 
-2. **Created ProductCategorySelect component** (`src/components/admin/product-form/ProductCategorySelect.tsx`)
-   - Hierarchical dropdown select for product categories
+2. **Built ProductTagsInput component** (`src/components/admin/ProductTagsInput.tsx`)
+   - Multi-select tag input for filtering products
+   - Two display variants:
+     - `dropdown` (default) - Full dropdown with search, tag list, and create form
+     - `chips` - Compact inline badges with add button
    - Features:
-     - Visual indentation showing category hierarchy
-     - Search functionality for filtering categories
-     - Category path breadcrumb display when selected
-     - Clear selection option
-     - Icons indicating parent vs child categories (FolderOpen, Folder, Tag)
-     - Category descriptions shown in dropdown
-   - Props interface:
-     - `value` - Currently selected category ID
-     - `onChange` - Callback when category changes
-     - `placeholder` - Customizable placeholder text
-     - `searchable` - Enable/disable search (default: true)
-     - `clearable` - Allow clearing selection (default: true)
-     - `disabled` - Disable the component
-     - `className` - Additional CSS classes
-   - Handles loading, error, and empty states gracefully
-   - Uses shadcn/ui Popover, Button, Input, ScrollArea components
-
-3. **Created product-form index file** (`src/components/admin/product-form/index.ts`)
-   - Exports all product form step components
-   - Exports the new ProductCategorySelect component
-
-4. **Updated admin components index** (`src/components/admin/index.ts`)
-   - Added export for ProductCategorySelect
+     - Real-time search/filter through available tags
+     - Color-coded tag badges
+     - Inline tag creation with color picker (9 preset colors)
+     - Keyboard navigation (Enter to create, Escape to cancel)
+     - Loading states and error handling
+     - Clear all / remove individual tags
+     - Optional max tags limit
+     - Read-only mode support
+     - Size variants (sm, default)
+   - Follows existing patterns from TagManager and SearchableFilterDropdown
 
 ### Files Created:
-- `src/hooks/useCategories.ts`
-- `src/components/admin/product-form/ProductCategorySelect.tsx`
-- `src/components/admin/product-form/index.ts`
-
-### Files Modified:
-- `src/components/admin/index.ts`
+- `src/hooks/useProductTags.ts`
+- `src/components/admin/ProductTagsInput.tsx`
 
 ### Usage Example:
 ```tsx
-import { ProductCategorySelect } from '@/components/admin';
-// or
-import { ProductCategorySelect } from '@/components/admin/product-form';
+import { ProductTagsInput } from '@/components/admin/ProductTagsInput';
 
-function ProductForm() {
-  const [categoryId, setCategoryId] = useState<string | null>(null);
-  
-  return (
-    <ProductCategorySelect
-      value={categoryId}
-      onChange={setCategoryId}
-      placeholder="Select a category..."
-    />
-  );
-}
+// Dropdown variant (full filter interface)
+<ProductTagsInput
+  value={selectedTagIds}
+  onChange={setSelectedTagIds}
+  placeholder="Filter by tags..."
+/>
+
+// Chips variant (compact inline display)
+<ProductTagsInput
+  value={selectedTagIds}
+  onChange={setSelectedTagIds}
+  variant="chips"
+  allowCreate={true}
+/>
 ```
 
-### Build Verification:
-- TypeScript compilation: PASSED
-- ESLint: PASSED (no errors in new files)
+### Notes:
+- TypeScript type checking passes successfully (`npx tsc --noEmit`)
+- Build error in PasswordResetPage.tsx is pre-existing (duplicate default export) and unrelated to this task
+- Component reuses existing `tags` table and follows FloraIQ patterns
+- Integrated with TanStack Query for caching and invalidation
