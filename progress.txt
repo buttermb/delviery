@@ -7495,62 +7495,36 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-### Task: Build ProductTagsInput for search and filter tags
+### Task: Add ProductStockLevelInput with low stock threshold setting
 
 **Completed:**
 
-1. **Created useProductTags hook** (`src/hooks/useProductTags.ts`)
-   - `useProductTags()` - Fetches all tags for the current tenant
-   - `useSearchProductTags(searchTerm)` - Search tags by name with filtering
-   - `useCreateProductTag()` - Create new tags with name, color, and description
-   - `useProductTagsByIds(tagIds)` - Fetch specific tags by their IDs
-   - Reuses the existing `tags` table which is tenant-scoped
-   - Proper tenant isolation with `useTenantAdminAuth()`
-   - Integrated with existing `queryKeys.tags` for cache management
+1. **Created ProductStockLevelInput component** (`src/components/admin/inventory/ProductStockLevelInput.tsx`)
+   - Full-featured stock level input with low stock threshold setting
+   - Visual stock status indicators (out of stock, critical, warning, healthy)
+   - Real-time status preview showing current stock vs threshold
+   - Help text via FieldHelp component explaining the feature
+   - Input validation with min/max threshold support
 
-2. **Built ProductTagsInput component** (`src/components/admin/ProductTagsInput.tsx`)
-   - Multi-select tag input for filtering products
-   - Two display variants:
-     - `dropdown` (default) - Full dropdown with search, tag list, and create form
-     - `chips` - Compact inline badges with add button
-   - Features:
-     - Real-time search/filter through available tags
-     - Color-coded tag badges
-     - Inline tag creation with color picker (9 preset colors)
-     - Keyboard navigation (Enter to create, Escape to cancel)
-     - Loading states and error handling
-     - Clear all / remove individual tags
-     - Optional max tags limit
-     - Read-only mode support
-     - Size variants (sm, default)
-   - Follows existing patterns from TagManager and SearchableFilterDropdown
+2. **Component exports:**
+   - `ProductStockLevelInput` - Main component with threshold input and status preview card
+   - `CompactStockLevelInput` - Compact version for table rows or inline editing
+   - `StockStatusBadge` - Read-only status badge for display purposes
+   - `getStockStatus` - Helper function to calculate stock status from values
+   - `StockStatus` type export for type-safe status handling
 
-### Files Created:
-- `src/hooks/useProductTags.ts`
-- `src/components/admin/ProductTagsInput.tsx`
+3. **Features:**
+   - Stock status levels: out_of_stock (qty <= 0), critical (qty <= threshold * 0.25), warning (qty <= threshold), healthy
+   - Color-coded visual feedback with icons (XCircle, AlertCircle, AlertTriangle, CheckCircle2)
+   - Follows FloraIQ UI patterns with shadcn/ui components
+   - Uses existing FieldHelp component and predefined help texts
+   - Accessible with proper labels and ARIA attributes
+   - Dark mode support with proper color variants
 
-### Usage Example:
-```tsx
-import { ProductTagsInput } from '@/components/admin/ProductTagsInput';
-
-// Dropdown variant (full filter interface)
-<ProductTagsInput
-  value={selectedTagIds}
-  onChange={setSelectedTagIds}
-  placeholder="Filter by tags..."
-/>
-
-// Chips variant (compact inline display)
-<ProductTagsInput
-  value={selectedTagIds}
-  onChange={setSelectedTagIds}
-  variant="chips"
-  allowCreate={true}
-/>
-```
+### Files Changed:
+- `src/components/admin/inventory/ProductStockLevelInput.tsx` (NEW)
 
 ### Notes:
-- TypeScript type checking passes successfully (`npx tsc --noEmit`)
-- Build error in PasswordResetPage.tsx is pre-existing (duplicate default export) and unrelated to this task
-- Component reuses existing `tags` table and follows FloraIQ patterns
-- Integrated with TanStack Query for caching and invalidation
+- ESLint passes with only 1 warning about exporting non-components (expected for helper utilities)
+- Component follows the same patterns as existing inventory components (InlineStockEdit, StockAdjustmentDialog)
+- Pre-existing build error in PasswordResetPage.tsx (multiple default exports) is unrelated to these changes
