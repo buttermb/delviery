@@ -121,28 +121,28 @@ tasks:
     completed: true
   - title: Add StoreOrdersTab showing orders from storefront
     parallel_group: 5
-    completed: false
+    completed: true
   - title: Build OrderAssignCourier modal with available courier list
     parallel_group: 5
-    completed: false
+    completed: true
   - title: Add OrderTrackingTimeline showing all status changes with timestamps
     parallel_group: 5
-    completed: false
+    completed: true
   - title: Build OrderRefundModal with partial and full refund options
     parallel_group: 5
-    completed: false
+    completed: true
   - title: Add OrderDuplicateButton creating new order from existing
     parallel_group: 5
-    completed: false
+    completed: true
   - title: Build OrderEditModal for modifying items before confirmation
     parallel_group: 5
-    completed: false
+    completed: true
   - title: Add OrderCancelModal with reason selection and restock option
     parallel_group: 5
-    completed: false
+    completed: true
   - title: Build OrderInvoiceGenerator creating PDF invoice from order
     parallel_group: 5
-    completed: false
+    completed: true
   - title: Add OrderEmailButton to send confirmation receipt tracking emails
     parallel_group: 5
     completed: false
