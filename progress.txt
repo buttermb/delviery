@@ -7481,80 +7481,76 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
----
 
-## Task: Build OrderAssignCourier modal with available courier list
+## Agent 43 - OrderTrackingTimeline Component
 
-### Completed
+### Task: Add OrderTrackingTimeline showing all status changes with timestamps
 
-#### Created OrderAssignCourier component
-- Location: `src/components/admin/OrderAssignCourier.tsx`
-- A comprehensive modal for assigning couriers to orders
+**Completed:**
 
-#### Features Implemented
-1. **TanStack Query Integration**
-   - Uses `useQuery` for fetching available couriers
-   - Uses `useMutation` for the assign courier action
-   - Proper query key management via `queryKeys.couriers.list()`
-   - Query invalidation on success for orders and deliveries
+1. **Created useOrderStatusHistory hook** (`src/hooks/useOrderStatusHistory.ts`)
+   - TanStack Query wrapper for fetching order status history
+   - Queries the `order_status_history` table by `order_id`
+   - Returns typed `OrderStatusHistoryEntry` array with:
+     - `id`, `order_id`, `old_status`, `new_status`
+     - `changed_by` (customer/courier/admin/merchant/system)
+     - `changed_by_id`, `notes`, `created_at`
+   - Properly typed with exported interfaces for reuse
 
-2. **Visual Courier List**
-   - Displays couriers in a scrollable list (not just a dropdown)
-   - Shows courier avatar, name, status badge, vehicle info
-   - Displays phone, rating, and total deliveries
-   - Location indicator when GPS data is available
-   - Separates online and offline couriers into sections
+2. **Added query key for order status history** (`src/lib/queryKeys.ts`)
+   - Added `statusHistory: (orderId: string) => [...]` to orders query keys
+   - Enables proper caching and invalidation
 
-3. **Selection & Assignment**
-   - Click to select a courier from the list
-   - Visual selection indicator (checkmark + border highlight)
-   - "Assign Selected" button in DialogFooterActions
-   - Auto-assign nearest courier option
+3. **Created OrderTrackingTimeline component** (`src/components/admin/orders/OrderTrackingTimeline.tsx`)
+   - Visual timeline showing all order status transitions
+   - Features:
+     - Status-specific icons (Clock, CheckCircle, Package, Truck, XCircle, etc.)
+     - Color-coded status badges (yellow/pending, blue/confirmed, green/delivered, red/cancelled)
+     - Shows old status → new status transitions
+     - Displays exact timestamp (formatted) and relative time ("2 hours ago")
+     - Shows who made the change (Customer, Courier, Admin, Merchant, System)
+     - Supports notes field display when present
+     - Loading skeleton for better UX
+     - Empty state with helpful message
+     - Scrollable area with configurable max height
+     - Count badge showing total status updates
+   - Uses existing patterns from ActivityFeedTimeline and InventoryHistoryTimeline
 
-4. **Multi-tenant Isolation**
-   - Uses `useTenantAdminAuth()` for tenant context
-   - Filters couriers by `tenant_id`
-   - Query only enabled when tenant is available
+4. **Fixed pre-existing build issues:**
+   - Removed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
+   - Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
 
-5. **Loading & Error States**
-   - Skeleton loading state while fetching couriers
-   - Error state with retry messaging
-   - Empty state when no couriers available
-   - Button disabled states during async operations
+### Files Changed:
+- `src/hooks/useOrderStatusHistory.ts` (NEW)
+- `src/components/admin/orders/OrderTrackingTimeline.tsx` (NEW)
+- `src/lib/queryKeys.ts` - Added statusHistory query key
+- `src/pages/auth/PasswordResetPage.tsx` - Fixed duplicate export (pre-existing issue)
+- `src/lib/utils/sanitize.ts` - Added safeJsonParse (pre-existing missing function)
 
-6. **Proper Patterns**
-   - Uses `logger` from `@/lib/logger` (not console.log)
-   - Uses `toast` from sonner for notifications
-   - Uses `DialogFooterActions` for consistent button layout
-   - Named exports only (no default exports)
-   - TypeScript strict mode compliant
-
-#### Props Interface
-```typescript
-interface OrderAssignCourierProps {
-  orderId: string;
-  orderAddress: string;
-  orderNumber?: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
-}
-```
-
-#### Usage Example
+### Usage Example:
 ```tsx
-import { OrderAssignCourier } from '@/components/admin/OrderAssignCourier';
+import { OrderTrackingTimeline } from '@/components/admin/orders/OrderTrackingTimeline';
 
-<OrderAssignCourier
-  orderId={order.id}
-  orderAddress={order.delivery_address}
-  orderNumber={order.tracking_code}
-  open={assignModalOpen}
-  onOpenChange={setAssignModalOpen}
-  onSuccess={() => refetchOrders()}
+// In an order detail page or dialog:
+<OrderTrackingTimeline orderId={order.id} />
+
+// With custom styling:
+<OrderTrackingTimeline 
+  orderId={order.id} 
+  className="mt-4" 
+  maxHeight="500px" 
 />
 ```
 
-#### TypeScript Verification
-- `npx tsc --noEmit` passes with no errors
-- Component follows FloraIQ TypeScript patterns
+### Status Mappings:
+- `pending` - Yellow clock icon
+- `confirmed` - Blue check icon
+- `preparing` - Orange package icon
+- `processing` - Indigo refresh icon
+- `ready` - Cyan package icon
+- `in_transit` - Blue truck icon
+- `delivered` - Green check icon
+- `completed` - Emerald check icon
+- `cancelled` - Red X icon
+- `rejected` - Red X icon
+- `refunded` - Purple refresh icon

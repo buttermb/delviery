@@ -45,7 +45,7 @@ export const queryKeys = {
     details: () => [...queryKeys.orders.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.orders.details(), id] as const,
     offline: (tenantId?: string) => [...queryKeys.orders.all, 'offline', tenantId] as const,
-    live: (tenantId?: string) => [...queryKeys.orders.all, 'live', tenantId] as const,
+    statusHistory: (orderId: string) => [...queryKeys.orders.all, 'status-history', orderId] as const,
   },
 
   // Wholesale Orders
