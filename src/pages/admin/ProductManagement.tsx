@@ -61,7 +61,8 @@ import { BatchPanel } from "@/components/admin/BatchPanel";
 import { BulkPriceEditor } from "@/components/admin/BulkPriceEditor";
 import { BatchCategoryEditor } from "@/components/admin/BatchCategoryEditor";
 import { ProductImportDialog } from "@/components/admin/ProductImportDialog";
-import { Upload } from "lucide-react";
+import { ProductBulkImportDialog } from "@/components/admin/ProductBulkImportDialog";
+import { Upload, FileUp } from "lucide-react";
 import { ProductForm, type ProductFormData } from "@/components/admin/products/ProductForm";
 import { useEncryption } from "@/lib/hooks/useEncryption";
 import type { Database } from "@/integrations/supabase/types";
@@ -203,6 +204,7 @@ export default function ProductManagement() {
   const [bulkPriceEditorOpen, setBulkPriceEditorOpen] = useState(false);
   const [batchCategoryEditorOpen, setBatchCategoryEditorOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [bulkImportDialogOpen, setBulkImportDialogOpen] = useState(false);
 
   // Optimistic locking for concurrent edit protection
   const { updateWithLock, isUpdating: isLockUpdating } = useOptimisticLock('products');
@@ -1009,6 +1011,15 @@ export default function ProductManagement() {
           <ProductImportDialog
             open={importDialogOpen}
             onOpenChange={setImportDialogOpen}
+            onSuccess={loadProducts}
+          />
+          <Button variant="outline" onClick={() => setBulkImportDialogOpen(true)}>
+            <FileUp className="h-4 w-4 mr-2" />
+            Bulk Import
+          </Button>
+          <ProductBulkImportDialog
+            open={bulkImportDialogOpen}
+            onOpenChange={setBulkImportDialogOpen}
             onSuccess={loadProducts}
           />
 

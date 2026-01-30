@@ -211,3 +211,17 @@ export function sanitizeUrlInput(url: string): string {
     return trimmed.replace(/[<>"']/g, '');
   }
 }
+
+/**
+ * Safely parses a JSON string, returning a default value if parsing fails.
+ * @param jsonString - The JSON string to parse
+ * @param defaultValue - The default value to return if parsing fails
+ */
+export function safeJsonParse<T>(jsonString: string | null | undefined, defaultValue: T): T {
+  if (!jsonString) return defaultValue;
+  try {
+    return JSON.parse(jsonString) as T;
+  } catch {
+    return defaultValue;
+  }
+}
