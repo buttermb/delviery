@@ -7459,3 +7459,76 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+## Task: Add CreateProductForm with all fields including variants
+
+### Completed
+
+#### 1. Created CreateProductForm Component
+- File: `src/components/admin/product-form/CreateProductForm.tsx`
+- Features:
+  - Multi-step wizard form with 7 steps (Basic Info, Pricing, Variants, Details, Compliance, Images, Review)
+  - Progress indicator showing current step and completion status
+  - Step validation before proceeding to next step
+  - Form data sanitization before submission
+  - Loading states during form submission
+  - Support for both create and edit modes
+  - Keyboard-accessible step navigation
+
+#### 2. Created VariantsStep Component
+- File: `src/components/admin/product-form/VariantsStep.tsx`
+- Features:
+  - Price variants management for different weights/sizes
+  - Preset weight options: 1g, 3.5g (1/8 oz), 7g (1/4 oz), 14g (1/2 oz), 28g (1 oz)
+  - Preset size options for non-flower products: Single, 2-Pack, 4-Pack, 10-Pack
+  - Toggle between weight-based and size/pack-based variants
+  - Custom variant input for any weight/size
+  - Price per gram calculation display
+  - Informational pricing tips card
+
+#### 3. Created Index File for Exports
+- File: `src/components/admin/product-form/index.ts`
+- Exports all product form components and types for easy importing
+
+### Form Data Structure
+
+The `CreateProductFormData` interface covers all product fields:
+
+**Basic Info:**
+- name, category, strain_name, strain_lineage, strain_type
+- vendor_name, thca_percentage, cbd_content, weight_grams
+
+**Pricing & Inventory:**
+- price, sale_price, cost_per_unit, wholesale_price, retail_price
+- stock_quantity, available_quantity, in_stock, low_stock_alert
+
+**Price Variants:**
+- prices: Record<string, number | string> (weight-based pricing)
+
+**Details:**
+- description, strain_info, effects, flavors, terpenes
+- usage_tips, medical_benefits, consumption_methods
+
+**Compliance:**
+- coa_url, coa_filename, lab_name, test_date, batch_number
+
+**Images:**
+- image_url, images (array of additional images)
+
+**Inventory/Tracking:**
+- sku, barcode
+
+**Visibility:**
+- menu_visibility, publish_status
+
+### Files Changed:
+- `src/components/admin/product-form/CreateProductForm.tsx` (NEW)
+- `src/components/admin/product-form/VariantsStep.tsx` (NEW)
+- `src/components/admin/product-form/index.ts` (NEW)
+
+### Build Status:
+- ESLint: Passes with no errors
+- TypeScript: Compiles with no errors in product-form files
+- Note: Pre-existing build issues exist in PasswordResetPage.tsx unrelated to these changes
