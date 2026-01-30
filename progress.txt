@@ -7459,3 +7459,59 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+## Task: Add ProductVariantsManager for size weight strain options
+
+### Summary:
+Added a complete product variants management system that allows products to have multiple size, weight, and strain options with their own pricing and inventory tracking.
+
+### Implementation Details:
+
+1. **Database Migration** (`supabase/migrations/20260129000001_create_product_variants.sql`):
+   - Created `product_variants` table with tenant isolation
+   - Supports three variant types: `size`, `weight`, `strain`
+   - Each variant can have its own:
+     - Pricing (price, cost_per_unit, wholesale_price, retail_price)
+     - Inventory (available_quantity, low_stock_alert)
+     - Cannabis-specific data for strains (thc_percent, cbd_percent, strain_type)
+     - Weight data for weight variants (weight_grams)
+   - RLS policies for tenant isolation
+   - Proper indexes for performance
+
+2. **React Hook** (`src/hooks/useProductVariants.ts`):
+   - `useProductVariants(productId)` - Fetches all variants for a product
+   - `useCreateVariant()` - Creates a new variant
+   - `useUpdateVariant()` - Updates an existing variant
+   - `useDeleteVariant()` - Deletes a variant
+   - `useReorderVariants()` - Reorders variants by display_order
+   - `useBulkCreateVariants()` - Creates multiple variants at once (for presets)
+   - Exports preset weights (1g, 1/8, 1/4, 1/2, 1oz) and sizes (S, M, L)
+
+3. **ProductVariantsManager Component** (`src/components/admin/products/ProductVariantsManager.tsx`):
+   - Full CRUD UI for managing variants
+   - Grouped display by variant type (Weight, Size, Strain)
+   - Quick-add preset weights and sizes
+   - Add/Edit dialog with type-specific fields
+   - Cannabis-specific fields for strain variants (THC%, CBD%, strain type)
+   - Loading and error states
+   - Read-only mode support
+
+4. **ProductForm Integration** (`src/components/admin/products/ProductForm.tsx`):
+   - Added new "Variants" tab (only shows when editing existing product)
+   - Passes productId to ProductVariantsManager
+   - Tab list dynamically adjusts for 5 tabs when editing
+
+### Files Changed:
+- `supabase/migrations/20260129000001_create_product_variants.sql` (NEW)
+- `src/hooks/useProductVariants.ts` (NEW)
+- `src/components/admin/products/ProductVariantsManager.tsx` (NEW)
+- `src/components/admin/products/ProductForm.tsx` (MODIFIED)
+- `src/pages/admin/ProductManagement.tsx` (MODIFIED - passes productId and storeSettings to ProductForm)
+
+### Notes:
+- Variants tab only appears when editing an existing product (variants require a product_id)
+- All hooks follow FloraIQ patterns with tenant isolation via useTenantAdminAuth
+- ESLint passes for all new/modified files

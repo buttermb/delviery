@@ -1038,6 +1038,8 @@ export default function ProductManagement() {
                   onCancel={() => setIsDialogOpen(false)}
                   isLoading={isGenerating}
                   isEditMode={!!editingProduct}
+                  productId={editingProduct?.id}
+                  storeSettings={storeSettings}
                 />
               </div>
             </DialogContent>
