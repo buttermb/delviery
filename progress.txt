@@ -7493,66 +7493,60 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+
 ---
 
-### Task: Add ProductQRGenerator creating QR codes linking to product
+### Task: Build ProductImageUploader with drag-drop and multiple images
 
 **Completed:**
 
-1. **Created ProductQRGenerator component** (`src/components/admin/ProductQRGenerator.tsx`)
-   - Dialog-based component that generates QR codes linking to product pages in the storefront
-   - Features:
-     - **Store Selection**: Fetches available marketplace stores for the tenant using TanStack Query
-     - **Configurable QR Size**: Small (160px), Medium (240px), Large (320px) options
-     - **QR Code Display**: Uses qrcode.react's QRCodeSVG component with high error correction level
-     - **Download**: Converts SVG to PNG for downloading with sanitized filename
-     - **Print**: Opens print dialog with styled QR code, product name, and URL
-     - **Copy Link**: Copies product URL to clipboard with visual feedback
-     - **Share**: Uses Web Share API with fallback to copy
-     - **Open Link**: Opens product page in new tab for verification
-   
-   - Component Props:
-     - `product`: Product object with `id`, `name`, `sku`, `category`, `strain_name` fields
-     - `open`: Boolean to control dialog visibility  
-     - `onOpenChange`: Callback for dialog state changes
+1. **Created ProductImageUploader component** (`src/components/admin/products/ProductImageUploader.tsx`)
+   - Full drag-and-drop support for image uploads
+   - Supports both main product image and up to 5 additional images
+   - Image dimension validation (400x400px min, 4096x4096px max)
+   - File type validation (JPEG, PNG, WebP, GIF)
+   - Max file size: 10MB per image
+   - Upload progress indicators with simulated progress
+   - Security validation using fileValidation utilities
 
-   - URL Format: Generates URLs in the format `/shop/{storeSlug}/products/{productId}`
-   
-   - Follows FloraIQ patterns:
-     - Uses `useTenantAdminAuth()` for tenant context
-     - Filters stores by `tenant_id`
-     - Uses `logger` from `@/lib/logger` for logging
-     - Uses `toast` from `sonner` for notifications
-     - Includes proper loading and disabled states
-     - TypeScript strict mode compliant
+2. **Features implemented:**
+   - **Main image section:**
+     - Large drop zone with visual feedback when dragging
+     - Replace/Remove buttons on hover overlay
+     - Loading spinner and progress bar during upload
+   - **Additional images grid:**
+     - Drag-to-reorder functionality for image positioning
+     - Star icon button to promote any image to main image
+     - Remove button on each image
+     - "Add" button with drag-drop support
+   - **UI polish:**
+     - Visual drag feedback with scale animation
+     - Consistent styling with shadcn/ui components
+     - Helpful guidelines section with image tips
+     - Count indicator showing images used vs max allowed
 
-2. **Exported component from admin index** (`src/components/admin/index.ts`)
-   - Added named export for `ProductQRGenerator`
+3. **Technical implementation:**
+   - Uses `validateImageDimensions` from `@/lib/utils/validation`
+   - Uses `validateFile` from `@/lib/fileValidation` for security
+   - Uploads to Supabase `product-images` bucket
+   - Proper cleanup of object URLs to prevent memory leaks
+   - Full TypeScript types with exported `ImageItem` interface
+   - All logging uses `logger` from `@/lib/logger`
+
+4. **Props interface:**
+   - `mainImage?: string` - Current main product image URL
+   - `additionalImages?: string[]` - Array of additional image URLs
+   - `onMainImageChange: (url: string | undefined) => void`
+   - `onAdditionalImagesChange: (urls: string[]) => void`
+   - `maxAdditionalImages?: number` - Default: 5
+   - `disabled?: boolean`
+   - `className?: string`
 
 ### Files Changed:
-- `src/components/admin/ProductQRGenerator.tsx` (NEW)
-- `src/components/admin/index.ts` (MODIFIED)
-
-### Usage Example:
-```tsx
-import { ProductQRGenerator } from '@/components/admin';
-
-// In your component:
-const [qrDialogOpen, setQrDialogOpen] = useState(false);
-
-<Button onClick={() => setQrDialogOpen(true)}>
-  <QrCode className="h-4 w-4 mr-2" />
-  Generate QR Code
-</Button>
-
-<ProductQRGenerator
-  product={selectedProduct}
-  open={qrDialogOpen}
-  onOpenChange={setQrDialogOpen}
-/>
-```
+- `src/components/admin/products/ProductImageUploader.tsx` (NEW)
 
 ### Notes:
-- TypeScript compilation passes successfully
-- Component uses existing dependencies: `qrcode.react`, `@tanstack/react-query`, shadcn/ui components
-- Pre-existing build error in PasswordResetPage.tsx (duplicate default export) is unrelated to these changes
+- Component follows FloraIQ patterns and code style
+- ESLint passes with no errors
+- Pre-existing build error in PasswordResetPage.tsx (duplicate default export) is unrelated
+- Component can be integrated into product forms by replacing/enhancing existing ImagesStep

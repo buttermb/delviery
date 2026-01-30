@@ -205,10 +205,10 @@ tasks:
     completed: true
   - title: Add CreateProductForm with all fields including variants
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Build ProductImageUploader with drag-drop and multiple images
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Add ProductVariantsManager for size weight strain options
     parallel_group: 8
     completed: false
