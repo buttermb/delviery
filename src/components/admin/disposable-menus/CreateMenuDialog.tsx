@@ -11,13 +11,14 @@ import { Badge } from '@/components/ui/badge';
 import { useWholesaleInventory } from '@/hooks/useWholesaleData';
 import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
 import { useBulkGenerateImages } from '@/hooks/useProductImages';
-import { Loader2, ChevronRight, ChevronLeft, Eye, Shield, Bell, Palette, CheckCircle2, Sparkles } from 'lucide-react';
+import { Loader2, ChevronRight, ChevronLeft, Eye, Shield, Bell, Palette, CheckCircle2, Sparkles, Calendar } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { MenuAccessDetails } from './MenuAccessDetails';
+import { MenuScheduler, type MenuScheduleConfig } from './MenuScheduler';
 import { useTenantLimits } from '@/hooks/useTenantLimits';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
@@ -33,7 +34,8 @@ const STEPS = [
   { id: 3, name: 'Access', icon: Shield },
   { id: 4, name: 'Security', icon: Shield },
   { id: 5, name: 'Notifications', icon: Bell },
-  { id: 6, name: 'Appearance', icon: Palette },
+  { id: 6, name: 'Schedule', icon: Calendar },
+  { id: 7, name: 'Appearance', icon: Palette },
 ];
 
 export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) => {
@@ -82,7 +84,17 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
   const [notifyOnShareAttempt, setNotifyOnShareAttempt] = useState(true);
   const [notifyOnGeofenceViolation, setNotifyOnGeofenceViolation] = useState(true);
 
-  // Step 6: Appearance
+  // Step 6: Schedule
+  const [menuSchedule, setMenuSchedule] = useState<MenuScheduleConfig>({
+    enabled: false,
+    activationTime: null,
+    deactivationTime: null,
+    timezone: 'America/New_York',
+    recurrencePattern: 'none',
+    recurrenceConfig: {},
+  });
+
+  // Step 7: Appearance
   const [appearanceStyle, setAppearanceStyle] = useState<'professional' | 'minimal' | 'anonymous'>('professional');
   const [showProductImages, setShowProductImages] = useState(true);
   const [showAvailability, setShowAvailability] = useState(true);
@@ -204,6 +216,15 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
           show_availability: showAvailability,
           show_contact_info: showContactInfo,
           custom_message: sanitizeFormInput(customMessage, 500),
+          // Schedule settings
+          schedule: menuSchedule.enabled ? {
+            enabled: true,
+            activation_time: menuSchedule.activationTime,
+            deactivation_time: menuSchedule.deactivationTime,
+            timezone: menuSchedule.timezone,
+            recurrence_pattern: menuSchedule.recurrencePattern,
+            recurrence_config: menuSchedule.recurrenceConfig,
+          } : { enabled: false },
         }
       });
 
@@ -231,6 +252,14 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
       setAccessType('invite_only');
       setRequireAccessCode(true);
       setAccessCode(generateAccessCode());
+      setMenuSchedule({
+        enabled: false,
+        activationTime: null,
+        deactivationTime: null,
+        timezone: 'America/New_York',
+        recurrencePattern: 'none',
+        recurrenceConfig: {},
+      });
       onOpenChange(false);
     } catch (error) {
       logger.error('Error creating menu', error, { component: 'CreateMenuDialog' });
@@ -696,8 +725,22 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
             </div>
           )}
 
-          {/* Step 6: Appearance */}
+          {/* Step 6: Schedule */}
           {currentStep === 6 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Menu Scheduling</h3>
+              <p className="text-sm text-muted-foreground">
+                Optionally schedule when this menu should automatically become active and inactive.
+              </p>
+              <MenuScheduler
+                schedule={menuSchedule}
+                onChange={setMenuSchedule}
+              />
+            </div>
+          )}
+
+          {/* Step 7: Appearance */}
+          {currentStep === 7 && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Menu Appearance</h3>
 
@@ -780,6 +823,12 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                     ]
                       .filter(Boolean)
                       .join(', ') || 'Basic'}
+                  </p>
+                  <p>
+                    <strong>Schedule:</strong>{' '}
+                    {menuSchedule.enabled && menuSchedule.activationTime
+                      ? `Activates ${new Date(menuSchedule.activationTime).toLocaleDateString()}`
+                      : 'Immediately available'}
                   </p>
                 </div>
               </div>

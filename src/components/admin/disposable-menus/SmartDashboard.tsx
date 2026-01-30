@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import {
   Plus, Search, Settings, LayoutGrid, ShoppingBag, Eye, Users, DollarSign,
   RefreshCw, Filter, TrendingUp, Flame, Clock, Shield, ChevronRight,
-  Zap, Target, AlertCircle, CheckCircle, BarChart3, Copy, ExternalLink
+  Zap, Target, AlertCircle, CheckCircle, BarChart3, Copy, ExternalLink, Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +36,7 @@ const NotificationSettings = lazy(() => import('./NotificationSettings').then(m 
 const CustomerMessaging = lazy(() => import('./CustomerMessaging').then(m => ({ default: m.CustomerMessaging })));
 const EncryptionMigrationTool = lazy(() => import('./EncryptionMigrationTool').then(m => ({ default: m.EncryptionMigrationTool })));
 const MenuAnalyticsDashboard = lazy(() => import('./MenuAnalyticsDashboard').then(m => ({ default: m.MenuAnalyticsDashboard })));
+const ScheduledMenusPanel = lazy(() => import('./ScheduledMenusPanel').then(m => ({ default: m.ScheduledMenusPanel })));
 
 // Enhanced Order Card with more details
 function OrderCard({ order, onStatusChange }: { order: any; onStatusChange?: (id: string, status: string) => void }) {
@@ -423,6 +424,7 @@ function SetupTab() {
   const [migrationOpen, setMigrationOpen] = useState(false);
 
   const sections = [
+    { id: 'scheduled', label: 'Scheduled Menus', icon: Calendar, component: ScheduledMenusPanel },
     { id: 'security', label: 'Security Rules', icon: Shield, component: AutomatedSecuritySettings },
     { id: 'notifications', label: 'Notifications', icon: AlertCircle, component: NotificationSettings },
     { id: 'messaging', label: 'Customer Messaging', icon: Users, component: CustomerMessaging },
