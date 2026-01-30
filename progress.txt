@@ -7499,56 +7499,79 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+
 ---
 
-## Task: Add OrderDuplicateButton creating new order from existing
+### Task: Build OrderInvoiceGenerator creating PDF invoice from order
 
-### Completed
+**Completed:**
 
-#### 1. Created `useOrderDuplicate` Hook (`src/hooks/useOrderDuplicate.ts`)
-- TanStack Query mutation hook for duplicating orders
-- Fetches original order items if not provided
-- Creates new order with:
-  - Same customer info (user_id, customer_id, customer_name, customer_phone)
-  - Same delivery details (address, borough, notes, fee)
-  - Same financial data (subtotal, total, tip, discount)
-  - Same order configuration (payment method, order type, special instructions)
-  - Status reset to 'pending'
-  - Delivery notes prefixed with "[Duplicated from #<order_number>]"
-- Duplicates all order items to the new order
-- Invalidates order queries to refresh lists
-- Toast notifications with success/error feedback
-- Optional navigation to new order
-- Proper tenant isolation using useTenantAdminAuth
+1. **Created OrderInvoiceGenerator component** (`src/components/admin/orders/OrderInvoiceGenerator.tsx`)
+   - Professional PDF invoice generation using jsPDF
+   - Supports order data with line items, customer info, and payment details
+   - Brand-colored header with FloraIQ green (#10b981)
+   - Status badge showing order status (delivered, confirmed, pending, etc.)
+   - Invoice details box with invoice number, order date, and tracking code
+   - Bill To section with customer name, email, and delivery address
+   - Line items table with item name, quantity, unit price, and total
+   - Totals section with subtotal, delivery fee, tax, discount, and total
+   - Order information section with payment and delivery methods
+   - Optional notes section
+   - Footer with page numbers and thank you message
+   - Logo support via URL
 
-#### 2. Created `OrderDuplicateButton` Component (`src/components/admin/OrderDuplicateButton.tsx`)
-- Reusable button component following DuplicateProductButton pattern
-- Loading state with spinner animation
-- Success state with checkmark (2-second display)
-- Tooltip when showLabel is false
-- Configurable props:
-  - variant: 'default' | 'ghost' | 'outline'
-  - size: 'default' | 'sm' | 'icon'
-  - showLabel: boolean
-  - navigateToNew: boolean
-  - onSuccess callback
-- Uses useOrderDuplicate hook internally
+2. **Exported utilities:**
+   - `generateOrderInvoicePDF()` - Generate PDF document
+   - `downloadOrderInvoice()` - Download PDF as file
+   - `printOrderInvoice()` - Open PDF in print dialog
+   - `useOrderInvoiceGenerator()` - React hook with loading state management
 
-#### 3. Integrated into Orders Page (`src/pages/admin/Orders.tsx`)
-- Added import for Copy icon from lucide-react
-- Added import for useOrderDuplicate hook
-- Added hook usage in component with isLoading state
-- Added "Duplicate Order" dropdown menu item in desktop table actions
-- Added "Duplicate" button in mobile drawer Quick Actions (changed grid from 2 to 3 columns)
-- Removed duplicate import of useAdminOrdersRealtime
+3. **Created UI components:**
+   - `OrderInvoiceDownloadButton` - Button component for downloading invoice
+   - `OrderInvoicePrintButton` - Button component for printing invoice
+   - Both components support variant, size, className, and label props
+   - Loading states with spinner during PDF generation
+
+4. **Type definitions:**
+   - `OrderInvoiceData` - Interface for order data input
+   - `OrderInvoiceGeneratorProps` - Props for generator functions
+   - `OrderInvoiceDownloadButtonProps` - Props for download button
+   - `OrderInvoicePrintButtonProps` - Props for print button
 
 ### Files Changed:
-- `src/hooks/useOrderDuplicate.ts` (NEW)
-- `src/components/admin/OrderDuplicateButton.tsx` (NEW)
-- `src/pages/admin/Orders.tsx` (MODIFIED)
+- `src/components/admin/orders/OrderInvoiceGenerator.tsx` (NEW)
+
+### Usage Example:
+```tsx
+import { 
+  OrderInvoiceDownloadButton,
+  OrderInvoicePrintButton,
+  useOrderInvoiceGenerator 
+} from '@/components/admin/orders/OrderInvoiceGenerator';
+
+// Using the download button
+<OrderInvoiceDownloadButton
+  order={orderData}
+  companyName="FloraIQ"
+  companyAddress="123 Main St"
+  invoicePrefix="INV-"
+/>
+
+// Using the print button
+<OrderInvoicePrintButton
+  order={orderData}
+  companyName="FloraIQ"
+/>
+
+// Using the hook for custom implementations
+const { download, print, isGenerating } = useOrderInvoiceGenerator();
+
+await download({ order: orderData, companyName: 'FloraIQ' });
+```
 
 ### Notes:
-- The OrderDuplicateButton component can be used standalone or the useOrderDuplicate hook can be called directly
-- Order duplication resets status to 'pending' to allow review before processing
-- Delivery notes are prefixed to indicate the order was duplicated and show the source order number
+- Uses existing jsPDF library already in project dependencies
+- Follows FloraIQ code style guidelines (logger, formatCurrency utility)
+- Compatible with existing Order and OrderItem types from @/types/order
 - TypeScript type checking passes successfully
+- Pre-existing build error in PasswordResetPage.tsx (multiple default exports) is unrelated to this change
