@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Eye, Users, ShoppingCart, Flame, Copy, ExternalLink,
   Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus,
-  MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store, Monitor
+  MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store, Calendar
 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -60,6 +60,12 @@ interface Menu {
   total_revenue?: number;
   disposable_menu_products?: Array<unknown>;
   max_views_per_period?: number;
+  // Schedule fields
+  is_scheduled?: boolean;
+  scheduled_activation_time?: string | null;
+  scheduled_deactivation_time?: string | null;
+  schedule_timezone?: string | null;
+  recurrence_pattern?: string | null;
   // Allow any additional DB fields
   [key: string]: unknown;
 }
@@ -89,6 +95,9 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
   const isActive = menu.status === 'active';
   const isBurned = menu.status === 'soft_burned' || menu.status === 'hard_burned';
   const isForumMenu = extractSecuritySetting(menu.security_settings, 'menu_type') === 'forum';
+  const isScheduled = menu.is_scheduled && menu.scheduled_activation_time;
+  const scheduledTime = isScheduled ? new Date(menu.scheduled_activation_time as string) : null;
+  const isUpcoming = scheduledTime && scheduledTime > new Date();
 
   const statusConfig = {
     active: { label: 'Active', color: 'bg-success text-success-foreground' },
@@ -144,6 +153,12 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                   <Badge variant="secondary" className="text-xs bg-success/10 text-success shrink-0">
                     <MessageSquare className="h-3 w-3 mr-1" />
                     Forum
+                  </Badge>
+                )}
+                {isScheduled && isUpcoming && (
+                  <Badge variant="secondary" className="text-xs bg-blue-500/10 text-blue-600 shrink-0">
+                    <Calendar className="h-3 w-3 mr-1" />
+                    Scheduled
                   </Badge>
                 )}
               </div>
@@ -367,12 +382,18 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
           {!compact && (
             <div className="text-xs text-muted-foreground flex items-center justify-between">
               <span>Created {format(new Date(menu.created_at), 'MMM d, yyyy')}</span>
-              {menu.expiration_date && !menu.never_expires && (
+              {isScheduled && isUpcoming && scheduledTime && (
+                <span className="text-blue-600 flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  Activates {format(scheduledTime, 'MMM d, h:mm a')}
+                </span>
+              )}
+              {!isScheduled && menu.expiration_date && !menu.never_expires && (
                 <span className="text-warning">
                   Expires {format(new Date(menu.expiration_date), 'MMM d')}
                 </span>
               )}
-              {menu.never_expires && (
+              {!isScheduled && menu.never_expires && !isUpcoming && (
                 <span className="text-success">Never expires</span>
               )}
             </div>
