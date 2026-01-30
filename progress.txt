@@ -7529,38 +7529,73 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-# Task: Build OrdersListPage with DataTable showing all orders with pagination
+## Task: Build OrderDetailsPage showing full order info with timeline
 
-## Completed
+### Completed
 
-### Created OrdersListPage Component
-- **File**: `src/pages/admin/OrdersListPage.tsx`
-- Clean DataTable view of all orders with full pagination support
-- Features implemented:
-  - TanStack Query for data fetching with tenant context isolation
-  - DataTable component with built-in pagination (25 items per page default)
-  - Status filtering (all, pending, confirmed, preparing, in_transit, delivered, completed, cancelled)
-  - Search functionality on order number
-  - Column visibility toggle
-  - Row selection for bulk actions
-  - Order stats summary cards (Total, Pending, In Progress, Completed, Cancelled)
-  - Actions dropdown per row (View Details, Print, Generate Invoice, Cancel, Delete)
-  - Status badges with appropriate colors
-  - Source badges (Storefront, Admin, POS, Menu, API)
-  - User profile enrichment for customer names
+#### 1. Created OrderDetailsPage Component (`src/pages/admin/OrderDetailsPage.tsx`)
+- Full admin order details view with comprehensive information display
+- Supports both `unified_orders` and legacy `orders` tables with automatic fallback
+- Tenant-isolated queries with proper RLS compliance
 
-### Component Architecture
-- Uses `useTenantAdminAuth()` for tenant context (follows FloraIQ patterns)
-- Uses `queryKeys.orders.list()` for proper query key management
-- Uses `useTenantNavigate()` for tenant-aware navigation
-- Mutations for status updates and order deletion
-- Proper loading skeleton states
-- Error handling with toast notifications
+#### 2. Order Status Timeline
+- Visual timeline showing order progression through statuses:
+  - Order Placed → Confirmed → Processing → Ready → In Transit → Delivered
+- Animated timeline with motion effects using framer-motion
+- Status steps with icons (Package, CheckCircle, Clock, Truck)
+- Current status highlighted with ring indicator
+- Cancelled/refunded orders show separate terminal state UI
 
-### Fixed Pre-existing Build Issues
-- Removed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
-- Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+#### 3. Order Information Display
+- **Header Section:**
+  - Order number with status badge
+  - Date placed and order source
+  - Quick actions: Share Tracking, Update Status, Cancel Order
+  
+- **Order Items Table:**
+  - Product images with fallback icons
+  - Product name, variant, quantity, unit price, total
+  - Order totals breakdown: subtotal, discount, tax, delivery fee, total
+  
+- **Delivery Information Card:**
+  - Delivery method, address, notes
+  - Assigned courier with contact info
+  
+- **Sidebar Cards:**
+  - Order Info: number, date, source, payment status
+  - Customer Info: name, email, phone with profile link
+  - Activity Timeline: chronological events from timestamps
+  - Notes section (if present)
 
-## Build Status
-- Build passes successfully
-- No TypeScript errors related to OrdersListPage
+#### 4. Action Dialogs
+- **Update Status Dialog:**
+  - Select dropdown with all status options
+  - Confirmation before status change
+  - Loading state during update
+  
+- **Cancel Order Dialog:**
+  - Cancellation reason textarea
+  - Confirmation with warning message
+  - Proper error handling
+
+#### 5. Route Configuration (`src/App.tsx`)
+- Added lazy import for OrderDetailsPage
+- Added route: `/:tenantSlug/admin/orders/:orderId`
+- Protected with FeatureProtectedRoute (featureId: "basic-orders")
+
+### Technical Details
+- Uses TanStack Query with proper queryKeys
+- Optimistic UI patterns with mutation callbacks
+- SwipeBackWrapper for mobile navigation
+- Responsive grid layout (1 col mobile, 3 cols desktop)
+- Uses semantic status colors from statusColors utility
+- Proper TypeScript types for order data
+
+### Files Changed:
+- `src/pages/admin/OrderDetailsPage.tsx` (NEW)
+- `src/App.tsx` (added import and route)
+
+### Notes:
+- TypeScript type checking passes successfully
+- Compatible with both unified_orders and orders table structures
+- Timeline automatically builds from timestamp fields (confirmed_at, shipped_at, etc.)

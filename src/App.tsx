@@ -195,6 +195,7 @@ const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));
 const NewWholesaleOrder = lazy(() => import("./pages/admin/NewWholesaleOrder"));
 const NewPurchaseOrder = lazy(() => import("./pages/admin/NewPurchaseOrder"));
 const OfflineOrderCreate = lazy(() => import("./pages/admin/OfflineOrderCreate"));
+const OrderDetailsPage = lazy(() => import("./pages/admin/OrderDetailsPage"));
 const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
 const BoardReportPage = lazy(() => import("./pages/admin/BoardReportPage"));
 const StrategicDashboardPage = lazy(() => import("./pages/admin/StrategicDashboardPage"));
@@ -869,6 +870,7 @@ const App = () => {
                                         <Route path="wholesale-orders/new" element={<FeatureProtectedRoute featureId="wholesale-orders"><NewWholesaleOrder /></FeatureProtectedRoute>} />
                                         <Route path="wholesale-orders/new-po" element={<FeatureProtectedRoute featureId="wholesale-orders"><NewPurchaseOrder /></FeatureProtectedRoute>} />
                                         <Route path="orders/offline-create" element={<OfflineOrderCreate />} />
+                                        <Route path="orders/:orderId" element={<FeatureProtectedRoute featureId="basic-orders"><OrderDetailsPage /></FeatureProtectedRoute>} />
 
                                         <Route path="inventory-hub" element={<FeatureProtectedRoute featureId="inventory-dashboard"><InventoryHubPage /></FeatureProtectedRoute>} />
                                         <Route path="inventory-dashboard" element={<Navigate to="inventory-hub?tab=stock" replace />} />
