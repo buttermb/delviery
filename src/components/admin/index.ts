@@ -29,6 +29,6 @@ export { LocalAIIntegration } from './ai/LocalAIIntegration';
 export { WorkflowBuilder } from './workflow/WorkflowBuilder';
 export { AdvancedWorkflowBuilder } from './workflow/AdvancedWorkflowBuilder';
 
-// Product
-export { ProductQRGenerator } from './ProductQRGenerator';
+// Product Form
+export { ProductCategorySelect } from './product-form/ProductCategorySelect';
 

@@ -7493,41 +7493,75 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-## Agent 76 - ProductPricingSection Component Implementation
+## Agent 73 - ProductCategorySelect with Hierarchical Categories
 
-### Task: Build ProductPricingSection with retail, wholesale, and bulk prices
+### Task: Add ProductCategorySelect with hierarchical categories
 
 **Completed:**
 
-1. **Created ProductPricingSection component** (`src/components/admin/products/ProductPricingSection.tsx`)
-   - Comprehensive pricing section for products with multiple price types
-   - Supports cost per unit, wholesale price, and retail price inputs
-   - Bulk pricing tiers with dynamic add/remove functionality
-   - Real-time profit margin calculations displayed as badges
-   - Color-coded margin indicators (red < 10%, amber < 20%, yellow < 30%, green >= 30%)
-   - Configurable visibility for retail price, bulk pricing, minimum price, and discount exclusion
-   - Includes exclude from discounts checkbox option
-   - Minimum allowed price field for regulatory compliance
-   - Margin summary card showing all calculated margins
-   - Uses shadcn/ui components (Card, Input, Label, Button, Checkbox, Badge, Tooltip)
-   - Follows FloraIQ patterns with named exports only
-   - TypeScript strict mode compliant with proper interfaces
+1. **Created useCategories hook** (`src/hooks/useCategories.ts`)
+   - `useCategories()` - Fetches all categories for the current tenant
+   - `useCategoryTree()` - Returns categories as a hierarchical tree structure
+   - `useFlattenedCategories()` - Returns flattened categories with depth info for select inputs
+   - Exports TypeScript interfaces: `Category`, `CategoryTreeNode`, `FlattenedCategory`
+   - Gracefully handles missing categories table (error code 42P01)
+   - Uses queryKeys factory pattern for TanStack Query
+   - Respects tenant isolation via `useTenantAdminAuth()`
 
-2. **Component Features:**
-   - `ProductPricingData` interface for form data structure
-   - `BulkPriceTier` interface for bulk pricing tiers
-   - `showRetailPrice` prop to toggle retail price visibility (default: true)
-   - `showBulkPricing` prop to toggle bulk pricing section (default: true)
-   - `showMinimumPrice` prop to toggle minimum price field (default: true)
-   - `showExcludeDiscounts` prop to toggle discount exclusion checkbox (default: true)
-   - Smart defaults for new bulk tiers based on existing tiers
-   - Helpful tooltips explaining each price type
-   - Responsive grid layout for mobile and desktop
+2. **Created ProductCategorySelect component** (`src/components/admin/product-form/ProductCategorySelect.tsx`)
+   - Hierarchical dropdown select for product categories
+   - Features:
+     - Visual indentation showing category hierarchy
+     - Search functionality for filtering categories
+     - Category path breadcrumb display when selected
+     - Clear selection option
+     - Icons indicating parent vs child categories (FolderOpen, Folder, Tag)
+     - Category descriptions shown in dropdown
+   - Props interface:
+     - `value` - Currently selected category ID
+     - `onChange` - Callback when category changes
+     - `placeholder` - Customizable placeholder text
+     - `searchable` - Enable/disable search (default: true)
+     - `clearable` - Allow clearing selection (default: true)
+     - `disabled` - Disable the component
+     - `className` - Additional CSS classes
+   - Handles loading, error, and empty states gracefully
+   - Uses shadcn/ui Popover, Button, Input, ScrollArea components
 
-### Files Changed:
-- `src/components/admin/products/ProductPricingSection.tsx` (NEW)
+3. **Created product-form index file** (`src/components/admin/product-form/index.ts`)
+   - Exports all product form step components
+   - Exports the new ProductCategorySelect component
 
-### Notes:
-- Build error about PasswordResetPage.tsx duplicate exports is pre-existing and unrelated to these changes
-- Component is ready for integration into ProductForm or standalone use
-- Uses useMemo and useCallback for performance optimization
+4. **Updated admin components index** (`src/components/admin/index.ts`)
+   - Added export for ProductCategorySelect
+
+### Files Created:
+- `src/hooks/useCategories.ts`
+- `src/components/admin/product-form/ProductCategorySelect.tsx`
+- `src/components/admin/product-form/index.ts`
+
+### Files Modified:
+- `src/components/admin/index.ts`
+
+### Usage Example:
+```tsx
+import { ProductCategorySelect } from '@/components/admin';
+// or
+import { ProductCategorySelect } from '@/components/admin/product-form';
+
+function ProductForm() {
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  
+  return (
+    <ProductCategorySelect
+      value={categoryId}
+      onChange={setCategoryId}
+      placeholder="Select a category..."
+    />
+  );
+}
+```
+
+### Build Verification:
+- TypeScript compilation: PASSED
+- ESLint: PASSED (no errors in new files)
