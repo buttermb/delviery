@@ -7528,61 +7528,72 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
 
----
+## Task: Add OrderItemsTable with quantity price discount columns
 
-## Task: Build CreateOrderForm with Customer Selection and Product Picker
+### Implementation Summary:
+Created a reusable `OrderItemsTable` component for displaying order line items with comprehensive features.
 
-### Completed
+### Component Features:
+1. **Core Columns:**
+   - Product name (with optional quantity unit display)
+   - Quantity (displayed in a badge)
+   - Unit Price (formatted currency)
+   - Discount (conditionally displayed, only when items have discounts)
+   - Total Price (formatted currency)
 
-#### 1. Created CreateOrderForm Component (`src/components/crm/CreateOrderForm.tsx`)
-- Comprehensive order creation form with customer selection and product picker
-- Uses existing `ClientSelector` component for customer selection with search and create functionality
-- Uses existing `LineItemsEditor` component for product picking with stock indicators
-- Features:
-  - Order type selector (Standard Order, Pre-Order, Invoice)
-  - Date picker for expected/due dates
-  - Notes/instructions field
-  - Real-time order summary with subtotal and total calculations
-  - Responsive two-column layout
-  - Loading and disabled states on submit button
-- Props interface for flexibility:
-  - `onSubmit` - Callback with order data
-  - `onCancel` - Cancel action callback
-  - `isSubmitting` - Loading state control
-  - `defaultOrderType` - Default order type selection
-  - `showOrderTypeSelector` - Toggle order type visibility
-  - `selectedClient` - Pre-select a client
-  - `title` and `submitLabel` - Customizable text
+2. **Optional Features:**
+   - `showDiscount` - Toggle discount column visibility (default: true, auto-hides if no discounts)
+   - `showSku` - Toggle SKU column visibility (default: false)
+   - `showTotals` - Toggle footer totals (default: true)
+   - `isLoading` - Loading state with skeleton placeholders
+   - `emptyMessage` - Customizable empty state message
 
-#### 2. Created useCreateCRMOrder Hook (`src/hooks/crm/useCreateCRMOrder.ts`)
-- Unified hook for creating CRM orders as pre-orders or invoices
-- Handles both order types with appropriate database operations:
-  - Pre-Orders: Creates in `crm_pre_orders` table with pending status
-  - Invoices: Creates in `crm_invoices` table with draft status
-- Returns typed result with order type and data
-- Includes optimistic updates and query invalidation
-- Proper error handling with toast notifications and logging
+3. **Footer Totals:**
+   - Subtotal (before discounts)
+   - Total Discount amount (highlighted in emerald/green)
+   - Grand Total
 
-#### 3. Created CreateOrderPage (`src/pages/admin/CreateOrderPage.tsx`)
-- Admin page that uses the CreateOrderForm component
-- Handles tenant context validation with loading and error states
-- Logs activity after order creation (pre_order_created or invoice_created)
-- Navigates to appropriate detail page after successful creation
+4. **Code Patterns Followed:**
+   - Uses shadcn/ui Table components (Table, TableHeader, TableBody, TableFooter, etc.)
+   - Uses `formatCurrency` utility from `@/lib/utils/formatCurrency`
+   - Named export only (no default export per codebase rules)
+   - TypeScript strict mode compliant
+   - Dark mode support via existing table styles
+   - Responsive design with horizontal scroll on overflow
 
-#### 4. Updated Component Exports (`src/components/crm/index.ts`)
-- Added exports for CreateOrderForm, ClientSelector, CreateClientDialog, and LineItemsEditor
+### Interface Definition:
+```typescript
+interface OrderItemData {
+  id: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  discount_amount?: number;
+  total_price: number;
+  sku?: string | null;
+  quantity_unit?: string;
+  product_id?: string | null;
+  inventory_id?: string | null;
+}
+```
 
-#### 5. Fixed Pre-existing Build Issues
-- Removed duplicate default export in `PasswordResetPage.tsx`
-- Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+### Files Created:
+- `src/components/admin/orders/OrderItemsTable.tsx` (NEW)
 
-### Files Changed
-- `src/components/crm/CreateOrderForm.tsx` (new)
-- `src/hooks/crm/useCreateCRMOrder.ts` (new)
-- `src/pages/admin/CreateOrderPage.tsx` (new)
-- `src/components/crm/index.ts` (updated exports)
-- `src/pages/auth/PasswordResetPage.tsx` (fixed duplicate export)
-- `src/lib/utils/sanitize.ts` (added safeJsonParse)
+### Usage Example:
+```tsx
+import { OrderItemsTable } from '@/components/admin/orders/OrderItemsTable';
 
-### Build Status
-- Build passes with no TypeScript errors
+<OrderItemsTable
+  items={orderItems}
+  isLoading={isLoading}
+  showDiscount={true}
+  showSku={false}
+  showTotals={true}
+/>
+```
+
+### Notes:
+- Compatible with multiple order item types in the codebase (order_items, unified_order_items, marketplace_order_items, wholesale_order_items)
+- ESLint passes with no errors
+- Pre-existing build errors in PasswordResetPage.tsx (duplicate default export) are unrelated to this change
