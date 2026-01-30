@@ -33,6 +33,7 @@ import { DashboardDateRangeProvider } from '@/contexts/DashboardDateRangeContext
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { DashboardDatePicker } from '@/components/admin/dashboard/DashboardDatePicker';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { DashboardTour, TakeDashboardTourButton } from '@/components/admin/DashboardTour';
 
 interface StatCardProps {
   title: string;
@@ -123,22 +124,25 @@ function DashboardHubContent() {
         hubHref="dashboard"
       />
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex items-center justify-between" data-tour="dashboard-header">
         <div>
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground text-sm">
             Overview of your operations
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <DashboardDatePicker className="w-[280px]" />
+        <div className="flex items-center gap-2">
+          <TakeDashboardTourButton />
           {lastUpdated && (
-            <Badge variant="secondary" className="text-xs whitespace-nowrap">
+            <Badge variant="secondary" className="text-xs">
               Updated {lastUpdated}
             </Badge>
           )}
         </div>
       </div>
+
+      {/* Dashboard Tour for new users */}
+      <DashboardTour />
 
       {error && (
         <Card className="border-destructive">
@@ -151,7 +155,7 @@ function DashboardHubContent() {
       )}
 
       {/* Revenue Section */}
-      <div className="space-y-3">
+      <div className="space-y-3" data-tour="revenue-section">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-green-600" />
           Revenue
@@ -192,7 +196,7 @@ function DashboardHubContent() {
       </div>
 
       {/* Orders Section */}
-      <div className="space-y-3">
+      <div className="space-y-3" data-tour="orders-section">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <ShoppingCart className="h-5 w-5 text-blue-600" />
           Orders
@@ -236,7 +240,7 @@ function DashboardHubContent() {
       </div>
 
       {/* Inventory Section */}
-      <div className="space-y-3">
+      <div className="space-y-3" data-tour="inventory-section">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Package className="h-5 w-5 text-purple-600" />
           Inventory
@@ -280,7 +284,7 @@ function DashboardHubContent() {
       </div>
 
       {/* Customers Section */}
-      <div className="space-y-3">
+      <div className="space-y-3" data-tour="customers-section">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Users className="h-5 w-5 text-indigo-600" />
           Customers
