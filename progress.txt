@@ -7459,3 +7459,20 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Build ProductDetailsPage with tabs for info, variants, and inventory
+
+### Completed:
+- Created src/hooks/useProduct.ts with hooks for fetching product details, inventory history, and fronted inventory
+- Created src/pages/admin/ProductDetailsPage.tsx with three tabs:
+  - Info tab: Basic product details, cannabis information, lab results, timestamps
+  - Variants tab: Pricing tiers, discount settings, METRC IDs
+  - Inventory tab: Stock levels, batch info, fronted inventory, movement history
+- Added ProductDetailsPage lazy import and route in src/App.tsx
+- Route: /:tenantSlug/admin/products/:productId
+
+### Files changed:
+- src/hooks/useProduct.ts (new)
+- src/pages/admin/ProductDetailsPage.tsx (new)
+- src/App.tsx (modified - added import and route)
+
