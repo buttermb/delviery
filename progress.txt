@@ -7527,52 +7527,43 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-## Task: Add OrderStatusStepper showing pending confirmed packed shipped delivered
+## Task: Build OrdersWidget showing last 10 orders with status badges
 
-### Completed
+### Status: COMPLETED
 
-#### 1. Created OrderStatusStepper Component (`src/components/orders/OrderStatusStepper.tsx`)
-- Visual stepper component showing order progression: pending → confirmed → packed → shipped → delivered
-- Features:
-  - Horizontal and vertical orientation support
-  - Three size variants: sm, default, lg
-  - Animated progress line between steps
-  - Current step highlighting with ring effect and scale
-  - Cancelled order state with distinct styling
-  - Status mapping for compatibility with similar statuses (e.g., 'in_transit' maps to 'shipped')
-- Component Props:
-  - `status`: Current order status (OrderStepperStatus or string)
-  - `className`: Optional custom styling
-  - `size`: 'sm' | 'default' | 'lg'
-  - `showLabels`: Boolean to show/hide step labels
-  - `orientation`: 'horizontal' | 'vertical'
-- Exported helpers:
-  - `getOrderStatusLabel()`: Get display label for a status
-  - `getOrderStatusSteps()`: Get the ordered list of step configurations
-  - `OrderStepperStatus` type: 'pending' | 'confirmed' | 'packed' | 'shipped' | 'delivered' | 'cancelled'
+### Summary:
+Created a new dashboard widget component that displays the 10 most recent orders with semantic status badges. The widget follows existing codebase patterns and integrates with the tenant context for proper multi-tenant isolation.
 
-#### 2. Created Index Export File (`src/components/orders/index.ts`)
-- Barrel export for clean imports from `@/components/orders`
-- Exports: OrderStatusStepper, getOrderStatusLabel, getOrderStatusSteps, OrderStepperStatus
+### Implementation Details:
+1. **OrdersWidget Component** (`src/components/admin/dashboard/OrdersWidget.tsx`)
+   - Displays last 10 orders from the `orders` table
+   - Filters orders by `tenant_id` for multi-tenant isolation
+   - Fetches user profiles to show customer names
+   - Uses TanStack Query with proper query keys (`queryKeys.orders.lists()`)
 
-### Usage Examples
-```tsx
-// Basic usage
-<OrderStatusStepper status="confirmed" />
+2. **Status Badge System**
+   - Semantic color-coded badges with icons for each status:
+     - `pending`: Yellow with Clock icon
+     - `confirmed`: Blue with CheckCircle icon  
+     - `preparing`: Purple with Package icon
+     - `ready`: Teal with CheckCircle icon
+     - `in_transit`: Indigo with Truck icon
+     - `delivered`: Green with CheckCircle icon
+     - `cancelled`: Red with XCircle icon
+   - Dark mode support with proper color variants
 
-// Large size with labels
-<OrderStatusStepper status="shipped" size="lg" showLabels />
+3. **UI Features**
+   - Loading skeleton states while data loads
+   - Empty state with icon when no orders exist
+   - Clickable order rows that navigate to order details
+   - Status dot indicator for quick visual scanning
+   - "View All" button for navigation to full orders page
+   - Responsive layout with proper truncation
 
-// Vertical orientation
-<OrderStatusStepper status="delivered" orientation="vertical" />
+### Files Changed:
+- `src/components/admin/dashboard/OrdersWidget.tsx` (NEW)
 
-// Without labels (compact)
-<OrderStatusStepper status="pending" showLabels={false} size="sm" />
-```
-
-### Import
-```tsx
-import { OrderStatusStepper } from '@/components/orders';
-// or
-import { OrderStatusStepper, getOrderStatusLabel } from '@/components/orders/OrderStatusStepper';
-```
+### Notes:
+- ESLint passes with no errors
+- Build has a pre-existing error in PasswordResetPage.tsx (unrelated to this change)
+- Component follows existing widget patterns from RecentOrdersWidget and ActivityFeedWidget
