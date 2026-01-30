@@ -1,67 +1,21 @@
-## Task: Add MenuScheduler for time-based menu activation
+## Task: Add OrderPaymentStatus Badge
 
 ### Completed
 
-#### 1. Created Database Migration for Menu Scheduling (`supabase/migrations/20260130000001_menu_scheduler.sql`)
-- Added scheduling columns to `disposable_menus` table:
-  - `scheduled_activation_time` - When menu automatically becomes active
-  - `scheduled_deactivation_time` - When menu automatically deactivates
-  - `is_scheduled` - Whether scheduling is enabled
-  - `schedule_timezone` - Timezone for schedule display
-  - `recurrence_pattern` - Recurrence: none, daily, weekly, monthly
-  - `recurrence_config` - Additional recurrence configuration
-- Created `menu_schedule_history` audit table for tracking schedule changes
-- Added `process_scheduled_menus()` function for cron-based activation/deactivation
-- Added `reschedule_recurring_menu()` function for automatic recurring schedules
-- Enabled RLS with tenant isolation policies
+#### 1. Created OrderPaymentStatusBadge Component (`src/components/admin/orders/OrderPaymentStatusBadge.tsx`)
+- New badge component for displaying order payment status
+- Supports four payment statuses: paid, pending, partial, refunded
+- Features:
+  - Icons: CheckCircle (paid), Clock (pending), AlertCircle (partial), RotateCcw (refunded)
+  - Size variants: sm, default, lg
+  - Optional icon display via showIcon prop
+  - Uses semantic status colors from statusColors.ts
+  - TypeScript typed with OrderPaymentStatusType
+- Follows existing badge patterns (OrderStatusBadge, CreditStatusBadge)
 
-#### 2. Created MenuScheduler Component (`src/components/admin/disposable-menus/MenuScheduler.tsx`)
-- Full scheduling UI with:
-  - Enable/disable scheduling toggle
-  - Activation and deactivation time pickers (datetime-local)
-  - Timezone selection (common US timezones + UTC)
-  - Recurrence pattern selection (none, daily, weekly, monthly)
-  - Schedule preview with formatted dates
-  - Quick schedule buttons (Tomorrow 9 AM, Next Week, +24h, +1 Week)
-  - Validation warnings for invalid configurations
-  - Schedule status badge (Scheduled, Active, Expired)
-
-#### 3. Created useMenuScheduler Hook (`src/hooks/useMenuScheduler.ts`)
-- `useMenuSchedule(menuId)` - Fetch schedule for specific menu
-- `useMenuScheduleHistory(menuId)` - Fetch schedule history for audit trail
-- `useUpdateMenuSchedule()` - Mutation to update menu schedule with history logging
-- `useCancelMenuSchedule()` - Mutation to cancel/disable scheduling
-- `useScheduledMenus(tenantId)` - Fetch all scheduled menus for a tenant
-
-#### 4. Integrated Scheduling into CreateMenuDialog
-- Added Step 6 "Schedule" to the wizard (now 7 steps total)
-- MenuScheduler component renders in the new step
-- Schedule settings included in security_settings on menu creation
-- Schedule state resets properly after menu creation
-- Menu summary shows scheduling status
-
-#### 5. Added Schedule Display in SmartDashboard
-- Created ScheduledMenusPanel component showing:
-  - Upcoming scheduled menus
-  - Currently active scheduled menus
-  - Past/expired schedules
-  - Visual status indicators and badges
-- Added to Setup tab in SmartDashboard as first collapsible section
-- Imported lazy-loaded for performance
-
-#### 6. Added Schedule Indicators to MenuCard
-- Shows "Scheduled" badge for menus with upcoming activation
-- Shows activation time in the card footer
-- Calendar icon for visual distinction
-
-### Files Modified/Created
-- `supabase/migrations/20260130000001_menu_scheduler.sql` (new)
-- `src/components/admin/disposable-menus/MenuScheduler.tsx` (new)
-- `src/components/admin/disposable-menus/ScheduledMenusPanel.tsx` (new)
-- `src/hooks/useMenuScheduler.ts` (new)
-- `src/components/admin/disposable-menus/CreateMenuDialog.tsx` (modified)
-- `src/components/admin/disposable-menus/MenuCard.tsx` (modified)
-- `src/components/admin/disposable-menus/SmartDashboard.tsx` (modified)
+#### 2. Added refunded status to statusColors.ts (`src/lib/utils/statusColors.ts`)
+- Added 'refunded' status with info semantic color (blue)
+- Uses consistent pattern: bg-info/10, text-info, border-info/20
 
 ---
 

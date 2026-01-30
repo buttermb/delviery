@@ -66,6 +66,9 @@ const STATUS_COLORS: Record<string, StatusColorConfig> = {
   critical: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20', className: 'bg-destructive/10 text-destructive border-destructive/20' },
   high: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20', className: 'bg-destructive/10 text-destructive border-destructive/20' },
   
+  // Refund states (info/blue semantic)
+  refunded: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20', className: 'bg-info/10 text-info border-info/20' },
+
   // Info states (blue semantic)
   draft: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20', className: 'bg-info/10 text-info border-info/20' },
   new: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20', className: 'bg-info/10 text-info border-info/20' },
