@@ -7459,3 +7459,46 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+## AlertsWidget Implementation - 2026-01-29
+
+### Task: Add AlertsWidget showing unread notifications with dismiss action
+
+### Implementation:
+
+1. **Created AlertsWidget component** (`src/components/admin/dashboard/AlertsWidget.tsx`):
+   - Displays unread/undismissed alerts from `inventory_alerts` table
+   - Shows alerts that haven't been dismissed (`dismissed_at IS NULL`) and aren't resolved
+   - Includes severity indicators (critical, warning, info) with color-coded badges
+   - Real-time updates via Supabase channel subscription
+   - Dismiss individual alerts or dismiss all at once
+   - Navigation to alerts detail page on click
+   - Skeleton loading states while fetching
+   - Empty state when no alerts
+
+2. **Features:**
+   - TanStack Query for data fetching with proper query keys
+   - Mutations for dismiss actions with optimistic cache invalidation
+   - Toast notifications on success/failure
+   - Tenant-aware navigation using `useTenantAdminAuth` context
+   - Proper error handling and logging
+   - Accessible dismiss buttons with proper title attributes
+
+3. **UI Components used:**
+   - Card, Badge, Button, Skeleton from shadcn/ui
+   - Icons from lucide-react (Bell, AlertTriangle, Package, Clock, FileWarning, X, CheckCheck, ArrowRight)
+   - date-fns for relative time formatting
+
+4. **Exported from dashboard index:**
+   - Added export to `src/components/admin/dashboard/index.ts`
+
+### Files Changed:
+- `src/components/admin/dashboard/AlertsWidget.tsx` (NEW)
+- `src/components/admin/dashboard/index.ts` (UPDATED - added AlertsWidget export)
+
+### Notes:
+- Uses existing `inventory_alerts` table which already has `dismissed_at`, `dismissed_by`, `is_resolved`, and `severity` fields
+- Follows established widget patterns from InventoryAlertsWidget and ActivityFeedWidget
+- Widget can be integrated into any dashboard page by importing from the dashboard index
