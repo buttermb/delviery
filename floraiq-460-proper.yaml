@@ -211,64 +211,64 @@ tasks:
     completed: true
   - title: Add ProductVariantsManager for size weight strain options
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Build ProductPricingSection with retail wholesale and bulk prices
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Add ProductCategorySelect with hierarchical categories
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Build ProductTagsInput for search and filter tags
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Add ProductStockLevelInput with low stock threshold setting
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Build ProductBarcodeGenerator creating scannable barcodes
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Add ProductQRGenerator creating QR codes linking to product
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Build ProductBulkImport from CSV with validation preview
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Add ProductBulkExport to CSV with selected fields
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Build ProductArchiveButton with soft delete and restore
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Add ProductDuplicateButton creating copy with new SKU
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Build MenusListPage showing all product menus
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Add CreateMenuForm with name description products selection
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Build MenuProductPicker with search filter and drag ordering
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Add MenuPreview showing customer-facing view
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Build MenuShareModal with link QR code and embed options
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Add MenuScheduler for time-based menu activation
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Build StockLevelsPage with sortable table of all products
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Add StockAdjustmentModal for manual stock corrections
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Build StockHistoryLog showing all stock changes with reason
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Add StockTransferForm for moving stock between locations
     parallel_group: 10
     completed: false
