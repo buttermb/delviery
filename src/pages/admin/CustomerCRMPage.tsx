@@ -322,7 +322,7 @@ export default function CustomerCRMPage() {
                 <CardDescription>Latest actions across your CRM</CardDescription>
               </CardHeader>
               <CardContent>
-                <ActivityTimeline activities={dashboardMetrics?.recentActivity || []} />
+                <ActivityTimeline activities={(dashboardMetrics?.recentActivity || []) as unknown as import('@/types/crm').CRMActivityLog[]} />
               </CardContent>
             </Card>
             <Card className="col-span-3">

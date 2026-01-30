@@ -40,48 +40,54 @@ import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Permission categories for role management
 const PERMISSION_CATEGORIES = [
   {
     name: 'Products',
+    description: 'Manage product catalog',
     permissions: [
-      { key: 'products.view', label: 'View Products' },
-      { key: 'products.create', label: 'Create Products' },
-      { key: 'products.edit', label: 'Edit Products' },
-      { key: 'products.delete', label: 'Delete Products' },
+      { key: 'products.view', label: 'View Products', description: 'View product listings' },
+      { key: 'products.create', label: 'Create Products', description: 'Add new products' },
+      { key: 'products.edit', label: 'Edit Products', description: 'Modify existing products' },
+      { key: 'products.delete', label: 'Delete Products', description: 'Remove products from catalog' },
     ],
   },
   {
     name: 'Orders',
+    description: 'Manage customer orders',
     permissions: [
-      { key: 'orders.view', label: 'View Orders' },
-      { key: 'orders.edit', label: 'Edit Orders' },
-      { key: 'orders.cancel', label: 'Cancel Orders' },
+      { key: 'orders.view', label: 'View Orders', description: 'View order details' },
+      { key: 'orders.edit', label: 'Edit Orders', description: 'Modify orders' },
+      { key: 'orders.cancel', label: 'Cancel Orders', description: 'Cancel existing orders' },
     ],
   },
   {
     name: 'Customers',
+    description: 'Manage customer accounts',
     permissions: [
-      { key: 'customers.view', label: 'View Customers' },
-      { key: 'customers.create', label: 'Create Customers' },
-      { key: 'customers.edit', label: 'Edit Customers' },
+      { key: 'customers.view', label: 'View Customers', description: 'View customer information' },
+      { key: 'customers.create', label: 'Create Customers', description: 'Add new customers' },
+      { key: 'customers.edit', label: 'Edit Customers', description: 'Modify customer details' },
     ],
   },
   {
     name: 'Settings',
+    description: 'Access system settings',
     permissions: [
-      { key: 'settings.view', label: 'View Settings' },
-      { key: 'settings.edit', label: 'Edit Settings' },
+      { key: 'settings.view', label: 'View Settings', description: 'View configuration' },
+      { key: 'settings.edit', label: 'Edit Settings', description: 'Modify configuration' },
     ],
   },
   {
     name: 'Users & Roles',
+    description: 'Manage team members and permissions',
     permissions: [
-      { key: 'users.view', label: 'View Users' },
-      { key: 'users.manage', label: 'Manage Users' },
-      { key: 'roles.view', label: 'View Roles' },
-      { key: 'roles.manage', label: 'Manage Roles' },
+      { key: 'users.view', label: 'View Users', description: 'View team member list' },
+      { key: 'users.manage', label: 'Manage Users', description: 'Add/remove team members' },
+      { key: 'roles.view', label: 'View Roles', description: 'View role definitions' },
+      { key: 'roles.manage', label: 'Manage Roles', description: 'Create and modify roles' },
     ],
   },
 ];
@@ -179,7 +185,7 @@ export function RoleManagement() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       // Create the role
-      const { data: roleData, error: roleError } = await supabase
+      const { data: roleData, error: roleError } = await (supabase as any)
         .from('roles')
         .insert({
           tenant_id: tenantId,
@@ -202,7 +208,7 @@ export function RoleManagement() {
 
       // Add permissions
       if (data.permissions.length > 0) {
-        const { error: permError } = await supabase
+        const { error: permError } = await (supabase as any)
           .from('tenant_role_permissions')
           .insert(
             data.permissions.map((perm) => ({
@@ -255,7 +261,7 @@ export function RoleManagement() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       // Update the role
-      const { data: roleData, error: roleError } = await supabase
+      const { data: roleData, error: roleError } = await (supabase as any)
         .from('roles')
         .update({
           name: data.name.trim(),
@@ -274,10 +280,10 @@ export function RoleManagement() {
       }
 
       // Delete existing permissions and add new ones
-      await supabase.from('tenant_role_permissions').delete().eq('role_id', id);
+      await (supabase as any).from('tenant_role_permissions').delete().eq('role_id', id);
 
       if (data.permissions.length > 0) {
-        const { error: permError } = await supabase
+        const { error: permError } = await (supabase as any)
           .from('tenant_role_permissions')
           .insert(
             data.permissions.map((perm) => ({
@@ -331,7 +337,7 @@ export function RoleManagement() {
     mutationFn: async (roleId: string) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('roles')
         .delete()
         .eq('id', roleId)

@@ -229,15 +229,31 @@ export default function ProductManagement() {
     enabled: !!tenant?.id,
   });
 
+  // Fetch products query
+  const { data: productsData, refetch: refetchProducts } = useQuery({
+    queryKey: queryKeys.products.byTenant(tenant?.id || ''),
+    queryFn: async () => {
+      if (!tenant?.id) return [];
+      const { data, error } = await (supabase as any)
+        .from('products')
+        .select('*')
+        .eq('tenant_id', tenant.id)
+        .order('name');
+      if (error) throw error;
+      return data as Product[];
+    },
+    enabled: !!tenant?.id,
+  });
+
   // Sync query data into optimistic list state
   useEffect(() => {
-    if (tenant?.id) {
-      fetchProducts();
+    if (productsData) {
+      setProducts(productsData);
     }
-  }, [tenant?.id, fetchProducts]);
+  }, [productsData]);
 
-  // Alias for external usage
-  const loadProducts = fetchProducts;
+  // Alias for external usage - refetch the query
+  const loadProducts = refetchProducts;
 
   // Derived state for categories
   const categories = useMemo(() => {

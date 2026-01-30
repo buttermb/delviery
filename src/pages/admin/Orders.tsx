@@ -235,7 +235,7 @@ export default function Orders() {
       // Merge regular orders with user info
       const regularOrdersWithUsers = (ordersData || []).map(order => ({
         ...order,
-        delivery_method: order.delivery_method || '',
+        delivery_method: (order as Record<string, unknown>).delivery_method as string || '',
         user: order.user_id ? profilesMap[order.user_id] : undefined
       })) as Order[];
 
@@ -406,7 +406,7 @@ export default function Orders() {
 
     // Execute the bulk status update using the proper method name
     await bulkStatusUpdate.executeBulkUpdate(
-      selectedOrders.map(id => ({ id, orderNumber: id })),
+      selectedOrders.map(id => ({ id, order_number: id })),
       bulkStatusConfirm.targetStatus
     );
   };
@@ -711,18 +711,18 @@ export default function Orders() {
                 <Eye className="mr-2 h-4 w-4" />
                 View Details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePrintOrderFunc(order)}>
+              <DropdownMenuItem onClick={() => handlePrintOrder(order)}>
                 <Printer className="mr-2 h-4 w-4" />
                 Print Order
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleGenerateInvoiceFunc(order)}>
+              <DropdownMenuItem onClick={() => handleGenerateInvoice(order)}>
                 <FileText className="mr-2 h-4 w-4" />
                 Generate Invoice
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {order.status !== 'cancelled' && (
                 <DropdownMenuItem
-                  onClick={() => handleCancelOrderFunc(order)}
+                  onClick={() => handleCancelOrder(order)}
                   className="text-destructive focus:text-destructive"
                 >
                   <XCircle className="mr-2 h-4 w-4" />
@@ -1084,7 +1084,7 @@ export default function Orders() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handlePrintOrderFunc(selectedOrder)}
+                    onClick={() => handlePrintOrder(selectedOrder)}
                   >
                     <Printer className="mr-2 h-4 w-4" />
                     Print
@@ -1092,7 +1092,7 @@ export default function Orders() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleGenerateInvoiceFunc(selectedOrder)}
+                    onClick={() => handleGenerateInvoice(selectedOrder)}
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     Invoice
