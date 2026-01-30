@@ -7459,3 +7459,76 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+## Agent 16 - Build MenuShareModal with Link, QR Code, and Embed Options
+
+### Task: Build MenuShareModal with link QR code and embed options
+
+**Completed:**
+
+1. **Created MenuShareModal component** (`src/components/admin/disposable-menus/MenuShareModal.tsx`)
+   - Comprehensive share modal with three tabs: Link, QR Code, and Embed
+   - Uses existing UI patterns from the codebase (Dialog, Tabs, Button, Input, Textarea)
+   - Full TypeScript support with named exports
+
+2. **Link Tab Features:**
+   - QR code preview (compact 180px size)
+   - Copyable access URL with visual feedback (checkmark icon on copy)
+   - Open in new tab button
+   - Share button (uses native Web Share API with clipboard fallback)
+   - Download QR button
+
+3. **QR Code Tab Features:**
+   - Large QR code display (280px size)
+   - High error correction level (H) for better scanning
+   - Download QR as PNG button
+   - Print QR button (opens print-friendly page)
+
+4. **Embed Tab Features:**
+   - Customizable embed dimensions (width and height inputs)
+   - Auto-generated iframe embed code
+   - Code preview in monospace textarea
+   - Copy embed code button with visual feedback
+   - Helper text explaining usage
+
+5. **Technical Implementation:**
+   - Uses `qrcode.react` for QR code generation (QRCodeSVG component)
+   - Canvas-based PNG download (converts SVG to canvas to PNG)
+   - Print window generation with styled HTML for QR printing
+   - Native Web Share API with graceful fallback to clipboard copy
+   - Toast notifications for user feedback
+   - Follows FloraIQ code style (named exports, @/ imports, logger usage)
+
+### Props Interface:
+```typescript
+interface MenuShareModalProps {
+  open: boolean;
+  onClose: () => void;
+  menuTitle: string;
+  accessUrl: string;
+  menuId: string;
+}
+```
+
+### Usage Example:
+```tsx
+import { MenuShareModal } from '@/components/admin/disposable-menus/MenuShareModal';
+
+<MenuShareModal
+  open={isShareOpen}
+  onClose={() => setIsShareOpen(false)}
+  menuTitle="Summer Menu 2026"
+  accessUrl="https://app.floraiq.com/menu/abc123"
+  menuId="abc123"
+/>
+```
+
+### Files Created:
+- `src/components/admin/disposable-menus/MenuShareModal.tsx` (NEW)
+
+### Notes:
+- Component is distinct from existing `MenuShareDialog.tsx` (which is for secure/encrypted menu sharing with access codes)
+- ESLint passes with no errors
+- Pre-existing build error in `PasswordResetPage.tsx` (multiple default exports) is unrelated to this task
