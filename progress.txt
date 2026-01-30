@@ -7459,3 +7459,77 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+## Agent 43 - OrderTrackingTimeline Component
+
+### Task: Add OrderTrackingTimeline showing all status changes with timestamps
+
+**Completed:**
+
+1. **Created useOrderStatusHistory hook** (`src/hooks/useOrderStatusHistory.ts`)
+   - TanStack Query wrapper for fetching order status history
+   - Queries the `order_status_history` table by `order_id`
+   - Returns typed `OrderStatusHistoryEntry` array with:
+     - `id`, `order_id`, `old_status`, `new_status`
+     - `changed_by` (customer/courier/admin/merchant/system)
+     - `changed_by_id`, `notes`, `created_at`
+   - Properly typed with exported interfaces for reuse
+
+2. **Added query key for order status history** (`src/lib/queryKeys.ts`)
+   - Added `statusHistory: (orderId: string) => [...]` to orders query keys
+   - Enables proper caching and invalidation
+
+3. **Created OrderTrackingTimeline component** (`src/components/admin/orders/OrderTrackingTimeline.tsx`)
+   - Visual timeline showing all order status transitions
+   - Features:
+     - Status-specific icons (Clock, CheckCircle, Package, Truck, XCircle, etc.)
+     - Color-coded status badges (yellow/pending, blue/confirmed, green/delivered, red/cancelled)
+     - Shows old status → new status transitions
+     - Displays exact timestamp (formatted) and relative time ("2 hours ago")
+     - Shows who made the change (Customer, Courier, Admin, Merchant, System)
+     - Supports notes field display when present
+     - Loading skeleton for better UX
+     - Empty state with helpful message
+     - Scrollable area with configurable max height
+     - Count badge showing total status updates
+   - Uses existing patterns from ActivityFeedTimeline and InventoryHistoryTimeline
+
+4. **Fixed pre-existing build issues:**
+   - Removed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
+   - Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+
+### Files Changed:
+- `src/hooks/useOrderStatusHistory.ts` (NEW)
+- `src/components/admin/orders/OrderTrackingTimeline.tsx` (NEW)
+- `src/lib/queryKeys.ts` - Added statusHistory query key
+- `src/pages/auth/PasswordResetPage.tsx` - Fixed duplicate export (pre-existing issue)
+- `src/lib/utils/sanitize.ts` - Added safeJsonParse (pre-existing missing function)
+
+### Usage Example:
+```tsx
+import { OrderTrackingTimeline } from '@/components/admin/orders/OrderTrackingTimeline';
+
+// In an order detail page or dialog:
+<OrderTrackingTimeline orderId={order.id} />
+
+// With custom styling:
+<OrderTrackingTimeline 
+  orderId={order.id} 
+  className="mt-4" 
+  maxHeight="500px" 
+/>
+```
+
+### Status Mappings:
+- `pending` - Yellow clock icon
+- `confirmed` - Blue check icon
+- `preparing` - Orange package icon
+- `processing` - Indigo refresh icon
+- `ready` - Cyan package icon
+- `in_transit` - Blue truck icon
+- `delivered` - Green check icon
+- `completed` - Emerald check icon
+- `cancelled` - Red X icon
+- `rejected` - Red X icon
+- `refunded` - Purple refresh icon
