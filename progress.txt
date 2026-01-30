@@ -7493,31 +7493,65 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+## Task: Build ProductBulkImport from CSV with validation preview
 
-## Task: Add ProductQRGenerator creating QR codes linking to product
+### Completed
 
-### Summary:
-Created a new ProductQRGenerator component that generates QR codes linking to product storefront pages. The component provides a dialog with download, copy, share, and print functionality.
+#### 1. Created ProductBulkImport Component (`src/components/admin/products/ProductBulkImport.tsx`)
+- Multi-step import wizard with 4 stages: Upload, Map, Preview, Import
+- Step indicator showing progress through the wizard
+- CSV/Excel file upload with drag-and-drop support
+- Download template button for easy onboarding
 
-### Implementation Details:
-- Created `ProductQRGenerator` component at `src/components/admin/products/ProductQRGenerator.tsx`
-- QR code links to: `/shop/{storeSlug}/products/{productId}`
-- Uses `qrcode.react` (QRCodeSVG) for QR code rendering
-- Follows existing QRCodeDialog pattern from disposable-menus
+#### 2. File Parsing and Column Mapping
+- Uses xlsx library for parsing CSV and Excel files
+- Auto-mapping of columns based on header name similarity
+- Support for 14 product fields: name, SKU, category, prices, quantities, descriptions, etc.
+- Configurable decimal separator (dot or comma) for international support
+- Option to treat empty cells as NULL
 
-### Features:
-1. **QR Code Display**: Shows product info (image, name, SKU) with QR code
-2. **Download**: Exports QR code as PNG with product name/SKU in filename
-3. **Copy Link**: Copies product URL to clipboard with visual feedback
-4. **Share**: Uses Web Share API on mobile, falls back to copy
-5. **Print**: Opens print-friendly page with product details and QR code
+#### 3. Validation Preview System
+- Real-time validation of all records before import
+- Summary cards showing total, valid, and invalid record counts
+- Tabbed view to filter: All records, Valid only, Invalid only
+- Export validation errors report for fixing data externally
 
-### Files Changed:
-- `src/components/admin/products/ProductQRGenerator.tsx` (NEW)
-- `src/components/admin/index.ts` (added export)
+#### 4. Row-Level Validation
+- Required field validation (name, SKU, category)
+- Category validation against predefined list
+- Numeric field validation with range checks
+- THC/CBD percentage validation (0-100%)
+- Price warnings when wholesale < cost
+- Detailed error messages with tooltips
 
-### Notes:
-- TypeScript check passes successfully (`npx tsc --noEmit`)
-- Component can be used from admin pages by importing from `@/components/admin` or directly
-- Uses high-resolution (2x) canvas for better QR code download quality
+#### 5. Data Preview Table
+- Scrollable table showing row number, status, name, SKU, category, and issues
+- Visual indicators (badges) for valid/invalid status
+- Tooltips showing all errors/warnings per row
+- Truncation with full details on hover
 
+#### 6. Bulk Import with Progress
+- Batched insert (10 records at a time) for performance
+- Progress bar showing import percentage
+- Skips invalid records automatically
+- Summary toast with success/failure counts
+- Option to download error report for failed database inserts
+
+#### 7. Updated ProductManagement Page (`src/pages/admin/ProductManagement.tsx`)
+- Added Import CSV button with Upload icon
+- Replaced old ProductImportDialog with new ProductBulkImport component
+- Added missing fetchProducts function for data refresh after import
+
+#### Additional Fixes
+- Fixed duplicate default export in PasswordResetPage.tsx
+- Added missing safeJsonParse export to sanitize.ts
+
+### Files Modified
+- `src/components/admin/products/ProductBulkImport.tsx` (new)
+- `src/pages/admin/ProductManagement.tsx` (updated)
+- `src/pages/auth/PasswordResetPage.tsx` (fixed pre-existing bug)
+- `src/lib/utils/sanitize.ts` (added missing export)
+
+### Build Status
+- TypeScript compilation: PASSED
+- Vite production build: PASSED

@@ -63,7 +63,7 @@ import { BarcodeScanner } from "@/components/admin/BarcodeScanner";
 import { BatchPanel } from "@/components/admin/BatchPanel";
 import { BulkPriceEditor } from "@/components/admin/BulkPriceEditor";
 import { BatchCategoryEditor } from "@/components/admin/BatchCategoryEditor";
-import { ProductImportDialog } from "@/components/admin/ProductImportDialog";
+import { ProductBulkImport } from "@/components/admin/products/ProductBulkImport";
 import { Upload } from "lucide-react";
 import { ProductForm, type ProductFormData } from "@/components/admin/products/ProductForm";
 import { ProductDuplicateButton } from "@/components/admin/products/ProductDuplicateButton";
@@ -243,38 +243,30 @@ export default function ProductManagement() {
     enabled: !!tenant?.id,
   });
 
-  // Fetch products with soft delete filtering
+  // Fetch products from database
   const fetchProducts = useCallback(async () => {
     if (!tenant?.id) return;
-
     setLoading(true);
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('tenant_id', tenant.id);
+        .eq('tenant_id', tenant.id)
+        .order('created_at', { ascending: false });
 
-      // Filter by archived status
-      if (showArchived) {
-        // Show only archived products
-        query = query.not('deleted_at', 'is', null);
-      } else {
-        // Show only active products (not archived)
-        query = query.is('deleted_at', null);
+      if (error) {
+        logger.error('Failed to fetch products', error);
+        toast.error('Failed to load products');
+        return;
       }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      setProducts(data || []);
+      setProducts(data as Product[] || []);
     } catch (error) {
-      logger.error('Failed to fetch products', error, { component: 'ProductManagement' });
+      logger.error('Error fetching products', error instanceof Error ? error : new Error(String(error)));
       toast.error('Failed to load products');
     } finally {
       setLoading(false);
     }
-  }, [tenant?.id, showArchived, setProducts]);
+  }, [tenant?.id, setProducts]);
 
   // Sync query data into optimistic list state
   useEffect(() => {
@@ -1133,7 +1125,11 @@ export default function ProductManagement() {
             <Barcode className="h-4 w-4 mr-2" />
             Generate Barcodes
           </Button>
-          <ProductImportDialog
+          <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            Import CSV
+          </Button>
+          <ProductBulkImport
             open={importDialogOpen}
             onOpenChange={setImportDialogOpen}
             onSuccess={loadProducts}
