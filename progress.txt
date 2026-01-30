@@ -7459,3 +7459,49 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+### Task: Build ProductsListPage with grid and table view toggle
+
+**Completed:**
+
+1. **Created ProductsListPage component** (`src/pages/admin/ProductsListPage.tsx`)
+   - Clean, focused products list page following FloraIQ patterns
+   - Full grid and table view toggle functionality
+   - Uses TanStack Query for data fetching with proper query keys
+   - Tenant-aware queries filtering by `tenant_id`
+   - Responsive design with mobile and desktop layouts
+
+2. **Features implemented:**
+   - **View Toggle**: Grid/Table view switch using Toggle components
+   - **Search**: Debounced search across product name, SKU, and category
+   - **Filters**: Category filter, Stock status filter (All/In Stock/Low Stock/Out of Stock)
+   - **Sorting**: Sort by Name, Price, Stock, or Category
+   - **Stats Cards**: Total Products, Available Units, Inventory Value, Low Stock Items
+   - **Selection**: Multi-select with checkbox in table view
+   - **Actions**: Edit, Delete, Print Label, Publish to Store dropdown menu
+   - **Loading States**: Skeleton loaders for all UI sections
+   - **Error Handling**: Error state with retry button
+   - **Empty States**: Using EnhancedEmptyState with contextual messaging
+
+3. **Component Integration:**
+   - Uses existing ProductCard component for grid view
+   - Uses ResponsiveTable for table view with mobile fallback
+   - Uses InventoryStatusBadge for stock status display
+   - Properly integrates with navigation via useTenantNavigate
+
+4. **Also fixed pre-existing build errors:**
+   - Fixed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
+   - Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+
+### Files Changed:
+- `src/pages/admin/ProductsListPage.tsx` (NEW)
+- `src/pages/auth/PasswordResetPage.tsx` (bugfix)
+- `src/lib/utils/sanitize.ts` (added missing function)
+
+### Build Status:
+- TypeScript compilation: PASSED
+- Vite production build: PASSED
+
