@@ -1,3 +1,74 @@
+## Task: Build OrderCustomerCard Component
+
+### Completed
+
+#### Created OrderCustomerCard Component (`src/components/admin/orders/OrderCustomerCard.tsx`)
+- Displays customer information within order context
+- Shows customer avatar with initials fallback
+- Displays contact details (email, phone) with click-to-action links
+- Fetches and displays order history statistics using `useCustomerStats` hook:
+  - Total order count
+  - Total amount spent
+  - Average order value
+- Provides quick action buttons:
+  - "View Profile" - navigates to customer detail page
+  - "New Order" - navigates to wholesale order creation with pre-filled client
+- Supports `compact` prop for different layout contexts
+- Supports `showActions` prop to hide/show action buttons
+- Handles null/undefined customer data gracefully
+- Uses existing UI components (Card, Avatar, Badge, Button, Skeleton, Separator)
+- Follows FloraIQ patterns with tenant-aware navigation
+
+#### Created Index File (`src/components/admin/orders/index.ts`)
+- Added barrel export for order-related components
+- Exports: `MenuSourceBadge`, `OrderBulkStatusConfirmDialog`, `OrderCustomerCard`
+
+### Props Interface
+```typescript
+interface OrderCustomerData {
+  id?: string;
+  customer_id?: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  full_name?: string | null;
+  business_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  avatar_url?: string | null;
+}
+
+interface OrderCustomerCardProps {
+  customer: OrderCustomerData | null | undefined;
+  className?: string;
+  showActions?: boolean;  // default: true
+  compact?: boolean;      // default: false
+}
+```
+
+### Usage Example
+```tsx
+import { OrderCustomerCard } from '@/components/admin/orders';
+
+<OrderCustomerCard
+  customer={{
+    customer_id: 'uuid-here',
+    full_name: 'John Doe',
+    email: 'john@example.com',
+    phone: '+1 555-1234',
+  }}
+/>
+```
+
+### Files Changed
+- `src/components/admin/orders/OrderCustomerCard.tsx` (new)
+- `src/components/admin/orders/index.ts` (new)
+
+### Build Status
+- ESLint: Passes with no errors on new files
+- Note: Pre-existing build issues exist unrelated to these changes
+
+---
+
 ## Task: Connect Operations to Roles - Role Creation and Permission Matrix
 
 ### Completed
