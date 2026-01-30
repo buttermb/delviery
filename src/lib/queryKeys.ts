@@ -698,15 +698,16 @@ export const queryKeys = {
     plans: () => ['subscription-plans'] as const,
   },
 
-  // Weather (for delivery planning)
-  weather: {
-    all: ['weather'] as const,
-    current: (location?: string) =>
-      [...queryKeys.weather.all, 'current', location] as const,
-    forecast: (location?: string, days?: number) =>
-      [...queryKeys.weather.all, 'forecast', location, days] as const,
-    byTenant: (tenantId?: string) =>
-      [...queryKeys.weather.all, 'tenant', tenantId] as const,
+  // Refunds
+  refunds: {
+    all: ['refunds'] as const,
+    lists: () => [...queryKeys.refunds.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) =>
+      [...queryKeys.refunds.lists(), filters] as const,
+    details: () => [...queryKeys.refunds.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.refunds.details(), id] as const,
+    byOrder: (orderId: string) =>
+      [...queryKeys.refunds.all, 'order', orderId] as const,
   },
 
   // Settings Versions
