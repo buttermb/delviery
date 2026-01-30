@@ -256,14 +256,8 @@ export const queryKeys = {
       [...queryKeys.finance.all, 'revenue', { tenantId }] as const,
     completedOrders: (tenantId?: string, dateRange?: string) =>
       [...queryKeys.finance.all, 'completed-orders', { tenantId, dateRange }] as const,
-    snapshot: (tenantId?: string) =>
-      [...queryKeys.finance.all, 'snapshot', { tenantId }] as const,
-    cashFlow: (tenantId?: string) =>
-      [...queryKeys.finance.all, 'cash-flow', { tenantId }] as const,
-    creditOut: (tenantId?: string) =>
-      [...queryKeys.finance.all, 'credit-out', { tenantId }] as const,
-    monthlyPerformance: (tenantId?: string) =>
-      [...queryKeys.finance.all, 'monthly-performance', { tenantId }] as const,
+    revenueGoal: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'revenue-goal', { tenantId }] as const,
   },
 
   // Storefront

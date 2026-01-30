@@ -7537,45 +7537,70 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
----
+## Agent 9 - RevenueGoalProgress Component Implementation
 
-## AlertsWidget Implementation - 2026-01-29
+### Task: Build RevenueGoalProgress showing monthly target vs actual
 
-### Task: Add AlertsWidget showing unread notifications with dismiss action
+**Completed:**
 
-### Implementation:
+1. **Created `useRevenueGoalProgress` hook** (`src/hooks/useRevenueGoalProgress.ts`)
+   - Fetches current month revenue from both retail orders and wholesale orders
+   - Only counts completed/delivered orders (no pending revenue)
+   - Calculates progress percentage toward monthly target
+   - Computes remaining amount, days left, daily target needed
+   - Determines if on-track based on current daily average projection
+   - Month-over-month comparison with last month's revenue
+   - Real-time updates via Supabase subscription for order status changes
+   - Configurable target revenue (defaults to last month's revenue)
+   - Returns comprehensive `RevenueGoalData` interface with:
+     - actualRevenue, targetRevenue, progressPercent
+     - remainingAmount, daysRemaining, dailyTargetNeeded
+     - currentDailyAverage, isOnTrack, isExceeded
+     - lastMonthRevenue, monthOverMonthChange
+     - currentMonthLabel, orderCount
 
-1. **Created AlertsWidget component** (`src/components/admin/dashboard/AlertsWidget.tsx`):
-   - Displays unread/undismissed alerts from `inventory_alerts` table
-   - Shows alerts that haven't been dismissed (`dismissed_at IS NULL`) and aren't resolved
-   - Includes severity indicators (critical, warning, info) with color-coded badges
-   - Real-time updates via Supabase channel subscription
-   - Dismiss individual alerts or dismiss all at once
-   - Navigation to alerts detail page on click
-   - Skeleton loading states while fetching
-   - Empty state when no alerts
+2. **Created `RevenueGoalProgress` component** (`src/components/financial/RevenueGoalProgress.tsx`)
+   - Matches existing Financial Command Center patterns (CashFlowPulse, PerformancePulse)
+   - Main progress card showing:
+     - Actual revenue vs target with large display
+     - Progress bar with color coding (emerald=exceeded, blue=on-track, amber=behind)
+     - Stats grid: Remaining, Days Left, Needed/Day, Orders
+   - Status & Trends card showing:
+     - On-track indicator with badge
+     - Daily average display
+     - Month-over-month comparison with trend indicator
+     - Insight message with projected surplus or required increase
+   - Skeleton loading state
+   - Dark theme styling consistent with Financial Command Center
+   - Responsive design (2-column to 4-column grid on stats)
 
-2. **Features:**
-   - TanStack Query for data fetching with proper query keys
-   - Mutations for dismiss actions with optimistic cache invalidation
-   - Toast notifications on success/failure
-   - Tenant-aware navigation using `useTenantAdminAuth` context
-   - Proper error handling and logging
-   - Accessible dismiss buttons with proper title attributes
+3. **Added query key** (`src/lib/queryKeys.ts`)
+   - Added `finance.revenueGoal(tenantId)` query key factory
 
-3. **UI Components used:**
-   - Card, Badge, Button, Skeleton from shadcn/ui
-   - Icons from lucide-react (Bell, AlertTriangle, Package, Clock, FileWarning, X, CheckCheck, ArrowRight)
-   - date-fns for relative time formatting
+4. **Exported from financial components index** (`src/components/financial/index.ts`)
+   - Added export for `RevenueGoalProgress`
 
-4. **Exported from dashboard index:**
-   - Added export to `src/components/admin/dashboard/index.ts`
+### Usage Example:
+```tsx
+import { RevenueGoalProgress } from '@/components/financial';
+
+// Default: uses last month's revenue as target
+<RevenueGoalProgress />
+
+// Custom target
+<RevenueGoalProgress targetRevenue={50000} />
+```
+
+### Features:
+- Real-time updates when orders complete/deliver
+- Color-coded progress bar (green=exceeded, blue=on-track, amber=behind pace)
+- Shows remaining amount and days to hit goal
+- Daily run rate and target calculations
+- Month-over-month comparison
+- Insights about projected outcome
 
 ### Files Changed:
-- `src/components/admin/dashboard/AlertsWidget.tsx` (NEW)
-- `src/components/admin/dashboard/index.ts` (UPDATED - added AlertsWidget export)
-
-### Notes:
-- Uses existing `inventory_alerts` table which already has `dismissed_at`, `dismissed_by`, `is_resolved`, and `severity` fields
-- Follows established widget patterns from InventoryAlertsWidget and ActivityFeedWidget
-- Widget can be integrated into any dashboard page by importing from the dashboard index
+- `src/hooks/useRevenueGoalProgress.ts` (NEW)
+- `src/components/financial/RevenueGoalProgress.tsx` (NEW)
+- `src/lib/queryKeys.ts` (added revenueGoal key)
+- `src/components/financial/index.ts` (added export)
