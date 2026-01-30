@@ -7459,3 +7459,76 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+## Task: Add OrderTagsInput for custom categorization of orders
+
+### Completed
+
+#### 1. Created Database Migration (`supabase/migrations/20260129000001_order_tags_system.sql`)
+- Created `order_tags` junction table for many-to-many relationship between unified_orders and tags
+- Reuses existing `tags` table for tag definitions (shared with customer tags)
+- Fields: id, tenant_id, order_id, tag_id, created_at
+- Unique constraint on (order_id, tag_id) to prevent duplicate assignments
+- Indexes for performance:
+  - idx_order_tags_tenant_id
+  - idx_order_tags_order_id
+  - idx_order_tags_tag_id
+  - idx_order_tags_tenant_tag (composite for tag-based filtering)
+- RLS policies for tenant isolation (select, insert, delete)
+
+#### 2. Added Query Keys (`src/lib/queryKeys.ts`)
+- Added `orderTags` query key factory:
+  - `orderTags.all` - Base key for all order tag queries
+  - `orderTags.byOrder(orderId)` - For order-specific tag queries
+  - `orderTags.byTag(tagId)` - For tag-based order queries
+
+#### 3. Created `useOrderTags` Hook (`src/hooks/useOrderTags.ts`)
+- `useOrderTags(orderId)` - Fetch tags for a specific order with tag details
+- `useAssignOrderTag()` - Assign a tag to an order
+- `useRemoveOrderTag()` - Remove a tag from an order
+- `useBatchAssignOrderTags()` - Bulk assign tags to multiple orders
+- `useBatchRemoveOrderTags()` - Bulk remove tags from multiple orders
+- All hooks follow TanStack Query patterns with proper cache invalidation
+- Tenant isolation enforced on all operations
+
+#### 4. Created `OrderTagsInput` Component (`src/components/admin/orders/OrderTagsInput.tsx`)
+- Tag management UI for order categorization
+- Features:
+  - View assigned tags as color-coded badges
+  - Remove tags with X button on each badge
+  - Popover UI for adding tags with available tags list
+  - Create new tags inline with color picker (9 preset colors)
+  - Keyboard support (Enter to create and assign)
+  - Loading and mutation states with visual feedback
+  - Toast notifications for success/error feedback
+- Props:
+  - `orderId: string` - Required order ID
+  - `readOnly?: boolean` - Disable editing when true
+  - `compact?: boolean` - Smaller size variant for table cells
+- Follows existing TagManager patterns from customer tags system
+
+### Files Changed:
+- `supabase/migrations/20260129000001_order_tags_system.sql` (new)
+- `src/lib/queryKeys.ts` (added orderTags query keys)
+- `src/hooks/useOrderTags.ts` (new)
+- `src/components/admin/orders/OrderTagsInput.tsx` (new)
+
+### Build Status:
+- TypeScript: Compiles with no errors (`npx tsc --noEmit` passes)
+- Note: Pre-existing build issue in PasswordResetPage.tsx (duplicate default export) unrelated to these changes
+
+### Usage Example:
+```tsx
+import { OrderTagsInput } from '@/components/admin/orders/OrderTagsInput';
+
+// In order detail page or table row
+<OrderTagsInput orderId={order.id} />
+
+// Read-only mode for display
+<OrderTagsInput orderId={order.id} readOnly />
+
+// Compact mode for table cells
+<OrderTagsInput orderId={order.id} compact />
+```

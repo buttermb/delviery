@@ -576,6 +576,13 @@ export const queryKeys = {
     byTag: (tagId: string) => [...queryKeys.customerTags.all, 'tag', tagId] as const,
   },
 
+  // Order Tags (junction)
+  orderTags: {
+    all: ['order-tags'] as const,
+    byOrder: (orderId: string) => [...queryKeys.orderTags.all, 'order', orderId] as const,
+    byTag: (tagId: string) => [...queryKeys.orderTags.all, 'tag', tagId] as const,
+  },
+
   // Credits
   credits: {
     all: ['credits'] as const,
