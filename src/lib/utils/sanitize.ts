@@ -182,6 +182,19 @@ export function sanitizeWithLineBreaks(text: string): string {
 }
 
 /**
+ * Safely parse JSON with error handling.
+ * Returns undefined if parsing fails.
+ */
+export function safeJsonParse<T>(json: string): T | undefined {
+  if (!json) return undefined;
+  try {
+    return JSON.parse(json) as T;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Sanitizes URL input - removes dangerous protocols.
  */
 export function sanitizeUrlInput(url: string): string {
