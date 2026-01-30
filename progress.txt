@@ -7459,3 +7459,73 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+## ProductPricingSection Component Implementation
+
+**Date:** 2026-01-30 15:59:39 UTC
+
+### Summary
+Created a new `ProductPricingSection` component that provides a comprehensive pricing interface for products with retail, wholesale, and bulk pricing capabilities.
+
+### Features Implemented
+1. **Base Pricing Section**
+   - Cost per unit input (internal cost tracking)
+   - Retail price with margin calculation
+   - Wholesale price with margin calculation
+   - Real-time profit margin display with color-coded feedback (green >40%, yellow >20%, red <20%)
+
+2. **Bulk Pricing Section**
+   - Toggle to enable/disable bulk pricing
+   - Dynamic tier management (add/remove tiers)
+   - Each tier includes: min quantity, max quantity, unit price
+   - Automatic discount percentage calculation vs base price
+   - Visual discount badges
+
+3. **Pricing Controls**
+   - Minimum allowed price (regulatory compliance)
+   - Exclude from discounts checkbox
+   - Validation warnings when prices fall below minimum
+
+### Component Location
+`src/components/admin/product-form/ProductPricingSection.tsx`
+
+### Interface
+```typescript
+interface BulkPriceTier {
+  id: string;
+  minQuantity: number;
+  maxQuantity: number | null;
+  price: number;
+  discountPercent?: number;
+}
+
+interface ProductPricingData {
+  cost_per_unit: string;
+  retail_price: string;
+  wholesale_price: string;
+  minimum_price: string;
+  exclude_from_discounts: boolean;
+  bulk_pricing_enabled: boolean;
+  bulk_price_tiers: BulkPriceTier[];
+}
+
+interface ProductPricingSectionProps {
+  formData: ProductPricingData;
+  updateFormData: (data: Partial<ProductPricingData>) => void;
+}
+```
+
+### UI Components Used
+- Card, CardContent, CardHeader, CardTitle, CardDescription
+- Input, Label, Button, Checkbox, Badge
+- Lucide icons: DollarSign, TrendingUp, Package, Store, Building2, Plus, Trash2, AlertCircle
+
+### Notes
+- ESLint passes with no errors
+- Follows existing codebase patterns from PricingStep.tsx and ProductForm.tsx
+- Uses shadcn/ui components consistently
+- Named export only (per project conventions)
+
