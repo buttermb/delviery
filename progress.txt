@@ -7463,57 +7463,26 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: Build MenuProductPicker with search filter and drag ordering
+### Task: Build DashboardRefreshButton to manually refresh all data
 
-### Completed
+**Completed:**
 
-#### 1. Created MenuProductPicker Component (`src/components/admin/disposable-menus/MenuProductPicker.tsx`)
-A comprehensive product selection component for disposable menus with the following features:
+1. **Created DashboardRefreshButton component** (`src/components/admin/dashboard/DashboardRefreshButton.tsx`)
+   - Uses TanStack Query's `useQueryClient` to invalidate dashboard queries
+   - Features a RefreshCw icon that animates when refreshing
+   - Shows loading state with "Refreshing..." text during refresh
+   - Displays toast notifications on success/failure
+   - Follows FloraIQ patterns: uses `useTenantAdminAuth`, `queryKeys`, named exports
 
-**Search and Filter:**
-- Text search filtering by product name and category
-- Category-based tab filtering for quick navigation
-- Clear search button when no results found
-
-**Product Selection:**
-- Checkbox-based product selection from scrollable list
-- Product cards showing image, name, price, category, and stock status
-- Out-of-stock products visually disabled
-- Optional maximum product limit with warning message
-
-**Drag-and-Drop Reordering:**
-- Uses @dnd-kit library (already in project dependencies)
-- Drag handle for reordering selected products
-- Visual feedback during drag with DragOverlay
-- Numbered positions for selected products
-- Smooth animations during reorder
-
-**UI/UX:**
-- Loading skeleton state
-- Empty state with search clear option
-- Clear all button for quick deselection
-- Responsive design with proper spacing
-
-#### 2. Fixed Pre-existing Build Issues
-- Removed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
-- Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
-
-### Component Interface:
-```typescript
-interface MenuProductPickerProps {
-  selectedIds: string[];           // Array of selected product IDs (ordered)
-  onSelectionChange: (ids: string[]) => void;  // Callback when selection changes
-  maxProducts?: number;            // Optional maximum products limit
-}
-```
+2. **Integrated into DashboardHubPage** (`src/pages/admin/hubs/DashboardHubPage.tsx`)
+   - Added import for DashboardRefreshButton component
+   - Placed button in header section alongside the "Updated" badge
+   - Button uses outline variant with small size for subtle appearance
 
 ### Files Changed:
-- `src/components/admin/disposable-menus/MenuProductPicker.tsx` (NEW)
-- `src/lib/utils/sanitize.ts` (added safeJsonParse)
-- `src/pages/auth/PasswordResetPage.tsx` (fixed duplicate export)
+- `src/components/admin/dashboard/DashboardRefreshButton.tsx` (NEW)
+- `src/pages/admin/hubs/DashboardHubPage.tsx`
 
 ### Notes:
-- Component follows FloraIQ patterns: tenant-aware queries, TanStack Query, shadcn/ui
-- Uses existing @dnd-kit libraries already installed in the project
-- TypeScript build passes successfully
-
+- ESLint passes with no errors on both changed files
+- Pre-existing build error in `PasswordResetPage.tsx` (multiple default exports) is unrelated to these changes
