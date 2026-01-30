@@ -100,6 +100,7 @@ export const STORAGE_KEYS = {
 
   // Dashboard
   DASHBOARD_WIDGETS: 'dashboard_widgets',
+  DASHBOARD_TOUR_COMPLETED: 'dashboard_tour_completed',
 
   // Performance
   NETWORK_QUALITY: 'network_quality',

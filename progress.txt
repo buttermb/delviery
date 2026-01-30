@@ -7459,3 +7459,54 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+### Task: Add DashboardTour using react-joyride for new users
+
+**Completed:**
+
+1. **Installed react-joyride dependency**
+   - Added `react-joyride@2.9.3` to project dependencies
+
+2. **Added storage key for tour completion tracking**
+   - Added `DASHBOARD_TOUR_COMPLETED` to `src/constants/storageKeys.ts`
+
+3. **Created useDashboardTour hook** (`src/hooks/useDashboardTour.ts`)
+   - Manages tour state (running, step index, completion status)
+   - Auto-starts tour for new users after configurable delay
+   - Persists completion status in localStorage
+   - Provides startTour, stopTour, resetTour functions
+   - Handles joyride callback events
+
+4. **Created DashboardTour component** (`src/components/admin/DashboardTour.tsx`)
+   - Implements react-joyride with 5 tour steps:
+     - Dashboard Overview (header)
+     - Revenue Metrics section
+     - Order Management section
+     - Inventory Status section
+     - Customer Insights section
+   - Custom styled tooltips matching the app design
+   - Includes TakeDashboardTourButton component for manual tour restart
+
+5. **Integrated tour into DashboardHubPage** (`src/pages/admin/hubs/DashboardHubPage.tsx`)
+   - Added data-tour attributes to all dashboard sections
+   - Added DashboardTour component (auto-starts for new users)
+   - Added TakeDashboardTourButton in header (shows "Take Tour" or "Restart Tour")
+
+### Files Changed:
+- `package.json` - Added react-joyride dependency
+- `src/constants/storageKeys.ts` - Added DASHBOARD_TOUR_COMPLETED key
+- `src/hooks/useDashboardTour.ts` (NEW) - Tour state management hook
+- `src/components/admin/DashboardTour.tsx` (NEW) - Tour component with joyride
+- `src/pages/admin/hubs/DashboardHubPage.tsx` - Integrated tour with data-tour attributes
+
+### Features:
+- Auto-starts for new users (1.5s delay after page load)
+- Stores completion in localStorage to show only once
+- "Take Tour" / "Restart Tour" button in dashboard header
+- Step-by-step tooltips highlighting key dashboard sections
+- Skip button to exit tour early
+- Progress indicator showing current step
+- CSS-themed tooltips matching the app design
