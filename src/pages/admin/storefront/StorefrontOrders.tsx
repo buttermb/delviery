@@ -26,9 +26,9 @@ import {
   Truck,
   Package,
   Filter,
-  Download,
   RefreshCw
 } from 'lucide-react';
+import { OrderExportButton } from '@/components/admin/orders/OrderExportButton';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import {
@@ -266,10 +266,12 @@ export default function StorefrontOrders() {
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
+          <OrderExportButton
+            orders={filteredOrders}
+            filenamePrefix="storefront-orders"
+            variant="outline"
+            size="sm"
+          />
         </div>
       </div>
 
