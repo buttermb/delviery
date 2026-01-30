@@ -7481,65 +7481,80 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+---
 
-## Task: Add StoreOrdersTab showing orders from storefront
+## Task: Build OrderAssignCourier modal with available courier list
 
 ### Completed
 
-Created a new **StoreOrdersTab** component that displays storefront orders. This component can be used as a reusable tab in store management pages.
+#### Created OrderAssignCourier component
+- Location: `src/components/admin/OrderAssignCourier.tsx`
+- A comprehensive modal for assigning couriers to orders
 
-### Features:
-1. **Order Display:**
-   - Shows all orders from the storefront
-   - Displays order number, customer info, items count, total, payment status, order status, and date
-   - Supports search by order number, customer name, email, or phone
+#### Features Implemented
+1. **TanStack Query Integration**
+   - Uses `useQuery` for fetching available couriers
+   - Uses `useMutation` for the assign courier action
+   - Proper query key management via `queryKeys.couriers.list()`
+   - Query invalidation on success for orders and deliveries
 
-2. **Status Management:**
-   - Quick filter buttons for filtering by order status
-   - Inline status change dropdown on each order row
-   - Status badges with color-coded indicators
+2. **Visual Courier List**
+   - Displays couriers in a scrollable list (not just a dropdown)
+   - Shows courier avatar, name, status badge, vehicle info
+   - Displays phone, rating, and total deliveries
+   - Location indicator when GPS data is available
+   - Separates online and offline couriers into sections
 
-3. **Statistics Dashboard:**
-   - Pending orders count
-   - In-progress orders count
-   - Delivered orders count
-   - Total revenue calculation
+3. **Selection & Assignment**
+   - Click to select a courier from the list
+   - Visual selection indicator (checkmark + border highlight)
+   - "Assign Selected" button in DialogFooterActions
+   - Auto-assign nearest courier option
 
-4. **Order Details Sheet:**
-   - Customer information (name, email, phone)
-   - Delivery address and notes
-   - Order items with quantities and prices
-   - Order totals (subtotal, discounts, delivery fee, tips, total)
-   - Payment method and status
-   - Tracking link for customers
+4. **Multi-tenant Isolation**
+   - Uses `useTenantAdminAuth()` for tenant context
+   - Filters couriers by `tenant_id`
+   - Query only enabled when tenant is available
 
-### Props:
-- `storeId` (optional) - If not provided, fetches store by tenant ID
-- `showHeader` (optional) - Whether to show the header section (default: true)
-- `maxHeight` (optional) - Max height for the orders table scroll area
+5. **Loading & Error States**
+   - Skeleton loading state while fetching couriers
+   - Error state with retry messaging
+   - Empty state when no couriers available
+   - Button disabled states during async operations
 
-### File Created:
-- `src/pages/admin/storefront/StoreOrdersTab.tsx`
+6. **Proper Patterns**
+   - Uses `logger` from `@/lib/logger` (not console.log)
+   - Uses `toast` from sonner for notifications
+   - Uses `DialogFooterActions` for consistent button layout
+   - Named exports only (no default exports)
+   - TypeScript strict mode compliant
 
-### Usage Example:
-```tsx
-import { StoreOrdersTab } from '@/pages/admin/storefront/StoreOrdersTab';
-
-// Basic usage
-<StoreOrdersTab />
-
-// With specific store ID
-<StoreOrdersTab storeId="store-uuid-here" />
-
-// Without header
-<StoreOrdersTab showHeader={false} />
-
-// With max height
-<StoreOrdersTab maxHeight="500px" />
+#### Props Interface
+```typescript
+interface OrderAssignCourierProps {
+  orderId: string;
+  orderAddress: string;
+  orderNumber?: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
+}
 ```
 
-### Notes:
-- Uses the same patterns as existing StorefrontOrders component
-- Queries the `marketplace_orders` table filtered by `seller_profile_id`
-- Follows FloraIQ project conventions (named exports, no default exports as the primary export, TanStack Query, etc.)
+#### Usage Example
+```tsx
+import { OrderAssignCourier } from '@/components/admin/OrderAssignCourier';
 
+<OrderAssignCourier
+  orderId={order.id}
+  orderAddress={order.delivery_address}
+  orderNumber={order.tracking_code}
+  open={assignModalOpen}
+  onOpenChange={setAssignModalOpen}
+  onSuccess={() => refetchOrders()}
+/>
+```
+
+#### TypeScript Verification
+- `npx tsc --noEmit` passes with no errors
+- Component follows FloraIQ TypeScript patterns
