@@ -7459,3 +7459,74 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+## Task: Add OrderItemsTable with quantity price discount columns
+
+### Implementation Summary:
+Created a reusable `OrderItemsTable` component for displaying order line items with comprehensive features.
+
+### Component Features:
+1. **Core Columns:**
+   - Product name (with optional quantity unit display)
+   - Quantity (displayed in a badge)
+   - Unit Price (formatted currency)
+   - Discount (conditionally displayed, only when items have discounts)
+   - Total Price (formatted currency)
+
+2. **Optional Features:**
+   - `showDiscount` - Toggle discount column visibility (default: true, auto-hides if no discounts)
+   - `showSku` - Toggle SKU column visibility (default: false)
+   - `showTotals` - Toggle footer totals (default: true)
+   - `isLoading` - Loading state with skeleton placeholders
+   - `emptyMessage` - Customizable empty state message
+
+3. **Footer Totals:**
+   - Subtotal (before discounts)
+   - Total Discount amount (highlighted in emerald/green)
+   - Grand Total
+
+4. **Code Patterns Followed:**
+   - Uses shadcn/ui Table components (Table, TableHeader, TableBody, TableFooter, etc.)
+   - Uses `formatCurrency` utility from `@/lib/utils/formatCurrency`
+   - Named export only (no default export per codebase rules)
+   - TypeScript strict mode compliant
+   - Dark mode support via existing table styles
+   - Responsive design with horizontal scroll on overflow
+
+### Interface Definition:
+```typescript
+interface OrderItemData {
+  id: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  discount_amount?: number;
+  total_price: number;
+  sku?: string | null;
+  quantity_unit?: string;
+  product_id?: string | null;
+  inventory_id?: string | null;
+}
+```
+
+### Files Created:
+- `src/components/admin/orders/OrderItemsTable.tsx` (NEW)
+
+### Usage Example:
+```tsx
+import { OrderItemsTable } from '@/components/admin/orders/OrderItemsTable';
+
+<OrderItemsTable
+  items={orderItems}
+  isLoading={isLoading}
+  showDiscount={true}
+  showSku={false}
+  showTotals={true}
+/>
+```
+
+### Notes:
+- Compatible with multiple order item types in the codebase (order_items, unified_order_items, marketplace_order_items, wholesale_order_items)
+- ESLint passes with no errors
+- Pre-existing build errors in PasswordResetPage.tsx (duplicate default export) are unrelated to this change
