@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, Building2 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -25,6 +25,7 @@ import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { LastUpdated } from "@/components/shared/LastUpdated";
 import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
 import { OrderBulkStatusConfirmDialog } from "@/components/admin/orders/OrderBulkStatusConfirmDialog";
+import { OrderCloneToB2BDialog } from "@/components/admin/orders/OrderCloneToB2BDialog";
 import { BulkOperationProgress } from "@/components/ui/bulk-operation-progress";
 import { useOrderBulkStatusUpdate } from "@/hooks/useOrderBulkStatusUpdate";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -118,6 +119,8 @@ export default function Orders() {
     targetStatus: string;
   }>({ open: false, targetStatus: '' });
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [cloneToB2BDialogOpen, setCloneToB2BDialogOpen] = useState(false);
+  const [orderToClone, setOrderToClone] = useState<Order | null>(null);
 
   // Bulk status update hook
   const bulkStatusUpdate = useOrderBulkStatusUpdate({
@@ -554,6 +557,12 @@ export default function Orders() {
     }
   };
 
+  const handleCloneToB2B = (order: Order) => {
+    setOrderToClone(order);
+    setCloneToB2BDialogOpen(true);
+    triggerHaptic('light');
+  };
+
   const handleOrderClick = (order: Order) => {
     if (window.innerWidth < 768) {
       setSelectedOrder(order);
@@ -716,6 +725,10 @@ export default function Orders() {
               <DropdownMenuItem onClick={() => handleGenerateInvoiceFunc(order)}>
                 <FileText className="mr-2 h-4 w-4" />
                 Generate Invoice
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleCloneToB2B(order)}>
+                <Building2 className="mr-2 h-4 w-4" />
+                Clone to B2B
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {order.status !== 'cancelled' && (
@@ -1027,6 +1040,18 @@ export default function Orders() {
         title="Export Orders"
         description="Choose which related data to include in the CSV export."
         itemCount={filteredOrders.length}
+      />
+
+      <OrderCloneToB2BDialog
+        order={orderToClone}
+        open={cloneToB2BDialogOpen}
+        onOpenChange={(open) => {
+          setCloneToB2BDialogOpen(open);
+          if (!open) setOrderToClone(null);
+        }}
+        onSuccess={() => {
+          refetch();
+        }}
       />
 
       <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>

@@ -7459,3 +7459,64 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Task: Add OrderCloneToB2B - Converting Retail Order to Wholesale
+
+### Completed
+
+#### 1. Created OrderCloneToB2BDialog Component (`src/components/admin/orders/OrderCloneToB2BDialog.tsx`)
+- New dialog component for cloning retail orders to B2B/wholesale orders
+- Features:
+  - Wholesale client selection with search functionality
+  - Credit limit and balance display for selected client
+  - Over-credit-limit warning when order would exceed client's credit
+  - Pricing adjustment options:
+    - Keep original retail prices
+    - Apply 15%% wholesale discount
+    - Custom discount percentage
+  - Order items preview with original vs adjusted prices
+  - Delivery address input (pre-filled from client address)
+  - Order total comparison (original vs new B2B total)
+  - Savings calculation display
+- Uses existing `useWholesaleClients` hook for client data
+- Calls `wholesale-order-create` edge function to create the new order
+- Includes source tracking (`source_order_id` and `source_order_type`)
+- Proper loading states and error handling
+- Toast notifications on success with "View Order" action
+
+#### 2. Integrated Clone to B2B in Orders Page (`src/pages/admin/Orders.tsx`)
+- Added import for OrderCloneToB2BDialog
+- Added Building2 icon import for menu item
+- Added state variables:
+  - `cloneToB2BDialogOpen` for dialog visibility
+  - `orderToClone` to track which order is being cloned
+- Added `handleCloneToB2B` handler function
+- Added "Clone to B2B" menu item in the order actions dropdown menu
+  - Positioned after "Generate Invoice" option
+  - Uses Building2 icon for visual consistency
+- Added OrderCloneToB2BDialog component rendering with proper props
+
+### How It Works
+
+1. User opens the orders list in the admin panel
+2. User clicks the more actions menu (three dots) on any retail order
+3. User selects "Clone to B2B" option
+4. Dialog opens showing:
+   - Original order summary (order number, customer, items count, total)
+   - Client selector (searchable list of wholesale clients)
+   - After selecting a client: credit impact summary and warnings
+   - Pricing adjustment dropdown
+   - Order items with price comparison
+   - New B2B total with savings
+5. User clicks "Create B2B Order"
+6. New wholesale order is created via edge function
+7. User is notified of success and can navigate to view the new order
+
+### Technical Notes
+- Follows existing patterns from CloneMenuDialog and DuplicateProductButton
+- Uses SmartClientPicker-style UI for client selection (inline, not separate component)
+- Maintains tenant isolation through useTenantAdminAuth context
+- Invalidates relevant queries after order creation
+- Preserves link to source order via metadata fields
+
+
