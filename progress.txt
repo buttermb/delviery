@@ -7459,3 +7459,59 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+### Task: Build DashboardPage with KPI cards for revenue orders customers inventory
+
+**Completed:**
+
+1. **Created new DashboardPage component** (`src/pages/admin/DashboardPage.tsx`)
+   - Comprehensive KPI dashboard following FloraIQ admin panel patterns
+   - Uses TanStack Query with 30-second auto-refresh for real-time data
+   - Tenant-aware using `useTenantAdminAuth()` hook
+   - Responsive grid layout for all screen sizes
+
+2. **Revenue Section (3 KPI cards):**
+   - Today's Revenue - Shows completed orders total for today
+   - Month to Date - Revenue with growth percentage vs last month
+   - Average Order Value - Per order this month
+
+3. **Orders Section (4 KPI cards):**
+   - Pending Orders - Awaiting processing (with warning variant)
+   - Today's Orders - Orders placed today
+   - Completed Today - Successfully delivered (success variant)
+   - Orders (MTD) - Total orders this month
+
+4. **Customers Section (3 KPI cards):**
+   - Total Customers - All registered customers
+   - New Customers - Joined in last 30 days (success variant)
+   - Active Sessions - Online in last 15 minutes
+
+5. **Inventory Section (4 KPI cards):**
+   - Total Products - In catalog
+   - Low Stock - Below reorder threshold (warning variant)
+   - Out of Stock - Needs restocking (destructive variant)
+   - Inventory Value - Total stock value
+
+6. **Features:**
+   - Loading skeletons for each KPI card during data fetch
+   - Error handling with user-friendly error state
+   - Last updated timestamp badge
+   - HubBreadcrumbs navigation component
+   - Color-coded variants (success, warning, destructive) for status indicators
+   - Trend indicator with up/down arrows for revenue growth
+
+### Files Changed:
+- `src/pages/admin/DashboardPage.tsx` (NEW)
+
+### Technical Details:
+- Uses existing `useDashboardStats` hook for data fetching
+- Uses `queryKeys.dashboard.stats()` for TanStack Query cache management
+- Uses `formatCurrency` utility for consistent currency formatting
+- Follows project conventions: named exports, @/ imports, TypeScript strict mode
+- No `console.log` - follows project logging guidelines
+
+### Notes:
+- TypeScript type checking passes successfully for DashboardPage.tsx
+- Pre-existing build error in PasswordResetPage.tsx (multiple default exports) is unrelated to this task
