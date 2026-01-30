@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Eye, Users, ShoppingCart, Flame, Copy, ExternalLink,
   Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus,
-  MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store
+  MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store, Monitor
 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -28,6 +28,7 @@ import { QRCodeDialog } from './QRCodeDialog';
 import { CloneMenuDialog } from './CloneMenuDialog';
 import { MenuAccessDetails } from './MenuAccessDetails';
 import { MenuPaymentSettingsDialog } from './MenuPaymentSettingsDialog';
+import { MenuPreview } from './MenuPreview';
 import { format } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { jsonToString, extractSecuritySetting, jsonToBooleanSafe } from '@/utils/menuTypeHelpers';
@@ -77,6 +78,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
   const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
   const [accessDetailsOpen, setAccessDetailsOpen] = useState(false);
   const [paymentSettingsOpen, setPaymentSettingsOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const viewCount = menu.view_count || 0;
   const customerCount = menu.customer_count || 0;
@@ -263,6 +265,21 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                 <TooltipContent>Share</TooltipContent>
               </Tooltip>
 
+              {/* Customer Preview */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={() => setPreviewOpen(true)}
+                  >
+                    <Monitor className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Customer Preview</TooltipContent>
+              </Tooltip>
+
               {/* Open in new tab */}
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -275,7 +292,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Preview Menu</TooltipContent>
+                <TooltipContent>Open in Browser</TooltipContent>
               </Tooltip>
 
               {/* Spacer */}
@@ -289,6 +306,11 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => setPreviewOpen(true)}>
+                    <Monitor className="h-4 w-4 mr-2" />
+                    Customer Preview
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setAccessDetailsOpen(true)}>
                     <Lock className="h-4 w-4 mr-2" />
                     Access Details
@@ -411,6 +433,12 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
         open={paymentSettingsOpen}
         onOpenChange={setPaymentSettingsOpen}
         menu={menu as any}
+      />
+
+      <MenuPreview
+        menu={menu as any}
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
       />
     </>
   );
