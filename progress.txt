@@ -1,3 +1,24 @@
+## Task: Add OrderPaymentStatus Badge
+
+### Completed
+
+#### 1. Created OrderPaymentStatusBadge Component (`src/components/admin/orders/OrderPaymentStatusBadge.tsx`)
+- New badge component for displaying order payment status
+- Supports four payment statuses: paid, pending, partial, refunded
+- Features:
+  - Icons: CheckCircle (paid), Clock (pending), AlertCircle (partial), RotateCcw (refunded)
+  - Size variants: sm, default, lg
+  - Optional icon display via showIcon prop
+  - Uses semantic status colors from statusColors.ts
+  - TypeScript typed with OrderPaymentStatusType
+- Follows existing badge patterns (OrderStatusBadge, CreditStatusBadge)
+
+#### 2. Added refunded status to statusColors.ts (`src/lib/utils/statusColors.ts`)
+- Added 'refunded' status with info semantic color (blue)
+- Uses consistent pattern: bg-info/10, text-info, border-info/20
+
+---
+
 ## Task: Connect Operations to Roles - Role Creation and Permission Matrix
 
 ### Completed
