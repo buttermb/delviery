@@ -7459,3 +7459,66 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+## Task: Add StoreOrdersTab showing orders from storefront
+
+### Completed
+
+Created a new **StoreOrdersTab** component that displays storefront orders. This component can be used as a reusable tab in store management pages.
+
+### Features:
+1. **Order Display:**
+   - Shows all orders from the storefront
+   - Displays order number, customer info, items count, total, payment status, order status, and date
+   - Supports search by order number, customer name, email, or phone
+
+2. **Status Management:**
+   - Quick filter buttons for filtering by order status
+   - Inline status change dropdown on each order row
+   - Status badges with color-coded indicators
+
+3. **Statistics Dashboard:**
+   - Pending orders count
+   - In-progress orders count
+   - Delivered orders count
+   - Total revenue calculation
+
+4. **Order Details Sheet:**
+   - Customer information (name, email, phone)
+   - Delivery address and notes
+   - Order items with quantities and prices
+   - Order totals (subtotal, discounts, delivery fee, tips, total)
+   - Payment method and status
+   - Tracking link for customers
+
+### Props:
+- `storeId` (optional) - If not provided, fetches store by tenant ID
+- `showHeader` (optional) - Whether to show the header section (default: true)
+- `maxHeight` (optional) - Max height for the orders table scroll area
+
+### File Created:
+- `src/pages/admin/storefront/StoreOrdersTab.tsx`
+
+### Usage Example:
+```tsx
+import { StoreOrdersTab } from '@/pages/admin/storefront/StoreOrdersTab';
+
+// Basic usage
+<StoreOrdersTab />
+
+// With specific store ID
+<StoreOrdersTab storeId="store-uuid-here" />
+
+// Without header
+<StoreOrdersTab showHeader={false} />
+
+// With max height
+<StoreOrdersTab maxHeight="500px" />
+```
+
+### Notes:
+- Uses the same patterns as existing StorefrontOrders component
+- Queries the `marketplace_orders` table filtered by `seller_profile_id`
+- Follows FloraIQ project conventions (named exports, no default exports as the primary export, TanStack Query, etc.)
+
