@@ -7459,3 +7459,49 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Agent 13 - CreateMenuForm Component
+
+### Task: Add CreateMenuForm with name, description, products selection
+
+**Completed:**
+
+1. **Created reusable CreateMenuForm component** (`src/components/admin/disposable-menus/CreateMenuForm.tsx`)
+   - Standalone form component for creating disposable menus
+   - Features name input (required, max 200 chars)
+   - Description textarea (optional, max 500 chars)
+   - Products selection with search/filter functionality
+   - Bulk selection actions (Select All, Deselect All, Clear)
+   - Selected products summary with badges
+   - Integration with existing hooks:
+     - `useWholesaleInventory` for fetching products
+     - `useCreateDisposableMenu` for menu creation
+     - `useTenantAdminAuth` for tenant context
+     - `useTenantLimits` for subscription limits
+     - `useFreeTierLimits` for daily limits
+   - Proper input sanitization using `sanitizeFormInput` and `sanitizeTextareaInput`
+   - Loading states with Skeleton components
+   - Empty state handling
+   - Error handling with toast notifications
+   - Callback support for success/cancel actions
+   - Configurable submit button label
+   - TypeScript strict mode compliant
+
+2. **Component Props:**
+   - `onSuccess?: (menuData: { id: string; access_code: string; shareable_url: string }) => void`
+   - `onCancel?: () => void`
+   - `initialData?: Partial<CreateMenuFormData>`
+   - `submitLabel?: string` (default: "Create Menu")
+   - `showCancelButton?: boolean` (default: true)
+
+3. **Exported Types:**
+   - `CreateMenuFormData` interface for form data
+   - `CreateMenuFormProps` for component props
+
+### Files Changed:
+- `src/components/admin/disposable-menus/CreateMenuForm.tsx` (NEW)
+
+### Notes:
+- Component follows existing codebase patterns from CreateMenuDialog and CreateMenuSimpleDialog
+- TypeScript type checking passes successfully
+- Component can be used in dialogs, pages, or other contexts
