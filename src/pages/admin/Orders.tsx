@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Truck, CheckCircle, WifiOff } from 'lucide-react';
+import { OrderSourceBadge } from '@/components/admin/orders/OrderSourceBadge';
 import { SEOHead } from '@/components/SEOHead';
 import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -578,23 +579,6 @@ export default function Orders() {
     return <Badge variant={variants[status] || "default"}>{status}</Badge>;
   };
 
-  const getSourceBadge = (source: string | undefined) => {
-    const sourceConfig: Record<string, { label: string; icon: typeof Store; className: string }> = {
-      storefront: { label: 'Storefront', icon: Store, className: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800' },
-      admin: { label: 'Admin', icon: Monitor, className: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800' },
-      pos: { label: 'POS', icon: Monitor, className: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' },
-      menu: { label: 'Menu', icon: Utensils, className: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800' },
-      api: { label: 'API', icon: Zap, className: 'bg-cyan-100 text-cyan-700 border-cyan-200 dark:bg-cyan-900/30 dark:text-cyan-300 dark:border-cyan-800' },
-    };
-    const config = sourceConfig[source || 'admin'] || sourceConfig.admin;
-    const Icon = config.icon;
-    return (
-      <Badge variant="outline" className={`gap-1 text-xs font-medium ${config.className}`}>
-        <Icon className="h-3 w-3" />
-        {config.label}
-      </Badge>
-    );
-  };
 
   // Table Config
   const columns: ResponsiveColumn<Order>[] = [
@@ -628,7 +612,7 @@ export default function Orders() {
     },
     {
       header: "Source",
-      cell: (order) => getSourceBadge(order.order_source),
+      cell: (order) => <OrderSourceBadge source={order.order_source} />,
       className: "w-[120px]"
     },
     {
@@ -918,7 +902,7 @@ export default function Orders() {
                         <span className="font-mono font-bold text-primary">
                           #{order.order_number || order.id.slice(0, 8)}
                         </span>
-                        {getSourceBadge(order.order_source)}
+                        <OrderSourceBadge source={order.order_source} />
                       </div>
                       <p className="text-sm font-medium">
                         {order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown Customer'}

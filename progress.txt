@@ -7459,3 +7459,42 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Task: Build OrderSourceBadge showing POS storefront phone manual source
+
+### Summary:
+Created a reusable OrderSourceBadge component that displays the origin of an order
+with appropriate icons and color-coded badges for each source type.
+
+### Implementation Details:
+
+1. **Created new component:** src/components/admin/orders/OrderSourceBadge.tsx
+   - Supports 7 order sources: pos, storefront, phone, manual, admin, menu, api
+   - Each source has a unique icon and color scheme
+   - Props: source, className, compact (icon only), labelOnly (no icon)
+   - Defaults to 'admin' if source is not provided
+   - Includes dark mode support
+   - Helper functions: getOrderSourceLabel, isValidOrderSource
+
+2. **Updated Orders page:** src/pages/admin/Orders.tsx
+   - Removed inline getSourceBadge function
+   - Replaced with OrderSourceBadge component in table and mobile view
+   - Cleaned up unused icon imports (Store, Monitor, Utensils, Zap)
+
+### Source Configurations:
+- pos: ShoppingCart icon, green badge
+- storefront: Store icon, purple badge
+- phone: Phone icon, blue badge
+- manual: FileEdit icon, slate badge
+- admin: Monitor icon, indigo badge
+- menu: Utensils icon, orange badge
+- api: Zap icon, cyan badge
+
+### Files Changed:
+- src/components/admin/orders/OrderSourceBadge.tsx (NEW)
+- src/pages/admin/Orders.tsx
+
+### Notes:
+- TypeScript type checking passes successfully
+- Component follows existing badge patterns (similar to MenuSourceBadge)
+- Supports dark mode with proper color contrasts
