@@ -7459,3 +7459,66 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+## Task: Build OrderTotalsCard showing subtotal tax discount total
+
+### Implementation:
+Created a new reusable OrderTotalsCard component for displaying order pricing breakdowns.
+
+### Component Location:
+- `src/components/admin/orders/OrderTotalsCard.tsx`
+
+### Features:
+1. **Displays key order pricing fields:**
+   - Subtotal
+   - Tax (with optional tax rate percentage display)
+   - Discount (only shown when > 0, with optional custom label)
+   - Total (highlighted as primary color)
+
+2. **Two display modes:**
+   - **Full mode** (default): Card with header, icons, and full styling
+   - **Compact mode**: Minimal layout for embedding in other components
+
+3. **Props interface:**
+   - `subtotal: number` - Pre-tax amount
+   - `tax: number` - Tax amount
+   - `discount?: number` - Discount amount (optional, defaults to 0)
+   - `total: number` - Final total
+   - `taxRate?: number` - Optional tax rate for display (e.g., 0.085 for 8.5%)
+   - `discountLabel?: string` - Optional custom label for discount line
+   - `className?: string` - Additional CSS classes
+   - `compact?: boolean` - Use compact layout (default: false)
+
+4. **Styling:**
+   - Uses shadcn/ui Card, Separator components
+   - Lucide icons (Receipt, Percent, Tag)
+   - Green color for discount (indicates savings)
+   - Primary color for total amount
+   - Dark mode support
+
+### Usage Examples:
+```tsx
+// Full card mode
+<OrderTotalsCard
+  subtotal={120.00}
+  tax={10.20}
+  discount={15.00}
+  total={115.20}
+  taxRate={0.085}
+  discountLabel="Promo Code: SAVE15"
+/>
+
+// Compact mode for embedding
+<OrderTotalsCard
+  subtotal={120.00}
+  tax={10.20}
+  total={130.20}
+  compact
+/>
+```
+
+### Files Changed:
+- `src/components/admin/orders/OrderTotalsCard.tsx` (NEW)
