@@ -7459,3 +7459,42 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+## Task: Build CourierStatusWidget showing available busy offline counts
+
+### Status: COMPLETED
+
+### Implementation:
+
+Created a new CourierStatusWidget component for the Hotbox Dashboard that displays real-time courier availability status:
+
+1. **Available**: Couriers who are online, active, verified, and have no active deliveries
+2. **Busy**: Couriers currently handling a delivery (status: assigned, in_transit, or picked_up)
+3. **Offline**: Couriers who are active but not currently online or unverified
+
+### Files Changed:
+- `src/components/admin/hotbox/widgets/CourierStatusWidget.tsx` (NEW)
+- `src/components/admin/hotbox/HotboxDashboard.tsx` (added import and widget rendering)
+- `src/lib/presets/businessTiers.ts` (added 'courier-status' to all tier dashboardWidgets)
+
+### Features:
+- Status summary badges showing counts for available, busy, and offline couriers
+- List of top 5 couriers prioritized by availability status
+- Visual status indicators with pulsing dot for available couriers
+- GPS location indicator when courier has location data
+- Quick action buttons: "Manage Couriers" and "Assign Deliveries"
+- Loading skeleton for better UX
+- Empty state when no active couriers
+
+### Technical Details:
+- Uses TanStack Query with queryKey: ['hotbox-courier-status', tenant?.id]
+- Fetches from 'couriers' and 'deliveries' tables with proper tenant filtering
+- 30 second stale time, 60 second refetch interval
+- Follows existing widget patterns (Card, Badge, Button from shadcn/ui)
+- Tenant-aware with proper navigation using tenantSlug
+
+### Notes:
+- TypeScript compilation verified with SWC
+- Build error about PasswordResetPage.tsx default export is pre-existing and unrelated

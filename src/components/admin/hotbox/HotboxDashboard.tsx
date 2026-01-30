@@ -74,6 +74,7 @@ import { ExecutiveSummaryWidget } from './widgets/ExecutiveSummaryWidget';
 import { StrategicDecisionsWidget } from './widgets/StrategicDecisionsWidget';
 import { WeeklyTrendsWidget } from './widgets/WeeklyTrendsWidget';
 import { LiveOrdersWidget } from './widgets/LiveOrdersWidget';
+import { CourierStatusWidget } from './widgets/CourierStatusWidget';
 
 // Type definitions
 interface PulseMetric {
@@ -532,6 +533,13 @@ export function HotboxDashboard() {
         {hasWidget('team-activity') && (
           <ErrorBoundary>
             <TeamActivityWidget />
+          </ErrorBoundary>
+        )}
+
+        {/* Courier Status */}
+        {hasWidget('courier-status') && (
+          <ErrorBoundary>
+            <CourierStatusWidget />
           </ErrorBoundary>
         )}
 
