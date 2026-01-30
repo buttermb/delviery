@@ -7459,3 +7459,104 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+# OrderHoldButton Feature Implementation
+
+## Task
+Add OrderHoldButton to pause order processing with reason
+
+## Completed Work
+
+### 1. Created `useOrderHold` Hook (`src/hooks/useOrderHold.ts`)
+- `useHoldOrder()` mutation: Places an order on hold with a required reason
+  - Stores hold metadata (hold_reason, held_at, held_by, previous_status) in the order's metadata JSONB field
+  - Updates order status to 'on_hold'
+  - Invalidates order-related queries on success
+- `useResumeOrder()` mutation: Resumes a held order
+  - Retrieves the previous status from metadata and restores it
+  - Stores resume metadata (resumed_at, resumed_by)
+  - Validates that order is actually on hold before resuming
+- `useOrderHold()` combined hook: Provides both hold and resume operations with loading states
+
+### 2. Created `OrderHoldButton` Component (`src/components/admin/orders/OrderHoldButton.tsx`)
+- Full-featured button component with dialog UI
+- Features:
+  - Toggle between Hold and Resume actions based on current order status
+  - Preset hold reasons for quick selection (e.g., "Pending customer verification", "Payment issue", "Out of stock")
+  - Custom reason text area when "Other" is selected
+  - Shows hold information when resuming (reason, duration, previous status)
+  - Loading states and disabled states during async operations
+  - Warning message about hold implications
+- Variants: `default`, `outline`, `ghost`, `icon`
+- Also includes `OrderHoldAction` compact variant for tables/menus
+
+### 3. Added 'on_hold' Status to Order Types
+- Updated `OrderStatus` type in `OrderRowContextMenu.tsx`
+- Added 'on_hold' to `STATUS_OPTIONS` array with appropriate icon (Ban/PauseCircle)
+- Added 'on_hold' status config in `OrderBulkStatusConfirmDialog.tsx`
+- Added 'on_hold' to status color utilities in `statusColors.ts`
+
+### 4. Integrated Hold/Resume Actions into Order Views
+
+#### OrderRowContextMenu (`src/components/admin/OrderRowContextMenu.tsx`)
+- Added 'hold' and 'resume' action types
+- Added Hold Order menu item (visible when not on_hold, cancelled, completed, or delivered)
+- Added Resume Order menu item (visible when on_hold)
+- Added keyboard shortcuts (H for Hold, R for Resume)
+- Updated `useOrderContextActions` hook with `onHold` and `onResume` callbacks
+
+#### LiveOrdersKanban (`src/components/admin/live-orders/LiveOrdersKanban.tsx`)
+- Added new "ON HOLD" column to the Kanban board
+- Added Hold Order dropdown menu option for non-hold orders
+- Added Resume Order dropdown menu option for on_hold orders
+- Uses amber/warning color scheme for hold column
+
+## Files Modified
+- `src/hooks/useOrderHold.ts` (NEW)
+- `src/components/admin/orders/OrderHoldButton.tsx` (NEW)
+- `src/components/admin/OrderRowContextMenu.tsx`
+- `src/components/admin/orders/OrderBulkStatusConfirmDialog.tsx`
+- `src/components/admin/live-orders/LiveOrdersKanban.tsx`
+- `src/lib/utils/statusColors.ts`
+
+## Usage Examples
+
+### Using OrderHoldButton in a component:
+```tsx
+import { OrderHoldButton } from '@/components/admin/orders/OrderHoldButton';
+
+<OrderHoldButton
+  orderId={order.id}
+  orderNumber={order.order_number}
+  currentStatus={order.status}
+  tenantId={tenantId}
+  metadata={order.metadata}
+  onComplete={() => refetch()}
+/>
+```
+
+### Using the hook directly:
+```tsx
+import { useOrderHold } from '@/hooks/useOrderHold';
+
+const { holdOrder, resumeOrder, isProcessing } = useOrderHold();
+
+// Hold an order
+holdOrder({
+  orderId: '...',
+  reason: 'Customer requested delay',
+  tenantId: '...',
+  previousStatus: 'confirmed',
+});
+
+// Resume an order
+resumeOrder({
+  orderId: '...',
+  tenantId: '...',
+});
+```
+
+## Testing Notes
+- TypeScript compilation passes with no errors
+- Hold metadata is stored in the existing `metadata` JSONB field (no database migration needed)
+- The previous status is stored when holding so orders can be restored to their prior state

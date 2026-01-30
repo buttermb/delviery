@@ -12,7 +12,8 @@ import {
     MapPin,
     AlertCircle,
     ChevronRight,
-    MoreHorizontal
+    MoreHorizontal,
+    PauseCircle
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -84,6 +85,14 @@ const COLUMNS = [
         color: 'bg-green-50 dark:bg-green-950/20',
         borderColor: 'border-green-200 dark:border-green-800',
         icon: MapPin
+    },
+    {
+        id: 'on_hold',
+        label: 'ON HOLD',
+        statuses: ['on_hold'],
+        color: 'bg-amber-50 dark:bg-amber-950/20',
+        borderColor: 'border-amber-200 dark:border-amber-800',
+        icon: PauseCircle
     }
 ];
 
@@ -162,6 +171,17 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start">
+                                {order.status !== 'on_hold' && (
+                                    <DropdownMenuItem onClick={() => onStatusChange(order.id, 'on_hold', order.source || 'app')}>
+                                        <PauseCircle className="h-4 w-4 mr-2 text-amber-600" />
+                                        Hold Order
+                                    </DropdownMenuItem>
+                                )}
+                                {order.status === 'on_hold' && (
+                                    <DropdownMenuItem onClick={() => onStatusChange(order.id, 'pending', order.source || 'app')}>
+                                        Resume Order
+                                    </DropdownMenuItem>
+                                )}
                                 <DropdownMenuItem onClick={() => onStatusChange(order.id, 'rejected', order.source || 'app')}>
                                     Reject Order
                                 </DropdownMenuItem>

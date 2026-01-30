@@ -28,6 +28,8 @@ import {
   Clock,
   Package,
   ChevronRight,
+  PauseCircle,
+  PlayCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -39,6 +41,8 @@ export type OrderContextAction =
   | 'send_update'
   | 'print_packing_slip'
   | 'cancel'
+  | 'hold'
+  | 'resume'
   | 'status_change';
 
 export type OrderStatus =
@@ -51,7 +55,8 @@ export type OrderStatus =
   | 'in_transit'
   | 'delivered'
   | 'completed'
-  | 'cancelled';
+  | 'cancelled'
+  | 'on_hold';
 
 interface OrderRowContextMenuProps {
   children: ReactNode;
@@ -75,6 +80,7 @@ const STATUS_OPTIONS: { value: OrderStatus; label: string; icon: typeof Clock }[
   { value: 'in_transit', label: 'In Transit', icon: Truck },
   { value: 'delivered', label: 'Delivered', icon: CheckCircle },
   { value: 'completed', label: 'Completed', icon: CheckCircle },
+  { value: 'on_hold', label: 'On Hold', icon: Ban },
 ];
 
 export function OrderRowContextMenu({
@@ -193,6 +199,31 @@ export function OrderRowContextMenu({
 
         <ContextMenuSeparator />
 
+        {/* Hold/Resume */}
+        {currentStatus !== 'on_hold' && currentStatus !== 'cancelled' && currentStatus !== 'completed' && currentStatus !== 'delivered' && (
+          <ContextMenuItem
+            onClick={() => onAction('hold')}
+            disabled={isDisabled('hold')}
+            className="text-amber-600 focus:text-amber-600"
+          >
+            <PauseCircle className="mr-2 h-4 w-4" />
+            Hold Order
+            <ContextMenuShortcut>H</ContextMenuShortcut>
+          </ContextMenuItem>
+        )}
+
+        {currentStatus === 'on_hold' && (
+          <ContextMenuItem
+            onClick={() => onAction('resume')}
+            disabled={isDisabled('resume')}
+            className="text-green-600 focus:text-green-600"
+          >
+            <PlayCircle className="mr-2 h-4 w-4" />
+            Resume Order
+            <ContextMenuShortcut>R</ContextMenuShortcut>
+          </ContextMenuItem>
+        )}
+
         {/* Cancel */}
         <ContextMenuItem
           onClick={() => onAction('cancel')}
@@ -218,6 +249,8 @@ export function useOrderContextActions(options: {
   onSendUpdate?: (orderId: string) => void;
   onPrintPackingSlip?: (orderId: string) => void;
   onCancel?: (orderId: string) => void;
+  onHold?: (orderId: string) => void;
+  onResume?: (orderId: string) => void;
   onStatusChange?: (orderId: string, status: string) => Promise<void> | void;
 }) {
   const handleAction = (
@@ -246,6 +279,12 @@ export function useOrderContextActions(options: {
         break;
       case 'cancel':
         options.onCancel?.(orderId);
+        break;
+      case 'hold':
+        options.onHold?.(orderId);
+        break;
+      case 'resume':
+        options.onResume?.(orderId);
         break;
       case 'status_change':
         if (data?.status) {
