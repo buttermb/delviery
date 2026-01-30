@@ -7528,72 +7528,64 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
 
-## Task: Add OrderItemsTable with quantity price discount columns
+---
 
-### Implementation Summary:
-Created a reusable `OrderItemsTable` component for displaying order line items with comprehensive features.
+## Task: Build OrderTotalsCard showing subtotal tax discount total
 
-### Component Features:
-1. **Core Columns:**
-   - Product name (with optional quantity unit display)
-   - Quantity (displayed in a badge)
-   - Unit Price (formatted currency)
-   - Discount (conditionally displayed, only when items have discounts)
-   - Total Price (formatted currency)
+### Implementation:
+Created a new reusable OrderTotalsCard component for displaying order pricing breakdowns.
 
-2. **Optional Features:**
-   - `showDiscount` - Toggle discount column visibility (default: true, auto-hides if no discounts)
-   - `showSku` - Toggle SKU column visibility (default: false)
-   - `showTotals` - Toggle footer totals (default: true)
-   - `isLoading` - Loading state with skeleton placeholders
-   - `emptyMessage` - Customizable empty state message
+### Component Location:
+- `src/components/admin/orders/OrderTotalsCard.tsx`
 
-3. **Footer Totals:**
-   - Subtotal (before discounts)
-   - Total Discount amount (highlighted in emerald/green)
-   - Grand Total
+### Features:
+1. **Displays key order pricing fields:**
+   - Subtotal
+   - Tax (with optional tax rate percentage display)
+   - Discount (only shown when > 0, with optional custom label)
+   - Total (highlighted as primary color)
 
-4. **Code Patterns Followed:**
-   - Uses shadcn/ui Table components (Table, TableHeader, TableBody, TableFooter, etc.)
-   - Uses `formatCurrency` utility from `@/lib/utils/formatCurrency`
-   - Named export only (no default export per codebase rules)
-   - TypeScript strict mode compliant
-   - Dark mode support via existing table styles
-   - Responsive design with horizontal scroll on overflow
+2. **Two display modes:**
+   - **Full mode** (default): Card with header, icons, and full styling
+   - **Compact mode**: Minimal layout for embedding in other components
 
-### Interface Definition:
-```typescript
-interface OrderItemData {
-  id: string;
-  product_name: string;
-  quantity: number;
-  unit_price: number;
-  discount_amount?: number;
-  total_price: number;
-  sku?: string | null;
-  quantity_unit?: string;
-  product_id?: string | null;
-  inventory_id?: string | null;
-}
-```
+3. **Props interface:**
+   - `subtotal: number` - Pre-tax amount
+   - `tax: number` - Tax amount
+   - `discount?: number` - Discount amount (optional, defaults to 0)
+   - `total: number` - Final total
+   - `taxRate?: number` - Optional tax rate for display (e.g., 0.085 for 8.5%)
+   - `discountLabel?: string` - Optional custom label for discount line
+   - `className?: string` - Additional CSS classes
+   - `compact?: boolean` - Use compact layout (default: false)
 
-### Files Created:
-- `src/components/admin/orders/OrderItemsTable.tsx` (NEW)
+4. **Styling:**
+   - Uses shadcn/ui Card, Separator components
+   - Lucide icons (Receipt, Percent, Tag)
+   - Green color for discount (indicates savings)
+   - Primary color for total amount
+   - Dark mode support
 
-### Usage Example:
+### Usage Examples:
 ```tsx
-import { OrderItemsTable } from '@/components/admin/orders/OrderItemsTable';
+// Full card mode
+<OrderTotalsCard
+  subtotal={120.00}
+  tax={10.20}
+  discount={15.00}
+  total={115.20}
+  taxRate={0.085}
+  discountLabel="Promo Code: SAVE15"
+/>
 
-<OrderItemsTable
-  items={orderItems}
-  isLoading={isLoading}
-  showDiscount={true}
-  showSku={false}
-  showTotals={true}
+// Compact mode for embedding
+<OrderTotalsCard
+  subtotal={120.00}
+  tax={10.20}
+  total={130.20}
+  compact
 />
 ```
 
-### Notes:
-- Compatible with multiple order item types in the codebase (order_items, unified_order_items, marketplace_order_items, wholesale_order_items)
-- ESLint passes with no errors
-- Pre-existing build errors in PasswordResetPage.tsx (duplicate default export) are unrelated to this change
+### Files Changed:
+- `src/components/admin/orders/OrderTotalsCard.tsx` (NEW)
