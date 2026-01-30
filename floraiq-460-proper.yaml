@@ -175,40 +175,40 @@ tasks:
     completed: true
   - title: Add OrderSplitButton to split order into multiple shipments
     parallel_group: 6
-    completed: true
+    completed: false
   - title: Build OrderMergeButton to combine multiple orders for same customer
     parallel_group: 6
-    completed: true
+    completed: false
   - title: Add OrderHoldButton to pause order processing with reason
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Build OrderRushButton to expedite order to front of queue
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Add OrderCloneToB2B converting retail order to wholesale
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Build OrderDiscountModal with percentage fixed and coupon options
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Add OrderAuditLog showing all changes made to order with user
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Build ProductsListPage with grid and table view toggle
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Add ProductCard component with image name price stock badge
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Build ProductDetailsPage with tabs for info variants inventory
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Add CreateProductForm with all fields including variants
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Build ProductImageUploader with drag-drop and multiple images
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Add ProductVariantsManager for size weight strain options
     parallel_group: 8
     completed: false

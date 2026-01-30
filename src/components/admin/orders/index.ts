@@ -1,8 +1,3 @@
-/**
- * Admin Orders Components
- * Barrel export for order-related components
- */
-
-export { MenuSourceBadge } from './MenuSourceBadge';
+export { OrderMergeButton, OrderMergeDialog } from './OrderMergeButton';
 export { OrderBulkStatusConfirmDialog } from './OrderBulkStatusConfirmDialog';
-export { OrderCustomerCard, type OrderCustomerData } from './OrderCustomerCard';
+export { MenuSourceBadge } from './MenuSourceBadge';

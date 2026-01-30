@@ -7531,73 +7531,60 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+
 ---
 
-### Task: Build ProductBarcodeGenerator creating scannable barcodes
+## Task: Build OrderMergeButton to combine multiple orders for same customer
 
-**Completed:**
+### Implementation Summary:
+Created an OrderMergeButton and OrderMergeDialog component that allows admin users to combine multiple orders from the same customer into a single order.
 
-1. **Created ProductBarcodeGenerator component** (`src/components/admin/products/ProductBarcodeGenerator.tsx`)
-   - Full-featured barcode generator for products
-   - Generates scannable barcodes using JsBarcode library
-   - Supports both dialog and inline rendering modes
-   - Tenant-aware with proper context integration
+### Features Implemented:
+1. **OrderMergeDialog Component** (`src/components/admin/orders/OrderMergeButton.tsx`)
+   - Controlled dialog component that can be used externally
+   - Groups selected orders by customer (user_id)
+   - Finds orders from the same customer that can be merged
+   - Allows selecting which order to keep as the target
+   - Shows order summary with combined totals
+   - Transfers order_items from source orders to target order
+   - Updates target order total_amount and subtotal
+   - Marks source orders as cancelled with merge reference
+   - Provides warning about the merge operation
+   - Loading state with disabled buttons during merge
 
-2. **Multiple Barcode Format Support:**
-   - CODE128 (recommended - supports any ASCII characters)
-   - CODE39 (alphanumeric with special characters)
-   - EAN13 (13 numeric digits)
-   - UPC (12 numeric digits)
-   - Each format has validation to ensure proper input
+2. **OrderMergeButton Component** (`src/components/admin/orders/OrderMergeButton.tsx`)
+   - Standalone button component with its own dialog
+   - Only renders when 2+ orders are selected
+   - Shows tooltip indicating merge capability
 
-3. **Product Integration:**
-   - Product selection dropdown for tenants
-   - Uses existing barcode/SKU from products when available
-   - Custom barcode value option for flexibility
-   - Support for generating multiple barcodes at once (up to 100)
+3. **Integration with Orders Page** (`src/pages/admin/Orders.tsx`)
+   - Added "Merge" action to BulkActionsBar
+   - Added OrderMergeDialog component
+   - Created computed `selectedOrdersData` to pass full order objects
+   - Clears selection after successful merge
 
-4. **Download/Print Functionality:**
-   - Download individual barcodes as PNG images
-   - Download all generated barcodes as a single image sheet
-   - Print functionality with proper print-optimized layout
-   - Copy barcode value to clipboard with visual feedback
-
-5. **Optional QR Code Generation:**
-   - Toggle to include QR codes with product data
-   - QR codes contain product SKU, barcode value, and name
-
-6. **Additional Fixes:**
-   - Fixed duplicate default export in `PasswordResetPage.tsx`
-   - Added missing `safeJsonParse` function to `sanitize.ts`
+### Merge Logic:
+1. Select 2+ orders from the same customer
+2. Open merge dialog via BulkActionsBar "Merge" action
+3. Select which order to keep as target
+4. Merge transfers all order_items to target order
+5. Target order totals are recalculated (sum of all merged orders)
+6. Source orders marked as cancelled with "[MERGED INTO #xxx]" note
+7. Target order gets delivery_notes with "[MERGED] Combined from orders: xxx, yyy"
 
 ### Files Changed:
-- `src/components/admin/products/ProductBarcodeGenerator.tsx` (NEW)
-- `src/pages/auth/PasswordResetPage.tsx` (Fixed duplicate export)
-- `src/lib/utils/sanitize.ts` (Added safeJsonParse function)
+- `src/components/admin/orders/OrderMergeButton.tsx` (NEW)
+- `src/components/admin/orders/index.ts` (NEW - exports for admin order components)
+- `src/pages/admin/Orders.tsx` (Modified - added merge action and dialog)
 
-### Component Usage:
-```tsx
-import { ProductBarcodeGenerator } from '@/components/admin/products/ProductBarcodeGenerator';
-
-// As a dialog (default)
-<ProductBarcodeGenerator
-  open={isOpen}
-  onOpenChange={setIsOpen}
-  product={selectedProduct}  // optional
-/>
-
-// Inline mode
-<ProductBarcodeGenerator mode="inline" />
-```
-
-### Features:
-- Validates barcode values for each format before generation
-- Error handling with user-friendly messages
-- Loading states during generation
-- Grid/list view for generated barcodes
-- Responsive layout supporting mobile and desktop
+### Technical Details:
+- Uses tenant isolation via tenant_id filter on all database operations
+- Invalidates orders query cache after successful merge
+- Proper error handling with toast notifications
+- Logging via logger for merge operations
+- Follows FloraIQ patterns: useTenantAdminAuth, queryKeys, formatCurrency, formatSmartDate
 
 ### Notes:
-- Build passes successfully with TypeScript strict mode
-- Component follows FloraIQ admin patterns (useTenantAdminAuth, queryKeys)
-- Uses shadcn/ui components for consistent styling
+- Fixed duplicate import of useAdminOrdersRealtime in Orders.tsx (pre-existing issue)
+- Pre-existing references to handlePrintOrderFunc etc. in Orders.tsx were left unchanged
+

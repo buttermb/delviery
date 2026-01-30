@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Truck, CheckCircle, WifiOff } from 'lucide-react';
-import { OrderSourceBadge } from '@/components/admin/orders/OrderSourceBadge';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, Merge } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -25,8 +24,7 @@ import { SearchInput } from '@/components/shared/SearchInput';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { LastUpdated } from "@/components/shared/LastUpdated";
 import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
-import { OrderBulkStatusConfirmDialog } from "@/components/admin/orders/OrderBulkStatusConfirmDialog";
-import { OrderSMSButton } from "@/components/admin/orders/OrderSMSButton";
+import { OrderBulkStatusConfirmDialog, OrderMergeDialog } from "@/components/admin/orders";
 import { BulkOperationProgress } from "@/components/ui/bulk-operation-progress";
 import { useOrderBulkStatusUpdate } from "@/hooks/useOrderBulkStatusUpdate";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -122,6 +120,7 @@ export default function Orders() {
     targetStatus: string;
   }>({ open: false, targetStatus: '' });
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
 
   // Bulk status update hook
   const bulkStatusUpdate = useOrderBulkStatusUpdate({
@@ -333,6 +332,11 @@ export default function Orders() {
 
     return result;
   }, [orders, searchQuery, dateRange]);
+
+  // Get selected orders with full data for merge functionality
+  const selectedOrdersData = useMemo(() => {
+    return filteredOrders.filter(order => selectedOrders.includes(order.id));
+  }, [filteredOrders, selectedOrders]);
 
   // Handlers
   const handleRefresh = async () => {
@@ -977,6 +981,12 @@ export default function Orders() {
             onClick: async () => { handleBulkStatusChange('in_transit'); },
           },
           {
+            id: 'merge',
+            label: 'Merge',
+            icon: <Merge className="h-4 w-4" />,
+            onClick: async () => { setMergeDialogOpen(true); },
+          },
+          {
             id: 'mark-cancelled',
             label: 'Cancel',
             icon: <XCircle className="h-4 w-4" />,
@@ -991,6 +1001,14 @@ export default function Orders() {
             onClick: async () => { handleBulkDelete(); },
           },
         ]}
+      />
+
+      {/* Order Merge Dialog */}
+      <OrderMergeDialog
+        selectedOrders={selectedOrdersData}
+        open={mergeDialogOpen}
+        onOpenChange={setMergeDialogOpen}
+        onSuccess={() => setSelectedOrders([])}
       />
 
       {/* Bulk Status Update Confirmation */}
