@@ -7459,3 +7459,54 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+## Task: Build B2BOrdersTab filtering orders by business customers only
+
+### Completed
+
+#### 1. Created B2BOrdersTab Component (`src/components/admin/orders/B2BOrdersTab.tsx`)
+- Fetches wholesale orders with business customer data from `wholesale_orders` table
+- Includes related `wholesale_clients` data (business_name, contact_name, phone, email, client_type, address)
+- Includes order items from `wholesale_order_items`
+
+#### 2. Features Implemented
+- **Stats Dashboard**: Shows total orders, pending, in transit, delivered, unpaid, and total revenue
+- **Filtering**: 
+  - Search by order #, business name, contact name, email, or phone
+  - Filter by order status (pending, confirmed, in_transit, delivered, cancelled)
+  - Filter by payment status (unpaid, partial, paid)
+  - Date range filter with presets
+- **Responsive Table**: 
+  - Desktop view with full details and checkbox selection
+  - Mobile-optimized card view
+  - Business customer info prominently displayed (Building2 icon, business name, contact, client type badge)
+- **Actions**: View order details, row click navigation, bulk selection
+- **Empty States**: Different messages for filtered vs no orders
+
+#### 3. Data Model
+- Orders are from `wholesale_orders` which represents B2B orders to business customers
+- Each order has a `client_id` referencing `wholesale_clients` (the business customer)
+- Wholesale clients have: business_name, contact_name, client_type, phone, email, address
+
+#### 4. Patterns Used
+- TanStack Query with `queryKeys.wholesaleOrders.list()` factory
+- `useTenantAdminAuth` for tenant context
+- `useTenantNavigate` for tenant-aware navigation
+- Standard FloraIQ component patterns (ResponsiveTable, SearchInput, Cards, Badges)
+- Proper error handling with logger
+- Date filtering with date-fns
+
+### Files Changed
+- `src/components/admin/orders/B2BOrdersTab.tsx` (NEW)
+
+### Usage
+```tsx
+import { B2BOrdersTab } from '@/components/admin/orders/B2BOrdersTab';
+
+// In a page or tab
+<B2BOrdersTab onOrderSelect={(order) => handleOrderClick(order)} />
+```
+
