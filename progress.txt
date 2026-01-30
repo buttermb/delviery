@@ -7459,3 +7459,62 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Agent 20 - Build StockHistoryLog Component
+
+### Task: Build StockHistoryLog showing all stock changes with reason
+
+**Completed:**
+
+1. **Created StockHistoryLog Component** (`src/components/admin/inventory/StockHistoryLog.tsx`)
+   - Comprehensive audit log showing all inventory changes
+   - Displays all 8 change types: stock_in, stock_out, transfer, adjustment, sale, return, receiving, disposal
+   - Each change type has distinct color coding and icons for visual clarity
+   - Shows quantity changes with previous → new values
+   - Displays reason (with human-readable labels) and notes for each change
+   - Shows reference type/ID for traceability (orders, transfers, POs, etc.)
+   - Shows performer ID when available
+
+2. **Filtering and Search Features:**
+   - Search by product name, SKU, reason, or notes
+   - Filter by change type (dropdown)
+   - Date range filtering with quick presets (Today, Last 7 Days, Last 30 Days, All Time)
+   - Custom date range using calendar pickers
+   - Clear filters button when filters are active
+
+3. **Pagination Support:**
+   - Server-side pagination with configurable page size
+   - Displays total record count
+   - Previous/Next navigation
+   - Compact mode uses 10 items/page, full mode uses 25 items/page
+
+4. **Component Props:**
+   - `productId` - Optional filter to show history for a specific product
+   - `className` - Custom styling
+   - `showHeader` - Toggle header visibility (default: true)
+   - `compact` - Compact mode with reduced pagination and hidden notes (default: false)
+
+5. **Created Admin Page** (`src/pages/admin/StockHistoryPage.tsx`)
+   - Simple wrapper page to host the StockHistoryLog component
+   - Proper loading and error states
+   - Tenant context integration
+
+6. **Added Route in App.tsx:**
+   - Route: `/:tenantSlug/admin/stock-history`
+   - Lazy-loaded for performance
+   - Protected by `stock-alerts` feature flag
+   - Added lazy import for StockHistoryPage
+
+### Technical Details:
+- Uses TanStack Query for data fetching with proper query keys
+- Queries `inventory_history` table with product join
+- Uses existing `queryKeys.inventory.history()` pattern
+- Proper tenant isolation with `tenant_id` filter
+- Follows FloraIQ patterns: tenant-aware, RLS-compliant, TanStack Query integration
+- Uses shadcn/ui components (Card, Badge, Button, Input, Select, Popover, Calendar, Skeleton)
+- Responsive design with mobile-friendly layout
+
+### Files Changed:
+- `src/components/admin/inventory/StockHistoryLog.tsx` (NEW)
+- `src/pages/admin/StockHistoryPage.tsx` (NEW)
+- `src/App.tsx` (added import and route)
