@@ -7531,60 +7531,103 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+# OrderHoldButton Feature Implementation
 
----
+## Task
+Add OrderHoldButton to pause order processing with reason
 
-## Task: Build OrderMergeButton to combine multiple orders for same customer
+## Completed Work
 
-### Implementation Summary:
-Created an OrderMergeButton and OrderMergeDialog component that allows admin users to combine multiple orders from the same customer into a single order.
+### 1. Created `useOrderHold` Hook (`src/hooks/useOrderHold.ts`)
+- `useHoldOrder()` mutation: Places an order on hold with a required reason
+  - Stores hold metadata (hold_reason, held_at, held_by, previous_status) in the order's metadata JSONB field
+  - Updates order status to 'on_hold'
+  - Invalidates order-related queries on success
+- `useResumeOrder()` mutation: Resumes a held order
+  - Retrieves the previous status from metadata and restores it
+  - Stores resume metadata (resumed_at, resumed_by)
+  - Validates that order is actually on hold before resuming
+- `useOrderHold()` combined hook: Provides both hold and resume operations with loading states
 
-### Features Implemented:
-1. **OrderMergeDialog Component** (`src/components/admin/orders/OrderMergeButton.tsx`)
-   - Controlled dialog component that can be used externally
-   - Groups selected orders by customer (user_id)
-   - Finds orders from the same customer that can be merged
-   - Allows selecting which order to keep as the target
-   - Shows order summary with combined totals
-   - Transfers order_items from source orders to target order
-   - Updates target order total_amount and subtotal
-   - Marks source orders as cancelled with merge reference
-   - Provides warning about the merge operation
-   - Loading state with disabled buttons during merge
+### 2. Created `OrderHoldButton` Component (`src/components/admin/orders/OrderHoldButton.tsx`)
+- Full-featured button component with dialog UI
+- Features:
+  - Toggle between Hold and Resume actions based on current order status
+  - Preset hold reasons for quick selection (e.g., "Pending customer verification", "Payment issue", "Out of stock")
+  - Custom reason text area when "Other" is selected
+  - Shows hold information when resuming (reason, duration, previous status)
+  - Loading states and disabled states during async operations
+  - Warning message about hold implications
+- Variants: `default`, `outline`, `ghost`, `icon`
+- Also includes `OrderHoldAction` compact variant for tables/menus
 
-2. **OrderMergeButton Component** (`src/components/admin/orders/OrderMergeButton.tsx`)
-   - Standalone button component with its own dialog
-   - Only renders when 2+ orders are selected
-   - Shows tooltip indicating merge capability
+### 3. Added 'on_hold' Status to Order Types
+- Updated `OrderStatus` type in `OrderRowContextMenu.tsx`
+- Added 'on_hold' to `STATUS_OPTIONS` array with appropriate icon (Ban/PauseCircle)
+- Added 'on_hold' status config in `OrderBulkStatusConfirmDialog.tsx`
+- Added 'on_hold' to status color utilities in `statusColors.ts`
 
-3. **Integration with Orders Page** (`src/pages/admin/Orders.tsx`)
-   - Added "Merge" action to BulkActionsBar
-   - Added OrderMergeDialog component
-   - Created computed `selectedOrdersData` to pass full order objects
-   - Clears selection after successful merge
+### 4. Integrated Hold/Resume Actions into Order Views
 
-### Merge Logic:
-1. Select 2+ orders from the same customer
-2. Open merge dialog via BulkActionsBar "Merge" action
-3. Select which order to keep as target
-4. Merge transfers all order_items to target order
-5. Target order totals are recalculated (sum of all merged orders)
-6. Source orders marked as cancelled with "[MERGED INTO #xxx]" note
-7. Target order gets delivery_notes with "[MERGED] Combined from orders: xxx, yyy"
+#### OrderRowContextMenu (`src/components/admin/OrderRowContextMenu.tsx`)
+- Added 'hold' and 'resume' action types
+- Added Hold Order menu item (visible when not on_hold, cancelled, completed, or delivered)
+- Added Resume Order menu item (visible when on_hold)
+- Added keyboard shortcuts (H for Hold, R for Resume)
+- Updated `useOrderContextActions` hook with `onHold` and `onResume` callbacks
 
-### Files Changed:
-- `src/components/admin/orders/OrderMergeButton.tsx` (NEW)
-- `src/components/admin/orders/index.ts` (NEW - exports for admin order components)
-- `src/pages/admin/Orders.tsx` (Modified - added merge action and dialog)
+#### LiveOrdersKanban (`src/components/admin/live-orders/LiveOrdersKanban.tsx`)
+- Added new "ON HOLD" column to the Kanban board
+- Added Hold Order dropdown menu option for non-hold orders
+- Added Resume Order dropdown menu option for on_hold orders
+- Uses amber/warning color scheme for hold column
 
-### Technical Details:
-- Uses tenant isolation via tenant_id filter on all database operations
-- Invalidates orders query cache after successful merge
-- Proper error handling with toast notifications
-- Logging via logger for merge operations
-- Follows FloraIQ patterns: useTenantAdminAuth, queryKeys, formatCurrency, formatSmartDate
+## Files Modified
+- `src/hooks/useOrderHold.ts` (NEW)
+- `src/components/admin/orders/OrderHoldButton.tsx` (NEW)
+- `src/components/admin/OrderRowContextMenu.tsx`
+- `src/components/admin/orders/OrderBulkStatusConfirmDialog.tsx`
+- `src/components/admin/live-orders/LiveOrdersKanban.tsx`
+- `src/lib/utils/statusColors.ts`
 
-### Notes:
-- Fixed duplicate import of useAdminOrdersRealtime in Orders.tsx (pre-existing issue)
-- Pre-existing references to handlePrintOrderFunc etc. in Orders.tsx were left unchanged
+## Usage Examples
 
+### Using OrderHoldButton in a component:
+```tsx
+import { OrderHoldButton } from '@/components/admin/orders/OrderHoldButton';
+
+<OrderHoldButton
+  orderId={order.id}
+  orderNumber={order.order_number}
+  currentStatus={order.status}
+  tenantId={tenantId}
+  metadata={order.metadata}
+  onComplete={() => refetch()}
+/>
+```
+
+### Using the hook directly:
+```tsx
+import { useOrderHold } from '@/hooks/useOrderHold';
+
+const { holdOrder, resumeOrder, isProcessing } = useOrderHold();
+
+// Hold an order
+holdOrder({
+  orderId: '...',
+  reason: 'Customer requested delay',
+  tenantId: '...',
+  previousStatus: 'confirmed',
+});
+
+// Resume an order
+resumeOrder({
+  orderId: '...',
+  tenantId: '...',
+});
+```
+
+## Testing Notes
+- TypeScript compilation passes with no errors
+- Hold metadata is stored in the existing `metadata` JSONB field (no database migration needed)
+- The previous status is stored when holding so orders can be restored to their prior state

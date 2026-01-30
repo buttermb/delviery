@@ -50,6 +50,12 @@ const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; desc
     description: 'Orders will be marked as delivered to the customer.',
     variant: 'default',
   },
+  on_hold: {
+    label: 'On Hold',
+    icon: <AlertTriangle className="h-5 w-5 text-amber-500" />,
+    description: 'Orders will be placed on hold and processing will be paused.',
+    variant: 'warning',
+  },
   cancelled: {
     label: 'Cancelled',
     icon: <XCircle className="h-5 w-5 text-destructive" />,

@@ -175,10 +175,10 @@ tasks:
     completed: true
   - title: Add OrderSplitButton to split order into multiple shipments
     parallel_group: 6
-    completed: false
+    completed: true
   - title: Build OrderMergeButton to combine multiple orders for same customer
     parallel_group: 6
-    completed: false
+    completed: true
   - title: Add OrderHoldButton to pause order processing with reason
     parallel_group: 7
     completed: false
