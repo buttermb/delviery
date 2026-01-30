@@ -7499,61 +7499,68 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+
 ---
 
-## Task: Build OrderDeliveryWindow showing scheduled time slot
+## Task: Add OrderAddressCard with map preview and directions link
 
-### Status: COMPLETED
+### Completed
 
-### Summary:
-Created a new `OrderDeliveryWindow` component that displays scheduled delivery time slot information for orders. The component provides visual indicators for delivery timing, status, and urgency.
+#### 1. Created OrderAddressCard Component (`src/components/admin/OrderAddressCard.tsx`)
 
-### Implementation Details:
+A comprehensive address display card with the following features:
 
-1. **Created `src/components/admin/orders/OrderDeliveryWindow.tsx`:**
-   - Main `OrderDeliveryWindow` component with full card display
-   - `OrderDeliveryWindowInline` variant for tables/lists
-   - Supports both compact (badge) and full (card) display modes
-   - Smart date formatting (Today, Tomorrow, or formatted date)
-   - Time slot display with 12-hour format conversion
-   - Visual urgency indicators:
-     - Overdue deliveries shown in red with warning icon
-     - Upcoming deliveries (within 2 hours) highlighted
-     - Delivered orders shown with success state
-     - In-transit orders shown with truck icon
-   - Tooltip with full details on compact mode
-   - TypeScript strict mode compatible with proper interfaces
+**Address Display:**
+- Street address with optional apartment/unit
+- City, state, ZIP code on second line
+- Borough/neighborhood badge
+- Customer name display
+- Delivery notes section with accent styling
 
-2. **Created `src/components/admin/orders/index.ts`:**
-   - Barrel export file for the orders components directory
-   - Exports `OrderDeliveryWindow`, `OrderDeliveryWindowInline`
-   - Exports existing `MenuSourceBadge` and `OrderBulkStatusConfirmDialog`
+**Map Preview:**
+- Static Mapbox map image showing delivery location
+- Red marker pin on the address location
+- Click to open in Google Maps
+- "Open Map" button overlay
+- Graceful fallback when coordinates unavailable
+- Error handling for map loading failures
 
-### Component Props:
-```typescript
-interface OrderDeliveryWindowProps {
-  scheduledDeliveryAt?: string | null;    // ISO timestamp
-  timeSlotLabel?: string | null;           // e.g., "Morning (9am-12pm)"
-  timeSlot?: TimeSlot | null;              // { label, start, end }
-  deliveryStatus?: 'pending' | 'in_transit' | 'delivered' | 'cancelled';
-  compact?: boolean;                        // Compact badge vs full card
-  className?: string;                       // Additional CSS classes
-}
-```
+**Directions Link:**
+- "Get Directions" primary action button
+- Opens Google Maps with driving directions on non-iOS devices
+- Opens Apple Maps with directions on iOS devices
+- Uses device detection for platform-appropriate maps app
 
-### Features:
-- Uses date-fns for smart date formatting
-- Uses shadcn/ui components (Badge, Card, Tooltip)
-- Uses lucide-react icons
-- Follows FloraIQ component patterns
-- Integrates with existing TimeSlot schema from storefrontSettingsSchema
+**Additional Features:**
+- Copy address to clipboard with visual feedback
+- External link button to open location in maps
+- Loading skeleton state
+- Support for different address types (delivery, billing, pickup)
+- Proper TypeScript types for all props
+- Uses existing FloraIQ patterns (shadcn/ui Card, Button, Badge, Skeleton)
+
+### Props Interface:
+- `address` (required): Street address line
+- `apartment`: Optional apartment/unit number
+- `city`: City name
+- `state`: State abbreviation
+- `zipCode`: ZIP code
+- `borough`: Borough or neighborhood
+- `latitude`: Latitude for map preview
+- `longitude`: Longitude for map preview
+- `addressType`: 'delivery' | 'billing' | 'pickup'
+- `customerName`: Customer name to display
+- `deliveryNotes`: Special delivery instructions
+- `showMapPreview`: Toggle map preview visibility
+- `mapHeight`: Custom map preview height
+- `className`: Additional CSS classes
+- `isLoading`: Loading state
 
 ### Files Changed:
-- `src/components/admin/orders/OrderDeliveryWindow.tsx` (NEW)
-- `src/components/admin/orders/index.ts` (NEW)
+- `src/components/admin/OrderAddressCard.tsx` (NEW)
 
 ### Notes:
-- TypeScript compilation passes with no errors
-- Component is ready to be used in order detail views, order lists, and order cards
-- Supports the `scheduled_delivery_at` field from unified_orders table
-- Supports time slot metadata from store settings
+- Follows FloraIQ code style (named exports, @/ imports, no console.log)
+- Uses existing patterns from EnhancedOrderCard, RouteView, and OrderHoverCard
+- Map preview uses Mapbox Static Images API (same as existing OrderMap setup)
+- Directions link follows pattern from RouteView.tsx
