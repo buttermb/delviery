@@ -6,5 +6,6 @@
 export { RevenuePredictionWidget } from './RevenuePredictionWidget';
 export { LeafletMapWidget } from './LeafletMapWidget';
 export { TremorMetricsWidget, RevenueMetricsExample } from './TremorMetricsWidget';
-export { DeliveryStatusWidget } from './DeliveryStatusWidget';
+export { DashboardSearchBar } from './DashboardSearchBar';
+export type { GlobalSearchResult, SearchResultType } from './DashboardSearchBar';
 
