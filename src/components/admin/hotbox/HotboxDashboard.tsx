@@ -74,6 +74,7 @@ import { ExecutiveSummaryWidget } from './widgets/ExecutiveSummaryWidget';
 import { StrategicDecisionsWidget } from './widgets/StrategicDecisionsWidget';
 import { WeeklyTrendsWidget } from './widgets/WeeklyTrendsWidget';
 import { LiveOrdersWidget } from './widgets/LiveOrdersWidget';
+import { ReadyForPickupWidget } from './widgets/ReadyForPickupWidget';
 
 // Type definitions
 interface PulseMetric {
@@ -518,6 +519,13 @@ export function HotboxDashboard() {
         {hasWidget('live-orders') && (
           <ErrorBoundary>
             <LiveOrdersWidget />
+          </ErrorBoundary>
+        )}
+
+        {/* Ready For Pickup Widget - Orders waiting for customer pickup */}
+        {hasWidget('ready-for-pickup') && (
+          <ErrorBoundary>
+            <ReadyForPickupWidget />
           </ErrorBoundary>
         )}
 

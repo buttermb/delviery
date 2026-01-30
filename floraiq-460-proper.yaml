@@ -61,184 +61,184 @@ tasks:
     completed: true
   - title: Build HotboxWidget showing orders ready for pickup
     parallel_group: 3
-    completed: true
+    completed: false
   - title: Add LiveOrdersCounter with pulse animation on new orders
     parallel_group: 3
-    completed: true
+    completed: false
   - title: Build CourierStatusWidget showing available busy offline counts
     parallel_group: 3
-    completed: true
+    completed: false
   - title: Add DashboardNotificationBell with dropdown of recent alerts
     parallel_group: 3
-    completed: true
+    completed: false
   - title: Build DashboardSearchBar with global search across all modules
     parallel_group: 3
-    completed: true
+    completed: false
   - title: Build OrdersListPage with DataTable showing all orders with pagination
     parallel_group: 3
-    completed: true
+    completed: false
   - title: Add OrderFilters component with status date customer product filters
     parallel_group: 3
-    completed: true
+    completed: false
   - title: Build OrderDetailsPage showing full order info with timeline
     parallel_group: 3
-    completed: true
+    completed: false
   - title: Add OrderStatusStepper showing pending confirmed packed shipped delivered
     parallel_group: 3
-    completed: true
+    completed: false
   - title: Build CreateOrderForm with customer selection and product picker
     parallel_group: 3
-    completed: true
+    completed: false
   - title: Add OrderItemsTable with quantity price discount columns
     parallel_group: 4
-    completed: true
+    completed: false
   - title: Build OrderTotalsCard showing subtotal tax discount total
     parallel_group: 4
-    completed: true
+    completed: false
   - title: Add OrderNotesSection with internal notes and customer notes tabs
     parallel_group: 4
-    completed: true
+    completed: false
   - title: Build OrderActionsDropdown with edit cancel refund duplicate options
     parallel_group: 4
-    completed: true
+    completed: false
   - title: Add OrderPaymentStatus badge showing paid pending partial refunded
     parallel_group: 4
-    completed: true
+    completed: false
   - title: Build BulkOrderActions for selecting multiple orders to update status
     parallel_group: 4
-    completed: true
+    completed: false
   - title: Add OrderExport button generating CSV of filtered orders
     parallel_group: 4
-    completed: true
+    completed: false
   - title: Build OrderPrintView with thermal receipt and packing slip layouts
     parallel_group: 4
-    completed: true
+    completed: false
   - title: Add OrderSearchBar with autocomplete for order number customer phone
     parallel_group: 4
-    completed: true
+    completed: false
   - title: Build B2BOrdersTab filtering orders by business customers only
     parallel_group: 4
-    completed: true
+    completed: false
   - title: Add StoreOrdersTab showing orders from storefront
     parallel_group: 5
-    completed: true
+    completed: false
   - title: Build OrderAssignCourier modal with available courier list
     parallel_group: 5
-    completed: true
+    completed: false
   - title: Add OrderTrackingTimeline showing all status changes with timestamps
     parallel_group: 5
-    completed: true
+    completed: false
   - title: Build OrderRefundModal with partial and full refund options
     parallel_group: 5
-    completed: true
+    completed: false
   - title: Add OrderDuplicateButton creating new order from existing
     parallel_group: 5
-    completed: true
+    completed: false
   - title: Build OrderEditModal for modifying items before confirmation
     parallel_group: 5
-    completed: true
+    completed: false
   - title: Add OrderCancelModal with reason selection and restock option
     parallel_group: 5
-    completed: true
+    completed: false
   - title: Build OrderInvoiceGenerator creating PDF invoice from order
     parallel_group: 5
-    completed: true
+    completed: false
   - title: Add OrderEmailButton to send confirmation receipt tracking emails
     parallel_group: 5
-    completed: true
+    completed: false
   - title: Build OrderSMSButton to send status updates via Twilio
     parallel_group: 5
-    completed: true
+    completed: false
   - title: Add OrderTagsInput for custom categorization of orders
     parallel_group: 6
-    completed: true
+    completed: false
   - title: Build OrderSourceBadge showing POS storefront phone manual source
     parallel_group: 6
-    completed: true
+    completed: false
   - title: Add OrderPriorityFlag with high normal low indicators
     parallel_group: 6
-    completed: true
+    completed: false
   - title: Build OrderDeliveryWindow showing scheduled time slot
     parallel_group: 6
-    completed: true
+    completed: false
   - title: Add OrderAddressCard with map preview and directions link
     parallel_group: 6
-    completed: true
+    completed: false
   - title: Build OrderCustomerCard showing customer info and order history count
     parallel_group: 6
-    completed: true
+    completed: false
   - title: Add OrderPaymentMethodBadge showing cash card invoice crypto
     parallel_group: 6
-    completed: true
+    completed: false
   - title: Build RecurringOrderSetup for subscription-style repeat orders
     parallel_group: 6
-    completed: true
+    completed: false
   - title: Add OrderSplitButton to split order into multiple shipments
     parallel_group: 6
-    completed: true
+    completed: false
   - title: Build OrderMergeButton to combine multiple orders for same customer
     parallel_group: 6
-    completed: true
+    completed: false
   - title: Add OrderHoldButton to pause order processing with reason
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Build OrderRushButton to expedite order to front of queue
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Add OrderCloneToB2B converting retail order to wholesale
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Build OrderDiscountModal with percentage fixed and coupon options
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Add OrderAuditLog showing all changes made to order with user
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Build ProductsListPage with grid and table view toggle
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Add ProductCard component with image name price stock badge
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Build ProductDetailsPage with tabs for info variants inventory
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Add CreateProductForm with all fields including variants
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Build ProductImageUploader with drag-drop and multiple images
     parallel_group: 7
-    completed: true
+    completed: false
   - title: Add ProductVariantsManager for size weight strain options
     parallel_group: 8
-    completed: true
+    completed: false
   - title: Build ProductPricingSection with retail wholesale and bulk prices
     parallel_group: 8
-    completed: true
+    completed: false
   - title: Add ProductCategorySelect with hierarchical categories
     parallel_group: 8
-    completed: true
+    completed: false
   - title: Build ProductTagsInput for search and filter tags
     parallel_group: 8
-    completed: true
+    completed: false
   - title: Add ProductStockLevelInput with low stock threshold setting
     parallel_group: 8
-    completed: true
+    completed: false
   - title: Build ProductBarcodeGenerator creating scannable barcodes
     parallel_group: 8
-    completed: true
+    completed: false
   - title: Add ProductQRGenerator creating QR codes linking to product
     parallel_group: 8
-    completed: true
+    completed: false
   - title: Build ProductBulkImport from CSV with validation preview
     parallel_group: 8
-    completed: true
+    completed: false
   - title: Add ProductBulkExport to CSV with selected fields
     parallel_group: 8
-    completed: true
+    completed: false
   - title: Build ProductArchiveButton with soft delete and restore
     parallel_group: 8
-    completed: true
+    completed: false
   - title: Add ProductDuplicateButton creating copy with new SKU
     parallel_group: 9
     completed: false
