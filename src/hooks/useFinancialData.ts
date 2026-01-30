@@ -243,9 +243,8 @@ export const useCreateCollectionActivity = () => {
       showSuccessToast("Activity Logged", "Collection activity recorded successfully");
       // Cross-panel invalidation - collection activity affects finance, CRM, dashboard
       if (tenant?.id) {
-        invalidateOnEvent(queryClient, 'PAYMENT_RECEIVED', tenant.id, {
-          customerId: variables.client_id,
-        });
+        queryClient.invalidateQueries({ queryKey: ['financial-snapshot', tenant.id] });
+        queryClient.invalidateQueries({ queryKey: ['customer', variables.client_id] });
       }
     },
     onError: (error) => {
@@ -340,17 +339,25 @@ export const useExpenseSummary = () => {
       const monthEnd = endOfMonth(new Date());
 
       // Fetch all expenses for the tenant (using any to avoid type issues with optional table)
-      const expensesQuery: unknown = supabase
-        .from("expenses" as "wholesale_orders")
-        .select("*")
-        .eq("tenant_id", tenant.id)
-        .order("created_at", { ascending: false })
-        .limit(100);
-
-      const { data: expenses, error } = await (expensesQuery as ReturnType<typeof supabase.from>);
+      let expenses: unknown[] = [];
+      let expenseError: Error | null = null;
+      
+      try {
+        const result = await (supabase as any)
+          .from("expenses")
+          .select("*")
+          .eq("tenant_id", tenant.id)
+          .order("created_at", { ascending: false })
+          .limit(100);
+        
+        expenses = result.data || [];
+        expenseError = result.error;
+      } catch {
+        // Table may not exist
+      }
 
       // Handle table not existing gracefully
-      if (error && (error as { code?: string }).code === '42P01') {
+      if (expenseError && (expenseError as { code?: string }).code === '42P01') {
         return {
           totalExpenses: 0,
           thisMonthExpenses: 0,
@@ -360,7 +367,7 @@ export const useExpenseSummary = () => {
         };
       }
 
-      if (error) throw error;
+      if (expenseError) throw expenseError;
 
       const expenseList = (expenses || []) as Array<{
         id: string;

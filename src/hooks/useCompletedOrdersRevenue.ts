@@ -147,9 +147,9 @@ export function useCompletedOrdersRevenue(dateRange: DateRangeType = 'today'): U
       const [ordersResult, wholesaleResult] = await Promise.all([
         // Regular orders
         (async () => {
-          let query = supabase
+          let query = (supabase as any)
             .from('orders')
-            .select('id, order_number, status, total_amount, subtotal, tax_amount, discount_amount, payment_status, payment_method, created_at, updated_at')
+            .select('id, order_number, status, total_amount, subtotal, payment_status, payment_method, created_at')
             .eq('tenant_id', tenantId)
             .order('created_at', { ascending: false });
 
@@ -165,21 +165,27 @@ export function useCompletedOrdersRevenue(dateRange: DateRangeType = 'today'): U
             logger.error('Failed to fetch orders for revenue', error, { component: 'useCompletedOrdersRevenue' });
             return [];
           }
-          return (data || []).map(o => ({
-            ...o,
+          return (data || []).map((o: any) => ({
+            id: o.id,
+            order_number: o.order_number || '',
+            status: o.status || '',
             total_amount: Number(o.total_amount || 0),
-            subtotal: Number(o.subtotal || 0),
-            tax_amount: Number(o.tax_amount || 0),
-            discount_amount: Number(o.discount_amount || 0),
+            subtotal: Number(o.subtotal || o.total_amount || 0),
+            tax_amount: 0,
+            discount_amount: 0,
+            payment_status: o.payment_status || '',
+            payment_method: o.payment_method || null,
+            created_at: o.created_at,
+            updated_at: o.created_at,
             order_type: 'retail',
             source: 'orders',
           }));
         })(),
         // Wholesale orders
         (async () => {
-          let query = supabase
+          let query = (supabase as any)
             .from('wholesale_orders')
-            .select('id, order_number, status, total_amount, payment_status, created_at, updated_at')
+            .select('id, order_number, status, total_amount, payment_status, created_at')
             .eq('tenant_id', tenantId)
             .order('created_at', { ascending: false });
 
@@ -195,13 +201,18 @@ export function useCompletedOrdersRevenue(dateRange: DateRangeType = 'today'): U
             logger.error('Failed to fetch wholesale orders for revenue', error, { component: 'useCompletedOrdersRevenue' });
             return [];
           }
-          return (data || []).map(o => ({
-            ...o,
+          return (data || []).map((o: any) => ({
+            id: o.id,
+            order_number: o.order_number || '',
+            status: o.status || '',
             total_amount: Number(o.total_amount || 0),
             subtotal: Number(o.total_amount || 0),
             tax_amount: 0,
             discount_amount: 0,
+            payment_status: o.payment_status || '',
             payment_method: null,
+            created_at: o.created_at,
+            updated_at: o.created_at,
             order_type: 'wholesale',
             source: 'wholesale_orders',
           }));

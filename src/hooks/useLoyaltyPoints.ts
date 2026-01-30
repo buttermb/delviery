@@ -38,7 +38,7 @@ export function useLoyaltyConfig(storeId: string | undefined) {
     queryFn: async () => {
       if (!storeId) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('marketplace_loyalty_config')
         .select('*')
         .eq('store_id', storeId)
@@ -65,7 +65,7 @@ export function useCustomerLoyalty(storeId: string | undefined, customerEmail: s
     queryFn: async () => {
       if (!storeId || !customerEmail) return null;
 
-      const { data, error } = await supabase.rpc('get_marketplace_customer_loyalty', {
+      const { data, error } = await (supabase as any).rpc('get_marketplace_customer_loyalty', {
         p_store_id: storeId,
         p_email: customerEmail,
       });
@@ -102,7 +102,7 @@ export function useRedeemLoyaltyPoints() {
       pointsToRedeem: number;
       orderId?: string;
     }) => {
-      const { data, error } = await supabase.rpc('redeem_marketplace_loyalty_points', {
+      const { data, error } = await (supabase as any).rpc('redeem_marketplace_loyalty_points', {
         p_store_id: storeId,
         p_customer_email: customerEmail,
         p_points_to_redeem: pointsToRedeem,

@@ -11,7 +11,6 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 
 export interface LowStockProduct {
@@ -53,17 +52,34 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
   const { tenant } = useTenantAdminAuth();
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: queryKeys.stockAlerts.active(tenant?.id),
+    queryKey: ['stock-alerts', 'active', tenant?.id],
     queryFn: async (): Promise<LowStockProduct[]> => {
       if (!tenant?.id) return [];
 
       // First try to fetch from stock_alerts table
-      const { data: alerts, error: alertError } = await supabase
-        .from('stock_alerts')
-        .select('id, product_id, product_name, current_quantity, threshold, severity')
-        .eq('tenant_id', tenant.id)
-        .eq('status', 'active')
-        .order('current_quantity', { ascending: true });
+      let alerts: Array<{
+        id: string;
+        product_id: string;
+        product_name: string;
+        current_quantity: number;
+        threshold: number;
+        severity: string;
+      }> = [];
+      let alertError: Error | null = null;
+
+      try {
+        const result = await (supabase as any)
+          .from('stock_alerts')
+          .select('id, product_id, product_name, current_quantity, threshold, severity')
+          .eq('tenant_id', tenant.id)
+          .eq('status', 'active')
+          .order('current_quantity', { ascending: true });
+        
+        alerts = result.data || [];
+        alertError = result.error;
+      } catch {
+        // Table may not exist
+      }
 
       // If stock_alerts table exists and has data, use it
       if (!alertError && alerts && alerts.length > 0) {
@@ -85,7 +101,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
       }
 
       // If table doesn't exist or no alerts, fall back to products query
-      if (alertError && alertError.code !== '42P01') {
+      if (alertError && (alertError as { code?: string }).code !== '42P01') {
         logger.error('Error fetching stock alerts', { error: alertError });
       }
 
