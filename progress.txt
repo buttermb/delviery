@@ -1,3 +1,62 @@
+## Task: Build OrderEditModal for modifying items before confirmation
+
+### Completed
+
+#### Created `OrderEditModal` Component (`src/components/admin/OrderEditModal.tsx`)
+
+A flexible modal component for editing order items before confirmation, following established FloraIQ patterns.
+
+**Features:**
+- **Item Editing**: Quantity adjustment with +/- buttons and direct input, price editing per item
+- **Item Removal**: Remove items with confirmation (minimum 1 item required)
+- **Live Totals**: Real-time calculation of subtotal and item count
+- **Delivery Details**: Edit delivery address, delivery notes, and customer notes
+- **Status Display**: Shows current order status with appropriate badge styling
+- **Order Editability**: Respects order status restrictions using `orderEditability.ts` utilities
+- **Multi-table Support**: Works with `orders`, `menu_orders`, and `wholesale_orders` tables via `orderTable` prop
+- **Loading States**: Proper loading spinner and disabled states during submission
+- **Error Handling**: Toast notifications for validation errors and API failures
+- **Query Invalidation**: Properly invalidates relevant TanStack Query caches after updates
+
+**Props Interface:**
+```typescript
+interface OrderEditModalProps {
+  order: Order | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
+  orderTable?: 'orders' | 'menu_orders' | 'wholesale_orders';
+}
+```
+
+**Usage Example:**
+```tsx
+<OrderEditModal
+  order={selectedOrder}
+  open={editModalOpen}
+  onOpenChange={setEditModalOpen}
+  onSuccess={() => refetch()}
+  orderTable="orders"
+/>
+```
+
+**Validation:**
+- Requires minimum 1 item in order
+- Validates all quantities > 0
+- Checks order editability based on status (pending orders only)
+- Shows restriction messages for non-editable orders
+
+**UI Components Used:**
+- Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
+- Button, Input, Label, Textarea
+- Badge, Card, Separator, Alert
+- Lucide icons: Package, Plus, Minus, Trash2, Loader2, AlertCircle
+
+### Files Created:
+- `src/components/admin/OrderEditModal.tsx`
+
+---
+
 ## Task: Connect Operations to Roles - Role Creation and Permission Matrix
 
 ### Completed
