@@ -7459,3 +7459,57 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+# Task: Add StockAdjustmentModal for manual stock corrections
+
+## Status: COMPLETED
+
+## What was implemented
+
+Created a new `StockAdjustmentModal` component at `src/components/admin/StockAdjustmentModal.tsx` that provides manual stock corrections with full audit trail support.
+
+### Features
+
+1. **Three Adjustment Types**
+   - Add Stock: Increase inventory quantity
+   - Reduce Stock: Decrease inventory quantity (prevents negative values)
+   - Set to Amount: Set inventory to a specific value
+
+2. **Audit Trail Recording**
+   - Records all adjustments to the `inventory_history` table
+   - Tracks previous_quantity, new_quantity, and change_amount
+   - Records the user who performed the adjustment (performed_by)
+   - Includes metadata with adjustment type, warehouse, and source
+
+3. **Comprehensive Reason Options**
+   - Receiving/Restock, Damage/Loss, Theft, Quality Issue
+   - Count Correction, Disposal/Expired, Transfer, Audit Adjustment, Other
+
+4. **Real-time Preview**
+   - Shows current quantity, change amount, and new quantity before submission
+   - Visual badges showing positive/negative changes
+   - Warning alerts when adjustment would result in zero stock
+
+5. **Proper Cache Invalidation**
+   - Uses the `invalidateOnEvent` system with 'INVENTORY_ADJUSTED' event
+
+### Props Interface
+
+```typescript
+interface StockAdjustmentModalProps {
+  productId: string;
+  productName: string;
+  currentQuantity: number;
+  warehouse?: string;
+  batchId?: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onComplete?: () => void;
+}
+```
+
+### Files Created
+
+- `src/components/admin/StockAdjustmentModal.tsx`
