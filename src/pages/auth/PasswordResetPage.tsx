@@ -353,6 +353,3 @@ export default function PasswordResetPage() {
     </div>
   );
 }
-
-// Named export for additional compatibility
-export { PasswordResetPage };

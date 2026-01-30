@@ -6,6 +6,8 @@ import {
   Trash2,
   Package,
   TrendingUp,
+  Archive,
+  ArchiveRestore,
 } from "lucide-react";
 import { InventoryStatusBadge } from "@/components/admin/InventoryStatusBadge";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
@@ -33,12 +35,14 @@ interface Product {
   strain_name?: string;
   cost_per_unit?: number;
   wholesale_price?: number;
+  deleted_at?: string | null;
 }
 
 interface ProductCardProps {
   product: Product;
   onEdit?: (productId: string) => void;
   onDelete?: (productId: string) => void;
+  onArchive?: (productId: string) => void;
   onAddToMenu?: (productId: string) => void;
   onPrintLabel?: () => void;
   onPublish?: (productId: string) => void;
@@ -48,10 +52,12 @@ export function ProductCard({
   product,
   onEdit,
   onDelete,
+  onArchive,
   onAddToMenu,
   onPrintLabel,
   onPublish
 }: ProductCardProps) {
+  const isArchived = !!product.deleted_at;
   const availableQty = Number(product.available_quantity || 0);
   const isInStock = availableQty > 0;
   const reorderPoint = typeof product.low_stock_alert === 'number' ? product.low_stock_alert : 10;
@@ -75,6 +81,12 @@ export function ProductCard({
     ...(onAddToMenu ? [{ label: 'Add to Menu', icon: <Package className="h-4 w-4" />, onSelect: () => onAddToMenu(product.id) }] : []),
     ...(onPrintLabel && product.sku ? [{ label: 'Print Label', icon: <Printer className="h-4 w-4" />, onSelect: onPrintLabel }] : []),
     ...(onPublish ? [{ label: 'Publish to Store', icon: <Store className="h-4 w-4" />, onSelect: () => onPublish(product.id) }] : []),
+    ...(onArchive ? [{
+      label: isArchived ? 'Restore' : 'Archive',
+      icon: isArchived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />,
+      onSelect: () => onArchive(product.id),
+      destructive: !isArchived
+    }] : []),
     ...(onDelete ? [{ label: 'Delete', icon: <Trash2 className="h-4 w-4" />, onSelect: () => onDelete(product.id), destructive: true }] : []),
   ];
 
@@ -169,6 +181,18 @@ export function ProductCard({
                 <DropdownMenuItem onClick={() => onPublish(product.id)}>
                   <Store className="h-4 w-4 mr-2" />
                   Publish to Store
+                </DropdownMenuItem>
+              )}
+              {onArchive && (
+                <DropdownMenuItem
+                  onClick={() => onArchive(product.id)}
+                  className={isArchived ? "text-primary focus:text-primary" : "text-warning focus:text-warning"}
+                >
+                  {isArchived ? (
+                    <><ArchiveRestore className="h-4 w-4 mr-2" /> Restore</>
+                  ) : (
+                    <><Archive className="h-4 w-4 mr-2" /> Archive</>
+                  )}
                 </DropdownMenuItem>
               )}
               {onDelete && (

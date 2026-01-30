@@ -182,6 +182,19 @@ export function sanitizeWithLineBreaks(text: string): string {
 }
 
 /**
+ * Safely parses JSON with error handling.
+ * Returns the default value if parsing fails.
+ */
+export function safeJsonParse<T>(json: string, defaultValue: T): T {
+  if (!json) return defaultValue;
+  try {
+    return JSON.parse(json) as T;
+  } catch {
+    return defaultValue;
+  }
+}
+
+/**
  * Sanitizes URL input - removes dangerous protocols.
  */
 export function sanitizeUrlInput(url: string): string {

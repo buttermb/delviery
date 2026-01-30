@@ -34,7 +34,9 @@ import {
   MoreVertical,
   Eye,
   EyeOff,
-  Store
+  Store,
+  Archive,
+  ArchiveRestore
 } from "lucide-react";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import {
@@ -48,6 +50,7 @@ import { ProductCard } from "@/components/admin/ProductCard";
 import { Toggle } from "@/components/ui/toggle";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { ConfirmArchiveDialog } from "@/components/shared/ConfirmArchiveDialog";
 import {
   Select,
   SelectContent,
@@ -80,6 +83,7 @@ type Product = Database['public']['Tables']['products']['Row'] & {
   exclude_from_discounts?: boolean;
   minimum_price?: number;
   version?: number;
+  deleted_at?: string | null;
 };
 type ProductUpdate = Database['public']['Tables']['products']['Update'];
 
@@ -194,6 +198,10 @@ export default function ProductManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
+  const [productToArchive, setProductToArchive] = useState<Product | null>(null);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const [labelDialogOpen, setLabelDialogOpen] = useState(false);
   const [labelProduct, setLabelProduct] = useState<Product | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -229,21 +237,38 @@ export default function ProductManagement() {
     enabled: !!tenant?.id,
   });
 
-  // Fetch products query
-  const { data: productsData, refetch: refetchProducts } = useQuery({
-    queryKey: queryKeys.products.byTenant(tenant?.id || ''),
-    queryFn: async () => {
-      if (!tenant?.id) return [];
-      const { data, error } = await (supabase as any)
+  // Fetch products with soft delete filtering
+  const fetchProducts = useCallback(async () => {
+    if (!tenant?.id) return;
+
+    setLoading(true);
+    try {
+      let query = supabase
         .from('products')
         .select('*')
-        .eq('tenant_id', tenant.id)
-        .order('name');
+        .eq('tenant_id', tenant.id);
+
+      // Filter by archived status
+      if (showArchived) {
+        // Show only archived products
+        query = query.not('deleted_at', 'is', null);
+      } else {
+        // Show only active products (not archived)
+        query = query.is('deleted_at', null);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+
       if (error) throw error;
-      return data as Product[];
-    },
-    enabled: !!tenant?.id,
-  });
+
+      setProducts(data || []);
+    } catch (error) {
+      logger.error('Failed to fetch products', error, { component: 'ProductManagement' });
+      toast.error('Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  }, [tenant?.id, showArchived, setProducts]);
 
   // Sync query data into optimistic list state
   useEffect(() => {
@@ -552,6 +577,74 @@ export default function ProductManagement() {
       toast.error(e.message);
     } finally {
       setIsDeleting(false);
+    }
+  }
+
+  // Archive handlers
+  const handleArchive = (id: string) => {
+    const product = products.find(p => p.id === id);
+    if (product) {
+      setProductToArchive(product);
+      setArchiveDialogOpen(true);
+    }
+  }
+
+  const confirmArchive = async () => {
+    if (!productToArchive) return;
+    if (!tenant?.id) {
+      toast.error('Tenant not found. Please refresh.');
+      return;
+    }
+    setIsArchiving(true);
+    try {
+      const isRestore = !!productToArchive.deleted_at;
+
+      if (isRestore) {
+        // Restore product
+        const { error } = await supabase
+          .from('products')
+          .update({ deleted_at: null })
+          .eq('id', productToArchive.id)
+          .eq('tenant_id', tenant.id);
+
+        if (error) throw error;
+
+        toast.success(`"${productToArchive.name}" restored`, {
+          description: 'Product is now active and visible again.',
+        });
+      } else {
+        // Archive product
+        const { error } = await supabase
+          .from('products')
+          .update({ deleted_at: new Date().toISOString() })
+          .eq('id', productToArchive.id)
+          .eq('tenant_id', tenant.id);
+
+        if (error) throw error;
+
+        toast.success(`"${productToArchive.name}" archived`, {
+          description: 'Product hidden from active inventory. Can be restored anytime.',
+        });
+      }
+
+      // Refresh the list
+      await fetchProducts();
+
+      // Invalidate all product caches so storefront reflects changes instantly
+      invalidateProductCaches({
+        tenantId: tenant.id,
+        storeId: store?.id || undefined,
+        productId: productToArchive.id,
+        category: productToArchive.category || undefined,
+      });
+
+      setArchiveDialogOpen(false);
+      setProductToArchive(null);
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Failed to archive/restore product';
+      toast.error(errorMessage);
+    } finally {
+      setIsArchiving(false);
     }
   }
 
@@ -902,14 +995,18 @@ export default function ProductManagement() {
             <DropdownMenuItem onClick={() => { setLabelProduct(product); setLabelDialogOpen(true); }}>
               <Printer className="mr-2 h-4 w-4" /> Print Label
             </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={() => handleDelete(product.id)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" /> Delete
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handlePublish(product.id)}>
               <Store className="mr-2 h-4 w-4" /> Publish to Store
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className={product.deleted_at ? "text-primary focus:text-primary" : "text-warning focus:text-warning"}
+              onClick={() => handleArchive(product.id)}
+            >
+              {product.deleted_at ? (
+                <><ArchiveRestore className="mr-2 h-4 w-4" /> Restore</>
+              ) : (
+                <><Archive className="mr-2 h-4 w-4" /> Archive</>
+              )}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -921,7 +1018,7 @@ export default function ProductManagement() {
     <ProductCard
       product={product}
       onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
-      onDelete={() => handleDelete(product.id)}
+      onArchive={() => handleArchive(product.id)}
       onPrintLabel={() => { setLabelProduct(product); setLabelDialogOpen(true); }}
       onPublish={() => handlePublish(product.id)}
     />
@@ -1200,6 +1297,16 @@ export default function ProductManagement() {
                 <SelectItem value="margin">Margin (High-Low)</SelectItem>
               </SelectContent>
             </Select>
+
+            {/* Show Archived Toggle */}
+            <Toggle
+              pressed={showArchived}
+              onPressedChange={setShowArchived}
+              className="h-9 px-3 data-[state=on]:bg-warning/20 data-[state=on]:text-warning"
+            >
+              <Archive className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">{showArchived ? 'Archived' : 'Show Archived'}</span>
+            </Toggle>
           </div>
 
           {/* View Mode Toggle */}
@@ -1245,7 +1352,7 @@ export default function ProductManagement() {
                     <ProductCard
                       product={product}
                       onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
-                      onDelete={() => handleDelete(product.id)}
+                      onArchive={() => handleArchive(product.id)}
                       onPrintLabel={() => {
                         setLabelProduct(product);
                         setLabelDialogOpen(true);
@@ -1365,6 +1472,17 @@ export default function ProductManagement() {
         description={batchDeleteDialogState.description}
         itemType={batchDeleteDialogState.itemType}
         isLoading={batchDeleteDialogState.isLoading}
+      />
+
+      {/* Archive Confirmation Dialog */}
+      <ConfirmArchiveDialog
+        open={archiveDialogOpen}
+        onOpenChange={setArchiveDialogOpen}
+        onConfirm={confirmArchive}
+        itemName={productToArchive?.name}
+        itemType="product"
+        isLoading={isArchiving}
+        isRestore={!!productToArchive?.deleted_at}
       />
     </div>
   );

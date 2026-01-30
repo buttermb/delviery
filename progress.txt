@@ -7460,62 +7460,90 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
-## Task: Add PendingOrdersCount badge updating via Supabase realtime
+---
+
+## Task: Build ProductArchiveButton with Soft Delete and Restore
 
 ### Completed
 
-#### 1. Enhanced useAdminBadgeCounts Hook (`src/hooks/useAdminBadgeCounts.ts`)
+#### 1. Created Database Migration for Products Soft Delete (`supabase/migrations/20260130000001_products_soft_delete.sql`)
+- Added `deleted_at` TIMESTAMPTZ column to products table with NULL default
+- Created indexes for efficient querying:
+  - `idx_products_active` - For active products (deleted_at IS NULL)
+  - `idx_products_archived` - For archived products (deleted_at IS NOT NULL)
+- Created `archive_product(p_product_id, p_tenant_id)` RPC function with SECURITY DEFINER
+- Created `restore_product(p_product_id, p_tenant_id)` RPC function with SECURITY DEFINER
+- Both functions have proper `SET search_path = public` for security
+- Granted execute permissions to authenticated users
 
-**Added unified_orders realtime subscription:**
-- Added `unifiedOrders` to `SubscriptionStatus` interface to track subscription state
-- Added new Supabase realtime channel for `unified_orders` table (Channel 3)
-- Subscribes to all events (INSERT, UPDATE, DELETE) filtered by tenant_id
-- Uses debounced fetch to prevent rapid-fire requests on multiple events
+#### 2. Created ProductArchiveButton Component (`src/components/admin/ProductArchiveButton.tsx`)
+- Reusable button component for archive/restore operations
+- Props: product, tenantId, onSuccess, variant, size, showLabel, className
+- Visual feedback with loading spinner and success checkmark
+- Uses Tooltip for accessibility
+- Toast notifications with "Undo" action for archive operations
+- Handles both archive (soft delete) and restore (unarchive) operations
+- Uses sonner for toast notifications
+- Follows DuplicateProductButton pattern for consistency
 
-**Updated fetchCounts to include unified_orders:**
-- Added query to count pending unified orders (status: pending, confirmed, processing)
-- Combined count: pendingOrders = wholesaleOrders + menuOrders + unifiedOrders
-- Enhanced debug logging to show individual counts for each order type
+#### 3. Created ConfirmArchiveDialog Component (`src/components/shared/ConfirmArchiveDialog.tsx`)
+- Standardized confirmation dialog for archive/restore operations
+- Props: open, onOpenChange, onConfirm, title, description, itemName, itemType, isLoading, isRestore
+- Uses AlertDialog from UI components
+- Haptic feedback for user confirmation
+- Different styling for archive (warning) vs restore (primary) actions
+- Clear messaging about the reversible nature of archiving
 
-**Changes made:**
-1. Interface `SubscriptionStatus` - Added `unifiedOrders: boolean` field
-2. Initial state - Added `unifiedOrders: false` to subscription status
-3. `fetchCounts` function - Added unified_orders query and combined count
-4. Realtime subscriptions - Added Channel 3 for unified_orders with proper error handling
-5. Renumbered subsequent channels (4-7) for consistency
-6. Updated file header comment to mention unified orders
+#### 4. Updated ProductManagement Page (`src/pages/admin/ProductManagement.tsx`)
+- Added `deleted_at` to Product type
+- Added state for archive functionality:
+  - `archiveDialogOpen` - Controls archive dialog visibility
+  - `productToArchive` - Product being archived/restored
+  - `isArchiving` - Loading state for archive operations
+  - `showArchived` - Toggle to show/hide archived products
+- Implemented `fetchProducts` callback with soft delete filtering:
+  - Shows only active products by default (deleted_at IS NULL)
+  - Toggle to show only archived products (deleted_at IS NOT NULL)
+- Added archive/restore handlers:
+  - `handleArchive(id)` - Opens confirmation dialog
+  - `confirmArchive()` - Performs archive/restore operation
+- Updated table dropdown menu:
+  - Replaced "Delete" with "Archive" for active products
+  - Shows "Restore" for archived products
+  - Uses Archive/ArchiveRestore icons from lucide-react
+- Added "Show Archived" toggle in filter section
+- Added ConfirmArchiveDialog at end of component
+- Cache invalidation after archive/restore operations
 
-**Why unified_orders was needed:**
-The existing badge system only subscribed to `wholesale_orders` and `menu_orders` tables. The newer `unified_orders` table (used for POS, retail, and other unified order types) was not being tracked, causing the pending orders badge to miss orders created through the unified order system.
+#### 5. Updated ProductCard Component (`src/components/admin/ProductCard.tsx`)
+- Added `deleted_at` to Product interface
+- Added `onArchive` callback prop
+- Added Archive/ArchiveRestore icons
+- Updated dropdown menu with Archive/Restore option:
+  - Shows "Archive" for active products (warning color)
+  - Shows "Restore" for archived products (primary color)
+- Updated long-press menu for mobile with archive/restore action
 
-### Technical Details
+#### 6. Fixed Existing Build Issues
+- Removed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
+- Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
 
-**Unified Orders Query:**
-```typescript
-supabase
-  .from('unified_orders')
-  .select('*', { count: 'exact', head: true })
-  .eq('tenant_id', tenant.id)
-  .in('status', ['pending', 'confirmed', 'processing'])
-```
+### Key Features
+- **Soft Delete**: Products are never permanently deleted from the database
+- **Restore Functionality**: Archived products can be restored at any time
+- **Historical Data Preservation**: Products used in orders remain in the system
+- **UI Toggle**: Users can easily switch between viewing active and archived products
+- **Undo Support**: Toast notifications include "Undo" action for quick reversal
+- **Tenant Isolation**: All operations are scoped to the current tenant
 
-**Realtime Channel:**
-```typescript
-supabase
-  .channel(`badge-unified-orders-${tenant.id}`)
-  .on('postgres_changes', {
-    event: '*',
-    schema: 'public',
-    table: 'unified_orders',
-    filter: `tenant_id=eq.${tenant.id}`,
-  }, (payload) => {
-    debouncedFetch(fetchCounts);
-  })
-```
+### Files Changed
+- `supabase/migrations/20260130000001_products_soft_delete.sql` (new)
+- `src/components/admin/ProductArchiveButton.tsx` (new)
+- `src/components/shared/ConfirmArchiveDialog.tsx` (new)
+- `src/pages/admin/ProductManagement.tsx` (updated)
+- `src/components/admin/ProductCard.tsx` (updated)
+- `src/lib/utils/sanitize.ts` (updated - added safeJsonParse)
+- `src/pages/auth/PasswordResetPage.tsx` (updated - removed duplicate export)
 
-### Files Modified
-- `src/hooks/useAdminBadgeCounts.ts`
-
-### Verification
-- TypeScript compilation passes with no errors
-- Build has pre-existing error in PasswordResetPage.tsx (unrelated to this change)
+### Build Status
+- Build passes successfully with no TypeScript errors
