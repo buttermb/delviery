@@ -7481,59 +7481,38 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
----
+## Agent 76 - Low Stock Widget Implementation
 
-### Task: Add OrderSearchBar with autocomplete for order number customer phone
+### Task: Add LowStockWidget displaying products below threshold with reorder button
 
 **Completed:**
 
-1. **Created OrderSearchBar component** (`src/components/admin/orders/OrderSearchBar.tsx`)
-   - Search autocomplete component for the admin orders page
-   - Searches orders by order number (supports # prefix) or customer phone number
-   - Debounced search with 300ms delay for optimal UX
-   - Tenant-aware queries using `useTenantAdminAuth()` context
-   - Uses TanStack Query for caching (30s stale time)
+1. **Created LowStockWidget component** (`src/components/admin/dashboard/LowStockWidget.tsx`)
+   - Uses the existing `useLowStockAlerts` hook for data fetching
+   - Displays products below their low stock threshold
+   - Shows alert levels: Out of Stock, Critical, Warning (with color-coded badges)
+   - Shows current quantity vs threshold for each product
+   - Includes "Reorder" button that creates a purchase order
+   - Loading state with skeleton placeholders
+   - Empty state when no low stock products exist
+   - "View All Inventory" link at the bottom
 
-2. **Features implemented:**
-   - **Order number search**: Searches using ILIKE pattern matching on order_number field
-   - **Phone search**: Searches by extracting phone digits and matching against customer profiles
-   - **Recent searches**: Persisted in localStorage using safe storage utilities
-   - **Keyboard navigation**: Arrow up/down, Enter to select, Escape to close
-   - **Visual feedback**: Loading spinner, highlighted matching text, status badges
-   - **Dropdown UI**: Shows recent searches when empty, search results when typing
-   - **Empty state**: Helpful message when no results found
+2. **Widget Features:**
+   - Displays up to 5 products, prioritized by severity (out of stock > critical > warning)
+   - Reorder button has loading state during async operation
+   - Suggested order quantity: 2x threshold minus current stock
+   - Uses tenant-aware navigation for the "View All Inventory" button
+   - Follows existing widget patterns (Card wrapper, consistent styling)
+   - Error handling with toast notifications
 
-3. **Component props:**
-   - `onSelectOrder?: (order: OrderSearchResult) => void` - Callback when order is selected
-   - `onSearch?: (query: string) => void` - Callback for search text changes
-   - `placeholder?: string` - Custom placeholder text
-   - `className?: string` - Additional CSS classes
-
-4. **Added storage key** (`src/constants/storageKeys.ts`)
-   - Added `ORDER_SEARCH_RECENT` key for persisting recent order searches
+3. **Integrated widget into ModernDashboard:**
+   - Added import for LowStockWidget
+   - Placed in the sidebar widgets section between InventoryAlertsWidget and AutoReorderSuggestionsWidget
 
 ### Files Changed:
-- `src/components/admin/orders/OrderSearchBar.tsx` (NEW)
-- `src/constants/storageKeys.ts` (Added ORDER_SEARCH_RECENT key)
-
-### Usage Example:
-```tsx
-import { OrderSearchBar } from '@/components/admin/orders/OrderSearchBar';
-
-// Basic usage with order selection
-<OrderSearchBar 
-  onSelectOrder={(order) => navigate(`orders/${order.id}`)}
-/>
-
-// With search callback for filtering
-<OrderSearchBar 
-  onSearch={setSearchQuery}
-  placeholder="Find orders..."
-/>
-```
+- `src/components/admin/dashboard/LowStockWidget.tsx` (NEW)
+- `src/components/admin/ModernDashboard.tsx` - Added import and widget to layout
 
 ### Notes:
-- Component follows existing FloraIQ patterns (tenant isolation, TanStack Query, safe storage)
-- TypeScript compilation passes successfully
-- Phone search requires minimum 3 characters to filter
-- Order number search requires minimum 2 characters
+- Pre-existing build error in PasswordResetPage.tsx (duplicate default export) is unrelated to these changes
+- LowStockWidget.tsx passes ESLint with no errors
