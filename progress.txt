@@ -7459,3 +7459,61 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+## Task: Build OrderMergeButton to combine multiple orders for same customer
+
+### Implementation Summary:
+Created an OrderMergeButton and OrderMergeDialog component that allows admin users to combine multiple orders from the same customer into a single order.
+
+### Features Implemented:
+1. **OrderMergeDialog Component** (`src/components/admin/orders/OrderMergeButton.tsx`)
+   - Controlled dialog component that can be used externally
+   - Groups selected orders by customer (user_id)
+   - Finds orders from the same customer that can be merged
+   - Allows selecting which order to keep as the target
+   - Shows order summary with combined totals
+   - Transfers order_items from source orders to target order
+   - Updates target order total_amount and subtotal
+   - Marks source orders as cancelled with merge reference
+   - Provides warning about the merge operation
+   - Loading state with disabled buttons during merge
+
+2. **OrderMergeButton Component** (`src/components/admin/orders/OrderMergeButton.tsx`)
+   - Standalone button component with its own dialog
+   - Only renders when 2+ orders are selected
+   - Shows tooltip indicating merge capability
+
+3. **Integration with Orders Page** (`src/pages/admin/Orders.tsx`)
+   - Added "Merge" action to BulkActionsBar
+   - Added OrderMergeDialog component
+   - Created computed `selectedOrdersData` to pass full order objects
+   - Clears selection after successful merge
+
+### Merge Logic:
+1. Select 2+ orders from the same customer
+2. Open merge dialog via BulkActionsBar "Merge" action
+3. Select which order to keep as target
+4. Merge transfers all order_items to target order
+5. Target order totals are recalculated (sum of all merged orders)
+6. Source orders marked as cancelled with "[MERGED INTO #xxx]" note
+7. Target order gets delivery_notes with "[MERGED] Combined from orders: xxx, yyy"
+
+### Files Changed:
+- `src/components/admin/orders/OrderMergeButton.tsx` (NEW)
+- `src/components/admin/orders/index.ts` (NEW - exports for admin order components)
+- `src/pages/admin/Orders.tsx` (Modified - added merge action and dialog)
+
+### Technical Details:
+- Uses tenant isolation via tenant_id filter on all database operations
+- Invalidates orders query cache after successful merge
+- Proper error handling with toast notifications
+- Logging via logger for merge operations
+- Follows FloraIQ patterns: useTenantAdminAuth, queryKeys, formatCurrency, formatSmartDate
+
+### Notes:
+- Fixed duplicate import of useAdminOrdersRealtime in Orders.tsx (pre-existing issue)
+- Pre-existing references to handlePrintOrderFunc etc. in Orders.tsx were left unchanged
+
