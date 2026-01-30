@@ -7459,3 +7459,30 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+### Task: Build DashboardRefreshButton to manually refresh all data
+
+**Completed:**
+
+1. **Created DashboardRefreshButton component** (`src/components/admin/dashboard/DashboardRefreshButton.tsx`)
+   - Uses TanStack Query's `useQueryClient` to invalidate dashboard queries
+   - Features a RefreshCw icon that animates when refreshing
+   - Shows loading state with "Refreshing..." text during refresh
+   - Displays toast notifications on success/failure
+   - Follows FloraIQ patterns: uses `useTenantAdminAuth`, `queryKeys`, named exports
+
+2. **Integrated into DashboardHubPage** (`src/pages/admin/hubs/DashboardHubPage.tsx`)
+   - Added import for DashboardRefreshButton component
+   - Placed button in header section alongside the "Updated" badge
+   - Button uses outline variant with small size for subtle appearance
+
+### Files Changed:
+- `src/components/admin/dashboard/DashboardRefreshButton.tsx` (NEW)
+- `src/pages/admin/hubs/DashboardHubPage.tsx`
+
+### Notes:
+- ESLint passes with no errors on both changed files
+- Pre-existing build error in `PasswordResetPage.tsx` (multiple default exports) is unrelated to these changes

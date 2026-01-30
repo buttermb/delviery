@@ -29,6 +29,7 @@ import {
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { DashboardRefreshButton } from '@/components/admin/dashboard/DashboardRefreshButton';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 interface StatCardProps {
@@ -127,11 +128,14 @@ export function DashboardHubPage() {
             Real-time overview of your operations
           </p>
         </div>
-        {lastUpdated && (
-          <Badge variant="secondary" className="text-xs">
-            Updated {lastUpdated}
-          </Badge>
-        )}
+        <div className="flex items-center gap-3">
+          {lastUpdated && (
+            <Badge variant="secondary" className="text-xs">
+              Updated {lastUpdated}
+            </Badge>
+          )}
+          <DashboardRefreshButton />
+        </div>
       </div>
 
       {error && (
