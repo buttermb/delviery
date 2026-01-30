@@ -7527,44 +7527,70 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+
 ---
 
-## Task: Build DashboardLayoutCustomizer to drag and drop widgets
+## Task: Add DashboardExportButton to export current view as PDF
 
 ### Implementation Summary:
-Created a comprehensive DashboardLayoutCustomizer component with full drag-and-drop functionality for dashboard widget management.
+Created a reusable `DashboardExportButton` component that allows users to export dashboard views as PDF, CSV, or Excel.
 
-### What was built:
-1. **DashboardLayoutCustomizer Component** (`src/components/admin/dashboard/DashboardLayoutCustomizer.tsx`)
-   - Full drag-and-drop widget reordering using @dnd-kit library
-   - Widget visibility toggles via Switch components
-   - Layout preset selection (Default, Sales Focus, Inventory Focus)
-   - Reset to default layout functionality
-   - Responsive Sheet-based UI that slides in from the right
-   - Badge showing visible/total widget count
-   - Keyboard accessibility via KeyboardSensor
+### Component Features:
+1. **PDF Export (Primary):** Uses html2canvas + jsPDF to capture the current dashboard view as a screenshot and save as PDF
+   - Supports multi-page documents for long content
+   - Automatic orientation detection (portrait/landscape)
+   - High-resolution capture (2x scale)
+   
+2. **CSV Export:** Exports structured data (metrics or table data) to CSV format
+   - UTF-8 BOM for Excel compatibility
+   - Proper escaping of special characters
+   
+3. **Excel Export:** Exports to XLSX format using the xlsx library
+   - Auto-sized columns
+   - Support for both metrics and table data
 
-### Key Features:
-- **Drag and Drop**: Uses @dnd-kit with SortableContext and verticalListSortingStrategy
-- **DragOverlay**: Shows preview of widget being dragged with elevated styling
-- **Visibility Toggles**: Each widget has an eye icon and Switch to toggle visibility
-- **Preset Layouts**: 
-  - Default: All widgets visible in standard order
-  - Sales Focus: Prioritizes sales/revenue widgets
-  - Inventory Focus: Prioritizes inventory/transfer widgets
-- **Custom Layout Detection**: When user reorders or toggles widgets, preset becomes 'custom'
-- **Persistence**: Automatically saves to localStorage per tenant via useDashboardLayout hook
-- **Accessibility**: Full keyboard support, ARIA labels on drag handles and switches
+### Component API:
+```typescript
+interface DashboardExportButtonProps {
+  targetRef: RefObject<HTMLElement | null>;  // Ref to element to capture
+  filename?: string;                          // Base filename (default: "dashboard-export")
+  title?: string;                             // Export title
+  data?: DashboardExportData;                 // Optional structured data for CSV/Excel
+  variant?: "default" | "outline" | "ghost" | "secondary";
+  size?: "default" | "sm" | "lg" | "icon";
+}
+```
 
-### Integration:
-- Uses existing `useDashboardLayout` hook for state management
-- Uses existing UI components: Sheet, Button, Badge, Switch, Separator, Label
-- Follows FloraIQ patterns for admin components
-- TypeScript strict mode compliant with no any types
+### Usage Example:
+```tsx
+import { useRef } from "react";
+import { DashboardExportButton } from "@/components/admin/DashboardExportButton";
 
-### Files Created:
-- `src/components/admin/dashboard/DashboardLayoutCustomizer.tsx` (NEW)
+const MyDashboard = () => {
+  const dashboardRef = useRef<HTMLDivElement>(null);
+  
+  return (
+    <div ref={dashboardRef}>
+      <DashboardExportButton 
+        targetRef={dashboardRef}
+        filename="my-dashboard"
+        title="My Dashboard"
+        data={{
+          metrics: { "Total Sales": 1234, "Orders": 56 }
+        }}
+      />
+      {/* Dashboard content */}
+    </div>
+  );
+};
+```
 
-### Verification:
-- TypeScript type checking passes without errors
-- Component follows all shadcn/ui and FloraIQ coding standards
+### Files Changed:
+- `src/components/admin/DashboardExportButton.tsx` (NEW)
+
+### Technical Notes:
+- Uses existing dependencies: jsPDF, html2canvas, xlsx (already in package.json)
+- Follows FloraIQ patterns: named exports, @/ imports, logger for errors, toast for feedback
+- Includes loading state with button spinner during PDF generation
+- TypeScript strict mode compliant
+
