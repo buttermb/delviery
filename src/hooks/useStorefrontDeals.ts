@@ -28,7 +28,7 @@ export interface StorefrontDeal {
 
 export function useStorefrontDeals(storeId: string | undefined) {
     return useQuery({
-        queryKey: queryKeys.storefront.deals(storeId),
+        queryKey: [...queryKeys.storefront.all, 'deals', { storeId }] as const,
         queryFn: async (): Promise<StorefrontDeal[]> => {
             if (!storeId) return [];
 

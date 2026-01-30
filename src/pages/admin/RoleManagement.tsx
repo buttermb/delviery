@@ -41,6 +41,60 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
 
+// Permission categories for role management
+const PERMISSION_CATEGORIES = [
+  {
+    name: 'Products',
+    permissions: [
+      { key: 'products.view', label: 'View Products' },
+      { key: 'products.create', label: 'Create Products' },
+      { key: 'products.edit', label: 'Edit Products' },
+      { key: 'products.delete', label: 'Delete Products' },
+    ],
+  },
+  {
+    name: 'Orders',
+    permissions: [
+      { key: 'orders.view', label: 'View Orders' },
+      { key: 'orders.edit', label: 'Edit Orders' },
+      { key: 'orders.cancel', label: 'Cancel Orders' },
+    ],
+  },
+  {
+    name: 'Customers',
+    permissions: [
+      { key: 'customers.view', label: 'View Customers' },
+      { key: 'customers.create', label: 'Create Customers' },
+      { key: 'customers.edit', label: 'Edit Customers' },
+    ],
+  },
+  {
+    name: 'Settings',
+    permissions: [
+      { key: 'settings.view', label: 'View Settings' },
+      { key: 'settings.edit', label: 'Edit Settings' },
+    ],
+  },
+  {
+    name: 'Users & Roles',
+    permissions: [
+      { key: 'users.view', label: 'View Users' },
+      { key: 'users.manage', label: 'Manage Users' },
+      { key: 'roles.view', label: 'View Roles' },
+      { key: 'roles.manage', label: 'Manage Roles' },
+    ],
+  },
+];
+
+// Get permission label from key
+const getPermissionLabel = (key: string): string => {
+  for (const cat of PERMISSION_CATEGORIES) {
+    const perm = cat.permissions.find(p => p.key === key);
+    if (perm) return perm.label;
+  }
+  return key;
+};
+
 interface Role {
   id: string;
   name: string;
@@ -78,13 +132,13 @@ export function RoleManagement() {
 
   // Fetch roles with their permissions
   const { data: roles = [], isLoading, error } = useQuery({
-    queryKey: queryKeys.roles.list(tenantId),
+    queryKey: ['roles', 'list', tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
 
       try {
         // Fetch roles
-        const { data: rolesData, error: rolesError } = await supabase
+        const { data: rolesData, error: rolesError } = await (supabase as any)
           .from('roles')
           .select('*')
           .eq('tenant_id', tenantId)
@@ -97,15 +151,15 @@ export function RoleManagement() {
 
         // Fetch permissions for each role
         const rolesWithPermissions = await Promise.all(
-          (rolesData || []).map(async (role) => {
-            const { data: permData } = await supabase
+          (rolesData || []).map(async (role: any) => {
+            const { data: permData } = await (supabase as any)
               .from('tenant_role_permissions')
               .select('permission_key')
               .eq('role_id', role.id);
 
             return {
               ...role,
-              permissions: (permData || []).map((p) => p.permission_key),
+              permissions: (permData || []).map((p: any) => p.permission_key),
             };
           })
         );

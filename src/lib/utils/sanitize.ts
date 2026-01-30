@@ -211,3 +211,11 @@ export function sanitizeUrlInput(url: string): string {
     return trimmed.replace(/[<>"']/g, '');
   }
 }
+
+/**
+ * Strips all HTML tags from a string, returning plain text.
+ */
+export function stripHtml(html: string): string {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '');
+}
