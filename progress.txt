@@ -7459,3 +7459,70 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+## Add TeamActivityFeed showing recent actions by team members
+
+### Summary:
+Created a new TeamActivityFeed component that displays recent actions performed by team members in a timeline format with real-time updates.
+
+### Implementation Details:
+
+1. **Added team query keys to queryKeys.ts:**
+   - Added `team` section with `members`, `invitations`, and `activity` subsections
+   - Follows existing queryKeys factory pattern for type-safe query keys
+
+2. **Created useTeamActivity hook (`src/hooks/useTeamActivity.ts`):**
+   - Fetches activity logs filtered to only team member actions (user_id not null)
+   - Enriches activities with team member info from tenant_users table
+   - Supports filtering by category and limit
+   - Implements real-time updates via Supabase realtime subscription
+   - Handles errors gracefully including table-not-found scenarios
+
+3. **Created TeamActivityFeed component (`src/components/admin/TeamActivityFeed.tsx`):**
+   - Displays team activity in a grouped timeline (by date)
+   - Shows team member avatar, name, role, and action details
+   - Includes category icons with color coding (order, inventory, payment, CRM, etc.)
+   - Features:
+     - Live badge indicator
+     - Category filter dropdown
+     - Manual refresh button
+     - Grouped by date with sticky headers
+     - Hover effects with relative timestamps
+     - Loading skeletons
+     - Empty state with helpful messaging
+     - Error handling with retry button
+   - Props:
+     - `limit`: Number of activities to fetch (default: 20)
+     - `maxHeight`: Scrollable area height (default: 500px)
+     - `showFilters`: Toggle category filter (default: true)
+     - `showHeader`: Toggle card header (default: true)
+     - `className`: Additional CSS classes
+
+### Files Changed:
+- `src/lib/queryKeys.ts` - Added team query keys
+- `src/hooks/useTeamActivity.ts` (NEW) - Hook for fetching team activity
+- `src/components/admin/TeamActivityFeed.tsx` (NEW) - Team activity feed component
+
+### Usage Example:
+```tsx
+import { TeamActivityFeed } from '@/components/admin/TeamActivityFeed';
+
+// Basic usage
+<TeamActivityFeed />
+
+// With customization
+<TeamActivityFeed 
+  limit={30} 
+  maxHeight="600px" 
+  showFilters={true}
+/>
+```
+
+### Notes:
+- TypeScript type checking passes successfully
+- ESLint validation passes
+- Component follows existing FloraIQ admin panel patterns
+- Uses shadcn/ui components (Card, Badge, Button, Avatar, Select, ScrollArea, Skeleton)
+- Integrates with existing activity_logs table and tenant_users table

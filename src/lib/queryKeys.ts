@@ -642,6 +642,33 @@ export const queryKeys = {
       [...queryKeys.settingsVersions.byTenant(tenantId), settingsKey] as const,
   },
 
+  // Team Management
+  team: {
+    all: ['team'] as const,
+    members: {
+      all: () => [...queryKeys.team.all, 'members'] as const,
+      lists: () => [...queryKeys.team.members.all(), 'list'] as const,
+      list: (tenantId?: string) =>
+        [...queryKeys.team.members.lists(), { tenantId }] as const,
+      detail: (userId: string) =>
+        [...queryKeys.team.members.all(), userId] as const,
+    },
+    invitations: {
+      all: () => [...queryKeys.team.all, 'invitations'] as const,
+      lists: () => [...queryKeys.team.invitations.all(), 'list'] as const,
+      pending: (tenantId?: string) =>
+        [...queryKeys.team.invitations.lists(), 'pending', { tenantId }] as const,
+    },
+    activity: {
+      all: () => [...queryKeys.team.all, 'activity'] as const,
+      lists: () => [...queryKeys.team.activity.all(), 'list'] as const,
+      list: (tenantId?: string, filters?: Record<string, unknown>) =>
+        [...queryKeys.team.activity.lists(), { tenantId, ...filters }] as const,
+      byUser: (tenantId: string, userId: string) =>
+        [...queryKeys.team.activity.all(), 'user', tenantId, userId] as const,
+    },
+  },
+
   // Customer Invoices
   customerInvoices: {
     all: ['customer-invoices'] as const,
