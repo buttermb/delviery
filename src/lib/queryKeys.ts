@@ -758,4 +758,11 @@ export const queryKeys = {
     stats: (tenantId?: string) =>
       [...queryKeys.customerInvoices.all, 'stats', tenantId] as const,
   },
+
+  // Alerts
+  alerts: {
+    all: ['alerts'] as const,
+    dashboard: (tenantId: string) => [...queryKeys.alerts.all, 'dashboard', tenantId] as const,
+    predictive: (tenantId: string) => [...queryKeys.alerts.all, 'predictive', tenantId] as const,
+  },
 } as const;

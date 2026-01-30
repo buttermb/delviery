@@ -7529,39 +7529,53 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 
 ---
 
-## Task: Build CourierStatusWidget showing available busy offline counts
+### Task: Add DashboardNotificationBell with dropdown of recent alerts
 
-### Status: COMPLETED
+**Completed:**
 
-### Implementation:
+1. **Created DashboardNotificationBell component** (`src/components/dashboard/DashboardNotificationBell.tsx`)
+   - Bell icon with badge showing unread count
+   - Animated pulse badge for critical alerts
+   - Dropdown panel with scrollable alerts list
+   - Displays alerts organized by severity (critical, warning, info)
+   - Shows category icons (inventory, orders, payments, customers, compliance)
+   - Action links to navigate to relevant pages
+   - Dismiss individual alerts or dismiss all
+   - Mark alerts as read on click
+   - "View all alerts" link to full alerts page
+   - Mobile-friendly with 44px minimum touch targets
 
-Created a new CourierStatusWidget component for the Hotbox Dashboard that displays real-time courier availability status:
+2. **Created useDashboardAlerts hook** (`src/hooks/useDashboardAlerts.ts`)
+   - Fetches real-time alert data from database
+   - Sources: low stock products, pending orders (>24hrs), overdue invoices
+   - Uses TanStack Query with 60-second refresh interval
+   - Persists dismissed/read state to localStorage per tenant
+   - Returns alerts sorted by severity and urgency
+   - Provides dismiss, dismissAll, and markAsRead functions
 
-1. **Available**: Couriers who are online, active, verified, and have no active deliveries
-2. **Busy**: Couriers currently handling a delivery (status: assigned, in_transit, or picked_up)
-3. **Offline**: Couriers who are active but not currently online or unverified
+3. **Added alerts query keys** (`src/lib/queryKeys.ts`)
+   - Added `alerts.all`, `alerts.dashboard(tenantId)`, `alerts.predictive(tenantId)` query keys
+
+4. **Integrated into Dashboard** (`src/pages/tenant-admin/DashboardPage.tsx`)
+   - Added DashboardNotificationBell to dashboard header
+   - Positioned next to existing SmartNotificationsCenter
+
+5. **Fixed pre-existing build issues:**
+   - Removed duplicate default export in PasswordResetPage.tsx
+   - Added missing safeJsonParse function to sanitize.ts
 
 ### Files Changed:
-- `src/components/admin/hotbox/widgets/CourierStatusWidget.tsx` (NEW)
-- `src/components/admin/hotbox/HotboxDashboard.tsx` (added import and widget rendering)
-- `src/lib/presets/businessTiers.ts` (added 'courier-status' to all tier dashboardWidgets)
+- `src/components/dashboard/DashboardNotificationBell.tsx` (NEW)
+- `src/hooks/useDashboardAlerts.ts` (NEW)
+- `src/lib/queryKeys.ts` (MODIFIED - added alerts query keys)
+- `src/pages/tenant-admin/DashboardPage.tsx` (MODIFIED - integrated bell component)
+- `src/pages/auth/PasswordResetPage.tsx` (FIXED - removed duplicate export)
+- `src/lib/utils/sanitize.ts` (FIXED - added safeJsonParse function)
 
 ### Features:
-- Status summary badges showing counts for available, busy, and offline couriers
-- List of top 5 couriers prioritized by availability status
-- Visual status indicators with pulsing dot for available couriers
-- GPS location indicator when courier has location data
-- Quick action buttons: "Manage Couriers" and "Assign Deliveries"
-- Loading skeleton for better UX
-- Empty state when no active couriers
+- Real-time alerts from inventory, orders, and payments data
+- Severity-based visual indicators (red for critical, amber for warning, blue for info)
+- Action-oriented with direct links to resolve issues
+- Tenant-isolated with persistent dismiss state
+- Responsive design for desktop and mobile
 
-### Technical Details:
-- Uses TanStack Query with queryKey: ['hotbox-courier-status', tenant?.id]
-- Fetches from 'couriers' and 'deliveries' tables with proper tenant filtering
-- 30 second stale time, 60 second refetch interval
-- Follows existing widget patterns (Card, Badge, Button from shadcn/ui)
-- Tenant-aware with proper navigation using tenantSlug
-
-### Notes:
-- TypeScript compilation verified with SWC
-- Build error about PasswordResetPage.tsx default export is pre-existing and unrelated
