@@ -7459,3 +7459,40 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+## Task: Add RecentCustomersWidget showing new signups this week
+
+### Completed
+
+#### 1. Created RecentCustomersWidget Component (`src/components/admin/dashboard/RecentCustomersWidget.tsx`)
+- New dashboard widget displaying customer signups from the past week
+- Features:
+  - Displays up to 5 most recent customers with avatar initials, name, email
+  - Shows relative signup time (e.g., "2 days ago") using date-fns
+  - Loading skeleton state during data fetch
+  - Empty state when no new signups this week
+  - Summary footer showing total new customers count
+  - Click navigation to individual customer CRM pages
+  - "View All" button links to CRM clients page
+- Uses TanStack Query with queryKeys pattern for data fetching
+- Tenant-aware with proper tenant_id filtering
+- Follows existing widget patterns (Card, Badge, Button, Skeleton)
+
+#### 2. Updated Dashboard Layout Configuration (`src/hooks/useDashboardLayout.ts`)
+- Added 'recent-customers' to WidgetId type
+- Added widget to DEFAULT_WIDGETS array with medium size
+- Added widget to SALES_PRESET (visible) - relevant for sales tracking
+- Added widget to INVENTORY_PRESET (hidden) - not relevant for inventory focus
+
+#### 3. Integrated Widget into ModernDashboard (`src/components/admin/ModernDashboard.tsx`)
+- Imported RecentCustomersWidget component
+- Added widget to the right sidebar section alongside InventoryAlertsWidget
+
+#### 4. Exported Widget from Dashboard Index (`src/components/admin/dashboard/index.ts`)
+- Added named export for RecentCustomersWidget
+
+### Technical Details
+- Query key: `['customers', 'recent-week', tenant?.id]`
+- Data source: `customers` table filtered by `tenant_id` and `created_at >= 7 days ago`
+- Stale time: 30 seconds for reasonable refresh rate
+- Widget size: medium (fits in sidebar)

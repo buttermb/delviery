@@ -14,6 +14,7 @@ export type WidgetId =
     | 'sales-chart'
     | 'revenue-prediction'
     | 'recent-orders'
+    | 'recent-customers'
     | 'inventory-alerts'
     | 'activity-feed'
     | 'location-map'
@@ -41,13 +42,14 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     { id: 'sales-chart', label: 'Sales Chart', visible: true, order: 2, size: 'large' },
     { id: 'revenue-prediction', label: 'Revenue Prediction', visible: true, order: 3, size: 'large' },
     { id: 'recent-orders', label: 'Recent Orders', visible: true, order: 4, size: 'large' },
-    { id: 'inventory-alerts', label: 'Inventory Alerts', visible: true, order: 5, size: 'medium' },
-    { id: 'activity-feed', label: 'Activity Feed', visible: true, order: 6, size: 'medium' },
-    { id: 'location-map', label: 'Location Map', visible: true, order: 7, size: 'medium' },
-    { id: 'pending-transfers', label: 'Pending Transfers', visible: true, order: 8, size: 'medium' },
-    { id: 'revenue-chart', label: 'Revenue Chart', visible: true, order: 9, size: 'medium' },
-    { id: 'top-products', label: 'Top Products', visible: true, order: 10, size: 'medium' },
-    { id: 'insights', label: 'Actionable Insights', visible: true, order: 11, size: 'full' },
+    { id: 'recent-customers', label: 'New Signups', visible: true, order: 5, size: 'medium' },
+    { id: 'inventory-alerts', label: 'Inventory Alerts', visible: true, order: 6, size: 'medium' },
+    { id: 'activity-feed', label: 'Activity Feed', visible: true, order: 7, size: 'medium' },
+    { id: 'location-map', label: 'Location Map', visible: true, order: 8, size: 'medium' },
+    { id: 'pending-transfers', label: 'Pending Transfers', visible: true, order: 9, size: 'medium' },
+    { id: 'revenue-chart', label: 'Revenue Chart', visible: true, order: 10, size: 'medium' },
+    { id: 'top-products', label: 'Top Products', visible: true, order: 11, size: 'medium' },
+    { id: 'insights', label: 'Actionable Insights', visible: true, order: 12, size: 'full' },
 ];
 
 const SALES_PRESET: WidgetConfig[] = [
@@ -57,12 +59,13 @@ const SALES_PRESET: WidgetConfig[] = [
     { id: 'revenue-chart', label: 'Revenue Chart', visible: true, order: 3, size: 'large' },
     { id: 'revenue-prediction', label: 'Revenue Prediction', visible: true, order: 4, size: 'large' },
     { id: 'recent-orders', label: 'Recent Orders', visible: true, order: 5, size: 'large' },
-    { id: 'top-products', label: 'Top Products', visible: true, order: 6, size: 'medium' },
-    { id: 'activity-feed', label: 'Activity Feed', visible: false, order: 7, size: 'medium' },
-    { id: 'inventory-alerts', label: 'Inventory Alerts', visible: false, order: 8, size: 'medium' },
-    { id: 'location-map', label: 'Location Map', visible: false, order: 9, size: 'medium' },
-    { id: 'pending-transfers', label: 'Pending Transfers', visible: false, order: 10, size: 'medium' },
-    { id: 'insights', label: 'Actionable Insights', visible: true, order: 11, size: 'full' },
+    { id: 'recent-customers', label: 'New Signups', visible: true, order: 6, size: 'medium' },
+    { id: 'top-products', label: 'Top Products', visible: true, order: 7, size: 'medium' },
+    { id: 'activity-feed', label: 'Activity Feed', visible: false, order: 8, size: 'medium' },
+    { id: 'inventory-alerts', label: 'Inventory Alerts', visible: false, order: 9, size: 'medium' },
+    { id: 'location-map', label: 'Location Map', visible: false, order: 10, size: 'medium' },
+    { id: 'pending-transfers', label: 'Pending Transfers', visible: false, order: 11, size: 'medium' },
+    { id: 'insights', label: 'Actionable Insights', visible: true, order: 12, size: 'full' },
 ];
 
 const INVENTORY_PRESET: WidgetConfig[] = [
@@ -73,11 +76,12 @@ const INVENTORY_PRESET: WidgetConfig[] = [
     { id: 'location-map', label: 'Location Map', visible: true, order: 4, size: 'large' },
     { id: 'top-products', label: 'Top Products', visible: true, order: 5, size: 'medium' },
     { id: 'activity-feed', label: 'Activity Feed', visible: true, order: 6, size: 'medium' },
-    { id: 'sales-chart', label: 'Sales Chart', visible: false, order: 7, size: 'large' },
-    { id: 'revenue-chart', label: 'Revenue Chart', visible: false, order: 8, size: 'medium' },
-    { id: 'revenue-prediction', label: 'Revenue Prediction', visible: false, order: 9, size: 'large' },
-    { id: 'recent-orders', label: 'Recent Orders', visible: false, order: 10, size: 'large' },
-    { id: 'insights', label: 'Actionable Insights', visible: true, order: 11, size: 'full' },
+    { id: 'recent-customers', label: 'New Signups', visible: false, order: 7, size: 'medium' },
+    { id: 'sales-chart', label: 'Sales Chart', visible: false, order: 8, size: 'large' },
+    { id: 'revenue-chart', label: 'Revenue Chart', visible: false, order: 9, size: 'medium' },
+    { id: 'revenue-prediction', label: 'Revenue Prediction', visible: false, order: 10, size: 'large' },
+    { id: 'recent-orders', label: 'Recent Orders', visible: false, order: 11, size: 'large' },
+    { id: 'insights', label: 'Actionable Insights', visible: true, order: 12, size: 'full' },
 ];
 
 const STORAGE_KEY = 'dashboard-layout';
