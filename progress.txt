@@ -7528,54 +7528,61 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
 
-## Agent 3 - ProductCategorySelect with Hierarchical Categories
+---
 
-### Task: Add ProductCategorySelect with hierarchical categories
+## Task: Build CreateOrderForm with Customer Selection and Product Picker
 
-**Completed:**
+### Completed
 
-1. **Created useCategories hook** (`src/hooks/useCategories.ts`)
-   - Fetches categories from Supabase for a given tenant
-   - Builds hierarchical tree structure from flat category data
-   - Provides multiple data formats:
-     - `categories` - Raw flat array from database
-     - `tree` - Hierarchical CategoryNode[] with children
-     - `flattened` - Flat list with depth and path info
-     - `grouped` - Groups organized by root parent for select dropdowns
-   - Utility functions: `getCategoryById`, `getCategoryPath`, `getAncestorIds`, `getDescendantIds`
-   - Uses queryKeys factory for proper cache management
-   - Handles missing table gracefully (code 42P01)
+#### 1. Created CreateOrderForm Component (`src/components/crm/CreateOrderForm.tsx`)
+- Comprehensive order creation form with customer selection and product picker
+- Uses existing `ClientSelector` component for customer selection with search and create functionality
+- Uses existing `LineItemsEditor` component for product picking with stock indicators
+- Features:
+  - Order type selector (Standard Order, Pre-Order, Invoice)
+  - Date picker for expected/due dates
+  - Notes/instructions field
+  - Real-time order summary with subtotal and total calculations
+  - Responsive two-column layout
+  - Loading and disabled states on submit button
+- Props interface for flexibility:
+  - `onSubmit` - Callback with order data
+  - `onCancel` - Cancel action callback
+  - `isSubmitting` - Loading state control
+  - `defaultOrderType` - Default order type selection
+  - `showOrderTypeSelector` - Toggle order type visibility
+  - `selectedClient` - Pre-select a client
+  - `title` and `submitLabel` - Customizable text
 
-2. **Created ProductCategorySelect component** (`src/components/admin/products/ProductCategorySelect.tsx`)
-   - Hierarchical dropdown with tree structure display
-   - Expand/collapse functionality for parent categories
-   - Search within categories (filters and auto-expands matching results)
-   - Shows full category path when selected (e.g., "Flower > Indica > OG Kush")
-   - Loading, error, and empty states handled
-   - Integrates with TenantAdminAuthContext for multi-tenant support
-   - Props: value, onChange, placeholder, disabled, showPath, allowParentSelection
+#### 2. Created useCreateCRMOrder Hook (`src/hooks/crm/useCreateCRMOrder.ts`)
+- Unified hook for creating CRM orders as pre-orders or invoices
+- Handles both order types with appropriate database operations:
+  - Pre-Orders: Creates in `crm_pre_orders` table with pending status
+  - Invoices: Creates in `crm_invoices` table with draft status
+- Returns typed result with order type and data
+- Includes optimistic updates and query invalidation
+- Proper error handling with toast notifications and logging
 
-3. **Updated ProductForm component** (`src/components/admin/products/ProductForm.tsx`)
-   - Added optional `category_id` field to ProductFormData interface
-   - Uses ProductCategorySelect when hierarchical categories exist
-   - Falls back to simple static select if no categories defined
-   - Maintains backwards compatibility with existing `category` string field
-   - When selecting a hierarchical category, sets both `category_id` and `category` (name)
+#### 3. Created CreateOrderPage (`src/pages/admin/CreateOrderPage.tsx`)
+- Admin page that uses the CreateOrderForm component
+- Handles tenant context validation with loading and error states
+- Logs activity after order creation (pre_order_created or invoice_created)
+- Navigates to appropriate detail page after successful creation
 
-4. **Fixed pre-existing build issues:**
-   - Removed duplicate default export in `src/pages/auth/PasswordResetPage.tsx`
-   - Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
+#### 4. Updated Component Exports (`src/components/crm/index.ts`)
+- Added exports for CreateOrderForm, ClientSelector, CreateClientDialog, and LineItemsEditor
 
-### Files Created:
-- `src/hooks/useCategories.ts`
-- `src/components/admin/products/ProductCategorySelect.tsx`
+#### 5. Fixed Pre-existing Build Issues
+- Removed duplicate default export in `PasswordResetPage.tsx`
+- Added missing `safeJsonParse` function to `src/lib/utils/sanitize.ts`
 
-### Files Modified:
-- `src/components/admin/products/ProductForm.tsx` - Integrated ProductCategorySelect
-- `src/pages/auth/PasswordResetPage.tsx` - Fixed duplicate export (pre-existing issue)
-- `src/lib/utils/sanitize.ts` - Added safeJsonParse (pre-existing issue)
+### Files Changed
+- `src/components/crm/CreateOrderForm.tsx` (new)
+- `src/hooks/crm/useCreateCRMOrder.ts` (new)
+- `src/pages/admin/CreateOrderPage.tsx` (new)
+- `src/components/crm/index.ts` (updated exports)
+- `src/pages/auth/PasswordResetPage.tsx` (fixed duplicate export)
+- `src/lib/utils/sanitize.ts` (added safeJsonParse)
 
-### Technical Notes:
-- Database already supports hierarchical categories via `parent_id` self-referential FK
-- Component gracefully degrades to static list if no categories are configured
+### Build Status
 - Build passes with no TypeScript errors
