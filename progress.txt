@@ -7459,3 +7459,39 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+---
+
+### Task: Add ProductStockLevelInput with low stock threshold setting
+
+**Completed:**
+
+1. **Created ProductStockLevelInput component** (`src/components/admin/inventory/ProductStockLevelInput.tsx`)
+   - Full-featured stock level input with low stock threshold setting
+   - Visual stock status indicators (out of stock, critical, warning, healthy)
+   - Real-time status preview showing current stock vs threshold
+   - Help text via FieldHelp component explaining the feature
+   - Input validation with min/max threshold support
+
+2. **Component exports:**
+   - `ProductStockLevelInput` - Main component with threshold input and status preview card
+   - `CompactStockLevelInput` - Compact version for table rows or inline editing
+   - `StockStatusBadge` - Read-only status badge for display purposes
+   - `getStockStatus` - Helper function to calculate stock status from values
+   - `StockStatus` type export for type-safe status handling
+
+3. **Features:**
+   - Stock status levels: out_of_stock (qty <= 0), critical (qty <= threshold * 0.25), warning (qty <= threshold), healthy
+   - Color-coded visual feedback with icons (XCircle, AlertCircle, AlertTriangle, CheckCircle2)
+   - Follows FloraIQ UI patterns with shadcn/ui components
+   - Uses existing FieldHelp component and predefined help texts
+   - Accessible with proper labels and ARIA attributes
+   - Dark mode support with proper color variants
+
+### Files Changed:
+- `src/components/admin/inventory/ProductStockLevelInput.tsx` (NEW)
+
+### Notes:
+- ESLint passes with only 1 warning about exporting non-components (expected for helper utilities)
+- Component follows the same patterns as existing inventory components (InlineStockEdit, StockAdjustmentDialog)
+- Pre-existing build error in PasswordResetPage.tsx (multiple default exports) is unrelated to these changes
