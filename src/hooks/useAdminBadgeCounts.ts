@@ -1,7 +1,7 @@
 /**
  * Admin Badge Counts Hook
  * Provides real-time badge counts for admin navigation
- * Subscribes to Supabase realtime for orders, alerts, and messages
+ * Subscribes to Supabase realtime for orders (wholesale, menu, unified), alerts, and messages
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -22,6 +22,7 @@ export interface BadgeCounts {
 interface SubscriptionStatus {
   wholesaleOrders: boolean;
   menuOrders: boolean;
+  unifiedOrders: boolean;
   inventoryAlerts: boolean;
   conversations: boolean;
   deliveries: boolean;
@@ -42,6 +43,7 @@ export function useAdminBadgeCounts() {
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus>({
     wholesaleOrders: false,
     menuOrders: false,
+    unifiedOrders: false,
     inventoryAlerts: false,
     conversations: false,
     deliveries: false,
@@ -68,6 +70,7 @@ export function useAdminBadgeCounts() {
       const [
         ordersResult,
         menuOrdersResult,
+        unifiedOrdersResult,
         stockResult,
         messagesResult,
         shipmentsResult,
@@ -86,6 +89,13 @@ export function useAdminBadgeCounts() {
           .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .in('status', ['pending', 'confirmed', 'processing', 'preparing']),
+
+        // Pending unified orders (count only) - POS and other unified order types
+        supabase
+          .from('unified_orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('tenant_id', tenant.id)
+          .in('status', ['pending', 'confirmed', 'processing']),
 
         // Low stock items (count only)
         supabase
@@ -120,10 +130,11 @@ export function useAdminBadgeCounts() {
 
       const wholesaleCount = ordersResult.count || 0;
       const menuCount = menuOrdersResult.count || 0;
+      const unifiedCount = unifiedOrdersResult.count || 0;
       const alertsCount = alertsResult.count || 0;
 
       setCounts({
-        pendingOrders: wholesaleCount + menuCount,
+        pendingOrders: wholesaleCount + menuCount + unifiedCount,
         lowStockItems: stockResult.count || 0,
         unreadMessages: messagesResult.count || 0,
         pendingShipments: shipmentsResult.count || 0,
@@ -132,7 +143,10 @@ export function useAdminBadgeCounts() {
       });
 
       logger.debug('Badge counts fetched', {
-        pendingOrders: wholesaleCount + menuCount,
+        pendingOrders: wholesaleCount + menuCount + unifiedCount,
+        wholesaleOrders: wholesaleCount,
+        menuOrders: menuCount,
+        unifiedOrders: unifiedCount,
         lowStockItems: stockResult.count,
         inventoryAlerts: alertsCount,
         component: 'useAdminBadgeCounts',
@@ -218,7 +232,37 @@ export function useAdminBadgeCounts() {
       });
     channelsRef.current.push(menuOrdersChannel);
 
-    // Channel 3: Inventory Alerts
+    // Channel 3: Unified Orders (POS, retail, and other unified order types)
+    const unifiedOrdersChannel = supabase
+      .channel(`badge-unified-orders-${tenant.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'unified_orders',
+          filter: `tenant_id=eq.${tenant.id}`,
+        },
+        (payload) => {
+          logger.debug('Unified order change detected', {
+            event: payload.eventType,
+            component: 'useAdminBadgeCounts'
+          });
+          debouncedFetch(fetchCounts);
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          updateStatus('unifiedOrders', true);
+          logger.debug('Subscribed to unified orders', { component: 'useAdminBadgeCounts' });
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          updateStatus('unifiedOrders', false);
+          logger.warn('Unified orders subscription error', { status, component: 'useAdminBadgeCounts' });
+        }
+      });
+    channelsRef.current.push(unifiedOrdersChannel);
+
+    // Channel 4: Inventory Alerts (renumbered from 3)
     const inventoryAlertsChannel = supabase
       .channel(`badge-inventory-alerts-${tenant.id}`)
       .on(
@@ -248,7 +292,7 @@ export function useAdminBadgeCounts() {
       });
     channelsRef.current.push(inventoryAlertsChannel);
 
-    // Channel 4: Conversations (Unread Messages)
+    // Channel 5: Conversations (Unread Messages)
     const conversationsChannel = supabase
       .channel(`badge-conversations-${tenant.id}`)
       .on(
@@ -278,7 +322,7 @@ export function useAdminBadgeCounts() {
       });
     channelsRef.current.push(conversationsChannel);
 
-    // Channel 5: Wholesale Deliveries (Pending Shipments)
+    // Channel 6: Wholesale Deliveries (Pending Shipments)
     const deliveriesChannel = supabase
       .channel(`badge-deliveries-${tenant.id}`)
       .on(
@@ -308,7 +352,7 @@ export function useAdminBadgeCounts() {
       });
     channelsRef.current.push(deliveriesChannel);
 
-    // Channel 6: Products (Low Stock)
+    // Channel 7: Products (Low Stock)
     const productsChannel = supabase
       .channel(`badge-products-${tenant.id}`)
       .on(

@@ -7460,54 +7460,62 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
 
+## Task: Add PendingOrdersCount badge updating via Supabase realtime
 
----
+### Completed
 
-### Task: Add ProductVariantsManager for size weight strain options
+#### 1. Enhanced useAdminBadgeCounts Hook (`src/hooks/useAdminBadgeCounts.ts`)
 
-**Completed:**
+**Added unified_orders realtime subscription:**
+- Added `unifiedOrders` to `SubscriptionStatus` interface to track subscription state
+- Added new Supabase realtime channel for `unified_orders` table (Channel 3)
+- Subscribes to all events (INSERT, UPDATE, DELETE) filtered by tenant_id
+- Uses debounced fetch to prevent rapid-fire requests on multiple events
 
-1. **Created ProductVariantsManager component** (`src/components/admin/products/ProductVariantsManager.tsx`)
-   - Comprehensive variant management with tabbed interface (Size & Pricing / Strain Info)
-   - Weight/size variant options:
-     - Wholesale presets: QP (Quarter Pound), HP (Half Pound), LB (Pound)
-     - Retail presets: 1g, 3.5g (1/8 oz), 7g (1/4 oz), 14g (1/2 oz), 28g (1 oz)
-     - Custom weight entry support
-     - Price-per-variant management with inline editing
-     - Quick-add preset buttons for common weights
-   - Strain information management:
-     - Strain name with autocomplete integration
-     - Strain type selection (Indica, Sativa, Hybrid, CBD) with descriptions
-     - Strain lineage/genetics entry
-     - THC/CBD percentage inputs
-     - Terpene profile management with common presets (Myrcene, Limonene, etc.)
-     - Custom terpene entry support
-   - Supports different modes: "wholesale", "retail", or "both"
-   - Uses shadcn/ui components (Card, Tabs, Badge, Input, Button, Select)
-   - TypeScript interfaces exported for type safety
+**Updated fetchCounts to include unified_orders:**
+- Added query to count pending unified orders (status: pending, confirmed, processing)
+- Combined count: pendingOrders = wholesaleOrders + menuOrders + unifiedOrders
+- Enhanced debug logging to show individual counts for each order type
 
-2. **Integrated with ProductForm** (`src/components/admin/products/ProductForm.tsx`)
-   - Added new "Variants" tab to the product form
-   - Extended ProductFormData interface with variant fields:
-     - `prices: Record<string, number>` for weight-based pricing
-     - `weight_grams: string` for base unit weight
-     - `strain_lineage: string` for genetics info
-     - `terpenes: Record<string, number>` for terpene profile
-   - Created data transformation between form data and variant manager
-   - Added useCallback handler for variant data changes
-   - Updated tab layout from 4 to 5 columns
+**Changes made:**
+1. Interface `SubscriptionStatus` - Added `unifiedOrders: boolean` field
+2. Initial state - Added `unifiedOrders: false` to subscription status
+3. `fetchCounts` function - Added unified_orders query and combined count
+4. Realtime subscriptions - Added Channel 3 for unified_orders with proper error handling
+5. Renumbered subsequent channels (4-7) for consistency
+6. Updated file header comment to mention unified orders
 
-3. **Exported types for external use:**
-   - `WeightVariant` - interface for weight variant entries
-   - `StrainOptions` - interface for strain-related fields
-   - `ProductVariantsData` - complete variant data interface
+**Why unified_orders was needed:**
+The existing badge system only subscribed to `wholesale_orders` and `menu_orders` tables. The newer `unified_orders` table (used for POS, retail, and other unified order types) was not being tracked, causing the pending orders badge to miss orders created through the unified order system.
 
-### Files Changed:
-- `src/components/admin/products/ProductVariantsManager.tsx` (NEW)
-- `src/components/admin/products/ProductForm.tsx` (MODIFIED)
+### Technical Details
 
-### Notes:
-- ESLint passes with only pre-existing warnings
-- Uses useMemo/useCallback for performance optimization
-- Follows FloraIQ patterns with shadcn/ui components
-- Compatible with existing prices JSON field structure used in the database
+**Unified Orders Query:**
+```typescript
+supabase
+  .from('unified_orders')
+  .select('*', { count: 'exact', head: true })
+  .eq('tenant_id', tenant.id)
+  .in('status', ['pending', 'confirmed', 'processing'])
+```
+
+**Realtime Channel:**
+```typescript
+supabase
+  .channel(`badge-unified-orders-${tenant.id}`)
+  .on('postgres_changes', {
+    event: '*',
+    schema: 'public',
+    table: 'unified_orders',
+    filter: `tenant_id=eq.${tenant.id}`,
+  }, (payload) => {
+    debouncedFetch(fetchCounts);
+  })
+```
+
+### Files Modified
+- `src/hooks/useAdminBadgeCounts.ts`
+
+### Verification
+- TypeScript compilation passes with no errors
+- Build has pre-existing error in PasswordResetPage.tsx (unrelated to this change)
