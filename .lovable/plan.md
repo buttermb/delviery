@@ -1,113 +1,99 @@
 
-# Fix Storefront Issues Plan
 
-## Overview
-Based on my thorough exploration of the storefront codebase, I've identified several issues that need to be fixed to ensure the storefront works correctly. This plan addresses infrastructure issues, typos, and ensures consistent behavior across the customer-facing storefront.
+# Plan: Fix Build Errors to Restore Your Animations
 
----
+## What's Happening
 
-## Issues Identified
+Your animations are **still in the codebase** and haven't been deleted. I found all the animation components intact:
 
-### 1. Critical: Stale Supabase URL in index.html
-**Location**: `index.html` lines 33-34
-**Impact**: Slower page loads due to unnecessary DNS prefetch/preconnect to wrong server
+- **ModernHero.tsx** - Framer Motion rotating badges, animated subheadlines
+- **TrustedBy.tsx** - Marquee/scroll animation for distributor logos
+- **SectionTransition.tsx** - Fade, slide, scale animations triggered on scroll
+- **DetailedFeatureSection.tsx** - Scroll-triggered feature reveals
+- **TestimonialsCarousel.tsx** - CSS transitions for carousel
+- **CountUpNumber.tsx** - Animated number counting
+- **animations.css** - Particle floats, shine effects, pulse glows, card flips, gradient borders
 
-The preconnect and dns-prefetch hints still reference the old Supabase project URL:
-```html
-<link rel="preconnect" href="https://mtvwmyerntkhrcdnhahp.supabase.co" crossorigin />
-<link rel="dns-prefetch" href="https://mtvwmyerntkhrcdnhahp.supabase.co" />
-```
-
-**Fix**: Update to the correct Lovable Cloud URL: `https://aejugtmhwwknrowfyzie.supabase.co`
+The animations aren't appearing because **the app can't build due to ~50 TypeScript errors** that accumulated during previous bug fixes. These errors prevent the preview from loading at all.
 
 ---
 
-### 2. Typo in CartPage.tsx
-**Location**: `src/pages/shop/CartPage.tsx` line 237
-**Impact**: Poor UX - button shows misspelled text
+## The Fix
 
-The empty cart CTA button has a typo:
-```tsx
-Continuue Shopping  // Should be "Continue Shopping"
-```
+I need to resolve the remaining build errors so the app can compile and your animations become visible again.
 
-**Fix**: Correct the spelling to "Continue Shopping"
+### Errors to Fix
 
----
+| File | Issue |
+|------|-------|
+| `TeamManagement.tsx` | Type `unknown` not assignable to `ReactNode` |
+| `LocationInventoryPage.tsx` | Missing `useLocationInventory` hook |
+| `POReceivingPage.tsx` | Deep type instantiation errors |
+| `ReceivingPage.tsx` | Location relation errors |
+| `StorefrontBuilder.tsx` | Incorrect `ThemePresetSelector` props |
+| `PasswordResetPage.tsx` | Duplicate default exports |
+| `SignupPage.tsx` | Missing `setSignupError` state |
+| `ForgotPasswordPage.tsx` | Missing `setFormError` state |
+| `ProductCatalogPage.tsx` | Type mismatch in product mapping |
+| `ProductDetailPage.tsx` | Missing `safeJsonParse` export |
+| `LoginPage.tsx` (tenant-admin) | Missing auth error helpers |
+| `StockAlertsPage.tsx` | Deep type instantiation + schema mismatch |
 
-### 3. MobileBottomNav Has 6 Columns But Only 5 Items Defined
-**Location**: `src/components/shop/MobileBottomNav.tsx` line 44
-**Impact**: Layout confusion - the nav has 5 items + 1 theme toggle button
+### Implementation Steps
 
-The grid has `grid-cols-5` but there's a 6th element (theme toggle). This works but layout may be affected.
-
-**Fix**: Change to `grid-cols-6` to accommodate the theme toggle button properly
-
----
-
-### 4. LuxuryProductGridSection Uses `debouncedSearch` in Filter Logic but Wrong Variable
-**Location**: `src/components/shop/sections/LuxuryProductGridSection.tsx` line 122
-**Impact**: Potential inconsistency between displayed search term and filtered results
-
-The `useMemo` dependency array references `searchQuery` but the filter uses `debouncedSearch`:
-```tsx
-// Line 108 uses debouncedSearch for filtering
-if (debouncedSearch) { ... }
-// But line 122 dependency array uses searchQuery
-}, [products, searchQuery, selectedCategory, max_products]);
-```
-
-**Fix**: Update the dependency array to use `debouncedSearch` instead of `searchQuery`
-
----
-
-### 5. StorefrontProductCard Missing Padding on Footer
-**Location**: `src/components/shop/StorefrontProductCard.tsx` line 208
-**Impact**: Minor visual issue - footer content touches card edges
-
-The footer div has no horizontal padding but siblings do:
-```tsx
-<div className="pt-5 mt-2 flex items-center justify-between border-t border-neutral-50">
-```
-
-**Fix**: Add `px-5` to match the content padding above it
-
----
-
-## Implementation Summary
-
-| Priority | File | Issue | Fix |
-|----------|------|-------|-----|
-| 1 | `index.html` | Wrong Supabase preconnect URL | Update to correct URL |
-| 2 | `CartPage.tsx` | "Continuue" typo | Fix spelling |
-| 3 | `MobileBottomNav.tsx` | Grid columns mismatch | Change to `grid-cols-6` |
-| 4 | `LuxuryProductGridSection.tsx` | Wrong useMemo dependency | Use `debouncedSearch` |
-| 5 | `StorefrontProductCard.tsx` | Missing footer padding | Add `px-5` |
+1. **Create missing hook** - `useLocationInventory.ts`
+2. **Fix auth pages** - Add missing state variables (`setSignupError`, `setFormError`)
+3. **Remove duplicate exports** - Fix `PasswordResetPage.tsx`
+4. **Apply type casting** - Use `(supabase as any)` for deep instantiation errors
+5. **Fix component props** - Update `ThemePresetSelector` usage
+6. **Add missing exports** - `safeJsonParse` to sanitize utils
+7. **Add missing auth helpers** - `getAuthErrorMessage`, `AuthErrorAlert`
 
 ---
 
 ## Technical Details
 
-### File: index.html
-- **Lines 33-34**: Replace `mtvwmyerntkhrcdnhahp` with `aejugtmhwwknrowfyzie`
+### Why Type Casting is Needed
 
-### File: src/pages/shop/CartPage.tsx
-- **Line 237**: Change `Continuue Shopping` → `Continue Shopping`
+The Supabase TypeScript types become infinitely recursive when dealing with complex table relationships. The standard workaround is:
 
-### File: src/components/shop/MobileBottomNav.tsx
-- **Line 44**: Change `grid-cols-5` → `grid-cols-6`
+```typescript
+// Before (causes TS2589)
+const { data } = await supabase.from('stock_alerts')...
 
-### File: src/components/shop/sections/LuxuryProductGridSection.tsx
-- **Line 122**: Change dependency `searchQuery` → `debouncedSearch`
+// After (fixes the error)
+const { data } = await (supabase as any).from('stock_alerts')...
+```
 
-### File: src/components/shop/StorefrontProductCard.tsx
-- **Line 208**: Add `px-5` class to footer div
+This maintains runtime functionality while satisfying TypeScript.
+
+### Animation Files Status
+
+| Component | Status | Animation Type |
+|-----------|--------|----------------|
+| `ModernHero.tsx` | ✅ Intact | Framer Motion |
+| `TrustedBy.tsx` | ✅ Intact | Motion marquee |
+| `SectionTransition.tsx` | ✅ Intact | Scroll-triggered |
+| `DetailedFeatureSection.tsx` | ✅ Intact | Viewport reveal |
+| `animations.css` | ✅ Intact | CSS keyframes |
+| `CountUpNumber.tsx` | ✅ Intact | Number animation |
+
+All animation code is present and will work once the build succeeds.
 
 ---
 
 ## Expected Outcome
-- Faster initial page loads with correct DNS prefetch
-- Professional appearance with correct spelling
-- Proper mobile navigation layout
-- Correct search filtering behavior
-- Consistent visual spacing in product cards
+
+After fixing these ~12 files with build errors:
+
+1. **App will compile successfully**
+2. **Preview will load properly**
+3. **All your animations will appear** exactly as they were before
+4. Your landing page will show:
+   - Rotating feature badges
+   - Scrolling distributor marquee
+   - Scroll-triggered section reveals
+   - Animated statistics counting up
+   - Testimonial carousel transitions
+   - Hover effects and micro-interactions
+
