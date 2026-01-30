@@ -7459,3 +7459,71 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+## Task: Add DashboardExportButton to export current view as PDF
+
+### Implementation Summary:
+Created a reusable `DashboardExportButton` component that allows users to export dashboard views as PDF, CSV, or Excel.
+
+### Component Features:
+1. **PDF Export (Primary):** Uses html2canvas + jsPDF to capture the current dashboard view as a screenshot and save as PDF
+   - Supports multi-page documents for long content
+   - Automatic orientation detection (portrait/landscape)
+   - High-resolution capture (2x scale)
+   
+2. **CSV Export:** Exports structured data (metrics or table data) to CSV format
+   - UTF-8 BOM for Excel compatibility
+   - Proper escaping of special characters
+   
+3. **Excel Export:** Exports to XLSX format using the xlsx library
+   - Auto-sized columns
+   - Support for both metrics and table data
+
+### Component API:
+```typescript
+interface DashboardExportButtonProps {
+  targetRef: RefObject<HTMLElement | null>;  // Ref to element to capture
+  filename?: string;                          // Base filename (default: "dashboard-export")
+  title?: string;                             // Export title
+  data?: DashboardExportData;                 // Optional structured data for CSV/Excel
+  variant?: "default" | "outline" | "ghost" | "secondary";
+  size?: "default" | "sm" | "lg" | "icon";
+}
+```
+
+### Usage Example:
+```tsx
+import { useRef } from "react";
+import { DashboardExportButton } from "@/components/admin/DashboardExportButton";
+
+const MyDashboard = () => {
+  const dashboardRef = useRef<HTMLDivElement>(null);
+  
+  return (
+    <div ref={dashboardRef}>
+      <DashboardExportButton 
+        targetRef={dashboardRef}
+        filename="my-dashboard"
+        title="My Dashboard"
+        data={{
+          metrics: { "Total Sales": 1234, "Orders": 56 }
+        }}
+      />
+      {/* Dashboard content */}
+    </div>
+  );
+};
+```
+
+### Files Changed:
+- `src/components/admin/DashboardExportButton.tsx` (NEW)
+
+### Technical Notes:
+- Uses existing dependencies: jsPDF, html2canvas, xlsx (already in package.json)
+- Follows FloraIQ patterns: named exports, @/ imports, logger for errors, toast for feedback
+- Includes loading state with button spinner during PDF generation
+- TypeScript strict mode compliant
+
