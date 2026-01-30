@@ -1,3 +1,36 @@
+## Task: Add ProductCard Component with Image, Name, Price, Stock Badge
+
+### Completed
+
+#### Created SimpleProductCard Component (`src/components/SimpleProductCard.tsx`)
+- Created a lightweight, reusable product card component focused on core elements
+- Features:
+  - **Product Image**: Uses existing `ProductImage` component with lazy loading and fallback
+  - **Product Name**: Clean display using `cleanProductName` utility, with line clamping
+  - **Price**: Formatted using `formatCurrency` utility with proper currency display
+  - **Stock Badge**: Dynamic badge showing stock status:
+    - "In Stock" (emerald) - when product is available
+    - "Only X left" (orange) - low stock warning when ≤5 units remain
+    - "Out of Stock" (red) - when product is unavailable
+  - Optional category badge toggle
+  - Sold out overlay for out-of-stock items
+  - Hover effects with subtle scale and shadow transitions
+  - Keyboard accessibility (Enter/Space to click)
+  - ARIA labels for screen readers
+
+#### Technical Implementation
+- TypeScript strict mode compliant with proper interfaces
+- Named export only (following FloraIQ conventions)
+- Uses `memo` for performance optimization
+- Utilizes existing UI components: Card, CardContent, Badge
+- Proper import aliases with `@/` prefix
+- No console.log, uses proper patterns
+
+#### Files Created
+- `src/components/SimpleProductCard.tsx` - New lightweight product card component
+
+---
+
 ## Task: Connect Operations to Roles - Role Creation and Permission Matrix
 
 ### Completed
