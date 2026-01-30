@@ -7459,3 +7459,80 @@ Created comprehensive test suite `src/components/auth/__tests__/ProtectedRoutes.
 - PIN-specific inputs (courier PIN modals) were not converted as they have specialized UI for numeric-only input
 - TypeScript type checking passes successfully
 - Build error about missing `papaparse` is pre-existing and unrelated to these changes
+
+
+---
+
+### Task: Build OrderInvoiceGenerator creating PDF invoice from order
+
+**Completed:**
+
+1. **Created OrderInvoiceGenerator component** (`src/components/admin/orders/OrderInvoiceGenerator.tsx`)
+   - Professional PDF invoice generation using jsPDF
+   - Supports order data with line items, customer info, and payment details
+   - Brand-colored header with FloraIQ green (#10b981)
+   - Status badge showing order status (delivered, confirmed, pending, etc.)
+   - Invoice details box with invoice number, order date, and tracking code
+   - Bill To section with customer name, email, and delivery address
+   - Line items table with item name, quantity, unit price, and total
+   - Totals section with subtotal, delivery fee, tax, discount, and total
+   - Order information section with payment and delivery methods
+   - Optional notes section
+   - Footer with page numbers and thank you message
+   - Logo support via URL
+
+2. **Exported utilities:**
+   - `generateOrderInvoicePDF()` - Generate PDF document
+   - `downloadOrderInvoice()` - Download PDF as file
+   - `printOrderInvoice()` - Open PDF in print dialog
+   - `useOrderInvoiceGenerator()` - React hook with loading state management
+
+3. **Created UI components:**
+   - `OrderInvoiceDownloadButton` - Button component for downloading invoice
+   - `OrderInvoicePrintButton` - Button component for printing invoice
+   - Both components support variant, size, className, and label props
+   - Loading states with spinner during PDF generation
+
+4. **Type definitions:**
+   - `OrderInvoiceData` - Interface for order data input
+   - `OrderInvoiceGeneratorProps` - Props for generator functions
+   - `OrderInvoiceDownloadButtonProps` - Props for download button
+   - `OrderInvoicePrintButtonProps` - Props for print button
+
+### Files Changed:
+- `src/components/admin/orders/OrderInvoiceGenerator.tsx` (NEW)
+
+### Usage Example:
+```tsx
+import { 
+  OrderInvoiceDownloadButton,
+  OrderInvoicePrintButton,
+  useOrderInvoiceGenerator 
+} from '@/components/admin/orders/OrderInvoiceGenerator';
+
+// Using the download button
+<OrderInvoiceDownloadButton
+  order={orderData}
+  companyName="FloraIQ"
+  companyAddress="123 Main St"
+  invoicePrefix="INV-"
+/>
+
+// Using the print button
+<OrderInvoicePrintButton
+  order={orderData}
+  companyName="FloraIQ"
+/>
+
+// Using the hook for custom implementations
+const { download, print, isGenerating } = useOrderInvoiceGenerator();
+
+await download({ order: orderData, companyName: 'FloraIQ' });
+```
+
+### Notes:
+- Uses existing jsPDF library already in project dependencies
+- Follows FloraIQ code style guidelines (logger, formatCurrency utility)
+- Compatible with existing Order and OrderItem types from @/types/order
+- TypeScript type checking passes successfully
+- Pre-existing build error in PasswordResetPage.tsx (multiple default exports) is unrelated to this change
