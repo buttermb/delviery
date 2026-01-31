@@ -35,6 +35,59 @@
       "startedAt": "2026-01-30T16:55:04.525Z",
       "updatedAt": "2026-01-30T16:55:04.525Z",
       "agentNum": 1
+    },
+    "Create ANALYTICS_QUERY_CONFIG with refetchInterval 60000 in react-query-config.ts": {
+      "sessionId": "ffb092fc-9f88-467a-8f23-fcc1e8c8c070",
+      "taskId": "Create ANALYTICS_QUERY_CONFIG with refetchInterval 60000 in react-query-config.ts",
+      "taskTitle": "Create ANALYTICS_QUERY_CONFIG with refetchInterval 60000 in react-query-config.ts",
+      "status": "in_progress",
+      "modifiedFiles": [
+        "src/lib/react-query-config.ts",
+        "src/lib/__tests__/react-query-config.test.ts"
+      ],
+      "startedAt": "2026-01-31T03:46:57.396Z",
+      "updatedAt": "2026-01-31T03:47:57.380Z",
+      "agentNum": 5
+    },
+    "Create INSTANT_CACHE_CONFIG preset with staleTime Infinity for static data in react-query-config.ts": {
+      "sessionId": "c1df297e-d224-4099-8d4e-73495a01cf8a",
+      "taskId": "Create INSTANT_CACHE_CONFIG preset with staleTime Infinity for static data in react-query-config.ts",
+      "taskTitle": "Create INSTANT_CACHE_CONFIG preset with staleTime Infinity for static data in react-query-config.ts",
+      "status": "in_progress",
+      "modifiedFiles": [],
+      "startedAt": "2026-01-31T03:47:09.280Z",
+      "updatedAt": "2026-01-31T03:47:09.280Z",
+      "agentNum": 4
+    },
+    "Add placeholderData keepPreviousData to default query options in src/lib/react-query-config.ts": {
+      "sessionId": "4fa40bae-2e05-4dee-a57e-fc4684ffee49",
+      "taskId": "Add placeholderData keepPreviousData to default query options in src/lib/react-query-config.ts",
+      "taskTitle": "Add placeholderData keepPreviousData to default query options in src/lib/react-query-config.ts",
+      "status": "in_progress",
+      "modifiedFiles": [],
+      "startedAt": "2026-01-31T03:47:13.668Z",
+      "updatedAt": "2026-01-31T03:47:13.668Z",
+      "agentNum": 1
+    },
+    "Implement onError callback to track slow queries over 500ms in react-query-config.ts": {
+      "sessionId": "568e0a47-4827-4bd6-80b0-d041c47651fc",
+      "taskId": "Implement onError callback to track slow queries over 500ms in react-query-config.ts",
+      "taskTitle": "Implement onError callback to track slow queries over 500ms in react-query-config.ts",
+      "status": "in_progress",
+      "modifiedFiles": [],
+      "startedAt": "2026-01-31T03:47:22.199Z",
+      "updatedAt": "2026-01-31T03:47:22.199Z",
+      "agentNum": 7
+    },
+    "Increase gcTime from 10 minutes to 15 minutes for admin queries in react-query-config.ts": {
+      "sessionId": "aae0a9da-168d-4bdb-8e09-57b12ad3d1cc",
+      "taskId": "Increase gcTime from 10 minutes to 15 minutes for admin queries in react-query-config.ts",
+      "taskTitle": "Increase gcTime from 10 minutes to 15 minutes for admin queries in react-query-config.ts",
+      "status": "in_progress",
+      "modifiedFiles": [],
+      "startedAt": "2026-01-31T03:47:48.523Z",
+      "updatedAt": "2026-01-31T03:47:48.523Z",
+      "agentNum": 2
     }
   }
 }

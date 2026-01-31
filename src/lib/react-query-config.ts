@@ -13,6 +13,11 @@ import { QueryClient, QueryCache, MutationCache, keepPreviousData } from '@tanst
 import { logger } from '@/lib/logger';
 
 /**
+ * Store query start times for performance tracking
+ */
+const queryStartTimes = new WeakMap<object, number>();
+
+/**
  * Query cache with error logging and deduplication
  */
 const queryCache = new QueryCache({
@@ -23,6 +28,32 @@ const queryCache = new QueryCache({
         queryKey: query.queryKey,
         component: 'QueryCache',
       });
+    }
+  },
+  onSuccess: (_data, query) => {
+    // Record query start time for performance tracking
+    if (!queryStartTimes.has(query)) {
+      queryStartTimes.set(query, Date.now());
+    }
+  },
+  onSettled: (_data, _error, query) => {
+    // Track slow queries over 500ms
+    const startTime = queryStartTimes.get(query);
+    if (startTime) {
+      const duration = Date.now() - startTime;
+      const isCachedData = query.state.dataUpdateCount === 0;
+
+      if (duration > 500) {
+        logger.warn('Slow query detected', {
+          queryKey: query.queryKey,
+          duration: `${duration}ms`,
+          cached: isCachedData,
+          component: 'QueryCache',
+        });
+      }
+
+      // Clean up to prevent memory leaks
+      queryStartTimes.delete(query);
     }
   },
 });
@@ -112,6 +143,18 @@ export const DASHBOARD_QUERY_CONFIG = {
 };
 
 /**
+ * Analytics data configuration
+ * For dashboard metrics and real-time analytics that need regular updates
+ */
+export const ANALYTICS_QUERY_CONFIG = {
+  staleTime: 2 * 60 * 1000, // 2 minutes
+  gcTime: 5 * 60 * 1000, // 5 minutes
+  refetchOnWindowFocus: false,
+  refetchOnMount: false,
+  refetchInterval: 60000, // Auto-refresh every minute
+};
+
+/**
  * Realtime data configuration
  * For data that needs frequent updates
  */
@@ -128,6 +171,19 @@ export const REALTIME_QUERY_CONFIG = {
  */
 export const STATIC_QUERY_CONFIG = {
   staleTime: 60 * 60 * 1000, // 1 hour
+  gcTime: 24 * 60 * 60 * 1000, // 24 hours
+  refetchOnWindowFocus: false,
+  refetchOnMount: false,
+  refetchOnReconnect: false,
+};
+
+/**
+ * Instant cache configuration
+ * For immutable static data that never changes (constants, enums, etc.)
+ * Data is cached indefinitely and never refetched
+ */
+export const INSTANT_CACHE_CONFIG = {
+  staleTime: Infinity, // Never becomes stale
   gcTime: 24 * 60 * 60 * 1000, // 24 hours
   refetchOnWindowFocus: false,
   refetchOnMount: false,
