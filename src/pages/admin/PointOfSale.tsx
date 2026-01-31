@@ -853,6 +853,7 @@ export default function PointOfSale() {
                 {tenantId && (
                   <PendingPickupsPanel
                     tenantId={tenantId}
+                    products={products}
                     onLoadOrder={handleLoadOrder}
                     onCancelOrder={handleCancelOrder}
                   />

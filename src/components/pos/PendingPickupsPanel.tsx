@@ -1,20 +1,29 @@
 import { useState } from 'react';
 import { usePendingOrders, PendingOrder } from '@/hooks/usePendingOrders';
 import { PendingOrderCard } from './PendingOrderCard';
+import { CreatePickupOrderDialog } from './CreatePickupOrderDialog';
 import { Input } from '@/components/ui/input';
-import { Search, RefreshCw } from 'lucide-react';
+import { Search, RefreshCw, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Product } from '@/pages/admin/PointOfSale';
 
 interface PendingPickupsPanelProps {
     tenantId: string;
+    products: Product[];
     onLoadOrder: (order: PendingOrder) => void;
     onCancelOrder: (order: PendingOrder) => void;
 }
 
-export function PendingPickupsPanel({ tenantId, onLoadOrder, onCancelOrder }: PendingPickupsPanelProps) {
+export function PendingPickupsPanel({
+    tenantId,
+    products,
+    onLoadOrder,
+    onCancelOrder
+}: PendingPickupsPanelProps) {
     const { orders, loading, refresh } = usePendingOrders(tenantId);
     const [searchQuery, setSearchQuery] = useState('');
+    const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
     const filteredOrders = orders.filter(order => {
         if (!searchQuery) return true;
@@ -23,6 +32,10 @@ export function PendingPickupsPanel({ tenantId, onLoadOrder, onCancelOrder }: Pe
             : '';
         return customerName.includes(searchQuery.toLowerCase());
     });
+
+    const handleOrderCreated = () => {
+        refresh();
+    };
 
     return (
         <div className="h-full flex flex-col space-y-4">
@@ -36,6 +49,14 @@ export function PendingPickupsPanel({ tenantId, onLoadOrder, onCancelOrder }: Pe
                         className="pl-8"
                     />
                 </div>
+                <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => setCreateDialogOpen(true)}
+                >
+                    <Plus className="h-4 w-4 mr-1" />
+                    New
+                </Button>
                 <Button variant="ghost" size="icon" onClick={refresh} disabled={loading}>
                     <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                 </Button>
@@ -59,6 +80,14 @@ export function PendingPickupsPanel({ tenantId, onLoadOrder, onCancelOrder }: Pe
                     )}
                 </div>
             </ScrollArea>
+
+            <CreatePickupOrderDialog
+                open={createDialogOpen}
+                onOpenChange={setCreateDialogOpen}
+                tenantId={tenantId}
+                products={products}
+                onOrderCreated={handleOrderCreated}
+            />
         </div>
     );
 }
