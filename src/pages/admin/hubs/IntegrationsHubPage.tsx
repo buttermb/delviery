@@ -18,17 +18,19 @@ import {
     Brain,
     Wrench,
 } from 'lucide-react';
-import { lazy, Suspense, useCallback } from 'react';
+import { Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 
-const APIAccessPage = lazy(() => import('@/pages/tenant-admin/APIAccessPage'));
-const WebhooksPage = lazy(() => import('@/pages/tenant-admin/WebhooksPage'));
-const AutomationPage = lazy(() => import('@/pages/tenant-admin/AutomationPage'));
-const BulkOperationsPage = lazy(() => import('@/pages/tenant-admin/BulkOperationsPage'));
-const CustomIntegrationsPage = lazy(() => import('@/pages/tenant-admin/CustomIntegrationsPage'));
-const LocalAIPage = lazy(() => import('@/pages/admin/LocalAIPage'));
-const DeveloperTools = lazy(() => import('@/pages/admin/DeveloperTools'));
+// Lazy load tab content with retry for robust module loading
+const APIAccessPage = lazyWithRetry(() => import('@/pages/tenant-admin/APIAccessPage'));
+const WebhooksPage = lazyWithRetry(() => import('@/pages/tenant-admin/WebhooksPage'));
+const AutomationPage = lazyWithRetry(() => import('@/pages/tenant-admin/AutomationPage'));
+const BulkOperationsPage = lazyWithRetry(() => import('@/pages/tenant-admin/BulkOperationsPage'));
+const CustomIntegrationsPage = lazyWithRetry(() => import('@/pages/tenant-admin/CustomIntegrationsPage'));
+const LocalAIPage = lazyWithRetry(() => import('@/pages/admin/LocalAIPage'));
+const DeveloperTools = lazyWithRetry(() => import('@/pages/admin/DeveloperTools'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">

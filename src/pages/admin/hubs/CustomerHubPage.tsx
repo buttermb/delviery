@@ -19,19 +19,20 @@ import {
     Headphones,
     Star,
 } from 'lucide-react';
-import { lazy, Suspense, useCallback } from 'react';
+import { Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 
-// Lazy load tab content for performance
-const CustomerManagement = lazy(() => import('@/pages/admin/CustomerManagement'));
-const WholesaleClients = lazy(() => import('@/pages/admin/WholesaleClients'));
-const CustomerCRMPage = lazy(() => import('@/pages/admin/CustomerCRMPage'));
-const CustomerInsightsPage = lazy(() => import('@/pages/tenant-admin/CustomerInsightsPage'));
-const CustomerInvoices = lazy(() => import('@/pages/admin/CustomerInvoices'));
-const CustomerAnalyticsPage = lazy(() => import('@/pages/tenant-admin/CustomerAnalyticsPage'));
-const SupportTicketsPage = lazy(() => import('@/pages/admin/SupportTicketsPage'));
-const LoyaltyProgramPage = lazy(() => import('@/pages/admin/LoyaltyProgramPage'));
+// Lazy load tab content with retry for robust module loading
+const CustomerManagement = lazyWithRetry(() => import('@/pages/admin/CustomerManagement'));
+const WholesaleClients = lazyWithRetry(() => import('@/pages/admin/WholesaleClients'));
+const CustomerCRMPage = lazyWithRetry(() => import('@/pages/admin/CustomerCRMPage'));
+const CustomerInsightsPage = lazyWithRetry(() => import('@/pages/tenant-admin/CustomerInsightsPage'));
+const CustomerInvoices = lazyWithRetry(() => import('@/pages/admin/CustomerInvoices'));
+const CustomerAnalyticsPage = lazyWithRetry(() => import('@/pages/tenant-admin/CustomerAnalyticsPage'));
+const SupportTicketsPage = lazyWithRetry(() => import('@/pages/admin/SupportTicketsPage'));
+const LoyaltyProgramPage = lazyWithRetry(() => import('@/pages/admin/LoyaltyProgramPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">

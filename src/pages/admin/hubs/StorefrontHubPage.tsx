@@ -25,22 +25,24 @@ import {
     Gift,
     ExternalLink,
 } from 'lucide-react';
-import { lazy, Suspense, useCallback, Fragment } from 'react';
+import { Suspense, useCallback, Fragment } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 
-const StorefrontDashboard = lazy(() => import('@/pages/admin/storefront/StorefrontDashboard'));
-const StorefrontProducts = lazy(() => import('@/pages/admin/storefront/StorefrontProducts'));
-const StorefrontOrders = lazy(() => import('@/pages/admin/storefront/StorefrontOrders'));
-const StorefrontCustomers = lazy(() => import('@/pages/admin/storefront/StorefrontCustomers'));
-const StorefrontCoupons = lazy(() => import('@/pages/admin/storefront/StorefrontCoupons'));
-const StorefrontSettings = lazy(() => import('@/pages/admin/storefront/StorefrontSettings'));
-const StorefrontDesignPage = lazy(() => import('@/pages/admin/storefront/StorefrontDesignPage').then(m => ({ default: m.StorefrontDesignPage })));
-const StorefrontBundles = lazy(() => import('@/pages/admin/storefront/StorefrontBundles'));
-const StorefrontLiveOrders = lazy(() => import('@/pages/admin/storefront/StorefrontLiveOrders'));
-const StorefrontAnalytics = lazy(() => import('@/pages/admin/storefront/StorefrontAnalytics'));
-const StorefrontGiftCards = lazy(() => import('@/pages/admin/storefront/StorefrontGiftCards'));
+// Lazy load tab content with retry for robust module loading
+const StorefrontDashboard = lazyWithRetry(() => import('@/pages/admin/storefront/StorefrontDashboard'));
+const StorefrontProducts = lazyWithRetry(() => import('@/pages/admin/storefront/StorefrontProducts'));
+const StorefrontOrders = lazyWithRetry(() => import('@/pages/admin/storefront/StorefrontOrders'));
+const StorefrontCustomers = lazyWithRetry(() => import('@/pages/admin/storefront/StorefrontCustomers'));
+const StorefrontCoupons = lazyWithRetry(() => import('@/pages/admin/storefront/StorefrontCoupons'));
+const StorefrontSettings = lazyWithRetry(() => import('@/pages/admin/storefront/StorefrontSettings'));
+const StorefrontDesignPage = lazyWithRetry(() => import('@/pages/admin/storefront/StorefrontDesignPage').then(m => ({ default: m.StorefrontDesignPage })));
+const StorefrontBundles = lazyWithRetry(() => import('@/pages/admin/storefront/StorefrontBundles'));
+const StorefrontLiveOrders = lazyWithRetry(() => import('@/pages/admin/storefront/StorefrontLiveOrders'));
+const StorefrontAnalytics = lazyWithRetry(() => import('@/pages/admin/storefront/StorefrontAnalytics'));
+const StorefrontGiftCards = lazyWithRetry(() => import('@/pages/admin/storefront/StorefrontGiftCards'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">

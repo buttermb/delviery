@@ -20,19 +20,21 @@ import {
     Building2,
     Banknote,
 } from 'lucide-react';
-import { lazy, Suspense, useCallback } from 'react';
+import { Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 
-const FinancialCenter = lazy(() => import('@/pages/admin/FinancialCenterReal'));
-const InvoicesPage = lazy(() => import('@/pages/admin/InvoicesPage'));
-const ExpenseTracking = lazy(() => import('@/pages/admin/ExpenseTracking'));
-const RevenueReportsPage = lazy(() => import('@/pages/tenant-admin/RevenueReportsPage'));
-const PayoutsPage = lazy(() => import('@/pages/admin/PayoutsPage'));
-const AdvancedInvoicePage = lazy(() => import('@/pages/admin/AdvancedInvoicePage'));
-const CollectionMode = lazy(() => import('@/pages/admin/CollectionMode'));
-const TaxManagementPage = lazy(() => import('@/pages/admin/TaxManagementPage'));
-const FrontedInventory = lazy(() => import('@/pages/admin/FrontedInventory'));
+// Lazy load tab content with retry for robust module loading
+const FinancialCenter = lazyWithRetry(() => import('@/pages/admin/FinancialCenterReal'));
+const InvoicesPage = lazyWithRetry(() => import('@/pages/admin/InvoicesPage'));
+const ExpenseTracking = lazyWithRetry(() => import('@/pages/admin/ExpenseTracking'));
+const RevenueReportsPage = lazyWithRetry(() => import('@/pages/tenant-admin/RevenueReportsPage'));
+const PayoutsPage = lazyWithRetry(() => import('@/pages/admin/PayoutsPage'));
+const AdvancedInvoicePage = lazyWithRetry(() => import('@/pages/admin/AdvancedInvoicePage'));
+const CollectionMode = lazyWithRetry(() => import('@/pages/admin/CollectionMode'));
+const TaxManagementPage = lazyWithRetry(() => import('@/pages/admin/TaxManagementPage'));
+const FrontedInventory = lazyWithRetry(() => import('@/pages/admin/FrontedInventory'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
