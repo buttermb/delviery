@@ -62,7 +62,7 @@ CREATE POLICY "Tenant users can view their tenant roles"
   USING (
     tenant_id IN (
       SELECT tu.tenant_id FROM public.tenant_users tu
-      WHERE tu.email = auth.jwt()->>'email'
+      WHERE tu.user_id = auth.uid()
     )
   );
 
@@ -74,7 +74,7 @@ CREATE POLICY "Tenant owners and admins can create roles"
   WITH CHECK (
     tenant_id IN (
       SELECT tu.tenant_id FROM public.tenant_users tu
-      WHERE tu.email = auth.jwt()->>'email'
+      WHERE tu.user_id = auth.uid()
         AND tu.role IN ('owner', 'admin')
     )
   );
@@ -87,14 +87,14 @@ CREATE POLICY "Tenant owners and admins can update roles"
   USING (
     tenant_id IN (
       SELECT tu.tenant_id FROM public.tenant_users tu
-      WHERE tu.email = auth.jwt()->>'email'
+      WHERE tu.user_id = auth.uid()
         AND tu.role IN ('owner', 'admin')
     )
   )
   WITH CHECK (
     tenant_id IN (
       SELECT tu.tenant_id FROM public.tenant_users tu
-      WHERE tu.email = auth.jwt()->>'email'
+      WHERE tu.user_id = auth.uid()
         AND tu.role IN ('owner', 'admin')
     )
   );
@@ -108,7 +108,7 @@ CREATE POLICY "Tenant owners and admins can delete non-system roles"
     is_system = FALSE
     AND tenant_id IN (
       SELECT tu.tenant_id FROM public.tenant_users tu
-      WHERE tu.email = auth.jwt()->>'email'
+      WHERE tu.user_id = auth.uid()
         AND tu.role IN ('owner', 'admin')
     )
   );
@@ -130,7 +130,7 @@ CREATE POLICY "Tenant users can view their role permissions"
       SELECT r.id FROM public.roles r
       WHERE r.tenant_id IN (
         SELECT tu.tenant_id FROM public.tenant_users tu
-        WHERE tu.email = auth.jwt()->>'email'
+        WHERE tu.user_id = auth.uid()
       )
     )
   );
@@ -145,7 +145,7 @@ CREATE POLICY "Tenant owners and admins can create role permissions"
       SELECT r.id FROM public.roles r
       WHERE r.tenant_id IN (
         SELECT tu.tenant_id FROM public.tenant_users tu
-        WHERE tu.email = auth.jwt()->>'email'
+        WHERE tu.user_id = auth.uid()
           AND tu.role IN ('owner', 'admin')
       )
     )
@@ -161,7 +161,7 @@ CREATE POLICY "Tenant owners and admins can delete role permissions"
       SELECT r.id FROM public.roles r
       WHERE r.tenant_id IN (
         SELECT tu.tenant_id FROM public.tenant_users tu
-        WHERE tu.email = auth.jwt()->>'email'
+        WHERE tu.user_id = auth.uid()
           AND tu.role IN ('owner', 'admin')
       )
     )

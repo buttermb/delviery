@@ -53,6 +53,7 @@ export function ModernHero() {
   const currentFeature = CYCLE_FEATURES[featureIndex];
   const FeatureIcon = currentFeature.icon;
 
+  return (
   <section className="relative min-h-[90vh] bg-[hsl(var(--marketing-bg))] pt-24 md:pt-32 pb-16 md:pb-24 overflow-hidden flex flex-col justify-center">
     {/* Technical Grid Background */}
     <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
