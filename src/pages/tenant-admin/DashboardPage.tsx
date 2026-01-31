@@ -58,6 +58,8 @@ import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist
 import { QuickActionsWidget } from '@/components/dashboard/QuickActionsWidget';
 import { DashboardQuickActionsPanel } from '@/components/dashboard/DashboardQuickActionsPanel';
 import { DashboardNotificationBell } from '@/components/dashboard/DashboardNotificationBell';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileDashboard } from '@/components/mobile/MobileDashboard';
 
 interface DashboardOrderRow {
   total_amount: number | null;
