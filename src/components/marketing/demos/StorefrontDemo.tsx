@@ -15,7 +15,7 @@ function MagneticButton({ children, className, onClick, ...props }: any) {
 
     const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (!ref.current) return;
-        const { left, KA top, width, height } = ref.current.getBoundingClientRect();
+        const { left, top, width, height } = ref.current.getBoundingClientRect();
         const centerX = left + width / 2;
         const centerY = top + height / 2;
         x.set((e.clientX - centerX) * 0.3); // Magnetic pull strength

@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 
-"Emerald Logistics",
+const companies = [
+    "Emerald Logistics",
     "CalGreen Distribution",
     "NorCal Supply Chain",
     "Pacific Roots Delivery",
@@ -16,6 +17,7 @@ import { motion } from "framer-motion";
     "NorCal Supply Chain",
     "Pacific Roots Delivery",
     "Urban Leaf Wholesale",
+];
 
 export function TrustedBy() {
     return (
