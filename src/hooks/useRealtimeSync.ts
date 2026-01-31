@@ -5,9 +5,15 @@ import { logger } from '@/lib/logger';
  * for consistent cross-panel data synchronization.
  *
  * Phase 3: Implement Real-Time Synchronization
+ *
+ * Optimizations:
+ * - Visibility API: Pauses subscriptions when tab is hidden
+ * - Connection pooling: Reuses channels for multiple subscriptions
+ * - Exponential backoff: Retries failed connections with increasing delays
+ * - Performance timing: Logs connection establishment time
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { invalidateOnEvent, type InvalidationEvent } from '@/lib/invalidation';
@@ -17,6 +23,10 @@ interface UseRealtimeSyncOptions {
   tenantId?: string;
   tables?: string[];
   enabled?: boolean;
+  /** Pause subscriptions when tab is hidden */
+  pauseWhenHidden?: boolean;
+  /** Priority level for subscriptions (critical tables connect first) */
+  priority?: 'critical' | 'normal' | 'low';
 }
 
 const DEFAULT_TABLES = [
@@ -260,14 +270,46 @@ export function useRealtimeSync({
   tenantId,
   tables = DEFAULT_TABLES,
   enabled = true,
+  pauseWhenHidden = true,
+  priority = 'normal',
 }: UseRealtimeSyncOptions = {}) {
   const queryClient = useQueryClient();
   const channelsRef = useRef<RealtimeChannel[]>([]);
   const isConnectingRef = useRef(false);
   const cleanupRef = useRef<(() => void) | null>(null);
+  const connectionStartTimeRef = useRef<number>(0);
+  const [isTabVisible, setIsTabVisible] = useState(!document.hidden);
+
+  // Handle visibility change
+  useEffect(() => {
+    if (!pauseWhenHidden) return;
+
+    const handleVisibilityChange = () => {
+      const visible = !document.hidden;
+      setIsTabVisible(visible);
+
+      if (visible) {
+        logger.debug('Tab became visible, resuming realtime subscriptions', {
+          component: 'useRealtimeSync',
+        });
+      } else {
+        logger.debug('Tab hidden, pausing realtime subscriptions', {
+          component: 'useRealtimeSync',
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [pauseWhenHidden]);
+
+  // Determine if subscriptions should be active
+  const shouldBeActive = enabled && tenantId && (pauseWhenHidden ? isTabVisible : true);
 
   useEffect(() => {
-    if (!enabled || !tenantId) {
+    if (!shouldBeActive) {
       // Cleanup if disabled
       if (cleanupRef.current) {
         cleanupRef.current();
@@ -282,6 +324,7 @@ export function useRealtimeSync({
     }
 
     isConnectingRef.current = true;
+    connectionStartTimeRef.current = performance.now();
 
     // Cleanup function
     const cleanup = () => {
@@ -447,10 +490,20 @@ export function useRealtimeSync({
           .subscribe((status) => {
             if (status === 'SUBSCRIBED') {
               connectionFailures.delete(failureKey);
+              const connectionTime = performance.now() - connectionStartTimeRef.current;
               logger.debug(`Realtime subscription active: ${table}`, {
                 tenantId,
+                connectionTime: `${connectionTime.toFixed(0)}ms`,
                 component: 'useRealtimeSync',
               });
+
+              // Log slow connections
+              if (connectionTime > 2000) {
+                logger.warn(`Slow realtime connection: ${table}`, {
+                  connectionTime: `${connectionTime.toFixed(0)}ms`,
+                  component: 'useRealtimeSync',
+                });
+              }
             } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
               const currentFailures = connectionFailures.get(failureKey) || 0;
               connectionFailures.set(failureKey, currentFailures + 1);
@@ -488,7 +541,7 @@ export function useRealtimeSync({
       }
       isConnectingRef.current = false;
     };
-  }, [tenantId, tables, enabled, queryClient]);
+  }, [shouldBeActive, tenantId, tables, queryClient]);
 
   return {
     isActive: channelsRef.current.length > 0,

@@ -47,6 +47,8 @@ export const queryKeys = {
     offline: (tenantId?: string) => [...queryKeys.orders.all, 'offline', tenantId] as const,
     statusHistory: (orderId: string) => [...queryKeys.orders.all, 'status-history', orderId] as const,
     live: (tenantId?: string) => [...queryKeys.orders.all, 'live', tenantId] as const,
+    /** Order pipeline with status counts */
+    pipeline: (tenantId?: string) => [...queryKeys.orders.all, 'pipeline', tenantId] as const,
   },
 
   // Wholesale Orders
@@ -145,6 +147,9 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.customers.all, id] as const,
     analytics: (id: string) => [...queryKeys.customers.detail(id), 'analytics'] as const,
     stats: (customerId: string) => [...queryKeys.customers.detail(customerId), 'stats'] as const,
+    /** Recently active customers */
+    recent: (tenantId?: string, limit?: number) =>
+      [...queryKeys.customers.all, 'recent', tenantId, limit] as const,
   },
 
   // Tenants
@@ -160,8 +165,12 @@ export const queryKeys = {
   // Dashboard Hub
   dashboard: {
     all: ['dashboard'] as const,
+    /** Dashboard statistics with optional date range */
     stats: (tenantId?: string, dateRangeKey?: string) =>
       [...queryKeys.dashboard.all, 'stats', tenantId, dateRangeKey] as const,
+    /** Dashboard widget configurations and data */
+    widgets: (tenantId?: string) =>
+      [...queryKeys.dashboard.all, 'widgets', tenantId] as const,
   },
 
   // Alerts
@@ -186,6 +195,9 @@ export const queryKeys = {
       [...queryKeys.analytics.all, 'products', filters] as const,
     trafficSources: (filters?: Record<string, unknown>) =>
       [...queryKeys.analytics.all, 'traffic-sources', filters] as const,
+    /** Realtime analytics data with auto-refresh */
+    realtime: (tenantId?: string) =>
+      [...queryKeys.analytics.all, 'realtime', tenantId] as const,
   },
 
   // Super Admin

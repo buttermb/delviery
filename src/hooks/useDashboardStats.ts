@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useDashboardDateRangeOptional } from '@/contexts/DashboardDateRangeContext';
@@ -41,14 +42,31 @@ export function useDashboardStats() {
   // Get date range from context (optional - falls back to defaults if not in provider)
   const dateRangeContext = useDashboardDateRangeOptional();
 
-  // Default date range: last 30 days if context not available
-  const defaultRange = {
-    from: startOfDay(subDays(new Date(), 29)),
-    to: endOfDay(new Date()),
-  };
+  // Memoize date range calculations to prevent recalculation on every render
+  const { dateRange, dateRangeKey, rangeStart, rangeEnd, comparisonStart, comparisonEnd } = useMemo(() => {
+    // Default date range: last 30 days if context not available
+    const defaultRange = {
+      from: startOfDay(subDays(new Date(), 29)),
+      to: endOfDay(new Date()),
+    };
 
-  const dateRange = dateRangeContext?.dateRange ?? defaultRange;
-  const dateRangeKey = dateRangeContext?.dateRangeKey ?? 'default';
+    const range = dateRangeContext?.dateRange ?? defaultRange;
+    const key = dateRangeContext?.dateRangeKey ?? 'default';
+
+    // Pre-calculate comparison period
+    const rangeDurationMs = range.to.getTime() - range.from.getTime();
+    const compEnd = new Date(range.from.getTime() - 1);
+    const compStart = new Date(compEnd.getTime() - rangeDurationMs);
+
+    return {
+      dateRange: range,
+      dateRangeKey: key,
+      rangeStart: range.from,
+      rangeEnd: range.to,
+      comparisonStart: compStart,
+      comparisonEnd: compEnd,
+    };
+  }, [dateRangeContext?.dateRange, dateRangeContext?.dateRangeKey]);
 
   return useQuery({
     queryKey: queryKeys.dashboard.stats(tenantId, dateRangeKey),
@@ -73,18 +91,8 @@ export function useDashboardStats() {
         };
       }
 
-      // Date calculations - use the date range from context
-      const rangeStart = dateRange.from;
-      const rangeEnd = dateRange.to;
-
-      // For "today" stats, we still use actual today within the range
-      const now = new Date();
-      const today = startOfDay(now);
-
-      // Calculate comparison period (same duration before the selected range)
-      const rangeDurationMs = rangeEnd.getTime() - rangeStart.getTime();
-      const comparisonEnd = new Date(rangeStart.getTime() - 1); // Day before range start
-      const comparisonStart = new Date(comparisonEnd.getTime() - rangeDurationMs);
+      // Performance timing
+      const startTime = performance.now();
 
       const [
         // Orders queries
@@ -339,6 +347,15 @@ export function useDashboardStats() {
         }
       }
 
+      // Log performance timing
+      const duration = performance.now() - startTime;
+      if (duration > 500) {
+        logger.warn('Slow dashboard stats query', {
+          duration: `${duration.toFixed(0)}ms`,
+          component: 'useDashboardStats',
+        });
+      }
+
       return {
         // Orders KPIs
         pendingOrders,
@@ -365,7 +382,8 @@ export function useDashboardStats() {
       };
     },
     enabled: !!tenantId,
-    refetchInterval: 30_000, // 30 seconds
-    staleTime: 15_000, // Consider data stale after 15s
+    refetchInterval: 60_000, // 60 seconds - reduced from 30s
+    staleTime: 60_000, // Consider data stale after 60s - increased from 15s
+    placeholderData: keepPreviousData, // Show previous data while refetching
   });
 }
