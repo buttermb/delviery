@@ -21,53 +21,53 @@ interface Testimonial {
 const testimonials: Testimonial[] = [
   {
     id: 1,
-    name: "Marcus Johnson",
-    role: "Operations Director",
-    company: "GreenLeaf Distributors",
+    name: "Marcus J.",
+    role: "Ops Director",
+    company: "GreenLeaf Distro",
     avatar: "MJ",
-    content: "FloraIQ transformed our entire operation. We went from managing spreadsheets to having real-time visibility across 12 locations. The disposable menus feature alone saved us 20+ hours per week.",
+    content: "We were drowning in spreadsheets. FloraIQ's Metrc sync alone saved us ~15 hours/week of manual data entry. The automated manifests are bulletproof.",
     rating: 5,
-    highlight: "20+ hours saved weekly"
+    highlight: "15hrs/wk saved"
   },
   {
     id: 2,
-    name: "Sarah Chen",
+    name: "Sarah C.",
     role: "CEO",
-    company: "Pacific Coast Cannabis",
+    company: "Pacific Coast",
     avatar: "SC",
-    content: "The security features are unmatched. Our clients love the auto-expiring catalogs - they feel confident knowing their orders are protected. Revenue is up 40% since switching.",
+    content: "The disposable menus are a game changer for OPSEC. We generated 847 unique catalogs last month and had zero leakage. Security is actually real here.",
     rating: 5,
-    highlight: "40% revenue increase"
+    highlight: "Zero data leaks"
   },
   {
     id: 3,
-    name: "David Rodriguez",
+    name: "David R.",
     role: "Founder",
-    company: "Mile High Supply Co",
+    company: "Mile High Supply",
     avatar: "DR",
-    content: "Best decision we made this year. The fleet management and live tracking eliminated our delivery disputes completely. Customer satisfaction scores are at an all-time high.",
+    content: "Dispatcher view shows me exactly where every unit is. We improved our stops-per-hour by 22% in the first month using the route optimization engine.",
     rating: 5,
-    highlight: "Zero delivery disputes"
+    highlight: "22% efficiency gain"
   },
   {
     id: 4,
-    name: "Jennifer Williams",
+    name: "Jen W.",
     role: "COO",
-    company: "Emerald Valley Wholesale",
+    company: "Emerald Valley",
     avatar: "JW",
-    content: "We evaluated 8 different platforms before choosing FloraIQ. The white-label customer portal and compliance features put them miles ahead.",
+    content: "Finally, a platform that doesn't feel like a toy. usage-based pricing made sense for us as we scaled from 2 to 5 hubs. The API docs are actually readable.",
     rating: 5,
-    highlight: "White-label excellence"
+    highlight: "Clean API Docs"
   },
   {
     id: 5,
-    name: "Michael Torres",
-    role: "Head of Logistics",
-    company: "SunState Distribution",
+    name: "Michael T.",
+    role: "Logistics Lead",
+    company: "SunState",
     avatar: "MT",
-    content: "The route optimization alone pays for the entire subscription. We're delivering 30% more orders with the same fleet. The ROI was visible within the first month.",
+    content: "I've used every 'cannabis ERP' out there. FloraIQ is the only one that doesn't crash on Friday afternoons. Uptime has been solid 99.9%.",
     rating: 5,
-    highlight: "30% more deliveries"
+    highlight: "99.9% Uptime"
   }
 ];
 
@@ -86,7 +86,7 @@ export function TestimonialsCarousel() {
   // Auto-rotate testimonials
   useEffect(() => {
     if (!isAutoPlaying) return;
-    
+
     const interval = setInterval(goToNext, 6000);
     return () => clearInterval(interval);
   }, [isAutoPlaying, goToNext]);
@@ -115,11 +115,11 @@ export function TestimonialsCarousel() {
             <Star className="w-4 h-4 fill-current" />
             <span>Trusted by 1,200+ Cannabis Businesses</span>
           </div>
-          
+
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
             Loved by Industry Leaders
           </h2>
-          
+
           <p className="text-xl text-[hsl(var(--marketing-text-light))] max-w-2xl mx-auto">
             See why top cannabis distributors choose FloraIQ
           </p>
@@ -131,18 +131,17 @@ export function TestimonialsCarousel() {
             {testimonials.map((testimonial, index) => (
               <div
                 key={testimonial.id}
-                className={`absolute inset-0 transition-all duration-500 ease-out ${
-                  index === activeIndex 
-                    ? 'opacity-100 translate-x-0 scale-100' 
-                    : index < activeIndex 
+                className={`absolute inset-0 transition-all duration-500 ease-out ${index === activeIndex
+                    ? 'opacity-100 translate-x-0 scale-100'
+                    : index < activeIndex
                       ? 'opacity-0 -translate-x-8 scale-95 pointer-events-none'
                       : 'opacity-0 translate-x-8 scale-95 pointer-events-none'
-                }`}
+                  }`}
               >
                 <div className="bg-[hsl(var(--marketing-bg))]/80 backdrop-blur-sm rounded-3xl border border-[hsl(var(--marketing-border))] p-8 md:p-12 shadow-xl h-full">
                   {/* Quote icon */}
                   <Quote className="w-10 h-10 text-[hsl(var(--marketing-primary))]/20 mb-4" />
-                  
+
                   {/* Content */}
                   <p className="text-lg md:text-xl text-[hsl(var(--marketing-text))] leading-relaxed mb-6">
                     "{testimonial.content}"
@@ -201,17 +200,15 @@ export function TestimonialsCarousel() {
                   role="tab"
                   aria-selected={index === activeIndex}
                   aria-label={`Testimonial ${index + 1} of ${testimonials.length}: ${t.name}`}
-                  className={`rounded-full transition-all duration-300 min-w-[44px] min-h-[44px] flex items-center justify-center ${
-                    index === activeIndex
+                  className={`rounded-full transition-all duration-300 min-w-[44px] min-h-[44px] flex items-center justify-center ${index === activeIndex
                       ? ""
                       : ""
-                  }`}
+                    }`}
                 >
-                  <span className={`block h-2 rounded-full transition-all duration-300 ${
-                    index === activeIndex
+                  <span className={`block h-2 rounded-full transition-all duration-300 ${index === activeIndex
                       ? "w-8 bg-[hsl(var(--marketing-primary))]"
                       : "w-2 bg-[hsl(var(--marketing-border))] hover:bg-[hsl(var(--marketing-text-light))]"
-                  }`} />
+                    }`} />
                 </button>
               ))}
             </div>

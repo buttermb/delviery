@@ -24,6 +24,28 @@ const GridBackground = () => (
   </div>
 );
 
+function CountingNumber({ value, prefix = "", suffix = "" }: { value: string | number, prefix?: string, suffix?: string }) {
+  // Parse number from string (remove non-numeric chars except period)
+  const numericValue = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.]/g, '')) : value;
+  const isCurrency = typeof value === 'string' && value.includes('$');
+  const displayValue = useSpring(0, { duration: 2000, bounce: 0 });
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    displayValue.set(numericValue);
+    const unsubscribe = displayValue.on("change", (latest) => {
+      setDisplay(latest);
+    });
+    return unsubscribe;
+  }, [numericValue, displayValue]);
+
+  const formatted = isCurrency
+    ? display.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+    : Math.round(display).toLocaleString();
+
+  return <span className="tabular-nums">{prefix}{formatted}{suffix}</span>;
+}
+
 // --- SUB-COMPONENTS ---
 
 function MetricCard({ label, value, trend, color, delay }: any) {
@@ -41,7 +63,9 @@ function MetricCard({ label, value, trend, color, delay }: any) {
           {trend}
         </div>
       </div>
-      <div className="text-xl font-bold text-slate-900">{value}</div>
+      <div className="text-xl font-bold text-slate-900">
+        <CountingNumber value={value} />
+      </div>
       <div className="h-8 mt-2 flex items-end gap-0.5 opacity-30">
         {[...Array(12)].map((_, j) => (
           <div key={j} className="flex-1 bg-slate-400 rounded-t-sm" style={{ height: `${30 + Math.random() * 70}%` }} />
@@ -52,6 +76,8 @@ function MetricCard({ label, value, trend, color, delay }: any) {
 }
 
 function DashboardOverview() {
+  const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
+
   return (
     <div className="space-y-6">
       {/* Metrics Grid */}
@@ -64,7 +90,7 @@ function DashboardOverview() {
 
       <div className="grid grid-cols-12 gap-6">
         {/* Main Chart */}
-        <div className="col-span-8 bg-white rounded-xl border border-slate-200 p-5 relative overflow-hidden h-64 shadow-sm">
+        <div className="col-span-8 bg-white rounded-xl border border-slate-200 p-5 relative overflow-hidden h-64 shadow-sm group">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-slate-800 font-bold text-sm">Revenue Analytics</h3>
             <div className="flex gap-2">
@@ -74,9 +100,39 @@ function DashboardOverview() {
             </div>
           </div>
           {/* Chart */}
-          <div className="absolute inset-x-5 bottom-5 top-16">
+          <div className="absolute inset-x-5 bottom-5 top-16" onMouseLeave={() => setHoveredPoint(null)}>
             <GridBackground />
-            <svg className="w-full h-full overflow-visible relative z-10">
+
+            {/* Interactive Areas */}
+            <div className="absolute inset-0 z-20 flex items-end justify-between px-2">
+              {[...Array(12)].map((_, i) => (
+                <div
+                  key={i}
+                  className="h-full flex-1 hover:bg-slate-50/50 cursor-pointer transition-colors relative"
+                  onMouseEnter={() => setHoveredPoint(i)}
+                />
+              ))}
+            </div>
+
+            {/* Hover Tooltip */}
+            <AnimatePresence>
+              {hoveredPoint !== null && (
+                <motion.div
+                  className="absolute bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg pointer-events-none z-30 font-bold"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  style={{
+                    left: `${(hoveredPoint / 12) * 100 + 4}%`,
+                    top: '30%'
+                  }}
+                >
+                  ${(2400 + Math.random() * 500).toFixed(0)}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <svg className="w-full h-full overflow-visible relative z-10 pointer-events-none">
               <defs>
                 <linearGradient id="dashGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(var(--marketing-primary))" stopOpacity="0.1" />
@@ -97,6 +153,21 @@ function DashboardOverview() {
                 animate={{ pathLength: 1 }}
                 transition={{ duration: 1.5, ease: "easeOut" }}
               />
+
+              {/* Data Points */}
+              {[
+                { cx: 150, cy: 90 }, { cx: 300, cy: 50 }, { cx: 450, cy: 30 }, { cx: 600, cy: 40 }
+              ].map((point, i) => (
+                <motion.circle
+                  key={i}
+                  cx={point.cx} cy={point.cy} r="4"
+                  fill="white" stroke="hsl(var(--marketing-primary))" strokeWidth="2"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 1 + i * 0.2 }}
+                />
+              ))}
+
             </svg>
           </div>
         </div>
@@ -119,9 +190,13 @@ function DashboardOverview() {
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 + i * 0.1 }}
+                whileHover={{ scale: 1.02, x: 5, backgroundColor: "rgba(241, 245, 249, 0.5)" }} // Subtle pulse/highlight
               >
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold ${act.color}`}>
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold ${act.color} relative`}>
                   {act.img}
+                  {i === 0 && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-white animate-pulse" />
+                  )}
                 </div>
                 <div className="flex-1">
                   <div className="text-xs text-slate-600"><span className="font-bold text-slate-900">{act.user}</span> {act.action}</div>
@@ -159,56 +234,9 @@ function OrdersView({ isInteractive }: { isInteractive: boolean }) {
     ] as any[]
   });
 
-  // Continuous Simulation Loop - DISABLED on mobile for performance
+  // Continuous Simulation Loop - DISABLED based on user feedback
   useEffect(() => {
-    if (!isInteractive || reduceAnimations) return;
-
-    let step = 0;
-    const interval = setInterval(() => {
-      setColumns(prev => {
-        const next = { ...prev };
-
-        // Cycle actions based on step counter to create a flow
-        // Step 0: Move New -> Prep
-        if (step % 4 === 0 && next.new.length > 0) {
-          const item = next.new[0];
-          next.new = next.new.slice(1);
-          next.prep = [...next.prep, item];
-        }
-        // Step 1: Move Prep -> Quality
-        else if (step % 4 === 1 && next.prep.length > 0) {
-          const item = next.prep[0];
-          next.prep = next.prep.slice(1);
-          next.quality = [...next.quality, item];
-        }
-        // Step 2: Move Quality -> Ready
-        else if (step % 4 === 2 && next.quality.length > 0) {
-          const item = next.quality[0];
-          next.quality = next.quality.slice(1);
-          next.ready = [...next.ready, item];
-        }
-        // Step 3: Clear Ready (Pickup) & Add New Order
-        else if (step % 4 === 3) {
-          if (next.ready.length > 0) {
-            next.ready = next.ready.slice(1); // Driver Pickup
-          }
-          // Ingest new order
-          const newId = 4933 + Math.floor(step / 4);
-          next.new = [...next.new, {
-            id: newId,
-            customer: ["Blue Sky", "Red River", "Golden Gate"][Math.floor(Math.random() * 3)],
-            items: Math.floor(Math.random() * 20) + 1,
-            total: `$${Math.floor(Math.random() * 1000) + 100}`,
-            time: "Just now"
-          }];
-        }
-
-        return next;
-      });
-      step++;
-    }, 2000); // Action every 2 seconds
-
-    return () => clearInterval(interval);
+    // Static view only
   }, [isInteractive]);
 
   const Column = ({ title, cards, color }: any) => (
@@ -582,13 +610,7 @@ function FleetView() {
   const [routeType, setRouteType] = useState('direct');
 
   useEffect(() => {
-    const t = setInterval(() => {
-      setRerouting(true);
-      setTimeout(() => setRouteType('optimized'), 1000);
-      setTimeout(() => setRerouting(false), 3500);
-      setTimeout(() => setRouteType('direct'), 8000); // reset
-    }, 10000);
-    return () => clearInterval(t);
+    // Static view only
   }, []);
 
   return (

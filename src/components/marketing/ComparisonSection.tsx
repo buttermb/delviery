@@ -99,15 +99,15 @@ export function ComparisonSection() {
               <table className="w-full">
                 <caption className="sr-only">Feature comparison between FloraIQ, Competitor A, and Spreadsheets</caption>
                 <thead>
-                  <tr className="border-b border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))]">
-                    <th scope="col" className="text-left p-4 font-semibold text-[hsl(var(--marketing-text))]">Feature</th>
-                    <th scope="col" className="text-center p-4 font-semibold text-[hsl(var(--marketing-text))] bg-[hsl(var(--marketing-primary))/0.05] rounded-t-xl">
-                      <span className="text-[hsl(var(--marketing-primary))]">FloraIQ</span>
+                  <tr className="border-b border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))] font-mono text-sm">
+                    <th scope="col" className="text-left p-4 font-bold text-[hsl(var(--marketing-text))]">System_Capabilities</th>
+                    <th scope="col" className="text-center p-4 font-bold text-[hsl(var(--marketing-text))] bg-[hsl(var(--marketing-primary))/0.05] rounded-t-xl border-x border-t border-[hsl(var(--marketing-primary))/0.1]">
+                      <span className="text-[hsl(var(--marketing-primary))]">FloraIQ_Core</span>
                     </th>
-                    <th scope="col" className="text-center p-4 font-semibold text-[hsl(var(--marketing-text-light))]">
-                      Competitor A
+                    <th scope="col" className="text-center p-4 font-semibold text-[hsl(var(--marketing-text-light))] opacity-70">
+                      Legacy ERPs
                     </th>
-                    <th scope="col" className="text-center p-4 font-semibold text-[hsl(var(--marketing-text-light))]">
+                    <th scope="col" className="text-center p-4 font-semibold text-[hsl(var(--marketing-text-light))] opacity-70">
                       Spreadsheets
                     </th>
                   </tr>

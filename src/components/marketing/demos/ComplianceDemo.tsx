@@ -101,22 +101,7 @@ export function ComplianceDemo() {
     ]);
 
     useEffect(() => {
-        // Skip animations on mobile
-        if (shouldUseStaticFallback) return;
-
-        const interval = setInterval(() => {
-            setLogs(prev => {
-                const newLog = {
-                    id: Date.now(),
-                    action: ['SYNC', 'CHECK', 'UPLOAD'][Math.floor(Math.random() * 3)],
-                    details: ['Verifying manifest ID...', 'Syncing package #1A4F...', 'Updating license status...'][Math.floor(Math.random() * 3)],
-                    time: new Date().toLocaleTimeString(),
-                    status: 'success'
-                };
-                return [...prev.slice(1), newLog];
-            });
-        }, 2500);
-        return () => clearInterval(interval);
+        // Static mode only - no fake logs
     }, [shouldUseStaticFallback]);
 
     // Mobile fallback
@@ -125,71 +110,105 @@ export function ComplianceDemo() {
     }
 
     return (
-        <div className="w-full h-[400px] bg-white rounded-xl overflow-hidden border border-slate-200 font-mono text-sm shadow-xl flex flex-col">
+        <div className="w-full h-[400px] bg-white rounded-xl overflow-hidden border border-slate-200 font-mono text-sm shadow-xl flex flex-col relative group">
+
+            {/* SCANNER BEAM ANIMATION */}
+            <motion.div
+                className="absolute inset-x-0 h-[2px] bg-emerald-500/50 z-20 shadow-[0_0_15px_rgba(16,185,129,0.5)] pointer-events-none"
+                animate={{ top: ['0%', '100%', '0%'] }}
+                transition={{ duration: 8, ease: "linear", repeat: Infinity }}
+            />
+
             {/* Header */}
-            <div className="h-10 bg-slate-50 border-b border-slate-200 flex items-center justify-between px-4">
+            <div className="h-10 bg-slate-50 border-b border-slate-200 flex items-center justify-between px-4 z-10 relative">
                 <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-[hsl(var(--marketing-primary))]" />
-                    <span className="text-slate-700 font-semibold">FloraIQ Compliance Engine</span>
+                    <div className="relative">
+                        <ShieldCheck className="w-4 h-4 text-[hsl(var(--marketing-primary))]" />
+                        {/* Shield Glow */}
+                        <div className="absolute inset-0 bg-[hsl(var(--marketing-primary))] blur-md opacity-20 animate-pulse" />
+                    </div>
+                    <span className="text-slate-700 font-semibold tracking-tight">FloraIQ Compliance Engine</span>
                 </div>
-                <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-emerald-600 text-xs uppercase tracking-wider font-medium">System Active</span>
+                <div className="flex items-center gap-2 bg-emerald-50 px-2 py-1 rounded text-emerald-700 border border-emerald-100">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[10px] uppercase tracking-wider font-bold">System Active</span>
                 </div>
             </div>
 
-            <div className="flex-1 flex min-h-0 bg-white">
+            <div className="flex-1 flex min-h-0 bg-white relative z-0">
                 {/* Sidebar Status */}
-                <div className="w-1/3 border-r border-slate-100 bg-slate-50/50 p-4 space-y-6 hidden sm:block">
-                    <div>
-                        <div className="text-slate-500 text-xs uppercase tracking-widest mb-2 font-medium">License Status</div>
-                        <div className="flex items-center gap-2 text-slate-800 font-medium">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                            <span>Active (C11-0000123)</span>
+                <div className="w-1/3 border-r border-slate-100 bg-slate-50/30 p-4 space-y-6 hidden sm:block relative overflow-hidden">
+                    {/* Background Grid Pattern */}
+                    <svg className="absolute inset-0 opacity-[0.03] z-0" width="100%" height="100%">
+                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                        </pattern>
+                        <rect width="100%" height="100%" fill="url(#grid)" />
+                    </svg>
+
+                    <div className="relative z-10">
+                        <div className="text-slate-400 text-[10px] uppercase tracking-widest mb-1 font-bold">License Status</div>
+                        <div className="bg-white border border-slate-200 rounded-lg p-2 shadow-sm flex items-center gap-2 text-slate-800 font-medium">
+                            <div className="bg-emerald-100 p-1 rounded">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                            </div>
+                            <span className="font-mono text-xs">Active (C11-000...)</span>
                         </div>
                     </div>
 
-                    <div>
-                        <div className="text-slate-500 text-xs uppercase tracking-widest mb-2 font-medium">Manifests</div>
+                    <div className="relative z-10">
+                        <div className="text-slate-400 text-[10px] uppercase tracking-widest mb-1 font-bold">Manifests</div>
                         <div className="flex items-center justify-between text-slate-800 mb-1">
-                            <span>Generated</span>
-                            <span className="font-bold">1,248</span>
+                            <span className="text-xs">Generated</span>
+                            <span className="font-mono font-bold text-sm">1,248</span>
                         </div>
-                        <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                            <div className="bg-[hsl(var(--marketing-primary))] h-full w-[98%]"></div>
+                        <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                            <motion.div
+                                className="bg-[hsl(var(--marketing-primary))] h-full w-[98%]"
+                                animate={{ opacity: [0.8, 1, 0.8] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                            />
                         </div>
-                        <div className="text-right text-[10px] text-slate-500 mt-1">99.9% Success Rate</div>
+                        <div className="text-right text-[10px] text-emerald-600 font-bold mt-1">99.9% Success Rate</div>
                     </div>
 
-                    <div>
-                        <div className="text-slate-500 text-xs uppercase tracking-widest mb-2 font-medium">Last Sync</div>
-                        <div className="flex items-center gap-2 text-slate-800">
-                            <RefreshCw className="w-4 h-4 text-blue-500 animate-spin-slow" />
-                            <span>Just now</span>
+                    <div className="relative z-10">
+                        <div className="text-slate-400 text-[10px] uppercase tracking-widest mb-1 font-bold">Sync Pulse</div>
+                        <div className="flex items-center gap-2 text-slate-800 bg-blue-50 border border-blue-100 rounded-lg p-2">
+                            <RefreshCw className="w-3.5 h-3.5 text-blue-500 animate-spin-slow" />
+                            <span className="text-xs font-mono">Live Sync: 45ms</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Live Logs */}
-                <div className="flex-1 p-4 overflow-hidden relative bg-white">
-                    <div className="absolute top-0 right-0 p-4 pointer-events-none bg-gradient-to-b from-white via-transparent to-transparent h-20 w-full z-10" />
-                    <div className="absolute bottom-0 right-0 p-4 pointer-events-none bg-gradient-to-t from-white via-transparent to-transparent h-20 w-full z-10" />
+                {/* Live Logs - TERMINAL STYLE */}
+                <div className="flex-1 p-0 overflow-hidden relative bg-[#0f172a]">
+                    <div className="absolute top-0 right-0 p-4 pointer-events-none bg-gradient-to-b from-[#0f172a] via-transparent to-transparent h-10 w-full z-10" />
+                    <div className="absolute bottom-0 right-0 p-4 pointer-events-none bg-gradient-to-t from-[#0f172a] via-transparent to-transparent h-10 w-full z-10" />
 
-                    <div className="space-y-3">
+                    <div className="p-4 font-mono text-xs space-y-2 h-full flex flex-col justify-end">
                         {logs.map((log) => (
                             <motion.div
                                 key={log.id}
-                                initial={{ opacity: 0, x: -10 }}
+                                initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="flex items-center gap-3 text-slate-600 border-l-2 border-slate-100 pl-3 py-1"
+                                transition={{ duration: 0.3 }}
+                                className="flex items-start gap-3 text-slate-300 border-l-2 border-slate-700 pl-3 py-0.5 hover:bg-white/5 transition-colors rounded-r"
                             >
-                                <span className="text-slate-400 text-xs font-medium">{log.time}</span>
-                                <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${log.status === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
+                                <span className="text-slate-500 text-[10px] min-w-[50px]">{log.time.split(' ')[0]}</span>
+                                <span className={`text-[10px] font-bold px-1.5 rounded min-w-[60px] text-center ${log.action === 'SYNC' ? 'text-blue-400 bg-blue-900/30' :
+                                    log.action === 'UPLOAD' ? 'text-amber-400 bg-amber-900/30' :
+                                        'text-emerald-400 bg-emerald-900/30'
+                                    }`}>
                                     {log.action}
                                 </span>
-                                <span className="text-slate-700 truncate font-medium">{log.details}</span>
+                                <span className="text-slate-300 truncate font-medium">{log.details}</span>
                             </motion.div>
                         ))}
+                        <div className="flex items-center gap-2 text-emerald-500 pt-2 animate-pulse">
+                            <span className="w-1.5 h-3 bg-emerald-500 block" />
+                            <span className="text-[10px] uppercase">Awaiting input...</span>
+                        </div>
                     </div>
                 </div>
             </div>

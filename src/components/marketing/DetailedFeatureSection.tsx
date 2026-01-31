@@ -11,40 +11,43 @@ export function DetailedFeatureSection() {
     const features = [
         {
             id: 'compliance',
-            title: 'Automated Compliance',
-            description: 'State reporting happens automatically in the background. We sync with Metrc every 5 minutes so your manifests are always audit-ready.',
-            bullets: ['Real-time Metrc sync', 'Automated manifest generation', 'Discrepancy alerts'],
+            title: 'Metrc Webhooks & Sync',
+            description: 'We poll Metrc every 300ms. If a manifest fails, you get a PagerDuty alert instantly. No manual CSV uploads required.',
+            bullets: ['Websocket_RT_Updates', 'Auto_Manifest_Gen', 'Drift_Detection_Algo'],
             link: '/features/compliance',
-            linkText: 'Learn more about Automated Compliance',
+            linkText: 'View Integration Docs',
             icon: ShieldCheck,
             demo: <ComplianceDemo />,
-            align: 'left' // Text left, Demo right
+            align: 'left'
         },
         {
             id: 'logistics',
-            title: 'Smart Logistics',
-            description: 'Maximize driver efficiency with algorithmic route planning. Reduce fuel costs and increase stops per hour with our intelligent dispatch engine.',
-            bullets: ['Multi-stop optimization', 'Driver mobile app', 'Proof of delivery (e-signature)'],
+            title: 'Route Optimization Engine',
+            description: 'Our O(n) routing algorithm handles complex time windows and vehicle capacity constraints to maximize stops per hour.',
+            bullets: ['Multi_Stop_Heuristics', 'Driver_App_v2.1', 'Proof_Of_Dlvry_Sig'],
             link: '/features/logistics',
-            linkText: 'Learn more about Smart Logistics',
+            linkText: 'Explore Routing API',
             icon: Truck,
             demo: (
-                <div className="w-full h-[500px] overflow-hidden rounded-xl border border-[hsl(var(--marketing-border))] shadow-2xl relative">
+                <div className="w-full h-[500px] overflow-hidden rounded border border-[hsl(var(--marketing-border))] shadow-2xl relative bg-[#0f172a]">
+                    <div className="absolute top-0 inset-x-0 h-6 bg-slate-800 border-b border-slate-700 flex items-center px-2 z-20">
+                        <div className="text-[10px] text-slate-400 font-mono">dispatcher_view.exe</div>
+                    </div>
                     <LogisticsDemo />
                 </div>
             ),
-            align: 'right' // Text right, Demo left
+            align: 'right'
         },
         {
             id: 'ecommerce',
-            title: 'B2B E-Commerce',
-            description: 'Give your retailers a modern ordering experience. Your live menu is always up to date with warehouse inventory, preventing overselling.',
-            bullets: ['Live inventory feed', 'Custom price tiers', 'One-click reordering'],
+            title: 'Headless Inventory',
+            description: 'Your physical inventory is the single source of truth. Connect via GraphQL or use our pre-built B2B storefront components.',
+            bullets: ['Realtime_Inv_Feed', 'Price_Tier_Logic', '1_Click_Reorder_Hook'],
             link: '/features/ecommerce',
-            linkText: 'Learn more about B2B E-Commerce',
+            linkText: 'Read GraphQL Schema',
             icon: ShoppingCart,
             demo: (
-                <div className="w-full h-[600px] overflow-hidden rounded-xl border border-[hsl(var(--marketing-border))] shadow-2xl">
+                <div className="w-full h-[600px] overflow-hidden rounded border border-[hsl(var(--marketing-border))] shadow-2xl">
                     <StorefrontDemo />
                 </div>
             ),
@@ -57,11 +60,12 @@ export function DetailedFeatureSection() {
             <div className="container mx-auto px-4">
 
                 <div className="text-center max-w-3xl mx-auto mb-20">
-                    <h2 className="text-4xl md:text-5xl font-bold text-[hsl(var(--marketing-text))] mb-6 leading-tight">
-                        Built for scale, <br /> designed for compliance
+                    <h2 className="text-3xl md:text-5xl font-mono font-bold text-[hsl(var(--marketing-text))] mb-6 leading-tight tracking-tight">
+                        Built for <span className="text-[hsl(var(--marketing-primary))]">Scale</span>. <br />
+                        Designed for <span className="text-[hsl(var(--marketing-primary))]">Compliance</span>.
                     </h2>
-                    <p className="text-xl text-[hsl(var(--marketing-text-light))]">
-                        Everything you need to run a modern cannabis distribution business.
+                    <p className="text-xl text-[hsl(var(--marketing-text-light))] font-mono">
+                         // Full-stack distribution infrastructure
                     </p>
                 </div>
 
@@ -77,35 +81,35 @@ export function DetailedFeatureSection() {
                         >
                             {/* Text Content */}
                             <div className="flex-1 space-y-8">
-                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[hsl(var(--marketing-primary))]/10 text-[hsl(var(--marketing-primary))] text-sm font-medium">
-                                    <feature.icon className="w-4 h-4" />
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[hsl(var(--marketing-primary))]/10 text-[hsl(var(--marketing-primary))] text-xs font-mono font-bold uppercase tracking-widest border border-[hsl(var(--marketing-primary))]/20">
+                                    <feature.icon className="w-3.5 h-3.5" />
                                     {feature.title}
                                 </div>
 
-                                <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[hsl(var(--marketing-text))] leading-tight">
+                                <h3 className="text-3xl md:text-4xl font-bold font-mono text-[hsl(var(--marketing-text))] leading-tight tracking-tighter">
                                     {feature.title}
                                 </h3>
 
-                                <p className="text-xl text-[hsl(var(--marketing-text-light))] leading-relaxed">
+                                <p className="text-lg text-[hsl(var(--marketing-text-light))] leading-relaxed font-sans">
                                     {feature.description}
                                 </p>
 
                                 <ul className="space-y-4">
                                     {feature.bullets.map((bullet, i) => (
                                         <li key={i} className="flex items-center gap-3">
-                                            <div className="w-6 h-6 rounded-full bg-[hsl(var(--marketing-primary))]/20 flex items-center justify-center flex-shrink-0">
-                                                <CheckCircle2 className="w-4 h-4 text-[hsl(var(--marketing-primary))]" />
+                                            <div className="w-5 h-5 rounded bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center flex-shrink-0">
+                                                <CheckCircle2 className="w-3 h-3 text-[hsl(var(--marketing-primary))]" />
                                             </div>
-                                            <span className="text-lg text-[hsl(var(--marketing-text))] font-medium">{bullet}</span>
+                                            <span className="text-sm font-mono text-[hsl(var(--marketing-text))] opacity-80">{bullet}</span>
                                         </li>
                                     ))}
                                 </ul>
 
                                 <div className="pt-4">
                                     <Link to={feature.link}>
-                                        <Button variant="link" className="p-0 h-auto text-[hsl(var(--marketing-primary))] hover:text-[hsl(var(--marketing-secondary))] font-semibold text-lg group">
+                                        <Button variant="link" className="p-0 h-auto text-[hsl(var(--marketing-primary))] hover:text-[hsl(var(--marketing-secondary))] font-mono text-sm uppercase tracking-widest group">
                                             {feature.linkText}
-                                            <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                                            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                                         </Button>
                                     </Link>
                                 </div>
@@ -113,7 +117,7 @@ export function DetailedFeatureSection() {
 
                             {/* Demo Visual */}
                             <div className="flex-1 w-full relative perspective-[1000px] group">
-                                <div className="relative transform transition-transform duration-700 hover:rotate-y-2 hover:rotate-x-2">
+                                <div className="relative transform transition-transform duration-700 hover:rotate-y-1 hover:rotate-x-1">
                                     {feature.demo}
                                 </div>
                             </div>

@@ -55,23 +55,20 @@ export function ProblemSolutionSection() {
   const [activeTab, setActiveTab] = useState<'before' | 'after'>('before');
 
   return (
-    <section className="py-12 md:py-20 bg-[hsl(var(--marketing-bg))] relative overflow-x-hidden">
-      {/* Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[hsl(var(--marketing-primary))] opacity-5 blur-[100px] rounded-full pointer-events-none" />
-
+    <section className="py-12 md:py-24 bg-[hsl(var(--marketing-bg))] relative overflow-x-hidden border-t border-[hsl(var(--marketing-border))]">
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-6xl mx-auto">
           <motion.div
-            className="text-center mb-12 md:mb-16"
+            className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
-              Stop Managing Spreadsheets, Start Scaling Distribution
+            <h2 className="text-3xl md:text-5xl font-mono font-bold mb-6 text-[hsl(var(--marketing-text))] tracking-tight">
+              Spreadsheet Hell <span className="text-[hsl(var(--marketing-text-light))]">vs.</span> Automated Ops
             </h2>
-            <p className="text-xl text-[hsl(var(--marketing-text-light))]">
-              See how FloraIQ transforms your cannabis distribution operations
+            <p className="text-lg font-mono text-[hsl(var(--marketing-text-light))] max-w-2xl mx-auto">
+              We built FloraIQ because we got tired of debugging inventory drift in Excel.
             </p>
           </motion.div>
 
@@ -80,118 +77,104 @@ export function ProblemSolutionSection() {
             <div className="flex gap-2 mb-6 p-1 bg-[hsl(var(--marketing-bg-subtle))] rounded-lg border border-[hsl(var(--marketing-border))]">
               <button
                 onClick={() => setActiveTab('before')}
-                className={`flex-1 px-4 py-3 rounded-md font-semibold transition-all ${activeTab === 'before'
+                className={`flex-1 px-4 py-3 rounded-md font-mono text-xs font-bold transition-all ${activeTab === 'before'
                   ? 'bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] shadow-sm border border-[hsl(var(--marketing-border))]'
                   : 'text-[hsl(var(--marketing-text-light))]'
                   }`}
               >
-                Before FloraIQ
+                Before.xlsx
               </button>
               <button
                 onClick={() => setActiveTab('after')}
-                className={`flex-1 px-4 py-3 rounded-md font-semibold transition-all ${activeTab === 'after'
+                className={`flex-1 px-4 py-3 rounded-md font-mono text-xs font-bold transition-all ${activeTab === 'after'
                   ? 'bg-[hsl(var(--marketing-primary))] text-white shadow-sm'
                   : 'text-[hsl(var(--marketing-text-light))]'
                   }`}
               >
-                With FloraIQ
+                After (System)
               </button>
             </div>
           )}
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Problems */}
+          <div className="grid md:grid-cols-2 gap-8 items-stretch">
+            {/* Problems - The "Old Way" */}
             <motion.div
-              className={`glass-card p-8 rounded-xl border border-zinc-200 bg-zinc-50/50 ${isMobile && activeTab !== 'before' ? 'hidden' : ''
+              className={`p-8 rounded border-2 border-dashed border-red-200 bg-red-50/10 ${isMobile && activeTab !== 'before' ? 'hidden' : ''
                 }`}
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center border border-zinc-200">
-                  <FileSpreadsheet className="h-6 w-6 text-zinc-400" />
-                </div>
-                <h3 className="text-2xl font-bold text-zinc-600">Before FloraIQ</h3>
+              <div className="flex items-center gap-3 mb-8">
+                <FileSpreadsheet className="h-5 w-5 text-red-400" />
+                <h3 className="text-xl font-bold font-mono text-red-900/70">Legacy_Systems</h3>
               </div>
-              <ul className="space-y-4">
-                {problems.map((problem, index) => {
-                  const Icon = problem.icon;
-                  return (
-                    <motion.li
-                      key={index}
-                      className="flex items-center gap-3 text-[hsl(var(--marketing-text-light))]"
-                      initial={{ opacity: 0, x: -10 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-zinc-100 flex items-center justify-center">
-                        <Icon className="h-4 w-4 text-zinc-400" />
-                      </div>
-                      <span className="text-zinc-600">{problem.text}</span>
-                    </motion.li>
-                  );
-                })}
+              <ul className="space-y-6 font-mono text-sm">
+                <li className="flex items-start gap-3 opacity-70">
+                  <span className="text-red-400 mt-0.5">x</span>
+                  <span>inventory_v4_final_REAL.xlsx</span>
+                </li>
+                <li className="flex items-start gap-3 opacity-70">
+                  <span className="text-red-400 mt-0.5">x</span>
+                  <span>Manual CSV exports (3x daily)</span>
+                </li>
+                <li className="flex items-start gap-3 opacity-70">
+                  <span className="text-red-400 mt-0.5">x</span>
+                  <span>Sync conflicts: 14 items</span>
+                </li>
+                <li className="flex items-start gap-3 opacity-70">
+                  <span className="text-red-400 mt-0.5">x</span>
+                  <span>Email threads for approvals</span>
+                </li>
               </ul>
             </motion.div>
 
-            {/* Solutions */}
+            {/* Solutions - The "Dev Way" */}
             <motion.div
-              className={`glass-card p-8 rounded-xl border border-[hsl(var(--marketing-accent))/0.3] bg-gradient-to-br from-[hsl(var(--marketing-primary))]/5 to-[hsl(var(--marketing-accent))]/5 shadow-xl shadow-[hsl(var(--marketing-accent))/0.1] relative overflow-hidden ${isMobile && activeTab !== 'after' ? 'hidden' : ''
+              className={`p-8 rounded bg-[#1e1e1e] text-emerald-400 border border-emerald-500/20 shadow-2xl relative overflow-hidden ${isMobile && activeTab !== 'after' ? 'hidden' : ''
                 }`}
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              {/* Gold Glow Effect */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[hsl(var(--marketing-accent))/0.1] blur-[50px] rounded-full pointer-events-none" />
-              <div className="flex items-center gap-3 mb-6 relative z-10">
-                <div className="w-12 h-12 rounded-full bg-[hsl(var(--marketing-accent))/0.1] flex items-center justify-center border border-[hsl(var(--marketing-accent))/0.2] shadow-lg shadow-[hsl(var(--marketing-accent))/0.15]">
-                  <Sparkles className="h-6 w-6 text-[hsl(var(--marketing-accent))]" />
+              <div className="flex items-center gap-3 mb-8 border-b border-emerald-500/20 pb-4">
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/20" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
                 </div>
-                <h3 className="text-2xl font-bold text-[hsl(var(--marketing-text))]">With FloraIQ</h3>
+                <h3 className="text-sm font-mono text-emerald-500/50 ml-2">system_status.log</h3>
               </div>
-              <ul className="space-y-4">
-                {solutions.map((solution, index) => {
-                  const Icon = solution.icon;
-                  return (
-                    <motion.li
-                      key={index}
-                      className="flex items-center gap-3 text-[hsl(var(--marketing-text))] font-medium relative z-10"
-                      initial={{ opacity: 0, x: 10 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[hsl(var(--marketing-primary))/0.05] flex items-center justify-center">
-                        <Check className="h-4 w-4 text-[hsl(var(--marketing-primary))]" />
-                      </div>
-                      <span>{solution.text}</span>
-                    </motion.li>
-                  );
-                })}
+
+              <ul className="space-y-4 font-mono text-sm">
+                <li className="flex items-center gap-3">
+                  <Check className="h-4 w-4 text-emerald-500" />
+                  <span><span className="text-emerald-700">{`>`}</span> Sync_Latancy: <span className="text-white">45ms</span></span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Check className="h-4 w-4 text-emerald-500" />
+                  <span><span className="text-emerald-700">{`>`}</span> Man hours saved: <span className="text-white">15.4/wk</span></span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Check className="h-4 w-4 text-emerald-500" />
+                  <span><span className="text-emerald-700">{`>`}</span> Uptime: <span className="text-white">99.99%</span></span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Check className="h-4 w-4 text-emerald-500" />
+                  <span><span className="text-emerald-700">{`>`}</span> Data_Source: <span className="text-white">Single Truth</span></span>
+                </li>
               </ul>
+
+              <div className="mt-8 pt-6 border-t border-emerald-500/20">
+                <div className="text-xs text-emerald-600 mb-2">// Deploy infrastructure</div>
+                <Link to="/signup">
+                  <button className="w-full py-3 bg-emerald-900/30 hover:bg-emerald-900/50 border border-emerald-500/50 text-emerald-400 font-mono text-xs uppercase tracking-widest transition-all">
+                    Initialize_Instance
+                  </button>
+                </Link>
+              </div>
             </motion.div>
           </div>
-
-          {/* CTA */}
-          <motion.div
-            className="text-center mt-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <p className="text-lg font-semibold text-[hsl(var(--marketing-text))] mb-4">
-              Join 400+ cannabis distributors who've transformed their operations
-            </p>
-            <Link to="/signup">
-              <Button size="lg" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white h-12 px-8 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all duration-300">
-                Start Automating Now
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-          </motion.div>
         </div>
       </div>
     </section >

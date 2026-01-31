@@ -1,23 +1,21 @@
 import { motion } from "framer-motion";
 
-const DISTRIBUTORS = [
-    "GreenLeaf Distribution",
-    "CannaLogistics",
-    "HighTide Wholesale",
-    "Verde Valley",
-    "Apex Cannabis",
-    "Pacific Roots",
-    "Emerald City Distro",
-    "Urban Harvest",
-    "Nature's Gift",
-    "Elevated Supply",
+"Emerald Logistics",
+    "CalGreen Distribution",
+    "NorCal Supply Chain",
+    "Pacific Roots Delivery",
+    "Urban Leaf Wholesale",
+    "Verde Valley Co.",
+    "Apex Cannabis Logistics",
+    "HighTide Distro",
+    "Nature's Gift Supply",
+    "Elevated Operations",
     // Duplicate for seamless loop
-    "GreenLeaf Distribution",
-    "CannaLogistics",
-    "HighTide Wholesale",
-    "Verde Valley",
-    "Apex Cannabis",
-];
+    "Emerald Logistics",
+    "CalGreen Distribution",
+    "NorCal Supply Chain",
+    "Pacific Roots Delivery",
+    "Urban Leaf Wholesale",
 
 export function TrustedBy() {
     return (

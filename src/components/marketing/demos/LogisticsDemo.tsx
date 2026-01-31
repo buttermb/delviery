@@ -2,13 +2,13 @@
  * LogisticsDemo Component
  * 
  * Demonstrates the delivery logistics and route optimization features.
- * Desktop: Full animated 3D map with iPhone mockup
+ * Desktop: Full animated 3D map with interactive parallax and radar pulse
  * Mobile: Simplified static preview with key stats
  */
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { MapPin, Navigation, Phone, ChevronRight, Package, CheckCircle2, Truck, Activity, Signal, Route, Clock, Zap } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
 // Mobile-optimized static fallback
@@ -105,6 +105,34 @@ function LogisticsDemoMobile() {
 export function LogisticsDemo() {
     const { shouldUseStaticFallback } = useMobileOptimized();
     const [step, setStep] = useState<'approaching' | 'arrived' | 'signing' | 'complete'>('approaching');
+    
+    // Mouse interaction state
+    const containerRef = useRef<HTMLDivElement>(null);
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+    
+    // Smooth spring physics for tilt
+    const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [5, -5]), { stiffness: 150, damping: 20 });
+    const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-5, 5]), { stiffness: 150, damping: 20 });
+    
+    // Auto-rotation fallback when not hovering
+    const [isHovering, setIsHovering] = useState(false);
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        x.set((e.clientX - centerX) / rect.width);
+        y.set((e.clientY - centerY) / rect.height);
+        setIsHovering(true);
+    };
+
+    const handleMouseLeave = () => {
+        setIsHovering(false);
+        x.set(0);
+        y.set(0);
+    };
 
     useEffect(() => {
         // Skip animations on mobile
@@ -136,13 +164,26 @@ export function LogisticsDemo() {
     }
 
     return (
-        <div className="w-full h-[500px] relative bg-slate-50 rounded-xl overflow-hidden border border-[hsl(var(--marketing-border))] shadow-2xl group font-sans flex items-center justify-center">
+        <div 
+            ref={containerRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            className="w-full h-[500px] relative bg-slate-50 rounded-xl overflow-hidden border border-[hsl(var(--marketing-border))] shadow-2xl group font-sans flex items-center justify-center cursor-crosshair"
+        >
 
             {/* 1. LIGHT MODE 3D MAP BACKGROUND */}
             <div className="absolute inset-0 perspective-[1000px] overflow-hidden bg-slate-50">
                 {/* Tilted Map Plane */}
-                <div className="w-[140%] h-[140%] absolute top-[-20%] left-[-20%] bg-[#f1f5f9] transform rotate-x-60 scale-100"
-                    style={{ transform: 'rotateX(35deg) rotateZ(-10deg) translateY(-50px)' }}>
+                <motion.div 
+                    className="w-[140%] h-[140%] absolute top-[-20%] left-[-20%] bg-[#f1f5f9]"
+                    style={{ 
+                        rotateX: isHovering ? rotateX : 35,
+                        rotateY: isHovering ? rotateY : 0, 
+                        rotateZ: -10,
+                        translateY: -50,
+                        transition: isHovering ? 'none' : 'all 1s ease-in-out'
+                    }}
+                >
 
                     {/* Environment: Parks & Zones */}
                     <div className="absolute top-[10%] left-[20%] w-[20%] h-[15%] bg-emerald-100/60 rounded-3xl border border-emerald-200/50" />
@@ -179,17 +220,20 @@ export function LogisticsDemo() {
                             strokeLinecap="round"
                         />
 
-                        {/* Path Line (Active) */}
-                        <path
+                        {/* Path Line (Active with Gradient Flow) */}
+                        <motion.path
                             d="M200,600 C400,600 500,400 650,350"
                             fill="none"
                             stroke="hsl(var(--marketing-primary))"
                             strokeWidth="8"
                             strokeLinecap="round"
                             className="opacity-90"
+                            strokeDasharray="20 20"
+                            animate={{ strokeDashoffset: -400 }}
+                            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
                         />
 
-                        {/* Moving Vehicle */}
+                        {/* Moving Vehicle with Radar Pulse */}
                         <motion.g
                             animate={{
                                 offsetDistance: step === 'approaching' ? "100%" : "100%"
@@ -197,6 +241,26 @@ export function LogisticsDemo() {
                             transition={{ duration: 4, ease: "easeInOut" }}
                             style={{ offsetPath: 'path("M200,600 C400,600 500,400 650,350")' }}
                         >
+                            {/* Radar Pulse Effect */}
+                            <motion.circle 
+                                r="40" 
+                                fill="none" 
+                                stroke="hsl(var(--marketing-primary))"
+                                strokeWidth="1"
+                                initial={{ opacity: 0.5, scale: 0.5 }}
+                                animate={{ opacity: 0, scale: 2 }}
+                                transition={{ duration: 1.5, repeat: Infinity }}
+                            />
+                            <motion.circle 
+                                r="25" 
+                                fill="none" 
+                                stroke="hsl(var(--marketing-primary))"
+                                strokeWidth="1"
+                                initial={{ opacity: 0.6, scale: 0.5 }}
+                                animate={{ opacity: 0, scale: 1.5 }}
+                                transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+                            />
+                            
                             <circle r="12" fill="white" stroke="hsl(var(--marketing-primary))" strokeWidth="4" />
                             <Truck size={12} className="text-[hsl(var(--marketing-primary))]" x="-6" y="-6" transform="rotate(-15)" />
                         </motion.g>
@@ -207,7 +271,7 @@ export function LogisticsDemo() {
                             <circle r="30" stroke="hsl(var(--marketing-primary))" strokeWidth="1" fill="none" className="animate-ping opacity-30" />
                         </g>
                     </svg>
-                </div>
+                </motion.div>
 
                 {/* Foreground HUD Elements */}
                 <div className="absolute top-6 left-6 flex flex-col gap-2 z-10">
@@ -233,9 +297,16 @@ export function LogisticsDemo() {
             <div className="absolute bottom-8 right-8 z-30 perspective-[1000px] w-[280px]">
                 <motion.div
                     className="w-full min-h-[440px] bg-white rounded-[3rem] p-3 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.15)] relative border-4 border-slate-200 ring-1 ring-slate-100"
-                    initial={{ y: 20, rotateY: -12, rotateX: 5 }}
-                    animate={{ y: 0, rotateY: -8, rotateX: 3 }}
-                    transition={{ repeat: Infinity, repeatType: "mirror", duration: 5 }}
+                    style={{
+                        rotateX: isHovering ? rotateX : 3,
+                        rotateY: isHovering ? rotateY : -8,
+                        transition: isHovering ? 'none' : 'all 3s ease-in-out'
+                    }}
+                    animate={!isHovering ? { 
+                        y: [0, -10, 0],
+                        rotateY: [-8, -12, -8]
+                    } : {}}
+                    transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
                 >
                     {/* Screen */}
                     <div className="w-full h-full bg-slate-50 rounded-[3rem] overflow-hidden relative flex flex-col border border-slate-100">

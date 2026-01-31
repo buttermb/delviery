@@ -18,7 +18,6 @@ import { SectionTransition } from "@/components/marketing/SectionTransition";
 import { ConfettiButton } from "@/components/marketing/ConfettiButton";
 import { SectionSkeleton } from "@/components/marketing/SkeletonLoader";
 import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigationHelper";
-import { LiveChatWidget } from "@/components/LiveChatWidget";
 import { MarketingErrorBoundary } from "@/components/marketing/MarketingErrorBoundary";
 import { TestimonialsCarousel } from "@/components/marketing/TestimonialsCarousel";
 import { VideoShowcase } from "@/components/marketing/VideoShowcase";
@@ -35,7 +34,6 @@ const ProblemSolutionSection = lazy(() => import("@/components/marketing/Problem
 const ComparisonSection = lazy(() => import("@/components/marketing/ComparisonSection").then(m => ({ default: m.ComparisonSection })));
 const IntegrationEcosystem = lazy(() => import("@/components/marketing/IntegrationEcosystem").then(m => ({ default: m.IntegrationEcosystem })));
 const ROICalculator = lazy(() => import("@/components/marketing/ROICalculator").then(m => ({ default: m.ROICalculator })));
-const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingChatButton").then(m => ({ default: m.FloatingChatButton })));
 const PlatformCapabilities = lazy(() => import("@/components/marketing/PlatformCapabilities").then(m => ({ default: m.PlatformCapabilities })));
 const EnhancedDashboardPreview = lazy(() => import("@/components/marketing/EnhancedDashboardPreview").then(m => ({ default: m.EnhancedDashboardPreview })));
 
@@ -389,18 +387,8 @@ export default function MarketingHome() {
         {/* SECTION 11: FOOTER */}
         <MarketingFooter />
 
-        {/* Floating Chat Button */}
-        <MarketingErrorBoundary section="FloatingChat">
-          <Suspense fallback={null}>
-            <FloatingChatButton />
-          </Suspense>
-        </MarketingErrorBoundary>
-
         {/* Keyboard Navigation Helper */}
         <KeyboardNavigationHelper />
-
-        {/* Live Chat Widget */}
-        <LiveChatWidget />
 
         {/* Sticky Mobile CTA */}
         <StickyMobileCTA />
