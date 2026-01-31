@@ -24,20 +24,21 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 
-// Lazy load tab content for performance
-const ProductManagement = lazy(() => import('@/pages/admin/ProductManagement'));
-const DisposableMenus = lazy(() => import('@/pages/admin/DisposableMenus'));
-const InventoryDashboard = lazy(() => import('@/pages/admin/InventoryDashboard'));
-const InventoryManagement = lazy(() => import('@/pages/admin/InventoryManagement'));
-const InventoryMonitoringPage = lazy(() => import('@/pages/admin/InventoryMonitoringPage'));
-const FrontedInventory = lazy(() => import('@/pages/admin/FrontedInventory'));
-const DispatchInventory = lazy(() => import('@/pages/admin/DispatchInventory'));
-const GenerateBarcodes = lazy(() => import('@/pages/admin/GenerateBarcodes'));
-const GlobalProductCatalog = lazy(() => import('@/components/admin/products/GlobalProductCatalog').then(m => ({ default: m.GlobalProductCatalog })));
+// Lazy load tab content with retry for robust module loading
+const ProductManagement = lazyWithRetry(() => import('@/pages/admin/ProductManagement'));
+const DisposableMenus = lazyWithRetry(() => import('@/pages/admin/DisposableMenus'));
+const InventoryDashboard = lazyWithRetry(() => import('@/pages/admin/InventoryDashboard'));
+const InventoryManagement = lazyWithRetry(() => import('@/pages/admin/InventoryManagement'));
+const InventoryMonitoringPage = lazyWithRetry(() => import('@/pages/admin/InventoryMonitoringPage'));
+const FrontedInventory = lazyWithRetry(() => import('@/pages/admin/FrontedInventory'));
+const DispatchInventory = lazyWithRetry(() => import('@/pages/admin/DispatchInventory'));
+const GenerateBarcodes = lazyWithRetry(() => import('@/pages/admin/GenerateBarcodes'));
+const GlobalProductCatalog = lazyWithRetry(() => import('@/components/admin/products/GlobalProductCatalog').then(m => ({ default: m.GlobalProductCatalog })));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">

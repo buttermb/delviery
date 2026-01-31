@@ -22,19 +22,20 @@ import {
     Package,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { lazy, Suspense, useCallback } from 'react';
+import { Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 
-// Lazy load tab content for performance
-const DeliveryManagement = lazy(() => import('@/pages/admin/DeliveryManagement'));
-const LiveOrders = lazy(() => import('@/pages/admin/LiveOrders'));
-const Couriers = lazy(() => import('@/pages/admin/Couriers'));
-const FleetManagement = lazy(() => import('@/pages/admin/FleetManagement'));
-const ReturnsManagementPage = lazy(() => import('@/pages/admin/ReturnsManagementPage'));
-const RouteOptimization = lazy(() => import('@/pages/admin/RouteOptimization'));
-const LiveMap = lazy(() => import('@/pages/admin/LiveMap'));
+// Lazy load tab content with retry for robust module loading
+const DeliveryManagement = lazyWithRetry(() => import('@/pages/admin/DeliveryManagement'));
+const LiveOrders = lazyWithRetry(() => import('@/pages/admin/LiveOrders'));
+const Couriers = lazyWithRetry(() => import('@/pages/admin/Couriers'));
+const FleetManagement = lazyWithRetry(() => import('@/pages/admin/FleetManagement'));
+const ReturnsManagementPage = lazyWithRetry(() => import('@/pages/admin/ReturnsManagementPage'));
+const RouteOptimization = lazyWithRetry(() => import('@/pages/admin/RouteOptimization'));
+const LiveMap = lazyWithRetry(() => import('@/pages/admin/LiveMap'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">

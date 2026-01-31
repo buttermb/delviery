@@ -17,15 +17,17 @@ import {
     Shield,
     Headphones,
 } from 'lucide-react';
-import { lazy, Suspense, useCallback } from 'react';
+import { Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 
-const SettingsPage = lazy(() => import('@/pages/admin/SettingsPage'));
-const BillingPage = lazy(() => import('@/pages/tenant-admin/BillingPage'));
-const APIAccessPage = lazy(() => import('@/pages/tenant-admin/APIAccessPage'));
-const SecurityPage = lazy(() => import('@/pages/super-admin/SecurityPage'));
-const HelpPage = lazy(() => import('@/pages/HelpPage'));
+// Lazy load tab content with retry for robust module loading
+const SettingsPage = lazyWithRetry(() => import('@/pages/admin/SettingsPage'));
+const BillingPage = lazyWithRetry(() => import('@/pages/tenant-admin/BillingPage'));
+const APIAccessPage = lazyWithRetry(() => import('@/pages/tenant-admin/APIAccessPage'));
+const SecurityPage = lazyWithRetry(() => import('@/pages/super-admin/SecurityPage'));
+const HelpPage = lazyWithRetry(() => import('@/pages/HelpPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">

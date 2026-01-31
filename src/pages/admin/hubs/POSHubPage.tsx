@@ -16,12 +16,13 @@ import PointOfSale from '@/pages/admin/PointOfSale';
 import { ShiftManager } from '@/components/pos/ShiftManager';
 import ZReportContent from './panels/ZReportPanel';
 
-// Lazy load for performance
-import { lazy, Suspense } from 'react';
+// Lazy load for performance with retry
+import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 
-const POSAnalyticsPage = lazy(() => import('@/pages/tenant-admin/POSAnalyticsPage'));
+const POSAnalyticsPage = lazyWithRetry(() => import('@/pages/tenant-admin/POSAnalyticsPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">

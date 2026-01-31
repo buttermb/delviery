@@ -22,7 +22,7 @@ import {
     FileText,
 } from 'lucide-react';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { lazy, Suspense, useMemo, useCallback, useState } from 'react';
+import { Suspense, useMemo, useCallback, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { QuickActions } from '@/components/admin/ui/QuickActions';
 import { AlertBadge } from '@/components/admin/ui/AlertBadge';
@@ -30,14 +30,15 @@ import { useAdminBadgeCounts } from '@/hooks/useAdminBadgeCounts';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { useUnifiedOrders, type UnifiedOrder } from '@/hooks/useUnifiedOrders';
 import { toast } from 'sonner';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 
-// Lazy load tab content for performance
-const WholesaleOrdersPage = lazy(() => import('@/pages/admin/WholesaleOrdersPage'));
-const StorefrontOrders = lazy(() => import('@/pages/admin/storefront/StorefrontOrders'));
-const PreOrdersPage = lazy(() => import('@/pages/admin/PreOrdersPage'));
-const LiveOrders = lazy(() => import('@/pages/admin/LiveOrders'));
-const OrderPipelinePage = lazy(() => import('@/pages/tenant-admin/OrderPipelinePage'));
-const Orders = lazy(() => import('@/pages/admin/Orders'));
+// Lazy load tab content with retry for robust module loading
+const WholesaleOrdersPage = lazyWithRetry(() => import('@/pages/admin/WholesaleOrdersPage'));
+const StorefrontOrders = lazyWithRetry(() => import('@/pages/admin/storefront/StorefrontOrders'));
+const PreOrdersPage = lazyWithRetry(() => import('@/pages/admin/PreOrdersPage'));
+const LiveOrders = lazyWithRetry(() => import('@/pages/admin/LiveOrders'));
+const OrderPipelinePage = lazyWithRetry(() => import('@/pages/tenant-admin/OrderPipelinePage'));
+const Orders = lazyWithRetry(() => import('@/pages/admin/Orders'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
