@@ -41,8 +41,13 @@ import {
   EyeOff,
   Store,
   Upload,
-  FileUp
+  FileUp,
+  AlertTriangle,
+  CheckCircle,
+  ChevronDown,
+  BoxIcon
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import {
   Dialog,
@@ -224,6 +229,19 @@ export default function ProductManagement() {
   const [batchCategoryEditorOpen, setBatchCategoryEditorOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  const toggleRowExpand = (productId: string) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(productId)) {
+        next.delete(productId);
+      } else {
+        next.add(productId);
+      }
+      return next;
+    });
+  };
 
   // Optimistic locking for concurrent edit protection
   const { updateWithLock, isUpdating: isLockUpdating } = useOptimisticLock('products');
@@ -342,6 +360,16 @@ export default function ProductManagement() {
         }
       });
   }, [products, debouncedSearchTerm, categoryFilter, sortBy, stockStatusFilter]);
+
+  // Stock status counts for stats bar
+  const totalUnits = products.reduce((sum, p) => sum + (p.available_quantity || 0), 0);
+  const inventoryValue = products.reduce((sum, p) => sum + (p.available_quantity || 0) * (p.wholesale_price || 0), 0);
+  const lowStockCount = products.filter(p => {
+    const qty = p.available_quantity || 0;
+    const lowAlert = p.low_stock_alert || 10;
+    return qty > 0 && qty <= lowAlert;
+  }).length;
+  const outOfStockCount = products.filter(p => (p.available_quantity || 0) <= 0).length;
 
   // Combined batch products (scanned + selected)
   const combinedBatchProducts = useMemo(() => {
@@ -895,6 +923,22 @@ export default function ProductManagement() {
   // --- Table Columns Definition ---
   const columns: ResponsiveColumn<Product>[] = [
     {
+      header: "",
+      className: "w-[40px]",
+      cell: (product) => (
+        <button
+          onClick={(e) => { e.stopPropagation(); toggleRowExpand(product.id); }}
+          className="p-1 hover:bg-muted rounded transition-colors"
+          aria-label={expandedRows.has(product.id) ? "Collapse row" : "Expand row"}
+        >
+          <ChevronDown className={cn(
+            "h-4 w-4 text-muted-foreground transition-transform duration-200",
+            expandedRows.has(product.id) && "rotate-180"
+          )} />
+        </button>
+      )
+    },
+    {
       header: (
         <Checkbox
           checked={filteredProducts.length > 0 && selectedProducts.length === filteredProducts.length}
@@ -1037,6 +1081,73 @@ export default function ProductManagement() {
     />
   );
 
+  const renderExpandedContent = (product: Product) => {
+    const margin = product.wholesale_price && product.cost_per_unit
+      ? ((product.wholesale_price - product.cost_per_unit) / product.wholesale_price * 100).toFixed(1)
+      : null;
+
+    return (
+      <div className="px-4 py-3 bg-muted/30 border-t">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div>
+            <span className="text-muted-foreground">Vendor</span>
+            <p className="font-medium">{product.vendor_name || '—'}</p>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Batch</span>
+            <p className="font-medium font-mono">{product.batch_number || '—'}</p>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Cost/Unit</span>
+            <p className="font-medium">{product.cost_per_unit ? `$${product.cost_per_unit.toFixed(2)}` : '—'}</p>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Margin</span>
+            <p className={cn("font-medium", margin && parseFloat(margin) > 30 ? "text-green-600" : margin && parseFloat(margin) < 15 ? "text-red-600" : "")}>{margin ? `${margin}%` : '—'}</p>
+          </div>
+          {product.strain_name && (
+            <div>
+              <span className="text-muted-foreground">Strain</span>
+              <p className="font-medium">{product.strain_name}</p>
+            </div>
+          )}
+          {(product.thc_percent || product.cbd_percent) && (
+            <div>
+              <span className="text-muted-foreground">Potency</span>
+              <p className="font-medium">
+                {product.thc_percent ? `THC: ${product.thc_percent}%` : ''}
+                {product.thc_percent && product.cbd_percent ? ' / ' : ''}
+                {product.cbd_percent ? `CBD: ${product.cbd_percent}%` : ''}
+              </p>
+            </div>
+          )}
+          <div>
+            <span className="text-muted-foreground">Reorder Point</span>
+            <p className="font-medium">{product.low_stock_alert || 10} units</p>
+          </div>
+          <div className="col-span-2 md:col-span-1">
+            <span className="text-muted-foreground">Quick Actions</span>
+            <div className="flex gap-2 mt-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { setEditingProduct(product); setIsDialogOpen(true); }}
+              >
+                <Edit className="h-3 w-3 mr-1" /> Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { setLabelProduct(product); setLabelDialogOpen(true); }}
+              >
+                <Printer className="h-3 w-3 mr-1" /> Label
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   if (tenantLoading) {
     return (
@@ -1044,45 +1155,35 @@ export default function ProductManagement() {
         {/* Header skeleton */}
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-4 w-96" />
+            <Skeleton className="h-8 w-64 skeleton-shimmer" />
+            <Skeleton className="h-4 w-96 skeleton-shimmer" />
           </div>
           <div className="flex gap-2">
-            <Skeleton className="h-10 w-32" />
-            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32 skeleton-shimmer" />
+            <Skeleton className="h-10 w-32 skeleton-shimmer" />
           </div>
         </div>
-        {/* Stats skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <Skeleton className="h-8 w-8 rounded" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-6 w-16" />
-                    <Skeleton className="h-4 w-24" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* Stats bar skeleton */}
+        <Skeleton className="h-12 w-full rounded-lg skeleton-shimmer" />
         {/* Products grid skeleton */}
         <Card>
           <CardHeader>
-            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-6 w-32 skeleton-shimmer" />
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="border rounded-lg p-4 space-y-3">
-                  <Skeleton className="h-32 w-full rounded" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
+                <div
+                  key={i}
+                  className="border rounded-lg p-4 space-y-3 animate-in fade-in slide-in-from-bottom-2"
+                  style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'backwards' }}
+                >
+                  <Skeleton className="h-32 w-full rounded skeleton-shimmer" />
+                  <Skeleton className="h-4 w-3/4 skeleton-shimmer" />
+                  <Skeleton className="h-4 w-1/2 skeleton-shimmer" />
                   <div className="flex justify-between">
-                    <Skeleton className="h-6 w-16" />
-                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-6 w-16 skeleton-shimmer" />
+                    <Skeleton className="h-6 w-20 skeleton-shimmer" />
                   </div>
                 </div>
               ))}
@@ -1168,66 +1269,51 @@ export default function ProductManagement() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <Package className="h-8 w-8 text-primary" />
-              <div>
-                <p className="text-2xl font-bold">{products.length}</p>
-                <p className="text-sm text-muted-foreground">Total Products</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <DollarSign className="h-8 w-8 text-green-500" />
-              <div>
-                <p className="text-2xl font-bold">
-                  {products.reduce((sum, p) => sum + (p.available_quantity || 0), 0)}
-                </p>
-                <p className="text-sm text-muted-foreground">Available Units</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <Package className="h-8 w-8 text-blue-500" />
-              <div>
-                <p className="text-2xl font-bold">
-                  {products.reduce((sum, p) => sum + (p.fronted_quantity || 0), 0)}
-                </p>
-                <p className="text-sm text-muted-foreground">Fronted Units</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <DollarSign className="h-8 w-8 text-yellow-500" />
-              <div>
-                <p className="text-2xl font-bold">
-                  $
-                  {products
-                    .reduce(
-                      (sum, p) =>
-                        sum +
-                        (p.available_quantity || 0) * (p.wholesale_price || 0),
-                      0
-                    )
-                    .toFixed(0)}
-                </p>
-                <p className="text-sm text-muted-foreground">Inventory Value</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Compact Stats Bar */}
+      <div className="flex items-center gap-4 sm:gap-6 py-2.5 px-4 bg-muted/30 rounded-lg overflow-x-auto scrollbar-hide">
+        <button
+          onClick={() => setStockStatusFilter('all')}
+          className={cn(
+            "flex items-center gap-2 whitespace-nowrap transition-opacity hover:opacity-80",
+            stockStatusFilter === 'all' ? "opacity-100" : "opacity-60"
+          )}
+        >
+          <Package className="h-4 w-4 text-blue-500" />
+          <span className="text-sm text-muted-foreground">Products</span>
+          <span className="font-bold tabular-nums">{products.length}</span>
+        </button>
+        <div className="flex items-center gap-2 whitespace-nowrap">
+          <BoxIcon className="h-4 w-4 text-emerald-500" />
+          <span className="text-sm text-muted-foreground">Units</span>
+          <span className="font-bold tabular-nums">{totalUnits.toLocaleString()}</span>
+        </div>
+        <div className="flex items-center gap-2 whitespace-nowrap">
+          <DollarSign className="h-4 w-4 text-amber-500" />
+          <span className="text-sm text-muted-foreground">Value</span>
+          <span className="font-bold tabular-nums">${(inventoryValue / 1000).toFixed(1)}k</span>
+        </div>
+        <button
+          onClick={() => setStockStatusFilter('low_stock')}
+          className={cn(
+            "flex items-center gap-2 whitespace-nowrap transition-opacity hover:opacity-80",
+            stockStatusFilter === 'low_stock' ? "opacity-100" : "opacity-60"
+          )}
+        >
+          <AlertTriangle className="h-4 w-4 text-yellow-500" />
+          <span className="text-sm text-muted-foreground">Low Stock</span>
+          <span className={cn("font-bold tabular-nums", lowStockCount > 0 && "text-yellow-600")}>{lowStockCount}</span>
+        </button>
+        <button
+          onClick={() => setStockStatusFilter('out_of_stock')}
+          className={cn(
+            "flex items-center gap-2 whitespace-nowrap transition-opacity hover:opacity-80",
+            stockStatusFilter === 'out_of_stock' ? "opacity-100" : "opacity-60"
+          )}
+        >
+          <AlertTriangle className="h-4 w-4 text-red-500" />
+          <span className="text-sm text-muted-foreground">Out of Stock</span>
+          <span className={cn("font-bold tabular-nums", outOfStockCount > 0 && "text-red-600")}>{outOfStockCount}</span>
+        </button>
       </div>
 
       {/* Filters and View Mode Toggle */}
@@ -1382,9 +1468,44 @@ export default function ProductManagement() {
                   keyExtractor={(item) => item.id}
                   isLoading={loading}
                   mobileRenderer={renderMobileProduct}
+                  expandedRows={expandedRows}
+                  onToggleExpand={toggleRowExpand}
+                  renderExpandedContent={renderExpandedContent}
                 />
               </div>
             )
+          ) : stockStatusFilter === 'low_stock' ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+              <h3 className="text-lg font-semibold">Inventory looks healthy!</h3>
+              <p className="text-muted-foreground mt-1">No products are running low on stock</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={() => setStockStatusFilter('all')}
+              >
+                View all products
+              </Button>
+            </div>
+          ) : stockStatusFilter === 'out_of_stock' ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+              <h3 className="text-lg font-semibold">All stocked up!</h3>
+              <p className="text-muted-foreground mt-1">No products are out of stock</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={() => setStockStatusFilter('all')}
+              >
+                View all products
+              </Button>
+            </div>
           ) : (
             <EnhancedEmptyState
               type="no_products"
