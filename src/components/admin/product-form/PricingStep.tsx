@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
 
 interface ProductFormData {
-  price?: number;
+  price?: number | string;
   [key: string]: unknown;
 }
 

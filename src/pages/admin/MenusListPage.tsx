@@ -29,7 +29,7 @@ import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePagination } from '@/hooks/usePagination';
 import { StandardPagination } from '@/components/shared/StandardPagination';
-import { MenuCard } from '@/components/admin/disposable-menus/MenuCard';
+import { MenuCard, Menu } from '@/components/admin/disposable-menus/MenuCard';
 import { CreateMenuDialog } from '@/components/admin/disposable-menus/CreateMenuDialog';
 import { cn } from '@/lib/utils';
 
@@ -258,7 +258,7 @@ export function MenusListPage() {
                                     ? "grid gap-4 md:grid-cols-2 lg:grid-cols-3"
                                     : "space-y-4"
                             )}>
-                                {paginatedMenus.map((menu) => (
+                                {paginatedMenus.map((menu: Menu) => (
                                     <MenuCard
                                         key={menu.id}
                                         menu={menu}

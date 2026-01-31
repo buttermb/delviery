@@ -461,7 +461,7 @@ export default function StockLevelsPage() {
           isLoading={isLoading}
           mobileRenderer={renderMobileCard}
           emptyState={{
-            type: "no_results",
+            type: "no_products",
             title: searchTerm || categoryFilter !== "all"
               ? "No products found"
               : "No products yet",
