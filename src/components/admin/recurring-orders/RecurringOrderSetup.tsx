@@ -382,14 +382,14 @@ function RecurringOrderSetupComponent({
             <div className="space-y-2">
               <Label>Preferred Day of Week</Label>
               <Select
-                value={watch("day_of_week")?.toString() || ""}
-                onValueChange={(v) => setValue("day_of_week", v ? parseInt(v) : null)}
+                value={watch("day_of_week")?.toString() || "__none__"}
+                onValueChange={(v) => setValue("day_of_week", v === "__none__" ? null : parseInt(v))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select day (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No preference</SelectItem>
+                  <SelectItem value="__none__">No preference</SelectItem>
                   {DAYS_OF_WEEK.map((day) => (
                     <SelectItem key={day.value} value={day.value.toString()}>
                       {day.label}
