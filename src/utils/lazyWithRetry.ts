@@ -51,16 +51,53 @@ export function lazyWithRetry<T extends ComponentType<any>>(
         }
 
         // Max retries reached or non-retryable error
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        let diagnostic: {
+          url?: string;
+          status?: number;
+          statusText?: string;
+          redirected?: boolean;
+          contentType?: string | null;
+          bodySnippet?: string;
+          fetchError?: string;
+        } | null = null;
+
+        // Best-effort diagnostics: try to fetch the module URL and log status/content-type.
+        // This helps distinguish between cache issues vs 404/500/redirect.
+        const match = errorMessage.match(/Failed to fetch dynamically imported module:\s*(\S+)/i);
+        if (match?.[1]) {
+          const url = match[1];
+          try {
+            const res = await fetch(url, { cache: 'no-store' });
+            const contentType = res.headers.get('content-type');
+            const text = await res.text();
+            diagnostic = {
+              url,
+              status: res.status,
+              statusText: res.statusText,
+              redirected: res.redirected,
+              contentType,
+              bodySnippet: text.slice(0, 400),
+            };
+          } catch (fetchError) {
+            diagnostic = {
+              url,
+              fetchError: fetchError instanceof Error ? fetchError.message : String(fetchError),
+            };
+          }
+        }
+
         logger.error('Module load failed after retries', error, {
           component: 'lazyWithRetry',
           retryCount,
           maxRetries,
+          diagnostic,
         });
 
         // Return fallback component using React.createElement to avoid JSX parsing issues
         return {
           default: (() => {
-            const FallbackComponent: ComponentType<any> = () => {
+            const FallbackComponent = React.forwardRef<HTMLDivElement>((_, ref) => {
               const handleReload = async () => {
                 // Clear all caches and service workers, then reload
                 await clearAllCachesAndServiceWorkers();
@@ -68,6 +105,7 @@ export function lazyWithRetry<T extends ComponentType<any>>(
               };
 
               return React.createElement('div', {
+                ref,
                 className: 'min-h-screen flex items-center justify-center p-4 bg-muted/20'
               },
                 React.createElement('div', {
@@ -85,10 +123,10 @@ export function lazyWithRetry<T extends ComponentType<any>>(
                   }, 'Clear Cache & Reload')
                 )
               );
-            };
+            });
             FallbackComponent.displayName = 'ModuleLoadErrorFallback';
             return FallbackComponent;
-          })() as T,
+          })() as unknown as T,
         };
       }
     }
