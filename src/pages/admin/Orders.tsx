@@ -817,6 +817,18 @@ export default function Orders() {
           </DropdownMenu>
         </div>
       )
+    },
+    {
+      header: "",
+      className: "w-[40px]",
+      cell: (order) => (
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 text-muted-foreground transition-transform duration-200",
+            expandedRows.has(order.id) && "rotate-180"
+          )}
+        />
+      )
     }
   ];
 
@@ -1018,19 +1030,30 @@ export default function Orders() {
                 )
               }
               emptyState={{
-                icon: Package,
-                title: "No orders found",
-                description: hasActiveFilters
-                  ? "We couldn't find any orders matching your filters."
-                  : "You haven't received any orders yet.",
-                primaryAction: !hasActiveFilters ? {
-                  label: "Create First Order",
-                  onClick: () => navigate('wholesale-orders'),
-                  icon: Plus
-                } : {
+                icon: statusFilter === 'pending' ? CheckCircle : searchQuery ? Eye : Package,
+                title: statusFilter === 'pending'
+                  ? "All caught up!"
+                  : searchQuery
+                    ? `No results for "${searchQuery}"`
+                    : hasActiveFilters
+                      ? "No orders match filters"
+                      : "No orders yet",
+                description: statusFilter === 'pending'
+                  ? "No pending orders right now. Great job staying on top of things!"
+                  : searchQuery
+                    ? "Try adjusting your search terms or clearing filters."
+                    : hasActiveFilters
+                      ? "We couldn't find any orders matching your current filters."
+                      : "Orders will appear here when customers place them.",
+                primaryAction: searchQuery || hasActiveFilters ? {
                   label: "Clear Filters",
                   onClick: handleClearFilters
-                }
+                } : {
+                  label: "Create Manual Order",
+                  onClick: () => navigate('wholesale-orders'),
+                  icon: Plus
+                },
+                className: statusFilter === 'pending' ? "bg-gradient-to-br from-emerald-500/5 to-transparent" : undefined
               }}
               mobileRenderer={(order) => (
                 <SwipeableItem

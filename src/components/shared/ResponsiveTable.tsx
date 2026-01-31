@@ -158,9 +158,13 @@ export function ResponsiveTable<T>({
 
     if (isLoading) {
         return (
-            <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-16 w-full rounded-lg" />
+            <div className="space-y-3 skeleton-stagger">
+                {[1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton
+                        key={i}
+                        className="h-14 w-full rounded-lg skeleton-shimmer animate-in fade-in slide-in-from-bottom-2"
+                        style={{ animationDelay: `${i * 75}ms`, animationFillMode: 'backwards' }}
+                    />
                 ))}
             </div>
         );
