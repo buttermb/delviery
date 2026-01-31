@@ -1,136 +1,154 @@
 
+# Build Error Fix Plan
 
-# Fix Module Loading Error for DisposableMenus Page
+## Overview
+There are **22 TypeScript errors** across multiple files that need to be fixed before the build can succeed. These fall into 4 categories:
 
-## Problem Summary
-
-The "Menus" tab in the Inventory Hub fails to load with the error:
-```
-Failed to fetch dynamically imported module: .../src/pages/admin/DisposableMenus.tsx
-```
-
-This is a **dynamic import failure** that commonly occurs when:
-- Stale cache/service worker serves outdated module references
-- Build artifacts have changed between deployments
-- Heavy modules fail to load on slow connections
-
-## Root Cause Analysis
-
-The InventoryHubPage uses standard `lazy()` for DisposableMenus instead of the project's `lazyWithRetry()` wrapper:
-
-```typescript
-// Current (problematic)
-const DisposableMenus = lazy(() => import('@/pages/admin/DisposableMenus'));
-
-// Should be
-const DisposableMenus = lazyWithRetry(() => import('@/pages/admin/DisposableMenus'));
-```
-
-The `lazyWithRetry` utility provides:
-- **3 automatic retries** with exponential backoff
-- **Graceful fallback UI** with "Clear Cache & Reload" button
-- **Error logging** for debugging
-
-## Implementation Plan
-
-### Step 1: Update InventoryHubPage Imports
-
-**File:** `src/pages/admin/hubs/InventoryHubPage.tsx`
-
-Changes:
-1. Import `lazyWithRetry` from `@/utils/lazyWithRetry`
-2. Replace `lazy()` with `lazyWithRetry()` for all heavy page imports:
-   - DisposableMenus
-   - ProductManagement
-   - InventoryDashboard
-   - InventoryManagement
-   - InventoryMonitoringPage
-   - FrontedInventory
-   - DispatchInventory
-   - GenerateBarcodes
-
-### Step 2: Update App.tsx Imports
-
-**File:** `src/App.tsx`
-
-Verify all admin pages use `lazyWithRetry`:
-- DisposableMenus (line 187)
-- DisposableMenuAnalytics (line 188)
-- Other heavy admin pages
-
-### Step 3: Enhance Error Boundary for Tab Content
-
-**File:** `src/pages/admin/hubs/InventoryHubPage.tsx`
-
-Wrap each TabsContent in an ErrorBoundary to catch module failures without crashing the entire page:
-
-```typescript
-<TabsContent value="menus">
-  <ErrorBoundary fallback={<ModuleErrorFallback tabName="Menus" />}>
-    <Suspense fallback={<TabSkeleton />}>
-      <DisposableMenus />
-    </Suspense>
-  </ErrorBoundary>
-</TabsContent>
-```
-
-### Step 4: Add Tab-Specific Error Fallback Component
-
-Create a friendly error state that:
-- Shows which tab failed
-- Provides "Retry" and "Clear Cache" buttons
-- Doesn't require full page reload
+1. **Missing imports** in marketing components
+2. **Missing queryKeys entries** in the query key factory  
+3. **Unused ts-expect-error directive**
+4. **Props type mismatch**
 
 ---
 
-## Technical Details
+## Error Summary
 
-### Files to Modify
-
-| File | Change |
-|------|--------|
-| `src/pages/admin/hubs/InventoryHubPage.tsx` | Replace `lazy()` with `lazyWithRetry()`, add ErrorBoundary wrappers |
-| `src/App.tsx` | Ensure admin pages use `lazyWithRetry()` |
-
-### Why lazyWithRetry Works
-
-The utility already handles this exact error pattern:
-
-```typescript
-const isModuleError = 
-  error instanceof Error && (
-    error.message.includes('Failed to fetch dynamically imported module') ||
-    error.message.includes('chunk') ||
-    error.message.includes('Loading') ||
-    error.message.includes('NetworkError')
-  );
-```
-
-When detected, it:
-1. Retries the import 3 times with exponential backoff (1s, 2s, 4s)
-2. Returns a fallback component with "Clear Cache & Reload" button
-3. Logs the error for debugging
-
-### Additional Robustness
-
-Also update these hub pages to use `lazyWithRetry`:
-- `OrdersHubPage.tsx`
-- `CustomerHubPage.tsx`
-- `FinanceHubPage.tsx`
-- `FulfillmentHubPage.tsx`
-- `StorefrontHubPage.tsx`
+| Category | Files Affected | Error Count |
+|----------|----------------|-------------|
+| Missing imports | 3 files | 4 errors |
+| Missing queryKeys | 5 files | 16 errors |
+| Unused directive | 1 file | 1 error |
+| Props mismatch | 1 file | 1 error |
 
 ---
 
-## Expected Outcome
+## Fix Plan
 
-After implementation:
-- **Automatic retries** prevent transient network failures
-- **Graceful degradation** shows friendly error with clear fix action
-- **No page crashes** - only the affected tab shows error state
-- **Cache clearing** works correctly when needed
+### 1. Marketing Components - Missing Imports
 
-## Quick Workaround (Immediate)
+#### File: `src/components/marketing/ModernHero.tsx`
+**Issues:**
+- Line 28: `useEffect` is not imported
+- Line 30: `ROTATING_FEATURES` is referenced but was removed
 
-If you're currently stuck, clicking "Clear Cache & Reload" should resolve the issue. This fix ensures future occurrences are handled gracefully.
+**Fix:**
+- Add `useEffect` to imports from React
+- Remove the `useEffect` block that references the deleted `ROTATING_FEATURES` constant (lines 28-33)
+- Remove unused `featureIndex` state since it's not used elsewhere
 
+#### File: `src/components/marketing/TrustedBy.tsx`  
+**Issues:**
+- Lines 41, 46: `DISTRIBUTORS` is undefined - should use `companies` constant defined at top
+
+**Fix:**
+- Replace `DISTRIBUTORS` with `companies` in both map() calls
+
+#### File: `src/components/marketing/dashboard/DashboardViews.tsx`
+**Issue:**
+- Line 31: `useSpring` is used but not imported from framer-motion
+
+**Fix:**
+- Add `useSpring` to the framer-motion imports
+
+---
+
+### 2. Query Keys - Missing Entries
+
+#### File: `src/lib/queryKeys.ts`
+**Missing entries that need to be added:**
+
+```typescript
+// Add after line 162 (after dashboard section):
+alerts: {
+  all: ['alerts'] as const,
+  dashboard: (tenantId: string) => 
+    [...queryKeys.alerts.all, 'dashboard', tenantId] as const,
+  predictive: (tenantId: string) => 
+    [...queryKeys.alerts.all, 'predictive', tenantId] as const,
+},
+
+// Add to finance section (after line 260):
+snapshot: (tenantId?: string) =>
+  [...queryKeys.finance.all, 'snapshot', { tenantId }] as const,
+cashFlow: (tenantId?: string) =>
+  [...queryKeys.finance.all, 'cash-flow', { tenantId }] as const,
+creditOut: (tenantId?: string) =>
+  [...queryKeys.finance.all, 'credit-out', { tenantId }] as const,
+monthlyPerformance: (tenantId?: string) =>
+  [...queryKeys.finance.all, 'monthly-performance', { tenantId }] as const,
+
+// Add after line 48 (in orders section):
+live: (tenantId?: string) => 
+  [...queryKeys.orders.all, 'live', tenantId] as const,
+
+// Add new top-level sections:
+recurringOrders: {
+  all: ['recurring-orders'] as const,
+  lists: () => [...queryKeys.recurringOrders.all, 'list'] as const,
+  list: (tenantId?: string) =>
+    [...queryKeys.recurringOrders.lists(), { tenantId }] as const,
+  detail: (id: string) => 
+    [...queryKeys.recurringOrders.all, id] as const,
+},
+
+weather: {
+  all: ['weather'] as const,
+  current: (location?: string) => 
+    [...queryKeys.weather.all, 'current', location] as const,
+  forecast: (location?: string) => 
+    [...queryKeys.weather.all, 'forecast', location] as const,
+},
+```
+
+---
+
+### 3. Unused Directive
+
+#### File: `src/components/admin/dashboard/RevenueChartWidget.tsx`
+**Issue:**
+- Line 35: `@ts-expect-error` directive is no longer needed
+
+**Fix:**
+- Remove the `@ts-expect-error` comment on line 35
+
+---
+
+### 4. Props Type Mismatch
+
+#### File: `src/pages/admin/Orders.tsx`
+**Issue:**
+- Line 1056: `className` prop doesn't exist on `EnhancedEmptyStateProps`
+
+**Fix:**
+- Need to check the `EnhancedEmptyState` component to verify if `className` should be added to its props, or if it should be removed from this usage
+
+---
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/lib/queryKeys.ts` | Add 5 missing query key sections |
+| `src/components/marketing/ModernHero.tsx` | Add useEffect import, remove dead code |
+| `src/components/marketing/TrustedBy.tsx` | Change DISTRIBUTORS → companies |
+| `src/components/marketing/dashboard/DashboardViews.tsx` | Add useSpring import |
+| `src/components/admin/dashboard/RevenueChartWidget.tsx` | Remove unused @ts-expect-error |
+| `src/pages/admin/Orders.tsx` | Remove or fix className prop |
+
+---
+
+## Implementation Order
+
+1. **queryKeys.ts** - Fix first since multiple hooks depend on it
+2. **Marketing components** - Quick import fixes
+3. **RevenueChartWidget.tsx** - Remove directive
+4. **Orders.tsx** - Fix props issue
+
+---
+
+## Expected Result
+
+After these fixes:
+- ✅ All 22 TypeScript errors resolved
+- ✅ Build will complete successfully
+- ✅ No functionality changes - these are all type/import fixes
