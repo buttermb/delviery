@@ -342,6 +342,7 @@ const AutomationPage = lazy(() => import("./pages/tenant-admin/AutomationPage"))
 const DataExportPage = lazy(() => import("./pages/tenant-admin/DataExportPage"));
 const AuditTrailPage = lazy(() => import("./pages/tenant-admin/AuditTrailPage"));
 const CompliancePage = lazy(() => import("./pages/tenant-admin/CompliancePage"));
+const SystemAuditPage = lazy(() => import("./pages/admin/SystemAuditPage"));
 const WhiteLabelPage = lazy(() => import("./pages/tenant-admin/WhiteLabelPage"));
 const CustomDomainPage = lazy(() => import("./pages/tenant-admin/CustomDomainPage"));
 const PrioritySupportPage = lazy(() => import("./pages/tenant-admin/PrioritySupportPage"));
@@ -1025,6 +1026,7 @@ const App = () => {
                                         {/* Additional routes that don't need FeatureProtectedRoute or need different paths */}
                                         <Route path="risk-management" element={<FeatureProtectedRoute featureId="risk-management"><RiskFactorManagement /></FeatureProtectedRoute>} />
                                         <Route path="system-settings" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="system-settings"><SystemSettings /></FeatureProtectedRoute></RoleProtectedRoute>} />
+                                        <Route path="system-audit" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><SystemAuditPage /></RoleProtectedRoute>} />
                                         <Route path="vendor-management" element={<FeatureProtectedRoute featureId="vendor-management"><VendorManagement /></FeatureProtectedRoute>} />
 
                                         {/* Coming Soon Pages - Professional & Enterprise Features */}

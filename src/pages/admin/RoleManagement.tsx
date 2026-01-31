@@ -551,13 +551,32 @@ export function RoleManagement() {
   }
 
   if (error) {
+    // Determine specific error type
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const isTableMissing = errorMessage.includes('42P01') || errorMessage.includes('does not exist');
+    const isPermissionDenied = errorMessage.includes('permission denied') || errorMessage.includes('42501');
+
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <AlertTriangle className="h-12 w-12 text-destructive" />
-        <p className="text-muted-foreground">Failed to load roles. Please try again.</p>
-        <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.roles.list(tenantId) })}>
-          Retry
-        </Button>
+        <div className="text-center space-y-2">
+          <p className="font-medium text-destructive">Failed to load roles</p>
+          <p className="text-muted-foreground text-sm max-w-md">
+            {isTableMissing
+              ? 'The roles table does not exist. Please run database migrations.'
+              : isPermissionDenied
+              ? 'You do not have permission to view roles. Please contact an administrator.'
+              : `Error: ${errorMessage}`}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.roles.list(tenantId) })}>
+            Retry
+          </Button>
+          <Button variant="outline" onClick={() => window.location.href = `/${tenant?.slug}/admin/system-audit`}>
+            Run System Audit
+          </Button>
+        </div>
       </div>
     );
   }
