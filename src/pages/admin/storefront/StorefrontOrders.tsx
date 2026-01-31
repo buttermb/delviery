@@ -22,6 +22,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { OrderEmailButton } from '@/components/admin/orders/OrderEmailButton';
+import { OrderExportButton } from '@/components/admin/orders/OrderExportButton';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import {
