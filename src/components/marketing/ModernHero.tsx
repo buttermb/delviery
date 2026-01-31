@@ -16,21 +16,14 @@ import { useMobileOptimized } from "@/hooks/useMobileOptimized";
 
 
 import { motion } from "framer-motion";
-import { useState } from "react";
 
 // Removed ROTATING_FEATURES
 
 
 export function ModernHero() {
   const { isMobile, isTouchDevice, shouldUseStaticFallback } = useMobileOptimized();
-  const [featureIndex, setFeatureIndex] = useState(0);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setFeatureIndex((prev) => (prev + 1) % ROTATING_FEATURES.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
+
 
   return (
     <section className="relative min-h-[90vh] md:min-h-[90vh] bg-[hsl(var(--marketing-bg))] pt-24 md:pt-32 pb-16 md:pb-24 overflow-x-hidden">

@@ -38,12 +38,12 @@ export function TrustedBy() {
                         duration: 30
                     }}
                 >
-                    {DISTRIBUTORS.map((name, i) => (
+                    {companies.map((name, i) => (
                         <div key={i} className="mx-8 flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity cursor-default">
                             <span className="text-xl font-bold text-[hsl(var(--marketing-text))]">{name}</span>
                         </div>
                     ))}
-                    {DISTRIBUTORS.map((name, i) => (
+                    {companies.map((name, i) => (
                         <div key={`dup-${i}`} className="mx-8 flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity cursor-default">
                             <span className="text-xl font-bold text-[hsl(var(--marketing-text))]">{name}</span>
                         </div>
