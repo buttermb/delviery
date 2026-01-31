@@ -1,154 +1,105 @@
 
-# Build Error Fix Plan
 
-## Overview
-There are **22 TypeScript errors** across multiple files that need to be fixed before the build can succeed. These fall into 4 categories:
+# Fix Runtime Errors on Inventory Hub
 
-1. **Missing imports** in marketing components
-2. **Missing queryKeys entries** in the query key factory  
-3. **Unused ts-expect-error directive**
-4. **Props type mismatch**
+## Problem Summary
 
----
+You're seeing two runtime errors on the Inventory Hub page:
 
-## Error Summary
-
-| Category | Files Affected | Error Count |
-|----------|----------------|-------------|
-| Missing imports | 3 files | 4 errors |
-| Missing queryKeys | 5 files | 16 errors |
-| Unused directive | 1 file | 1 error |
-| Props mismatch | 1 file | 1 error |
+1. **Select.Item Error**: "A `<Select.Item />` must have a value prop that is not an empty string"
+2. **HTTP 404 Error**: The Global Product Catalog is failing because required database tables and functions don't exist
 
 ---
 
-## Fix Plan
+## Error 1: SelectItem Empty String Values
 
-### 1. Marketing Components - Missing Imports
+### What's Happening
+Radix UI Select components don't allow empty string `value=""` because an empty string is used to clear the selection. Using it causes the page to crash.
 
-#### File: `src/components/marketing/ModernHero.tsx`
-**Issues:**
-- Line 28: `useEffect` is not imported
-- Line 30: `ROTATING_FEATURES` is referenced but was removed
+### Files Affected (6 total)
 
-**Fix:**
-- Add `useEffect` to imports from React
-- Remove the `useEffect` block that references the deleted `ROTATING_FEATURES` constant (lines 28-33)
-- Remove unused `featureIndex` state since it's not used elsewhere
+| File | Line | Current Value |
+|------|------|---------------|
+| `src/components/admin/FilterPanel.tsx` | 142 | `value=""` → `value="__all__"` |
+| `src/components/shared/FilterPanel.tsx` | 131 | `value=""` → `value="__all__"` |
+| `src/components/admin/recurring-orders/RecurringOrderSetup.tsx` | 392 | `value=""` → `value="__none__"` |
+| `src/pages/admin/RunnerLocationTracking.tsx` | 338 | `value=""` → `value="__all__"` |
+| `src/components/wholesale/EditWholesaleOrderDialog.tsx` | 344 | `value=""` → `value="__unassigned__"` |
+| `src/pages/super-admin/CreditPackagesPage.tsx` | 448 | `value=""` → `value="__none__"` |
 
-#### File: `src/components/marketing/TrustedBy.tsx`  
-**Issues:**
-- Lines 41, 46: `DISTRIBUTORS` is undefined - should use `companies` constant defined at top
-
-**Fix:**
-- Replace `DISTRIBUTORS` with `companies` in both map() calls
-
-#### File: `src/components/marketing/dashboard/DashboardViews.tsx`
-**Issue:**
-- Line 31: `useSpring` is used but not imported from framer-motion
-
-**Fix:**
-- Add `useSpring` to the framer-motion imports
+### Fix Strategy
+Replace empty string values with a sentinel value like `"__all__"` or `"__none__"`, then update the corresponding handler logic to treat these sentinels as `null` or empty when processing.
 
 ---
 
-### 2. Query Keys - Missing Entries
+## Error 2: Missing Global Product Catalog Database Objects
 
-#### File: `src/lib/queryKeys.ts`
-**Missing entries that need to be added:**
+### What's Happening
+The "Global" tab calls `search_global_products` RPC function, but the database migration that creates this was never applied. Missing:
+- `global_products` table
+- `global_product_imports` table  
+- `search_global_products()` function
+- `import_global_product()` function
+- `sync_imported_products()` function
+
+### Fix Strategy
+Apply the existing migration file `supabase/migrations/20260110000016_global_product_catalog.sql` to create all required database objects.
+
+---
+
+## Implementation Plan
+
+### Step 1: Apply Database Migration
+
+Run the SQL from the migration file to create:
+- Tables: `global_products`, `global_product_imports`
+- RLS policies for proper access control
+- RPC functions for search and import
+- Indexes for performance
+
+### Step 2: Fix SelectItem Values
+
+Update each file to use non-empty sentinel values:
 
 ```typescript
-// Add after line 162 (after dashboard section):
-alerts: {
-  all: ['alerts'] as const,
-  dashboard: (tenantId: string) => 
-    [...queryKeys.alerts.all, 'dashboard', tenantId] as const,
-  predictive: (tenantId: string) => 
-    [...queryKeys.alerts.all, 'predictive', tenantId] as const,
-},
+// Before
+<SelectItem value="">All</SelectItem>
 
-// Add to finance section (after line 260):
-snapshot: (tenantId?: string) =>
-  [...queryKeys.finance.all, 'snapshot', { tenantId }] as const,
-cashFlow: (tenantId?: string) =>
-  [...queryKeys.finance.all, 'cash-flow', { tenantId }] as const,
-creditOut: (tenantId?: string) =>
-  [...queryKeys.finance.all, 'credit-out', { tenantId }] as const,
-monthlyPerformance: (tenantId?: string) =>
-  [...queryKeys.finance.all, 'monthly-performance', { tenantId }] as const,
-
-// Add after line 48 (in orders section):
-live: (tenantId?: string) => 
-  [...queryKeys.orders.all, 'live', tenantId] as const,
-
-// Add new top-level sections:
-recurringOrders: {
-  all: ['recurring-orders'] as const,
-  lists: () => [...queryKeys.recurringOrders.all, 'list'] as const,
-  list: (tenantId?: string) =>
-    [...queryKeys.recurringOrders.lists(), { tenantId }] as const,
-  detail: (id: string) => 
-    [...queryKeys.recurringOrders.all, id] as const,
-},
-
-weather: {
-  all: ['weather'] as const,
-  current: (location?: string) => 
-    [...queryKeys.weather.all, 'current', location] as const,
-  forecast: (location?: string) => 
-    [...queryKeys.weather.all, 'forecast', location] as const,
-},
+// After  
+<SelectItem value="__all__">All</SelectItem>
 ```
 
----
+And update the handlers:
 
-### 3. Unused Directive
+```typescript
+// Before
+onValueChange={(val) => handleFilterChange(filter.id, val || null)}
 
-#### File: `src/components/admin/dashboard/RevenueChartWidget.tsx`
-**Issue:**
-- Line 35: `@ts-expect-error` directive is no longer needed
-
-**Fix:**
-- Remove the `@ts-expect-error` comment on line 35
-
----
-
-### 4. Props Type Mismatch
-
-#### File: `src/pages/admin/Orders.tsx`
-**Issue:**
-- Line 1056: `className` prop doesn't exist on `EnhancedEmptyStateProps`
-
-**Fix:**
-- Need to check the `EnhancedEmptyState` component to verify if `className` should be added to its props, or if it should be removed from this usage
+// After
+onValueChange={(val) => handleFilterChange(filter.id, val === '__all__' ? null : val)}
+```
 
 ---
 
 ## Files to Modify
 
-| File | Changes |
-|------|---------|
-| `src/lib/queryKeys.ts` | Add 5 missing query key sections |
-| `src/components/marketing/ModernHero.tsx` | Add useEffect import, remove dead code |
-| `src/components/marketing/TrustedBy.tsx` | Change DISTRIBUTORS → companies |
-| `src/components/marketing/dashboard/DashboardViews.tsx` | Add useSpring import |
-| `src/components/admin/dashboard/RevenueChartWidget.tsx` | Remove unused @ts-expect-error |
-| `src/pages/admin/Orders.tsx` | Remove or fix className prop |
-
----
-
-## Implementation Order
-
-1. **queryKeys.ts** - Fix first since multiple hooks depend on it
-2. **Marketing components** - Quick import fixes
-3. **RevenueChartWidget.tsx** - Remove directive
-4. **Orders.tsx** - Fix props issue
+| Type | File | Change |
+|------|------|--------|
+| Database | Migration | Apply `20260110000016_global_product_catalog.sql` |
+| Frontend | `src/components/admin/FilterPanel.tsx` | Fix SelectItem value |
+| Frontend | `src/components/shared/FilterPanel.tsx` | Fix SelectItem value |
+| Frontend | `src/components/admin/recurring-orders/RecurringOrderSetup.tsx` | Fix SelectItem value |
+| Frontend | `src/pages/admin/RunnerLocationTracking.tsx` | Fix SelectItem value |
+| Frontend | `src/components/wholesale/EditWholesaleOrderDialog.tsx` | Fix SelectItem value |
+| Frontend | `src/pages/super-admin/CreditPackagesPage.tsx` | Fix SelectItem value |
 
 ---
 
 ## Expected Result
 
 After these fixes:
-- ✅ All 22 TypeScript errors resolved
-- ✅ Build will complete successfully
-- ✅ No functionality changes - these are all type/import fixes
+- ✅ Select components work without crashing
+- ✅ Global Product Catalog loads and functions properly
+- ✅ Product import/search features become operational
+- ✅ No more HTTP 404 errors on the Global tab
+
