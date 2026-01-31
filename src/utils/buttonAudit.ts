@@ -86,7 +86,7 @@ export function auditButtons(): ButtonAuditResult[] {
   buttonLinks.forEach((link, index) => {
     const href = link.getAttribute('href');
     if (!href || href === '#' || href === 'javascript:void(0)') {
-      const hasOnClick = link.onclick !== null;
+      const hasOnClick = (link as HTMLElement).onclick !== null;
       const reactProps = Object.keys(link).find(key => key.startsWith('__reactProps'));
       const hasReactHandler = reactProps && (link as any)[reactProps]?.onClick;
 

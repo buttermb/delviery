@@ -112,7 +112,7 @@ class AdminPanelAuditor {
   async checkTableExists(tableName: string): Promise<AuditResult> {
     try {
       const { data, error } = await supabase
-        .from(tableName)
+        .from(tableName as any)
         .select('*', { count: 'exact', head: true })
         .limit(0);
 
@@ -592,7 +592,7 @@ export async function quickHealthCheck(): Promise<{
   const coreTables = ['tenants', 'orders', 'products'];
   for (const table of coreTables) {
     const { error } = await supabase
-      .from(table)
+      .from(table as any)
       .select('*', { count: 'exact', head: true })
       .limit(0);
     if (error) {
