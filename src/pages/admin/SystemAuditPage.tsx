@@ -20,7 +20,7 @@ export function SystemAuditPage() {
         <HubBreadcrumbs
           hubName="settings"
           hubHref="settings-hub"
-          currentPage="System Audit"
+          currentTab="System Audit"
         />
         <AdminAuditPanel />
       </div>
