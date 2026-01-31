@@ -185,6 +185,18 @@ export const queryKeys = {
       [...queryKeys.analytics.all, 'traffic-sources', filters] as const,
   },
 
+  // Finance
+  finance: {
+    all: ['finance'] as const,
+    snapshot: (tenantId?: string) => ['finance', 'snapshot', tenantId] as const,
+    cashFlow: (tenantId?: string) => ['finance', 'cashFlow', tenantId] as const,
+    creditOut: (tenantId?: string) => ['finance', 'creditOut', tenantId] as const,
+    monthlyPerformance: (tenantId?: string) => ['finance', 'monthlyPerformance', tenantId] as const,
+    revenue: (tenantId?: string) => ['finance', 'revenue', { tenantId }] as const,
+    completedOrders: (tenantId?: string, dateRange?: string) => ['finance', 'completedOrders', tenantId, dateRange] as const,
+    revenueGoal: (tenantId?: string) => ['finance', 'revenueGoal', tenantId] as const,
+  },
+
   // Super Admin
   superAdmin: {
     all: ['super-admin'] as const,

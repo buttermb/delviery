@@ -14,9 +14,24 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
-import { Loader2, Package, DollarSign, Image as ImageIcon, FileText, Barcode, Layers } from "lucide-react";
+import { Loader2, Package, DollarSign, Image as ImageIcon, FileText, Barcode, Layers, Scale } from "lucide-react";
 import { toast } from "sonner";
 import { ProductVariantsManager } from "@/components/admin/products/ProductVariantsManager";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useCategories, type Category } from "@/hooks/useCategories";
+import { ProductCategorySelect } from "@/components/admin/products/ProductCategorySelect";
+
+// Type for variant data passed to ProductVariantsManager
+interface ProductVariantsData {
+    prices: Record<string, number>;
+    weight_grams: number | null;
+    strain_name?: string;
+    strain_type?: string;
+    strain_lineage?: string;
+    thc_percent: number | null;
+    cbd_percent: number | null;
+    terpenes: Record<string, number>;
+}
 
 // Define the shape of form data
 export interface ProductFormData {
@@ -95,8 +110,9 @@ export function ProductForm({
     productId,
 }: ProductFormProps) {
     const { tenant } = useTenantAdminAuth();
-    const { categories, getCategoryById } = useCategories(tenant?.id);
+    const { data: categories = [] } = useCategories();
     const hasHierarchicalCategories = categories.length > 0;
+    const getCategoryById = (id: string) => categories.find((c: Category) => c.id === id);
 
     const [formData, setFormData] = useState<ProductFormData>(DEFAULT_FORM_DATA);
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -326,11 +342,14 @@ export function ProductForm({
 
                     {/* Variants Tab */}
                     <TabsContent value="variants" className="space-y-4">
-                        <ProductVariantsManager
-                            data={variantData}
-                            onChange={handleVariantDataChange}
-                            mode="both"
-                        />
+                        {/* ProductVariantsManager requires productId prop for editing */}
+                        {isEditMode && productId ? (
+                            <ProductVariantsManager productId={productId} />
+                        ) : (
+                            <div className="text-center py-8 text-muted-foreground">
+                                <p>Save the product first to manage variants.</p>
+                            </div>
+                        )}
                     </TabsContent>
 
                     {/* Pricing Tab */}

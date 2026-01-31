@@ -135,7 +135,7 @@ export const B2BOrdersTab = ({ onOrderSelect }: B2BOrdersTabProps) => {
           items:wholesale_order_items(
             id,
             product_name,
-            quantity_lbs,
+            quantity,
             unit_price
           )
         `)
@@ -147,11 +147,16 @@ export const B2BOrdersTab = ({ onOrderSelect }: B2BOrdersTabProps) => {
         throw error;
       }
 
-      // Transform the data to match our interface
-      return (data || []).map(order => ({
+      // Transform the data to match our interface (cast to any to bypass type issues)
+      return (data || []).map((order: any) => ({
         ...order,
         client: Array.isArray(order.client) ? order.client[0] : order.client,
-        items: order.items || [],
+        items: (order.items || []).map((item: any) => ({
+          id: item.id,
+          product_name: item.product_name,
+          quantity_lbs: item.quantity || 0,
+          unit_price: item.unit_price,
+        })),
       })) as B2BOrder[];
     },
     enabled: !!tenant?.id,

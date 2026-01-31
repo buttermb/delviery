@@ -48,7 +48,7 @@ interface RecurringOrdersListProps {
   compact?: boolean;
 }
 
-export function RecurringOrdersList({ clientId, compact = false }: RecurringOrdersListProps) {
+function RecurringOrdersListComponent({ clientId, compact = false }: RecurringOrdersListProps) {
   const {
     schedules,
     activeSchedules,
@@ -407,4 +407,4 @@ export function RecurringOrdersList({ clientId, compact = false }: RecurringOrde
   );
 }
 
-export { RecurringOrdersList };
+export { RecurringOrdersListComponent as RecurringOrdersList };

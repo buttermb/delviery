@@ -444,7 +444,7 @@ export function StockHistoryLog({
                 ? 'Try adjusting your filters to see more results.'
                 : 'Stock changes will appear here as inventory is adjusted.'
             }
-            action={hasActiveFilters ? {
+            primaryAction={hasActiveFilters ? {
               label: 'Clear Filters',
               onClick: clearFilters,
             } : undefined}

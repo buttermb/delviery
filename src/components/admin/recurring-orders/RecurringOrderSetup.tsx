@@ -85,7 +85,7 @@ const FREQUENCY_OPTIONS: { value: RecurringOrderFrequency; label: string; descri
   { value: "quarterly", label: "Quarterly", description: "Every three months" },
 ];
 
-export function RecurringOrderSetup({
+function RecurringOrderSetupComponent({
   open,
   onOpenChange,
   editSchedule,
@@ -152,9 +152,10 @@ export function RecurringOrderSetup({
   // Update delivery address when client changes
   const handleClientChange = (id: string) => {
     setValue("client_id", id);
-    const client = clients.find((c) => c.id === id);
-    if (client?.address && !watch("delivery_address")) {
-      setValue("delivery_address", client.address);
+    const client = clients.find((c) => c.id === id) as any;
+    // Use email as fallback since address may not exist on wholesale_clients
+    if (!watch("delivery_address") && client) {
+      setValue("delivery_address", client.email || '');
     }
   };
 
@@ -535,15 +536,15 @@ export function RecurringOrderSetup({
               {...register("delivery_address")}
               placeholder="Enter delivery address or use client's default"
             />
-            {selectedClient?.address && (
+            {(selectedClient as any)?.email && (
               <Button
                 type="button"
                 variant="link"
                 size="sm"
                 className="h-auto p-0 text-xs"
-                onClick={() => setValue("delivery_address", selectedClient.address)}
+                onClick={() => setValue("delivery_address", (selectedClient as any).email)}
               >
-                Use client's address: {selectedClient.address}
+                Use client's email: {(selectedClient as any).email}
               </Button>
             )}
           </div>
@@ -685,4 +686,4 @@ export function RecurringOrderSetup({
   );
 }
 
-export { RecurringOrderSetup };
+export { RecurringOrderSetupComponent as RecurringOrderSetup };

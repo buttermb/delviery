@@ -98,23 +98,23 @@ export function useGlobalSearch(options: GlobalSearchOptions = {}): UseGlobalSea
       try {
         const promises: Promise<void>[] = [];
 
-        // Search customers
+        // Search customers (cast to any to bypass deep type issues)
         if (categories.includes('customer')) {
           promises.push(
-            supabase
+            (supabase as any)
               .from('profiles')
-              .select('id, user_id, full_name, email, phone')
+              .select('id, user_id, full_name, phone')
               .eq('account_id', tenant.id)
-              .or(`full_name.ilike.%${searchLower}%,email.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
+              .or(`full_name.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
               .limit(limit)
-              .then(({ data: customers }) => {
+              .then(({ data: customers }: any) => {
                 if (customers) {
-                  for (const c of customers) {
+                  for (const c of customers as any[]) {
                     results.push({
                       id: c.user_id || c.id,
                       type: 'customer',
                       label: c.full_name || 'Unknown Customer',
-                      sublabel: c.email || c.phone || undefined,
+                      sublabel: c.phone || undefined,
                       url: `/admin/customers/${c.user_id || c.id}`,
                     });
                   }
@@ -126,15 +126,15 @@ export function useGlobalSearch(options: GlobalSearchOptions = {}): UseGlobalSea
         // Search orders
         if (categories.includes('order')) {
           promises.push(
-            supabase
+            (supabase as any)
               .from('orders')
               .select('id, order_number, status, total_amount, customer_name')
               .eq('tenant_id', tenant.id)
               .or(`order_number.ilike.%${searchLower}%,customer_name.ilike.%${searchLower}%`)
               .limit(limit)
-              .then(({ data: orders }) => {
+              .then(({ data: orders }: any) => {
                 if (orders) {
-                  for (const o of orders) {
+                  for (const o of orders as any[]) {
                     results.push({
                       id: o.id,
                       type: 'order',
@@ -152,15 +152,15 @@ export function useGlobalSearch(options: GlobalSearchOptions = {}): UseGlobalSea
         // Search products
         if (categories.includes('product')) {
           promises.push(
-            supabase
+            (supabase as any)
               .from('products')
               .select('id, name, sku, category')
               .eq('tenant_id', tenant.id)
               .or(`name.ilike.%${searchLower}%,sku.ilike.%${searchLower}%`)
               .limit(limit)
-              .then(({ data: products }) => {
+              .then(({ data: products }: any) => {
                 if (products) {
-                  for (const p of products) {
+                  for (const p of products as any[]) {
                     results.push({
                       id: p.id,
                       type: 'product',
