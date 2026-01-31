@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, Building2, Copy, Merge } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, Building2, Copy, Merge, ChevronDown, Undo2 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -47,6 +47,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { cn } from "@/lib/utils";
+import { useBulkSelectionStore } from "@/stores/useBulkSelectionStore";
 
 interface Order {
   id: string;
@@ -109,6 +111,8 @@ export default function Orders() {
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [animatingStatusChange, setAnimatingStatusChange] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     open: boolean;
     type: 'single' | 'bulk';
@@ -143,8 +147,15 @@ export default function Orders() {
     savePreferences({ customFilters: { status: statusFilter } });
   }, [statusFilter, savePreferences]);
 
+  // Sync bulk selection state with store (for MobileBottomNav coordination)
+  const setBulkSelectionActive = useBulkSelectionStore((state) => state.setActive);
+  useEffect(() => {
+    setBulkSelectionActive(selectedOrders.length > 0);
+    return () => setBulkSelectionActive(false); // Cleanup on unmount
+  }, [selectedOrders.length, setBulkSelectionActive]);
+
   // Data Fetching - includes both regular orders and POS orders from unified_orders
-  const { data: orders = [], isLoading, refetch } = useQuery({
+  const { data: orders = [], isLoading, isFetching, refetch } = useQuery({
     queryKey: ['orders', tenant?.id, statusFilter],
     queryFn: async () => {
       if (!tenant) return [];
@@ -366,7 +377,22 @@ export default function Orders() {
     );
   };
 
+  const toggleRowExpand = (orderId: string) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(orderId)) {
+        next.delete(orderId);
+      } else {
+        next.add(orderId);
+      }
+      return next;
+    });
+  };
+
   const handleStatusChange = (orderId: string, newStatus: string) => {
+    // Show inline animation feedback
+    setAnimatingStatusChange(orderId);
+    setTimeout(() => setAnimatingStatusChange(null), 1000);
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
   };
 
@@ -376,8 +402,12 @@ export default function Orders() {
       return;
     }
 
-    // Optimistic update: capture previous state for rollback
+    // Capture previous state for undo
     const previousOrders = orders;
+    const affectedOrderIds = [...selectedOrders];
+    const previousStatuses = orders
+      .filter(o => affectedOrderIds.includes(o.id))
+      .reduce((acc, o) => ({ ...acc, [o.id]: o.status }), {} as Record<string, string>);
 
     // Optimistically update the UI
     queryClient.setQueryData(['orders', tenant.id, statusFilter], (old: Order[] = []) =>
@@ -401,7 +431,33 @@ export default function Orders() {
 
       if (error) throw error;
 
-      toast.success(`Updated ${selectedOrders.length} orders to ${status}`);
+      // Toast with undo action
+      toast.success(
+        `Updated ${affectedOrderIds.length} order${affectedOrderIds.length > 1 ? 's' : ''} to ${status}`,
+        {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              // Revert each order to its previous status
+              for (const orderId of affectedOrderIds) {
+                const prevStatus = previousStatuses[orderId];
+                if (prevStatus) {
+                  await supabase
+                    .from('orders')
+                    .update({ status: prevStatus, updated_at: new Date().toISOString() })
+                    .eq('id', orderId)
+                    .eq('tenant_id', tenant.id);
+                }
+              }
+              queryClient.invalidateQueries({ queryKey: ['orders'] });
+              toast.success("Changes reverted");
+            }
+          },
+          duration: 5000,
+          icon: <Undo2 className="h-4 w-4" />
+        }
+      );
+
       // Invalidate related queries for consistency
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -822,20 +878,24 @@ export default function Orders() {
             </div>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+          {/* Compact Stats Bar */}
+          <div className="flex items-center gap-4 sm:gap-6 py-2.5 px-4 bg-muted/30 rounded-lg overflow-x-auto scrollbar-hide">
             {stats.map((stat) => {
               const Icon = stat.icon;
               return (
-                <Card key={stat.label} className="p-3 sm:p-4 border-none shadow-sm bg-gradient-to-br from-card to-muted/20">
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
-                      <p className="text-xl sm:text-2xl font-bold">{stat.value}</p>
-                    </div>
-                    <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${stat.color} flex-shrink-0`} />
-                  </div>
-                </Card>
+                <button
+                  key={stat.label}
+                  onClick={() => setStatusFilter(stat.label === 'Total Orders' ? 'all' : stat.label.toLowerCase().replace(' ', '_'))}
+                  className={cn(
+                    "flex items-center gap-2 whitespace-nowrap transition-colors hover:opacity-80",
+                    statusFilter === (stat.label === 'Total Orders' ? 'all' : stat.label.toLowerCase().replace(' ', '_')) && "opacity-100",
+                    statusFilter !== (stat.label === 'Total Orders' ? 'all' : stat.label.toLowerCase().replace(' ', '_')) && "opacity-60"
+                  )}
+                >
+                  <Icon className={`h-4 w-4 ${stat.color}`} />
+                  <span className="text-sm text-muted-foreground">{stat.label}</span>
+                  <span className="font-bold tabular-nums">{stat.value}</span>
+                </button>
               );
             })}
           </div>
@@ -887,17 +947,75 @@ export default function Orders() {
 
             {/* Bulk Actions - handled by floating BulkActionsBar below */}
 
-            {/* Responsive Table */}
+            {/* Responsive Table - with refetch blur effect */}
+            <div className={cn(
+              "transition-all duration-200",
+              isFetching && !isLoading && "refetch-blur"
+            )}>
             <ResponsiveTable<Order>
               data={filteredOrders}
               columns={columns}
               isLoading={isLoading}
               keyExtractor={(item) => item.id}
               onRowClick={handleOrderClick}
+              expandedRows={expandedRows}
+              onToggleExpand={toggleRowExpand}
+              renderExpandedContent={(order) => (
+                <div className="p-4 space-y-4 border-t border-border/50">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Customer Info */}
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Customer</h4>
+                      <div className="space-y-1">
+                        <p className="font-medium">{order.user?.full_name || 'Unknown'}</p>
+                        {order.user?.email && <p className="text-sm text-muted-foreground">{order.user.email}</p>}
+                        {order.user?.phone && <p className="text-sm text-muted-foreground">{order.user.phone}</p>}
+                      </div>
+                    </div>
+                    {/* Order Items */}
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                        Items ({order.order_items?.length || 0})
+                      </h4>
+                      {order.order_items && order.order_items.length > 0 ? (
+                        <ul className="space-y-1 text-sm">
+                          {order.order_items.slice(0, 3).map((item) => (
+                            <li key={item.id} className="flex justify-between">
+                              <span>{(item as any).product_name || `Product ${item.product_id.slice(0, 6)}`}</span>
+                              <span className="text-muted-foreground">×{item.quantity}</span>
+                            </li>
+                          ))}
+                          {order.order_items.length > 3 && (
+                            <li className="text-muted-foreground">+{order.order_items.length - 3} more items</li>
+                          )}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No items</p>
+                      )}
+                    </div>
+                    {/* Quick Actions */}
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Quick Actions</h4>
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); navigate(`orders/${order.id}`); }}>
+                          <Eye className="h-3 w-3 mr-1" /> View Full
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handlePrintOrder(order); }}>
+                          <Printer className="h-3 w-3 mr-1" /> Print
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handleGenerateInvoice(order); }}>
+                          <FileText className="h-3 w-3 mr-1" /> Invoice
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               rowClassName={(order) =>
-                newOrderIds.has(order.id)
-                  ? 'animate-new-order-highlight bg-primary/5 border-l-4 border-l-primary'
-                  : undefined
+                cn(
+                  newOrderIds.has(order.id) && 'animate-new-order-highlight bg-primary/5 border-l-4 border-l-primary',
+                  animatingStatusChange === order.id && 'bg-primary/10 transition-colors duration-500'
+                )
               }
               emptyState={{
                 icon: Package,
@@ -958,6 +1076,7 @@ export default function Orders() {
                 </SwipeableItem>
               )}
             />
+            </div>
           </Card>
         </div>
       </PullToRefresh>
@@ -1079,108 +1198,121 @@ export default function Orders() {
       />
 
       <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <DrawerContent className="max-h-[90vh]">
-          <DrawerHeader className="text-left">
+        <DrawerContent className="max-h-[90vh] flex flex-col">
+          <DrawerHeader className="flex-shrink-0 text-left">
             <DrawerTitle>Order Details</DrawerTitle>
             <DrawerDescription>
               #{selectedOrder?.order_number || selectedOrder?.id.slice(0, 8)}
             </DrawerDescription>
           </DrawerHeader>
           {selectedOrder && (
-            <div className="p-4 space-y-4 overflow-y-auto pb-safe">
-              {/* Order Info */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-sm">Status</span>
-                  {getStatusBadge(selectedOrder.status)}
+            <>
+              {/* Scrollable content area */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {/* Order Info */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground text-sm">Status</span>
+                    {getStatusBadge(selectedOrder.status)}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground text-sm">Total</span>
+                    <span className="font-mono font-bold">${selectedOrder.total_amount?.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground text-sm">Date</span>
+                    <span className="text-sm">{selectedOrder.created_at ? format(new Date(selectedOrder.created_at), 'PPp') : 'N/A'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground text-sm">Method</span>
+                    <span className="text-sm capitalize">{selectedOrder.delivery_method || 'N/A'}</span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-sm">Total</span>
-                  <span className="font-mono font-bold">${selectedOrder.total_amount?.toFixed(2)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-sm">Date</span>
-                  <span className="text-sm">{selectedOrder.created_at ? format(new Date(selectedOrder.created_at), 'PPp') : 'N/A'}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-sm">Method</span>
-                  <span className="text-sm capitalize">{selectedOrder.delivery_method || 'N/A'}</span>
-                </div>
-              </div>
 
-              {/* Customer Info */}
-              <div className="border-t pt-3">
-                <h4 className="text-sm font-medium mb-2">Customer</h4>
-                <p className="text-sm">{selectedOrder.user?.full_name || selectedOrder.user?.email || selectedOrder.user?.phone || 'Unknown'}</p>
-                {selectedOrder.user?.phone && (
-                  <p className="text-xs text-muted-foreground">{selectedOrder.user.phone}</p>
-                )}
-              </div>
-
-              {/* Order Items Summary */}
-              {selectedOrder.order_items && Array.isArray(selectedOrder.order_items) && selectedOrder.order_items.length > 0 && (
+                {/* Customer Info */}
                 <div className="border-t pt-3">
-                  <h4 className="text-sm font-medium mb-2">Items ({selectedOrder.order_items.length})</h4>
-                  <p className="text-xs text-muted-foreground">View full details to see all items</p>
+                  <h4 className="text-sm font-medium mb-2">Customer</h4>
+                  <p className="text-sm">{selectedOrder.user?.full_name || selectedOrder.user?.email || selectedOrder.user?.phone || 'Unknown'}</p>
+                  {selectedOrder.user?.phone && (
+                    <p className="text-xs text-muted-foreground">{selectedOrder.user.phone}</p>
+                  )}
                 </div>
-              )}
 
-              {/* Quick Actions */}
-              <div className="border-t pt-3 space-y-2">
-                <div className="grid grid-cols-3 gap-2">
-                  <OrderSMSButton
-                    order={{
-                      id: selectedOrder.id,
-                      order_number: selectedOrder.order_number,
-                      status: selectedOrder.status,
-                      total_amount: selectedOrder.total_amount,
-                      user: selectedOrder.user,
-                    }}
-                    tenantId={tenant?.id}
-                    variant="button"
-                    size="sm"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePrintOrder(selectedOrder)}
-                  >
-                    <Printer className="mr-2 h-4 w-4" />
-                    Print
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleGenerateInvoice(selectedOrder)}
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    Invoice
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => duplicateOrder(selectedOrder)}
-                    disabled={isDuplicating}
-                  >
-                    <Copy className="mr-2 h-4 w-4" />
-                    Duplicate
-                  </Button>
+                {/* Order Items Summary */}
+                {selectedOrder.order_items && Array.isArray(selectedOrder.order_items) && selectedOrder.order_items.length > 0 && (
+                  <div className="border-t pt-3">
+                    <h4 className="text-sm font-medium mb-2">Items ({selectedOrder.order_items.length})</h4>
+                    <ul className="space-y-1 text-sm">
+                      {selectedOrder.order_items.slice(0, 4).map((item) => (
+                        <li key={item.id} className="flex justify-between text-muted-foreground">
+                          <span>{(item as any).product_name || `Product ${item.product_id.slice(0, 6)}`}</span>
+                          <span>×{item.quantity}</span>
+                        </li>
+                      ))}
+                      {selectedOrder.order_items.length > 4 && (
+                        <li className="text-muted-foreground text-xs">+{selectedOrder.order_items.length - 4} more items</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Secondary Actions */}
+                <div className="border-t pt-3">
+                  <div className="grid grid-cols-4 gap-2">
+                    <OrderSMSButton
+                      order={{
+                        id: selectedOrder.id,
+                        order_number: selectedOrder.order_number,
+                        status: selectedOrder.status,
+                        total_amount: selectedOrder.total_amount,
+                        user: selectedOrder.user,
+                      }}
+                      tenantId={tenant?.id}
+                      variant="button"
+                      size="sm"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePrintOrder(selectedOrder)}
+                    >
+                      <Printer className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleGenerateInvoice(selectedOrder)}
+                    >
+                      <FileText className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => duplicateOrder(selectedOrder)}
+                      disabled={isDuplicating}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
 
-              {/* Main Actions */}
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <Button className="w-full" onClick={() => {
-                  setIsDrawerOpen(false);
-                  navigate(`orders/${selectedOrder.id}`);
-                }}>
-                  Full Details
-                </Button>
-                <DrawerClose asChild>
-                  <Button variant="outline" className="w-full">Close</Button>
-                </DrawerClose>
+              {/* Sticky footer with primary actions */}
+              <div className="flex-shrink-0 border-t p-4 pb-safe bg-background">
+                <div className="grid grid-cols-2 gap-3">
+                  <Button className="w-full min-h-[48px]" onClick={() => {
+                    setIsDrawerOpen(false);
+                    navigate(`orders/${selectedOrder.id}`);
+                  }}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    Full Details
+                  </Button>
+                  <DrawerClose asChild>
+                    <Button variant="outline" className="w-full min-h-[48px]">Close</Button>
+                  </DrawerClose>
+                </div>
               </div>
-            </div>
+            </>
           )}
         </DrawerContent>
       </Drawer>

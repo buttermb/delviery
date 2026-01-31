@@ -27,6 +27,7 @@ import { ErrorBoundary } from './MobileBottomNavErrorBoundary';
 import { useMobileNavigation } from '@/hooks/useMobileNavigation';
 import { MobileErrorBoundary } from '@/components/mobile/MobileErrorBoundary';
 import { OfflineIndicator } from '@/components/mobile/OfflineIndicator';
+import { useBulkSelectionStore } from '@/stores/useBulkSelectionStore';
 
 export function MobileBottomNav() {
   const location = useLocation();
@@ -36,6 +37,7 @@ export function MobileBottomNav() {
   const [open, setOpen] = useState(false);
   const [sidebarError, setSidebarError] = useState<Error | null>(null);
   const { isNavigating } = useMobileNavigation();
+  const isBulkSelectionActive = useBulkSelectionStore((state) => state.isActive);
 
   const quickLinks = [
     {
@@ -99,9 +101,12 @@ export function MobileBottomNav() {
       <OfflineIndicator />
       <MobileErrorBoundary>
         <nav
-          className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t lg:hidden min-h-[64px] shadow-lg"
+          className={cn(
+            "fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t lg:hidden min-h-[64px] shadow-lg transition-transform duration-200",
+            isBulkSelectionActive && "translate-y-full"
+          )}
           style={{
-            pointerEvents: 'auto',
+            pointerEvents: isBulkSelectionActive ? 'none' : 'auto',
             zIndex: 50,
             paddingBottom: 'env(safe-area-inset-bottom, 0px)',
           }}

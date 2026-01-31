@@ -2316,6 +2316,48 @@ body.keyboard-open [data-radix-dialog-content] {
 }
 
 /* ========================================
+   DATA TABLE LOADING & REFETCH STATES
+   Improves perceived performance and UX
+   ======================================== */
+
+/* Skeleton shimmer with staggered animation */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--muted-foreground) / 0.1) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Stagger animation delays for skeleton items */
+.skeleton-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.skeleton-stagger > *:nth-child(2) { animation-delay: 75ms; }
+.skeleton-stagger > *:nth-child(3) { animation-delay: 150ms; }
+.skeleton-stagger > *:nth-child(4) { animation-delay: 225ms; }
+.skeleton-stagger > *:nth-child(n+5) { animation-delay: 300ms; }
+
+/* Refetch blur state - subtle indication data is updating */
+.refetch-blur {
+  opacity: 0.6;
+  filter: blur(1px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+/* Status change animation - quick highlight then fade */
+@keyframes status-change-flash {
+  0% { background-color: hsl(var(--primary) / 0.15); }
+  100% { background-color: transparent; }
+}
+
+.animate-status-change {
+  animation: status-change-flash 0.5s ease-out;
+}
+
+/* ========================================
    VIEW TRANSITIONS API
    Smooth panel switching animations
    Only works in Chrome/Edge, gracefully ignored elsewhere

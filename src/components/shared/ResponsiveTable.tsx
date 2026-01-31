@@ -39,6 +39,12 @@ interface ResponsiveTableProps<T> {
     virtualizeHeight?: number;
     /** Height of each row in the virtualized table (default: 48) */
     virtualizeRowHeight?: number;
+    /** Set of expanded row keys for expandable rows */
+    expandedRows?: Set<string>;
+    /** Callback when a row expand toggle is clicked */
+    onToggleExpand?: (key: string) => void;
+    /** Render function for expanded row content */
+    renderExpandedContent?: (item: T) => React.ReactNode;
 }
 
 /** Memoized table row to prevent re-renders when parent updates */
@@ -48,31 +54,55 @@ const MemoizedTableRow = memo(function MemoizedTableRow<T>({
     onRowClick,
     itemKey,
     rowClassName,
+    isExpanded,
+    onToggleExpand,
+    renderExpandedContent,
 }: {
     item: T;
     columns: ResponsiveColumn<T>[];
     onRowClick?: (item: T) => void;
     itemKey: string;
     rowClassName?: string;
+    isExpanded?: boolean;
+    onToggleExpand?: (key: string) => void;
+    renderExpandedContent?: (item: T) => React.ReactNode;
 }) {
     return (
-        <TableRow
-            onClick={() => onRowClick && onRowClick(item)}
-            className={cn(
-                onRowClick && "cursor-pointer hover:bg-muted/50 transition-colors",
-                rowClassName
+        <>
+            <TableRow
+                onClick={() => {
+                    if (onToggleExpand) {
+                        onToggleExpand(itemKey);
+                    } else if (onRowClick) {
+                        onRowClick(item);
+                    }
+                }}
+                className={cn(
+                    "group",
+                    (onRowClick || onToggleExpand) && "cursor-pointer hover:bg-muted/50 transition-colors",
+                    rowClassName
+                )}
+            >
+                {columns.map((col, index) => (
+                    <TableCell key={index} className={col.className}>
+                        {col.cell
+                            ? col.cell(item)
+                            : col.accessorKey
+                                ? (item[col.accessorKey] as React.ReactNode)
+                                : null}
+                    </TableCell>
+                ))}
+            </TableRow>
+            {isExpanded && renderExpandedContent && (
+                <TableRow className="bg-muted/30 hover:bg-muted/30">
+                    <TableCell colSpan={columns.length} className="p-0">
+                        <div className="animate-in slide-in-from-top-2 fade-in duration-200">
+                            {renderExpandedContent(item)}
+                        </div>
+                    </TableCell>
+                </TableRow>
             )}
-        >
-            {columns.map((col, index) => (
-                <TableCell key={index} className={col.className}>
-                    {col.cell
-                        ? col.cell(item)
-                        : col.accessorKey
-                            ? (item[col.accessorKey] as React.ReactNode)
-                            : null}
-                </TableCell>
-            ))}
-        </TableRow>
+        </>
     );
 }) as <T>(props: {
     item: T;
@@ -80,6 +110,9 @@ const MemoizedTableRow = memo(function MemoizedTableRow<T>({
     onRowClick?: (item: T) => void;
     itemKey: string;
     rowClassName?: string;
+    isExpanded?: boolean;
+    onToggleExpand?: (key: string) => void;
+    renderExpandedContent?: (item: T) => React.ReactNode;
 }) => React.ReactElement;
 
 export function ResponsiveTable<T>({
@@ -96,6 +129,9 @@ export function ResponsiveTable<T>({
     virtualizeThreshold = 100,
     virtualizeHeight = 600,
     virtualizeRowHeight = 48,
+    expandedRows,
+    onToggleExpand,
+    renderExpandedContent,
 }: ResponsiveTableProps<T>) {
     // Determine if virtualization should be used (auto-enable for large datasets)
     const shouldVirtualize = virtualize ?? (data.length > virtualizeThreshold);
@@ -182,16 +218,22 @@ export function ResponsiveTable<T>({
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {data.map((item) => (
-                                    <MemoizedTableRow
-                                        key={keyExtractor(item)}
-                                        item={item}
-                                        columns={columns}
-                                        onRowClick={onRowClick}
-                                        itemKey={keyExtractor(item)}
-                                        rowClassName={rowClassName?.(item)}
-                                    />
-                                ))}
+                                {data.map((item) => {
+                                    const itemKey = keyExtractor(item);
+                                    return (
+                                        <MemoizedTableRow
+                                            key={itemKey}
+                                            item={item}
+                                            columns={columns}
+                                            onRowClick={renderExpandedContent ? undefined : onRowClick}
+                                            itemKey={itemKey}
+                                            rowClassName={rowClassName?.(item)}
+                                            isExpanded={expandedRows?.has(itemKey)}
+                                            onToggleExpand={renderExpandedContent ? onToggleExpand : undefined}
+                                            renderExpandedContent={renderExpandedContent}
+                                        />
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                     </div>
