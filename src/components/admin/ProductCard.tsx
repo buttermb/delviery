@@ -47,6 +47,7 @@ interface ProductCardProps {
   onAddToMenu?: (productId: string) => void;
   onPrintLabel?: () => void;
   onPublish?: (productId: string) => void;
+  onArchive?: (productId: string) => void;
 }
 
 export function ProductCard({
@@ -56,7 +57,8 @@ export function ProductCard({
   onDuplicate,
   onAddToMenu,
   onPrintLabel,
-  onPublish
+  onPublish,
+  onArchive
 }: ProductCardProps) {
   const isArchived = !!product.deleted_at;
   const availableQty = Number(product.available_quantity || 0);

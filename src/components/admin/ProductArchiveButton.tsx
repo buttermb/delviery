@@ -25,7 +25,7 @@ import { logger } from '@/lib/logger';
 interface Product {
   id: string;
   name: string;
-  deleted_at?: string | null;
+  is_active?: boolean;
   [key: string]: unknown;
 }
 
@@ -51,17 +51,17 @@ export function ProductArchiveButton({
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const isArchived = !!product.deleted_at;
+  const isArchived = product.is_active === false;
   const action = isArchived ? 'restore' : 'archive';
 
   const handleAction = async () => {
     setIsLoading(true);
     try {
       if (isArchived) {
-        // Restore the product
+        // Restore the product - set is_active to true
         const { error } = await supabase
           .from('products')
-          .update({ deleted_at: null })
+          .update({ is_active: true } as any)
           .eq('id', product.id)
           .eq('tenant_id', tenantId);
 
@@ -74,10 +74,10 @@ export function ProductArchiveButton({
 
         onSuccess?.(product, false);
       } else {
-        // Archive the product
+        // Archive the product - set is_active to false
         const { error } = await supabase
           .from('products')
-          .update({ deleted_at: new Date().toISOString() })
+          .update({ is_active: false } as any)
           .eq('id', product.id)
           .eq('tenant_id', tenantId);
 
@@ -89,10 +89,10 @@ export function ProductArchiveButton({
           action: {
             label: 'Undo',
             onClick: async () => {
-              // Quick undo - restore the product
+            // Quick undo - restore the product
               const { error: restoreError } = await supabase
                 .from('products')
-                .update({ deleted_at: null })
+                .update({ is_active: true } as any)
                 .eq('id', product.id)
                 .eq('tenant_id', tenantId);
 

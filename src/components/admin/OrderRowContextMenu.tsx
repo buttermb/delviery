@@ -29,6 +29,8 @@ import {
   Package,
   ChevronRight,
   Zap,
+  PauseCircle,
+  PlayCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -41,7 +43,9 @@ export type OrderContextAction =
   | 'print_packing_slip'
   | 'cancel'
   | 'status_change'
-  | 'rush';
+  | 'rush'
+  | 'hold'
+  | 'resume';
 
 export type OrderStatus =
   | 'pending'

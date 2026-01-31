@@ -178,26 +178,25 @@ export function DashboardSearchBar({
       const results: GlobalSearchResult[] = [];
 
       try {
-        // Search in parallel across multiple tables
+        // Search in parallel across multiple tables (cast to any to bypass deep type issues)
         const [
           customersRes,
           ordersRes,
           productsRes,
           wholesaleClientsRes,
           wholesaleOrdersRes,
-          suppliersRes,
           couriersRes,
         ] = await Promise.all([
           // Search customers (profiles with account_id = tenant.id)
-          supabase
+          (supabase as any)
             .from('profiles')
-            .select('id, user_id, full_name, email, phone')
+            .select('id, user_id, full_name, phone')
             .eq('account_id', tenant.id)
-            .or(`full_name.ilike.%${searchLower}%,email.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
+            .or(`full_name.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
             .limit(5),
 
           // Search orders
-          supabase
+          (supabase as any)
             .from('orders')
             .select('id, order_number, status, total_amount, customer_name')
             .eq('tenant_id', tenant.id)
@@ -205,7 +204,7 @@ export function DashboardSearchBar({
             .limit(5),
 
           // Search products
-          supabase
+          (supabase as any)
             .from('products')
             .select('id, name, sku, category')
             .eq('tenant_id', tenant.id)
@@ -213,7 +212,7 @@ export function DashboardSearchBar({
             .limit(5),
 
           // Search wholesale clients
-          supabase
+          (supabase as any)
             .from('wholesale_clients')
             .select('id, business_name, contact_name, email')
             .eq('tenant_id', tenant.id)
@@ -221,38 +220,30 @@ export function DashboardSearchBar({
             .limit(5),
 
           // Search wholesale orders
-          supabase
+          (supabase as any)
             .from('wholesale_orders')
             .select('id, status, total_amount, wholesale_clients(business_name)')
             .eq('tenant_id', tenant.id)
             .ilike('id', `%${searchLower}%`)
             .limit(5),
 
-          // Search suppliers
-          supabase
-            .from('suppliers')
-            .select('id, name, contact_name, email')
-            .eq('tenant_id', tenant.id)
-            .or(`name.ilike.%${searchLower}%,contact_name.ilike.%${searchLower}%`)
-            .limit(5),
-
           // Search couriers
-          supabase
+          (supabase as any)
             .from('couriers')
-            .select('id, name, phone, vehicle_type')
+            .select('id, full_name, phone, vehicle_type')
             .eq('tenant_id', tenant.id)
-            .or(`name.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
+            .or(`full_name.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
             .limit(5),
         ]);
 
         // Map customers
         if (customersRes.data) {
-          for (const c of customersRes.data) {
+          for (const c of customersRes.data as any[]) {
             results.push({
               id: c.user_id || c.id,
               type: 'customer',
               label: c.full_name || 'Unknown Customer',
-              sublabel: c.email || c.phone || undefined,
+              sublabel: c.phone || undefined,
               url: `/admin/customers/${c.user_id || c.id}`,
             });
           }
@@ -260,7 +251,7 @@ export function DashboardSearchBar({
 
         // Map orders
         if (ordersRes.data) {
-          for (const o of ordersRes.data) {
+          for (const o of ordersRes.data as any[]) {
             results.push({
               id: o.id,
               type: 'order',
@@ -274,7 +265,7 @@ export function DashboardSearchBar({
 
         // Map products
         if (productsRes.data) {
-          for (const p of productsRes.data) {
+          for (const p of productsRes.data as any[]) {
             results.push({
               id: p.id,
               type: 'product',
@@ -287,7 +278,7 @@ export function DashboardSearchBar({
 
         // Map wholesale clients
         if (wholesaleClientsRes.data) {
-          for (const wc of wholesaleClientsRes.data) {
+          for (const wc of wholesaleClientsRes.data as any[]) {
             results.push({
               id: wc.id,
               type: 'wholesale_client',
@@ -300,8 +291,8 @@ export function DashboardSearchBar({
 
         // Map wholesale orders
         if (wholesaleOrdersRes.data) {
-          for (const wo of wholesaleOrdersRes.data) {
-            const clientName = (wo.wholesale_clients as { business_name: string | null } | null)?.business_name;
+          for (const wo of wholesaleOrdersRes.data as any[]) {
+            const clientName = wo.wholesale_clients?.business_name;
             results.push({
               id: wo.id,
               type: 'wholesale_order',
@@ -312,26 +303,13 @@ export function DashboardSearchBar({
           }
         }
 
-        // Map suppliers
-        if (suppliersRes.data) {
-          for (const s of suppliersRes.data) {
-            results.push({
-              id: s.id,
-              type: 'supplier',
-              label: s.name,
-              sublabel: s.contact_name || s.email || undefined,
-              url: `/admin/suppliers/${s.id}`,
-            });
-          }
-        }
-
         // Map couriers
         if (couriersRes.data) {
-          for (const c of couriersRes.data) {
+          for (const c of couriersRes.data as any[]) {
             results.push({
               id: c.id,
               type: 'courier',
-              label: c.name,
+              label: c.full_name || 'Unknown Courier',
               sublabel: c.phone || c.vehicle_type || undefined,
               url: `/admin/couriers/${c.id}`,
             });

@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import {
   Eye, Users, ShoppingCart, Flame, Copy, ExternalLink,
   Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus,
-  MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store, Calendar
+  MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store, Calendar,
+  Monitor
 } from 'lucide-react';
 import { useState } from 'react';
 import {

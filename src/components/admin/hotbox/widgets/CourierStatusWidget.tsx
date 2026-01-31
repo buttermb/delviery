@@ -53,8 +53,8 @@ export function CourierStatusWidget() {
       if (!tenant?.id) return { couriers: [], counts: { available: 0, busy: 0, offline: 0 } };
 
       try {
-        // Fetch all active couriers
-        const { data: couriersData, error: couriersError } = await supabase
+        // Fetch all active couriers (cast to any to bypass deep type issues)
+        const { data: couriersData, error: couriersError } = await (supabase as any)
           .from('couriers')
           .select('id, full_name, is_online, is_active, age_verified, current_lat, current_lng')
           .eq('tenant_id', tenant.id)
@@ -65,7 +65,7 @@ export function CourierStatusWidget() {
         const couriers = (couriersData || []) as Courier[];
 
         // Get all couriers with active deliveries (assigned or in_transit)
-        const { data: activeDeliveries, error: deliveriesError } = await supabase
+        const { data: activeDeliveries, error: deliveriesError } = await (supabase as any)
           .from('deliveries')
           .select('courier_id')
           .eq('tenant_id', tenant.id)
@@ -248,7 +248,7 @@ export function CourierStatusWidget() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {courier.hasLocation && (
-                      <MapPin className="h-3.5 w-3.5 text-emerald-500" title="GPS location available" />
+                      <MapPin className="h-3.5 w-3.5 text-emerald-500" aria-label="GPS location available" />
                     )}
                   </div>
                 </div>
