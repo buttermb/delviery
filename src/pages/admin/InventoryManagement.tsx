@@ -5,7 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Package, TrendingUp, ArrowUpDown, Settings, AlertTriangle, CheckCircle, Warehouse, Layers } from "lucide-react";
+import { Package, TrendingUp, ArrowUpDown, Settings, AlertTriangle, CheckCircle, Warehouse, Layers, ChevronDown, DollarSign, BoxIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { StockAdjustmentDialog } from "@/components/admin/StockAdjustmentDialog";
 import { BulkInventoryModal } from "@/components/admin/BulkInventoryModal";
 import { InventoryMovementLog } from "@/components/admin/InventoryMovementLog";
@@ -45,6 +46,19 @@ export default function InventoryManagement() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  const toggleRowExpand = (productId: string) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(productId)) {
+        next.delete(productId);
+      } else {
+        next.add(productId);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     async function loadInventory() {
@@ -109,6 +123,14 @@ export default function InventoryManagement() {
   const avgCostPerLb = productsWithCosts.length > 0 && totalStock > 0
     ? totalValue / totalStock
     : 0;
+
+  // Stock status counts for stats bar
+  const criticalCount = products.filter(p => Number(p.available_quantity || 0) <= 10).length;
+  const lowStockCount = products.filter(p => {
+    const qty = Number(p.available_quantity || 0);
+    return qty > 10 && qty <= (p.low_stock_alert || 20);
+  }).length;
+  const healthyCount = products.length - criticalCount - lowStockCount;
 
   const getStockStatus = (qty: number, reorderPoint: number = 20) => {
     if (qty <= 10) return { status: "critical", color: "destructive", label: "CRITICAL" };
@@ -185,7 +207,8 @@ export default function InventoryManagement() {
         <Button
           size="sm"
           variant="ghost"
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             setSelectedProduct(item);
             setAdjustmentDialogOpen(true);
           }}
@@ -193,6 +216,18 @@ export default function InventoryManagement() {
           <Settings className="h-4 w-4" />
           <span className="sr-only">Adjust</span>
         </Button>
+      )
+    },
+    {
+      header: '',
+      className: 'w-[40px]',
+      cell: (item) => (
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 text-muted-foreground transition-transform duration-200",
+            expandedRows.has(item.id) && "rotate-180"
+          )}
+        />
       )
     }
   ];
@@ -282,46 +317,65 @@ export default function InventoryManagement() {
         </div>
       </div>
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4" data-tutorial="inventory-overview">
-        <Card className="p-3 sm:p-4 md:p-5">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs sm:text-sm text-muted-foreground">Total Stock</span>
-            <Package className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold font-mono text-foreground">{totalStock.toFixed(0)} lbs</div>
-          <div className="text-xs sm:text-sm text-muted-foreground mt-1">{(totalStock * 0.453592).toFixed(0)} kg</div>
-        </Card>
-
-        <Card className="p-3 sm:p-4 md:p-5">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs sm:text-sm text-muted-foreground">Total Value</span>
-            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold font-mono text-foreground">${(totalValue / 1000).toFixed(0)}k</div>
-          <div className="text-xs sm:text-sm text-muted-foreground mt-1">at cost</div>
-        </Card>
-
-        <Card className="p-3 sm:p-4 md:p-5 sm:col-span-2 md:col-span-1">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs sm:text-sm text-muted-foreground">Avg Cost/lb</span>
-            <ArrowUpDown className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold font-mono text-foreground">${avgCostPerLb.toFixed(0)}</div>
-          <div className="text-xs sm:text-sm text-muted-foreground mt-1">average</div>
-        </Card>
+      {/* Compact Stats Bar */}
+      <div className="flex items-center gap-4 sm:gap-6 py-2.5 px-4 bg-muted/30 rounded-lg overflow-x-auto scrollbar-hide" data-tutorial="inventory-overview">
+        <div className="flex items-center gap-2 whitespace-nowrap">
+          <Package className="h-4 w-4 text-blue-500" />
+          <span className="text-sm text-muted-foreground">Total Stock</span>
+          <span className="font-bold tabular-nums">{totalStock.toFixed(0)} lbs</span>
+        </div>
+        <div className="flex items-center gap-2 whitespace-nowrap">
+          <DollarSign className="h-4 w-4 text-emerald-500" />
+          <span className="text-sm text-muted-foreground">Value</span>
+          <span className="font-bold tabular-nums">${(totalValue / 1000).toFixed(1)}k</span>
+        </div>
+        <div className="flex items-center gap-2 whitespace-nowrap">
+          <CheckCircle className="h-4 w-4 text-green-500" />
+          <span className="text-sm text-muted-foreground">Healthy</span>
+          <span className="font-bold tabular-nums">{healthyCount}</span>
+        </div>
+        <div className="flex items-center gap-2 whitespace-nowrap">
+          <ArrowUpDown className="h-4 w-4 text-yellow-500" />
+          <span className="text-sm text-muted-foreground">Low</span>
+          <span className="font-bold tabular-nums text-yellow-600">{lowStockCount}</span>
+        </div>
+        <div className="flex items-center gap-2 whitespace-nowrap">
+          <AlertTriangle className="h-4 w-4 text-red-500" />
+          <span className="text-sm text-muted-foreground">Critical</span>
+          <span className="font-bold tabular-nums text-red-600">{criticalCount}</span>
+        </div>
       </div>
 
       {/* Warehouses */}
       {loading ? (
-        <Card className="p-8 text-center">
-          <Package className="h-10 w-10 animate-bounce text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading inventory...</p>
+        <Card className="p-6 space-y-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="h-14 rounded-lg skeleton-shimmer animate-in fade-in slide-in-from-bottom-2"
+              style={{ animationDelay: `${i * 75}ms`, animationFillMode: 'backwards' }}
+            />
+          ))}
         </Card>
       ) : Object.keys(groupedInventory).length === 0 ? (
-        <Card className="p-8 text-center">
+        <Card className={cn(
+          "p-8 text-center",
+          searchTerm ? "" : "bg-gradient-to-br from-blue-500/5 to-transparent"
+        )}>
           <Package className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground">No inventory data. Add products to get started.</p>
+          <h3 className="text-lg font-medium mb-1">
+            {searchTerm ? `No results for "${searchTerm}"` : "No inventory yet"}
+          </h3>
+          <p className="text-muted-foreground text-sm mb-4">
+            {searchTerm
+              ? "Try adjusting your search terms."
+              : "Add products to start tracking your inventory."}
+          </p>
+          <Button
+            onClick={() => searchTerm ? setSearchTerm('') : navigateToAdmin('products/new')}
+          >
+            {searchTerm ? "Clear Search" : "Add First Product"}
+          </Button>
         </Card>
       ) : (
         Object.entries(groupedInventory).map(([warehouseName, warehouseProducts]) => {
@@ -351,6 +405,53 @@ export default function InventoryManagement() {
                 mobileRenderer={renderMobileCard}
                 keyExtractor={(item) => item.id}
                 className="mt-4"
+                expandedRows={expandedRows}
+                onToggleExpand={toggleRowExpand}
+                renderExpandedContent={(item) => (
+                  <div className="p-4 space-y-3 border-t border-border/50">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">SKU</p>
+                        <p className="font-mono text-sm">{item.sku || '—'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">Batch</p>
+                        <p className="font-mono text-sm">{item.batch_number || '—'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">Category</p>
+                        <p className="text-sm capitalize">{item.category || '—'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">Reorder Point</p>
+                        <p className="font-mono text-sm">{item.low_stock_alert || 20} lbs</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedProduct(item);
+                          setAdjustmentDialogOpen(true);
+                        }}
+                      >
+                        <Settings className="h-3 w-3 mr-1" /> Adjust Stock
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigateToAdmin(`products/${item.id}`);
+                        }}
+                      >
+                        <BoxIcon className="h-3 w-3 mr-1" /> View Product
+                      </Button>
+                    </div>
+                  </div>
+                )}
               />
             </Card>
           );
