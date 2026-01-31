@@ -75,6 +75,7 @@ export default function PointOfSale() {
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const { dialogState, confirm, closeDialog, setLoading: setDialogLoading } = useConfirmDialog();
   const [pendingLoadOrder, setPendingLoadOrder] = useState<PendingOrder | null>(null);
+  const [idempotencyKey, setIdempotencyKey] = useState<string>(() => crypto.randomUUID());
 
   // Handle image load error - fall back to placeholder
   const handleImageError = useCallback((productId: string) => {
@@ -226,11 +227,15 @@ export default function PointOfSale() {
 
   const calculateTotals = () => {
     const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
-    const tax = subtotal * 0.08875; // 8.875% tax
-    const discount = selectedCustomer?.customer_type === 'medical' ? subtotal * 0.05 : 0;
+    // TODO: Make tax rate configurable per tenant (tenant.tax_rate)
+    const taxRate = tenant?.tax_rate ?? 0.08875; // Default 8.875%
+    const tax = subtotal * taxRate;
+    // Medical discount: 5% (could be made configurable)
+    const discountRate = 0.05;
+    const discount = selectedCustomer?.customer_type === 'medical' ? subtotal * discountRate : 0;
     const total = subtotal + tax - discount;
 
-    return { subtotal, tax, discount, total };
+    return { subtotal, tax, discount, total, taxRate };
   };
 
   const completeSale = async () => {
@@ -267,8 +272,49 @@ export default function PointOfSale() {
         return;
       }
 
-      // Prepare transaction items
-      const transactionItems = cart.map(item => ({
+      // STOCK VALIDATION: Re-fetch current stock levels before completing sale
+      const productIds = cart.map(item => item.id);
+      const { data: currentProducts, error: stockError } = await supabase
+        .from('products')
+        .select('id, stock_quantity, name')
+        .in('id', productIds)
+        .eq('tenant_id', tenantId);
+
+      if (stockError) {
+        throw new Error('Failed to validate stock levels');
+      }
+
+      // Check if any items are now out of stock or insufficient
+      const stockIssues: string[] = [];
+      for (const cartItem of cart) {
+        const currentProduct = currentProducts?.find(p => p.id === cartItem.id);
+        if (!currentProduct) {
+          stockIssues.push(`${cartItem.name} is no longer available`);
+        } else if (currentProduct.stock_quantity < cartItem.quantity) {
+          stockIssues.push(`${cartItem.name}: only ${currentProduct.stock_quantity} available (need ${cartItem.quantity})`);
+        }
+      }
+
+      if (stockIssues.length > 0) {
+        toast({
+          title: 'Stock Issue',
+          description: stockIssues.join(', '),
+          variant: 'destructive',
+        });
+        // Refresh products to update UI
+        loadProducts();
+        setLoading(false);
+        return;
+      }
+
+      // Update cart with fresh stock quantities
+      const updatedCart = cart.map(item => {
+        const fresh = currentProducts?.find(p => p.id === item.id);
+        return fresh ? { ...item, stock_quantity: fresh.stock_quantity } : item;
+      });
+
+      // Prepare transaction items with fresh stock
+      const transactionItems = updatedCart.map(item => ({
         product_id: item.id,
         product_name: item.name,
         quantity: item.quantity,
@@ -278,7 +324,7 @@ export default function PointOfSale() {
         stock_quantity: item.stock_quantity
       }));
 
-      // Try atomic RPC first
+      // Try atomic RPC first (includes idempotency)
       // @ts-ignore - RPC function create_pos_transaction_atomic not in auto-generated types
       const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic' as any, {
         p_tenant_id: tenantId,
@@ -288,55 +334,82 @@ export default function PointOfSale() {
         p_tax_amount: tax,
         p_discount_amount: discount,
         p_customer_id: selectedCustomer?.id || null,
-        p_shift_id: null
+        p_shift_id: null,
+        p_idempotency_key: idempotencyKey // Pass idempotency key
       });
 
       let transactionId: string | null = null;
       let transactionNumber: string;
 
       if (rpcError) {
-        // Fallback logic
+        // Fallback logic - only if RPC doesn't exist
         if (rpcError.code === 'PGRST202' || rpcError.message?.includes('function') || rpcError.message?.includes('does not exist')) {
-          transactionNumber = `POS-${Date.now().toString(36).toUpperCase()}`;
-          const { data: transaction, error: transactionError } = await supabase
+          // Check for existing transaction with same idempotency key (prevent duplicates)
+          const { data: existingTx } = await supabase
             .from('pos_transactions')
-            .insert({
-              tenant_id: tenantId,
-              transaction_number: transactionNumber,
-              customer_id: selectedCustomer?.id || null,
-              items: transactionItems,
-              subtotal: subtotal,
-              tax_amount: tax,
-              discount_amount: discount,
-              total_amount: total,
-              payment_method: paymentMethod,
-              payment_status: 'completed',
-              status: 'completed',
-              notes: selectedCustomer ? `Customer: ${selectedCustomer.first_name} ${selectedCustomer.last_name}` : 'Walk-in customer'
-            } as any)
-            .select()
+            .select('id, transaction_number')
+            .eq('tenant_id', tenantId)
+            .eq('idempotency_key', idempotencyKey)
             .maybeSingle();
 
-          if (transactionError) throw transactionError;
-          transactionId = transaction?.id;
+          if (existingTx) {
+            // Already processed - just show success
+            transactionId = existingTx.id;
+            transactionNumber = existingTx.transaction_number;
+            logger.info('Duplicate transaction prevented by idempotency key', { transactionId });
+          } else {
+            transactionNumber = `POS-${Date.now().toString(36).toUpperCase()}`;
+            const { data: transaction, error: transactionError } = await supabase
+              .from('pos_transactions')
+              .insert({
+                tenant_id: tenantId,
+                transaction_number: transactionNumber,
+                customer_id: selectedCustomer?.id || null,
+                items: transactionItems,
+                subtotal: subtotal,
+                tax_amount: tax,
+                discount_amount: discount,
+                total_amount: total,
+                payment_method: paymentMethod,
+                payment_status: 'completed',
+                status: 'completed',
+                idempotency_key: idempotencyKey,
+                notes: selectedCustomer ? `Customer: ${selectedCustomer.first_name} ${selectedCustomer.last_name}` : 'Walk-in customer'
+              } as any)
+              .select()
+              .maybeSingle();
 
-          // Update inventory 
-          for (const item of cart) {
-            await supabase
-              .from('products')
-              .update({ stock_quantity: item.stock_quantity - item.quantity })
-              .eq('id', item.id)
-              .eq('tenant_id', tenantId);
-          }
+            if (transactionError) throw transactionError;
+            transactionId = transaction?.id;
 
-          // Update loyalty
-          if (selectedCustomer) {
-            const pointsEarned = Math.floor(total);
-            await supabase
-              .from('customers')
-              .update({ loyalty_points: (selectedCustomer.loyalty_points || 0) + pointsEarned })
-              .eq('id', selectedCustomer.id)
-              .eq('tenant_id', tenantId);
+            // Update inventory with optimistic locking pattern
+            const inventoryErrors: string[] = [];
+            for (const item of updatedCart) {
+              const { error: updateError, count } = await supabase
+                .from('products')
+                .update({ stock_quantity: item.stock_quantity - item.quantity })
+                .eq('id', item.id)
+                .eq('tenant_id', tenantId)
+                .gte('stock_quantity', item.quantity); // Only update if stock still sufficient
+
+              if (updateError || count === 0) {
+                inventoryErrors.push(item.name);
+              }
+            }
+
+            if (inventoryErrors.length > 0) {
+              logger.warn('Some inventory updates may have failed', { items: inventoryErrors, transactionId });
+            }
+
+            // Update loyalty
+            if (selectedCustomer) {
+              const pointsEarned = Math.floor(total);
+              await supabase
+                .from('customers')
+                .update({ loyalty_points: (selectedCustomer.loyalty_points || 0) + pointsEarned })
+                .eq('id', selectedCustomer.id)
+                .eq('tenant_id', tenantId);
+            }
           }
         } else {
           throw rpcError;
@@ -411,6 +484,9 @@ export default function PointOfSale() {
         title: 'Sale completed!',
         description: `Transaction ${transactionNumber}${changeMsg}`
       });
+
+      // Regenerate idempotency key for next transaction
+      setIdempotencyKey(crypto.randomUUID());
 
       clearCart();
       loadProducts();
@@ -576,7 +652,7 @@ export default function PointOfSale() {
 
               {/* Product Grid - Scrollable */}
               <ScrollArea className="flex-1 -mr-4 pr-4">
-                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-20">
+                <div className="grid grid-cols-2 xl:grid-cols-3 gap-5 pb-20">
                   {filteredProducts.map(product => (
                     <Card
                       key={product.id}
@@ -613,14 +689,14 @@ export default function PointOfSale() {
                           )}
                         </div>
                       </div>
-                      <CardContent className="p-3 flex flex-col flex-1">
-                        <h3 className="font-semibold text-base line-clamp-2 leading-tight mb-2 flex-1">{product.name}</h3>
+                      <CardContent className="p-4 flex flex-col flex-1">
+                        <h3 className="font-semibold text-lg line-clamp-2 leading-tight mb-3 flex-1">{product.name}</h3>
                         <div className="flex items-end justify-between mt-auto">
                           <div className="flex flex-col">
-                            <span className="text-xs text-muted-foreground">{product.stock_quantity} left</span>
-                            <span className="text-lg font-bold text-primary">${product.price}</span>
+                            <span className="text-sm text-muted-foreground">{product.stock_quantity} in stock</span>
+                            <span className="text-xl font-bold text-primary">${product.price}</span>
                           </div>
-                          <Button size="sm" variant="secondary" className="h-8 w-8 rounded-full p-0">
+                          <Button size="sm" variant="secondary" className="h-10 w-10 rounded-full p-0">
                             <Plus className="h-4 w-4" />
                           </Button>
                         </div>
@@ -654,7 +730,7 @@ export default function PointOfSale() {
         {/* RIGHT COLUMN - Cart */}
         <div className={cn(
           "flex flex-col border-l pl-6 transition-all duration-300",
-          isFullScreen ? "w-[400px] xl:w-[450px]" : "w-[350px] lg:w-[380px]"
+          isFullScreen ? "w-[480px] xl:w-[540px]" : "w-[420px] lg:w-[480px]"
         )}>
           <div className="flex items-center justify-between mb-4 flex-shrink-0">
             <h2 className="text-xl font-bold flex items-center gap-2">
@@ -703,7 +779,7 @@ export default function PointOfSale() {
           {/* Cart Items List */}
           <Card className="flex-1 flex flex-col min-h-0 overflow-hidden border-2">
             <ScrollArea className="flex-1 bg-muted/10">
-              <div className="p-3 space-y-2">
+              <div className="p-4 space-y-3">
                 {cart.length === 0 ? (
                   <div className="h-40 flex flex-col items-center justify-center text-muted-foreground opacity-50">
                     <ShoppingCart className="h-10 w-10 mb-2" />
@@ -711,22 +787,22 @@ export default function PointOfSale() {
                   </div>
                 ) : (
                   cart.map(item => (
-                    <div key={item.id} className="flex gap-2 p-2 bg-background rounded-lg border shadow-sm">
+                    <div key={item.id} className="flex gap-3 p-3 bg-background rounded-lg border shadow-sm">
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium line-clamp-1">{item.name}</div>
-                        <div className="text-sm text-muted-foreground">${item.price}</div>
+                        <div className="font-medium text-base line-clamp-1">{item.name}</div>
+                        <div className="text-sm text-muted-foreground">${item.price.toFixed(2)} each</div>
                       </div>
-                      <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => updateQuantity(item.id, -1)}>
-                          {item.quantity === 1 ? <Trash2 className="h-3 w-3 text-destructive" /> : <Minus className="h-3 w-3" />}
+                      <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                        <Button size="icon" variant="ghost" className="h-9 w-9 min-h-[44px] min-w-[44px]" onClick={() => updateQuantity(item.id, -1)}>
+                          {item.quantity === 1 ? <Trash2 className="h-4 w-4 text-destructive" /> : <Minus className="h-4 w-4" />}
                         </Button>
-                        <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => updateQuantity(item.id, 1)}>
-                          <Plus className="h-3 w-3" />
+                        <span className="w-8 text-center text-base font-semibold">{item.quantity}</span>
+                        <Button size="icon" variant="ghost" className="h-9 w-9 min-h-[44px] min-w-[44px]" onClick={() => updateQuantity(item.id, 1)}>
+                          <Plus className="h-4 w-4" />
                         </Button>
                       </div>
-                      <div className="font-mono font-medium min-w-[3rem] text-right pt-[0.15rem]">
-                        ${item.subtotal.toFixed(0)}
+                      <div className="font-mono font-bold text-lg min-w-[4rem] text-right">
+                        ${item.subtotal.toFixed(2)}
                       </div>
                     </div>
                   ))
@@ -735,8 +811,8 @@ export default function PointOfSale() {
             </ScrollArea>
 
             {/* Footer / Totals */}
-            <div className="p-4 bg-background border-t space-y-4 shadow-xl z-10">
-              <div className="space-y-1 text-sm">
+            <div className="p-5 bg-background border-t space-y-5 shadow-xl z-10">
+              <div className="space-y-2 text-base">
                 <div className="flex justify-between text-muted-foreground">
                   <span>Subtotal</span>
                   <span>${subtotal.toFixed(2)}</span>
@@ -751,21 +827,21 @@ export default function PointOfSale() {
                     <span>-${discount.toFixed(2)}</span>
                   </div>
                 )}
-                <Separator className="my-2" />
-                <div className="flex justify-between text-2xl font-bold text-foreground">
+                <Separator className="my-3" />
+                <div className="flex justify-between text-3xl font-bold text-foreground">
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
               </div>
 
               {/* Payment Method */}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 {['cash', 'credit', 'debit', 'other'].map(method => (
                   <Button
                     key={method}
                     variant={paymentMethod === method ? "default" : "outline"}
-                    size="sm"
-                    className="capitalize"
+                    size="lg"
+                    className="capitalize h-12 text-base min-h-[48px]"
                     onClick={() => setPaymentMethod(method)}
                   >
                     {method}
@@ -775,11 +851,11 @@ export default function PointOfSale() {
 
               {/* Cash Calculator */}
               {paymentMethod === 'cash' && (
-                <div className="space-y-2 bg-muted/30 p-2 rounded-md border">
-                  <div className="flex gap-2 items-center">
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <div className="space-y-3 bg-muted/30 p-3 rounded-lg border">
+                  <div className="flex gap-3 items-center">
+                    <DollarSign className="h-5 w-5 text-muted-foreground" />
                     <Input
-                      className="h-9 font-mono"
+                      className="h-12 font-mono text-lg"
                       placeholder="Amount Tendered"
                       type="number"
                       value={cashTendered}
@@ -788,8 +864,8 @@ export default function PointOfSale() {
                   </div>
                   {changeDue > 0 && (
                     <div className="flex justify-between items-center px-1">
-                      <span className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Change Due</span>
-                      <span className="text-xl font-bold font-mono text-green-600">${changeDue.toFixed(2)}</span>
+                      <span className="font-medium text-muted-foreground text-sm uppercase tracking-wide">Change Due</span>
+                      <span className="text-2xl font-bold font-mono text-green-600">${changeDue.toFixed(2)}</span>
                     </div>
                   )}
                 </div>
