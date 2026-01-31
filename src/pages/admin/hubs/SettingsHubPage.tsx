@@ -16,6 +16,7 @@ import {
     Plug,
     Shield,
     Headphones,
+    Stethoscope,
 } from 'lucide-react';
 import { Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,6 +29,7 @@ const BillingPage = lazyWithRetry(() => import('@/pages/tenant-admin/BillingPage
 const APIAccessPage = lazyWithRetry(() => import('@/pages/tenant-admin/APIAccessPage'));
 const SecurityPage = lazyWithRetry(() => import('@/pages/super-admin/SecurityPage'));
 const HelpPage = lazyWithRetry(() => import('@/pages/HelpPage'));
+const SystemAuditPage = lazyWithRetry(() => import('@/pages/admin/SystemAuditPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -44,6 +46,7 @@ const tabs = [
     { id: 'security', label: 'Security', icon: Shield, group: 'Account' },
     // Tools
     { id: 'integrations', label: 'Integrations', icon: Plug, group: 'Tools' },
+    { id: 'diagnostics', label: 'Diagnostics', icon: Stethoscope, group: 'Tools' },
     { id: 'support', label: 'Support', icon: Headphones, group: 'Tools' },
 ] as const;
 
@@ -106,6 +109,9 @@ export default function SettingsHubPage() {
                 </TabsContent>
                 <TabsContent value="security" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><SecurityPage /></Suspense>
+                </TabsContent>
+                <TabsContent value="diagnostics" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><SystemAuditPage /></Suspense>
                 </TabsContent>
                 <TabsContent value="support" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><HelpPage /></Suspense>
