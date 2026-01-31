@@ -4,9 +4,11 @@
  * Individual transaction list item with expandable details.
  * Shows icon based on type, signed amount, running balance,
  * truncated description, and relative date.
+ *
+ * Memoized with React.memo for performance in long lists.
  */
 
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import {
   Plus,
   Minus,
@@ -156,7 +158,7 @@ function formatMetadataValue(value: unknown): string {
   return JSON.stringify(value);
 }
 
-export function CreditTransactionRow({
+export const CreditTransactionRow = memo(function CreditTransactionRow({
   transaction,
   className,
   defaultExpanded = false,
@@ -291,4 +293,4 @@ export function CreditTransactionRow({
       )}
     </Collapsible>
   );
-}
+});
