@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { keepPreviousData } from '@tanstack/react-query';
 import {
   createQueryClient,
   appQueryClient,
@@ -13,6 +14,7 @@ import {
   STATIC_QUERY_CONFIG,
   INSTANT_CACHE_CONFIG,
   LIST_QUERY_CONFIG,
+  ADMIN_PANEL_QUERY_CONFIG,
 } from '../react-query-config';
 
 describe('React Query Configuration', () => {
@@ -29,6 +31,50 @@ describe('React Query Configuration', () => {
       const queries = client.getDefaultOptions().queries;
       expect(queries?.retry).toBeDefined();
       expect(queries?.retryDelay).toBeDefined();
+    });
+
+    it('should have placeholderData set to keepPreviousData', () => {
+      const client = createQueryClient();
+      const queries = client.getDefaultOptions().queries;
+      expect(queries?.placeholderData).toBeDefined();
+      expect(queries?.placeholderData).toBe(keepPreviousData);
+    });
+
+    it('should enable instant navigation with previous data', () => {
+      const client = createQueryClient();
+      const queries = client.getDefaultOptions().queries;
+      // placeholderData: keepPreviousData ensures users see old data while new data loads
+      expect(queries?.placeholderData).toBe(keepPreviousData);
+    });
+
+    it('should have structural sharing enabled', () => {
+      const client = createQueryClient();
+      const queries = client.getDefaultOptions().queries;
+      expect(queries?.structuralSharing).toBe(true);
+    });
+
+    it('should have network mode set to offlineFirst', () => {
+      const client = createQueryClient();
+      const queries = client.getDefaultOptions().queries;
+      expect(queries?.networkMode).toBe('offlineFirst');
+    });
+
+    it('should not refetch on window focus by default', () => {
+      const client = createQueryClient();
+      const queries = client.getDefaultOptions().queries;
+      expect(queries?.refetchOnWindowFocus).toBe(false);
+    });
+
+    it('should not refetch on mount by default', () => {
+      const client = createQueryClient();
+      const queries = client.getDefaultOptions().queries;
+      expect(queries?.refetchOnMount).toBe(false);
+    });
+
+    it('should refetch on reconnect', () => {
+      const client = createQueryClient();
+      const queries = client.getDefaultOptions().queries;
+      expect(queries?.refetchOnReconnect).toBe(true);
     });
   });
 
@@ -141,6 +187,32 @@ describe('React Query Configuration', () => {
     });
   });
 
+  describe('INSTANT_CACHE_CONFIG', () => {
+    it('should have correct configuration for instant cache', () => {
+      expect(INSTANT_CACHE_CONFIG).toEqual({
+        staleTime: Infinity,
+        gcTime: 24 * 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        refetchOnReconnect: false,
+      });
+    });
+
+    it('should never become stale', () => {
+      expect(INSTANT_CACHE_CONFIG.staleTime).toBe(Infinity);
+    });
+
+    it('should cache for 24 hours', () => {
+      expect(INSTANT_CACHE_CONFIG.gcTime).toBe(24 * 60 * 60 * 1000);
+    });
+
+    it('should never refetch', () => {
+      expect(INSTANT_CACHE_CONFIG.refetchOnWindowFocus).toBe(false);
+      expect(INSTANT_CACHE_CONFIG.refetchOnMount).toBe(false);
+      expect(INSTANT_CACHE_CONFIG.refetchOnReconnect).toBe(false);
+    });
+  });
+
   describe('LIST_QUERY_CONFIG', () => {
     it('should have correct configuration for list data', () => {
       expect(LIST_QUERY_CONFIG).toEqual({
@@ -155,6 +227,39 @@ describe('React Query Configuration', () => {
     });
   });
 
+  describe('ADMIN_PANEL_QUERY_CONFIG', () => {
+    it('should have correct configuration for admin panel', () => {
+      expect(ADMIN_PANEL_QUERY_CONFIG).toEqual({
+        staleTime: 10 * 60 * 1000,
+        gcTime: 15 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+      });
+    });
+
+    it('should have 10 minute staleTime', () => {
+      expect(ADMIN_PANEL_QUERY_CONFIG.staleTime).toBe(10 * 60 * 1000);
+    });
+
+    it('should have 15 minute gcTime', () => {
+      expect(ADMIN_PANEL_QUERY_CONFIG.gcTime).toBe(15 * 60 * 1000);
+    });
+
+    it('should have gcTime greater than staleTime', () => {
+      expect(ADMIN_PANEL_QUERY_CONFIG.gcTime).toBeGreaterThan(
+        ADMIN_PANEL_QUERY_CONFIG.staleTime
+      );
+    });
+
+    it('should not refetch on window focus', () => {
+      expect(ADMIN_PANEL_QUERY_CONFIG.refetchOnWindowFocus).toBe(false);
+    });
+
+    it('should not refetch on mount', () => {
+      expect(ADMIN_PANEL_QUERY_CONFIG.refetchOnMount).toBe(false);
+    });
+  });
+
   describe('Configuration consistency', () => {
     it('should have gcTime >= staleTime for all configs', () => {
       const configs = [
@@ -164,6 +269,7 @@ describe('React Query Configuration', () => {
         REALTIME_QUERY_CONFIG,
         STATIC_QUERY_CONFIG,
         LIST_QUERY_CONFIG,
+        ADMIN_PANEL_QUERY_CONFIG,
       ];
 
       configs.forEach((config) => {

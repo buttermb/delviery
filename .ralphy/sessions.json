@@ -84,10 +84,47 @@
       "taskId": "Increase gcTime from 10 minutes to 15 minutes for admin queries in react-query-config.ts",
       "taskTitle": "Increase gcTime from 10 minutes to 15 minutes for admin queries in react-query-config.ts",
       "status": "in_progress",
-      "modifiedFiles": [],
+      "modifiedFiles": [
+        "src/hooks/useAuth.ts",
+        "src/hooks/useCreditPackages.ts",
+        "src/hooks/useMenuScheduler.ts"
+      ],
       "startedAt": "2026-01-31T03:47:48.523Z",
-      "updatedAt": "2026-01-31T03:47:48.523Z",
+      "updatedAt": "2026-01-31T03:52:21.831Z",
       "agentNum": 2
+    },
+    "Create ADMIN_PANEL_QUERY_CONFIG preset with staleTime 10 minutes in react-query-config.ts": {
+      "sessionId": "5a8496c2-a7e5-4140-a2a5-4f4fc76c3bcb",
+      "taskId": "Create ADMIN_PANEL_QUERY_CONFIG preset with staleTime 10 minutes in react-query-config.ts",
+      "taskTitle": "Create ADMIN_PANEL_QUERY_CONFIG preset with staleTime 10 minutes in react-query-config.ts",
+      "status": "in_progress",
+      "modifiedFiles": [
+        "src/lib/react-query-config.ts",
+        "src/lib/__tests__/react-query-config.test.ts"
+      ],
+      "startedAt": "2026-01-31T03:49:26.847Z",
+      "updatedAt": "2026-01-31T03:49:55.064Z",
+      "agentNum": 3
+    },
+    "Add refetchIntervalInBackground false to REALTIME_QUERY_CONFIG in react-query-config.ts": {
+      "sessionId": "f57ba66a-2c45-489e-bc3b-efa6e28d8c9d",
+      "taskId": "Add refetchIntervalInBackground false to REALTIME_QUERY_CONFIG in react-query-config.ts",
+      "taskTitle": "Add refetchIntervalInBackground false to REALTIME_QUERY_CONFIG in react-query-config.ts",
+      "status": "in_progress",
+      "modifiedFiles": [],
+      "startedAt": "2026-01-31T03:51:34.954Z",
+      "updatedAt": "2026-01-31T03:51:34.954Z",
+      "agentNum": 6
+    },
+    "Add performance timing to queryCache for debugging in react-query-config.ts": {
+      "sessionId": "7e5f8926-5870-4f7b-94ff-1f140a22045a",
+      "taskId": "Add performance timing to queryCache for debugging in react-query-config.ts",
+      "taskTitle": "Add performance timing to queryCache for debugging in react-query-config.ts",
+      "status": "in_progress",
+      "modifiedFiles": [],
+      "startedAt": "2026-01-31T03:51:48.257Z",
+      "updatedAt": "2026-01-31T03:51:48.257Z",
+      "agentNum": 8
     }
   }
 }

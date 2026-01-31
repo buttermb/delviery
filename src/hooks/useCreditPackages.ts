@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
+import { ADMIN_PANEL_QUERY_CONFIG } from '@/lib/react-query-config';
 import type { Tables } from '@/integrations/supabase/types';
 
 // ============================================================================
@@ -132,8 +133,8 @@ export function useCreditPackages(
 
       return (data ?? []) as CreditPackageRow[];
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - packages change infrequently
-    gcTime: 10 * 60 * 1000,   // 10 minutes
+    staleTime: ADMIN_PANEL_QUERY_CONFIG.staleTime,
+    gcTime: ADMIN_PANEL_QUERY_CONFIG.gcTime, // 15 minutes for admin queries
   });
 
   // Transform raw packages into enriched CreditPackage objects

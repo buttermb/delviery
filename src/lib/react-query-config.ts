@@ -201,6 +201,17 @@ export const LIST_QUERY_CONFIG = {
 };
 
 /**
+ * Admin panel query configuration
+ * For admin dashboards and management interfaces with moderate update frequency
+ */
+export const ADMIN_PANEL_QUERY_CONFIG = {
+  staleTime: 10 * 60 * 1000, // 10 minutes
+  gcTime: 15 * 60 * 1000, // 15 minutes
+  refetchOnWindowFocus: false,
+  refetchOnMount: false,
+};
+
+/**
  * Helper to prefetch common routes data
  */
 export const prefetchRouteData = async (

@@ -18,6 +18,7 @@ import { logger } from '@/lib/logger';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
 import { tokenRefreshManager } from '@/lib/auth/tokenRefreshManager';
 import { performLogoutCleanup } from '@/lib/auth/logoutCleanup';
+import { ADMIN_PANEL_QUERY_CONFIG } from '@/lib/react-query-config';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -150,8 +151,8 @@ export function useAuth(): UseAuthReturn {
         session: session ?? null,
       };
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: ADMIN_PANEL_QUERY_CONFIG.staleTime,
+    gcTime: ADMIN_PANEL_QUERY_CONFIG.gcTime, // 15 minutes for admin queries
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     retry: 1,
