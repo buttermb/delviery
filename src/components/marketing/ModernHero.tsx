@@ -54,15 +54,9 @@ export function ModernHero() {
   const FeatureIcon = currentFeature.icon;
 
   return (
-<<<<<<< HEAD
-  <section className="relative min-h-[90vh] bg-[hsl(var(--marketing-bg))] pt-24 md:pt-32 pb-16 md:pb-24 overflow-hidden flex flex-col justify-center">
-    {/* Technical Grid Background */}
-    <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-=======
     <section className="relative min-h-[90vh] bg-[hsl(var(--marketing-bg))] pt-24 md:pt-32 pb-16 md:pb-24 overflow-hidden flex flex-col justify-center">
       {/* Technical Grid Background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
->>>>>>> a7565733a1a781214f24e94a69e43fd7b1b5be32
 
       {/* Ambient Gradient Glows */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
