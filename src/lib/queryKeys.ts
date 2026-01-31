@@ -46,6 +46,7 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.orders.details(), id] as const,
     offline: (tenantId?: string) => [...queryKeys.orders.all, 'offline', tenantId] as const,
     statusHistory: (orderId: string) => [...queryKeys.orders.all, 'status-history', orderId] as const,
+    live: (tenantId?: string) => [...queryKeys.orders.all, 'live', tenantId] as const,
   },
 
   // Wholesale Orders
@@ -170,6 +171,12 @@ export const queryKeys = {
     predictive: (tenantId: string) => ['alerts', 'predictive', tenantId] as const,
   },
 
+  // Weather
+  weather: {
+    all: ['weather'] as const,
+    current: (locationKey?: string) => ['weather', 'current', locationKey] as const,
+  },
+
   // Analytics
   analytics: {
     all: ['analytics'] as const,
@@ -268,16 +275,7 @@ export const queryKeys = {
     },
   },
 
-  // Finance
-  finance: {
-    all: ['finance'] as const,
-    revenue: (tenantId?: string) =>
-      [...queryKeys.finance.all, 'revenue', { tenantId }] as const,
-    completedOrders: (tenantId?: string, dateRange?: string) =>
-      [...queryKeys.finance.all, 'completed-orders', { tenantId, dateRange }] as const,
-    revenueGoal: (tenantId?: string) =>
-      [...queryKeys.finance.all, 'revenue-goal', { tenantId }] as const,
-  },
+  // NOTE: Duplicate finance key removed - using the more complete one at line 188
 
   // Storefront
   storefront: {
@@ -442,21 +440,8 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.roles.all, id] as const,
   },
 
-  // Team
-  team: {
-    all: ['team'] as const,
-    lists: () => [...queryKeys.team.all, 'list'] as const,
-    list: (tenantId?: string) => [...queryKeys.team.lists(), { tenantId }] as const,
-    detail: (id: string) => [...queryKeys.team.all, id] as const,
-    members: {
-      all: () => [...queryKeys.team.all, 'members'] as const,
-      list: (tenantId?: string) => [...queryKeys.team.members.all(), 'list', { tenantId }] as const,
-    },
-    invitations: {
-      all: () => [...queryKeys.team.all, 'invitations'] as const,
-      pending: (tenantId?: string) => [...queryKeys.team.invitations.all(), 'pending', { tenantId }] as const,
-    },
-  },
+  // Team - NOTE: More complete definition at line 733, this is kept for backwards compatibility
+  // (See full team definition with activity support below)
 
   // Vendor
   vendor: {
@@ -790,5 +775,14 @@ export const queryKeys = {
       [...queryKeys.orderAuditLog.all, 'order', orderId] as const,
     byTenant: (tenantId: string) =>
       [...queryKeys.orderAuditLog.all, 'tenant', tenantId] as const,
+  },
+
+  // Recurring Orders
+  recurringOrders: {
+    all: ['recurring-orders'] as const,
+    lists: () => [...queryKeys.recurringOrders.all, 'list'] as const,
+    list: (tenantId?: string) => 
+      [...queryKeys.recurringOrders.lists(), { tenantId }] as const,
+    detail: (id: string) => [...queryKeys.recurringOrders.all, id] as const,
   },
 } as const;

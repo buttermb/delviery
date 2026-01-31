@@ -123,7 +123,9 @@ export function ProductForm({
         const numVal = parseFloat(value);
         if (!storeSettings || isNaN(numVal)) return;
 
-        const limit = field === 'thc_percent' ? storeSettings.potency_limit_thc : storeSettings.potency_limit_cbd;
+        const limit = field === 'thc_percent' 
+          ? (storeSettings.potency_limit_thc as number | undefined) 
+          : (storeSettings.potency_limit_cbd as number | undefined);
 
         if (limit && numVal > limit) {
             toast.warning(`Potency Alert: Value exceeds store limit of ${limit}%`);
