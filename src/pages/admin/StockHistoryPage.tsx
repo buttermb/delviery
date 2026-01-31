@@ -3,7 +3,7 @@ import { StockHistoryLog } from '@/components/admin/inventory/StockHistoryLog';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function StockHistoryPage() {
-  const { tenant, isLoading } = useTenantAdminAuth();
+  const { tenant, loading: isLoading } = useTenantAdminAuth();
 
   if (isLoading) {
     return (

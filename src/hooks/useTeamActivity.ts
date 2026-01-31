@@ -67,10 +67,8 @@ export function useTeamActivity(options: UseTeamActivityOptions = {}) {
       try {
         // Query activity logs with team member info
         // First get activity logs
-        let activityQuery = (supabase as unknown as { from: (table: string) => unknown })
-          .from('activity_logs') as ReturnType<typeof supabase.from>;
-
-        activityQuery = activityQuery
+        let activityQuery = (supabase as any)
+          .from('activity_logs')
           .select('*')
           .eq('tenant_id', tenantId)
           .not('user_id', 'is', null) // Only get activities with user_id (team member actions)
@@ -103,15 +101,15 @@ export function useTeamActivity(options: UseTeamActivityOptions = {}) {
         const userIds = [...new Set(activities.map((a: TeamActivityEntry) => a.user_id).filter(Boolean))];
 
         // Fetch team member info for those users
-        const { data: teamMembers } = await supabase
+        const { data: teamMembers } = await (supabase as any)
           .from('tenant_users')
-          .select('user_id, first_name, last_name, avatar_url, role')
+          .select('user_id, full_name, avatar_url, role')
           .eq('tenant_id', tenantId)
-          .in('user_id', userIds);
+          .in('user_id', userIds as string[]);
 
         // Create a lookup map for team members
         const memberMap = new Map(
-          (teamMembers || []).map((m: { user_id: string; first_name: string | null; last_name: string | null; avatar_url: string | null; role: string }) => [m.user_id, m])
+          ((teamMembers || []) as any[]).map((m) => [m.user_id, m])
         );
 
         // Enrich activities with team member info

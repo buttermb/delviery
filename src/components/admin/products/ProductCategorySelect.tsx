@@ -17,8 +17,11 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useCategories, CategoryNode } from '@/hooks/useCategories';
+import { useCategories, useCategoryTree, useFlattenedCategories, type Category, type CategoryTreeNode } from '@/hooks/useCategories';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+
+// Alias for backward compatibility
+type CategoryNode = CategoryTreeNode;
 
 interface ProductCategorySelectProps {
   /** Currently selected category ID */
@@ -65,13 +68,10 @@ export function ProductCategorySelect({
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
 
-  const {
-    tree,
-    flattened,
-    isLoading,
-    isError,
-    getCategoryPath,
-  } = useCategories(tenantId);
+  // Use the tree and flattened hooks
+  const { data: tree = [], isLoading: treeLoading, isError } = useCategoryTree();
+  const { data: flattened = [] } = useFlattenedCategories();
+  const isLoading = treeLoading;
 
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -101,10 +101,10 @@ export function ProductCategorySelect({
         matchingIds.add(cat.id);
 
         // Add all ancestors to ensure path is visible
-        let current = flattened.find((f) => f.id === cat.parentId);
+        let current = flattened.find((f) => f.id === cat.parent_id);
         while (current) {
           ancestorIds.add(current.id);
-          current = flattened.find((f) => f.id === current?.parentId);
+          current = flattened.find((f) => f.id === current?.parent_id);
         }
       }
     });

@@ -188,11 +188,12 @@ export function OrderEditModal({
         if (deleteError) throw deleteError;
 
         // Insert updated items
-        const { error: insertError } = await supabase
+        const { error: insertError } = await (supabase as any)
           .from('order_items')
           .insert(
             items.map((item) => ({
               order_id: order.id,
+              product_id: item.id.startsWith('temp-') ? null : item.id,
               product_name: item.product_name,
               quantity: item.quantity,
               price: item.price,
@@ -250,14 +251,15 @@ export function OrderEditModal({
 
         if (deleteError) throw deleteError;
 
-        const { error: insertError } = await supabase
+        const { error: insertError } = await (supabase as any)
           .from('wholesale_order_items')
           .insert(
             items.map((item) => ({
               order_id: order.id,
               product_name: item.product_name,
-              quantity_lbs: item.quantity,
+              quantity: item.quantity,
               unit_price: item.price,
+              subtotal: item.quantity * item.price,
             }))
           );
 

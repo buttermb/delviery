@@ -196,7 +196,7 @@ export function OrderDetailsPage() {
           subtotal: unifiedOrder.subtotal || 0,
           tax_amount: unifiedOrder.tax_amount || 0,
           discount_amount: unifiedOrder.discount_amount || 0,
-          delivery_method: unifiedOrder.delivery_method,
+          delivery_method: (unifiedOrder as Record<string, unknown>).delivery_method as string | null,
           delivery_address: unifiedOrder.delivery_address,
           delivery_notes: unifiedOrder.delivery_notes,
           delivery_fee: 0,
@@ -251,8 +251,12 @@ export function OrderDetailsPage() {
 
       return {
         ...data,
+        delivery_method: (data as Record<string, unknown>).delivery_method as string | null ?? null,
+        order_source: (data as Record<string, unknown>).order_source as string | null ?? 'admin',
+        tax_amount: (data as Record<string, unknown>).tax_amount as number ?? 0,
+        updated_at: (data as Record<string, unknown>).updated_at as string ?? data.created_at,
         order_items: data.order_items || [],
-      } as OrderDetails;
+      } as unknown as OrderDetails;
     },
     enabled: !!tenant?.id && !!orderId,
   });

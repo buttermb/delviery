@@ -79,7 +79,7 @@ export function StockAdjustmentModal({
   onOpenChange,
   onComplete,
 }: StockAdjustmentModalProps) {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
 
   const [adjustmentType, setAdjustmentType] = useState<AdjustmentType>("add");
@@ -196,7 +196,7 @@ export function StockAdjustmentModal({
         batch_id: batchId || null,
         reason: data.reason,
         notes: data.notes || null,
-        performed_by: user?.id || null,
+        performed_by: admin?.id || null,
         metadata: {
           adjustment_type: data.type,
           warehouse: warehouse,
@@ -204,8 +204,7 @@ export function StockAdjustmentModal({
         },
       };
 
-      // @ts-expect-error - inventory_history table exists via migration
-      const { error: historyError } = await supabase
+      const { error: historyError } = await (supabase as any)
         .from("inventory_history")
         .insert(historyEntry);
 

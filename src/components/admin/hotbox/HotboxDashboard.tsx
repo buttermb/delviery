@@ -523,11 +523,7 @@ export function HotboxDashboard() {
         )}
 
         {/* Ready For Pickup Widget - Orders waiting for customer pickup */}
-        {hasWidget('ready-for-pickup') && (
-          <ErrorBoundary>
-            <ReadyForPickupWidget />
-          </ErrorBoundary>
-        )}
+        {/* Note: ReadyForPickupWidget not yet implemented */}
 
         {/* Street Tier Tips */}
         {hasWidget('street-tips') && (

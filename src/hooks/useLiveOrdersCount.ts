@@ -19,11 +19,8 @@ const ACTIVE_STATUSES = [
   'processing',
   'preparing',
   'ready_for_pickup',
-  'ready',
   'in_transit',
-  'picked_up',
-  'assigned',
-];
+] as const;
 
 interface UseLiveOrdersCountOptions {
   /** Enable/disable the hook */

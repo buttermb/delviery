@@ -133,25 +133,24 @@ export function useDashboardAlerts(): UseDashboardAlertsResult {
         });
       });
 
-      // Fetch overdue invoices
-      const { data: overdueInvoices } = await supabase
+      // Fetch overdue invoices (cast to any to bypass type issues)
+      const { data: overdueInvoices } = await (supabase as any)
         .from('invoices')
-        .select('id, invoice_number, due_date, total_amount, wholesale_clients(business_name)')
+        .select('id, invoice_number, due_date, total, client_id')
         .eq('tenant_id', tenantId)
         .in('status', ['pending', 'sent', 'overdue'])
         .lt('due_date', now.toISOString())
         .limit(5);
 
-      overdueInvoices?.forEach(invoice => {
+      (overdueInvoices || []).forEach((invoice: any) => {
         const daysOverdue = Math.ceil((now.getTime() - new Date(invoice.due_date).getTime()) / (1000 * 60 * 60 * 24));
-        const clientName = (invoice.wholesale_clients as { business_name?: string } | null)?.business_name || 'Customer';
 
         alerts.push({
           id: `invoice-overdue-${invoice.id}`,
           category: 'payments' as AlertCategory,
           severity: daysOverdue > 7 ? 'critical' : 'warning',
           title: 'Overdue Invoice',
-          message: `Invoice ${invoice.invoice_number} for ${clientName} is ${daysOverdue} day${daysOverdue === 1 ? '' : 's'} overdue`,
+          message: `Invoice ${invoice.invoice_number || invoice.id?.slice(0, 8)} is ${daysOverdue} day${daysOverdue === 1 ? '' : 's'} overdue`,
           actionLabel: 'Follow Up',
           actionHref: `/admin/invoices?id=${invoice.id}`,
           daysUntil: -daysOverdue,

@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import {
   Eye, Users, ShoppingCart, Flame, Copy, ExternalLink,
   Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus,
-  MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store, Calendar
+  MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store, Calendar,
+  Monitor
 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -39,7 +40,7 @@ import type { Json } from '@/integrations/supabase/types';
 
 // Extended Menu type with computed/joined fields from queries
 // Simplified interface that accepts what the database actually returns
-interface Menu {
+export interface Menu {
   id: string;
   tenant_id: string;
   name: string;

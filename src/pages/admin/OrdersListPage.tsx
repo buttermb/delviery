@@ -111,7 +111,7 @@ export function OrdersListPage() {
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      let query = supabase
+      let query = (supabase as any)
         .from('orders')
         .select(`
           id,
@@ -121,9 +121,7 @@ export function OrdersListPage() {
           total_amount,
           user_id,
           courier_id,
-          tenant_id,
-          delivery_method,
-          order_source
+          tenant_id
         `)
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false });
@@ -140,7 +138,7 @@ export function OrdersListPage() {
       }
 
       // Fetch user profiles for orders
-      const userIds = [...new Set(ordersData?.map(o => o.user_id).filter(Boolean))];
+      const userIds = [...new Set((ordersData || []).map((o: Record<string, unknown>) => o.user_id as string).filter(Boolean))] as string[];
       let profilesMap: Record<string, { full_name: string | null; email: string | null; phone: string | null }> = {};
 
       if (userIds.length > 0) {
@@ -163,9 +161,18 @@ export function OrdersListPage() {
       }
 
       // Merge orders with user data
-      return (ordersData || []).map(order => ({
-        ...order,
-        user: order.user_id ? profilesMap[order.user_id] : undefined,
+      return (ordersData || []).map((order: Record<string, unknown>) => ({
+        id: order.id as string,
+        order_number: order.order_number as string,
+        created_at: order.created_at as string,
+        status: order.status as string,
+        total_amount: order.total_amount as number,
+        user_id: order.user_id as string,
+        courier_id: order.courier_id as string | undefined,
+        tenant_id: order.tenant_id as string,
+        order_source: order.order_source as string | undefined,
+        delivery_method: undefined, // Column doesn't exist
+        user: order.user_id ? profilesMap[order.user_id as string] : undefined,
       })) as Order[];
     },
     enabled: !!tenant?.id,

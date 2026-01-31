@@ -45,7 +45,16 @@ export function sanitizeHtml(html: string): string {
   // Remove data: URIs from src (potential XSS vector)
   sanitized = sanitized.replace(/src\s*=\s*(['"])\s*data\s*:[^'"]*\1/gi, 'src=$1#$1');
 
+
   return sanitized;
+}
+
+/**
+ * Strips all HTML tags from a string, leaving only text content.
+ */
+export function stripHtml(html: string): string {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/gi, ' ').trim();
 }
 
 /**
@@ -213,11 +222,11 @@ export function sanitizeUrlInput(url: string): string {
 }
 
 /**
- * Safely parses a JSON string, returning a default value if parsing fails.
+ * Safely parses a JSON string with a default value, returning a default value if parsing fails.
  * @param jsonString - The JSON string to parse
  * @param defaultValue - The default value to return if parsing fails
  */
-export function safeJsonParse<T>(jsonString: string | null | undefined, defaultValue: T): T {
+export function safeJsonParseWithDefault<T>(jsonString: string | null | undefined, defaultValue: T): T {
   if (!jsonString) return defaultValue;
   try {
     return JSON.parse(jsonString) as T;
