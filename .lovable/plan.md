@@ -1,105 +1,125 @@
 
 
-# Fix Runtime Errors on Inventory Hub
+# Fix Build Errors and Diagnostic Failures
 
-## Problem Summary
+## Summary
 
-You're seeing two runtime errors on the Inventory Hub page:
+There are 3 categories of issues to fix:
 
-1. **Select.Item Error**: "A `<Select.Item />` must have a value prop that is not an empty string"
-2. **HTTP 404 Error**: The Global Product Catalog is failing because required database tables and functions don't exist
-
----
-
-## Error 1: SelectItem Empty String Values
-
-### What's Happening
-Radix UI Select components don't allow empty string `value=""` because an empty string is used to clear the selection. Using it causes the page to crash.
-
-### Files Affected (6 total)
-
-| File | Line | Current Value |
-|------|------|---------------|
-| `src/components/admin/FilterPanel.tsx` | 142 | `value=""` → `value="__all__"` |
-| `src/components/shared/FilterPanel.tsx` | 131 | `value=""` → `value="__all__"` |
-| `src/components/admin/recurring-orders/RecurringOrderSetup.tsx` | 392 | `value=""` → `value="__none__"` |
-| `src/pages/admin/RunnerLocationTracking.tsx` | 338 | `value=""` → `value="__all__"` |
-| `src/components/wholesale/EditWholesaleOrderDialog.tsx` | 344 | `value=""` → `value="__unassigned__"` |
-| `src/pages/super-admin/CreditPackagesPage.tsx` | 448 | `value=""` → `value="__none__"` |
-
-### Fix Strategy
-Replace empty string values with a sentinel value like `"__all__"` or `"__none__"`, then update the corresponding handler logic to treat these sentinels as `null` or empty when processing.
+| Category | Issue | Impact |
+|----------|-------|--------|
+| Build Error | Missing `return` in ModernHero.tsx | Blocks deployment |
+| Database | Missing `roles` and `tenant_role_permissions` tables | Diagnostics failing |
+| Config | Mismatched project_id in config.toml | Edge functions may not deploy correctly |
 
 ---
 
-## Error 2: Missing Global Product Catalog Database Objects
+## Issue 1: Build Error - Missing Return Statement
 
-### What's Happening
-The "Global" tab calls `search_global_products` RPC function, but the database migration that creates this was never applied. Missing:
-- `global_products` table
-- `global_product_imports` table  
-- `search_global_products()` function
-- `import_global_product()` function
-- `sync_imported_products()` function
+**File:** `src/components/marketing/ModernHero.tsx`
 
-### Fix Strategy
-Apply the existing migration file `supabase/migrations/20260110000016_global_product_catalog.sql` to create all required database objects.
+**Problem:** Line 56 starts JSX without a `return` statement, causing error TS1128 at line 189.
+
+**Current Code (lines 53-56):**
+```typescript
+const currentFeature = CYCLE_FEATURES[featureIndex];
+const FeatureIcon = currentFeature.icon;
+
+<section className="relative min-h-[90vh]...
+```
+
+**Fix:** Add `return (` before line 56 and ensure proper closing `)` at the end.
+
+---
+
+## Issue 2: Missing Database Tables
+
+**Problem:** The `roles` and `tenant_role_permissions` tables don't exist even though migration `20260128000001_tenant_roles.sql` defines them.
+
+**Tables to Create:**
+
+1. **`roles`** - Tenant-specific custom role definitions
+   - `id` (UUID, PK)
+   - `tenant_id` (UUID, FK to tenants)
+   - `name` (text)
+   - `description` (text)
+   - `is_system` (boolean)
+   - `permissions` (jsonb)
+
+2. **`tenant_role_permissions`** - Role-permission mappings
+   - `id` (UUID, PK)
+   - `role_id` (UUID, FK to roles)
+   - `permission` (text)
+   - `tenant_id` (UUID, FK to tenants)
+
+**Fix:** Run the existing migration SQL to create these tables with proper RLS policies.
+
+---
+
+## Issue 3: Config Mismatch
+
+**Problem:** `supabase/config.toml` has `project_id = "mtvwmyerntkhrcdnhahp"` but the actual Supabase project is `aejugtmhwwknrowfyzie`.
+
+**Fix:** Update project_id to match the actual project.
+
+---
+
+## Issue 4: Edge Function "Failed to Fetch" Errors
+
+**Analysis:** The following edge functions are failing:
+- `send-notification`
+- `create-order`
+- `update-order-status`
+- `invoice-management`
+- `credits-balance`
+
+These functions exist in the codebase and have proper CORS headers. The "Failed to fetch" errors indicate they may not be deployed or there's a network/CORS issue.
+
+**Root Cause:** The project_id mismatch in config.toml is likely preventing proper deployment.
+
+**Fix:** After correcting the project_id, the functions should deploy correctly with the next build.
 
 ---
 
 ## Implementation Plan
 
-### Step 1: Apply Database Migration
-
-Run the SQL from the migration file to create:
-- Tables: `global_products`, `global_product_imports`
-- RLS policies for proper access control
-- RPC functions for search and import
-- Indexes for performance
-
-### Step 2: Fix SelectItem Values
-
-Update each file to use non-empty sentinel values:
+### Step 1: Fix Build Error
+Update `ModernHero.tsx` to add the missing `return (` before the JSX:
 
 ```typescript
-// Before
-<SelectItem value="">All</SelectItem>
+const currentFeature = CYCLE_FEATURES[featureIndex];
+const FeatureIcon = currentFeature.icon;
 
-// After  
-<SelectItem value="__all__">All</SelectItem>
+return (
+  <section className="relative min-h-[90vh]...
 ```
 
-And update the handlers:
+### Step 2: Fix Config.toml
+Update the project_id from `mtvwmyerntkhrcdnhahp` to `aejugtmhwwknrowfyzie`.
 
-```typescript
-// Before
-onValueChange={(val) => handleFilterChange(filter.id, val || null)}
-
-// After
-onValueChange={(val) => handleFilterChange(filter.id, val === '__all__' ? null : val)}
-```
+### Step 3: Apply Database Migration
+Create the `roles` and `tenant_role_permissions` tables with:
+- Proper tenant isolation via RLS
+- Foreign key to tenants table
+- System role seeding (admin, owner, team_member, viewer)
 
 ---
 
 ## Files to Modify
 
-| Type | File | Change |
-|------|------|--------|
-| Database | Migration | Apply `20260110000016_global_product_catalog.sql` |
-| Frontend | `src/components/admin/FilterPanel.tsx` | Fix SelectItem value |
-| Frontend | `src/components/shared/FilterPanel.tsx` | Fix SelectItem value |
-| Frontend | `src/components/admin/recurring-orders/RecurringOrderSetup.tsx` | Fix SelectItem value |
-| Frontend | `src/pages/admin/RunnerLocationTracking.tsx` | Fix SelectItem value |
-| Frontend | `src/components/wholesale/EditWholesaleOrderDialog.tsx` | Fix SelectItem value |
-| Frontend | `src/pages/super-admin/CreditPackagesPage.tsx` | Fix SelectItem value |
+| File | Change |
+|------|--------|
+| `src/components/marketing/ModernHero.tsx` | Add `return (` before JSX |
+| `supabase/config.toml` | Update project_id to correct value |
+| Database Migration | Create `roles` and `tenant_role_permissions` tables |
 
 ---
 
-## Expected Result
+## Expected Results
 
 After these fixes:
-- ✅ Select components work without crashing
-- ✅ Global Product Catalog loads and functions properly
-- ✅ Product import/search features become operational
-- ✅ No more HTTP 404 errors on the Global tab
+- Build completes successfully
+- All 6 failing diagnostic checks pass
+- Edge functions become reachable
+- Roles & Permissions system fully operational
 
