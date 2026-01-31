@@ -115,45 +115,27 @@ export function OrdersWidget() {
 
   const { data: orders, isLoading } = useQuery({
     queryKey: [...queryKeys.orders.lists(), 'widget', tenant?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<OrderRow[]> => {
       if (!tenant?.id) return [];
 
-      // Fetch recent orders from the orders table
-      const { data: ordersData, error } = await supabase
+      // Fetch recent orders from the orders table (cast to any to bypass deep type issues)
+      const { data: ordersData, error } = await (supabase as any)
         .from('orders')
-        .select('id, order_number, total_amount, status, created_at, order_source, user_id')
+        .select('id, order_number, total_amount, status, created_at, customer_name')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
         .limit(10);
 
       if (error) throw error;
 
-      // Fetch profiles for the orders
-      const userIds = [...new Set((ordersData || []).map(o => o.user_id).filter(Boolean))];
-      let profilesMap: Record<string, { full_name: string | null; email: string | null }> = {};
-
-      if (userIds.length > 0) {
-        const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('user_id, full_name, first_name, last_name')
-          .in('user_id', userIds);
-
-        profilesMap = (profilesData || []).reduce((acc, profile) => {
-          const displayName = profile.full_name
-            || [profile.first_name, profile.last_name].filter(Boolean).join(' ')
-            || null;
-          acc[profile.user_id] = {
-            full_name: displayName,
-            email: null,
-          };
-          return acc;
-        }, {} as Record<string, { full_name: string | null; email: string | null }>);
-      }
-
-      // Merge orders with user info
-      return (ordersData || []).map(order => ({
-        ...order,
-        user: order.user_id ? profilesMap[order.user_id] : undefined,
+      // Map orders to expected format
+      return (ordersData || []).map((order: any) => ({
+        id: order.id,
+        order_number: order.order_number,
+        total_amount: order.total_amount,
+        status: order.status,
+        created_at: order.created_at,
+        user: order.customer_name ? { full_name: order.customer_name, email: null } : undefined,
       })) as OrderRow[];
     },
     enabled: !!tenant?.id,

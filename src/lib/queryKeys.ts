@@ -163,6 +163,13 @@ export const queryKeys = {
       [...queryKeys.dashboard.all, 'stats', tenantId, dateRangeKey] as const,
   },
 
+  // Alerts
+  alerts: {
+    all: ['alerts'] as const,
+    dashboard: (tenantId: string) => ['alerts', 'dashboard', tenantId] as const,
+    predictive: (tenantId: string) => ['alerts', 'predictive', tenantId] as const,
+  },
+
   // Analytics
   analytics: {
     all: ['analytics'] as const,

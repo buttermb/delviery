@@ -43,8 +43,7 @@ export function RecentCustomersWidget() {
 
       const oneWeekAgo = subDays(new Date(), 7);
 
-      // @ts-expect-error - Supabase query type inference issue
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customers')
         .select('id, email, created_at, first_name, last_name')
         .eq('tenant_id', tenant.id)
