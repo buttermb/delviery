@@ -440,12 +440,12 @@ function EditPackageDialog({
 
           <div className="space-y-2">
             <Label>Badge (Optional)</Label>
-            <Select value={badge} onValueChange={setBadge}>
+            <Select value={badge || '__none__'} onValueChange={(v) => setBadge(v === '__none__' ? '' : v)}>
               <SelectTrigger>
                 <SelectValue placeholder="No badge" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No badge</SelectItem>
+                <SelectItem value="__none__">No badge</SelectItem>
                 <SelectItem value="POPULAR">POPULAR</SelectItem>
                 <SelectItem value="BEST VALUE">BEST VALUE</SelectItem>
                 <SelectItem value="NEW">NEW</SelectItem>
