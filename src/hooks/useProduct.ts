@@ -63,7 +63,7 @@ export function useProductInventoryHistory(productId: string | undefined) {
                 return [];
             }
 
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('inventory_history')
                 .select('*')
                 .eq('product_id', productId)

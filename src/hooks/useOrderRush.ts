@@ -29,7 +29,7 @@ interface RushOrderResult {
 
 export function useOrderRush() {
   const queryClient = useQueryClient();
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
 
   const rushMutation = useMutation<RushOrderResult, Error, RushOrderParams>({
     mutationFn: async ({ orderId, isRush }) => {
@@ -39,21 +39,12 @@ export function useOrderRush() {
 
       const now = new Date().toISOString();
 
-      const updatePayload = isRush
-        ? {
-            is_rush: true,
-            rushed_at: now,
-            rushed_by: user?.id,
-          }
-        : {
-            is_rush: false,
-            rushed_at: null,
-            rushed_by: null,
-          };
-
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('orders')
-        .update(updatePayload)
+        .update(isRush
+          ? { is_rush: true, rushed_at: now, rushed_by: admin?.id }
+          : { is_rush: false, rushed_at: null, rushed_by: null }
+        )
         .eq('id', orderId)
         .eq('tenant_id', tenant.id);
 
@@ -126,7 +117,7 @@ export function useOrderRush() {
  */
 export function useOrderBulkRush() {
   const queryClient = useQueryClient();
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
 
   const bulkRushMutation = useMutation<
     { succeeded: number; failed: number },
@@ -140,21 +131,12 @@ export function useOrderBulkRush() {
 
       const now = new Date().toISOString();
 
-      const updatePayload = isRush
-        ? {
-            is_rush: true,
-            rushed_at: now,
-            rushed_by: user?.id,
-          }
-        : {
-            is_rush: false,
-            rushed_at: null,
-            rushed_by: null,
-          };
-
-      const { error, count } = await supabase
+      const { error, count } = await (supabase as any)
         .from('orders')
-        .update(updatePayload)
+        .update(isRush
+          ? { is_rush: true, rushed_at: now, rushed_by: admin?.id }
+          : { is_rush: false, rushed_at: null, rushed_by: null }
+        )
         .in('id', orderIds)
         .eq('tenant_id', tenant.id);
 

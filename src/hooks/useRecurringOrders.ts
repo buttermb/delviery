@@ -64,7 +64,7 @@ export function useRecurringOrders() {
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("recurring_order_schedules")
         .select(`
           *,
@@ -95,7 +95,7 @@ export function useRecurringOrders() {
     mutationFn: async (input: CreateRecurringOrderInput) => {
       if (!tenant?.id) throw new Error("No tenant context");
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("recurring_order_schedules")
         .insert([{
           tenant_id: tenant.id,
@@ -156,7 +156,7 @@ export function useRecurringOrders() {
       if (updates.is_active !== undefined) payload.is_active = updates.is_active;
       if (updates.notes !== undefined) payload.notes = updates.notes;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("recurring_order_schedules")
         .update(payload)
         .eq("id", id)
@@ -187,7 +187,7 @@ export function useRecurringOrders() {
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
       if (!tenant?.id) throw new Error("No tenant context");
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("recurring_order_schedules")
         .update({ is_active })
         .eq("id", id)
@@ -214,7 +214,7 @@ export function useRecurringOrders() {
     mutationFn: async (id: string) => {
       if (!tenant?.id) throw new Error("No tenant context");
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("recurring_order_schedules")
         .delete()
         .eq("id", id)

@@ -177,126 +177,126 @@ export function useGlobalSearch(options: GlobalSearchOptions = {}): UseGlobalSea
         // Search wholesale clients
         if (categories.includes('wholesale_client')) {
           promises.push(
-            supabase
-              .from('wholesale_clients')
-              .select('id, business_name, contact_name, email')
-              .eq('tenant_id', tenant.id)
-              .or(`business_name.ilike.%${searchLower}%,contact_name.ilike.%${searchLower}%,email.ilike.%${searchLower}%`)
-              .limit(limit)
-              .then(({ data: clients }) => {
-                if (clients) {
-                  for (const wc of clients) {
-                    results.push({
-                      id: wc.id,
-                      type: 'wholesale_client',
-                      label: wc.business_name || 'Unnamed Client',
-                      sublabel: wc.contact_name || wc.email || undefined,
-                      url: `/admin/clients/${wc.id}`,
-                    });
-                  }
+            (async () => {
+              const { data: clients } = await supabase
+                .from('wholesale_clients')
+                .select('id, business_name, contact_name, email')
+                .eq('tenant_id', tenant.id)
+                .or(`business_name.ilike.%${searchLower}%,contact_name.ilike.%${searchLower}%,email.ilike.%${searchLower}%`)
+                .limit(limit);
+              if (clients) {
+                for (const wc of clients) {
+                  results.push({
+                    id: wc.id,
+                    type: 'wholesale_client',
+                    label: wc.business_name || 'Unnamed Client',
+                    sublabel: wc.contact_name || wc.email || undefined,
+                    url: `/admin/clients/${wc.id}`,
+                  });
                 }
-              })
+              }
+            })()
           );
         }
 
         // Search wholesale orders
         if (categories.includes('wholesale_order')) {
           promises.push(
-            supabase
-              .from('wholesale_orders')
-              .select('id, status, total_amount, wholesale_clients(business_name)')
-              .eq('tenant_id', tenant.id)
-              .ilike('id', `%${searchLower}%`)
-              .limit(limit)
-              .then(({ data: orders }) => {
-                if (orders) {
-                  for (const wo of orders) {
-                    const clientName = (wo.wholesale_clients as { business_name: string | null } | null)?.business_name;
-                    results.push({
-                      id: wo.id,
-                      type: 'wholesale_order',
-                      label: `Wholesale #${wo.id.slice(0, 8)}`,
-                      sublabel: clientName || wo.status || undefined,
-                      url: `/admin/wholesale-orders/${wo.id}`,
-                    });
-                  }
+            (async () => {
+              const { data: orders } = await supabase
+                .from('wholesale_orders')
+                .select('id, status, total_amount, wholesale_clients(business_name)')
+                .eq('tenant_id', tenant.id)
+                .ilike('id', `%${searchLower}%`)
+                .limit(limit);
+              if (orders) {
+                for (const wo of orders) {
+                  const clientName = (wo.wholesale_clients as { business_name: string | null } | null)?.business_name;
+                  results.push({
+                    id: wo.id,
+                    type: 'wholesale_order',
+                    label: `Wholesale #${wo.id.slice(0, 8)}`,
+                    sublabel: clientName || wo.status || undefined,
+                    url: `/admin/wholesale-orders/${wo.id}`,
+                  });
                 }
-              })
+              }
+            })()
           );
         }
 
         // Search suppliers
         if (categories.includes('supplier')) {
           promises.push(
-            supabase
-              .from('suppliers')
-              .select('id, name, contact_name, email')
-              .eq('tenant_id', tenant.id)
-              .or(`name.ilike.%${searchLower}%,contact_name.ilike.%${searchLower}%`)
-              .limit(limit)
-              .then(({ data: suppliers }) => {
-                if (suppliers) {
-                  for (const s of suppliers) {
-                    results.push({
-                      id: s.id,
-                      type: 'supplier',
-                      label: s.name,
-                      sublabel: s.contact_name || s.email || undefined,
-                      url: `/admin/suppliers/${s.id}`,
-                    });
-                  }
+            (async () => {
+              const { data: suppliers } = await (supabase as any)
+                .from('suppliers')
+                .select('id, company_name, contact_name, email')
+                .eq('tenant_id', tenant.id)
+                .or(`company_name.ilike.%${searchLower}%,contact_name.ilike.%${searchLower}%`)
+                .limit(limit);
+              if (suppliers) {
+                for (const s of suppliers as any[]) {
+                  results.push({
+                    id: s.id,
+                    type: 'supplier',
+                    label: s.company_name || 'Unnamed Supplier',
+                    sublabel: s.contact_name || s.email || undefined,
+                    url: `/admin/suppliers/${s.id}`,
+                  });
                 }
-              })
+              }
+            })()
           );
         }
 
         // Search couriers
         if (categories.includes('courier')) {
           promises.push(
-            supabase
-              .from('couriers')
-              .select('id, name, phone, vehicle_type')
-              .eq('tenant_id', tenant.id)
-              .or(`name.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
-              .limit(limit)
-              .then(({ data: couriers }) => {
-                if (couriers) {
-                  for (const c of couriers) {
-                    results.push({
-                      id: c.id,
-                      type: 'courier',
-                      label: c.name,
-                      sublabel: c.phone || c.vehicle_type || undefined,
-                      url: `/admin/couriers/${c.id}`,
-                    });
-                  }
+            (async () => {
+              const { data: couriers } = await (supabase as any)
+                .from('couriers')
+                .select('id, full_name, phone, vehicle_type')
+                .eq('tenant_id', tenant.id)
+                .or(`full_name.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
+                .limit(limit);
+              if (couriers) {
+                for (const c of couriers as any[]) {
+                  results.push({
+                    id: c.id,
+                    type: 'courier',
+                    label: c.full_name || 'Unnamed Courier',
+                    sublabel: c.phone || c.vehicle_type || undefined,
+                    url: `/admin/couriers/${c.id}`,
+                  });
                 }
-              })
+              }
+            })()
           );
         }
 
         // Search disposable menus
         if (categories.includes('menu')) {
           promises.push(
-            supabase
-              .from('disposable_menus')
-              .select('id, title, recipient_name, status')
-              .eq('tenant_id', tenant.id)
-              .or(`title.ilike.%${searchLower}%,recipient_name.ilike.%${searchLower}%`)
-              .limit(limit)
-              .then(({ data: menus }) => {
-                if (menus) {
-                  for (const m of menus) {
-                    results.push({
-                      id: m.id,
-                      type: 'menu',
-                      label: m.title || `Menu for ${m.recipient_name || 'Unknown'}`,
-                      sublabel: m.recipient_name || m.status || undefined,
-                      url: `/admin/menus/${m.id}`,
-                    });
-                  }
+            (async () => {
+              const { data: menus } = await (supabase as any)
+                .from('disposable_menus')
+                .select('id, title, customer_name, status')
+                .eq('tenant_id', tenant.id)
+                .or(`title.ilike.%${searchLower}%,customer_name.ilike.%${searchLower}%`)
+                .limit(limit);
+              if (menus) {
+                for (const m of menus as any[]) {
+                  results.push({
+                    id: m.id,
+                    type: 'menu',
+                    label: m.title || `Menu for ${m.customer_name || 'Unknown'}`,
+                    sublabel: m.customer_name || m.status || undefined,
+                    url: `/admin/menus/${m.id}`,
+                  });
                 }
-              })
+              }
+            })()
           );
         }
 
