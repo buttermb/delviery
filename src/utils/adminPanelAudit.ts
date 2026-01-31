@@ -63,16 +63,17 @@ const REQUIRED_TABLES = [
 
 /**
  * Edge functions that must be accessible
+ * Only includes functions that actually exist in supabase/functions/
  */
 const REQUIRED_EDGE_FUNCTIONS = [
   'tenant-admin-auth',
   'super-admin-auth',
   'customer-auth',
   'send-notification',
-  'process-order',
-  'generate-invoice',
-  'sync-inventory',
-  'calculate-shipping',
+  'create-order',
+  'update-order-status',
+  'invoice-management',
+  'credits-balance',
 ];
 
 /**
@@ -125,6 +126,16 @@ class AdminPanelAuditor {
             message: `Table "${tableName}" does not exist`,
             details: error,
             fix: `Run migration to create ${tableName} table`,
+          };
+        }
+        if (error.code === 'PGRST205') {
+          return {
+            category: 'Database',
+            check: `Table: ${tableName}`,
+            status: 'fail',
+            message: `Table "${tableName}" not in PostgREST schema cache`,
+            details: error,
+            fix: 'Run: supabase db push to apply migrations, then reload PostgREST schema',
           };
         }
         if (error.code === '42501' || error.message?.includes('permission denied')) {
@@ -234,13 +245,21 @@ class AdminPanelAuditor {
         .limit(10);
 
       if (rolesError) {
+        // Check for specific error codes
+        const isSchemaCache = rolesError.code === 'PGRST205';
+        const isRLS = rolesError.code === '42501' || rolesError.message.includes('permission denied');
+
         results.push({
           category: 'Roles & Permissions',
           check: 'Roles table',
           status: 'fail',
           message: `Cannot query roles: ${rolesError.message}`,
           details: rolesError,
-          fix: 'Ensure roles table exists and RLS allows access',
+          fix: isSchemaCache
+            ? 'Migration not applied or PostgREST schema cache needs reload. Run: supabase db push && supabase functions deploy'
+            : isRLS
+              ? 'RLS policy blocking access. Check tenant_users has matching email for current user.'
+              : 'Ensure roles table exists and RLS allows access',
         });
       } else if (!roles || roles.length === 0) {
         results.push({
