@@ -1,6 +1,8 @@
 /**
  * ReviewCard Component
  * Display individual product review with moderation actions
+ *
+ * Memoized with React.memo for performance in review lists.
  */
 
 import { formatSmartDate } from '@/lib/utils/formatDate';
@@ -12,7 +14,7 @@ import { logger } from '@/lib/logger';
 import { Textarea } from '@/components/ui/textarea';
 import { StarRating } from './StarRating';
 import { Check, X, ThumbsUp, ShieldCheck } from 'lucide-react';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface ProductReview {
@@ -45,7 +47,7 @@ interface ReviewCardProps {
     className?: string;
 }
 
-export function ReviewCard({
+export const ReviewCard = memo(function ReviewCard({
     review,
     onApprove,
     onReject,
@@ -223,4 +225,4 @@ export function ReviewCard({
             </CardContent>
         </Card>
     );
-}
+});

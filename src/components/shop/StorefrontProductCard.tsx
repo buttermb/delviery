@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -48,7 +48,7 @@ interface StorefrontProductCardProps {
     showStockWarning?: boolean;
 }
 
-export function StorefrontProductCard({
+export const StorefrontProductCard = memo(function StorefrontProductCard({
     product,
     storeSlug,
     isPreviewMode,
@@ -257,4 +257,4 @@ export function StorefrontProductCard({
             </div>
         </motion.div>
     );
-}
+});
