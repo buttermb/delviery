@@ -1053,7 +1053,7 @@ export default function Orders() {
                   onClick: () => navigate('wholesale-orders'),
                   icon: Plus
                 },
-                className: statusFilter === 'pending' ? "bg-gradient-to-br from-emerald-500/5 to-transparent" : undefined
+                
               }}
               mobileRenderer={(order) => (
                 <SwipeableItem

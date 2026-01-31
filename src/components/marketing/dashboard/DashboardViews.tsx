@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useSpring } from 'framer-motion';
 import {
   ArrowUpRight, ArrowDownRight, MoreVertical, Search, Filter,
   Download, Plus, CheckCircle2, AlertCircle, Clock, MapPin,

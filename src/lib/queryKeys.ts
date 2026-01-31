@@ -46,6 +46,7 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.orders.details(), id] as const,
     offline: (tenantId?: string) => [...queryKeys.orders.all, 'offline', tenantId] as const,
     statusHistory: (orderId: string) => [...queryKeys.orders.all, 'status-history', orderId] as const,
+    live: (tenantId?: string) => [...queryKeys.orders.all, 'live', tenantId] as const,
   },
 
   // Wholesale Orders
@@ -163,6 +164,15 @@ export const queryKeys = {
       [...queryKeys.dashboard.all, 'stats', tenantId, dateRangeKey] as const,
   },
 
+  // Alerts
+  alerts: {
+    all: ['alerts'] as const,
+    dashboard: (tenantId: string) =>
+      [...queryKeys.alerts.all, 'dashboard', tenantId] as const,
+    predictive: (tenantId: string) =>
+      [...queryKeys.alerts.all, 'predictive', tenantId] as const,
+  },
+
   // Analytics
   analytics: {
     all: ['analytics'] as const,
@@ -258,6 +268,33 @@ export const queryKeys = {
       [...queryKeys.finance.all, 'completed-orders', { tenantId, dateRange }] as const,
     revenueGoal: (tenantId?: string) =>
       [...queryKeys.finance.all, 'revenue-goal', { tenantId }] as const,
+    snapshot: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'snapshot', { tenantId }] as const,
+    cashFlow: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'cash-flow', { tenantId }] as const,
+    creditOut: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'credit-out', { tenantId }] as const,
+    monthlyPerformance: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'monthly-performance', { tenantId }] as const,
+  },
+
+  // Recurring Orders
+  recurringOrders: {
+    all: ['recurring-orders'] as const,
+    lists: () => [...queryKeys.recurringOrders.all, 'list'] as const,
+    list: (tenantId?: string) =>
+      [...queryKeys.recurringOrders.lists(), { tenantId }] as const,
+    detail: (id: string) =>
+      [...queryKeys.recurringOrders.all, id] as const,
+  },
+
+  // Weather
+  weather: {
+    all: ['weather'] as const,
+    current: (location?: string) =>
+      [...queryKeys.weather.all, 'current', location] as const,
+    forecast: (location?: string) =>
+      [...queryKeys.weather.all, 'forecast', location] as const,
   },
 
   // Storefront
