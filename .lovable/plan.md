@@ -1,105 +1,132 @@
 
 
-# Fix Runtime Errors on Inventory Hub
+# Fix Remaining Diagnostic Issues
 
-## Problem Summary
+## Summary
 
-You're seeing two runtime errors on the Inventory Hub page:
-
-1. **Select.Item Error**: "A `<Select.Item />` must have a value prop that is not an empty string"
-2. **HTTP 404 Error**: The Global Product Catalog is failing because required database tables and functions don't exist
-
----
-
-## Error 1: SelectItem Empty String Values
-
-### What's Happening
-Radix UI Select components don't allow empty string `value=""` because an empty string is used to clear the selection. Using it causes the page to crash.
-
-### Files Affected (6 total)
-
-| File | Line | Current Value |
-|------|------|---------------|
-| `src/components/admin/FilterPanel.tsx` | 142 | `value=""` → `value="__all__"` |
-| `src/components/shared/FilterPanel.tsx` | 131 | `value=""` → `value="__all__"` |
-| `src/components/admin/recurring-orders/RecurringOrderSetup.tsx` | 392 | `value=""` → `value="__none__"` |
-| `src/pages/admin/RunnerLocationTracking.tsx` | 338 | `value=""` → `value="__all__"` |
-| `src/components/wholesale/EditWholesaleOrderDialog.tsx` | 344 | `value=""` → `value="__unassigned__"` |
-| `src/pages/super-admin/CreditPackagesPage.tsx` | 448 | `value=""` → `value="__none__"` |
-
-### Fix Strategy
-Replace empty string values with a sentinel value like `"__all__"` or `"__none__"`, then update the corresponding handler logic to treat these sentinels as `null` or empty when processing.
+| Issue | Status | Fix Required |
+|-------|--------|--------------|
+| Edge Functions "Failed to fetch" | Working (false positive) | Update CORS headers to include additional Supabase headers |
+| Roles table empty | Warning | Seed default roles for existing tenants |
 
 ---
 
-## Error 2: Missing Global Product Catalog Database Objects
+## Analysis
 
-### What's Happening
-The "Global" tab calls `search_global_products` RPC function, but the database migration that creates this was never applied. Missing:
-- `global_products` table
-- `global_product_imports` table  
-- `search_global_products()` function
-- `import_global_product()` function
-- `sync_imported_products()` function
+### Edge Functions Status
 
-### Fix Strategy
-Apply the existing migration file `supabase/migrations/20260110000016_global_product_catalog.sql` to create all required database objects.
+I tested the edge functions directly and confirmed they ARE working:
+
+```text
+credits-balance → 200 OK, returns valid balance data
+send-notification → 500 (expected - validation error due to empty body)
+```
+
+The "Failed to fetch" in diagnostics is a **false positive** caused by:
+1. CORS headers missing some Supabase client headers
+2. Cold start latency during audit runs
+
+### Roles Table Status
+
+The `roles` table exists but is empty. The table structure:
+
+| Column | Type | Purpose |
+|--------|------|---------|
+| id | UUID | Primary key |
+| tenant_id | UUID | Tenant isolation |
+| name | text | Role name |
+| description | text | Role description |
+| is_system | boolean | Whether it's a system-defined role |
+| permissions | JSONB | Role permissions |
+
+Default system roles need to be seeded for each tenant.
 
 ---
 
 ## Implementation Plan
 
-### Step 1: Apply Database Migration
+### Step 1: Update CORS Headers
 
-Run the SQL from the migration file to create:
-- Tables: `global_products`, `global_product_imports`
-- RLS policies for proper access control
-- RPC functions for search and import
-- Indexes for performance
+Update `supabase/functions/_shared/deps.ts` to include all Supabase client headers:
 
-### Step 2: Fix SelectItem Values
-
-Update each file to use non-empty sentinel values:
-
+**Current:**
 ```typescript
-// Before
-<SelectItem value="">All</SelectItem>
-
-// After  
-<SelectItem value="__all__">All</SelectItem>
+'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 ```
 
-And update the handlers:
-
+**Updated:**
 ```typescript
-// Before
-onValueChange={(val) => handleFilterChange(filter.id, val || null)}
+'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+```
 
-// After
-onValueChange={(val) => handleFilterChange(filter.id, val === '__all__' ? null : val)}
+This matches the headers that the Supabase JS client sends.
+
+### Step 2: Seed Default Roles for All Tenants
+
+Create a database migration to seed default roles for all existing tenants:
+
+```sql
+INSERT INTO roles (tenant_id, name, description, is_system, permissions)
+SELECT 
+  t.id,
+  role_def.name,
+  role_def.description,
+  true,
+  role_def.permissions
+FROM tenants t
+CROSS JOIN (VALUES
+  ('owner', 'Business Owner', '{"*": true}'::jsonb),
+  ('admin', 'Administrator', '{"orders:*": true, "products:*": true, "inventory:*": true, "staff:read": true, "settings:read": true}'::jsonb),
+  ('team_member', 'Team Member', '{"orders:read": true, "orders:update": true, "products:read": true, "inventory:read": true}'::jsonb),
+  ('viewer', 'Viewer', '{"orders:read": true, "products:read": true, "inventory:read": true}'::jsonb)
+) AS role_def(name, description, permissions)
+ON CONFLICT DO NOTHING;
+```
+
+### Step 3: Add Trigger for New Tenants
+
+Create a trigger to automatically seed roles when a new tenant is created:
+
+```sql
+CREATE OR REPLACE FUNCTION seed_tenant_roles()
+RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO roles (tenant_id, name, description, is_system, permissions)
+  VALUES 
+    (NEW.id, 'owner', 'Business Owner', true, '{"*": true}'::jsonb),
+    (NEW.id, 'admin', 'Administrator', true, '{"orders:*": true, "products:*": true, "inventory:*": true}'::jsonb),
+    (NEW.id, 'team_member', 'Team Member', true, '{"orders:read": true, "orders:update": true}'::jsonb),
+    (NEW.id, 'viewer', 'Viewer', true, '{"orders:read": true, "products:read": true}'::jsonb);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER seed_roles_on_tenant_insert
+  AFTER INSERT ON tenants
+  FOR EACH ROW
+  EXECUTE FUNCTION seed_tenant_roles();
 ```
 
 ---
 
 ## Files to Modify
 
-| Type | File | Change |
-|------|------|--------|
-| Database | Migration | Apply `20260110000016_global_product_catalog.sql` |
-| Frontend | `src/components/admin/FilterPanel.tsx` | Fix SelectItem value |
-| Frontend | `src/components/shared/FilterPanel.tsx` | Fix SelectItem value |
-| Frontend | `src/components/admin/recurring-orders/RecurringOrderSetup.tsx` | Fix SelectItem value |
-| Frontend | `src/pages/admin/RunnerLocationTracking.tsx` | Fix SelectItem value |
-| Frontend | `src/components/wholesale/EditWholesaleOrderDialog.tsx` | Fix SelectItem value |
-| Frontend | `src/pages/super-admin/CreditPackagesPage.tsx` | Fix SelectItem value |
+| File | Change |
+|------|--------|
+| `supabase/functions/_shared/deps.ts` | Add missing CORS headers |
+| Database migration | Seed default roles for existing tenants |
+| Database migration | Add trigger for new tenant role seeding |
 
 ---
 
-## Expected Result
+## Expected Results
 
 After these fixes:
-- ✅ Select components work without crashing
-- ✅ Global Product Catalog loads and functions properly
-- ✅ Product import/search features become operational
-- ✅ No more HTTP 404 errors on the Global tab
+- All edge function diagnostic checks pass
+- Roles table contains default roles for each tenant
+- New tenants automatically get default roles
+- Warning "No roles found in database" is resolved
 
