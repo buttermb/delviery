@@ -1,115 +1,136 @@
 
-# Fix Plan: Dashboard Crashes and Build Errors
+
+# Fix Module Loading Error for DisposableMenus Page
 
 ## Problem Summary
 
-Your dashboard is crashing with two main runtime errors:
-1. **"Cannot read properties of undefined (reading 'dashboard')"** - The notification bell component tries to use a query key that doesn't exist
-2. **"useIsMobile is not defined"** - Missing hook import/export issue
-
-Additionally, there are **40+ build errors** across multiple files that need fixing.
-
----
-
-## Phase 1: Fix Dashboard-Blocking Errors
-
-### 1.1 Add Missing `alerts` Section to Query Keys
-**File:** `src/lib/queryKeys.ts`
-
-The `useDashboardAlerts` hook references `queryKeys.alerts.dashboard()`, but no `alerts` section exists. I'll add it:
-
-```text
-alerts: {
-  all: ['alerts'] as const,
-  dashboard: (tenantId: string) => ['alerts', 'dashboard', tenantId] as const,
-  predictive: (tenantId: string) => ['alerts', 'predictive', tenantId] as const,
-},
+The "Menus" tab in the Inventory Hub fails to load with the error:
+```
+Failed to fetch dynamically imported module: .../src/pages/admin/DisposableMenus.tsx
 ```
 
-### 1.2 Fix `useIsMobile` Import Issue
-**File:** `src/pages/tenant-admin/DashboardPage.tsx`
+This is a **dynamic import failure** that commonly occurs when:
+- Stale cache/service worker serves outdated module references
+- Build artifacts have changed between deployments
+- Heavy modules fail to load on slow connections
 
-The import points to `@/hooks/use-mobile` but may need verification that the export matches. There are two mobile hook files:
-- `use-mobile.tsx` - exports `useIsMobile`
-- `useIsMobile.ts` - need to check this file
+## Root Cause Analysis
 
----
+The InventoryHubPage uses standard `lazy()` for DisposableMenus instead of the project's `lazyWithRetry()` wrapper:
 
-## Phase 2: Fix Build Errors (40+ errors across 15 files)
+```typescript
+// Current (problematic)
+const DisposableMenus = lazy(() => import('@/pages/admin/DisposableMenus'));
 
-### 2.1 Missing Icon/Component Imports
+// Should be
+const DisposableMenus = lazyWithRetry(() => import('@/pages/admin/DisposableMenus'));
+```
 
-| File | Missing | Fix |
-|------|---------|-----|
-| `ModernDashboard.tsx` | `WeatherWidget` | Remove or create component |
-| `OrderRowContextMenu.tsx` | `PauseCircle`, `PlayCircle` | Add imports from lucide-react |
-| `MenuCard.tsx` | `Monitor` | Add import from lucide-react |
-| `HotboxDashboard.tsx` | `ReadyForPickupWidget` | Create or import component |
-| `ProductQRGenerator.tsx` | `Skeleton` | Add import from ui/skeleton |
+The `lazyWithRetry` utility provides:
+- **3 automatic retries** with exponential backoff
+- **Graceful fallback UI** with "Clear Cache & Reload" button
+- **Error logging** for debugging
 
-### 2.2 Type Mismatches
+## Implementation Plan
 
-| File | Issue | Fix |
-|------|-------|-----|
-| `OrderEditModal.tsx` | Missing `product_id`, `quantity`, `subtotal` fields | Add required fields to order items |
-| `OrderRowContextMenu.tsx` | `"hold"` and `"resume"` not valid `OrderContextAction` | Add to type definition |
-| `ProductArchiveButton.tsx` | `deleted_at` not in product type | Remove field or add to type |
-| `ProductCard.tsx` | `onArchive` undefined | Fix prop name/destructuring |
-| `StockAdjustmentModal.tsx` | `user` not in context | Use correct property from auth context |
+### Step 1: Update InventoryHubPage Imports
 
-### 2.3 Database Column Errors
+**File:** `src/pages/admin/hubs/InventoryHubPage.tsx`
 
-| File | Issue | Fix |
-|------|-------|-----|
-| `DashboardSearchBar.tsx` | `email` column doesn't exist on `profiles`, `name` on `couriers`, `suppliers` table | Fix column names to match database schema |
-| `OrdersWidget.tsx` | `order_source`, `user_id` columns missing from `orders` | Update query to use correct columns |
-| `StockAdjustmentModal.tsx` | `inventory_history` table not in types | Use correct table name or cast to bypass |
+Changes:
+1. Import `lazyWithRetry` from `@/utils/lazyWithRetry`
+2. Replace `lazy()` with `lazyWithRetry()` for all heavy page imports:
+   - DisposableMenus
+   - ProductManagement
+   - InventoryDashboard
+   - InventoryManagement
+   - InventoryMonitoringPage
+   - FrontedInventory
+   - DispatchInventory
+   - GenerateBarcodes
 
-### 2.4 Deep Instantiation Errors
-**File:** `DashboardSearchBar.tsx` (line 232)
+### Step 2: Update App.tsx Imports
 
-Apply the established pattern: cast Supabase client to `any` to bypass recursive type check.
+**File:** `src/App.tsx`
 
----
+Verify all admin pages use `lazyWithRetry`:
+- DisposableMenus (line 187)
+- DisposableMenuAnalytics (line 188)
+- Other heavy admin pages
 
-## Phase 3: Verify and Test
+### Step 3: Enhance Error Boundary for Tab Content
 
-After fixes, verify:
-1. Dashboard loads without crashing
-2. Notification bell displays alerts
-3. Mobile layout works on small screens
-4. No TypeScript build errors remain
+**File:** `src/pages/admin/hubs/InventoryHubPage.tsx`
+
+Wrap each TabsContent in an ErrorBoundary to catch module failures without crashing the entire page:
+
+```typescript
+<TabsContent value="menus">
+  <ErrorBoundary fallback={<ModuleErrorFallback tabName="Menus" />}>
+    <Suspense fallback={<TabSkeleton />}>
+      <DisposableMenus />
+    </Suspense>
+  </ErrorBoundary>
+</TabsContent>
+```
+
+### Step 4: Add Tab-Specific Error Fallback Component
+
+Create a friendly error state that:
+- Shows which tab failed
+- Provides "Retry" and "Clear Cache" buttons
+- Doesn't require full page reload
 
 ---
 
 ## Technical Details
 
-### Files to Modify (Priority Order)
+### Files to Modify
 
-1. `src/lib/queryKeys.ts` - Add `alerts` query key section
-2. `src/hooks/useIsMobile.ts` - Verify export matches import
-3. `src/components/admin/ModernDashboard.tsx` - Remove/fix WeatherWidget
-4. `src/components/admin/OrderEditModal.tsx` - Add missing fields
-5. `src/components/admin/OrderRowContextMenu.tsx` - Add action types and icons
-6. `src/components/admin/ProductArchiveButton.tsx` - Remove `deleted_at` field
-7. `src/components/admin/ProductCard.tsx` - Fix prop destructuring
-8. `src/components/admin/ProductQRGenerator.tsx` - Add Skeleton import
-9. `src/components/admin/StockAdjustmentModal.tsx` - Fix auth context usage
-10. `src/components/admin/dashboard/DashboardSearchBar.tsx` - Fix column queries
-11. `src/components/admin/dashboard/OrdersWidget.tsx` - Fix column references
-12. `src/components/admin/dashboard/RecentCustomersWidget.tsx` - Remove unused directive
-13. `src/components/admin/disposable-menus/MenuCard.tsx` - Add Monitor import
-14. `src/components/admin/hotbox/HotboxDashboard.tsx` - Fix widget reference
-15. `src/components/admin/hotbox/widgets/CourierStatusWidget.tsx` - Fix icon props
+| File | Change |
+|------|--------|
+| `src/pages/admin/hubs/InventoryHubPage.tsx` | Replace `lazy()` with `lazyWithRetry()`, add ErrorBoundary wrappers |
+| `src/App.tsx` | Ensure admin pages use `lazyWithRetry()` |
 
-### Estimated Changes
-- ~15 files modified
-- ~50 lines of code changes
-- No database migrations needed
+### Why lazyWithRetry Works
+
+The utility already handles this exact error pattern:
+
+```typescript
+const isModuleError = 
+  error instanceof Error && (
+    error.message.includes('Failed to fetch dynamically imported module') ||
+    error.message.includes('chunk') ||
+    error.message.includes('Loading') ||
+    error.message.includes('NetworkError')
+  );
+```
+
+When detected, it:
+1. Retries the import 3 times with exponential backoff (1s, 2s, 4s)
+2. Returns a fallback component with "Clear Cache & Reload" button
+3. Logs the error for debugging
+
+### Additional Robustness
+
+Also update these hub pages to use `lazyWithRetry`:
+- `OrdersHubPage.tsx`
+- `CustomerHubPage.tsx`
+- `FinanceHubPage.tsx`
+- `FulfillmentHubPage.tsx`
+- `StorefrontHubPage.tsx`
 
 ---
 
-## Risk Assessment
-- **Low risk**: All changes are code-level fixes with no database modifications
-- The fixes follow established patterns already used in the codebase
-- Changes are isolated to specific components
+## Expected Outcome
+
+After implementation:
+- **Automatic retries** prevent transient network failures
+- **Graceful degradation** shows friendly error with clear fix action
+- **No page crashes** - only the affected tab shows error state
+- **Cache clearing** works correctly when needed
+
+## Quick Workaround (Immediate)
+
+If you're currently stuck, clicking "Clear Cache & Reload" should resolve the issue. This fix ensures future occurrences are handled gracefully.
+
