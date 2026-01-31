@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle,
-  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Phone, Mail, Calendar, Lock
+  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Phone, Mail, Calendar, Lock,
+  AlertTriangle, CheckCircle, UserPlus
 } from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
@@ -90,6 +91,7 @@ export default function CustomerManagement() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedCustomerForDrawer, setSelectedCustomerForDrawer] = useState<Customer | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [segmentFilter, setSegmentFilter] = useState<'all' | 'active' | 'at_risk' | 'new'>('all');
 
   useEffect(() => {
     if (tenant && !accountLoading) {
@@ -275,13 +277,36 @@ export default function CustomerManagement() {
   };
 
   const filteredCustomers = customers.filter((customer) => {
+    // Search filter
     const fullName = `${customer.first_name} ${customer.last_name}`.toLowerCase();
     const search = searchTerm.toLowerCase();
-    return (
+    const matchesSearch = (
       fullName.includes(search) ||
       customer.email?.toLowerCase().includes(search) ||
       customer.phone?.includes(search)
     );
+
+    // Segment filter
+    let matchesSegment = true;
+    if (segmentFilter === 'active') {
+      if (!customer.last_purchase_at) {
+        matchesSegment = false;
+      } else {
+        const days = Math.floor((Date.now() - new Date(customer.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
+        matchesSegment = days <= 7;
+      }
+    } else if (segmentFilter === 'at_risk') {
+      if (!customer.last_purchase_at) {
+        matchesSegment = false;
+      } else {
+        const days = Math.floor((Date.now() - new Date(customer.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
+        matchesSegment = days > 60;
+      }
+    } else if (segmentFilter === 'new') {
+      matchesSegment = !customer.last_purchase_at;
+    }
+
+    return matchesSearch && matchesSegment;
   });
 
   // Use standardized pagination
@@ -307,6 +332,19 @@ export default function CustomerManagement() {
   const totalRevenue = customers.reduce((sum, c) => sum + (c.total_spent || 0), 0);
   const avgLifetimeValue = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
 
+  // Segment counts
+  const atRiskCustomers = customers.filter(c => {
+    if (!c.last_purchase_at) return false;
+    const days = Math.floor((Date.now() - new Date(c.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
+    return days > 60;
+  });
+  const newCustomers = customers.filter(c => !c.last_purchase_at);
+  const recentlyActive = customers.filter(c => {
+    if (!c.last_purchase_at) return false;
+    const days = Math.floor((Date.now() - new Date(c.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
+    return days <= 7;
+  });
+
   const getCustomerStatus = (customer: Customer) => {
     if (!customer.last_purchase_at) return <Badge variant="outline">New</Badge>;
 
@@ -321,8 +359,18 @@ export default function CustomerManagement() {
 
   if (accountLoading || loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6">
+        <div className="h-10 w-64 skeleton-shimmer rounded-lg" />
+        <div className="h-12 w-full skeleton-shimmer rounded-lg" />
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              className="h-16 skeleton-shimmer rounded-lg animate-in fade-in slide-in-from-bottom-2"
+              style={{ animationDelay: `${i * 75}ms`, animationFillMode: 'backwards' }}
+            />
+          ))}
+        </div>
       </div>
     );
   }
@@ -408,32 +456,68 @@ export default function CustomerManagement() {
         </Button>
       </div>
 
-      {/* Stats Carousel */}
-      <div className="flex overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-5 gap-4 snap-x snap-mandatory hide-scrollbar">
-        {stats.map((stat, index) => (
-          <motion.div
-            key={stat.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="min-w-[240px] sm:min-w-0 snap-center"
-          >
-            <Card className="border-none shadow-sm bg-gradient-to-br from-card to-muted/20 h-full">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-                <div className={cn("p-2 rounded-full", stat.bg)}>
-                  <stat.icon className={cn("h-4 w-4", stat.color)} />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+      {/* Compact Stats Bar */}
+      <div className="flex items-center gap-4 sm:gap-6 py-2.5 px-4 bg-muted/30 rounded-lg overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-2 whitespace-nowrap">
+          <Users className="h-4 w-4 text-blue-500" />
+          <span className="text-sm text-muted-foreground">Total</span>
+          <span className="font-bold tabular-nums">{totalCustomers}</span>
+        </div>
+        <div className="flex items-center gap-2 whitespace-nowrap">
+          <UserCircle className="h-4 w-4 text-purple-500" />
+          <span className="text-sm text-muted-foreground">Medical</span>
+          <span className="font-bold tabular-nums">{medicalPatients}</span>
+        </div>
+        <div className="flex items-center gap-2 whitespace-nowrap">
+          <DollarSign className="h-4 w-4 text-emerald-500" />
+          <span className="text-sm text-muted-foreground">Revenue</span>
+          <span className="font-bold tabular-nums">${(totalRevenue / 1000).toFixed(1)}k</span>
+        </div>
+        <div className="flex items-center gap-2 whitespace-nowrap">
+          <TrendingUp className="h-4 w-4 text-amber-500" />
+          <span className="text-sm text-muted-foreground">Avg LTV</span>
+          <span className="font-bold tabular-nums">${avgLifetimeValue.toFixed(0)}</span>
+        </div>
+      </div>
+
+      {/* Segment Quick Filters */}
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+        <Button
+          variant={segmentFilter === 'all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setSegmentFilter('all')}
+          className="min-h-[36px] whitespace-nowrap"
+        >
+          <Users className="h-3.5 w-3.5 mr-1.5" />
+          All ({totalCustomers})
+        </Button>
+        <Button
+          variant={segmentFilter === 'active' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setSegmentFilter('active')}
+          className="min-h-[36px] whitespace-nowrap"
+        >
+          <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-green-500" />
+          Active ({recentlyActive.length})
+        </Button>
+        <Button
+          variant={segmentFilter === 'at_risk' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setSegmentFilter('at_risk')}
+          className={cn("min-h-[36px] whitespace-nowrap", atRiskCustomers.length > 0 && segmentFilter !== 'at_risk' && "border-red-200 text-red-600")}
+        >
+          <AlertTriangle className="h-3.5 w-3.5 mr-1.5 text-red-500" />
+          At Risk ({atRiskCustomers.length})
+        </Button>
+        <Button
+          variant={segmentFilter === 'new' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setSegmentFilter('new')}
+          className="min-h-[36px] whitespace-nowrap"
+        >
+          <UserPlus className="h-3.5 w-3.5 mr-1.5 text-blue-500" />
+          New ({newCustomers.length})
+        </Button>
       </div>
 
       {/* Search and Filters */}
@@ -640,14 +724,38 @@ export default function CustomerManagement() {
 
             {filteredCustomers.length === 0 && (
               <EnhancedEmptyState
-                icon={Users}
-                title={searchTerm ? "No Customers Found" : "No Customers Yet"}
-                description={searchTerm ? "No customers match your search." : "Add your first customer to get started."}
-                primaryAction={!searchTerm ? {
+                icon={segmentFilter === 'at_risk' ? CheckCircle : segmentFilter === 'active' ? Users : Users}
+                title={
+                  segmentFilter === 'at_risk'
+                    ? "No at-risk customers!"
+                    : segmentFilter === 'active'
+                      ? "No recently active customers"
+                      : segmentFilter === 'new'
+                        ? "No new customers"
+                        : searchTerm
+                          ? `No results for "${searchTerm}"`
+                          : "No Customers Yet"
+                }
+                description={
+                  segmentFilter === 'at_risk'
+                    ? "Great news! All your customers have been active recently."
+                    : segmentFilter === 'active'
+                      ? "No customers have made purchases in the last 7 days."
+                      : segmentFilter === 'new'
+                        ? "All customers have made at least one purchase."
+                        : searchTerm
+                          ? "Try adjusting your search terms."
+                          : "Add your first customer to get started."
+                }
+                primaryAction={searchTerm || segmentFilter !== 'all' ? {
+                  label: "Clear Filters",
+                  onClick: () => { setSearchTerm(''); setSegmentFilter('all'); }
+                } : {
                   label: "Add Your First Customer",
                   onClick: () => navigateToAdmin('customers/new'),
                   icon: Plus
-                } : undefined}
+                }}
+                className={segmentFilter === 'at_risk' ? "bg-gradient-to-br from-emerald-500/5 to-transparent" : undefined}
               />
             )}
           </div>
@@ -658,14 +766,32 @@ export default function CustomerManagement() {
       <div className="md:hidden space-y-3">
         {filteredCustomers.length === 0 ? (
           <EnhancedEmptyState
-            icon={Users}
-            title={searchTerm ? "No Customers Found" : "No Customers Yet"}
-            description={searchTerm ? "No customers match your search." : "Add your first customer to get started."}
-            primaryAction={!searchTerm ? {
-              label: "Add Your First Customer",
+            icon={segmentFilter === 'at_risk' ? CheckCircle : Users}
+            title={
+              segmentFilter === 'at_risk'
+                ? "No at-risk customers!"
+                : segmentFilter === 'active'
+                  ? "No recently active"
+                  : searchTerm
+                    ? `No results for "${searchTerm}"`
+                    : "No Customers Yet"
+            }
+            description={
+              segmentFilter === 'at_risk'
+                ? "All customers have been active recently."
+                : searchTerm
+                  ? "Try adjusting your search."
+                  : "Add your first customer to get started."
+            }
+            primaryAction={searchTerm || segmentFilter !== 'all' ? {
+              label: "Clear Filters",
+              onClick: () => { setSearchTerm(''); setSegmentFilter('all'); }
+            } : {
+              label: "Add Customer",
               onClick: () => navigateToAdmin('customers/new'),
               icon: Plus
-            } : undefined}
+            }}
+            className={segmentFilter === 'at_risk' ? "bg-gradient-to-br from-emerald-500/5 to-transparent" : undefined}
           />
         ) : (
           <AnimatePresence>
