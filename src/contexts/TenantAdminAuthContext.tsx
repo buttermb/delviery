@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { logAuth, logAuthWarn, logAuthError, logStateChange } from '@/lib/debug/logger';
-import { createContext, useContext, useEffect, useState, ReactNode, useRef, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useRef, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getTokenExpiration } from "@/lib/auth/jwt";
@@ -1687,25 +1687,45 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     return () => clearInterval(pollInterval);
   }, [isAuthenticated, tenant?.id, tenant?.subscription_status, tenant?.subscription_plan, tenant?.is_free_tier, tenant?.credits_enabled, refreshTenant]);
 
+  // Memoize context value to prevent unnecessary re-renders of consumers
+  const contextValue = useMemo<TenantAdminAuthContextType>(() => ({
+    admin,
+    tenant,
+    tenantSlug,
+    token,
+    accessToken,
+    refreshToken: refreshToken,
+    isAuthenticated,
+    connectionStatus,
+    loading,
+    login,
+    logout,
+    refreshAuthToken,
+    refreshTenant,
+    handleSignupSuccess,
+    mfaRequired,
+    verifyMfa,
+  }), [
+    admin,
+    tenant,
+    tenantSlug,
+    token,
+    accessToken,
+    refreshToken,
+    isAuthenticated,
+    connectionStatus,
+    loading,
+    login,
+    logout,
+    refreshAuthToken,
+    refreshTenant,
+    handleSignupSuccess,
+    mfaRequired,
+    verifyMfa,
+  ]);
+
   return (
-    <TenantAdminAuthContext.Provider value={{
-      admin,
-      tenant,
-      tenantSlug,
-      token,
-      accessToken,
-      refreshToken: refreshToken,
-      isAuthenticated,
-      connectionStatus,
-      loading,
-      login,
-      logout,
-      refreshAuthToken,
-      refreshTenant,
-      handleSignupSuccess,
-      mfaRequired,
-      verifyMfa,
-    }}>
+    <TenantAdminAuthContext.Provider value={contextValue}>
       {children}
       <SessionTimeoutWarning
         open={showTimeoutWarning}
