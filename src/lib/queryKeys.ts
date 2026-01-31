@@ -52,7 +52,7 @@ export const queryKeys = {
   wholesaleOrders: {
     all: ['wholesale-orders'] as const,
     lists: () => [...queryKeys.wholesaleOrders.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.wholesaleOrders.lists(), filters] as const,
     details: () => [...queryKeys.wholesaleOrders.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.wholesaleOrders.details(), id] as const,
@@ -62,7 +62,7 @@ export const queryKeys = {
   wholesaleClients: {
     all: ['wholesale-clients'] as const,
     lists: () => [...queryKeys.wholesaleClients.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.wholesaleClients.lists(), filters] as const,
     details: () => [...queryKeys.wholesaleClients.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.wholesaleClients.details(), id] as const,
@@ -105,7 +105,7 @@ export const queryKeys = {
   menus: {
     all: ['menus'] as const,
     lists: () => [...queryKeys.menus.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.menus.lists(), filters] as const,
     details: () => [...queryKeys.menus.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.menus.details(), id] as const,
@@ -117,7 +117,7 @@ export const queryKeys = {
   couriers: {
     all: ['couriers'] as const,
     lists: () => [...queryKeys.couriers.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.couriers.lists(), filters] as const,
     details: () => [...queryKeys.couriers.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.couriers.details(), id] as const,
@@ -129,7 +129,7 @@ export const queryKeys = {
   deliveries: {
     all: ['deliveries'] as const,
     lists: () => [...queryKeys.deliveries.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.deliveries.lists(), filters] as const,
     active: () => [...queryKeys.deliveries.all, 'active'] as const,
     detail: (id: string) => [...queryKeys.deliveries.all, id] as const,
@@ -139,7 +139,7 @@ export const queryKeys = {
   customers: {
     all: ['customers'] as const,
     lists: () => [...queryKeys.customers.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.customers.lists(), filters] as const,
     detail: (id: string) => [...queryKeys.customers.all, id] as const,
     analytics: (id: string) => [...queryKeys.customers.detail(id), 'analytics'] as const,
@@ -150,7 +150,7 @@ export const queryKeys = {
   tenants: {
     all: ['tenants'] as const,
     lists: () => [...queryKeys.tenants.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.tenants.lists(), filters] as const,
     detail: (id: string) => [...queryKeys.tenants.all, id] as const,
     current: () => [...queryKeys.tenants.all, 'current'] as const,
@@ -190,7 +190,7 @@ export const queryKeys = {
   categories: {
     all: ['categories'] as const,
     lists: () => [...queryKeys.categories.all, 'list'] as const,
-    list: (tenantId?: string) => 
+    list: (tenantId?: string) =>
       [...queryKeys.categories.lists(), { tenantId }] as const,
     detail: (id: string) => [...queryKeys.categories.all, id] as const,
   },
@@ -199,7 +199,7 @@ export const queryKeys = {
   productImages: {
     all: ['product-images'] as const,
     lists: () => [...queryKeys.productImages.all, 'list'] as const,
-    list: (tenantId?: string) => 
+    list: (tenantId?: string) =>
       [...queryKeys.productImages.lists(), { tenantId }] as const,
     detail: (id: string) => [...queryKeys.productImages.all, id] as const,
   },
@@ -207,9 +207,9 @@ export const queryKeys = {
   // Pricing
   pricing: {
     all: ['pricing'] as const,
-    products: (tenantId?: string) => 
+    products: (tenantId?: string) =>
       [...queryKeys.pricing.all, 'products', { tenantId }] as const,
-    tiers: (productId?: string) => 
+    tiers: (productId?: string) =>
       [...queryKeys.pricing.all, 'tiers', { productId }] as const,
   },
 
@@ -217,10 +217,10 @@ export const queryKeys = {
   runners: {
     all: ['runners'] as const,
     lists: () => [...queryKeys.runners.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.runners.lists(), filters] as const,
     detail: (id: string) => [...queryKeys.runners.all, id] as const,
-    deliveries: (runnerId: string) => 
+    deliveries: (runnerId: string) =>
       [...queryKeys.runners.detail(runnerId), 'deliveries'] as const,
     available: () => [...queryKeys.runners.all, 'available'] as const,
   },
@@ -292,7 +292,7 @@ export const queryKeys = {
   batches: {
     all: ['inventory-batches'] as const,
     lists: () => [...queryKeys.batches.all, 'list'] as const,
-    list: (tenantId?: string) => 
+    list: (tenantId?: string) =>
       [...queryKeys.batches.lists(), { tenantId }] as const,
     detail: (id: string) => [...queryKeys.batches.all, id] as const,
   },
@@ -301,7 +301,7 @@ export const queryKeys = {
   warehouses: {
     all: ['warehouses'] as const,
     lists: () => [...queryKeys.warehouses.all, 'list'] as const,
-    list: (tenantId?: string) => 
+    list: (tenantId?: string) =>
       [...queryKeys.warehouses.lists(), { tenantId }] as const,
     detail: (id: string) => [...queryKeys.warehouses.all, id] as const,
   },
@@ -310,7 +310,7 @@ export const queryKeys = {
   receiving: {
     all: ['receiving'] as const,
     lists: () => [...queryKeys.receiving.all, 'list'] as const,
-    list: (tenantId?: string, filter?: string) => 
+    list: (tenantId?: string, filter?: string) =>
       [...queryKeys.receiving.lists(), { tenantId, filter }] as const,
     detail: (id: string) => [...queryKeys.receiving.all, id] as const,
   },
@@ -319,11 +319,11 @@ export const queryKeys = {
   suppliers: {
     all: ['suppliers'] as const,
     lists: () => [...queryKeys.suppliers.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.suppliers.lists(), filters] as const,
     details: () => [...queryKeys.suppliers.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.suppliers.details(), id] as const,
-    transactions: (supplierId: string) => 
+    transactions: (supplierId: string) =>
       [...queryKeys.suppliers.detail(supplierId), 'transactions'] as const,
   },
 
@@ -331,11 +331,11 @@ export const queryKeys = {
   purchaseOrders: {
     all: ['purchase-orders'] as const,
     lists: () => [...queryKeys.purchaseOrders.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.purchaseOrders.lists(), filters] as const,
     details: () => [...queryKeys.purchaseOrders.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.purchaseOrders.details(), id] as const,
-    items: (poId: string) => 
+    items: (poId: string) =>
       [...queryKeys.purchaseOrders.detail(poId), 'items'] as const,
   },
 
@@ -343,7 +343,7 @@ export const queryKeys = {
   returns: {
     all: ['returns'] as const,
     lists: () => [...queryKeys.returns.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.returns.lists(), filters] as const,
     details: () => [...queryKeys.returns.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.returns.details(), id] as const,
@@ -363,7 +363,7 @@ export const queryKeys = {
   coupons: {
     all: ['coupons'] as const,
     lists: () => [...queryKeys.coupons.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.coupons.lists(), filters] as const,
     details: () => [...queryKeys.coupons.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.coupons.details(), id] as const,
@@ -380,7 +380,7 @@ export const queryKeys = {
   appointments: {
     all: ['appointments'] as const,
     lists: () => [...queryKeys.appointments.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.appointments.lists(), filters] as const,
     details: () => [...queryKeys.appointments.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.appointments.details(), id] as const,
@@ -396,7 +396,7 @@ export const queryKeys = {
   recall: {
     all: ['recall'] as const,
     lists: () => [...queryKeys.recall.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.recall.lists(), filters] as const,
     details: () => [...queryKeys.recall.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.recall.details(), id] as const,
@@ -421,22 +421,6 @@ export const queryKeys = {
     lists: () => [...queryKeys.roles.all, 'list'] as const,
     list: (tenantId?: string) => [...queryKeys.roles.lists(), { tenantId }] as const,
     detail: (id: string) => [...queryKeys.roles.all, id] as const,
-  },
-
-  // Team
-  team: {
-    all: ['team'] as const,
-    lists: () => [...queryKeys.team.all, 'list'] as const,
-    list: (tenantId?: string) => [...queryKeys.team.lists(), { tenantId }] as const,
-    detail: (id: string) => [...queryKeys.team.all, id] as const,
-    members: {
-      all: () => [...queryKeys.team.all, 'members'] as const,
-      list: (tenantId?: string) => [...queryKeys.team.members.all(), 'list', { tenantId }] as const,
-    },
-    invitations: {
-      all: () => [...queryKeys.team.all, 'invitations'] as const,
-      pending: (tenantId?: string) => [...queryKeys.team.invitations.all(), 'pending', { tenantId }] as const,
-    },
   },
 
   // Vendor
@@ -566,13 +550,13 @@ export const queryKeys = {
   payments: {
     all: ['payments'] as const,
     lists: () => [...queryKeys.payments.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.payments.lists(), filters] as const,
-    byClient: (clientId: string) => 
+    byClient: (clientId: string) =>
       [...queryKeys.payments.all, 'client', clientId] as const,
-    history: (clientId: string, limit?: number) => 
+    history: (clientId: string, limit?: number) =>
       [...queryKeys.payments.byClient(clientId), 'history', limit] as const,
-    aging: (clientId: string) => 
+    aging: (clientId: string) =>
       [...queryKeys.payments.byClient(clientId), 'aging'] as const,
   },
 
@@ -580,10 +564,10 @@ export const queryKeys = {
   frontedInventory: {
     all: ['fronted-inventory'] as const,
     lists: () => [...queryKeys.frontedInventory.all, 'list'] as const,
-    list: (filters?: Record<string, unknown>) => 
+    list: (filters?: Record<string, unknown>) =>
       [...queryKeys.frontedInventory.lists(), filters] as const,
     detail: (id: string) => [...queryKeys.frontedInventory.all, id] as const,
-    payments: (frontedId: string) => 
+    payments: (frontedId: string) =>
       [...queryKeys.frontedInventory.detail(frontedId), 'payments'] as const,
   },
 

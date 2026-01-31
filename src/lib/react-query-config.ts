@@ -9,7 +9,7 @@
  * - Network-aware: Different behavior online vs offline
  */
 
-import { QueryClient, QueryCache, MutationCache } from '@tanstack/react-query';
+import { QueryClient, QueryCache, MutationCache, keepPreviousData } from '@tanstack/react-query';
 import { logger } from '@/lib/logger';
 
 /**
@@ -54,7 +54,7 @@ export const createQueryClient = () => {
     defaultOptions: {
       queries: {
         staleTime: 5 * 60 * 1000, // 5 minutes
-        gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+        gcTime: 30 * 60 * 1000, // 30 minutes - keep cached data longer for navigation
         retry: (failureCount, error) => {
           // Don't retry on 4xx errors (client errors)
           if (error && typeof error === 'object' && 'status' in error) {
@@ -71,6 +71,8 @@ export const createQueryClient = () => {
         structuralSharing: true,
         // Network mode - suspends queries when offline
         networkMode: 'offlineFirst',
+        // Show previous data immediately while refetching (instant navigation)
+        placeholderData: keepPreviousData,
       },
       mutations: {
         retry: 1,

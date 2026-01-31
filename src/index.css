@@ -2314,3 +2314,37 @@ body.keyboard-open [data-radix-dialog-content] {
   animation: new-order-highlight 2s ease-out;
   transition: background-color 0.5s ease-out, border-color 0.5s ease-out;
 }
+
+/* ========================================
+   VIEW TRANSITIONS API
+   Smooth panel switching animations
+   Only works in Chrome/Edge, gracefully ignored elsewhere
+   ======================================== */
+
+/* Outgoing content fade-out */
+::view-transition-old(root) {
+  animation: view-fade-out 150ms ease-out forwards;
+}
+
+/* Incoming content fade-in */
+::view-transition-new(root) {
+  animation: view-fade-in 150ms ease-in forwards;
+}
+
+@keyframes view-fade-out {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(-10px); }
+}
+
+@keyframes view-fade-in {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}

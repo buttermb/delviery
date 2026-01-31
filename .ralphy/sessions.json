@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "sessions": {
+    "Add StockAlertsList showing all low stock and out of stock": {
+      "sessionId": "873fb385-e950-4ec6-9e61-ca1a29327e9f",
+      "taskId": "Add StockAlertsList showing all low stock and out of stock",
+      "taskTitle": "Add StockAlertsList showing all low stock and out of stock",
+      "status": "in_progress",
+      "modifiedFiles": [
+        "src/components/admin/StockAlertsList.tsx"
+      ],
+      "startedAt": "2026-01-30T16:54:24.842Z",
+      "updatedAt": "2026-01-30T16:55:47.572Z",
+      "agentNum": 3
+    },
+    "Build StockAlertSettings configuring thresholds per product": {
+      "sessionId": "b3534cf9-8ff7-47c1-aae9-09ceda83d524",
+      "taskId": "Build StockAlertSettings configuring thresholds per product",
+      "taskTitle": "Build StockAlertSettings configuring thresholds per product",
+      "status": "in_progress",
+      "modifiedFiles": [
+        "src/components/admin/StockAlertSettings.tsx",
+        "src/hooks/useStockAlertSettings.ts"
+      ],
+      "startedAt": "2026-01-30T16:54:31.947Z",
+      "updatedAt": "2026-01-30T16:56:20.596Z",
+      "agentNum": 4
+    },
+    "Add StockTransferForm for moving stock between locations": {
+      "sessionId": "8c2aeeb7-10b0-49ba-ad0e-a5500032a489",
+      "taskId": "Add StockTransferForm for moving stock between locations",
+      "taskTitle": "Add StockTransferForm for moving stock between locations",
+      "status": "in_progress",
+      "modifiedFiles": [],
+      "startedAt": "2026-01-30T16:55:04.525Z",
+      "updatedAt": "2026-01-30T16:55:04.525Z",
+      "agentNum": 1
+    }
+  }
+}

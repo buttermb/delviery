@@ -20,17 +20,13 @@ interface UseRealtimeSyncOptions {
 }
 
 const DEFAULT_TABLES = [
-  'orders',
-  'menu_orders',
-  'products',
-  'deliveries',
-  'customers',
-  'payments',
-  'inventory_transfers',
-  'wholesale_orders',
-  'courier_earnings',
-  'storefront_orders',
-  'invoices',
+  'orders',           // Critical: Live orders
+  'wholesale_orders', // Critical: B2B orders  
+  'products',         // Critical: Stock changes
+  'storefront_orders', // Critical: POS/online orders
+  // Removed for performance: deliveries, customers, payments, 
+  // inventory_transfers, courier_earnings, invoices, menu_orders
+  // These can be subscribed individually on pages that need them
 ];
 
 // Track failed connection attempts per table

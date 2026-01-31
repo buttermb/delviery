@@ -1,0 +1,462 @@
+# FloraIQ Platform - 400 Tasks
+
+- Build DashboardPage with KPI cards for revenue orders customers inventory
+- Add real-time revenue chart with daily weekly monthly toggle using Recharts
+- Build OrdersWidget showing last 10 orders with status badges
+- Add LowStockWidget displaying products below threshold with reorder button
+- Build TopProductsWidget with bar chart of best sellers
+- Add RecentCustomersWidget showing new signups this week
+- Build QuickActionsCard with buttons for new order product customer
+- Add AlertsWidget showing unread notifications with dismiss action
+- Build RevenueGoalProgress showing monthly target vs actual
+- Add PendingOrdersCount badge updating via Supabase realtime
+- Build DeliveryStatusWidget showing active in-transit completed counts
+- Add TeamActivityFeed showing recent actions by team members
+- Build WeatherWidget for delivery planning with API integration
+- Add DashboardSkeleton loading state for all widgets
+- Build DashboardRefreshButton to manually refresh all data
+- Add DashboardDatePicker to filter all widgets by date range
+- Build DashboardLayoutCustomizer to drag and drop widgets
+- Add DashboardExportButton to export current view as PDF
+- Build MobileDashboard with stacked single-column layout
+- Add DashboardTour using react-joyride for new users
+- Build HotboxWidget showing orders ready for pickup
+- Add LiveOrdersCounter with pulse animation on new orders
+- Build CourierStatusWidget showing available busy offline counts
+- Add DashboardNotificationBell with dropdown of recent alerts
+- Build DashboardSearchBar with global search across all modules
+- Build OrdersListPage with DataTable showing all orders with pagination
+- Add OrderFilters component with status date customer product filters
+- Build OrderDetailsPage showing full order info with timeline
+- Add OrderStatusStepper showing pending confirmed packed shipped delivered
+- Build CreateOrderForm with customer selection and product picker
+- Add OrderItemsTable with quantity price discount columns
+- Build OrderTotalsCard showing subtotal tax discount total
+- Add OrderNotesSection with internal notes and customer notes tabs
+- Build OrderActionsDropdown with edit cancel refund duplicate options
+- Add OrderPaymentStatus badge showing paid pending partial refunded
+- Build BulkOrderActions for selecting multiple orders to update status
+- Add OrderExport button generating CSV of filtered orders
+- Build OrderPrintView with thermal receipt and packing slip layouts
+- Add OrderSearchBar with autocomplete for order number customer phone
+- Build B2BOrdersTab filtering orders by business customers only
+- Add StoreOrdersTab showing orders from storefront
+- Build OrderAssignCourier modal with available courier list
+- Add OrderTrackingTimeline showing all status changes with timestamps
+- Build OrderRefundModal with partial and full refund options
+- Add OrderDuplicateButton creating new order from existing
+- Build OrderEditModal for modifying items before confirmation
+- Add OrderCancelModal with reason selection and restock option
+- Build OrderInvoiceGenerator creating PDF invoice from order
+- Add OrderEmailButton to send confirmation receipt tracking emails
+- Build OrderSMSButton to send status updates via Twilio
+- Add OrderTagsInput for custom categorization of orders
+- Build OrderSourceBadge showing POS storefront phone manual source
+- Add OrderPriorityFlag with high normal low indicators
+- Build OrderDeliveryWindow showing scheduled time slot
+- Add OrderAddressCard with map preview and directions link
+- Build OrderCustomerCard showing customer info and order history count
+- Add OrderPaymentMethodBadge showing cash card invoice crypto
+- Build RecurringOrderSetup for subscription-style repeat orders
+- Add OrderSplitButton to split order into multiple shipments
+- Build OrderMergeButton to combine multiple orders for same customer
+- Add OrderHoldButton to pause order processing with reason
+- Build OrderRushButton to expedite order to front of queue
+- Add OrderCloneToB2B converting retail order to wholesale
+- Build OrderDiscountModal with percentage fixed and coupon options
+- Add OrderAuditLog showing all changes made to order with user
+- Build ProductsListPage with grid and table view toggle
+- Add ProductCard component with image name price stock badge
+- Build ProductDetailsPage with tabs for info variants inventory
+- Add CreateProductForm with all fields including variants
+- Build ProductImageUploader with drag-drop and multiple images
+- Add ProductVariantsManager for size weight strain options
+- Build ProductPricingSection with retail wholesale and bulk prices
+- Add ProductCategorySelect with hierarchical categories
+- Build ProductTagsInput for search and filter tags
+- Add ProductStockLevelInput with low stock threshold setting
+- Build ProductBarcodeGenerator creating scannable barcodes
+- Add ProductQRGenerator creating QR codes linking to product
+- Build ProductBulkImport from CSV with validation preview
+- Add ProductBulkExport to CSV with selected fields
+- Build ProductArchiveButton with soft delete and restore
+- Add ProductDuplicateButton creating copy with new SKU
+- Build MenusListPage showing all product menus
+- Add CreateMenuForm with name description products selection
+- Build MenuProductPicker with search filter and drag ordering
+- Add MenuPreview showing customer-facing view
+- Build MenuShareModal with link QR code and embed options
+- Add MenuScheduler for time-based menu activation
+- Build StockLevelsPage with sortable table of all products
+- Add StockAdjustmentModal for manual stock corrections
+- Build StockHistoryLog showing all stock changes with reason
+- Add StockTransferForm for moving stock between locations
+- Build StockCountSession for physical inventory counts
+- Add StockAlertsList showing all low stock and out of stock
+- Build StockAlertSettings configuring thresholds per product
+- Add StockForecastWidget predicting stockouts based on velocity
+- Build StockReorderSuggestions based on sales and lead time
+- Add BarcodeScanner component using device camera
+- Build BarcodeLookup searching products by scanned barcode
+- Add BarcodePrintQueue for batch printing product labels
+- Build BarcodeTemplateEditor for custom label layouts
+- Add InventoryValuationReport showing total inventory value
+- Build InventoryAgeReport showing slow moving products
+- Add InventoryTurnoverReport calculating turnover rates
+- Build ProductPerformanceChart showing sales over time
+- Add ProductComparisonTool comparing metrics of multiple products
+- Build ProductBundleCreator for creating product bundles
+- Add ProductKitBuilder for assembly products with components
+- Build SupplierLinkage connecting products to vendors
+- Add ProductCostTracking with cost history and margin calc
+- Build ProductSeasonalityChart showing demand patterns
+- Build CustomersListPage with search filter and pagination
+- Add CustomerCard showing name email phone order count
+- Build CustomerDetailsPage with profile orders notes tabs
+- Add CreateCustomerForm with all contact and billing fields
+- Build CustomerEditModal for updating customer information
+- Add CustomerAddressBook with multiple addresses and default
+- Build CustomerOrderHistory table with status and totals
+- Add CustomerNotesSection with pinned and regular notes
+- Build CustomerTagsManager for segmentation and targeting
+- Add CustomerMergeWizard for combining duplicate customers
+- Build CustomerImportCSV with field mapping and validation
+- Add CustomerExportCSV with selected fields and filters
+- Build CustomerSearchAutocomplete for order forms and lookups
+- Add CustomerBalanceCard showing credit balance and invoices due
+- Build CustomerCreditLimitSetting with approval workflow
+- Add CustomerPaymentTermsSelect net15 net30 cod options
+- Build CustomerPriceListAssignment for custom pricing tiers
+- Add CustomerDocuments uploader for licenses and contracts
+- Build CustomerVerificationStatus for age ID compliance checks
+- Add CustomerReferralCode generator and tracker
+- Build CRMTimelinePage showing all interactions chronologically
+- Add CRMAddInteraction form for calls emails meetings notes
+- Build CRMTaskManager for follow-ups with due dates
+- Add CRMDealPipeline with stages and drag-drop cards
+- Build InvoicesListPage with status filters and search
+- Add CreateInvoiceForm with line items tax and terms
+- Build InvoicePDFGenerator with customizable template
+- Add InvoiceEmailSender with template and tracking
+- Build InvoicePaymentRecorder for marking invoices paid
+- Add InvoiceAgeingReport showing overdue by period
+- Build SupportTicketsPage with status priority assignment
+- Add CreateTicketForm with category description attachments
+- Build TicketDetailsPage with conversation thread
+- Add TicketAssignmentDropdown with team member list
+- Build TicketEscalationButton with notification to managers
+- Add LoyaltyPointsDisplay showing balance and history
+- Build LoyaltyRewardsPage with redeemable rewards catalog
+- Add LoyaltyEarnRules configuring points per dollar
+- Build LoyaltyTierSystem with bronze silver gold platinum
+- Add CustomerAnalyticsDashboard with LTV churn segments
+- Build FinanceDashboardPage with revenue expenses profit cards
+- Add RevenueChart with line chart showing daily weekly monthly
+- Build RevenueByCategoryChart with pie chart breakdown
+- Add RevenueByChannelChart showing POS storefront B2B
+- Build ExpensesListPage with category date vendor columns
+- Add CreateExpenseForm with category vendor amount receipt
+- Build ExpenseCategoryManager for custom expense categories
+- Add ExpenseReceiptUploader with OCR data extraction
+- Build ExpenseApprovalWorkflow for expenses over threshold
+- Add ExpenseExportButton for accounting software formats
+- Build ProfitLossStatement with date range selection
+- Add CashFlowReport showing inflows and outflows
+- Build BalanceSheetView with assets liabilities equity
+- Add TaxReportGenerator with sales tax summary by period
+- Build InvoicesDashboard showing sent paid overdue totals
+- Add InvoiceAgingWidget with 30 60 90 day buckets
+- Build PayoutsListPage showing all payouts to vendors partners
+- Add CreatePayoutForm with vendor amount method fields
+- Build PayoutScheduler for recurring vendor payments
+- Add PayoutApprovalQueue for manager review
+- Build PayoutExportButton for bank upload formats
+- Add RevenueGoalSetter with monthly and quarterly targets
+- Build BudgetManager with category budgets and tracking
+- Add BudgetVsActualChart comparing planned to actual
+- Build FinancialAlerts for unusual activity detection
+- Add MultiCurrencySupport with exchange rate handling
+- Build AccountsReceivableReport showing customer balances
+- Add AccountsPayableReport showing vendor balances
+- Build PaymentMethodAnalytics showing cash card split trends
+- Add RefundReport showing refunds by reason over time
+- Build DiscountReport showing discounts given by type
+- Add ProfitMarginReport by product category customer
+- Build RevenueForecaster with ML-based predictions
+- Add FinancialExportToQuickBooks with API integration
+- Build FinancialExportToXero with API integration
+- Build FulfillmentOverviewPage with orders by status counters
+- Add FulfillmentQueue showing orders ready to pack
+- Build PackingSlipGenerator with order items and barcode
+- Add PackingStation interface for warehouse workers
+- Build ShippingLabelGenerator with carrier integration
+- Add ShipmentTrackingUpdater polling carrier APIs
+- Build FleetListPage showing all vehicles with status
+- Add CreateVehicleForm with type capacity license fields
+- Build VehicleMaintenanceLog with service history
+- Add VehicleAssignmentManager for driver-vehicle pairing
+- Build CouriersListPage with status availability filters
+- Add CourierProfilePage with stats routes earnings
+- Build CourierScheduler with shift calendar view
+- Add CourierAvailabilityToggle for on-duty off-duty
+- Build CourierPerformanceMetrics with delivery times ratings
+- Add CourierPayoutCalculator with commission and tips
+- Build DeliveryRouteOptimizer suggesting optimal route order
+- Add DeliveryBatchCreator grouping orders by zone
+- Build DeliveryZoneManager defining delivery areas on map
+- Add DeliveryFeeCalculator based on distance and zone
+- Build LiveMapPage with all active deliveries as markers
+- Add LiveMapCourierPopup showing courier details on click
+- Build LiveMapOrderPopup showing order details on click
+- Add LiveMapRouteLines showing planned delivery routes
+- Build LiveMapETAUpdater recalculating ETAs in real-time
+- Add LiveMapTrafficOverlay showing traffic conditions
+- Build DeliveryProofCapture for photo signature capture
+- Add DeliveryIssueReporter for problems during delivery
+- Build DeliveryRescheduleModal for failed deliveries
+- Add DeliveryNotifications sending SMS updates to customers
+- Build PickupOrdersQueue for customer pickup orders
+- Add PickupReadyNotification alerting customer order ready
+- Build PickupCheckIn for customer arrival notification
+- Add CurbsidePickupFlow with vehicle description field
+- Build FulfillmentAnalytics with delivery times and success rates
+- Build StorefrontEditorPage with drag-drop sections
+- Add StorefrontThemeSelector with preset themes
+- Build StorefrontColorPicker for brand colors
+- Add StorefrontLogoUploader with size guidelines
+- Build StorefrontBannerManager for hero images and slides
+- Add StorefrontMenuDisplaySettings for layout options
+- Build StorefrontSEOSettings with meta title description
+- Add StorefrontCustomDomain configuration with SSL
+- Build StorefrontAnalyticsWidget showing visitors and conversions
+- Add StorefrontPreviewButton with desktop tablet mobile views
+- Build ReviewsListPage with moderation approve reject
+- Add ReviewResponseForm for replying to customer reviews
+- Build ReviewWidgetEmbed code for external sites
+- Add ReviewRequestEmail sent after order delivery
+- Build ReviewAnalytics with rating trends and sentiment
+- Add CouponsListPage with code type status columns
+- Build CreateCouponForm with percentage fixed bogo options
+- Add CouponUsageLimits setting max uses and per customer
+- Build CouponScheduler for start end date activation
+- Add CouponTargeting by customer segment or product
+- Build CouponCodeGenerator for unique batch codes
+- Add CouponPerformanceReport showing redemptions revenue
+- Build LiveChatWidget embeddable on storefront
+- Add LiveChatInbox for agents to handle conversations
+- Build LiveChatCannedResponses for quick replies
+- Add LiveChatAssignment routing chats to available agents
+- Build LiveChatTranscript saving conversation history
+- Add ChatbotBuilder for automated FAQ responses
+- Build EmailCampaignManager for promotional emails
+- Add SMSCampaignManager for text marketing
+- Build AnalyticsOverviewPage with key metric cards
+- Add SalesOverTimeChart with customizable date range
+- Build SalesByProductChart with top performers
+- Add SalesByCustomerChart showing biggest buyers
+- Build SalesByLocationChart for multi-location
+- Add SalesComparisonTool comparing two periods
+- Build ConversionFunnelChart from visit to purchase
+- Add CustomerAcquisitionChart showing new vs returning
+- Build CustomerRetentionChart with cohort analysis
+- Add CustomerLifetimeValueChart by segment
+- Build InventoryTurnoverChart by category
+- Add StockoutFrequencyChart showing missed sales
+- Build DeliveryPerformanceChart with on-time rates
+- Add CourierLeaderboard ranking by performance
+- Build PeakHoursHeatmap showing order volume by hour
+- Add GeographicSalesMap with order density
+- Build ProductAffinityReport showing frequently bought together
+- Add MarketBasketAnalysis for cross-sell opportunities
+- Build CustomReportBuilder with drag-drop metrics
+- Add SavedReportsManager for quick access
+- Build ScheduledReports for automated email delivery
+- Add ReportSharingManager with permissions
+- Build ExportToCSV for any report with filters
+- Add ExportToPDF with charts and formatting
+- Build ExportToExcel with multiple sheets
+- Add APIDataExport for third-party integrations
+- Build AnalyticsDashboardCustomizer with widget placement
+- Add CompetitorBenchmarking placeholder for future
+- Build GoalTrackingWidget showing progress to targets
+- Add AnalyticsAnnotations for marking events on charts
+- Build TeamMembersPage with roles status filters
+- Add InviteTeamMemberForm with email role selection
+- Build TeamMemberProfile with permissions and activity
+- Add TeamMemberDeactivate with access revocation
+- Build RolesListPage showing all custom roles
+- Add CreateRoleForm with permission checkboxes
+- Build PermissionMatrix showing roles vs permissions grid
+- Add RoleAssignmentModal for bulk user assignment
+- Build VendorsListPage with contact and order columns
+- Add CreateVendorForm with company contact payment fields
+- Build VendorProfilePage with products orders performance
+- Add VendorRatingSystem with quality delivery metrics
+- Build VendorDocuments for contracts and licenses
+- Add VendorCommunicationLog for email and call history
+- Build PurchaseOrdersListPage with status filters
+- Add CreatePurchaseOrderForm with vendor products quantities
+- Build POApprovalWorkflow for orders over threshold
+- Add POReceivingForm for recording received inventory
+- Build POPartialReceiving for split shipments
+- Add PODiscrepancyReport for shorts and damages
+- Build LocationsListPage for multi-location setup
+- Add CreateLocationForm with address hours fields
+- Build LocationInventoryView showing stock per location
+- Add LocationTransferRequest for inter-location moves
+- Build LocationPerformanceComparison across locations
+- Add ActivityLogsPage with filterable audit trail
+- Build ActivityLogFilters by user action date module
+- Add ActivityLogExport for compliance reporting
+- Build ActivityLogRetention settings for data cleanup
+- Add SystemHealthDashboard showing API database status
+- Build BackupStatusWidget showing last backup time
+- Add DataExportRequest for GDPR compliance
+- Build DataDeletionRequest for customer privacy
+- Add ComplianceChecklist for cannabis regulations
+- Build LicenseTracker for business license renewals
+- Build WebhooksListPage showing all configured webhooks
+- Add CreateWebhookForm with URL events secret fields
+- Build WebhookTestButton sending test payload
+- Add WebhookLogsTable showing delivery attempts status
+- Build WebhookRetryButton for failed deliveries
+- Add WebhookPayloadViewer showing request response
+- Build LocalAISettingsPage for AI assistant config
+- Add AIModelSelector choosing between available models
+- Build AIPromptTemplates for common AI tasks
+- Add AIUsageMetrics showing token consumption
+- Build APIKeysManager for third-party access
+- Add APIKeyGenerator with scope selection
+- Build APIDocumentation with interactive examples
+- Add APIRateLimitSettings per key
+- Build ZapierIntegration for no-code automation
+- Add MetrcIntegration for compliance reporting
+- Build QuickBooksSync for accounting
+- Add ShippoIntegration for shipping labels
+- Build TwilioIntegration for SMS notifications
+- Add StripeIntegration for payment processing
+- Build SettingsPage with organized sections sidebar
+- Add GeneralSettings with business name logo timezone
+- Build NotificationSettings with email SMS push toggles
+- Add SecuritySettings with 2FA session timeout
+- Build BillingSettings showing plan usage invoices
+- Add PlanUpgradeModal with tier comparison
+- Build PaymentMethodManager for subscription billing
+- Add UsageMeter showing API calls storage limits
+- Build TaxSettings configuring tax rates by location
+- Add TaxExemptionManager for exempt customers
+- Build ShippingSettings with carriers and rates
+- Add DeliveryZonesEditor with map-based zones
+- Build EmailTemplateEditor for transactional emails
+- Add SMSTemplateEditor for notification messages
+- Build ReceiptTemplateEditor for POS receipts
+- Add InvoiceTemplateEditor with logo and terms
+- Build BrandingSettings with colors fonts styles
+- Add WhiteLabelSettings for reseller customization
+- Build DataRetentionSettings for automatic cleanup
+- Add BackupSettings for manual and scheduled backups
+- Build ImportExportSettings for data migration
+- Add APISettings showing endpoint and keys
+- Build HelpCenterPage with searchable FAQ
+- Add ContactSupportForm with ticket creation
+- Build PrioritySupportChat for premium tiers
+- Build POSPage with full screen register interface
+- Add POSProductGrid with category tabs and search
+- Build POSCartSidebar showing items quantity totals
+- Add POSQuantityControls with plus minus and direct input
+- Build POSDiscountButton applying item or cart discounts
+- Add POSCustomerLookup with search and quick create
+- Build POSPaymentModal with cash card split options
+- Add POSCashCalculator for making change
+- Build POSReceiptPreview before printing
+- Add POSThermalPrint sending to receipt printer
+- Build POSHoldOrder for saving and recalling later
+- Add POSOrderNotes for special instructions
+- Build POSBarcodeInput for scanner integration
+- Add POSQuickKeys for frequently sold items
+- Build POSRefundFlow for processing returns
+- Add POSExchangeFlow for product exchanges
+- Build POSCashDrawer open close and count functions
+- Add POSShiftManagement for clock in out
+- Build POSEndOfDay with reconciliation report
+- Add POSSalesReport for current shift
+- Build POSOfflineMode with sync when reconnected
+- Add POSMultipleRegisters managing multiple stations
+- Build POSKitchenDisplay for order prep queue
+- Add POSCustomerDisplay showing items to customer
+- Build POSLoyaltyLookup checking and redeeming points
+- Add POSAgeVerification for compliance checking
+- Build POSWeighScale integration for weighted products
+- Add POSTipPrompt for service industry tipping
+- Build POSGiftCard sell check balance redeem
+- Add POSTrainingMode for staff practice
+- Build DisposableMenusListPage showing all encrypted menus
+- Add CreateDisposableMenu with expiration and password
+- Build DisposableMenuEditor selecting products and pricing
+- Add DisposableMenuPreview showing customer view
+- Build DisposableMenuShareModal with encrypted link
+- Add DisposableMenuQRCode for easy sharing
+- Build DisposableMenuPasswordGate for access control
+- Add DisposableMenuExpiration with countdown display
+- Build DisposableMenuViewCounter tracking opens
+- Add DisposableMenuOrderCapture for receiving orders
+- Build DisposableMenuOrderNotification alerting on new order
+- Add DisposableMenuRevoke for immediate deactivation
+- Build DisposableMenuAnalytics showing views and orders
+- Add DisposableMenuTemplates for quick creation
+- Build DisposableMenuBulkCreate for multiple menus
+- Build MobileNavigation with touch-optimized layout
+- Add MobileOrdersView with swipe actions
+- Build MobileProductScanner using device camera
+- Add MobileNotifications with push notification support
+- Build MobileOfflineIndicator showing connection status
+- Add MobileBottomNav with quick access tabs
+- Build MobilePullToRefresh on list pages
+- Add MobileSwipeGestures for common actions
+- Build CourierMobileApp with delivery workflow
+- Add CourierNavigationIntegration with maps
+- Build CourierDeliveryChecklist with photo capture
+- Add CourierEarningsView showing daily totals
+- Build PWAInstallPrompt encouraging app install
+- Add PWAOfflineCache for critical pages
+- Build PWABackgroundSync for offline actions
+- Build RealtimeOrderUpdates subscribing to order changes
+- Add RealtimeStockUpdates for inventory changes
+- Build RealtimeNotifications for alerts and messages
+- Add RealtimeChatMessages for support conversations
+- Build RealtimeCourierLocation tracking updates
+- Add RealtimeDashboardMetrics for live KPIs
+- Build RealtimePresence showing online team members
+- Add RealtimeCollaboration for multi-user editing
+- Build OrderStatusBroadcast to all relevant screens
+- Add LowStockAlert triggering on threshold breach
+- Build NewOrderSound playing audio on new order
+- Add CustomerArrivalPing for pickup notifications
+- Build DeliveryCompletePush notifying customers
+- Add ShiftChangeAlert for upcoming shift reminders
+- Build SystemAlertBroadcast for critical issues
+- Add ErrorBoundary component wrapping all pages
+- Build EmptyState components for all list pages
+- Add LoadingSkeleton components for all pages
+- Build ToastNotifications for success error actions
+- Add ConfirmationModal for destructive actions
+- Build KeyboardShortcuts for power users
+- Add AccessibilityAudit fixing ARIA and focus issues
+- Build DarkModeToggle with system preference detection
+- Add ResponsiveBreakpoints ensuring mobile tablet desktop
+- Build PrintStyles for all printable pages
+- Add FormValidation with inline error messages
+- Build OptimisticUpdates for better perceived performance
+- Add InfiniteScroll for long lists
+- Build VirtualizedLists for performance
+- Add ImageLazyLoading for product images
+- Build ServiceWorkerSetup for offline and caching
+- Add PerformanceMonitoring with web vitals
+- Build ErrorTracking integration with Sentry
+- Add AnalyticsTracking with event logging
+- Build A11yKeyboardNav for all interactive elements
+- Add SemanticHTML replacing divs with proper elements
+- Build FocusManagement for modals and dialogs
+- Add ReducedMotion respecting user preference
+- Build HighContrastMode for accessibility
+- Add ScreenReaderAnnouncements for dynamic content
