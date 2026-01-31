@@ -167,9 +167,9 @@ export const queryKeys = {
   // Alerts
   alerts: {
     all: ['alerts'] as const,
-    dashboard: (tenantId: string) =>
+    dashboard: (tenantId?: string) =>
       [...queryKeys.alerts.all, 'dashboard', tenantId] as const,
-    predictive: (tenantId: string) =>
+    predictive: (tenantId?: string) =>
       [...queryKeys.alerts.all, 'predictive', tenantId] as const,
   },
 
