@@ -38,9 +38,12 @@ interface KPICardProps {
   description: string;
   variant?: 'default' | 'warning' | 'success' | 'destructive';
   trend?: { value: number; label: string };
+  /** Hero style - larger, gradient background, spans 2 columns */
+  hero?: boolean;
+  className?: string;
 }
 
-function KPICard({ title, value, icon, description, variant = 'default', trend }: KPICardProps) {
+function KPICard({ title, value, icon, description, variant = 'default', trend, hero, className }: KPICardProps) {
   const variantClasses = {
     default: 'text-primary',
     warning: 'text-orange-500',
@@ -48,8 +51,42 @@ function KPICard({ title, value, icon, description, variant = 'default', trend }
     destructive: 'text-red-600',
   };
 
+  if (hero) {
+    return (
+      <Card className={`col-span-full lg:col-span-2 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border-emerald-500/20 hover:shadow-lg transition-shadow ${className || ''}`}>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground uppercase tracking-wider font-medium">{title}</p>
+              <p className="text-4xl font-bold tracking-tight mt-1">{value}</p>
+              {trend && (
+                <div className="flex items-center gap-1.5 mt-2">
+                  {trend.value >= 0 ? (
+                    <TrendingUp className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <TrendingDown className="h-4 w-4 text-red-600" />
+                  )}
+                  <span className={trend.value >= 0 ? 'text-green-600 text-sm font-semibold' : 'text-red-600 text-sm font-semibold'}>
+                    {trend.value >= 0 ? '+' : ''}{trend.value.toFixed(1)}%
+                  </span>
+                  <span className="text-sm text-muted-foreground">{trend.label}</span>
+                </div>
+              )}
+              {!trend && <p className="text-sm text-muted-foreground mt-2">{description}</p>}
+            </div>
+            <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
+              <div className="text-emerald-600">
+                {icon}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className={`hover:shadow-md transition-shadow ${className || ''}`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <div className={variantClasses[variant]}>
@@ -77,16 +114,19 @@ function KPICard({ title, value, icon, description, variant = 'default', trend }
   );
 }
 
-function KPICardSkeleton() {
+function KPICardSkeleton({ index = 0 }: { index?: number }) {
   return (
-    <Card>
+    <Card
+      className="animate-in fade-in slide-in-from-bottom-2"
+      style={{ animationDelay: `${index * 75}ms`, animationFillMode: 'backwards' }}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-5 w-5 rounded" />
+        <Skeleton className="h-4 w-24 skeleton-shimmer" />
+        <Skeleton className="h-5 w-5 rounded skeleton-shimmer" />
       </CardHeader>
       <CardContent>
-        <Skeleton className="h-8 w-16 mb-1" />
-        <Skeleton className="h-3 w-32" />
+        <Skeleton className="h-8 w-16 mb-1 skeleton-shimmer" />
+        <Skeleton className="h-3 w-32 skeleton-shimmer" />
       </CardContent>
     </Card>
   );
@@ -102,7 +142,7 @@ export function DashboardPage() {
         <Skeleton className="h-8 w-48" />
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 12 }).map((_, i) => (
-            <KPICardSkeleton key={i} />
+            <KPICardSkeleton key={i} index={i} />
           ))}
         </div>
       </div>
@@ -146,21 +186,22 @@ export function DashboardPage() {
 
       {/* Revenue Section */}
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <DollarSign className="h-5 w-5 text-green-600" />
-          Revenue
-        </h2>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-1 rounded-full bg-emerald-500" />
+          <h2 className="text-xl font-bold tracking-tight">Revenue</h2>
+        </div>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {isLoading ? (
-            Array.from({ length: 3 }).map((_, i) => <KPICardSkeleton key={i} />)
+            Array.from({ length: 3 }).map((_, i) => <KPICardSkeleton key={i} index={i} />)
           ) : (
             <>
               <KPICard
                 title="Today's Revenue"
                 value={formatCurrency(stats?.revenueToday ?? 0)}
-                icon={<DollarSign className="h-5 w-5" />}
+                icon={<DollarSign className="h-8 w-8" />}
                 description="Completed orders today"
                 variant="success"
+                hero
               />
               <KPICard
                 title="Month to Date"
@@ -187,13 +228,13 @@ export function DashboardPage() {
 
       {/* Orders Section */}
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <ShoppingCart className="h-5 w-5 text-blue-600" />
-          Orders
-        </h2>
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-1 rounded-full bg-blue-500" />
+          <h2 className="text-xl font-bold tracking-tight">Orders</h2>
+        </div>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
+            Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} index={i} />)
           ) : (
             <>
               <KPICard
@@ -231,13 +272,13 @@ export function DashboardPage() {
 
       {/* Customers Section */}
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Users className="h-5 w-5 text-indigo-600" />
-          Customers
-        </h2>
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-1 rounded-full bg-indigo-500" />
+          <h2 className="text-xl font-bold tracking-tight">Customers</h2>
+        </div>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading ? (
-            Array.from({ length: 3 }).map((_, i) => <KPICardSkeleton key={i} />)
+            Array.from({ length: 3 }).map((_, i) => <KPICardSkeleton key={i} index={i} />)
           ) : (
             <>
               <KPICard
@@ -268,13 +309,13 @@ export function DashboardPage() {
 
       {/* Inventory Section */}
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Package className="h-5 w-5 text-purple-600" />
-          Inventory
-        </h2>
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-1 rounded-full bg-purple-500" />
+          <h2 className="text-xl font-bold tracking-tight">Inventory</h2>
+        </div>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
+            Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} index={i} />)
           ) : (
             <>
               <KPICard
