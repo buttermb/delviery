@@ -305,19 +305,6 @@ export default function PointOfSale() {
     searchInputRef.current?.focus();
   }, []);
 
-  // Initialize keyboard shortcuts
-  usePOSKeyboardShortcuts({
-    onCompleteSale: completeSale,
-    onClearCart: clearCart,
-    onToggleFullscreen: () => setIsFullScreen(prev => !prev),
-    onHoldTransaction: handleHoldTransaction,
-    onProductScan: handleProductScan,
-    onFocusSearch: handleFocusSearch,
-    cartHasItems: cart.length > 0,
-    isLoading: loading,
-    enabled: !isMobile, // Disable on mobile
-  });
-
   const calculateTotals = () => {
     const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
     // TODO: Make tax rate configurable per tenant (tenant.tax_rate)
@@ -598,6 +585,19 @@ export default function PointOfSale() {
       setLoading(false);
     }
   };
+
+  // Initialize keyboard shortcuts (after completeSale is defined)
+  usePOSKeyboardShortcuts({
+    onCompleteSale: completeSale,
+    onClearCart: clearCart,
+    onToggleFullscreen: () => setIsFullScreen(prev => !prev),
+    onHoldTransaction: handleHoldTransaction,
+    onProductScan: handleProductScan,
+    onFocusSearch: handleFocusSearch,
+    cartHasItems: cart.length > 0,
+    isLoading: loading,
+    enabled: !isMobile,
+  });
 
   const handleLoadOrder = (order: PendingOrder) => {
     if (cart.length > 0) {
