@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, CreditCard, Maximize2, Minimize2, Share2, Receipt } from 'lucide-react';
+import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, CreditCard, Maximize2, Minimize2, Share2, Receipt, Pause } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
@@ -26,6 +26,15 @@ import { cn } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobilePOS } from '@/components/pos/MobilePOS';
+// Advanced POS Features
+import { usePOSKeyboardShortcuts } from '@/hooks/usePOSKeyboardShortcuts';
+import { usePOSHeldTransactions } from '@/hooks/usePOSHeldTransactions';
+import { HeldTransactionsPanel } from '@/components/pos/HeldTransactionsPanel';
+import { RecentSalesPanel } from '@/components/pos/RecentSalesPanel';
+import { POSFavoritesPanel, usePOSFavorites } from '@/components/pos/POSFavoritesPanel';
+import { usePOSLowStockAlerts, POSLowStockAlert } from '@/components/pos/POSLowStockAlert';
 
 export interface Product {
   id: string;
@@ -56,6 +65,7 @@ export default function PointOfSale() {
   const { toast } = useToast();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
+  const isMobile = useIsMobile();
   const { checkLimit, recordAction, limitsApply } = useFreeTierLimits();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -76,6 +86,19 @@ export default function PointOfSale() {
   const { dialogState, confirm, closeDialog, setLoading: setDialogLoading } = useConfirmDialog();
   const [pendingLoadOrder, setPendingLoadOrder] = useState<PendingOrder | null>(null);
   const [idempotencyKey, setIdempotencyKey] = useState<string>(() => crypto.randomUUID());
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Advanced POS Features
+  const {
+    heldTransactions,
+    holdTransaction,
+    recallTransaction,
+    deleteTransaction: deleteHeldTransaction,
+    canHold
+  } = usePOSHeldTransactions({ tenantId, maxHeld: 5 });
+
+  const { recordSale: recordFavorite } = usePOSFavorites(tenantId);
+  const { alerts: lowStockAlerts, checkStock } = usePOSLowStockAlerts(5);
 
   // Handle image load error - fall back to placeholder
   const handleImageError = useCallback((productId: string) => {
@@ -198,8 +221,12 @@ export default function PointOfSale() {
           ? { ...item, quantity: item.quantity + 1, subtotal: (item.quantity + 1) * item.price }
           : item
       ));
+      // Check low stock after adding
+      checkStock(product, existingItem.quantity + 1);
     } else {
       setCart([...cart, { ...product, quantity: 1, subtotal: product.price }]);
+      // Check low stock for new item
+      checkStock(product, 1);
     }
   };
 
@@ -224,6 +251,72 @@ export default function PointOfSale() {
     setCashTendered('');
     setActiveOrderId(null);
   };
+
+  // ADVANCED POS HANDLERS
+  const handleHoldTransaction = useCallback(() => {
+    if (cart.length === 0) {
+      toast({ title: 'Cart is empty', variant: 'destructive' });
+      return;
+    }
+
+    const customerName = selectedCustomer
+      ? `${selectedCustomer.first_name} ${selectedCustomer.last_name}`
+      : undefined;
+
+    const success = holdTransaction(cart, selectedCustomer?.id, customerName);
+
+    if (success) {
+      toast({ title: 'Transaction held', description: 'You can recall it later' });
+      clearCart();
+    } else {
+      toast({ title: 'Cannot hold more transactions', variant: 'destructive' });
+    }
+  }, [cart, selectedCustomer, holdTransaction, clearCart, toast]);
+
+  const handleRecallTransaction = useCallback((id: string) => {
+    const tx = recallTransaction(id);
+    if (tx) {
+      // Clear current cart and load held cart
+      setCart(tx.cart);
+      if (tx.customerId) {
+        const customer = customers.find(c => c.id === tx.customerId);
+        if (customer) setSelectedCustomer(customer);
+      }
+      toast({ title: 'Transaction recalled' });
+    }
+  }, [recallTransaction, customers, toast]);
+
+  const handleProductScan = useCallback((barcode: string) => {
+    // Try to find product by barcode (you may have a barcode field on products)
+    const product = products.find(p =>
+      p.id === barcode || // Match by ID
+      p.name.toLowerCase().includes(barcode.toLowerCase()) // Partial name match
+    );
+
+    if (product) {
+      addToCart(product);
+      toast({ title: `Added: ${product.name}`, duration: 1500 });
+    } else {
+      toast({ title: 'Product not found', description: barcode, variant: 'destructive' });
+    }
+  }, [products, addToCart, toast]);
+
+  const handleFocusSearch = useCallback(() => {
+    searchInputRef.current?.focus();
+  }, []);
+
+  // Initialize keyboard shortcuts
+  usePOSKeyboardShortcuts({
+    onCompleteSale: completeSale,
+    onClearCart: clearCart,
+    onToggleFullscreen: () => setIsFullScreen(prev => !prev),
+    onHoldTransaction: handleHoldTransaction,
+    onProductScan: handleProductScan,
+    onFocusSearch: handleFocusSearch,
+    cartHasItems: cart.length > 0,
+    isLoading: loading,
+    enabled: !isMobile, // Disable on mobile
+  });
 
   const calculateTotals = () => {
     const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
@@ -485,6 +578,9 @@ export default function PointOfSale() {
         description: `Transaction ${transactionNumber}${changeMsg}`
       });
 
+      // Record products for favorites tracking
+      recordFavorite(cart.map(item => item.id));
+
       // Regenerate idempotency key for next transaction
       setIdempotencyKey(crypto.randomUUID());
 
@@ -578,6 +674,35 @@ export default function PointOfSale() {
     ? Math.max(0, parseFloat(cashTendered) - total)
     : 0;
 
+  // Render mobile-optimized POS for mobile devices
+  if (isMobile) {
+    return (
+      <>
+        <SEOHead title="Point of Sale | Admin" description="Process sales and manage transactions" />
+        <MobilePOS
+          products={filteredProducts}
+          cart={cart}
+          onAddToCart={addToCart}
+          onUpdateQuantity={updateQuantity}
+          onRemoveFromCart={removeFromCart}
+          onClearCart={clearCart}
+          onCompleteSale={completeSale}
+          loading={loading}
+          totals={{ subtotal, tax, discount, total }}
+          paymentMethod={paymentMethod}
+          onPaymentMethodChange={setPaymentMethod}
+          cashTendered={cashTendered}
+          onCashTenderedChange={setCashTendered}
+          categories={categories}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          categoryFilter={categoryFilter}
+          onCategoryChange={setCategoryFilter}
+        />
+      </>
+    );
+  }
+
   return (
     <div className={cn(
       "bg-background transition-all duration-300",
@@ -594,6 +719,16 @@ export default function PointOfSale() {
           </Badge>
         </div>
         <div className="flex items-center gap-2">
+          {cart.length > 0 && canHold && (
+            <Button
+              variant="outline"
+              onClick={handleHoldTransaction}
+              title="Hold Transaction (Ctrl+H)"
+            >
+              <Pause className="h-4 w-4 mr-2" />
+              Hold
+            </Button>
+          )}
           {!isFullScreen && (
             <Button variant="outline" onClick={() => navigateToAdmin('order-management')}>
               View History
@@ -603,7 +738,7 @@ export default function PointOfSale() {
             variant={isFullScreen ? "secondary" : "outline"}
             size="icon"
             onClick={() => setIsFullScreen(!isFullScreen)}
-            title={isFullScreen ? "Exit Full Screen (Esc)" : "Full Screen"}
+            title={isFullScreen ? "Exit Full Screen (Esc)" : "Full Screen (F3)"}
           >
             {isFullScreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
           </Button>
