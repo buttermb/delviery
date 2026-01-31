@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { queryKeys } from '@/lib/queryKeys';
+import { ADMIN_PANEL_QUERY_CONFIG } from '@/lib/react-query-config';
 
 export interface MenuSchedule {
   id: string;
@@ -133,7 +134,7 @@ export const useMenuScheduleHistory = (menuId?: string) => {
     },
     enabled: !!menuId,
     staleTime: 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    gcTime: ADMIN_PANEL_QUERY_CONFIG.gcTime, // 15 minutes for admin queries
   });
 };
 

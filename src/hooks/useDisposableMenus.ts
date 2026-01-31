@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { invalidateOnEvent } from '@/lib/invalidation';
+import { ADMIN_PANEL_QUERY_CONFIG } from '@/lib/react-query-config';
 
 export const useDisposableMenus = (tenantId?: string) => {
   return useQuery({
@@ -347,7 +348,7 @@ export const useMenuSecurityEvents = (menuId?: string, tenantId?: string) => {
     },
     enabled: !!tenantId,
     staleTime: 60 * 1000, // Security events change less frequently
-    gcTime: 10 * 60 * 1000,
+    gcTime: ADMIN_PANEL_QUERY_CONFIG.gcTime, // 15 minutes for admin queries
   });
 };
 

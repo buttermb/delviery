@@ -87,10 +87,11 @@
       "modifiedFiles": [
         "src/hooks/useAuth.ts",
         "src/hooks/useCreditPackages.ts",
-        "src/hooks/useMenuScheduler.ts"
+        "src/hooks/useMenuScheduler.ts",
+        "src/hooks/useDisposableMenus.ts"
       ],
       "startedAt": "2026-01-31T03:47:48.523Z",
-      "updatedAt": "2026-01-31T03:52:21.831Z",
+      "updatedAt": "2026-01-31T03:52:45.087Z",
       "agentNum": 2
     },
     "Create ADMIN_PANEL_QUERY_CONFIG preset with staleTime 10 minutes in react-query-config.ts": {
