@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Navigation as NavigationIcon, Phone, MapPin, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { loadMapbox } from '@/lib/mapbox-loader';
 
 interface Delivery {
   id: string;
@@ -40,6 +40,13 @@ interface MapboxRoute {
 export function RouteView({ deliveries, currentLat, currentLng }: RouteViewProps) {
   const [route, setRoute] = useState<MapboxRoute | null>(null);
   const [mapboxToken] = useState(import.meta.env.VITE_MAPBOX_TOKEN || '');
+
+  // Load mapbox-gl dynamically (including CSS)
+  useEffect(() => {
+    loadMapbox().catch(error => {
+      logger.error('Failed to load Mapbox GL', error);
+    });
+  }, []);
 
   useEffect(() => {
     if (deliveries.length === 0 || !mapboxToken) return;

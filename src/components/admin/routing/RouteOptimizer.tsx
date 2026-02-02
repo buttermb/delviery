@@ -45,7 +45,7 @@ import { AssignRouteDialog } from './AssignRouteDialog';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 // Mapbox & Map Components
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { loadMapbox } from '@/lib/mapbox-loader';
 // @ts-ignore - react-map-gl types
 import Map, { Marker, Source, Layer, NavigationControl } from 'react-map-gl/mapbox';
 
@@ -94,6 +94,13 @@ export function RouteOptimizer() {
 
   // Mapbox Token
   const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+
+  // Load mapbox-gl dynamically (including CSS)
+  useEffect(() => {
+    loadMapbox().catch(error => {
+      logger.error('Failed to load Mapbox GL', error);
+    });
+  }, []);
 
   // ----------------------------------------------------------------------------
   // Helper: Calculate Bounds
