@@ -5,6 +5,7 @@
  * Shows trend data and on-track status to help users understand their progress.
  */
 
+import { useMemo } from 'react';
 import { Target, TrendingUp, TrendingDown, Zap, Calendar, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -23,6 +24,38 @@ interface RevenueGoalProgressProps {
 export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalProgressProps) {
   const { data, isLoading } = useRevenueGoalProgress({ targetRevenue });
 
+  const formatCurrency = (value: number) => {
+    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
+    return `$${value.toLocaleString()}`;
+  };
+
+  // Memoize formatted currency values (must be before early return)
+  const formattedActualRevenue = useMemo(
+    () => formatCurrency(data?.actualRevenue || 0),
+    [data?.actualRevenue]
+  );
+  const formattedTargetRevenue = useMemo(
+    () => formatCurrency(data?.targetRevenue || 0),
+    [data?.targetRevenue]
+  );
+  const formattedRemainingAmount = useMemo(
+    () => formatCurrency(data?.remainingAmount || 0),
+    [data?.remainingAmount]
+  );
+  const formattedDailyTargetNeeded = useMemo(
+    () => formatCurrency(data?.dailyTargetNeeded || 0),
+    [data?.dailyTargetNeeded]
+  );
+  const formattedCurrentDailyAverage = useMemo(
+    () => formatCurrency(data?.currentDailyAverage || 0),
+    [data?.currentDailyAverage]
+  );
+  const formattedLastMonthRevenue = useMemo(
+    () => formatCurrency(data?.lastMonthRevenue || 0),
+    [data?.lastMonthRevenue]
+  );
+
   if (isLoading) {
     return (
       <div className={cn('space-y-4', className)}>
@@ -31,12 +64,6 @@ export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalPro
       </div>
     );
   }
-
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
-    return `$${value.toLocaleString()}`;
-  };
 
   // Clamp progress for the visual bar (max 100%), but show real percentage in text
   const progressBarValue = Math.min(data?.progressPercent || 0, 100);
@@ -66,10 +93,10 @@ export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalPro
                   'text-3xl font-bold font-mono',
                   isExceeded ? 'text-emerald-400' : 'text-zinc-100'
                 )}>
-                  {formatCurrency(data?.actualRevenue || 0)}
+                  {formattedActualRevenue}
                 </span>
                 <span className="text-zinc-500 text-sm">
-                  / {formatCurrency(data?.targetRevenue || 0)}
+                  / {formattedTargetRevenue}
                 </span>
               </div>
               <span className={cn(
@@ -106,7 +133,7 @@ export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalPro
             {/* Remaining */}
             <div className="text-center p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
               <div className="text-lg font-bold font-mono text-zinc-100">
-                {formatCurrency(data?.remainingAmount || 0)}
+                {formattedRemainingAmount}
               </div>
               <div className="text-xs text-zinc-500 mt-0.5">Remaining</div>
             </div>
@@ -127,7 +154,7 @@ export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalPro
               <div className="flex items-center justify-center gap-1">
                 <Zap className="h-4 w-4 text-amber-400" />
                 <span className="text-lg font-bold font-mono text-zinc-100">
-                  {formatCurrency(data?.dailyTargetNeeded || 0)}
+                  {formattedDailyTargetNeeded}
                 </span>
               </div>
               <div className="text-xs text-zinc-500 mt-0.5">Needed/Day</div>
@@ -176,7 +203,7 @@ export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalPro
                     : 'border-amber-500/30 bg-amber-500/10 text-amber-400'
               )}
             >
-              {formatCurrency(data?.currentDailyAverage || 0)}/day avg
+              {formattedCurrentDailyAverage}/day avg
             </Badge>
           </div>
 
@@ -185,7 +212,7 @@ export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalPro
             <span className="text-sm text-zinc-400">vs Last Month</span>
             <div className="flex items-center gap-2">
               <span className="text-sm font-mono text-zinc-500">
-                {formatCurrency(data?.lastMonthRevenue || 0)}
+                {formattedLastMonthRevenue}
               </span>
               {(data?.monthOverMonthChange ?? 0) !== 0 && (
                 <Badge

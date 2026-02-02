@@ -3,6 +3,7 @@
  * Displays order line items with quantity, price, and discount columns
  */
 
+import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -74,6 +75,11 @@ export function OrderItemsTable({
 
   // Only show discount column if showDiscount is true AND there are actual discounts
   const displayDiscount = showDiscount && hasDiscounts;
+
+  // Memoize formatted totals
+  const formattedSubtotal = useMemo(() => formatCurrency(subtotal), [subtotal]);
+  const formattedTotalDiscount = useMemo(() => formatCurrency(totalDiscount), [totalDiscount]);
+  const formattedGrandTotal = useMemo(() => formatCurrency(grandTotal), [grandTotal]);
 
   if (isLoading) {
     return (
@@ -171,7 +177,7 @@ export function OrderItemsTable({
                     Subtotal
                   </TableCell>
                   <TableCell className="text-right font-mono">
-                    {formatCurrency(subtotal)}
+                    {formattedSubtotal}
                   </TableCell>
                   <TableCell />
                 </TableRow>
@@ -183,7 +189,7 @@ export function OrderItemsTable({
                     Total Discount
                   </TableCell>
                   <TableCell className="text-right font-mono text-emerald-600 dark:text-emerald-400">
-                    -{formatCurrency(totalDiscount)}
+                    -{formattedTotalDiscount}
                   </TableCell>
                   <TableCell />
                 </TableRow>
@@ -197,7 +203,7 @@ export function OrderItemsTable({
                 Grand Total
               </TableCell>
               <TableCell className="text-right font-bold font-mono text-lg">
-                {formatCurrency(grandTotal)}
+                {formattedGrandTotal}
               </TableCell>
             </TableRow>
           </TableFooter>

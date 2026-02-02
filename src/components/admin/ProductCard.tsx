@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -78,6 +78,10 @@ export const ProductCard = React.memo(function ProductCard({
   const costPerUnit = Number(product.cost_per_unit || 0);
   const wholesalePrice = Number(product.wholesale_price || 0);
   const margin = profitMargin(costPerUnit, wholesalePrice);
+
+  // Memoize formatted currency values
+  const formattedWholesalePrice = useMemo(() => formatCurrency(wholesalePrice), [wholesalePrice]);
+  const formattedCostPerUnit = useMemo(() => formatCurrency(costPerUnit), [costPerUnit]);
 
   // Build long-press menu items for mobile
   const longPressItems = [
@@ -224,14 +228,14 @@ export const ProductCard = React.memo(function ProductCard({
           <div className="flex items-center justify-between">
             <span className="text-sm text-[hsl(var(--tenant-text-light))]">Wholesale Price</span>
             <span className="text-lg font-bold text-[hsl(var(--tenant-primary))]">
-              {formatCurrency(wholesalePrice)}
+              {formattedWholesalePrice}
             </span>
           </div>
           {costPerUnit > 0 && (
             <div className="flex items-center justify-between text-xs">
               <span className="text-[hsl(var(--tenant-text-light))]">Cost</span>
               <span className="text-[hsl(var(--tenant-text-light))]">
-                {formatCurrency(costPerUnit)}
+                {formattedCostPerUnit}
               </span>
             </div>
           )}

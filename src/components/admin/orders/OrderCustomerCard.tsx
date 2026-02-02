@@ -8,6 +8,7 @@
  * - Quick actions (view profile, new order)
  */
 
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -90,6 +91,16 @@ export function OrderCustomerCard({
   const customerId = customer?.customer_id || customer?.id;
 
   const { data: stats, isLoading: statsLoading } = useCustomerStats(customerId);
+
+  // Memoize formatted currency values (must be before early return)
+  const formattedTotalSpent = useMemo(
+    () => (stats ? formatCurrency(stats.total_spent) : null),
+    [stats]
+  );
+  const formattedAvgOrderValue = useMemo(
+    () => (stats ? formatCurrency(stats.avg_order_value) : null),
+    [stats]
+  );
 
   if (!customer) {
     return (
@@ -199,7 +210,7 @@ export function OrderCustomerCard({
                     <div>
                       <p className="text-xs text-muted-foreground">Total Spent</p>
                       <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                        {formatCurrency(stats.total_spent)}
+                        {formattedTotalSpent}
                       </p>
                     </div>
                   </div>
@@ -212,7 +223,7 @@ export function OrderCustomerCard({
               )}
               {stats && stats.order_count > 0 && (
                 <Badge variant="outline" className="text-xs w-fit">
-                  Avg. order: {formatCurrency(stats.avg_order_value)}
+                  Avg. order: {formattedAvgOrderValue}
                 </Badge>
               )}
             </div>

@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Package, AlertTriangle } from 'lucide-react';
@@ -47,6 +47,9 @@ export const SimpleProductCard = memo(function SimpleProductCard({
     ? parseFloat(product.price)
     : product.price ?? 0;
 
+  // Memoize formatted currency value
+  const formattedPrice = useMemo(() => formatCurrency(priceValue), [priceValue]);
+
   const handleClick = () => {
     if (onClick) {
       onClick(product);
@@ -73,7 +76,7 @@ export const SimpleProductCard = memo(function SimpleProductCard({
       onKeyDown={handleKeyDown}
       tabIndex={onClick ? 0 : undefined}
       role={onClick ? 'button' : undefined}
-      aria-label={`${cleanedName} - ${formatCurrency(priceValue)}`}
+      aria-label={`${cleanedName} - ${formattedPrice}`}
     >
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden bg-neutral-100">
@@ -145,7 +148,7 @@ export const SimpleProductCard = memo(function SimpleProductCard({
         {/* Price */}
         <div className="flex items-baseline gap-2">
           <span className="text-xl font-bold text-primary">
-            {formatCurrency(priceValue)}
+            {formattedPrice}
           </span>
         </div>
       </CardContent>
