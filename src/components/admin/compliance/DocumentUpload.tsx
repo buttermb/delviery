@@ -20,7 +20,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, Upload, AlertCircle } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Upload from "lucide-react/dist/esm/icons/upload";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { queryKeys } from "@/lib/queryKeys";
 import { validateFile, generateSecureStoragePath, FILE_SIZE_LIMITS, formatFileSize } from "@/lib/fileValidation";
 

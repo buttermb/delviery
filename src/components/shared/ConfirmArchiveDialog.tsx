@@ -16,7 +16,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Archive, ArchiveRestore } from 'lucide-react';
+import Archive from "lucide-react/dist/esm/icons/archive";
+import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
 import { haptics } from '@/utils/haptics';
 
 interface ConfirmArchiveDialogProps {

@@ -20,7 +20,10 @@ import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 import { logger } from '@/lib/logger';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
-import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),

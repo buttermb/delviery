@@ -14,7 +14,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { AlertCircle, Bell, ChevronRight, Zap } from 'lucide-react';
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Zap from "lucide-react/dist/esm/icons/zap";
 import { useAttentionQueue } from '@/hooks/useAttentionQueue';
 import { cn } from '@/lib/utils';
 

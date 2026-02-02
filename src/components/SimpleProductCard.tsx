@@ -1,7 +1,8 @@
 import { memo, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Package, AlertTriangle } from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import ProductImage from '@/components/ProductImage';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';

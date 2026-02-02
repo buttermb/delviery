@@ -23,16 +23,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  Monitor,
-  Smartphone,
-  Tablet,
-  LogOut,
-  Shield,
-  Loader2,
-  MapPin,
-  Clock,
-} from 'lucide-react';
+import Monitor from "lucide-react/dist/esm/icons/monitor";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Tablet from "lucide-react/dist/esm/icons/tablet";
+import LogOut from "lucide-react/dist/esm/icons/log-out";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { toast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 

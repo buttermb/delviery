@@ -10,7 +10,10 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Store, AlertTriangle, Lock } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Store from "lucide-react/dist/esm/icons/store";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Lock from "lucide-react/dist/esm/icons/lock";
 import { logger } from '@/lib/logger';
 
 export default function EncryptedStorePage() {

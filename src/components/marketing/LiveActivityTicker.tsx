@@ -3,7 +3,10 @@
  * Uses CSS keyframes for smooth, GPU-accelerated scrolling
  */
 
-import { ShoppingBag, Eye, Truck, CheckCircle } from "lucide-react";
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 
 const activities = [
   { type: "order", text: "New wholesale order ($4,200) from Miami, FL", time: "2m ago" },

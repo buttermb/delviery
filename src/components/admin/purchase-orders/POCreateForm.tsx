@@ -23,7 +23,13 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, ArrowRight, ArrowLeft, CheckCircle2, Package, Building2, FileText } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Package from "lucide-react/dist/esm/icons/package";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import FileText from "lucide-react/dist/esm/icons/file-text";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { useCreditGatedAction } from "@/hooks/useCredits";
 import type { Database } from "@/integrations/supabase/types";

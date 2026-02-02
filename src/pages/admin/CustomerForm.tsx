@@ -15,7 +15,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Shield } from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Save from "lucide-react/dist/esm/icons/save";
+import Shield from "lucide-react/dist/esm/icons/shield";
 import { SEOHead } from '@/components/SEOHead';
 
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';

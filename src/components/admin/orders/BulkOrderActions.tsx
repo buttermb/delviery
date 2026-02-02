@@ -1,5 +1,9 @@
 import { useState, useCallback } from 'react';
-import { CheckCircle, Package, Truck, XCircle, Trash2 } from 'lucide-react';
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import { BulkActionsBar, type BulkAction } from '@/components/ui/BulkActionsBar';
 import { OrderBulkStatusConfirmDialog } from '@/components/admin/orders/OrderBulkStatusConfirmDialog';
 import { BulkOperationProgress } from '@/components/ui/bulk-operation-progress';

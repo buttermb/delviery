@@ -1,15 +1,13 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Eye, 
-  LogIn, 
-  DollarSign, 
-  Calendar,
-  TrendingUp,
-  MoreVertical,
-  Building2,
-} from "lucide-react";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import LogIn from "lucide-react/dist/esm/icons/log-in";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { calculateHealthScore } from "@/lib/tenant";

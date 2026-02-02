@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
-import { LucideIcon } from "lucide-react";
+import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
 import { isValidElement } from "react";
 
 export type EmptyStateType =

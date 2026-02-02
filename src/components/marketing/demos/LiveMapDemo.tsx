@@ -8,10 +8,14 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Truck, MapPin, Clock, Navigation, CheckCircle2,
-  Package, Zap, Users
-} from 'lucide-react';
+import Truck from "lucide-react/dist/esm/icons/truck";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Package from "lucide-react/dist/esm/icons/package";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Users from "lucide-react/dist/esm/icons/users";
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
 interface Driver {

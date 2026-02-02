@@ -13,20 +13,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import {
-  ShoppingCart,
-  PackageX,
-  Package,
-  UserPlus,
-  Users,
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
-  Activity,
-  CheckCircle2,
-  AlertTriangle,
-  Warehouse,
-} from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import PackageX from "lucide-react/dist/esm/icons/package-x";
+import Package from "lucide-react/dist/esm/icons/package";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import Users from "lucide-react/dist/esm/icons/users";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Warehouse from "lucide-react/dist/esm/icons/warehouse";
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { DashboardDateRangeProvider } from '@/contexts/DashboardDateRangeContext';

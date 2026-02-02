@@ -1,5 +1,7 @@
 import React from 'react';
-import { Info, HelpCircle, AlertCircle } from 'lucide-react';
+import Info from "lucide-react/dist/esm/icons/info";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import {
   Tooltip,
   TooltipContent,

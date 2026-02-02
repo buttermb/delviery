@@ -16,14 +16,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  ArrowLeft,
-  Loader2,
-  TrendingDown,
-  TrendingUp,
-  RefreshCw,
-  FileText,
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import FileText from "lucide-react/dist/esm/icons/file-text";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 

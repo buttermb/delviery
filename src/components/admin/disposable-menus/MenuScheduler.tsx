@@ -4,7 +4,11 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, Repeat, AlertCircle, CalendarDays } from 'lucide-react';
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Repeat from "lucide-react/dist/esm/icons/repeat";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CalendarDays from "lucide-react/dist/esm/icons/calendar-days";
 import { Separator } from '@/components/ui/separator';
 import {
   Select,

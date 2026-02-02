@@ -9,7 +9,9 @@ import { format } from 'date-fns';
 import { logger } from '@/lib/logger';
 import { formatCurrency } from '@/utils/formatters';
 import { Button } from '@/components/ui/button';
-import { FileText, Loader2, Printer } from 'lucide-react';
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Printer from "lucide-react/dist/esm/icons/printer";
 import type { Order, OrderItem } from '@/types/order';
 
 /**

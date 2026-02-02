@@ -4,7 +4,8 @@
  */
 
 import { Button } from "@/components/ui/button";
-import { Check, ArrowRight } from "lucide-react";
+import Check from "lucide-react/dist/esm/icons/check";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 
 export function PlatformCapabilities() {
   const capabilities = [

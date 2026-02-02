@@ -36,7 +36,10 @@ import {
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Mail, MessageSquare, Globe } from 'lucide-react';
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Globe from "lucide-react/dist/esm/icons/globe";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';

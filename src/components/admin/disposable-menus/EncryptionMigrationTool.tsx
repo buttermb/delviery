@@ -5,7 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Loader2, CheckCircle, AlertTriangle, Lock, Database, Mail } from 'lucide-react';
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import Database from "lucide-react/dist/esm/icons/database";
+import Mail from "lucide-react/dist/esm/icons/mail";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 

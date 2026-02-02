@@ -20,27 +20,25 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useStorefrontOrders, type OrderStatusFilter, type OrderFilters } from '@/hooks/useStorefrontOrders';
-import {
-  User,
-  Package,
-  MapPin,
-  Settings,
-  LogOut,
-  Search,
-  ChevronRight,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Heart,
-  RefreshCw,
-  ShoppingCart,
-  Trash2,
-  Plus,
-  Mail,
-  Loader2,
-  Filter,
-  Calendar
-} from 'lucide-react';
+import User from "lucide-react/dist/esm/icons/user";
+import Package from "lucide-react/dist/esm/icons/package";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import LogOut from "lucide-react/dist/esm/icons/log-out";
+import Search from "lucide-react/dist/esm/icons/search";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Heart from "lucide-react/dist/esm/icons/heart";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
@@ -1118,8 +1116,4 @@ function QuickReorderButton({
     </Button>
   );
 }
-
-
-
-
 

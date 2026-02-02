@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import { Camera, Loader2 } from 'lucide-react';
+import Camera from "lucide-react/dist/esm/icons/camera";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';

@@ -1,6 +1,11 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, Package, Clock, DollarSign, Star, Zap } from 'lucide-react';
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Package from "lucide-react/dist/esm/icons/package";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Star from "lucide-react/dist/esm/icons/star";
+import Zap from "lucide-react/dist/esm/icons/zap";
 import { motion } from 'framer-motion';
 
 interface EnhancedStatsProps {

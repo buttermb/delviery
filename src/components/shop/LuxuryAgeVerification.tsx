@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Shield } from 'lucide-react';
+import Shield from "lucide-react/dist/esm/icons/shield";
 
 interface LuxuryAgeVerificationProps {
   storeName?: string;

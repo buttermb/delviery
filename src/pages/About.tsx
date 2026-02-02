@@ -1,6 +1,13 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Target, Rocket, Shield, Zap, Users, Award, Globe, Heart } from "lucide-react";
+import Target from "lucide-react/dist/esm/icons/target";
+import Rocket from "lucide-react/dist/esm/icons/rocket";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Users from "lucide-react/dist/esm/icons/users";
+import Award from "lucide-react/dist/esm/icons/award";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import Heart from "lucide-react/dist/esm/icons/heart";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";

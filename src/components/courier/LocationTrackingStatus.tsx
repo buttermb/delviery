@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, AlertCircle } from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { useCourier } from '@/contexts/CourierContext';
 

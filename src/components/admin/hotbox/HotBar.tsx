@@ -7,21 +7,19 @@
  */
 
 import { NavLink, useLocation } from 'react-router-dom';
-import {
-  Flame,
-  LayoutDashboard,
-  Package,
-  DollarSign,
-  MoreHorizontal,
-  Store,
-  Users,
-  Truck,
-  Settings,
-  ShoppingCart,
-  Box,
-  BarChart3,
-  Megaphone,
-} from 'lucide-react';
+import Flame from "lucide-react/dist/esm/icons/flame";
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import Package from "lucide-react/dist/esm/icons/package";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import Store from "lucide-react/dist/esm/icons/store";
+import Users from "lucide-react/dist/esm/icons/users";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Box from "lucide-react/dist/esm/icons/box";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Megaphone from "lucide-react/dist/esm/icons/megaphone";
 import { cn } from '@/lib/utils';
 import { useBusinessTier } from '@/hooks/useBusinessTier';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

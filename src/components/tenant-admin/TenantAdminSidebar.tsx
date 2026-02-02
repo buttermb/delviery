@@ -24,55 +24,53 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  LayoutDashboard,
-  ChevronDown,
-  Settings,
-  LogOut,
-  Menu,
-  Package,
-  Users,
-  BarChart3,
-  FileText,
-  Barcode,
-  ShoppingCart,
-  CreditCard,
-  Warehouse,
-  TrendingUp,
-  Star,
-  Truck,
-  MapPin,
-  DollarSign,
-  PieChart,
-  Zap,
-  Globe,
-  HelpCircle,
-  Bell,
-  Building,
-  Shield,
-  Box,
-  AlertCircle,
-  ArrowRightLeft,
-  Receipt,
-  UserCog,
-  Activity,
-  FileSpreadsheet,
-  Download,
-  MapPinned,
-  Building2,
-  Key,
-  ScrollText,
-  Headphones,
-  Store,
-  Brain,
-  Tag,
-  Mail,
-  Calendar,
-  Flame,
-  ChevronUp,
-  Wallet,
-  MessageSquare,
-} from "lucide-react";
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import LogOut from "lucide-react/dist/esm/icons/log-out";
+import Menu from "lucide-react/dist/esm/icons/menu";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Barcode from "lucide-react/dist/esm/icons/barcode";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Warehouse from "lucide-react/dist/esm/icons/warehouse";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Star from "lucide-react/dist/esm/icons/star";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import PieChart from "lucide-react/dist/esm/icons/pie-chart";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Building from "lucide-react/dist/esm/icons/building";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Box from "lucide-react/dist/esm/icons/box";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import ArrowRightLeft from "lucide-react/dist/esm/icons/arrow-right-left";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import UserCog from "lucide-react/dist/esm/icons/user-cog";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
+import Download from "lucide-react/dist/esm/icons/download";
+import MapPinned from "lucide-react/dist/esm/icons/map-pinned";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Key from "lucide-react/dist/esm/icons/key";
+import ScrollText from "lucide-react/dist/esm/icons/scroll-text";
+import Headphones from "lucide-react/dist/esm/icons/headphones";
+import Store from "lucide-react/dist/esm/icons/store";
+import Brain from "lucide-react/dist/esm/icons/brain";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Flame from "lucide-react/dist/esm/icons/flame";
+import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
+import Wallet from "lucide-react/dist/esm/icons/wallet";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -251,7 +249,6 @@ const SIDEBAR_CATEGORIES: SidebarCategory[] = [
     features: ['settings', 'billing', 'help'],
   },
 ];
-
 
 export function TenantAdminSidebar() {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();

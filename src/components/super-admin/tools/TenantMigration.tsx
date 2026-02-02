@@ -20,7 +20,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Database, ArrowRight, Download, Upload, CheckCircle2, AlertTriangle } from 'lucide-react';
+import Database from "lucide-react/dist/esm/icons/database";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Download from "lucide-react/dist/esm/icons/download";
+import Upload from "lucide-react/dist/esm/icons/upload";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 

@@ -19,30 +19,28 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { SearchInput } from "@/components/shared/SearchInput";
 import { toast } from "sonner";
-import {
-  Package,
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  Barcode,
-  DollarSign,
-  LayoutGrid,
-  List,
-  Filter,
-  Download,
-  Archive,
-  ArchiveRestore,
-  Copy,
-  Loader2,
-  Printer,
-  MoreVertical,
-  Eye,
-  EyeOff,
-  Store,
-  Upload,
-  FileUp
-} from "lucide-react";
+import Package from "lucide-react/dist/esm/icons/package";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Search from "lucide-react/dist/esm/icons/search";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Barcode from "lucide-react/dist/esm/icons/barcode";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
+import List from "lucide-react/dist/esm/icons/list";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import Download from "lucide-react/dist/esm/icons/download";
+import Archive from "lucide-react/dist/esm/icons/archive";
+import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import Store from "lucide-react/dist/esm/icons/store";
+import Upload from "lucide-react/dist/esm/icons/upload";
+import FileUp from "lucide-react/dist/esm/icons/file-up";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import {
   Dialog,
@@ -785,7 +783,6 @@ export default function ProductManagement() {
     setBatchCategoryEditorOpen(false);
   }, [loadProducts, invalidateProductCaches, tenant, store]);
 
-
   const handleScanSuccess = useCallback(async (code: string) => {
     // Logic to find product by barcode or SKU and add to batch
     const product = products.find(p => p.sku === code || p.id === code); // Simplified matching
@@ -922,7 +919,6 @@ export default function ProductManagement() {
   const handlePublishProduct = useCallback((productId: string) => {
     handlePublish(productId);
   }, [handlePublish]);
-
 
   // --- Table Columns Definition ---
   const columns: ResponsiveColumn<Product>[] = [
@@ -1068,7 +1064,6 @@ export default function ProductManagement() {
       onPublish={handlePublishProduct}
     />
   ), [handleEditProduct, handleDeleteProduct, handleDuplicateProduct, handlePrintLabelForProduct, handlePublishProduct]);
-
 
   if (tenantLoading) {
     return (

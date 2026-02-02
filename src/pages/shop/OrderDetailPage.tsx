@@ -28,23 +28,21 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
-import {
-  ArrowLeft,
-  Package,
-  Truck,
-  CheckCircle,
-  Clock,
-  MapPin,
-  XCircle,
-  RefreshCw,
-  ShoppingCart,
-  CreditCard,
-  Copy,
-  Check,
-  Loader2,
-  AlertTriangle,
-  Receipt,
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Check from "lucide-react/dist/esm/icons/check";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';

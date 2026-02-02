@@ -30,16 +30,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import {
-  Loader2,
-  Package,
-  ArrowRight,
-  Building2,
-  DollarSign,
-  AlertCircle,
-  CheckCircle2,
-  Search,
-} from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Package from "lucide-react/dist/esm/icons/package";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Search from "lucide-react/dist/esm/icons/search";
 import { useWholesaleClients } from '@/hooks/useWholesaleData';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';

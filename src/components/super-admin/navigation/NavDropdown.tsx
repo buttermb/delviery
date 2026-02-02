@@ -4,7 +4,8 @@
  */
 
 import { useState } from 'react';
-import { LucideIcon, ChevronDown } from 'lucide-react';
+import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -7,15 +7,13 @@
 
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import {
-    Check,
-    X,
-    Sparkles,
-    Infinity as InfinityIcon,
-    Zap,
-    ArrowRight,
-    Crown
-} from 'lucide-react';
+import Check from "lucide-react/dist/esm/icons/check";
+import X from "lucide-react/dist/esm/icons/x";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import Infinity as InfinityIcon from "lucide-react/dist/esm/icons/infinity as infinity-icon";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Crown from "lucide-react/dist/esm/icons/crown";
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

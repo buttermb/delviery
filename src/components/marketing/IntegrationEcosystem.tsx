@@ -5,20 +5,18 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowRight,
-  Puzzle,
-  CreditCard,
-  BarChart3,
-  Zap,
-  MessageSquare,
-  Sheet,
-  Smartphone,
-  ShoppingCart,
-  Mail,
-  Link2,
-  type LucideIcon,
-} from "lucide-react";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Puzzle from "lucide-react/dist/esm/icons/puzzle";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Sheet from "lucide-react/dist/esm/icons/sheet";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Link2 from "lucide-react/dist/esm/icons/link-2";
+import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
 
 export function IntegrationEcosystem() {
   // Common, easy-to-integrate tools

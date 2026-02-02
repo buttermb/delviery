@@ -17,7 +17,8 @@ import { SidebarHotItems } from '../SidebarHotItems';
 import { SidebarRecentlyUsed } from '../SidebarRecentlyUsed';
 import { SidebarProvider as ContextProvider } from '../SidebarContext';
 import type { SidebarItem, SidebarSection as SidebarSectionType } from '@/types/sidebar';
-import { Home, Settings } from 'lucide-react';
+import Home from "lucide-react/dist/esm/icons/home";
+import Settings from "lucide-react/dist/esm/icons/settings";
 
 // Mock Supabase client first (before any imports that use it)
 vi.mock('@/integrations/supabase/client', () => ({

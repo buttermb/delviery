@@ -1,4 +1,9 @@
-import { Clock, CheckCircle, Package, Truck, Home, XCircle } from 'lucide-react';
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Home from "lucide-react/dist/esm/icons/home";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
 import { cn } from '@/lib/utils';
 
 /**

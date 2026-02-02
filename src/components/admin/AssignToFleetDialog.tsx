@@ -10,7 +10,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Truck, Star, MapPin, Phone, CheckCircle2 } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Star from "lucide-react/dist/esm/icons/star";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { supabase } from '@/integrations/supabase/client';
 import { useAvailableRunners, type AvailableRunner } from '@/hooks/useAvailableRunners';

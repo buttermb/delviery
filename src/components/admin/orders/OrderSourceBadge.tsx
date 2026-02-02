@@ -6,7 +6,13 @@
  */
 
 import { Badge } from '@/components/ui/badge';
-import { Store, Monitor, Phone, FileEdit, Utensils, Zap, ShoppingCart } from 'lucide-react';
+import Store from "lucide-react/dist/esm/icons/store";
+import Monitor from "lucide-react/dist/esm/icons/monitor";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import FileEdit from "lucide-react/dist/esm/icons/file-edit";
+import Utensils from "lucide-react/dist/esm/icons/utensils";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
 

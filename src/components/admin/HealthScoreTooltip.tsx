@@ -11,14 +11,12 @@ import {
 } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Activity,
-    AlertCircle,
-    CheckCircle,
-    CreditCard,
-    Ticket,
-    TrendingUp
-} from 'lucide-react';
+import Activity from "lucide-react/dist/esm/icons/activity";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Ticket from "lucide-react/dist/esm/icons/ticket";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 
 interface HealthReason {
     factor: string;

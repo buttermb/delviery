@@ -3,16 +3,14 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-  Shield, 
-  Search,
-  Filter,
-  AlertTriangle,
-  Eye,
-  MapPin,
-  Camera,
-  Lock
-} from 'lucide-react';
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Search from "lucide-react/dist/esm/icons/search";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Camera from "lucide-react/dist/esm/icons/camera";
+import Lock from "lucide-react/dist/esm/icons/lock";
 import { format } from 'date-fns';
 import {
   Select,

@@ -19,10 +19,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  Edit, Trash2, Eye, EyeOff, Copy, Tag, 
-  DollarSign, Package, TrendingUp, TrendingDown, Loader2
-} from "lucide-react";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Package from "lucide-react/dist/esm/icons/package";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { toast } from "sonner";
 

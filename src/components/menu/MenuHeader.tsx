@@ -1,4 +1,5 @@
-import { Clock, User } from 'lucide-react';
+import Clock from "lucide-react/dist/esm/icons/clock";
+import User from "lucide-react/dist/esm/icons/user";
 import { Card, CardContent } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
 

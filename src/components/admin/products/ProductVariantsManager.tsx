@@ -10,7 +10,13 @@
  */
 
 import { useState } from 'react';
-import { Plus, Trash2, GripVertical, Loader2, Scale, Ruler, Leaf } from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Scale from "lucide-react/dist/esm/icons/scale";
+import Ruler from "lucide-react/dist/esm/icons/ruler";
+import Leaf from "lucide-react/dist/esm/icons/leaf";
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

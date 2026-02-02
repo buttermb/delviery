@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { Play, RotateCcw } from 'lucide-react';
+import Play from "lucide-react/dist/esm/icons/play";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import { useTutorialContext } from './TutorialProvider';
 import { TutorialOverlay, TutorialStep } from './TutorialOverlay';
 import { toast } from 'sonner';

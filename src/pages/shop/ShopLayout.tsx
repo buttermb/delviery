@@ -11,16 +11,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  ShoppingCart,
-  Menu,
-  X,
-  User,
-  Search,
-  Clock,
-  AlertTriangle,
-  Leaf
-} from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Menu from "lucide-react/dist/esm/icons/menu";
+import X from "lucide-react/dist/esm/icons/x";
+import User from "lucide-react/dist/esm/icons/user";
+import Search from "lucide-react/dist/esm/icons/search";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Leaf from "lucide-react/dist/esm/icons/leaf";
 import { logger } from '@/lib/logger';
 import { MobileBottomNav } from '@/components/shop/MobileBottomNav';
 import { LuxuryNav } from '@/components/shop/LuxuryNav';

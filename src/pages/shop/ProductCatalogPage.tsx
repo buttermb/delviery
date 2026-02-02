@@ -22,16 +22,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Search,
-  Package,
-  Grid3X3,
-  List,
-  X,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import Package from "lucide-react/dist/esm/icons/package";
+import Grid3X3 from "lucide-react/dist/esm/icons/grid-3-x3";
+import List from "lucide-react/dist/esm/icons/list";
+import X from "lucide-react/dist/esm/icons/x";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
@@ -767,7 +765,6 @@ export function ProductCatalogPage() {
 
 // Product Card Component (Grid View) - Legacy component removed, replaced by shared StorefrontProductCard
 
-
 // Product List Item Component (List View)
 function ProductListItem({
   product,
@@ -829,8 +826,4 @@ function ProductListItem({
     </Link>
   );
 }
-
-
-
-
 

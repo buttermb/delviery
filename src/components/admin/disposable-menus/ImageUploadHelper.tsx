@@ -3,7 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Upload, Image, AlertCircle, CheckCircle2, ExternalLink } from 'lucide-react';
+import Upload from "lucide-react/dist/esm/icons/upload";
+import Image from "lucide-react/dist/esm/icons/image";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
 import { useNavigate } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 

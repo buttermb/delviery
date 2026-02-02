@@ -6,7 +6,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { ShoppingCart, Tag, TrendingDown } from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
 
 interface CartItem {
     productId: string;

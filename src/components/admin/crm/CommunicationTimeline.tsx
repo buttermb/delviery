@@ -11,8 +11,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, ShoppingCart, Calendar, MessageSquare } from "lucide-react";
-import { Loader2 } from "lucide-react";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 interface Customer {
   id: string;

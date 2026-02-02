@@ -3,7 +3,10 @@ import { SEOHead } from "@/components/SEOHead";
 import { DocsLayout } from "@/components/docs/DocsLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CodeBlock } from "@/components/docs/CodeBlock";
-import { Shield, Key, Lock, AlertTriangle } from "lucide-react";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Key from "lucide-react/dist/esm/icons/key";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function AuthenticationPage() {

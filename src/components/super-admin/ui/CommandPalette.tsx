@@ -12,7 +12,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Command, Search, ArrowRight } from 'lucide-react';
+import Command from "lucide-react/dist/esm/icons/command";
+import Search from "lucide-react/dist/esm/icons/search";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 

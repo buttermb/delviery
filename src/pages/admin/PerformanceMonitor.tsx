@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Activity from "lucide-react/dist/esm/icons/activity";
 import { PerformanceMonitor as PM } from '@/utils/performance';
 
 export default function PerformanceMonitor() {

@@ -13,7 +13,12 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useCheckoutLoyalty } from '@/hooks/useLoyaltyPoints';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { Gift, Star, Sparkles, Loader2, Info, X } from 'lucide-react';
+import Gift from "lucide-react/dist/esm/icons/gift";
+import Star from "lucide-react/dist/esm/icons/star";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Info from "lucide-react/dist/esm/icons/info";
+import X from "lucide-react/dist/esm/icons/x";
 
 interface CheckoutLoyaltyProps {
   storeId: string;

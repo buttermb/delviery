@@ -8,18 +8,16 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Sun,
-  Moon,
-  Sparkles,
-  Zap,
-  Coffee,
-  Star,
-  ChevronRight,
-  Clock,
-  Plus,
-  Check,
-} from 'lucide-react';
+import Sun from "lucide-react/dist/esm/icons/sun";
+import Moon from "lucide-react/dist/esm/icons/moon";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Coffee from "lucide-react/dist/esm/icons/coffee";
+import Star from "lucide-react/dist/esm/icons/star";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Check from "lucide-react/dist/esm/icons/check";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';

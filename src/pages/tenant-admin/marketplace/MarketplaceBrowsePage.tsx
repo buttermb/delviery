@@ -14,17 +14,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    Search,
-    Filter,
-    ShoppingCart,
-    Tag,
-    Store,
-    ArrowUpRight
-} from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Store from "lucide-react/dist/esm/icons/store";
+import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { Loader2 } from 'lucide-react';
 
 interface MarketplaceListing {
     id: string;

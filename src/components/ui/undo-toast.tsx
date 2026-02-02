@@ -6,7 +6,9 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Undo2, X, Check } from 'lucide-react';
+import Undo2 from "lucide-react/dist/esm/icons/undo-2";
+import X from "lucide-react/dist/esm/icons/x";
+import Check from "lucide-react/dist/esm/icons/check";
 
 interface UndoToastProps {
     /** Description of the action */

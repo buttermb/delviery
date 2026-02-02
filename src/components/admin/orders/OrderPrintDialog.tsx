@@ -17,7 +17,11 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Printer, Receipt, Package, FileText, Loader2 } from 'lucide-react';
+import Printer from "lucide-react/dist/esm/icons/printer";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import Package from "lucide-react/dist/esm/icons/package";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import {

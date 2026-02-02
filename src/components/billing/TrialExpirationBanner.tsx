@@ -1,6 +1,8 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, CreditCard, X } from "lucide-react";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import X from "lucide-react/dist/esm/icons/x";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";

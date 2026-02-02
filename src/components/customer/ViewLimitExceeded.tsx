@@ -1,6 +1,8 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Eye, Lock } from 'lucide-react';
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Lock from "lucide-react/dist/esm/icons/lock";
 
 interface ViewLimitExceededProps {
   viewLimit: number;

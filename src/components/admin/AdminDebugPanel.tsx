@@ -19,7 +19,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, Bug, Download, Trash2, AlertCircle, Info, AlertTriangle, Search } from 'lucide-react';
+import X from "lucide-react/dist/esm/icons/x";
+import Bug from "lucide-react/dist/esm/icons/bug";
+import Download from "lucide-react/dist/esm/icons/download";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Info from "lucide-react/dist/esm/icons/info";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Search from "lucide-react/dist/esm/icons/search";
 import { cn } from '@/lib/utils';
 
 const CATEGORIES: Array<LogCategory | 'all'> = [

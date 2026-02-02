@@ -9,7 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Paintbrush, Upload, Save } from 'lucide-react';
+import Paintbrush from "lucide-react/dist/esm/icons/paintbrush";
+import Upload from "lucide-react/dist/esm/icons/upload";
+import Save from "lucide-react/dist/esm/icons/save";
 import { handleError } from "@/utils/errorHandling/handlers";
 
 export default function WhiteLabel() {

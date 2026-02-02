@@ -18,25 +18,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  Plug,
-  CreditCard,
-  MessageSquare,
-  BarChart3,
-  Webhook,
-  Key,
-  Copy,
-  Eye,
-  EyeOff,
-  CheckCircle,
-  XCircle,
-  ExternalLink,
-  RefreshCw,
-  Plus,
-  Trash2,
-  Loader2,
-  Brain,
-} from 'lucide-react';
+import Plug from "lucide-react/dist/esm/icons/plug";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Webhook from "lucide-react/dist/esm/icons/webhook";
+import Key from "lucide-react/dist/esm/icons/key";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Brain from "lucide-react/dist/esm/icons/brain";
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';

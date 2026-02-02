@@ -15,7 +15,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DateRangePickerWithPresets } from '@/components/ui/date-picker-with-presets';
-import { Search, X, RefreshCw, Filter } from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import X from "lucide-react/dist/esm/icons/x";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Filter from "lucide-react/dist/esm/icons/filter";
 
 export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'in_transit' | 'delivered' | 'cancelled';
 

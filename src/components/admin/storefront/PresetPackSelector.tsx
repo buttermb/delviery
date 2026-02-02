@@ -7,16 +7,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import {
-    Rocket,
-    Sun,
-    Briefcase,
-    Leaf,
-    Crown,
-    Megaphone,
-    Check,
-    Sparkles,
-} from 'lucide-react';
+import Rocket from "lucide-react/dist/esm/icons/rocket";
+import Sun from "lucide-react/dist/esm/icons/sun";
+import Briefcase from "lucide-react/dist/esm/icons/briefcase";
+import Leaf from "lucide-react/dist/esm/icons/leaf";
+import Crown from "lucide-react/dist/esm/icons/crown";
+import Megaphone from "lucide-react/dist/esm/icons/megaphone";
+import Check from "lucide-react/dist/esm/icons/check";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 import { type PresetPack, PRESET_PACKS, getPresetTheme } from '@/lib/storefrontPresets';
 
 interface PresetPackSelectorProps {

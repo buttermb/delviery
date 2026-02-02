@@ -13,17 +13,15 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Download,
-  Copy,
-  Share2,
-  CheckCircle2,
-  Link,
-  QrCode,
-  Code,
-  Printer,
-  ExternalLink,
-} from 'lucide-react';
+import Download from "lucide-react/dist/esm/icons/download";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Share2 from "lucide-react/dist/esm/icons/share-2";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Link from "lucide-react/dist/esm/icons/link";
+import QrCode from "lucide-react/dist/esm/icons/qr-code";
+import Code from "lucide-react/dist/esm/icons/code";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from '@/hooks/use-toast';
 

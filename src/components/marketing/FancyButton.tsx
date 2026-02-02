@@ -1,6 +1,7 @@
 import React, { useState, useRef, MouseEvent } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { cn } from '@/lib/utils';
 
 interface FancyButtonProps {

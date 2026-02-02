@@ -16,35 +16,33 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useAttentionQueue } from '@/hooks/useAttentionQueue';
-import {
-  DollarSign,
-  TrendingUp,
-  Package,
-  AlertCircle,
-  ChevronRight,
-  Users,
-  Store,
-  Menu,
-  Box,
-  MapPin,
-  BarChart3,
-  Shield,
-  Building,
-  CheckCircle,
-  Plus,
-  Clock,
-  Truck,
-  ArrowRightLeft,
-  FileText,
-  Globe,
-  Sparkles,
-  CreditCard,
-  Wallet,
-  Calendar,
-  MessageSquare,
-  LayoutGrid,
-  List,
-} from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Package from "lucide-react/dist/esm/icons/package";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Users from "lucide-react/dist/esm/icons/users";
+import Store from "lucide-react/dist/esm/icons/store";
+import Menu from "lucide-react/dist/esm/icons/menu";
+import Box from "lucide-react/dist/esm/icons/box";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Building from "lucide-react/dist/esm/icons/building";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import ArrowRightLeft from "lucide-react/dist/esm/icons/arrow-right-left";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Wallet from "lucide-react/dist/esm/icons/wallet";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
+import List from "lucide-react/dist/esm/icons/list";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -468,7 +466,6 @@ export function HotboxDashboard() {
 
       {/* Attention Queue with View Toggle */}
       <AttentionQueueKanban items={attentionItems} />
-
 
       {/* Quick Actions */}
       <Card>

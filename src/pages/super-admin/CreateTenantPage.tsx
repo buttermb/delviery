@@ -21,7 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Building2 } from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
 import { Link } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 

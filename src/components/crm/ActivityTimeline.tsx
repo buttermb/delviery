@@ -1,20 +1,18 @@
 import { useClientActivity } from '@/hooks/crm/useActivityLog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Loader2,
-  FileText,
-  Receipt,
-  DollarSign,
-  MessageSquare,
-  UserPlus,
-  Mail,
-  Users,
-  Link2,
-  Unlink,
-  Star,
-  ShoppingCart,
-  RefreshCw,
-} from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Users from "lucide-react/dist/esm/icons/users";
+import Link2 from "lucide-react/dist/esm/icons/link-2";
+import Unlink from "lucide-react/dist/esm/icons/unlink";
+import Star from "lucide-react/dist/esm/icons/star";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { format } from 'date-fns';
 import type { CRMActivityLog, CRMActivityType } from '@/types/crm';
 

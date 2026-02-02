@@ -27,7 +27,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Receipt, Search, Calendar, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import Search from "lucide-react/dist/esm/icons/search";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { formatDistanceToNow } from 'date-fns';

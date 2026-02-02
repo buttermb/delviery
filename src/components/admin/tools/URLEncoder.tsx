@@ -9,7 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, Check, ArrowRightLeft, Link as LinkIcon } from 'lucide-react';
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Check from "lucide-react/dist/esm/icons/check";
+import ArrowRightLeft from "lucide-react/dist/esm/icons/arrow-right-left";
+import Link as LinkIcon from "lucide-react/dist/esm/icons/link as link-icon";
 import { toast } from 'sonner';
 
 type EncodingType = 'url' | 'urlComponent' | 'base64';

@@ -4,15 +4,13 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import {
-  Upload,
-  X,
-  Image as ImageIcon,
-  GripVertical,
-  Loader2,
-  Star,
-  AlertCircle,
-} from 'lucide-react';
+import Upload from "lucide-react/dist/esm/icons/upload";
+import X from "lucide-react/dist/esm/icons/x";
+import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Star from "lucide-react/dist/esm/icons/star";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import {

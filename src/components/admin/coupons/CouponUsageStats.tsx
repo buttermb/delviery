@@ -5,7 +5,12 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tag, Users, DollarSign, TrendingUp, Percent, BarChart3 } from 'lucide-react';
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Users from "lucide-react/dist/esm/icons/users";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Percent from "lucide-react/dist/esm/icons/percent";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
 import { useCouponUsageStats } from '@/hooks/useCouponUsageStats';
 import { cn } from '@/lib/utils';
 

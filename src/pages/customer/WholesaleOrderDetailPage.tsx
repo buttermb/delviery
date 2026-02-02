@@ -12,18 +12,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  ShoppingCart, 
-  ArrowLeft,
-  Package,
-  Truck,
-  CheckCircle,
-  Clock,
-  Building2,
-  MapPin,
-  DollarSign,
-  FileText
-} from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import FileText from "lucide-react/dist/esm/icons/file-text";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { ModeBanner } from '@/components/customer/ModeSwitcher';

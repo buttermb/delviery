@@ -1,7 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { AlertTriangle, Plus } from "lucide-react";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Plus from "lucide-react/dist/esm/icons/plus";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 

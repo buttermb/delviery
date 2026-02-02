@@ -13,15 +13,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  ShoppingCart, 
-  Plus,
-  Minus,
-  Trash2,
-  ArrowRight,
-  Building2,
-  Package
-} from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Package from "lucide-react/dist/esm/icons/package";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ModeBanner } from '@/components/customer/ModeSwitcher';

@@ -16,7 +16,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Eye, MoreHorizontal, Printer, FileText, XCircle, Trash2, Building2 } from 'lucide-react';
+import Eye from "lucide-react/dist/esm/icons/eye";
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
 import CopyButton from '@/components/CopyButton';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 

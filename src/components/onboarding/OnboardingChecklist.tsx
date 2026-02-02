@@ -4,20 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import {
-  CheckCircle2,
-  Circle,
-  Package,
-  Users,
-  FileSpreadsheet,
-  CreditCard,
-  ArrowRight,
-  X,
-  ChevronDown,
-  ChevronUp,
-  Sparkles,
-  Clock
-} from "lucide-react";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Circle from "lucide-react/dist/esm/icons/circle";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import X from "lucide-react/dist/esm/icons/x";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { cn } from "@/lib/utils";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { supabase } from "@/integrations/supabase/client";

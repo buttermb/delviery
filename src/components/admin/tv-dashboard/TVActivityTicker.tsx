@@ -8,7 +8,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { ShoppingBag, CheckCircle2, AlertTriangle, Clock, User } from 'lucide-react';
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import User from "lucide-react/dist/esm/icons/user";
 
 export interface ActivityEvent {
     id: string;

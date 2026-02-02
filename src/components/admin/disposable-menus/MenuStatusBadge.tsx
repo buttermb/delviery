@@ -1,5 +1,8 @@
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, XCircle, AlertTriangle, Clock } from 'lucide-react';
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { getStatusColor } from '@/lib/utils/statusColors';
 import { cn } from '@/lib/utils';
 

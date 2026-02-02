@@ -16,7 +16,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Download, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react';
+import Download from "lucide-react/dist/esm/icons/download";
+import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import ArrowUpDown from "lucide-react/dist/esm/icons/arrow-up-down";
 import { useToast } from '@/hooks/use-toast';
 
 interface QueryResultsProps {

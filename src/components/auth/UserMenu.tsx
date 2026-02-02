@@ -1,5 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { User, Settings, CreditCard, Monitor, LogOut } from 'lucide-react';
+import User from "lucide-react/dist/esm/icons/user";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Monitor from "lucide-react/dist/esm/icons/monitor";
+import LogOut from "lucide-react/dist/esm/icons/log-out";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCredits } from '@/hooks/useCredits';
 import {

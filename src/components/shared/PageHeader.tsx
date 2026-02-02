@@ -7,7 +7,8 @@ import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, LucideIcon } from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
 
 interface PageHeaderProps {
   /** Page title */

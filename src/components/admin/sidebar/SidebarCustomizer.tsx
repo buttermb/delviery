@@ -11,7 +11,11 @@ import { FeatureVisibilityManager } from './FeatureVisibilityManager';
 import { IntegrationManager } from './IntegrationManager';
 import { LayoutPresets } from './LayoutPresets';
 import { SidebarDebugger } from '@/components/admin/settings/SidebarDebugger';
-import { Settings, Eye, Plug, Layout, Bug } from 'lucide-react';
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Plug from "lucide-react/dist/esm/icons/plug";
+import Layout from "lucide-react/dist/esm/icons/layout";
+import Bug from "lucide-react/dist/esm/icons/bug";
 
 export function SidebarCustomizer() {
   const [activeTab, setActiveTab] = useState('visibility');

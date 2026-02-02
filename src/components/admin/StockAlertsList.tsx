@@ -19,15 +19,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  AlertTriangle,
-  AlertCircle,
-  PackageX,
-  PackagePlus,
-  CheckCheck,
-  RefreshCw,
-  Package
-} from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import PackageX from "lucide-react/dist/esm/icons/package-x";
+import PackagePlus from "lucide-react/dist/esm/icons/package-plus";
+import CheckCheck from "lucide-react/dist/esm/icons/check-check";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Package from "lucide-react/dist/esm/icons/package";
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { LowStockProduct } from '@/hooks/useLowStockAlerts';
 import { cn } from '@/lib/utils';

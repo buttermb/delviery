@@ -17,15 +17,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
-import {
-  Loader2,
-  Play,
-  Download,
-  Database,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle2,
-} from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Play from "lucide-react/dist/esm/icons/play";
+import Download from "lucide-react/dist/esm/icons/download";
+import Database from "lucide-react/dist/esm/icons/database";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import { useReportDataSources } from '@/hooks/useReportDataSources';
 import type {
   ReportFilter,

@@ -11,7 +11,11 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, ComposedChart, Area
 } from 'recharts';
-import { DollarSign, TrendingUp, Calendar, ShoppingBag, Activity } from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import Activity from "lucide-react/dist/esm/icons/activity";
 import { subDays, startOfYear, format, parseISO, isSameDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";

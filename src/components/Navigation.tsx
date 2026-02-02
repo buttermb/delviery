@@ -11,7 +11,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, ShoppingCart, User, Loader2 } from "lucide-react";
+import Menu from "lucide-react/dist/esm/icons/menu";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import User from "lucide-react/dist/esm/icons/user";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -95,7 +98,6 @@ const Navigation = () => {
     ) : 0,
     [user, cartItems, getItemPrice]
   );
-
 
   const openAuth = (mode: "signin" | "signup") => {
     haptics.light(); // Light tap feedback

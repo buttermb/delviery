@@ -12,19 +12,17 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import {
-  Bell,
-  Mail,
-  Smartphone,
-  MessageSquare,
-  ShoppingCart,
-  Package,
-  DollarSign,
-  AlertTriangle,
-  Moon,
-  Volume2,
-  VolumeX,
-} from 'lucide-react';
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Package from "lucide-react/dist/esm/icons/package";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Moon from "lucide-react/dist/esm/icons/moon";
+import Volume2 from "lucide-react/dist/esm/icons/volume-2";
+import VolumeX from "lucide-react/dist/esm/icons/volume-x";
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';

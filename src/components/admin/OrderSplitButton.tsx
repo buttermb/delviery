@@ -10,7 +10,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Split, Loader2 } from 'lucide-react';
+import Split from "lucide-react/dist/esm/icons/split";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';

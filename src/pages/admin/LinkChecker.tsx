@@ -3,7 +3,11 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, ExternalLink, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import Play from "lucide-react/dist/esm/icons/play";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { toast } from 'sonner';
 import { safeFetch } from '@/utils/safeFetch';
 

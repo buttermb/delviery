@@ -1,6 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Medal, Award, TrendingUp } from 'lucide-react';
+import Trophy from "lucide-react/dist/esm/icons/trophy";
+import Medal from "lucide-react/dist/esm/icons/medal";
+import Award from "lucide-react/dist/esm/icons/award";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import { motion } from 'framer-motion';
 
 interface ProductRanking {

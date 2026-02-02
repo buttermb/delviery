@@ -16,26 +16,24 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import {
-  Store,
-  ShoppingCart,
-  Users,
-  DollarSign,
-  Package,
-  Settings,
-  ExternalLink,
-  Plus,
-  BarChart3,
-  Palette,
-  Globe,
-  Percent,
-  Trash2,
-  LayoutGrid,
-  FileText,
-  ClipboardList,
-  TrendingUp,
-  TrendingDown
-} from 'lucide-react';
+import Store from "lucide-react/dist/esm/icons/store";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Users from "lucide-react/dist/esm/icons/users";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Package from "lucide-react/dist/esm/icons/package";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Palette from "lucide-react/dist/esm/icons/palette";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import Percent from "lucide-react/dist/esm/icons/percent";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import ClipboardList from "lucide-react/dist/esm/icons/clipboard-list";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { StorePreviewButton } from '@/components/admin/storefront/StorePreviewButton';

@@ -6,7 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { Bell, Mail, MessageSquare, Save, Loader2 } from 'lucide-react';
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Save from "lucide-react/dist/esm/icons/save";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { toast } from '@/hooks/use-toast';
 
 interface NotificationTemplate {

@@ -21,10 +21,23 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle,
-  Filter, Download, Upload, Phone, Mail, Lock, Eye, Trash, MoreHorizontal, Edit
-} from "lucide-react";
+import Users from "lucide-react/dist/esm/icons/users";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Search from "lucide-react/dist/esm/icons/search";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Award from "lucide-react/dist/esm/icons/award";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import UserCircle from "lucide-react/dist/esm/icons/user-circle";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import Download from "lucide-react/dist/esm/icons/download";
+import Upload from "lucide-react/dist/esm/icons/upload";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Trash from "lucide-react/dist/esm/icons/trash";
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import Edit from "lucide-react/dist/esm/icons/edit";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
 import { TooltipGuide } from "@/components/shared/TooltipGuide";

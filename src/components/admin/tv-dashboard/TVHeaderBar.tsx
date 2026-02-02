@@ -11,7 +11,8 @@
 import { useState, useEffect } from 'react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { cn } from '@/lib/utils';
-import { Wifi, WifiOff } from 'lucide-react';
+import Wifi from "lucide-react/dist/esm/icons/wifi";
+import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
 
 interface TVHeaderBarProps {
     isConnected?: boolean;

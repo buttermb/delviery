@@ -6,7 +6,7 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
 import { cn } from '@/lib/utils';
 import type { WidgetId } from '@/hooks/useDashboardLayout';
 

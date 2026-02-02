@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, ArrowRight } from '@phosphor-icons/react';
 import { AnimatedIcon } from './AnimatedIcon';
-import { UserPlus, Upload, Rocket, type LucideIcon } from 'lucide-react';
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import Upload from "lucide-react/dist/esm/icons/upload";
+import Rocket from "lucide-react/dist/esm/icons/rocket";
+import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
 
 interface Step {
   id: number;

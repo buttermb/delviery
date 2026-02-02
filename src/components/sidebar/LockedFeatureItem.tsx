@@ -8,7 +8,11 @@
  * - Click handler to open upgrade modal
  */
 
-import { Lock, Star, Diamond, Zap, ArrowUpRight } from 'lucide-react';
+import Lock from "lucide-react/dist/esm/icons/lock";
+import Star from "lucide-react/dist/esm/icons/star";
+import Diamond from "lucide-react/dist/esm/icons/diamond";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
 import { Badge } from '@/components/ui/badge';
 import {
   Tooltip,

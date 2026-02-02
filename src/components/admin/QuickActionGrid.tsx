@@ -1,6 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, Users, Truck, TrendingUp, Bell, Settings, FileText, Shield } from "lucide-react";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Shield from "lucide-react/dist/esm/icons/shield";
 import { motion } from "framer-motion";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 

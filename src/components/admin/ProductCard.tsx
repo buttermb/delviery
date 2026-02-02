@@ -2,15 +2,16 @@ import React, { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Copy,
-  Edit,
-  Trash2,
-  Package,
-  TrendingUp,
-  Archive,
-  ArchiveRestore,
-} from "lucide-react";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Package from "lucide-react/dist/esm/icons/package";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Archive from "lucide-react/dist/esm/icons/archive";
+import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
+import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import Store from "lucide-react/dist/esm/icons/store";
 import { InventoryStatusBadge } from "@/components/admin/InventoryStatusBadge";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import {
@@ -19,7 +20,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Printer, Store } from "lucide-react";
 import { useProductThumbnail } from "@/hooks/useOptimizedImage";
 import LongPressMenu from "@/components/mobile/LongPressMenu";
 

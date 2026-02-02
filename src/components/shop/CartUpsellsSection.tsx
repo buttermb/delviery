@@ -16,8 +16,9 @@ import { useLuxuryTheme } from '@/components/shop/luxury';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { useShopCart } from '@/hooks/useShopCart';
 import { StorefrontProductCard, type MarketplaceProduct } from '@/components/shop/StorefrontProductCard';
-import { TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
-
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
 
 interface CartUpsellsSectionProps {
     storeId: string;

@@ -6,7 +6,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Download, FileText, FileSpreadsheet, FileSpreadsheet as ExcelIcon } from 'lucide-react';
+import Download from "lucide-react/dist/esm/icons/download";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
+import FileSpreadsheet as ExcelIcon from "lucide-react/dist/esm/icons/file-spreadsheet as excel-icon";
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 

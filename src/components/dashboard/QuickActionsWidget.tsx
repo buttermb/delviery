@@ -9,7 +9,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Zap } from 'lucide-react';
+import Zap from "lucide-react/dist/esm/icons/zap";
 import { cn } from '@/lib/utils';
 import {
     QUICK_ACTION_ITEMS,

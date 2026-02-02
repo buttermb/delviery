@@ -19,7 +19,12 @@ import {
 } from '@/components/ui/select';
 import { BarcodeScanner } from '@/components/inventory/BarcodeScanner';
 import { SmartClientPicker } from '@/components/wholesale/SmartClientPicker';
-import { ArrowLeft, Trash2, DollarSign, Calendar, AlertTriangle, Clock } from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { SEOHead } from '@/components/SEOHead';
 import { useToast } from '@/hooks/use-toast';
 import { calculateExpectedProfit } from '@/utils/barcodeHelpers';

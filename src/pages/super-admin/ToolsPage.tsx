@@ -7,7 +7,7 @@ import { TenantMigration } from '@/components/super-admin/tools/TenantMigration'
 import { PanicResetTool } from '@/components/super-admin/tools/PanicResetTool';
 import { PageHeader } from '@/components/super-admin/ui/PageHeader';
 import { SEOHead } from '@/components/SEOHead';
-import { Wrench } from 'lucide-react';
+import Wrench from "lucide-react/dist/esm/icons/wrench";
 
 export default function ToolsPage() {
   return (

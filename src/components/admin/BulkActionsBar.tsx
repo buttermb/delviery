@@ -4,14 +4,12 @@
  */
 
 import { Button } from '@/components/ui/button';
-import {
-    X,
-    Mail,
-    Ban,
-    CheckCircle,
-    Download,
-    Trash2
-} from 'lucide-react';
+import X from "lucide-react/dist/esm/icons/x";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Ban from "lucide-react/dist/esm/icons/ban";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Download from "lucide-react/dist/esm/icons/download";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import {
     AlertDialog,
     AlertDialogAction,

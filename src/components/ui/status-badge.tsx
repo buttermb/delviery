@@ -1,18 +1,16 @@
 import { Badge, BadgeProps } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { getStatusColor, getStatusVariant } from '@/lib/utils/statusColors';
-import { 
-  CheckCircle2, 
-  XCircle, 
-  AlertTriangle, 
-  Clock, 
-  Info,
-  Package,
-  Truck,
-  Ban,
-  Loader2,
-  LucideIcon
-} from 'lucide-react';
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Info from "lucide-react/dist/esm/icons/info";
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Ban from "lucide-react/dist/esm/icons/ban";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
 
 export interface StatusBadgeProps extends Omit<BadgeProps, 'variant'> {
   /** The status value to display */

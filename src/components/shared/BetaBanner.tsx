@@ -3,7 +3,8 @@
  * Non-intrusive banner to indicate beta preview status
  */
 
-import { AlertTriangle, X } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import X from "lucide-react/dist/esm/icons/x";
 import { useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';

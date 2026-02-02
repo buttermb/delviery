@@ -34,13 +34,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
-import {
-  Search,
-  Star,
-  GripVertical,
-  X,
-  Package,
-} from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import Star from "lucide-react/dist/esm/icons/star";
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
+import X from "lucide-react/dist/esm/icons/x";
+import Package from "lucide-react/dist/esm/icons/package";
 
 interface Product {
   id: string;

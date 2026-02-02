@@ -5,13 +5,11 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import {
-  TrendingUp,
-  Package,
-  DollarSign,
-  Loader2,
-  BarChart3,
-} from "lucide-react";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Package from "lucide-react/dist/esm/icons/package";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
 import { DemandForecast } from "@/components/admin/predictive/DemandForecast";
 import { InventoryOptimization } from "@/components/admin/predictive/InventoryOptimization";
 import { CashFlowProjection } from "@/components/admin/predictive/CashFlowProjection";

@@ -6,20 +6,18 @@
  */
 
 import { motion } from 'framer-motion';
-import {
-    Clock,
-    CalendarDays,
-    AlertCircle,
-    FileText,
-    ShoppingCart,
-    MessageSquare,
-    Mail,
-    CreditCard,
-    Package,
-    Users,
-    User,
-    MapPin
-} from 'lucide-react';
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CalendarDays from "lucide-react/dist/esm/icons/calendar-days";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import User from "lucide-react/dist/esm/icons/user";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
 import { cn } from '@/lib/utils';
 import { FREE_TIER_LIMITS } from '@/lib/credits';
 import { Badge } from '@/components/ui/badge';

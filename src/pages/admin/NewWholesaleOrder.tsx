@@ -17,22 +17,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  ArrowLeft,
-  AlertCircle,
-  AlertTriangle,
-  CheckCircle2,
-  Package,
-  DollarSign,
-  Truck,
-  Plus,
-  Minus,
-  Search,
-  Users,
-  Loader2,
-  Sparkles,
-  X,
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Package from "lucide-react/dist/esm/icons/package";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import Search from "lucide-react/dist/esm/icons/search";
+import Users from "lucide-react/dist/esm/icons/users";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import X from "lucide-react/dist/esm/icons/x";
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useWholesaleCouriers, useProductsForWholesale } from '@/hooks/useWholesaleData';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

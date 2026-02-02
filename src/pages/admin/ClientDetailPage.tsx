@@ -13,17 +13,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import {
-    Loader2,
-    ArrowLeft,
-    Mail,
-    Phone,
-    ExternalLink,
-    Copy,
-    FileText,
-    Receipt,
-    DollarSign
-} from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import { formatCurrency } from '@/utils/formatters';
 import { format } from 'date-fns';
 import { toast } from 'sonner';

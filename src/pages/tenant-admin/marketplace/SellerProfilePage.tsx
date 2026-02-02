@@ -14,7 +14,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { ProfileForm } from './ProfileForm';
-import { Building2, CheckCircle, Clock, XCircle, AlertCircle, FileText, Upload } from 'lucide-react';
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Upload from "lucide-react/dist/esm/icons/upload";
 import { formatSmartDate } from '@/lib/utils/formatDate';
 
 export default function SellerProfilePage() {

@@ -9,13 +9,11 @@
 
 import { useState, useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import {
-  Tag,
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  X,
-} from 'lucide-react';
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import X from "lucide-react/dist/esm/icons/x";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

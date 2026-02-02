@@ -8,19 +8,17 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import {
-  Building2,
-  DollarSign,
-  Users,
-  Package,
-  Settings,
-  AlertTriangle,
-  ArrowLeft,
-  LogIn,
-  Play,
-  Pause,
-  Trash2
-} from "lucide-react";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Users from "lucide-react/dist/esm/icons/users";
+import Package from "lucide-react/dist/esm/icons/package";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import LogIn from "lucide-react/dist/esm/icons/log-in";
+import Play from "lucide-react/dist/esm/icons/play";
+import Pause from "lucide-react/dist/esm/icons/pause";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";

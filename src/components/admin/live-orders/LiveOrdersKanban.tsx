@@ -4,17 +4,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
-import {
-    Clock,
-    CheckCircle,
-    Package,
-    Truck,
-    MapPin,
-    AlertCircle,
-    ChevronRight,
-    MoreHorizontal,
-    PauseCircle
-} from 'lucide-react';
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import PauseCircle from "lucide-react/dist/esm/icons/pause-circle";
 import {
     DropdownMenu,
     DropdownMenuContent,

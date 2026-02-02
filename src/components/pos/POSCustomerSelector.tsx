@@ -4,7 +4,13 @@
  */
 
 import { useState, useMemo } from 'react';
-import { Check, ChevronsUpDown, Plus, User, Phone, Mail, Award } from 'lucide-react';
+import Check from "lucide-react/dist/esm/icons/check";
+import ChevronsUpDown from "lucide-react/dist/esm/icons/chevrons-up-down";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import User from "lucide-react/dist/esm/icons/user";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Award from "lucide-react/dist/esm/icons/award";
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {

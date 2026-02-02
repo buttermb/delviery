@@ -1,5 +1,10 @@
 import { motion } from "framer-motion";
-import { TrendingUp, DollarSign, Package, Users, BarChart3, ArrowUpRight } from "lucide-react";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
 import { useEffect, useState } from "react";
 
 export function AnimatedDashboardPreview() {

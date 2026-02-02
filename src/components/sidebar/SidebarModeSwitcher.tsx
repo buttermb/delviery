@@ -15,7 +15,8 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Layers } from 'lucide-react';
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import Layers from "lucide-react/dist/esm/icons/layers";
 import { useSidebarMode, type SidebarMode } from '@/hooks/useSidebarMode';
 
 interface SidebarModeSwitcherProps {

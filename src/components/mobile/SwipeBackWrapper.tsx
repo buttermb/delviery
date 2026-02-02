@@ -7,7 +7,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/utils/haptics';
-import { ChevronLeft } from 'lucide-react';
+import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
 
 interface SwipeBackWrapperProps {
   children: React.ReactNode;

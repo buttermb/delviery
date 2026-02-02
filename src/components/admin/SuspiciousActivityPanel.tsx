@@ -3,21 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import {
-  AlertTriangle,
-  Monitor,
-  Smartphone,
-  Tablet,
-  Shield,
-  ShieldCheck,
-  ShieldX,
-  CheckCircle,
-  XCircle,
-  Trash2,
-  Clock,
-  MapPin,
-  Globe,
-} from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Monitor from "lucide-react/dist/esm/icons/monitor";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Tablet from "lucide-react/dist/esm/icons/tablet";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import ShieldX from "lucide-react/dist/esm/icons/shield-x";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Globe from "lucide-react/dist/esm/icons/globe";
 import { useKnownDevices, type KnownDevice, type SuspiciousLoginAlert } from '@/hooks/useKnownDevices';
 import { toast } from 'sonner';
 

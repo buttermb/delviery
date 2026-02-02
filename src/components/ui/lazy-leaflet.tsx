@@ -6,7 +6,7 @@
 import { lazy, ComponentType, Suspense, ReactNode } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin } from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
 
 // Skeleton loader for Map components
 export const MapSkeleton = ({ height = 400 }: { height?: number }) => (

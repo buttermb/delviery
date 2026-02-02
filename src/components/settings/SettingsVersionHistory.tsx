@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { formatDistanceToNow, format } from 'date-fns';
-import { History, RotateCcw, ChevronDown, ChevronUp, Eye, Loader2 } from 'lucide-react';
+import History from "lucide-react/dist/esm/icons/history";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {

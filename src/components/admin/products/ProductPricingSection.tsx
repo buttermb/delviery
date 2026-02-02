@@ -16,15 +16,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {
-  DollarSign,
-  Plus,
-  Trash2,
-  TrendingUp,
-  Info,
-  Percent,
-  Package,
-} from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Info from "lucide-react/dist/esm/icons/info";
+import Percent from "lucide-react/dist/esm/icons/percent";
+import Package from "lucide-react/dist/esm/icons/package";
 import { cn } from '@/lib/utils';
 
 export interface BulkPriceTier {

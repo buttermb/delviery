@@ -7,22 +7,20 @@
  */
 
 import { motion } from 'framer-motion';
-import {
-    LayoutDashboard,
-    ShoppingCart,
-    Package,
-    Users,
-    Settings,
-    Bell,
-    Search,
-    Menu,
-    MoreVertical,
-    TrendingUp,
-    DollarSign,
-    Clock,
-    CheckCircle2,
-    Zap
-} from 'lucide-react';
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Search from "lucide-react/dist/esm/icons/search";
+import Menu from "lucide-react/dist/esm/icons/menu";
+import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Zap from "lucide-react/dist/esm/icons/zap";
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
 // Mobile-optimized version

@@ -5,7 +5,8 @@
 
 import { OrderPipelineBoard } from '@/components/tenant-admin/OrderPipelineBoard';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus } from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Plus from "lucide-react/dist/esm/icons/plus";
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function OrderPipelinePage() {

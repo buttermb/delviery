@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Smartphone } from "lucide-react";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
 import { useNavigate } from "react-router-dom";
 
 const CTA = () => {

@@ -27,7 +27,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Zap, Loader2 } from 'lucide-react';
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { cn } from '@/lib/utils';
 import { useOrderRush } from '@/hooks/useOrderRush';
 

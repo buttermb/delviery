@@ -6,7 +6,12 @@
 
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Tag, Percent, Clock, Calendar, ArrowRight, Sparkles } from 'lucide-react';
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Percent from "lucide-react/dist/esm/icons/percent";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';

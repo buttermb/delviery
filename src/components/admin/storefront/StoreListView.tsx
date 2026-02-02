@@ -5,7 +5,8 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Store } from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Store from "lucide-react/dist/esm/icons/store";
 import { StoreCard } from './StoreCard';
 
 interface MarketplaceStore {

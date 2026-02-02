@@ -6,7 +6,10 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, FileText, Calendar, Building2 } from "lucide-react";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
 import { getStatusColor } from "@/lib/utils/statusColors";
 
 interface Batch {

@@ -6,7 +6,13 @@
  */
 
 import { useMemo } from 'react';
-import { Target, TrendingUp, TrendingDown, Zap, Calendar, CheckCircle, AlertTriangle } from 'lucide-react';
+import Target from "lucide-react/dist/esm/icons/target";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';

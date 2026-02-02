@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
-import { Loader2 } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { cn } from '@/lib/utils';
 
 interface DialogFooterActionsProps {

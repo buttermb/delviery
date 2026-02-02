@@ -4,7 +4,9 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Bell, MessageSquare, Mail } from "lucide-react";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Mail from "lucide-react/dist/esm/icons/mail";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 

@@ -7,7 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Filter, X } from 'lucide-react';
+import Filter from "lucide-react/dist/esm/icons/filter";
+import X from "lucide-react/dist/esm/icons/x";
 import { useState } from 'react';
 
 interface FilterState {

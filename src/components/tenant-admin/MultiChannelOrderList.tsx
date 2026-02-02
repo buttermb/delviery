@@ -8,13 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-    ShoppingBag,
-    Store,
-    Globe,
-    Search,
-    ArrowUpRight
-} from 'lucide-react';
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import Store from "lucide-react/dist/esm/icons/store";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import Search from "lucide-react/dist/esm/icons/search";
+import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

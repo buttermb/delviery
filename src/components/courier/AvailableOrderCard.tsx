@@ -1,7 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Navigation, Clock, Package } from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Package from "lucide-react/dist/esm/icons/package";
 import { formatDistance } from 'date-fns';
 import { motion } from 'framer-motion';
 

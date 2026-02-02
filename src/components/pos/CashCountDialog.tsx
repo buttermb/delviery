@@ -12,7 +12,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Calculator, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import Calculator from "lucide-react/dist/esm/icons/calculator";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import { useCashDrawer, calculateCashCountTotal, type CashCount } from '@/hooks/useCashDrawer';
 
 interface CashCountDialogProps {

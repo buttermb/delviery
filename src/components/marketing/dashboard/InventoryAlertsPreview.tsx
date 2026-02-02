@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { AlertTriangle, Package } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Package from "lucide-react/dist/esm/icons/package";
 import { Badge } from '@/components/ui/badge';
 import { mockDashboardData } from '../mockDashboardData';
 

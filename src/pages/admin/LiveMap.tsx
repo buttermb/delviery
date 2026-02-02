@@ -8,12 +8,30 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import {
-  MapPin, Truck, Layers, Map as MapIcon, Search,
-  Phone, Navigation, Clock, Users, Activity,
-  ChevronRight, RefreshCw, Maximize2, Minimize2, UserPlus, AlertCircle,
-  CheckCircle, XCircle, Car, Focus, Package, Route, Timer, ShoppingBag
-} from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Layers from "lucide-react/dist/esm/icons/layers";
+import Map as MapIcon from "lucide-react/dist/esm/icons/map as map-icon";
+import Search from "lucide-react/dist/esm/icons/search";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Users from "lucide-react/dist/esm/icons/users";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Maximize2 from "lucide-react/dist/esm/icons/maximize-2";
+import Minimize2 from "lucide-react/dist/esm/icons/minimize-2";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Car from "lucide-react/dist/esm/icons/car";
+import Focus from "lucide-react/dist/esm/icons/focus";
+import Package from "lucide-react/dist/esm/icons/package";
+import Route from "lucide-react/dist/esm/icons/route";
+import Timer from "lucide-react/dist/esm/icons/timer";
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
 import { SEOHead } from '@/components/SEOHead';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import type mapboxgl from 'mapbox-gl';

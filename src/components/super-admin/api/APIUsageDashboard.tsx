@@ -5,7 +5,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Activity, Clock } from 'lucide-react';
+import Activity from "lucide-react/dist/esm/icons/activity";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { format } from 'date-fns';
 

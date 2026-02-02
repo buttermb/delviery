@@ -19,16 +19,14 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  TrendingUp,
-  Users,
-  DollarSign,
-  AlertTriangle,
-  Activity,
-  Search,
-  Eye,
-  MoreVertical,
-} from 'lucide-react';
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Users from "lucide-react/dist/esm/icons/users";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import Search from "lucide-react/dist/esm/icons/search";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/utils/formatCurrency';

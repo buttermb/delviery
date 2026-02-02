@@ -39,16 +39,14 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { usePagination } from '@/hooks/usePagination';
 import { StandardPagination } from '@/components/shared/StandardPagination';
-import {
-  Search,
-  Loader2,
-  Copy,
-  Mail,
-  Ban,
-  CheckCircle,
-  Gift,
-  History,
-} from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Ban from "lucide-react/dist/esm/icons/ban";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Gift from "lucide-react/dist/esm/icons/gift";
+import History from "lucide-react/dist/esm/icons/history";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';

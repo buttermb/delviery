@@ -8,7 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Zap, Mail, MessageSquare, Clock, Loader2 } from "lucide-react";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 interface Workflow {
   id: string;

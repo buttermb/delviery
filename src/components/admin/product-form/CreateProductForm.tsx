@@ -2,18 +2,16 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 // Card components available for future use if needed
 import { Progress } from "@/components/ui/progress";
-import {
-  Loader2,
-  ChevronLeft,
-  ChevronRight,
-  Check,
-  Package,
-  DollarSign,
-  FileText,
-  Shield,
-  Image as ImageIcon,
-  ClipboardCheck
-} from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Check from "lucide-react/dist/esm/icons/check";
+import Package from "lucide-react/dist/esm/icons/package";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
+import ClipboardCheck from "lucide-react/dist/esm/icons/clipboard-check";
 import { toast } from "sonner";
 import { sanitizeFormInput, sanitizeTextareaInput, sanitizeSkuInput } from "@/lib/utils/sanitize";
 import { BasicInfoStep } from "./BasicInfoStep";

@@ -7,17 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { 
-  ArrowLeft, 
-  Minus, 
-  Plus, 
-  Trash2, 
-  ShoppingCart,
-  CreditCard,
-  MessageSquare,
-  ArrowRight,
-  Package
-} from "lucide-react";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Package from "lucide-react/dist/esm/icons/package";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { useGuestCart } from "@/hooks/useGuestCart";

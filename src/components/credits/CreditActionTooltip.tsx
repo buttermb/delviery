@@ -4,7 +4,8 @@ import {
     TooltipProvider,
     TooltipTrigger
 } from "@/components/ui/tooltip";
-import { Coins, AlertTriangle } from "lucide-react";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { useCredits } from "@/hooks/useCredits";
 import { getCreditCost, getCreditCostInfo } from "@/lib/credits";
 import { cn } from "@/lib/utils";

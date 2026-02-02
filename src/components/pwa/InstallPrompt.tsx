@@ -4,7 +4,10 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Download, Smartphone, Share } from 'lucide-react';
+import X from "lucide-react/dist/esm/icons/x";
+import Download from "lucide-react/dist/esm/icons/download";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Share from "lucide-react/dist/esm/icons/share";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';

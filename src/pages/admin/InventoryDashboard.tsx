@@ -3,15 +3,13 @@ import { logger } from '@/lib/logger';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { queryKeys } from '@/lib/queryKeys';
-import {
-  Package,
-  Warehouse,
-  Truck,
-  MapPin,
-  AlertTriangle,
-  Plus,
-  ArrowRightLeft,
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import Warehouse from "lucide-react/dist/esm/icons/warehouse";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import ArrowRightLeft from "lucide-react/dist/esm/icons/arrow-right-left";
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

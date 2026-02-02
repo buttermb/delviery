@@ -8,13 +8,11 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Play,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Loader2,
-} from 'lucide-react';
+import Play from "lucide-react/dist/esm/icons/play";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { WorkflowCanvas } from './WorkflowCanvas';
 import { WorkflowMonitoringDashboard } from './WorkflowMonitoringDashboard';
 import { DeadLetterQueue } from './DeadLetterQueue';

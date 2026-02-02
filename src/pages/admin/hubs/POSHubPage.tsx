@@ -9,7 +9,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CreditCard, Clock, FileText, BarChart3 } from 'lucide-react';
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
 
 // Import existing components (reuse, don't duplicate)
 import PointOfSale from '@/pages/admin/PointOfSale';

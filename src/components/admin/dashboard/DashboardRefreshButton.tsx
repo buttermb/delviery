@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { RefreshCw } from 'lucide-react';
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { Button } from '@/components/ui/button';
 import { queryKeys } from '@/lib/queryKeys';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

@@ -16,7 +16,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { X, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import X from "lucide-react/dist/esm/icons/x";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 

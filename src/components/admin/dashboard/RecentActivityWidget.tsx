@@ -6,7 +6,9 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Activity, Clock, User } from 'lucide-react';
+import Activity from "lucide-react/dist/esm/icons/activity";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import User from "lucide-react/dist/esm/icons/user";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';

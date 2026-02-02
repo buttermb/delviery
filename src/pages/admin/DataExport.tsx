@@ -9,7 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import { Download, Database, FileSpreadsheet } from 'lucide-react';
+import Download from "lucide-react/dist/esm/icons/download";
+import Database from "lucide-react/dist/esm/icons/database";
+import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
 import { Skeleton } from '@/components/ui/skeleton';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { CreditCostBadge, CreditCostIndicator, useCreditConfirm, CreditConfirmDialog } from '@/components/credits';

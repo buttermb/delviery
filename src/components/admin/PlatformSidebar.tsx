@@ -1,14 +1,12 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import {
-    Users,
-    ShieldAlert,
-    BarChart3,
-    LogOut,
-    LayoutDashboard,
-    Wallet
-} from 'lucide-react';
+import Users from "lucide-react/dist/esm/icons/users";
+import ShieldAlert from "lucide-react/dist/esm/icons/shield-alert";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import LogOut from "lucide-react/dist/esm/icons/log-out";
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import Wallet from "lucide-react/dist/esm/icons/wallet";
 
 export function PlatformSidebar() {
     const location = useLocation();

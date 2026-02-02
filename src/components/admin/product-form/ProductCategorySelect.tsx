@@ -17,7 +17,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Check, ChevronDown, Search, Folder, FolderOpen, Tag } from 'lucide-react';
+import Check from "lucide-react/dist/esm/icons/check";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import Search from "lucide-react/dist/esm/icons/search";
+import Folder from "lucide-react/dist/esm/icons/folder";
+import FolderOpen from "lucide-react/dist/esm/icons/folder-open";
+import Tag from "lucide-react/dist/esm/icons/tag";
 import { cn } from '@/lib/utils';
 import { useFlattenedCategories, type FlattenedCategory } from '@/hooks/useCategories';
 import { Skeleton } from '@/components/ui/skeleton';

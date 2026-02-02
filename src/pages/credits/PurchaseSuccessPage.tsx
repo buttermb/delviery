@@ -8,17 +8,15 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  CheckCircle,
-  Coins,
-  Loader2,
-  ArrowRight,
-  ShoppingCart,
-  Zap,
-  TrendingUp,
-  Copy,
-  Check,
-} from 'lucide-react';
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Check from "lucide-react/dist/esm/icons/check";
 import { useCredits } from '@/hooks/useCredits';
 import { useTenantNavigation } from '@/hooks/useTenantNavigation';
 import { useQueryClient } from '@tanstack/react-query';

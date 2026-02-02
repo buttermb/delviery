@@ -14,18 +14,16 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { motion } from 'framer-motion';
-import {
-  Package,
-  Truck,
-  CheckCircle,
-  Clock,
-  MapPin,
-  Phone,
-  Mail,
-  XCircle,
-  ArrowLeft,
-  RefreshCw
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
@@ -380,8 +378,4 @@ export default function OrderTrackingPage() {
     </div>
   );
 }
-
-
-
-
 

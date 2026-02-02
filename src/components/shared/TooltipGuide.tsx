@@ -4,7 +4,8 @@
  */
 
 import { useState, useEffect } from "react";
-import { Info, X } from "lucide-react";
+import Info from "lucide-react/dist/esm/icons/info";
+import X from "lucide-react/dist/esm/icons/x";
 import {
   Tooltip,
   TooltipContent,

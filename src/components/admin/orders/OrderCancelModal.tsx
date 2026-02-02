@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { AlertTriangle, Loader2, Package } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Package from "lucide-react/dist/esm/icons/package";
 import { logger } from '@/lib/logger';
 import { useCancelOrder } from '@/hooks/useUnifiedOrders';
 import {

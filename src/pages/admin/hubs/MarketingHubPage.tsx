@@ -8,13 +8,11 @@
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    Star,
-    Tag,
-    Mail,
-    MessageSquare,
-    ThumbsUp,
-} from 'lucide-react';
+import Star from "lucide-react/dist/esm/icons/star";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import ThumbsUp from "lucide-react/dist/esm/icons/thumbs-up";
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';

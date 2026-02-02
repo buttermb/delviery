@@ -6,7 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, CreditCard, AlertCircle } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { logger } from "@/lib/logger";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 

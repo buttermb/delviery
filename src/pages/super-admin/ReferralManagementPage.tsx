@@ -5,17 +5,15 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import {
-  Users,
-  Gift,
-  TrendingUp,
-  Trophy,
-  RefreshCw,
-  Crown,
-  Coins,
-  CheckCircle,
-  Clock,
-} from 'lucide-react';
+import Users from "lucide-react/dist/esm/icons/users";
+import Gift from "lucide-react/dist/esm/icons/gift";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Trophy from "lucide-react/dist/esm/icons/trophy";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Crown from "lucide-react/dist/esm/icons/crown";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -328,10 +326,4 @@ export default function ReferralManagementPage() {
     </div>
   );
 }
-
-
-
-
-
-
 

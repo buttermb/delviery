@@ -23,26 +23,24 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  Package,
-  User,
-  MapPin,
-  CreditCard,
-  ShoppingCart,
-  Loader2,
-  ChevronUp,
-  ChevronDown
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Check from "lucide-react/dist/esm/icons/check";
+import Package from "lucide-react/dist/esm/icons/package";
+import User from "lucide-react/dist/esm/icons/user";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CheckoutLoyalty } from '@/components/shop/CheckoutLoyalty';
 import { useStoreStatus } from '@/hooks/useStoreStatus';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Clock } from 'lucide-react';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -8,7 +8,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Webhook, Plus, Edit, Trash2, Loader2, Link2, ExternalLink } from 'lucide-react';
+import Webhook from "lucide-react/dist/esm/icons/webhook";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Link2 from "lucide-react/dist/esm/icons/link-2";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
 import { useState } from 'react';
 import { WebhookLogs } from './WebhookLogs';
 import { handleError } from '@/utils/errorHandling/handlers';

@@ -7,7 +7,7 @@
 import { ReactNode, useState, useEffect } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { AlertTriangle } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { useTenantLimits } from '@/hooks/useTenantLimits';
 import { UpgradePrompt } from '@/components/shared/UpgradePrompt';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

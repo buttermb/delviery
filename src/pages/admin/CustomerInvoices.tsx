@@ -17,7 +17,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { FileText, Plus, Mail, DollarSign, Calendar, User, Trash2, X, Loader2 } from 'lucide-react';
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import User from "lucide-react/dist/esm/icons/user";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import X from "lucide-react/dist/esm/icons/x";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';

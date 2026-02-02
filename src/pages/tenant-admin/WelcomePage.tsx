@@ -3,17 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Package, 
-  Users, 
-  Menu, 
-  Zap, 
-  Check, 
-  ArrowRight,
-  PlayCircle,
-  BookOpen,
-  MessageCircle,
-} from "lucide-react";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import Menu from "lucide-react/dist/esm/icons/menu";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Check from "lucide-react/dist/esm/icons/check";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import PlayCircle from "lucide-react/dist/esm/icons/play-circle";
+import BookOpen from "lucide-react/dist/esm/icons/book-open";
+import MessageCircle from "lucide-react/dist/esm/icons/message-circle";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 interface SetupStep {

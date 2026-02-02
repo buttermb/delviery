@@ -1,7 +1,7 @@
 import { UsageLimitGuard } from "@/components/tenant-admin/UsageLimitGuard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UserPlus } from "lucide-react";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
 
 /**
  * Example page showing how to use UsageLimitGuard

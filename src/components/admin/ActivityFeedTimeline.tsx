@@ -8,20 +8,18 @@ import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  ShoppingCart,
-  Package,
-  User,
-  Settings,
-  CreditCard,
-  Truck,
-  Activity,
-  Users,
-  AlertTriangle,
-  CheckCircle,
-  Info,
-  AlertCircle,
-} from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Package from "lucide-react/dist/esm/icons/package";
+import User from "lucide-react/dist/esm/icons/user";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import Users from "lucide-react/dist/esm/icons/users";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Info from "lucide-react/dist/esm/icons/info";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { formatRelativeTime } from '@/lib/utils/formatDate';
 import type { ActivityLogEntry, ActivityCategory, ActivitySeverity } from '@/hooks/useActivityFeed';
 

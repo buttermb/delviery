@@ -6,7 +6,7 @@
 import { SelfHostedAnalytics } from '@/components/admin/analytics/SelfHostedAnalytics';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
 import { useNavigate } from 'react-router-dom';
 
 export default function AnalyticsPage() {

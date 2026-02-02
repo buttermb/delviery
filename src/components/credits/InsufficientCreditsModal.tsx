@@ -8,7 +8,10 @@
  */
 
 import { useState, useMemo } from 'react';
-import { AlertCircle, Coins, ShoppingCart, X } from 'lucide-react';
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import X from "lucide-react/dist/esm/icons/x";
 import {
   Dialog,
   DialogContent,

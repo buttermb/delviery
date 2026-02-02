@@ -3,7 +3,7 @@ import { DocsLayout } from "@/components/docs/DocsLayout";
 import { ApiEndpointCard, ApiEndpoint } from "@/components/docs/ApiEndpointCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import Search from "lucide-react/dist/esm/icons/search";
 import { useState } from "react";
 
 const endpoints: ApiEndpoint[] = [

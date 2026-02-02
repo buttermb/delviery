@@ -8,55 +8,53 @@
  * for feature tier assignments. This file provides sidebar-specific metadata.
  */
 
-import {
-  LayoutDashboard,
-  Package,
-  Users,
-  ShoppingCart,
-  DollarSign,
-  TrendingUp,
-  Warehouse,
-  AlertCircle,
-  CreditCard,
-  Wallet,
-  Box,
-  Settings,
-  FileText,
-  Building2,
-  Truck,
-  Mail,
-  MapPin,
-  Bell,
-  BarChart3,
-  Star,
-  Tag,
-  Shield,
-  FileSpreadsheet,
-  Receipt,
-  Menu,
-  Store,
-  Globe,
-  Zap,
-  Brain,
-  Download,
-  FolderKanban,
-  Layers,
-  ScrollText,
-  Headphones,
-  HelpCircle,
-  Flame,
-  Activity,
-  Briefcase,
-  ArrowRightLeft,
-  UserCog,
-  Key,
-  Calendar,
-  MessageSquare,
-  Barcode,
-  MapPinned,
-  Building,
-  PieChart,
-} from 'lucide-react';
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Warehouse from "lucide-react/dist/esm/icons/warehouse";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Wallet from "lucide-react/dist/esm/icons/wallet";
+import Box from "lucide-react/dist/esm/icons/box";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Star from "lucide-react/dist/esm/icons/star";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import Menu from "lucide-react/dist/esm/icons/menu";
+import Store from "lucide-react/dist/esm/icons/store";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Brain from "lucide-react/dist/esm/icons/brain";
+import Download from "lucide-react/dist/esm/icons/download";
+import FolderKanban from "lucide-react/dist/esm/icons/folder-kanban";
+import Layers from "lucide-react/dist/esm/icons/layers";
+import ScrollText from "lucide-react/dist/esm/icons/scroll-text";
+import Headphones from "lucide-react/dist/esm/icons/headphones";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
+import Flame from "lucide-react/dist/esm/icons/flame";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import Briefcase from "lucide-react/dist/esm/icons/briefcase";
+import ArrowRightLeft from "lucide-react/dist/esm/icons/arrow-right-left";
+import UserCog from "lucide-react/dist/esm/icons/user-cog";
+import Key from "lucide-react/dist/esm/icons/key";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Barcode from "lucide-react/dist/esm/icons/barcode";
+import MapPinned from "lucide-react/dist/esm/icons/map-pinned";
+import Building from "lucide-react/dist/esm/icons/building";
+import PieChart from "lucide-react/dist/esm/icons/pie-chart";
 import { type FeatureId, type SubscriptionTier, FEATURES } from '@/lib/featureConfig';
 
 export type OperationSize = 'street' | 'small' | 'medium' | 'enterprise';

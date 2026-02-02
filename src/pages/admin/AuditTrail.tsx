@@ -5,7 +5,11 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { History, Search, User, Clock, Shield } from 'lucide-react';
+import History from "lucide-react/dist/esm/icons/history";
+import Search from "lucide-react/dist/esm/icons/search";
+import User from "lucide-react/dist/esm/icons/user";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Shield from "lucide-react/dist/esm/icons/shield";
 
 import { handleError } from '@/utils/errorHandling/handlers';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';

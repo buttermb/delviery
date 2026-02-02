@@ -21,7 +21,12 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { User, Shield, Mail, Key, MonitorSmartphone, Trash2 } from 'lucide-react';
+import User from "lucide-react/dist/esm/icons/user";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Key from "lucide-react/dist/esm/icons/key";
+import MonitorSmartphone from "lucide-react/dist/esm/icons/monitor-smartphone";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 
 interface ProfileData {
   full_name: string | null;

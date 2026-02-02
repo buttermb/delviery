@@ -7,7 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Bell, Send, Calendar, AlertTriangle } from "lucide-react";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Send from "lucide-react/dist/esm/icons/send";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { format, differenceInDays } from "date-fns";
 import {
   Select,

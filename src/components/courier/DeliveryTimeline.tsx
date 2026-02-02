@@ -1,4 +1,7 @@
-import { Clock, CheckCircle, Package, Navigation } from 'lucide-react';
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Package from "lucide-react/dist/esm/icons/package";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 

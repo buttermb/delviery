@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Loader2, AlertTriangle } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { queryKeys } from "@/lib/queryKeys";
 
 interface Batch {

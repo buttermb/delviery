@@ -4,7 +4,10 @@
  */
 
 import { useState } from 'react';
-import { Check, ChevronDown, Loader2, RefreshCw } from 'lucide-react';
+import Check from "lucide-react/dist/esm/icons/check";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import {

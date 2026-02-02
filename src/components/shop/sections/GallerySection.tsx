@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import X from "lucide-react/dist/esm/icons/x";
 
 export interface GallerySectionProps {
     content: {

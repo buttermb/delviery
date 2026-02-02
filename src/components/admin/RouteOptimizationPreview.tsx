@@ -1,7 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Clock, TrendingDown, Navigation } from "lucide-react";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
 
 interface Stop {
   id: string;

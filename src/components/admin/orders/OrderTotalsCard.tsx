@@ -6,7 +6,9 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Receipt, Percent, Tag } from 'lucide-react';
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import Percent from "lucide-react/dist/esm/icons/percent";
+import Tag from "lucide-react/dist/esm/icons/tag";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 

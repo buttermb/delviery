@@ -39,20 +39,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-  Search,
-  X,
-  History,
-  Users,
-  ShoppingCart,
-  Package,
-  FileText,
-  Truck,
-  Building2,
-  Receipt,
-  Loader2,
-  ArrowRight,
-} from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import X from "lucide-react/dist/esm/icons/x";
+import History from "lucide-react/dist/esm/icons/history";
+import Users from "lucide-react/dist/esm/icons/users";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Package from "lucide-react/dist/esm/icons/package";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 
 const RECENT_SEARCHES_KEY = 'dashboard_recent_searches';
 const MAX_RECENT_SEARCHES = 5;

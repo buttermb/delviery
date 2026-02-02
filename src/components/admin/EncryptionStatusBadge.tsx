@@ -2,7 +2,9 @@
 // Component to display encryption status for records
 
 import { Badge } from '@/components/ui/badge';
-import { Lock, Unlock, AlertCircle } from 'lucide-react';
+import Lock from "lucide-react/dist/esm/icons/lock";
+import Unlock from "lucide-react/dist/esm/icons/unlock";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { useEncryption } from '@/lib/hooks/useEncryption';
 import { getEncryptionStatus } from '@/lib/utils/encryptionHelpers';
 import type { ReactNode } from 'react';

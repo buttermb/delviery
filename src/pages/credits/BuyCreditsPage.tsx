@@ -3,7 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Coins, ArrowLeft, Loader2, Tag, Check, Sparkles } from 'lucide-react';
+import Coins from "lucide-react/dist/esm/icons/coins";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Check from "lucide-react/dist/esm/icons/check";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCreditPackages, type CreditPackage } from '@/hooks/useCreditPackages';
 

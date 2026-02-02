@@ -4,7 +4,7 @@
  */
 
 import { Link, useLocation } from 'react-router-dom';
-import { LucideIcon } from 'lucide-react';
+import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
 import { cn } from '@/lib/utils';
 
 interface NavItemProps {

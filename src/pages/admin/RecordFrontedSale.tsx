@@ -6,7 +6,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BarcodeScanner } from '@/components/inventory/BarcodeScanner';
-import { ArrowLeft, DollarSign, Trash2 } from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import { SEOHead } from '@/components/SEOHead';
 import { useToast } from '@/hooks/use-toast';
 

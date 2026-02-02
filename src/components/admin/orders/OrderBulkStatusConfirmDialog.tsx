@@ -1,4 +1,9 @@
-import { AlertTriangle, CheckCircle, Package, Truck, XCircle, Clock } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {

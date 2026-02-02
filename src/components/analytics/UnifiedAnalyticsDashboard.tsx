@@ -2,7 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { Loader2, TrendingUp, ShoppingCart, DollarSign, CreditCard } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { format } from 'date-fns';
 

@@ -1,19 +1,17 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Shield,
-  Lock,
-  MapPin,
-  Clock,
-  Flame,
-  Users,
-  Eye,
-  ArrowLeft,
-  BookOpen,
-  AlertTriangle,
-  CheckCircle2
-} from 'lucide-react';
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Flame from "lucide-react/dist/esm/icons/flame";
+import Users from "lucide-react/dist/esm/icons/users";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import BookOpen from "lucide-react/dist/esm/icons/book-open";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import { useNavigate } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';

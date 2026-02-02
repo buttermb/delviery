@@ -1,18 +1,16 @@
 import { useState } from "react";
-import {
-  Calendar,
-  MoreVertical,
-  Pause,
-  Play,
-  Pencil,
-  Trash2,
-  RefreshCw,
-  Package,
-  Clock,
-  DollarSign,
-  Zap,
-  Building2,
-} from "lucide-react";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
+import Pause from "lucide-react/dist/esm/icons/pause";
+import Play from "lucide-react/dist/esm/icons/play";
+import Pencil from "lucide-react/dist/esm/icons/pencil";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Package from "lucide-react/dist/esm/icons/package";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

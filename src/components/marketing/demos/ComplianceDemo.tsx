@@ -7,7 +7,14 @@
  */
 
 import { motion } from 'framer-motion';
-import { FileText, CheckCircle2, RefreshCw, ShieldCheck, Lock, Zap, Clock, Database } from 'lucide-react';
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Database from "lucide-react/dist/esm/icons/database";
 import { useState, useEffect } from 'react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 

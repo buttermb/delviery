@@ -8,7 +8,9 @@
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCustomerStats } from '@/hooks/useCustomerStats';
-import { DollarSign, ShoppingCart, TrendingUp } from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 
 interface CustomerStatsCardProps {
   customerId: string | undefined;

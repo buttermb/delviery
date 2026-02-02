@@ -14,27 +14,25 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { useNavigate } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  Building2,
-  DollarSign,
-  BarChart3,
-  Settings,
-  Mail,
-  Shield,
-  Activity,
-  Database,
-  FileText,
-  Workflow,
-  Flag,
-  TrendingUp,
-  Search,
-  Plus,
-  FileSearch,
-  User,
-  Bell,
-  Zap,
-} from 'lucide-react';
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import Database from "lucide-react/dist/esm/icons/database";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Workflow from "lucide-react/dist/esm/icons/workflow";
+import Flag from "lucide-react/dist/esm/icons/flag";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Search from "lucide-react/dist/esm/icons/search";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import FileSearch from "lucide-react/dist/esm/icons/file-search";
+import User from "lucide-react/dist/esm/icons/user";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Zap from "lucide-react/dist/esm/icons/zap";
 
 interface CommandPaletteProps {
   open: boolean;

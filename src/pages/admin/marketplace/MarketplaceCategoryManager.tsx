@@ -13,7 +13,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
-import { Loader2, Plus, FolderTree, Edit2, Trash2 } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import FolderTree from "lucide-react/dist/esm/icons/folder-tree";
+import Edit2 from "lucide-react/dist/esm/icons/edit-2";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 
 type MarketplaceCategory = {

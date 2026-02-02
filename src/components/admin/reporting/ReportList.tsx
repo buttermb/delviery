@@ -2,7 +2,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { FileText, Loader2, Download, Eye } from "lucide-react";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Download from "lucide-react/dist/esm/icons/download";
+import Eye from "lucide-react/dist/esm/icons/eye";
 
 interface CustomReport {
   id: string;

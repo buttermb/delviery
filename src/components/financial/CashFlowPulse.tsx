@@ -7,7 +7,11 @@
  * - Cash Runway Indicator
  */
 
-import { ArrowDownRight, ArrowUpRight, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
+import ArrowDownRight from "lucide-react/dist/esm/icons/arrow-down-right";
+import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';

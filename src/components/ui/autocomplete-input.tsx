@@ -2,7 +2,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getSuggestionsSync, isPopularItem, type SuggestionType } from "@/lib/getSuggestions";
-import { Check, Clock, TrendingUp } from "lucide-react";
+import Check from "lucide-react/dist/esm/icons/check";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 
 interface AutocompleteInputProps {
   value: string;

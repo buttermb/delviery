@@ -5,48 +5,46 @@
  * Used by quick actions, navigation, and other dynamic icon rendering.
  */
 
-import {
-  DollarSign,
-  TrendingUp,
-  Package,
-  AlertCircle,
-  ChevronRight,
-  Users,
-  Store,
-  Menu,
-  Box,
-  MapPin,
-  BarChart3,
-  Shield,
-  Building,
-  CheckCircle,
-  Plus,
-  Clock,
-  Truck,
-  ArrowRightLeft,
-  FileText,
-  Globe,
-  Sparkles,
-  CreditCard,
-  Wallet,
-  Calendar,
-  MessageSquare,
-  LayoutGrid,
-  List,
-  Settings,
-  Home,
-  ShoppingCart,
-  Clipboard,
-  Layers,
-  Tag,
-  Percent,
-  Receipt,
-  CreditCard as Payment,
-  Bell,
-  Mail,
-  Phone,
-  type LucideIcon,
-} from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Package from "lucide-react/dist/esm/icons/package";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Users from "lucide-react/dist/esm/icons/users";
+import Store from "lucide-react/dist/esm/icons/store";
+import Menu from "lucide-react/dist/esm/icons/menu";
+import Box from "lucide-react/dist/esm/icons/box";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Building from "lucide-react/dist/esm/icons/building";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import ArrowRightLeft from "lucide-react/dist/esm/icons/arrow-right-left";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Wallet from "lucide-react/dist/esm/icons/wallet";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
+import List from "lucide-react/dist/esm/icons/list";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Home from "lucide-react/dist/esm/icons/home";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Clipboard from "lucide-react/dist/esm/icons/clipboard";
+import Layers from "lucide-react/dist/esm/icons/layers";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Percent from "lucide-react/dist/esm/icons/percent";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import CreditCard as Payment from "lucide-react/dist/esm/icons/credit-card as payment";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
 import React from 'react';
 
 // Icon size variants

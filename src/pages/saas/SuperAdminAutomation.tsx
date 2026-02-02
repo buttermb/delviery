@@ -12,17 +12,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import {
-  Zap,
-  Clock,
-  Shield,
-  AlertTriangle,
-  CheckCircle,
-  Play,
-  Pause,
-  Settings,
-  ArrowLeft,
-} from 'lucide-react';
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Play from "lucide-react/dist/esm/icons/play";
+import Pause from "lucide-react/dist/esm/icons/pause";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatSmartDate } from '@/lib/utils/formatDate';

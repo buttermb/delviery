@@ -1,6 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Book, Code2, FileText, Shield, Zap, BookOpen, AlertCircle } from "lucide-react";
+import Book from "lucide-react/dist/esm/icons/book";
+import Code2 from "lucide-react/dist/esm/icons/code-2";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import BookOpen from "lucide-react/dist/esm/icons/book-open";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const navItems = [

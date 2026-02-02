@@ -9,7 +9,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Coins } from 'lucide-react';
+import Coins from "lucide-react/dist/esm/icons/coins";
 import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { useCredits } from '@/contexts/CreditContext';

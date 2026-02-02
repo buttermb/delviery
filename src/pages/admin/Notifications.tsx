@@ -10,7 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Bell, Plus, Edit, Trash2 } from 'lucide-react';
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 

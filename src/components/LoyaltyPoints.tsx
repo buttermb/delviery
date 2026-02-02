@@ -4,7 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, Gift, Star, Users, Copy, Calendar } from "lucide-react";
+import Trophy from "lucide-react/dist/esm/icons/trophy";
+import Gift from "lucide-react/dist/esm/icons/gift";
+import Star from "lucide-react/dist/esm/icons/star";
+import Users from "lucide-react/dist/esm/icons/users";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
 import { toast } from "@/hooks/use-toast";
 
 const LoyaltyPoints = () => {

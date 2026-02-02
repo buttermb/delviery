@@ -1,14 +1,12 @@
 import { ModernPage } from '@/templates/ModernPageTemplate';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  PlayCircle,
-  BookOpen,
-  HelpCircle,
-  Mail,
-  MessageSquare,
-  Video,
-} from 'lucide-react';
+import PlayCircle from "lucide-react/dist/esm/icons/play-circle";
+import BookOpen from "lucide-react/dist/esm/icons/book-open";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Video from "lucide-react/dist/esm/icons/video";
 import { Link } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 

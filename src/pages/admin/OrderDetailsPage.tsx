@@ -54,30 +54,28 @@ import {
 } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import {
-  ArrowLeft,
-  Package,
-  Truck,
-  CheckCircle,
-  Clock,
-  MapPin,
-  XCircle,
-  User,
-  Phone,
-  Mail,
-  CreditCard,
-  Receipt,
-  Loader2,
-  Edit,
-  Ban,
-  RefreshCw,
-  Copy,
-  ExternalLink,
-  MessageSquare,
-  Calendar,
-  DollarSign,
-  FileText,
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import User from "lucide-react/dist/esm/icons/user";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Ban from "lucide-react/dist/esm/icons/ban";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import FileText from "lucide-react/dist/esm/icons/file-text";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { format } from 'date-fns';

@@ -3,7 +3,7 @@
  * Shows step-by-step progress for multi-section forms
  */
 
-import { Check } from 'lucide-react';
+import Check from "lucide-react/dist/esm/icons/check";
 import { cn } from '@/lib/utils';
 
 interface FormProgressStep {

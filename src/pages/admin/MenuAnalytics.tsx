@@ -2,10 +2,15 @@ import { useParams } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Eye, Users, ShoppingCart, DollarSign, MapPin, Clock,
-  Shield, AlertTriangle, TrendingUp
-} from 'lucide-react';
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Users from "lucide-react/dist/esm/icons/users";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import { useMenuAccessLogs, useMenuOrders, useMenuSecurityEvents } from '@/hooks/useDisposableMenus';
 import { format } from 'date-fns';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';

@@ -33,19 +33,17 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { toast } from "sonner";
-import {
-  Loader2,
-  BarChart3,
-  Database,
-  Filter,
-  LineChart,
-  PieChart,
-  Table2,
-  LayoutGrid,
-  TrendingUp,
-  Plus,
-  X,
-} from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Database from "lucide-react/dist/esm/icons/database";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import LineChart from "lucide-react/dist/esm/icons/line-chart";
+import PieChart from "lucide-react/dist/esm/icons/pie-chart";
+import Table2 from "lucide-react/dist/esm/icons/table-2";
+import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import X from "lucide-react/dist/esm/icons/x";
 import { queryKeys } from "@/lib/queryKeys";
 import { useReportDataSources, useDataSourceFields } from "@/hooks/useReportDataSources";
 import {

@@ -8,16 +8,14 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-    Activity,
-    UserPlus,
-    CreditCard,
-    Settings,
-    AlertTriangle,
-    LogIn,
-    FileText,
-    CheckCircle
-} from 'lucide-react';
+import Activity from "lucide-react/dist/esm/icons/activity";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import LogIn from "lucide-react/dist/esm/icons/log-in";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { handleError } from '@/utils/errorHandling/handlers';
 

@@ -1,4 +1,8 @@
-import { Check, Package, ChefHat, Truck, Home } from 'lucide-react';
+import Check from "lucide-react/dist/esm/icons/check";
+import Package from "lucide-react/dist/esm/icons/package";
+import ChefHat from "lucide-react/dist/esm/icons/chef-hat";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Home from "lucide-react/dist/esm/icons/home";
 import { cn } from '@/lib/utils';
 
 interface OrderProgressBarProps {

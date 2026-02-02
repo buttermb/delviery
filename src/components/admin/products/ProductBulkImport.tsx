@@ -11,18 +11,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  Upload,
-  AlertCircle,
-  CheckCircle2,
-  Loader2,
-  ArrowRight,
-  ArrowLeft,
-  XCircle,
-  FileSpreadsheet,
-  Download,
-  AlertTriangle,
-} from "lucide-react";
+import Upload from "lucide-react/dist/esm/icons/upload";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
+import Download from "lucide-react/dist/esm/icons/download";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";

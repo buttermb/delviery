@@ -24,19 +24,17 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Banknote,
-  Smartphone,
-  Bitcoin,
-  Zap,
-  Coins,
-  Save,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-  Copy,
-  ExternalLink,
-} from 'lucide-react';
+import Banknote from "lucide-react/dist/esm/icons/banknote";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Bitcoin from "lucide-react/dist/esm/icons/bitcoin";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Save from "lucide-react/dist/esm/icons/save";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 

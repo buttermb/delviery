@@ -3,7 +3,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye, Clock } from 'lucide-react';
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Clock from "lucide-react/dist/esm/icons/clock";
 
 interface ViewLimitConfig {
   enabled: boolean;

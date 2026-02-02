@@ -3,7 +3,10 @@
  * Shows low stock and out of stock warnings with real-time data
  */
 
-import { AlertTriangle, Ban, Package, Loader2 } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Ban from "lucide-react/dist/esm/icons/ban";
+import Package from "lucide-react/dist/esm/icons/package";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useProductStock } from '@/hooks/useInventoryCheck';

@@ -7,7 +7,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Package, Users, Truck, Sparkles, ArrowRight } from "lucide-react";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import { useNavigate, useParams } from "react-router-dom";
 
 interface QuickStartWizardProps {

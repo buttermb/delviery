@@ -4,7 +4,8 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Clock, RefreshCw } from 'lucide-react';
+import Clock from "lucide-react/dist/esm/icons/clock";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';

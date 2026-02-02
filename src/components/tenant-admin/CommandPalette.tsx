@@ -26,32 +26,30 @@ import {
 } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  LayoutDashboard,
-  Package,
-  Users,
-  ShoppingCart,
-  FileText,
-  Settings,
-  Search,
-  Plus,
-  Boxes,
-  Truck,
-  MapPin,
-  BarChart3,
-  Calculator,
-  Wallet,
-  Clock,
-  ArrowRight,
-  Menu,
-  Bell,
-  Zap,
-  HelpCircle,
-  Tag,
-  Loader2,
-  X,
-  History,
-} from 'lucide-react';
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Search from "lucide-react/dist/esm/icons/search";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Boxes from "lucide-react/dist/esm/icons/boxes";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Calculator from "lucide-react/dist/esm/icons/calculator";
+import Wallet from "lucide-react/dist/esm/icons/wallet";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Menu from "lucide-react/dist/esm/icons/menu";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import X from "lucide-react/dist/esm/icons/x";
+import History from "lucide-react/dist/esm/icons/history";
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { STORAGE_KEYS, safeJsonParse, safeJsonStringify } from '@/constants/storageKeys';

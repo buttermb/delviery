@@ -18,7 +18,11 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
-import { AlertTriangle, AlertCircle, CheckCircle2, XCircle, Package } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Package from "lucide-react/dist/esm/icons/package";
 import { cn } from '@/lib/utils';
 
 type StockStatus = 'out_of_stock' | 'critical' | 'warning' | 'healthy';

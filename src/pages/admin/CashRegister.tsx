@@ -8,10 +8,23 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import {
-  ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2,
-  User, Percent, Receipt, Printer, X, Keyboard, Tag, Wallet
-} from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Search from "lucide-react/dist/esm/icons/search";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import User from "lucide-react/dist/esm/icons/user";
+import Percent from "lucide-react/dist/esm/icons/percent";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import X from "lucide-react/dist/esm/icons/x";
+import Keyboard from "lucide-react/dist/esm/icons/keyboard";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Wallet from "lucide-react/dist/esm/icons/wallet";
 import {
   Dialog,
   DialogContent,

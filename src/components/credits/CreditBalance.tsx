@@ -1,7 +1,10 @@
 import { useCredits } from "@/contexts/CreditContext";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Coins, Plus, TrendingDown, Calendar } from "lucide-react";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
 import {
   Tooltip,
   TooltipContent,

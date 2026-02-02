@@ -29,7 +29,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Loader2, Ticket, MessageSquare } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Ticket from "lucide-react/dist/esm/icons/ticket";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
 import { queryKeys } from '@/lib/queryKeys';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';

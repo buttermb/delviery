@@ -5,13 +5,11 @@ import { logger } from '@/lib/logger';
  */
 
 import { NavLink, useLocation, Link } from 'react-router-dom';
-import { 
-  Home, 
-  Package, 
-  Users, 
-  Menu,
-  RefreshCw
-} from 'lucide-react';
+import Home from "lucide-react/dist/esm/icons/home";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import Menu from "lucide-react/dist/esm/icons/menu";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';

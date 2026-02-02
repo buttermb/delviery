@@ -17,16 +17,14 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import {
-    Settings2,
-    GripVertical,
-    ChevronUp,
-    ChevronDown,
-    RotateCcw,
-    Eye,
-    EyeOff,
-    LayoutDashboard,
-} from 'lucide-react';
+import Settings2 from "lucide-react/dist/esm/icons/settings-2";
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
+import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
 import { DashboardWidgetDefinition, DashboardWidgetState } from '@/hooks/useDashboardWidgets';
 
 type Widget = DashboardWidgetDefinition & { title?: string; icon?: string; description?: string };

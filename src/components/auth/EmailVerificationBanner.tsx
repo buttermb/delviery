@@ -5,7 +5,9 @@ import { logger } from '@/lib/logger';
  */
 
 import { useState, useEffect } from 'react';
-import { X, Mail, AlertCircle } from 'lucide-react';
+import X from "lucide-react/dist/esm/icons/x";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

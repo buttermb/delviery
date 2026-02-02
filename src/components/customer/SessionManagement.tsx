@@ -10,7 +10,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Monitor, Smartphone, Tablet, LogOut, AlertTriangle } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Monitor from "lucide-react/dist/esm/icons/monitor";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Tablet from "lucide-react/dist/esm/icons/tablet";
+import LogOut from "lucide-react/dist/esm/icons/log-out";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { toast } from '@/hooks/use-toast';
 import { apiFetch } from '@/lib/utils/apiClient';
 // Helper function to format time ago

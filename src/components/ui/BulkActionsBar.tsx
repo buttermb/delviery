@@ -7,15 +7,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
-  X, 
-  Trash2, 
-  CheckCircle, 
-  XCircle, 
-  Download,
-  MoreHorizontal,
-  Loader2
-} from "lucide-react";
+import X from "lucide-react/dist/esm/icons/x";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Download from "lucide-react/dist/esm/icons/download";
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { ExportButton } from "./ExportButton";
 import { cn } from "@/lib/utils";
 

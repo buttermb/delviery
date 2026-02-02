@@ -1,5 +1,10 @@
 import { motion } from 'framer-motion';
-import { Shield, Clock, Leaf, Award, Truck, HeartHandshake } from 'lucide-react';
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Leaf from "lucide-react/dist/esm/icons/leaf";
+import Award from "lucide-react/dist/esm/icons/award";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import HeartHandshake from "lucide-react/dist/esm/icons/heart-handshake";
 
 export interface LuxuryFeaturesSectionProps {
   content?: {

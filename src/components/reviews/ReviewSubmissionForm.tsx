@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { StarRating } from './StarRating';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import { Loader2 } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 interface ReviewSubmissionFormProps {
     productId: string;

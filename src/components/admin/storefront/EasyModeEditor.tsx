@@ -12,17 +12,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import {
-    Palette,
-    Type,
-    Settings2,
-    Megaphone,
-    ChevronDown,
-    ChevronUp,
-    Sparkles,
-    Eye,
-    RefreshCw,
-} from 'lucide-react';
+import Palette from "lucide-react/dist/esm/icons/palette";
+import Type from "lucide-react/dist/esm/icons/type";
+import Settings2 from "lucide-react/dist/esm/icons/settings-2";
+import Megaphone from "lucide-react/dist/esm/icons/megaphone";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { PresetPackSelector, PresetPackStrip } from '@/components/admin/storefront/PresetPackSelector';
 import { FeatureTogglesPanel } from '@/components/admin/storefront/FeatureTogglesPanel';
 import { StorefrontBannerManager } from '@/components/admin/storefront/StorefrontBannerManager';

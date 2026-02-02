@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { Search, Loader2, X, Clock, Package, Phone, Hash } from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import X from "lucide-react/dist/esm/icons/x";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Package from "lucide-react/dist/esm/icons/package";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Hash from "lucide-react/dist/esm/icons/hash";
 import { useDebounce } from '@/hooks/useDebounce';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';

@@ -1,6 +1,11 @@
 import { ModernPage } from '@/templates/ModernPageTemplate';
 import { Card, CardContent } from '@/components/ui/card';
-import { Shield, Eye, Lock, Database, Mail, AlertCircle } from 'lucide-react';
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import Database from "lucide-react/dist/esm/icons/database";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 
 export default function PrivacyPage() {
   return (

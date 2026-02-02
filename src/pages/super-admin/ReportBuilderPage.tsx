@@ -6,7 +6,7 @@
 import { ReportBuilder } from '@/components/super-admin/reports/ReportBuilder';
 import { PageHeader } from '@/components/super-admin/ui/PageHeader';
 import { SEOHead } from '@/components/SEOHead';
-import { FileText } from 'lucide-react';
+import FileText from "lucide-react/dist/esm/icons/file-text";
 
 export default function ReportBuilderPage() {
   return (

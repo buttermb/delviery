@@ -17,19 +17,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import {
-  Building2,
-  Package,
-  Clock,
-  Truck,
-  CheckCircle2,
-  XCircle,
-  Eye,
-  DollarSign,
-  Phone,
-  Mail,
-  Plus,
-} from 'lucide-react';
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Package from "lucide-react/dist/esm/icons/package";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Plus from "lucide-react/dist/esm/icons/plus";
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { LastUpdated } from '@/components/shared/LastUpdated';

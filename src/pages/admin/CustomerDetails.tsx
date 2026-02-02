@@ -12,10 +12,19 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import {
-  ArrowLeft, User, Mail, Phone, MapPin, Calendar,
-  DollarSign, Star, ShoppingBag, CreditCard, Gift, MessageSquare, Shield
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import User from "lucide-react/dist/esm/icons/user";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Star from "lucide-react/dist/esm/icons/star";
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Gift from "lucide-react/dist/esm/icons/gift";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Shield from "lucide-react/dist/esm/icons/shield";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

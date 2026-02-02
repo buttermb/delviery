@@ -8,20 +8,18 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Search,
-  Filter,
-  Download,
-  RefreshCw,
-  TrendingUp,
-  TrendingDown,
-  Coins,
-  Gift,
-  CreditCard,
-  RotateCcw,
-  Settings,
-  Calendar,
-} from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import Download from "lucide-react/dist/esm/icons/download";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Gift from "lucide-react/dist/esm/icons/gift";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -374,10 +372,4 @@ export default function CreditAuditLogPage() {
     </div>
   );
 }
-
-
-
-
-
-
 

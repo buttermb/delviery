@@ -5,23 +5,21 @@
  */
 
 import { Link, useLocation } from 'react-router-dom';
-import {
-  Building2,
-  Activity,
-  BarChart3,
-  TrendingUp,
-  Database,
-  Globe,
-  FileText,
-  Workflow,
-  Mail,
-  Flag,
-  Wrench,
-  Lock,
-  LayoutDashboard,
-  Settings,
-  ChevronDown,
-} from 'lucide-react';
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Database from "lucide-react/dist/esm/icons/database";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Workflow from "lucide-react/dist/esm/icons/workflow";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Flag from "lucide-react/dist/esm/icons/flag";
+import Wrench from "lucide-react/dist/esm/icons/wrench";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
 import {
   DropdownMenu,
   DropdownMenuContent,

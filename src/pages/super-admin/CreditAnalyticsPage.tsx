@@ -6,19 +6,17 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Users,
-  Activity,
-  BarChart3,
-  Calendar,
-  RefreshCw,
-  Coins,
-  ArrowUpRight,
-  ArrowDownRight,
-} from 'lucide-react';
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Users from "lucide-react/dist/esm/icons/users";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
+import ArrowDownRight from "lucide-react/dist/esm/icons/arrow-down-right";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -476,10 +474,4 @@ export default function CreditAnalyticsPage() {
     </div>
   );
 }
-
-
-
-
-
-
 

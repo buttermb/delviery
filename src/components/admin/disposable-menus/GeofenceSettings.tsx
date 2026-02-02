@@ -4,7 +4,9 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { MapPin, Plus, Trash2 } from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import { NYC_BOROUGHS } from '@/utils/geofencing';
 
 interface GeofenceRule {

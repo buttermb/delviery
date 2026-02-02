@@ -9,18 +9,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import {
-    Clock,
-    Package,
-    Truck,
-    User,
-    Phone,
-    ChevronRight,
-    Bell,
-    MessageSquare,
-    Loader2,
-    Store,
-} from 'lucide-react';
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import User from "lucide-react/dist/esm/icons/user";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Store from "lucide-react/dist/esm/icons/store";
 
 // Types
 interface StorefrontOrder {

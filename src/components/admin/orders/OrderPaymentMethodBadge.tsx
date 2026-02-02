@@ -6,7 +6,10 @@
  */
 
 import { Badge } from '@/components/ui/badge';
-import { Banknote, CreditCard, FileText, Bitcoin } from 'lucide-react';
+import Banknote from "lucide-react/dist/esm/icons/banknote";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Bitcoin from "lucide-react/dist/esm/icons/bitcoin";
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
 

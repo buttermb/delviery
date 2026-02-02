@@ -2,7 +2,9 @@ import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import X from "lucide-react/dist/esm/icons/x";
+import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
 import { cn } from '@/lib/utils';
 
 export interface TutorialStep {

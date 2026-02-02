@@ -16,17 +16,15 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import {
-  MessageSquare,
-  Search,
-  Send,
-  Package,
-  ShoppingCart,
-  Clock,
-  CheckCircle2,
-  Building2,
-  ArrowLeft
-} from 'lucide-react';
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Search from "lucide-react/dist/esm/icons/search";
+import Send from "lucide-react/dist/esm/icons/send";
+import Package from "lucide-react/dist/esm/icons/package";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';

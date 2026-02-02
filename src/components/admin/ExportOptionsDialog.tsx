@@ -9,7 +9,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { MultiCheckbox, type CheckboxOption } from '@/components/ui/multi-checkbox';
-import { Download, Loader2 } from 'lucide-react';
+import Download from "lucide-react/dist/esm/icons/download";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 export interface ExportField {
   value: string;

@@ -18,17 +18,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Search,
-  Plus,
-  Phone,
-  MessageSquare,
-  DollarSign,
-  Package,
-  Star,
-  AlertCircle,
-  Edit2
-} from "lucide-react";
+import Search from "lucide-react/dist/esm/icons/search";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Package from "lucide-react/dist/esm/icons/package";
+import Star from "lucide-react/dist/esm/icons/star";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Edit2 from "lucide-react/dist/esm/icons/edit-2";
+import Link2 from "lucide-react/dist/esm/icons/link-2";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
@@ -54,7 +53,6 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
 import { SendPortalLinkDialog } from "@/components/admin/wholesale/SendPortalLinkDialog";
-import { Link2 } from "lucide-react";
 import { customersTutorial } from "@/lib/tutorials/tutorialConfig";
 import { Database } from "@/integrations/supabase/types";
 import { CustomerQuickViewCard } from "@/components/tenant-admin/CustomerQuickViewCard";
@@ -144,8 +142,6 @@ export default function WholesaleClients() {
     client.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.contact_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-
 
   const getClientTypeLabel = (type: string) => {
     const types: Record<string, string> = {

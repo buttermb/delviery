@@ -141,64 +141,64 @@ tasks:
     completed: true
   - title: Add useCallback to all event handlers passed as props
     parallel_group: 7
-    completed: false
+    completed: true
   - title: Memoize formatted currency values with useMemo across all components
     parallel_group: 7
-    completed: false
+    completed: true
   - title: Lazy load all chart components from recharts with dynamic import
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Lazy load @react-pdf/renderer only when generating PDF
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Lazy load leaflet only when rendering maps
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Lazy load mapbox-gl only when rendering maps
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Lazy load RevenueWidget in DashboardPage.tsx
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Lazy load ActivityWidget in DashboardPage.tsx
     parallel_group: 8
-    completed: false
+    completed: true
   - title: Lazy load AlertsWidget in DashboardPage.tsx
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Lazy load OrderMergeDialog in Orders.tsx
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Lazy load OrderExportDialog in Orders.tsx
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Create WidgetSkeleton fallback component for lazy loaded widgets
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Implement virtual scrolling with tanstack-virtual for Orders list
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Implement virtual scrolling for Products grid
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Implement virtual scrolling for Customers list
     parallel_group: 9
-    completed: false
+    completed: true
   - title: Add row height estimation for variable content in virtual lists
     parallel_group: 10
-    completed: false
+    completed: true
   - title: Add vendor-charts chunk for recharts d3 in vite.config.ts manualChunks
     parallel_group: 10
-    completed: false
+    completed: true
   - title: Add vendor-pdf chunk for react-pdf jspdf html2canvas in vite.config.ts
     parallel_group: 10
-    completed: false
+    completed: true
   - title: Add vendor-forms chunk for react-hook-form zod in vite.config.ts
     parallel_group: 10
-    completed: false
+    completed: true
   - title: Add vendor-map chunk for leaflet react-leaflet mapbox in vite.config.ts
     parallel_group: 10
-    completed: false
+    completed: true
   - title: Import only used Lucide icons instead of entire library across all files
     parallel_group: 10
     completed: false

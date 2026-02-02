@@ -8,12 +8,15 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ShieldCheck, MousePointer2, Smartphone, Play } from "lucide-react";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import MousePointer2 from "lucide-react/dist/esm/icons/mouse-pointer-2";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Play from "lucide-react/dist/esm/icons/play";
 import { lazy, Suspense } from "react";
 // Lazy load the heavy demo component
 const BusinessAdminDemo = lazy(() => import("./demos/BusinessAdminDemo").then(module => ({ default: module.BusinessAdminDemo })));
 import { useMobileOptimized } from "@/hooks/useMobileOptimized";
-
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";

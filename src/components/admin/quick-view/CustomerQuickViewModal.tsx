@@ -6,15 +6,13 @@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-  Mail,
-  Phone,
-  Award,
-  DollarSign,
-  Calendar,
-  ShieldCheck,
-  AlertTriangle,
-} from 'lucide-react';
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Award from "lucide-react/dist/esm/icons/award";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { getStatusColor } from '@/lib/utils/statusColors';

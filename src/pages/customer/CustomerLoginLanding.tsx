@@ -10,7 +10,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Store, ArrowRight, HelpCircle } from "lucide-react";
+import Search from "lucide-react/dist/esm/icons/search";
+import Store from "lucide-react/dist/esm/icons/store";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
 import { LoadingFallback } from "@/components/LoadingFallback";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 

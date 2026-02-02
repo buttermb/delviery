@@ -11,7 +11,9 @@ import {
 } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, KeyRound, Smartphone } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import KeyRound from "lucide-react/dist/esm/icons/key-round";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
 
 interface TwoFactorVerificationProps {
     onVerified: () => void;

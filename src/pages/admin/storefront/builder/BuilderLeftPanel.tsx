@@ -3,7 +3,8 @@
  * Left sidebar with Sections, Theme, and Templates tabs
  */
 
-import { Plus, FileText } from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import FileText from "lucide-react/dist/esm/icons/file-text";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

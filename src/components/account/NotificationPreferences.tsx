@@ -8,7 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Bell, Mail, MessageSquare, Package, Gift, Tag, User, LucideIcon, Loader2 } from 'lucide-react';
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Package from "lucide-react/dist/esm/icons/package";
+import Gift from "lucide-react/dist/esm/icons/gift";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import User from "lucide-react/dist/esm/icons/user";
+import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';

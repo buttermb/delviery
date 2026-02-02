@@ -24,7 +24,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Loader2, Gift } from "lucide-react";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Gift from "lucide-react/dist/esm/icons/gift";
 import {
   Table,
   TableBody,

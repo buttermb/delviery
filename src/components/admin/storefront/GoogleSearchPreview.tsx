@@ -4,7 +4,7 @@
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search } from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
 
 interface GoogleSearchPreviewProps {
   title: string;

@@ -4,7 +4,9 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { FileText, Printer, Download } from 'lucide-react';
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import Download from "lucide-react/dist/esm/icons/download";
 import { useToast } from '@/hooks/use-toast';
 import { useRealtimeTransactions } from '@/hooks/useRealtimePOS';
 

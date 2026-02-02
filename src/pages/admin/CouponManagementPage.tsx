@@ -8,22 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import {
-  Search,
-  Plus,
-  Tag,
-  Calendar,
-  DollarSign,
-  Users,
-  Edit,
-  Trash2,
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  BarChart3,
-  Receipt,
-  List,
-} from "lucide-react";
+import Search from "lucide-react/dist/esm/icons/search";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Users from "lucide-react/dist/esm/icons/users";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import List from "lucide-react/dist/esm/icons/list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,

@@ -22,7 +22,9 @@ import { Badge } from '@/components/ui/badge';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { getCategoryDisplayName, type CreditCategory } from '@/lib/credits';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Minus from "lucide-react/dist/esm/icons/minus";
 
 const CATEGORY_COLORS: Record<string, string> = {
   orders: '#3b82f6',
@@ -272,10 +274,4 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
     </Card>
   );
 }
-
-
-
-
-
-
 

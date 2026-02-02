@@ -12,18 +12,16 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import {
-  Search,
-  Users,
-  TrendingUp,
-  DollarSign,
-  Calendar,
-  Tag,
-  Filter,
-  Loader2,
-  Star,
-  AlertCircle,
-} from "lucide-react";
+import Search from "lucide-react/dist/esm/icons/search";
+import Users from "lucide-react/dist/esm/icons/users";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Star from "lucide-react/dist/esm/icons/star";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import {
   Table,
   TableBody,

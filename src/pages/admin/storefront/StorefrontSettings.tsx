@@ -20,26 +20,24 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import {
-  Store,
-  Palette,
-  Truck,
-  CreditCard,
-  Clock,
-  Globe,
-  Save,
-  Eye,
-  Share2,
-  MapPin,
-  Plus,
-  Trash2,
-  Sparkles,
-  Shield,
-  Star,
-  PanelRightClose,
-  PanelRightOpen,
-  Loader2
-} from 'lucide-react';
+import Store from "lucide-react/dist/esm/icons/store";
+import Palette from "lucide-react/dist/esm/icons/palette";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import Save from "lucide-react/dist/esm/icons/save";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Share2 from "lucide-react/dist/esm/icons/share-2";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Star from "lucide-react/dist/esm/icons/star";
+import PanelRightClose from "lucide-react/dist/esm/icons/panel-right-close";
+import PanelRightOpen from "lucide-react/dist/esm/icons/panel-right-open";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog';
 import { generateUrlToken } from '@/utils/menuHelpers';
 import { StorefrontSettingsLivePreview } from '@/components/admin/storefront/StorefrontSettingsLivePreview';
@@ -1438,8 +1436,4 @@ export default function StorefrontSettings() {
     </div>
   );
 }
-
-
-
-
 

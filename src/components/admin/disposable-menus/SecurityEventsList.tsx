@@ -1,7 +1,10 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, CheckCircle, XCircle, Clock } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { format } from 'date-fns';
 import { useState } from 'react';
 import { getStatusColor } from '@/lib/utils/statusColors';

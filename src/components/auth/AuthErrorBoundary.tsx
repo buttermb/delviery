@@ -2,7 +2,9 @@ import { Component, ReactNode } from 'react';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, RefreshCw, LogIn } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import LogIn from "lucide-react/dist/esm/icons/log-in";
 import { clearAllAuthTokens, getLoginUrl } from '@/lib/utils/authHelpers';
 
 interface AuthErrorBoundaryProps {

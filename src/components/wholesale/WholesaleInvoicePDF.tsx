@@ -5,7 +5,8 @@
 
 import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@/components/ui/lazy-react-pdf';
 import { Button } from '@/components/ui/button';
-import { FileText, Loader2 } from 'lucide-react';
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 interface WholesaleOrderItem {
   id: string;

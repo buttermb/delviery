@@ -2,15 +2,13 @@ import { logger } from '@/lib/logger';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  FileText, 
-  Download, 
-  TrendingUp, 
-  AlertTriangle,
-  Shield,
-  Eye,
-  Clock
-} from 'lucide-react';
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Download from "lucide-react/dist/esm/icons/download";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { format } from 'date-fns';
 
 interface AdvancedReportsCardProps {

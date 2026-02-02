@@ -1,7 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, XCircle, AlertCircle, Loader2, RefreshCw } from "lucide-react";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns/format";

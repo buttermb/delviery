@@ -11,7 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { FileText, Download, Loader2 } from 'lucide-react';
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Download from "lucide-react/dist/esm/icons/download";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { format } from 'date-fns';
 import type { PortalInvoice } from '@/types/portal';
 import { generateInvoicePDF } from './InvoicePDFGenerator';

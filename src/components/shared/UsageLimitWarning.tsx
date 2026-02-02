@@ -5,7 +5,8 @@
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, TrendingUp } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import { useTenantLimits } from '@/hooks/useTenantLimits';
 import { Link } from 'react-router-dom';
 

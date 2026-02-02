@@ -9,20 +9,18 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import {
-    ArrowLeft,
-    ShoppingCart,
-    Store,
-    Leaf,
-    FileText,
-    ShieldCheck,
-    Package,
-    Loader2,
-    Minus,
-    Plus,
-    MessageSquare,
-    Send
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Store from "lucide-react/dist/esm/icons/store";
+import Leaf from "lucide-react/dist/esm/icons/leaf";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import Package from "lucide-react/dist/esm/icons/package";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Send from "lucide-react/dist/esm/icons/send";
 import {
     Dialog,
     DialogContent,

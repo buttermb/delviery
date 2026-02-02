@@ -5,7 +5,11 @@
  * Cash Position | Today's P&L | Outstanding AR | Fronted Value | Alerts
  */
 
-import { Wallet, TrendingUp, AlertCircle, Package, Bell } from 'lucide-react';
+import Wallet from "lucide-react/dist/esm/icons/wallet";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Package from "lucide-react/dist/esm/icons/package";
+import Bell from "lucide-react/dist/esm/icons/bell";
 import { cn } from '@/lib/utils';
 import { useQuickStats } from '@/hooks/useFinancialCommandCenter';
 import { Skeleton } from '@/components/ui/skeleton';

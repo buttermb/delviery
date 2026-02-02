@@ -5,7 +5,9 @@
 
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TrendingUp, DollarSign, Calendar } from 'lucide-react';
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';

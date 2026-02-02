@@ -26,14 +26,18 @@ import {
     SheetFooter,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import {
-    ChevronRight,
-    AlertCircle,
-    Clock,
-    Calendar,
-    DollarSign,
-    ExternalLink,
-} from 'lucide-react';
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import Check from "lucide-react/dist/esm/icons/check";
+import Clock as ClockIcon from "lucide-react/dist/esm/icons/clock as clock-icon";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import CheckCheck from "lucide-react/dist/esm/icons/check-check";
+import Clock as SnoozeIcon from "lucide-react/dist/esm/icons/clock as snooze-icon";
 import { getCategoryColor } from '@/lib/hotbox/attentionQueue';
 import { AttentionItem } from '@/types/hotbox';
 
@@ -87,7 +91,6 @@ const columns: KanbanColumn[] = [
 
 import { useSwipeable } from 'react-swipeable';
 import { useCallback } from 'react';
-import { Check, Clock as ClockIcon, ArrowRight, Loader2, CheckCheck, Clock as SnoozeIcon } from 'lucide-react';
 
 interface KanbanCardProps {
     item: AttentionItem;

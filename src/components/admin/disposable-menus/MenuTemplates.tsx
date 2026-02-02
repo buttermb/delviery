@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Zap, Crown, Sparkles, MessageSquare } from 'lucide-react';
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Crown from "lucide-react/dist/esm/icons/crown";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
 import { cn } from '@/lib/utils';
 
 interface MenuTemplate {

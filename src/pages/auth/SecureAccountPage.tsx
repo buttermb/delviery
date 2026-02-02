@@ -3,7 +3,11 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, CheckCircle, XCircle, Loader2, ShieldCheck } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
 import { logger } from '@/lib/logger';
 
 type SecureStatus = 'loading' | 'success' | 'error' | 'expired';

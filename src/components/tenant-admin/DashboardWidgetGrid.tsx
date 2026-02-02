@@ -11,7 +11,8 @@ import { RevenueForecastWidget } from '@/components/tenant-admin/RevenueForecast
 import { MultiChannelOrderList } from '@/components/tenant-admin/MultiChannelOrderList';
 import { StorefrontPerformanceWidget } from '@/components/tenant-admin/StorefrontPerformanceWidget';
 import { Button } from '@/components/ui/button';
-import { Settings2, RotateCcw } from 'lucide-react';
+import Settings2 from "lucide-react/dist/esm/icons/settings-2";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import {
     Sheet,
     SheetContent,

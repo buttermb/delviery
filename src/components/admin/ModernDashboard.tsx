@@ -5,7 +5,10 @@
 
 import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { DollarSign, Package, Truck, AlertTriangle } from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, subDays } from 'date-fns';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

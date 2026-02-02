@@ -7,17 +7,15 @@ import { useRelatedInvoicePreOrders } from "@/hooks/useRelatedEntities";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-    ArrowLeft,
-    ExternalLink,
-    CheckCircle,
-    Send,
-    Printer,
-    Trash2,
-    Copy,
-    Ban,
-    FileText
-} from "lucide-react";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Send from "lucide-react/dist/esm/icons/send";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Ban from "lucide-react/dist/esm/icons/ban";
+import FileText from "lucide-react/dist/esm/icons/file-text";
 import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/utils/formatters";
 import { format } from "date-fns";

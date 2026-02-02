@@ -6,7 +6,11 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Palette, Maximize2, Loader2, Layout, Sparkles } from 'lucide-react';
+import Palette from "lucide-react/dist/esm/icons/palette";
+import Maximize2 from "lucide-react/dist/esm/icons/maximize-2";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Layout from "lucide-react/dist/esm/icons/layout";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 import { formatDistanceToNow } from 'date-fns';
 
 interface EditorEntryCardProps {

@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Check, X, Pencil } from "lucide-react";
+import Check from "lucide-react/dist/esm/icons/check";
+import X from "lucide-react/dist/esm/icons/x";
+import Pencil from "lucide-react/dist/esm/icons/pencil";
 import { cn } from "@/lib/utils";
 
 interface InlineEditableCellProps {

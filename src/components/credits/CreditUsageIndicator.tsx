@@ -7,7 +7,8 @@
  * Warns visually when the action would exceed the user's balance.
  */
 
-import { Coins, AlertTriangle } from 'lucide-react';
+import Coins from "lucide-react/dist/esm/icons/coins";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { cn } from '@/lib/utils';
 import {
   Tooltip,

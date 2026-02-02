@@ -1,5 +1,7 @@
 import { useDropzone } from 'react-dropzone';
-import { Upload, X, FileIcon } from 'lucide-react';
+import Upload from "lucide-react/dist/esm/icons/upload";
+import X from "lucide-react/dist/esm/icons/x";
+import FileIcon from "lucide-react/dist/esm/icons/file-icon";
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 

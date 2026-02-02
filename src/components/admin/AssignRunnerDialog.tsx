@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAssignDelivery } from "@/hooks/useWholesaleData";
 import { useState } from "react";
-import { Star } from "lucide-react";
+import Star from "lucide-react/dist/esm/icons/star";
 
 interface AssignRunnerDialogProps {
   orderId: string;

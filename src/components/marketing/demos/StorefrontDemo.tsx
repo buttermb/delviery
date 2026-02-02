@@ -1,5 +1,19 @@
 import { motion } from 'framer-motion';
-import { ShoppingBag, Star, Plus, ArrowRight, Sparkles, Search, Menu, Filter, Moon, Smile, Zap, Sun, Target, Lightbulb, Activity } from 'lucide-react';
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import Star from "lucide-react/dist/esm/icons/star";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import Search from "lucide-react/dist/esm/icons/search";
+import Menu from "lucide-react/dist/esm/icons/menu";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import Moon from "lucide-react/dist/esm/icons/moon";
+import Smile from "lucide-react/dist/esm/icons/smile";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Sun from "lucide-react/dist/esm/icons/sun";
+import Target from "lucide-react/dist/esm/icons/target";
+import Lightbulb from "lucide-react/dist/esm/icons/lightbulb";
+import Activity from "lucide-react/dist/esm/icons/activity";
 import { Button } from '@/components/ui/button';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 

@@ -7,7 +7,8 @@
 
 import Joyride, { Step, Styles } from 'react-joyride';
 import { Button } from '@/components/ui/button';
-import { Play, RotateCcw } from 'lucide-react';
+import Play from "lucide-react/dist/esm/icons/play";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import { useDashboardTour } from '@/hooks/useDashboardTour';
 
 /** Tour step definitions for the dashboard */

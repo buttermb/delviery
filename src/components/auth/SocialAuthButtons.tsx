@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { logger } from "@/lib/logger";
 import { toast } from "@/hooks/use-toast";
 

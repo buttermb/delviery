@@ -11,7 +11,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Download, Copy, Share2, CheckCircle2, Printer, QrCode } from 'lucide-react';
+import Download from "lucide-react/dist/esm/icons/download";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Share2 from "lucide-react/dist/esm/icons/share-2";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import QrCode from "lucide-react/dist/esm/icons/qr-code";
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from '@/hooks/use-toast';
 

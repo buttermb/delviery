@@ -5,7 +5,12 @@ import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shield, Loader2, Lock, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
@@ -15,7 +20,6 @@ import { AuthOfflineIndicator } from "@/components/auth/AuthOfflineIndicator";
 import { useAuthOffline } from "@/hooks/useAuthOffline";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
-
 
 export default function SuperAdminLoginPage() {
   const navigate = useNavigate();
@@ -70,8 +74,6 @@ export default function SuperAdminLoginPage() {
       setLoading(false);
     }
   };
-
-
 
   return (
     <div className="min-h-dvh flex items-center justify-center relative overflow-hidden bg-[hsl(var(--super-admin-bg))] p-4">
@@ -225,7 +227,6 @@ export default function SuperAdminLoginPage() {
               disabled={loading || !isOnline}
               className="bg-[hsl(var(--super-admin-bg))]/50 border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-[hsl(var(--super-admin-bg))]/70"
             />
-
 
           </form>
 

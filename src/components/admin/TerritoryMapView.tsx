@@ -5,7 +5,8 @@ import { loadMapbox } from "@/lib/mapbox-loader";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useWholesaleClients } from "@/hooks/useWholesaleData";
-import { MapPin, AlertCircle } from "lucide-react";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { themeColors } from "@/lib/utils/colorConversion";
 
 // Mapbox token

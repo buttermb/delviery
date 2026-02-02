@@ -20,7 +20,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Palette, Upload, Globe, Mail, MessageSquare, Image, Save } from 'lucide-react';
+import Palette from "lucide-react/dist/esm/icons/palette";
+import Upload from "lucide-react/dist/esm/icons/upload";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Image from "lucide-react/dist/esm/icons/image";
+import Save from "lucide-react/dist/esm/icons/save";
 import { Badge } from '@/components/ui/badge';
 import { useTenant } from '@/contexts/TenantContext';
 import { supabase } from '@/integrations/supabase/client';

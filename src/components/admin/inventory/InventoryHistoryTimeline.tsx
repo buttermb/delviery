@@ -1,18 +1,16 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import {
-  Package,
-  ArrowUpCircle,
-  ArrowDownCircle,
-  ArrowRightLeft,
-  Wrench,
-  ShoppingCart,
-  RotateCcw,
-  Truck,
-  Trash2,
-  Loader2,
-  Filter,
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import ArrowUpCircle from "lucide-react/dist/esm/icons/arrow-up-circle";
+import ArrowDownCircle from "lucide-react/dist/esm/icons/arrow-down-circle";
+import ArrowRightLeft from "lucide-react/dist/esm/icons/arrow-right-left";
+import Wrench from "lucide-react/dist/esm/icons/wrench";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Filter from "lucide-react/dist/esm/icons/filter";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {

@@ -395,7 +395,7 @@ export interface TouchMonitor {
  */
 export function createTouchMonitor(): TouchMonitor {
   let touchCount = 0;
-  let hasTouchSupport = 'ontouchstart' in window;
+  const hasTouchSupport = 'ontouchstart' in window;
 
   const handleTouch = () => {
     touchCount++;

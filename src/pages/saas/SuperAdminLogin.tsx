@@ -12,7 +12,10 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Loader2, Building2, ArrowLeft } from "lucide-react";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
 import { toast } from "@/hooks/use-toast";
 import { handleError } from '@/utils/errorHandling/handlers';
 

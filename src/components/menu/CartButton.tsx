@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ShoppingCart } from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import { useMenuCart } from '@/contexts/MenuCartContext';
 import { Badge } from '@/components/ui/badge';
 

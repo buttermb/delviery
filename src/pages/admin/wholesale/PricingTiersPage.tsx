@@ -33,7 +33,14 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, MoreVertical, Edit2, Trash2, ShieldCheck, Users, DollarSign, Percent } from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
+import Edit2 from "lucide-react/dist/esm/icons/edit-2";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import Users from "lucide-react/dist/esm/icons/users";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Percent from "lucide-react/dist/esm/icons/percent";
 
 interface PricingTier {
     id: string;

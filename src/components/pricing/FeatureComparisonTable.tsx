@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
-import { CheckCircle, X } from "lucide-react";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import X from "lucide-react/dist/esm/icons/x";
 import { FEATURES, TIER_NAMES, type SubscriptionTier } from "@/lib/featureConfig";
 import { Badge } from "@/components/ui/badge";
 

@@ -5,7 +5,12 @@
  * Shows during signup/onboarding.
  */
 
-import { Coins, Zap, TrendingUp, Gift, CheckCircle, ArrowRight } from 'lucide-react';
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Gift from "lucide-react/dist/esm/icons/gift";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -195,10 +200,4 @@ export function CreditSystemExplainer({
 }
 
 export default CreditSystemExplainer;
-
-
-
-
-
-
 

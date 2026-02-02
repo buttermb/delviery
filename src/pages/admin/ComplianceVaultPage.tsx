@@ -7,14 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import {
-  FileText,
-  Plus,
-  Loader2,
-  Upload,
-  Calendar,
-  AlertCircle,
-} from "lucide-react";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Upload from "lucide-react/dist/esm/icons/upload";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { DocumentList } from "@/components/admin/compliance/DocumentList";
 import { DocumentUpload } from "@/components/admin/compliance/DocumentUpload";
 import { DocumentDetail } from "@/components/admin/compliance/DocumentDetail";

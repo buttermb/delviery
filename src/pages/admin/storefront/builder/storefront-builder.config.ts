@@ -3,7 +3,13 @@
  * Section types, templates, defaults, and shared types
  */
 
-import { Layout, Sparkles, MessageSquare, Mail, Image, HelpCircle, Code } from 'lucide-react';
+import Layout from "lucide-react/dist/esm/icons/layout";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Image from "lucide-react/dist/esm/icons/image";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
+import Code from "lucide-react/dist/esm/icons/code";
 import { HeroSection } from '@/components/shop/sections/HeroSection';
 import { FeaturesSection } from '@/components/shop/sections/FeaturesSection';
 import { ProductGridSection } from '@/components/shop/sections/ProductGridSection';

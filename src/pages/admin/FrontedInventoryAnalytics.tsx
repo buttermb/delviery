@@ -5,16 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import {
-  DollarSign,
-  TrendingUp,
-  Package,
-  Users,
-  Calendar,
-  AlertTriangle,
-  Download,
-  BarChart3,
-} from "lucide-react";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Download from "lucide-react/dist/esm/icons/download";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
 import {
   Table,
   TableBody,

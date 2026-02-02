@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Copy, Loader2 } from 'lucide-react';
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';

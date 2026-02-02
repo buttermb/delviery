@@ -14,17 +14,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  ShoppingCart, 
-  Search, 
-  Filter,
-  Eye,
-  Package,
-  Truck,
-  CheckCircle,
-  Clock,
-  Building2
-} from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Search from "lucide-react/dist/esm/icons/search";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import {

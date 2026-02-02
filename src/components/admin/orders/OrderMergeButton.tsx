@@ -19,7 +19,12 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Loader2, Merge, AlertTriangle, Package, Calendar, DollarSign } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Merge from "lucide-react/dist/esm/icons/merge";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Package from "lucide-react/dist/esm/icons/package";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 

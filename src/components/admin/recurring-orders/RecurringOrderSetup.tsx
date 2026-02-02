@@ -3,18 +3,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Plus,
-  Trash2,
-  Calendar,
-  Repeat,
-  Package,
-  Truck,
-  Loader2,
-  Play,
-  Pause,
-  RefreshCw,
-} from "lucide-react";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Repeat from "lucide-react/dist/esm/icons/repeat";
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Play from "lucide-react/dist/esm/icons/play";
+import Pause from "lucide-react/dist/esm/icons/pause";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

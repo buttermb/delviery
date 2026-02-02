@@ -9,7 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Plus, Search, Filter, Eye, EyeOff, MoreHorizontal } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Search from "lucide-react/dist/esm/icons/search";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
 import { MarketplaceListing } from "@/types/marketplace-extended";
 import {
     Table,

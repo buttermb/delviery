@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Building } from 'lucide-react';
+import Building from "lucide-react/dist/esm/icons/building";
 import { useToast } from '@/hooks/use-toast';
 
 interface Account {

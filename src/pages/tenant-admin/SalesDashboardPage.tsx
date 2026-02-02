@@ -4,7 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { DollarSign, TrendingUp, TrendingDown, ShoppingBag, Percent, CreditCard, Loader2 } from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import Percent from "lucide-react/dist/esm/icons/percent";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

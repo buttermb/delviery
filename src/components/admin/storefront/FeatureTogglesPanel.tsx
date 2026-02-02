@@ -7,20 +7,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import {
-    Tag,
-    Sparkles,
-    Leaf,
-    AlertTriangle,
-    Search,
-    LayoutGrid,
-    Star,
-    Layout,
-    MessageSquare,
-    Mail,
-    HelpCircle,
-    Image,
-} from 'lucide-react';
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import Leaf from "lucide-react/dist/esm/icons/leaf";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Search from "lucide-react/dist/esm/icons/search";
+import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
+import Star from "lucide-react/dist/esm/icons/star";
+import Layout from "lucide-react/dist/esm/icons/layout";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
+import Image from "lucide-react/dist/esm/icons/image";
 import { type FeatureToggles } from '@/lib/storefrontPresets';
 
 interface FeatureTogglesPanelProps {

@@ -7,7 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Building2, Loader2, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
 import { toast } from "@/hooks/use-toast";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Link } from "react-router-dom";
@@ -21,7 +25,6 @@ import { Database } from "@/integrations/supabase/types";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { intendedDestinationUtils } from "@/hooks/useIntendedDestination";
 import { AuthErrorAlert, getAuthErrorMessage, getAuthErrorType } from "@/components/auth/AuthErrorAlert";
-
 
 type Tenant = Database['public']['Tables']['tenants']['Row'];
 
@@ -57,7 +60,6 @@ export default function TenantAdminLoginPage() {
       navigate(redirectTo, { replace: true });
     }
   );
-
 
   useEffect(() => {
     const fetchTenant = async (): Promise<void> => {
@@ -229,8 +231,6 @@ export default function TenantAdminLoginPage() {
   const businessName = tenant.business_name || tenantSlug;
   const logo = null; // White label settings not implemented yet
 
-
-
   return (
     <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4 relative overflow-hidden">
       {/* Back to Home Button */}
@@ -395,7 +395,6 @@ export default function TenantAdminLoginPage() {
               disabled={loading || !isOnline}
               className="bg-background/50 backdrop-blur-sm border-border hover:bg-background/80"
             />
-
 
           </form>
 

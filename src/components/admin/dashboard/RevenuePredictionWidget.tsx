@@ -8,14 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { 
-  Sparkles, 
-  TrendingUp, 
-  TrendingDown, 
-  Minus, 
-  AlertTriangle,
-  Loader2 
-} from 'lucide-react';
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import {
   LineChart,
   Line,

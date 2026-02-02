@@ -9,7 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Search, CreditCard } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Search from "lucide-react/dist/esm/icons/search";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
 

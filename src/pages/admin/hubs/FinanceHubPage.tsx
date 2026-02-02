@@ -10,16 +10,14 @@
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    DollarSign,
-    FileText,
-    CreditCard,
-    TrendingUp,
-    FileEdit,
-    Wallet,
-    Building2,
-    Banknote,
-} from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import FileEdit from "lucide-react/dist/esm/icons/file-edit";
+import Wallet from "lucide-react/dist/esm/icons/wallet";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Banknote from "lucide-react/dist/esm/icons/banknote";
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';

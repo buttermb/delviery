@@ -5,7 +5,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Package, Users, FileText } from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import FileText from "lucide-react/dist/esm/icons/file-text";
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { cn } from '@/lib/utils';
 

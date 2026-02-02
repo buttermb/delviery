@@ -4,7 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Package, TrendingUp, TrendingDown, RefreshCw, FileDown } from "lucide-react";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Package from "lucide-react/dist/esm/icons/package";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import FileDown from "lucide-react/dist/esm/icons/file-down";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 

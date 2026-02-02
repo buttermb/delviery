@@ -12,7 +12,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Zap } from "lucide-react";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Zap from "lucide-react/dist/esm/icons/zap";
 import { useNavigate } from "react-router-dom";
 
 interface UpgradePromptProps {

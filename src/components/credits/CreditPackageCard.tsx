@@ -2,7 +2,12 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Coins, Loader2, Minus, Plus, Sparkles, TrendingUp } from 'lucide-react';
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import { cn } from '@/lib/utils';
 import { getPricePerCredit } from '@/lib/credits/creditCosts';
 

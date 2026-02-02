@@ -20,23 +20,21 @@ import { Separator } from '@/components/ui/separator';
 import { formatCurrency } from '@/utils/formatters';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import {
-    ArrowLeft,
-    Package,
-    DollarSign,
-    Boxes,
-    Edit,
-    Loader2,
-    Image as ImageIcon,
-    Beaker,
-    Tag,
-    AlertTriangle,
-    TrendingUp,
-    TrendingDown,
-    Clock,
-    FileText,
-    BarChart3,
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Package from "lucide-react/dist/esm/icons/package";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Boxes from "lucide-react/dist/esm/icons/boxes";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
+import Beaker from "lucide-react/dist/esm/icons/beaker";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
 import { useState } from 'react';
 
 export default function ProductDetailsPage() {

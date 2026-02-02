@@ -16,7 +16,11 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import QRCode from "qrcode";
-import { Loader2, ShieldCheck, AlertTriangle, Download, Copy } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Download from "lucide-react/dist/esm/icons/download";
+import Copy from "lucide-react/dist/esm/icons/copy";
 import { handleError } from '@/utils/errorHandling/handlers';
 
 interface MfaFactor {

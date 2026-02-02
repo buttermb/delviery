@@ -10,7 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
-import { Eye, Users, ShoppingCart, TrendingUp } from 'lucide-react';
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Users from "lucide-react/dist/esm/icons/users";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 
 interface StorefrontAnalyticsWidgetProps {
   storeId: string;

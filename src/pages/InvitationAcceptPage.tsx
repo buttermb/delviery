@@ -5,7 +5,10 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, CheckCircle2, Loader2, Mail } from 'lucide-react';
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Mail from "lucide-react/dist/esm/icons/mail";
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 

@@ -28,7 +28,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, ChevronDown, User, HelpCircle, Layout, RefreshCw, Search, Plus, ShoppingCart, LayoutDashboard, Package } from 'lucide-react';
+import LogOut from "lucide-react/dist/esm/icons/log-out";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import User from "lucide-react/dist/esm/icons/user";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
+import Layout from "lucide-react/dist/esm/icons/layout";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Search from "lucide-react/dist/esm/icons/search";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import Package from "lucide-react/dist/esm/icons/package";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarMigration } from '@/hooks/useSidebarMigration';

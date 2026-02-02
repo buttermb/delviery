@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion, useTransform } from "framer-motion";
-import { Play } from "lucide-react";
+import Play from "lucide-react/dist/esm/icons/play";
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react";
 import { useInView } from "react-intersection-observer";
 import { AnimatedIcon } from "./AnimatedIcon";

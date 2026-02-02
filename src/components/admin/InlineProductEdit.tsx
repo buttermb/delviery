@@ -2,7 +2,13 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Edit, Trash2, Copy, Eye, MoreVertical } from "lucide-react";
+import Check from "lucide-react/dist/esm/icons/check";
+import X from "lucide-react/dist/esm/icons/x";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
 import { Switch } from "@/components/ui/switch";
 import {
   DropdownMenu,

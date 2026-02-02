@@ -27,31 +27,29 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  DollarSign,
-  Building2,
-  TrendingDown,
-  TrendingUp,
-  AlertTriangle,
-  CreditCard,
-  Ticket,
-  Users,
-  Activity,
-  BarChart3,
-  Settings,
-  Search,
-  Filter,
-  Download,
-  Plus,
-  Eye,
-  LogIn,
-  MoreVertical,
-  Mail,
-  Bell,
-  Shield,
-  Zap,
-  LogOut,
-} from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Ticket from "lucide-react/dist/esm/icons/ticket";
+import Users from "lucide-react/dist/esm/icons/users";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Search from "lucide-react/dist/esm/icons/search";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import Download from "lucide-react/dist/esm/icons/download";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import LogIn from "lucide-react/dist/esm/icons/log-in";
+import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import LogOut from "lucide-react/dist/esm/icons/log-out";
 import { exportTenantsToCSV, exportTenantsToJSON } from '@/utils/tenantExport';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { LucideIcon, ArrowRight } from "lucide-react";
+import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import { AnimatedIcon } from "./AnimatedIcon";
 
 interface FeatureCardProps {

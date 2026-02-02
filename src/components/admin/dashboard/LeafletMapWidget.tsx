@@ -5,7 +5,7 @@
 
 import { useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin } from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 

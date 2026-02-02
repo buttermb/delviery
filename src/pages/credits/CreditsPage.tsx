@@ -7,16 +7,14 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import {
-  Coins,
-  TrendingUp,
-  TrendingDown,
-  ArrowRight,
-  ShoppingCart,
-  CreditCard,
-  Clock,
-  Sparkles,
-} from 'lucide-react';
+import Coins from "lucide-react/dist/esm/icons/coins";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

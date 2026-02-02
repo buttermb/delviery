@@ -21,7 +21,11 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CalendarIcon, ArrowLeft, Loader2, Save, AlertTriangle } from "lucide-react";
+import CalendarIcon from "lucide-react/dist/esm/icons/calendar-icon";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Save from "lucide-react/dist/esm/icons/save";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { format, addDays } from "date-fns";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { cn } from "@/lib/utils";

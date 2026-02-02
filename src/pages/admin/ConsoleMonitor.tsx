@@ -4,7 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Download, Search, Filter, Terminal } from 'lucide-react';
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Download from "lucide-react/dist/esm/icons/download";
+import Search from "lucide-react/dist/esm/icons/search";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import Terminal from "lucide-react/dist/esm/icons/terminal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 

@@ -24,24 +24,22 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    Search,
-    Building2,
-    Phone,
-    Mail,
-    MapPin,
-    DollarSign,
-    FileText,
-    Calendar,
-    Loader2,
-    ShoppingCart,
-    Package,
-    TrendingUp,
-    Clock,
-    CheckCircle2,
-    XCircle,
-    X,
-} from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Package from "lucide-react/dist/esm/icons/package";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import X from "lucide-react/dist/esm/icons/x";
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 const STATUS_COLORS: Record<string, string> = {

@@ -15,15 +15,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import {
-  User,
-  Mail,
-  Phone,
-  ShoppingBag,
-  DollarSign,
-  ExternalLink,
-  Package,
-} from 'lucide-react';
+import User from "lucide-react/dist/esm/icons/user";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import Package from "lucide-react/dist/esm/icons/package";
 import { useCustomerStats } from '@/hooks/useCustomerStats';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';

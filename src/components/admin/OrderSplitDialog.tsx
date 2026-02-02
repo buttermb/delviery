@@ -33,7 +33,10 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Package, Split, AlertTriangle } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Package from "lucide-react/dist/esm/icons/package";
+import Split from "lucide-react/dist/esm/icons/split";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { useOrderSplit, type OrderItem, type ShipmentAllocation } from '@/hooks/useOrderSplit';
 import { cn } from '@/lib/utils';
 

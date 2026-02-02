@@ -1,15 +1,13 @@
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Users,
-  FileText,
-  Package,
-  Smartphone,
-  Shield,
-  Zap,
-  CheckCircle2,
-  Sparkles,
-  Coins,
-} from 'lucide-react';
+import Users from "lucide-react/dist/esm/icons/users";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Package from "lucide-react/dist/esm/icons/package";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import Coins from "lucide-react/dist/esm/icons/coins";
 import { PLAN_CONFIG, type PlanKey } from '@/config/planPricing';
 
 interface SignupFeaturesShowcaseProps {

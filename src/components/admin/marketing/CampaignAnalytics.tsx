@@ -1,5 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, MessageSquare, TrendingUp, Users, Bell } from "lucide-react";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Users from "lucide-react/dist/esm/icons/users";
+import Bell from "lucide-react/dist/esm/icons/bell";
 
 interface MarketingCampaign {
   id: string;

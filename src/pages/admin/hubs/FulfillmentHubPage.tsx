@@ -11,16 +11,14 @@
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    LayoutDashboard,
-    Clock,
-    Truck,
-    Users,
-    Car,
-    ArrowLeftRight,
-    MapPinned,
-    Package,
-} from 'lucide-react';
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Users from "lucide-react/dist/esm/icons/users";
+import Car from "lucide-react/dist/esm/icons/car";
+import ArrowLeftRight from "lucide-react/dist/esm/icons/arrow-left-right";
+import MapPinned from "lucide-react/dist/esm/icons/map-pinned";
+import Package from "lucide-react/dist/esm/icons/package";
 import { Button } from '@/components/ui/button';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';

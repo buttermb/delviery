@@ -7,7 +7,10 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import { AlertTriangle, Package, X, AlertCircle } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Package from "lucide-react/dist/esm/icons/package";
+import X from "lucide-react/dist/esm/icons/x";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

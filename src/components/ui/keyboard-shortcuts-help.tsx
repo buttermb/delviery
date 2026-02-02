@@ -12,7 +12,7 @@ import {
     DialogDescription,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Keyboard } from 'lucide-react';
+import Keyboard from "lucide-react/dist/esm/icons/keyboard";
 
 interface ShortcutInfo {
     key: string;

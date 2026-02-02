@@ -26,14 +26,12 @@ import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { invalidateOnEvent } from "@/lib/invalidation";
 import { logger } from "@/lib/logger";
-import {
-  Loader2,
-  AlertTriangle,
-  ArrowUp,
-  ArrowDown,
-  Replace,
-  Package,
-} from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import ArrowUp from "lucide-react/dist/esm/icons/arrow-up";
+import ArrowDown from "lucide-react/dist/esm/icons/arrow-down";
+import Replace from "lucide-react/dist/esm/icons/replace";
+import Package from "lucide-react/dist/esm/icons/package";
 
 type AdjustmentType = "add" | "subtract" | "set";
 

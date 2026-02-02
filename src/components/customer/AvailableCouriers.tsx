@@ -9,7 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
-import { Truck, Star, Users } from 'lucide-react';
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Star from "lucide-react/dist/esm/icons/star";
+import Users from "lucide-react/dist/esm/icons/users";
 
 interface Courier {
   id: string;

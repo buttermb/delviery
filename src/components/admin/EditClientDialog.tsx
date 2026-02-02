@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
-import { Loader2 } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 interface EditClientDialogProps {
   clientId: string;

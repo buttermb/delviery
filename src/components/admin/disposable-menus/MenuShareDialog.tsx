@@ -8,7 +8,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Copy, ExternalLink, MessageCircle, Mail, QrCode } from 'lucide-react';
+import Copy from "lucide-react/dist/esm/icons/copy";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import MessageCircle from "lucide-react/dist/esm/icons/message-circle";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import QrCode from "lucide-react/dist/esm/icons/qr-code";
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { formatMenuUrl, generateWhatsAppMessage } from '@/utils/menuHelpers';
 import { useState } from 'react';

@@ -7,7 +7,10 @@
  */
 
 import { useState } from 'react';
-import { AlertTriangle, Zap, ChevronRight, X } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import X from "lucide-react/dist/esm/icons/x";
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -122,8 +125,4 @@ export function LowCreditNudge({
 }
 
 export default LowCreditNudge;
-
-
-
-
 

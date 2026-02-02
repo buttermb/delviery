@@ -44,19 +44,17 @@ import { InventoryStatusBadge } from '@/components/admin/InventoryStatusBadge';
 import { ProductCard } from '@/components/admin/ProductCard';
 
 // Icons
-import {
-  Package,
-  Plus,
-  LayoutGrid,
-  List,
-  Filter,
-  MoreVertical,
-  Edit,
-  Trash2,
-  Printer,
-  Store,
-  DollarSign,
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
+import List from "lucide-react/dist/esm/icons/list";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import Store from "lucide-react/dist/esm/icons/store";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 
 import type { Database } from '@/integrations/supabase/types';
 

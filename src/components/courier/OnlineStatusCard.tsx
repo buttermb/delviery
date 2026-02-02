@@ -2,7 +2,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useCourier } from '@/contexts/CourierContext';
-import { Wifi, WifiOff, MapPin, Clock } from 'lucide-react';
+import Wifi from "lucide-react/dist/esm/icons/wifi";
+import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 

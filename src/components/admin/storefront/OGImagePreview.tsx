@@ -7,7 +7,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Globe, ImageOff } from 'lucide-react';
+import Globe from "lucide-react/dist/esm/icons/globe";
+import ImageOff from "lucide-react/dist/esm/icons/image-off";
 
 interface OGImagePreviewProps {
   title: string;

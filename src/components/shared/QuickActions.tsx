@@ -4,7 +4,11 @@
  */
 
 import { Button } from '@/components/ui/button';
-import { Plus, Package, FileText, Truck, Menu } from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Package from "lucide-react/dist/esm/icons/package";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Menu from "lucide-react/dist/esm/icons/menu";
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 

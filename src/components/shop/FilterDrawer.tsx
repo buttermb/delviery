@@ -4,7 +4,9 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import X from "lucide-react/dist/esm/icons/x";
+import SlidersHorizontal from "lucide-react/dist/esm/icons/sliders-horizontal";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useState } from 'react';

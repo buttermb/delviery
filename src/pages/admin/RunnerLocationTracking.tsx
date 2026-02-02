@@ -1,10 +1,19 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ArrowLeft, MapPin, History, TrendingUp, Clock,
-  Navigation, Truck, Timer, Phone, RefreshCw,
-  Calendar, Route, ChevronRight, AlertCircle
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import History from "lucide-react/dist/esm/icons/history";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Timer from "lucide-react/dist/esm/icons/timer";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Route from "lucide-react/dist/esm/icons/route";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

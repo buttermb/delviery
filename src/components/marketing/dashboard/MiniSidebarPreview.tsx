@@ -1,16 +1,14 @@
 import { motion } from 'framer-motion';
-import { 
-  LayoutDashboard, 
-  Package, 
-  ShoppingCart, 
-  Warehouse, 
-  Truck, 
-  Users, 
-  BarChart3, 
-  Settings,
-  Radio,
-  Shield
-} from 'lucide-react';
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import Package from "lucide-react/dist/esm/icons/package";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Warehouse from "lucide-react/dist/esm/icons/warehouse";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Users from "lucide-react/dist/esm/icons/users";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Radio from "lucide-react/dist/esm/icons/radio";
+import Shield from "lucide-react/dist/esm/icons/shield";
 import { 
   Tooltip,
   TooltipContent,

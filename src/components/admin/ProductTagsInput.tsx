@@ -20,7 +20,13 @@
  */
 
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { X, Plus, Tag, Loader2, Search, Check, ChevronDown } from 'lucide-react';
+import X from "lucide-react/dist/esm/icons/x";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Search from "lucide-react/dist/esm/icons/search";
+import Check from "lucide-react/dist/esm/icons/check";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

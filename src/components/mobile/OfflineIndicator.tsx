@@ -1,4 +1,4 @@
-import { WifiOff } from 'lucide-react';
+import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';

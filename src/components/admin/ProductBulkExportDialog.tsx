@@ -13,7 +13,11 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Download, Loader2, FileSpreadsheet, FileText, FileJson } from 'lucide-react';
+import Download from "lucide-react/dist/esm/icons/download";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import FileJson from "lucide-react/dist/esm/icons/file-json";
 import {
   exportToCSV,
   exportToJSON,

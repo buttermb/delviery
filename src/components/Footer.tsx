@@ -1,4 +1,9 @@
-import { Shield, Award, Lock, ChevronDown, UserCog, Truck } from "lucide-react";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Award from "lucide-react/dist/esm/icons/award";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import UserCog from "lucide-react/dist/esm/icons/user-cog";
+import Truck from "lucide-react/dist/esm/icons/truck";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";

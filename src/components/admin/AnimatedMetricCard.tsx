@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LucideIcon } from "lucide-react";
+import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 

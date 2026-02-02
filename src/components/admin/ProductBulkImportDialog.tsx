@@ -31,20 +31,18 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Upload,
-  AlertCircle,
-  CheckCircle2,
-  Loader2,
-  ArrowRight,
-  ArrowLeft,
-  XCircle,
-  AlertTriangle,
-  Download,
-  FileSpreadsheet,
-  Eye,
-  RotateCcw,
-} from "lucide-react";
+import Upload from "lucide-react/dist/esm/icons/upload";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Download from "lucide-react/dist/esm/icons/download";
+import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";

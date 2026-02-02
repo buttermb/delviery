@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
-import { Mail, Loader2 } from 'lucide-react';
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 interface OrderItem {
   name: string;

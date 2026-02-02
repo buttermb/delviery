@@ -3,7 +3,8 @@
  */
 
 import { Card } from '@/components/ui/card';
-import { BarChart3, TrendingUp } from 'lucide-react';
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 
 export function SalesChartWidget() {
   return (

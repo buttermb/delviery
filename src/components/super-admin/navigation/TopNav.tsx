@@ -6,52 +6,50 @@ import { logger } from '@/lib/logger';
  */
 
 import { Link } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  Building2,
-  DollarSign,
-  BarChart3,
-  Settings,
-  Mail,
-  Shield,
-  Search,
-  Bell,
-  ChevronDown,
-  User,
-  Users,
-  Moon,
-  LogOut,
-  AlertTriangle,
-  XCircle,
-  Download,
-  RefreshCw,
-  TrendingUp,
-  PieChart,
-  LineChart,
-  Receipt,
-  CreditCard,
-  Activity,
-  Target,
-  Zap,
-  Brain,
-  TrendingDown,
-  FileText,
-  Database,
-  Code,
-  Webhook,
-  FileSearch,
-  Clock,
-  Flag,
-  Send,
-  MessageSquare,
-  Megaphone,
-  ShieldCheck,
-  Lock,
-  Eye,
-  Key,
-  Coins,
-  Gift,
-} from 'lucide-react';
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Search from "lucide-react/dist/esm/icons/search";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import User from "lucide-react/dist/esm/icons/user";
+import Users from "lucide-react/dist/esm/icons/users";
+import Moon from "lucide-react/dist/esm/icons/moon";
+import LogOut from "lucide-react/dist/esm/icons/log-out";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Download from "lucide-react/dist/esm/icons/download";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import PieChart from "lucide-react/dist/esm/icons/pie-chart";
+import LineChart from "lucide-react/dist/esm/icons/line-chart";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import Target from "lucide-react/dist/esm/icons/target";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Brain from "lucide-react/dist/esm/icons/brain";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Database from "lucide-react/dist/esm/icons/database";
+import Code from "lucide-react/dist/esm/icons/code";
+import Webhook from "lucide-react/dist/esm/icons/webhook";
+import FileSearch from "lucide-react/dist/esm/icons/file-search";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Flag from "lucide-react/dist/esm/icons/flag";
+import Send from "lucide-react/dist/esm/icons/send";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Megaphone from "lucide-react/dist/esm/icons/megaphone";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Key from "lucide-react/dist/esm/icons/key";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Gift from "lucide-react/dist/esm/icons/gift";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {

@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import Star from "lucide-react/dist/esm/icons/star";
 import { motion } from "framer-motion";
 
 interface TestimonialCardProps {

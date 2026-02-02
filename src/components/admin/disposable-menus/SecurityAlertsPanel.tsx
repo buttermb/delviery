@@ -5,17 +5,15 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSecurityAlerts } from '@/hooks/useSecurityAlerts';
 import { format } from 'date-fns';
-import { 
-  AlertTriangle, 
-  Shield, 
-  Info, 
-  X,
-  MapPin,
-  Clock,
-  User,
-  Eye,
-  type LucideIcon
-} from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Info from "lucide-react/dist/esm/icons/info";
+import X from "lucide-react/dist/esm/icons/x";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import User from "lucide-react/dist/esm/icons/user";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
 
 const severityConfig = {
   critical: {

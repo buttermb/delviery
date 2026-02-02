@@ -4,7 +4,9 @@
  * Shows offline status and queued attempt state.
  */
 
-import { WifiOff, Clock, Loader2 } from 'lucide-react';
+import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { cn } from '@/lib/utils';
 
 interface AuthOfflineIndicatorProps {

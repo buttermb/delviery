@@ -3,7 +3,7 @@
  * Right sidebar panel for editing content and styles of the selected section
  */
 
-import { X } from 'lucide-react';
+import X from "lucide-react/dist/esm/icons/x";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

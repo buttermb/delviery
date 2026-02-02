@@ -1,17 +1,15 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import {
-    Loader2,
-    CheckCircle,
-    XCircle,
-    RefreshCw,
-    Mail,
-    Key,
-    UserPlus,
-    ShieldCheck,
-    AlertTriangle
-} from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Key from "lucide-react/dist/esm/icons/key";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';

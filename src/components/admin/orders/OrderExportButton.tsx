@@ -7,7 +7,8 @@
 
 import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, Loader2 } from 'lucide-react';
+import Download from "lucide-react/dist/esm/icons/download";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { useExport } from '@/hooks/useExport';
 import { ExportOptionsDialog, type ExportField } from '@/components/admin/ExportOptionsDialog';
 import { format } from 'date-fns';

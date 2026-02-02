@@ -4,7 +4,7 @@
  */
 
 import { Link } from 'react-router-dom';
-import { LucideIcon } from 'lucide-react';
+import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 

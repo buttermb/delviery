@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useVendorAuth } from '@/contexts/VendorAuthContext';
-import { Loader2 } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 export default function ProtectedVendorRoute({ children }: { children: React.ReactNode }) {
     const { vendor, loading, isAuthenticated } = useVendorAuth();

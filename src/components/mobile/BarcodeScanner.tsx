@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import BarcodeScannerComponent from 'react-qr-barcode-scanner';
 import { Button } from '@/components/ui/button';
-import { X, Camera, Flashlight } from 'lucide-react';
+import X from "lucide-react/dist/esm/icons/x";
+import Camera from "lucide-react/dist/esm/icons/camera";
+import Flashlight from "lucide-react/dist/esm/icons/flashlight";
 import { toast } from 'sonner';
 
 interface BarcodeScannerProps {

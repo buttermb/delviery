@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/table';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
-import { Package } from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
 
 /**
  * Order item data structure

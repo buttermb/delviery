@@ -7,16 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import {
-  Package,
-  DollarSign,
-  Scan,
-  ArrowLeft,
-  CheckCircle,
-  AlertCircle,
-  TrendingUp,
-  Calendar,
-} from "lucide-react";
+import Package from "lucide-react/dist/esm/icons/package";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Scan from "lucide-react/dist/esm/icons/scan";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
 import { format } from "date-fns";
 
 export default function DriverPortal() {

@@ -13,7 +13,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Package, Plus, Edit, Trash2, Mail, Phone, Loader2 } from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';

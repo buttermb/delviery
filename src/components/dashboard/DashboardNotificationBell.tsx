@@ -5,7 +5,18 @@
 
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Bell, Package, ShoppingCart, CreditCard, Shield, Users, ChevronRight, AlertCircle, AlertTriangle, Info, CheckCheck, X } from 'lucide-react';
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Package from "lucide-react/dist/esm/icons/package";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Users from "lucide-react/dist/esm/icons/users";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Info from "lucide-react/dist/esm/icons/info";
+import CheckCheck from "lucide-react/dist/esm/icons/check-check";
+import X from "lucide-react/dist/esm/icons/x";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';

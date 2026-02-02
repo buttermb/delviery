@@ -20,23 +20,21 @@ import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
-import {
-  Package,
-  Search,
-  ChevronRight,
-  Clock,
-  CheckCircle,
-  XCircle,
-  RefreshCw,
-  ShoppingCart,
-  Plus,
-  Filter,
-  Calendar,
-  Truck,
-  ArrowLeft,
-  User,
-  Receipt
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import Search from "lucide-react/dist/esm/icons/search";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import User from "lucide-react/dist/esm/icons/user";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
 
 interface CustomerOrder {
   id: string;

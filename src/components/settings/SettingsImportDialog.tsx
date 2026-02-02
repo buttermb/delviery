@@ -12,15 +12,13 @@ import {
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Upload,
-  FileJson,
-  AlertCircle,
-  CheckCircle2,
-  Loader2,
-  FileWarning,
-  X
-} from 'lucide-react';
+import Upload from "lucide-react/dist/esm/icons/upload";
+import FileJson from "lucide-react/dist/esm/icons/file-json";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import FileWarning from "lucide-react/dist/esm/icons/file-warning";
+import X from "lucide-react/dist/esm/icons/x";
 import { toast } from 'sonner';
 
 // Schema for settings validation

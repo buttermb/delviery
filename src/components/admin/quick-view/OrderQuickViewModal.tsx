@@ -5,14 +5,12 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import {
-  CalendarDays,
-  Package,
-  MapPin,
-  User,
-  Truck,
-  CreditCard,
-} from 'lucide-react';
+import CalendarDays from "lucide-react/dist/esm/icons/calendar-days";
+import Package from "lucide-react/dist/esm/icons/package";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import User from "lucide-react/dist/esm/icons/user";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { getStatusColor } from '@/lib/utils/statusColors';

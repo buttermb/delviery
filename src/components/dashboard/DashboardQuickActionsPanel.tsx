@@ -8,7 +8,10 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Package, Megaphone, FileBarChart } from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Package from "lucide-react/dist/esm/icons/package";
+import Megaphone from "lucide-react/dist/esm/icons/megaphone";
+import FileBarChart from "lucide-react/dist/esm/icons/file-bar-chart";
 import { cn } from '@/lib/utils';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

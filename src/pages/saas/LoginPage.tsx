@@ -30,7 +30,20 @@ import {
 } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, CheckCircle2, Lock, Mail, WifiOff, AlertCircle, Eye, EyeOff, ArrowLeft, Wand2, Flower2, Leaf, Star, ShieldCheck } from 'lucide-react';
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Wand2 from "lucide-react/dist/esm/icons/wand-2";
+import Flower2 from "lucide-react/dist/esm/icons/flower-2";
+import Leaf from "lucide-react/dist/esm/icons/leaf";
+import Star from "lucide-react/dist/esm/icons/star";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RateLimitWarning } from '@/components/auth/RateLimitWarning';
 import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from '@/components/auth/AuthErrorAlert';
@@ -182,13 +195,11 @@ export default function LoginPage() {
     // Clear any other auth-related keys (pattern-based cleanup) - REMOVED to prevent Supabase session loss
     // We only clear tenant-specific data above to ensure clean state for the new tenant
 
-
     // Clear sessionStorage auth data
     sessionStorage.removeItem('floraiq_user_id');
 
     // Clear stale cookies - REMOVED to prevent session loss
     // The previous aggressive cleanup was causing 401s on redirect
-
 
     // Small delay to ensure cleanup is complete before login attempt
     await new Promise(resolve => setTimeout(resolve, 50));

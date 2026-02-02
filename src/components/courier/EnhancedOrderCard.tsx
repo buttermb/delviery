@@ -1,11 +1,18 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  MapPin, DollarSign, Package, Clock, 
-  Navigation, Phone, ThumbsUp, ThumbsDown,
-  Star, User, Home, TrendingUp
-} from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Package from "lucide-react/dist/esm/icons/package";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import ThumbsUp from "lucide-react/dist/esm/icons/thumbs-up";
+import ThumbsDown from "lucide-react/dist/esm/icons/thumbs-down";
+import Star from "lucide-react/dist/esm/icons/star";
+import User from "lucide-react/dist/esm/icons/user";
+import Home from "lucide-react/dist/esm/icons/home";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useSwipeable } from 'react-swipeable';

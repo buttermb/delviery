@@ -9,7 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
-import { TrendingDown, Users, AlertTriangle } from 'lucide-react';
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Users from "lucide-react/dist/esm/icons/users";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { format } from 'date-fns';
 
 interface ChurnData {

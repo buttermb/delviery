@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { GripVertical, GripHorizontal } from 'lucide-react';
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
+import GripHorizontal from "lucide-react/dist/esm/icons/grip-horizontal";
 
 interface SplitPaneProps {
     /** Left or top panel content */

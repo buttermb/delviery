@@ -1,6 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Phone, MessageSquare, DollarSign } from "lucide-react";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import { useWholesaleClients, useWholesaleOrders } from "@/hooks/useWholesaleData";
 import { differenceInDays } from "date-fns";
 import { useState, useMemo } from "react";

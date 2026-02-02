@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { usePendingOrders, PendingOrder } from '@/hooks/usePendingOrders';
 import { PendingOrderCard } from './PendingOrderCard';
 import { Input } from '@/components/ui/input';
-import { Search, RefreshCw } from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 

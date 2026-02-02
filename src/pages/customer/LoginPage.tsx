@@ -6,7 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShoppingBag, Loader2, Sparkles, Eye, EyeOff } from "lucide-react";
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
 import { toast } from "@/hooks/use-toast";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Link } from "react-router-dom";
@@ -19,7 +23,6 @@ import { useAuthRateLimit } from "@/hooks/useAuthRateLimit";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
-
 
 export default function CustomerLoginPage() {
   const navigate = useNavigate();

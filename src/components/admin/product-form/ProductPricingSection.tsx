@@ -10,16 +10,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import {
-  Plus,
-  Trash2,
-  DollarSign,
-  TrendingUp,
-  Package,
-  Store,
-  Building2,
-  AlertCircle
-} from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Package from "lucide-react/dist/esm/icons/package";
+import Store from "lucide-react/dist/esm/icons/store";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 
 interface BulkPriceTier {
   id: string;

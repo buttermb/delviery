@@ -7,20 +7,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import {
-    ArrowLeft,
-    CheckCircle,
-    Truck,
-    MapPin,
-    Store,
-    FileText,
-    Package,
-    Clock,
-    XCircle,
-    Loader2,
-    MessageSquare,
-    Send
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Store from "lucide-react/dist/esm/icons/store";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Package from "lucide-react/dist/esm/icons/package";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Send from "lucide-react/dist/esm/icons/send";
 import {
     Dialog,
     DialogContent,

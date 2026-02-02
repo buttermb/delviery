@@ -1,6 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
 import { getStatusColor } from "@/lib/utils/statusColors";
 
 interface InventoryStatusBadgeProps {

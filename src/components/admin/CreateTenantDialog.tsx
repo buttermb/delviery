@@ -38,7 +38,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
 import type { Database } from '@/integrations/supabase/types';
 
 type TenantLimits = {

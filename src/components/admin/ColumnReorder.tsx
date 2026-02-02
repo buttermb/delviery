@@ -22,7 +22,10 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Eye, EyeOff, Settings2 } from 'lucide-react';
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import Settings2 from "lucide-react/dist/esm/icons/settings-2";
 import { Button } from '@/components/ui/button';
 import {
   Popover,

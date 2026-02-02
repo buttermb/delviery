@@ -3,7 +3,8 @@ import { DocsLayout } from "@/components/docs/DocsLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CodeBlock } from "@/components/docs/CodeBlock";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 
 export default function GettingStartedPage() {
   return (

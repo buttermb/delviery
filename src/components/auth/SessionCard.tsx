@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import {
-  Monitor,
-  Smartphone,
-  Tablet,
-  MapPin,
-  Clock,
-  Loader2,
-} from 'lucide-react';
+import Monitor from "lucide-react/dist/esm/icons/monitor";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Tablet from "lucide-react/dist/esm/icons/tablet";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { formatDistanceToNow } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

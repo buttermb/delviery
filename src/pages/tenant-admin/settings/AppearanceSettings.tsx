@@ -9,17 +9,15 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import {
-  Palette,
-  Sun,
-  Moon,
-  Monitor,
-  Layout,
-  Sidebar,
-  Maximize,
-  Minimize,
-  Eye,
-} from 'lucide-react';
+import Palette from "lucide-react/dist/esm/icons/palette";
+import Sun from "lucide-react/dist/esm/icons/sun";
+import Moon from "lucide-react/dist/esm/icons/moon";
+import Monitor from "lucide-react/dist/esm/icons/monitor";
+import Layout from "lucide-react/dist/esm/icons/layout";
+import Sidebar from "lucide-react/dist/esm/icons/sidebar";
+import Maximize from "lucide-react/dist/esm/icons/maximize";
+import Minimize from "lucide-react/dist/esm/icons/minimize";
+import Eye from "lucide-react/dist/esm/icons/eye";
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { OperationSizeSelector } from '@/components/admin/sidebar/OperationSizeSelector';

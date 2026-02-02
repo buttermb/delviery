@@ -18,16 +18,14 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import {
-  Truck,
-  MapPin,
-  Phone,
-  Star,
-  Zap,
-  CheckCircle2,
-  User,
-  AlertCircle,
-} from 'lucide-react';
+import Truck from "lucide-react/dist/esm/icons/truck";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Star from "lucide-react/dist/esm/icons/star";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import User from "lucide-react/dist/esm/icons/user";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { cn } from '@/lib/utils';
 
 interface Courier {

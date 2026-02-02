@@ -1,5 +1,5 @@
 import { motion, useAnimation } from 'framer-motion';
-import { type LucideIcon } from 'lucide-react';
+import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
 import { useEffect, useMemo } from 'react';
 
 interface Integration {

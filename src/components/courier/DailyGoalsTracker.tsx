@@ -1,6 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Trophy, Target, Zap, TrendingUp } from 'lucide-react';
+import Trophy from "lucide-react/dist/esm/icons/trophy";
+import Target from "lucide-react/dist/esm/icons/target";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import { motion } from 'framer-motion';
 
 interface DailyGoalsTrackerProps {

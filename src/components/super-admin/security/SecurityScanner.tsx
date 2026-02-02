@@ -8,7 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { Shield, AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
+import Shield from "lucide-react/dist/esm/icons/shield";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { useState } from 'react';
 
 interface SecurityFinding {

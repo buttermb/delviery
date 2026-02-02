@@ -13,7 +13,11 @@
 
 import { useState, useRef } from 'react';
 import { format } from 'date-fns';
-import { RefreshCw, Maximize2, ChevronDown, ChevronUp, Settings } from 'lucide-react';
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Maximize2 from "lucide-react/dist/esm/icons/maximize-2";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
+import Settings from "lucide-react/dist/esm/icons/settings";
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';

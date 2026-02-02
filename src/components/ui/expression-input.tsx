@@ -5,7 +5,9 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
-import { Calculator, Percent, DollarSign } from 'lucide-react';
+import Calculator from "lucide-react/dist/esm/icons/calculator";
+import Percent from "lucide-react/dist/esm/icons/percent";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import { cn } from '@/lib/utils';
 import {
   Tooltip,

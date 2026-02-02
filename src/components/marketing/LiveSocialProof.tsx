@@ -4,7 +4,10 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { Users, TrendingUp, ShieldCheck, Zap } from "lucide-react";
+import Users from "lucide-react/dist/esm/icons/users";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import Zap from "lucide-react/dist/esm/icons/zap";
 
 interface Activity {
   id: number;

@@ -8,24 +8,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-  DollarSign,
-  Package,
-  ShoppingCart,
-  AlertTriangle,
-  TrendingUp,
-  ArrowRight,
-  Settings,
-  Users,
-  Activity,
-  Zap,
-  Smartphone,
-  Plus,
-  CheckCircle2,
-  Circle,
-  Coins,
-  Sparkles,
-} from "lucide-react";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Package from "lucide-react/dist/esm/icons/package";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Users from "lucide-react/dist/esm/icons/users";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Circle from "lucide-react/dist/esm/icons/circle";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 import { useCredits } from "@/hooks/useCredits";
 import { CreditBalance } from "@/components/credits/CreditBalance";
 import { CreditPurchaseCelebration } from "@/components/credits/CreditPurchaseCelebration";

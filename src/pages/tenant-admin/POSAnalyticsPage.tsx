@@ -10,10 +10,15 @@ import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
 } from 'recharts';
-import { 
-  DollarSign, TrendingUp, ShoppingCart, Clock, Users, 
-  CreditCard, Package, Award, Activity 
-} from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Users from "lucide-react/dist/esm/icons/users";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Package from "lucide-react/dist/esm/icons/package";
+import Award from "lucide-react/dist/esm/icons/award";
+import Activity from "lucide-react/dist/esm/icons/activity";
 
 interface POSTransaction {
   id: string;

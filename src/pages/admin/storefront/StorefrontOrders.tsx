@@ -15,12 +15,10 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import {
-  Search,
-  ShoppingCart,
-  Download,
-  RefreshCw
-} from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Download from "lucide-react/dist/esm/icons/download";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { OrderEmailButton } from '@/components/admin/orders/OrderEmailButton';
 import { OrderExportButton } from '@/components/admin/orders/OrderExportButton';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -564,8 +562,4 @@ export default function StorefrontOrders() {
     </div>
   );
 }
-
-
-
-
 

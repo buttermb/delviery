@@ -2,7 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { ArrowLeft, Download, FileText, Calendar } from "lucide-react";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Download from "lucide-react/dist/esm/icons/download";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
 
 interface ComplianceDocument {
   id: string;

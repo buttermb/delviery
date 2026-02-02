@@ -13,7 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, X, RefreshCw } from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import X from "lucide-react/dist/esm/icons/x";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import type { ActivityFeedFilters as FilterState, ActivityCategory, ActivitySeverity } from '@/hooks/useActivityFeed';
 
 interface ActivityFeedFiltersProps {

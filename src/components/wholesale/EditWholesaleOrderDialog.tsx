@@ -25,7 +25,11 @@ import {
 } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, Plus, Minus, Trash2, Package } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Package from "lucide-react/dist/esm/icons/package";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useWholesaleCouriers } from '@/hooks/useWholesaleData';
 

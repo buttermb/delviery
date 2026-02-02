@@ -3,7 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Clock, Loader2 } from 'lucide-react';
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { useUnifiedOrders } from '@/hooks/unified';
 import { format, subDays, parseISO, startOfDay, getHours } from 'date-fns';
 

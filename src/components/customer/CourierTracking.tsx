@@ -9,7 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
-import { Phone, Star, Truck, MapPin, Clock } from 'lucide-react';
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Star from "lucide-react/dist/esm/icons/star";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { formatDistanceToNow } from 'date-fns';
 
 interface CourierInfo {

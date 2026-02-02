@@ -10,23 +10,22 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-  History,
-  Plus,
-  RefreshCw,
-  CreditCard,
-  Truck,
-  Package,
-  FileText,
-  UserCheck,
-  XCircle,
-  RotateCcw,
-  CheckCircle,
-  Edit,
-  ArrowRight,
-  User,
-  Clock,
-} from 'lucide-react';
+import History from "lucide-react/dist/esm/icons/history";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Package from "lucide-react/dist/esm/icons/package";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import UserCheck from "lucide-react/dist/esm/icons/user-check";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import User from "lucide-react/dist/esm/icons/user";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
 import { formatRelativeTime, formatSmartDate } from '@/lib/utils/formatDate';
 import {
   useOrderAuditLog,
@@ -47,7 +46,6 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
-import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
 interface OrderAuditLogProps {

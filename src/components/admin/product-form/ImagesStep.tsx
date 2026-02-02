@@ -3,7 +3,9 @@ import { useState, useCallback } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, X, Image as ImageIcon } from "lucide-react";
+import Upload from "lucide-react/dist/esm/icons/upload";
+import X from "lucide-react/dist/esm/icons/x";
+import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {

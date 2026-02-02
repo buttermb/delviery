@@ -2,7 +2,7 @@ import { logger } from '@/lib/logger';
 import { Component, ReactNode } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 
 interface TurnstileWrapperProps {
   siteKey: string;

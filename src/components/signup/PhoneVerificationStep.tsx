@@ -5,7 +5,11 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { Phone, CheckCircle, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
+import Phone from "lucide-react/dist/esm/icons/phone";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -418,10 +422,4 @@ export function PhoneVerificationStep({
 }
 
 export default PhoneVerificationStep;
-
-
-
-
-
-
 

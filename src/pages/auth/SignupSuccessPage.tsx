@@ -3,19 +3,17 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import { SEOHead } from '@/components/SEOHead';
-import {
-  Mail,
-  Loader2,
-  AlertCircle,
-  ArrowLeft,
-  RefreshCw,
-  CheckCircle2,
-  Rocket,
-  BookOpen,
-  Users,
-  Settings,
-  Sparkles
-} from 'lucide-react';
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Rocket from "lucide-react/dist/esm/icons/rocket";
+import BookOpen from "lucide-react/dist/esm/icons/book-open";
+import Users from "lucide-react/dist/esm/icons/users";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';

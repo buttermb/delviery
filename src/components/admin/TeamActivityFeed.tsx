@@ -18,18 +18,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Users,
-  ShoppingCart,
-  Package,
-  Settings,
-  CreditCard,
-  Truck,
-  Activity,
-  User,
-  RefreshCw,
-  Filter,
-} from 'lucide-react';
+import Users from "lucide-react/dist/esm/icons/users";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Package from "lucide-react/dist/esm/icons/package";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import User from "lucide-react/dist/esm/icons/user";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Filter from "lucide-react/dist/esm/icons/filter";
 import { formatRelativeTime } from '@/lib/utils/formatDate';
 import { useTeamActivity, type TeamActivityEntry } from '@/hooks/useTeamActivity';
 

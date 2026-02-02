@@ -5,7 +5,9 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Loader2, Check } from 'lucide-react';
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Check from "lucide-react/dist/esm/icons/check";
 import {
   Tooltip,
   TooltipContent,

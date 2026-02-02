@@ -1,5 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { MessageCircle, X, Send } from 'lucide-react';
+import MessageCircle from "lucide-react/dist/esm/icons/message-circle";
+import X from "lucide-react/dist/esm/icons/x";
+import Send from "lucide-react/dist/esm/icons/send";
 import { useState, useRef } from 'react';
 
 export function FloatingChatButton() {

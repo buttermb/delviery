@@ -1,6 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, CheckCircle, Navigation } from "lucide-react";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
 import { formatDistance, getGeofenceStatus, GEOFENCE_RADIUS_MILES } from "@/utils/geofenceHelper";
 
 interface GeofenceStatusProps {

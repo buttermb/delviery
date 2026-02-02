@@ -13,15 +13,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-    Tag,
-    Clock,
-    Calendar,
-    ChevronRight,
-    Percent,
-    Sparkles,
-    ShoppingBag,
-} from 'lucide-react';
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Percent from "lucide-react/dist/esm/icons/percent";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
 import { formatSmartDate } from '@/lib/utils/formatDate';
 
 interface Deal {

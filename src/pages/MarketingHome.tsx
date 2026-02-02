@@ -1,12 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowRight,
-  CheckCircle,
-  HelpCircle,
-  AlertCircle,
-  AlertTriangle,
-} from "lucide-react";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
@@ -38,7 +36,6 @@ const ROICalculator = lazy(() => import("@/components/marketing/ROICalculator").
 const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingChatButton").then(m => ({ default: m.FloatingChatButton })));
 const PlatformCapabilities = lazy(() => import("@/components/marketing/PlatformCapabilities").then(m => ({ default: m.PlatformCapabilities })));
 const EnhancedDashboardPreview = lazy(() => import("@/components/marketing/EnhancedDashboardPreview").then(m => ({ default: m.EnhancedDashboardPreview })));
-
 
 // Loading fallback component
 const SectionLoader = () => (
@@ -105,9 +102,6 @@ export default function MarketingHome() {
 
         {/* STATS SECTION */}
         <StatsSection />
-
-
-
 
         {/* SECTION 5: TESTIMONIALS CAROUSEL */}
         <MarketingErrorBoundary section="Testimonials">
@@ -188,7 +182,6 @@ export default function MarketingHome() {
             </section>
           </SectionTransition>
         </MarketingErrorBoundary>
-
 
         {/* SECTION 9: PRICING PREVIEW */}
         <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg))]">

@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Clock } from 'lucide-react';
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { Separator } from '@/components/ui/separator';
 
 interface TimeRestrictionConfig {

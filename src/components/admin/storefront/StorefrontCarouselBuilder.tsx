@@ -29,22 +29,20 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import {
-    Plus,
-    Trash2,
-    GripVertical,
-    Edit,
-    Eye,
-    EyeOff,
-    Layers,
-    TrendingUp,
-    Clock,
-    Tag,
-    Package,
-    Loader2,
-    ChevronUp,
-    ChevronDown,
-} from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import Layers from "lucide-react/dist/esm/icons/layers";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Package from "lucide-react/dist/esm/icons/package";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
 
 interface Carousel {
     id: string;

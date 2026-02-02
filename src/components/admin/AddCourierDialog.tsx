@@ -34,7 +34,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { UserPlus, Loader2 } from "lucide-react";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 const courierSchema = z.object({
   full_name: z.string().min(2, "Name must be at least 2 characters"),

@@ -1,5 +1,8 @@
 import { motion } from 'framer-motion';
-import { CheckCircle, Clock, Zap, Sparkles } from 'lucide-react';
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 
 const steps = [
   { label: 'Order Received', icon: Clock, status: 'complete' },

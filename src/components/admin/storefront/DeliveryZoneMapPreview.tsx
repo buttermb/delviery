@@ -8,7 +8,9 @@ import { useEffect, useRef, useMemo, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin, Info, AlertCircle } from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Info from "lucide-react/dist/esm/icons/info";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 

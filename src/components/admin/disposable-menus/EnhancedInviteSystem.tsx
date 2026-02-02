@@ -13,10 +13,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { 
-  MessageSquare, Mail, Shield, Send, UserPlus, 
-  Users, CheckCircle2, AlertCircle
-} from 'lucide-react';
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Send from "lucide-react/dist/esm/icons/send";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import Users from "lucide-react/dist/esm/icons/users";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 

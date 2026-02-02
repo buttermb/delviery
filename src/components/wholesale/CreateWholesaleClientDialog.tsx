@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 interface Props {
     open: boolean;

@@ -7,7 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { DollarSign, Edit, Save, X } from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Save from "lucide-react/dist/esm/icons/save";
+import X from "lucide-react/dist/esm/icons/x";
 import { Label } from '@/components/ui/label';
 import { queryKeys } from '@/lib/queryKeys';
 

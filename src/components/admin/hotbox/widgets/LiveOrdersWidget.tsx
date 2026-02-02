@@ -19,17 +19,15 @@ import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
-import {
-  Activity,
-  Clock,
-  Package,
-  Truck,
-  CheckCircle,
-  AlertCircle,
-  ChevronRight,
-  Wifi,
-  WifiOff,
-} from 'lucide-react';
+import Activity from "lucide-react/dist/esm/icons/activity";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Wifi from "lucide-react/dist/esm/icons/wifi";
+import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
 
 // Status configuration
 const STATUS_CONFIG: Record<string, {

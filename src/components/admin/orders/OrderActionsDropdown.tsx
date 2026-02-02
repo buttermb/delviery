@@ -11,14 +11,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import {
-  MoreHorizontal,
-  Edit,
-  Copy,
-  XCircle,
-  RotateCcw,
-  Loader2,
-} from 'lucide-react';
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { cn } from '@/lib/utils';
 
 export type OrderAction = 'edit' | 'cancel' | 'refund' | 'duplicate';

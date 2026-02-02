@@ -1,7 +1,16 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, AlertCircle, Loader2, BarChart, Receipt, Tag, CreditCard } from "lucide-react";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
+import ArrowDownRight from "lucide-react/dist/esm/icons/arrow-down-right";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import BarChart from "lucide-react/dist/esm/icons/bar-chart";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
 import { useWholesaleOrders, useWholesaleClients, useWholesalePayments } from "@/hooks/useWholesaleData";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { format, isToday, startOfMonth, endOfMonth } from "date-fns";

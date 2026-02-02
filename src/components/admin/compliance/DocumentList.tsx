@@ -1,7 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format, isAfter, addDays } from "date-fns";
-import { FileText, Loader2, Calendar } from "lucide-react";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
 
 interface ComplianceDocument {
   id: string;

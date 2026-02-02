@@ -11,20 +11,18 @@
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    BarChart3,
-    ShoppingCart,
-    UtensilsCrossed,
-    Truck,
-    TrendingUp,
-    LineChart,
-    FileText,
-    PieChart,
-    Download,
-    Target,
-    Presentation,
-    Store,
-} from 'lucide-react';
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import UtensilsCrossed from "lucide-react/dist/esm/icons/utensils-crossed";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import LineChart from "lucide-react/dist/esm/icons/line-chart";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import PieChart from "lucide-react/dist/esm/icons/pie-chart";
+import Download from "lucide-react/dist/esm/icons/download";
+import Target from "lucide-react/dist/esm/icons/target";
+import Presentation from "lucide-react/dist/esm/icons/presentation";
+import Store from "lucide-react/dist/esm/icons/store";
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';

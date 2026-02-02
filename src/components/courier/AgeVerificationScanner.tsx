@@ -5,7 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Camera, Keyboard, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import Camera from "lucide-react/dist/esm/icons/camera";
+import Keyboard from "lucide-react/dist/esm/icons/keyboard";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { toast } from 'sonner';
 
 interface AgeData {

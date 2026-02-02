@@ -9,13 +9,31 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import {
-  Package, DollarSign, TrendingUp, AlertTriangle,
-  Eye, CreditCard, MessageCircle, Calendar, ShieldAlert,
-  Phone, Mail, FileText, Clock, CheckCircle2, XCircle,
-  Activity, TrendingDown, BarChart3, Target, AlertCircle,
-  History, Send, Filter, ArrowUpRight, ArrowDownRight
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import MessageCircle from "lucide-react/dist/esm/icons/message-circle";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import ShieldAlert from "lucide-react/dist/esm/icons/shield-alert";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Target from "lucide-react/dist/esm/icons/target";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import History from "lucide-react/dist/esm/icons/history";
+import Send from "lucide-react/dist/esm/icons/send";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
+import ArrowDownRight from "lucide-react/dist/esm/icons/arrow-down-right";
 import { SEOHead } from '@/components/SEOHead';
 import { format, differenceInDays, formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';

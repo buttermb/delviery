@@ -22,7 +22,10 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, DollarSign, RotateCcw, Package } from 'lucide-react';
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import Package from "lucide-react/dist/esm/icons/package";
 import { toast } from 'sonner';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';

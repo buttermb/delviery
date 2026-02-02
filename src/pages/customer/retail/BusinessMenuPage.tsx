@@ -16,16 +16,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Store, 
-  Search, 
-  Filter,
-  ShoppingCart,
-  Package,
-  ArrowLeft,
-  Plus,
-  Minus
-} from 'lucide-react';
+import Store from "lucide-react/dist/esm/icons/store";
+import Search from "lucide-react/dist/esm/icons/search";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Package from "lucide-react/dist/esm/icons/package";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Minus from "lucide-react/dist/esm/icons/minus";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import {
   Select,

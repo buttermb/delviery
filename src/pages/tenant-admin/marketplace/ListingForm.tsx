@@ -33,7 +33,14 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, X, Loader2, Plus, Trash2, FileText, Image as ImageIcon, Lock } from 'lucide-react';
+import Upload from "lucide-react/dist/esm/icons/upload";
+import X from "lucide-react/dist/esm/icons/x";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
+import Lock from "lucide-react/dist/esm/icons/lock";
 import { encryptLabResults } from '@/lib/encryption/sensitive-fields';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

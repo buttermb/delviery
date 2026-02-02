@@ -1,8 +1,15 @@
 import { useMemo } from 'react';
-import {
-  Eye, ShoppingCart, DollarSign, TrendingUp, Flame, Clock,
-  BarChart3, PieChart as PieChartIcon, Activity, RefreshCw, Zap
-} from 'lucide-react';
+import Eye from "lucide-react/dist/esm/icons/eye";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Flame from "lucide-react/dist/esm/icons/flame";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import PieChart as PieChartIcon from "lucide-react/dist/esm/icons/pie-chart as pie-chart-icon";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Zap from "lucide-react/dist/esm/icons/zap";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

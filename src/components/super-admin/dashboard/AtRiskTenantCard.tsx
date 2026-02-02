@@ -5,7 +5,8 @@
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, ExternalLink } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
 import { Link } from 'react-router-dom';
 import { getHealthColor, getHealthTextColor } from '@/lib/utils/statusColors';
 import { cn } from '@/lib/utils';

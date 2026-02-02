@@ -22,18 +22,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  Monitor,
-  Smartphone,
-  Tablet,
-  LogOut,
-  Shield,
-  Loader2,
-  MapPin,
-  Clock,
-  RefreshCw,
-  AlertTriangle,
-} from 'lucide-react';
+import Monitor from "lucide-react/dist/esm/icons/monitor";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Tablet from "lucide-react/dist/esm/icons/tablet";
+import LogOut from "lucide-react/dist/esm/icons/log-out";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 
 type RevokeTarget = { type: 'single'; sessionId: string; displayName: string } | { type: 'all-others' } | null;
 

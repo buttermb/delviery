@@ -6,11 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useWholesaleDeliveries } from "@/hooks/useWholesaleData";
-import {
-  Navigation, Package, AlertCircle,
-  Truck, MapPin, ChevronRight, RefreshCw,
-  Timer, User
-} from "lucide-react";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
+import Package from "lucide-react/dist/esm/icons/package";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Timer from "lucide-react/dist/esm/icons/timer";
+import User from "lucide-react/dist/esm/icons/user";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateETA } from "@/lib/utils/eta-calculation";
 import { useMapboxToken } from "@/hooks/useMapboxToken";

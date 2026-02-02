@@ -4,21 +4,19 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  User,
-  Shield,
-  Building2,
-  Bell,
-  CreditCard,
-  Users,
-  Plug,
-  Palette,
-  Search,
-  ChevronLeft,
-  AlertCircle,
-  X,
-} from 'lucide-react';
-import { LucideIcon } from 'lucide-react';
+import User from "lucide-react/dist/esm/icons/user";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Users from "lucide-react/dist/esm/icons/users";
+import Plug from "lucide-react/dist/esm/icons/plug";
+import Palette from "lucide-react/dist/esm/icons/palette";
+import Search from "lucide-react/dist/esm/icons/search";
+import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import X from "lucide-react/dist/esm/icons/x";
+import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
 
 export type SettingsSection =
   | 'account'

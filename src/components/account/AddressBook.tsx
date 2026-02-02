@@ -10,10 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import {
-  Plus, Edit, Trash2, MapPin, Home,
-  Building, Loader2
-} from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Home from "lucide-react/dist/esm/icons/home";
+import Building from "lucide-react/dist/esm/icons/building";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,

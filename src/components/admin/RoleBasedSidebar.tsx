@@ -19,7 +19,8 @@ import {
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
-import { LogOut, ChevronDown } from 'lucide-react';
+import LogOut from "lucide-react/dist/esm/icons/log-out";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
 import { getNavigationForRole } from '@/lib/constants/navigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';

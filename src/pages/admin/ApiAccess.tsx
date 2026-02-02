@@ -10,7 +10,11 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Key, Plus, Copy, Trash2, Loader2 } from 'lucide-react';
+import Key from "lucide-react/dist/esm/icons/key";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 export default function ApiAccess() {

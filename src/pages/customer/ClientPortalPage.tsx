@@ -9,7 +9,7 @@ import { InvoiceTable } from '@/components/customer/portal/InvoiceTable';
 import { OrderHistory } from '@/components/customer/portal/OrderHistory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle } from 'lucide-react';
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function ClientPortalPage() {

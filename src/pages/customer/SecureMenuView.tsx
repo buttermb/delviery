@@ -7,11 +7,23 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogTitle, DialogHeader } from '@/components/ui/dialog';
-import {
-  Shield, ShoppingCart, Package, Minus, Plus, Lock,
-  ZoomIn, Leaf, Sparkles, Wind, Coffee, Search, X, Check,
-  ChevronRight, Timer, AlertTriangle
-} from 'lucide-react';
+import Shield from "lucide-react/dist/esm/icons/shield";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Package from "lucide-react/dist/esm/icons/package";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import ZoomIn from "lucide-react/dist/esm/icons/zoom-in";
+import Leaf from "lucide-react/dist/esm/icons/leaf";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import Wind from "lucide-react/dist/esm/icons/wind";
+import Coffee from "lucide-react/dist/esm/icons/coffee";
+import Search from "lucide-react/dist/esm/icons/search";
+import X from "lucide-react/dist/esm/icons/x";
+import Check from "lucide-react/dist/esm/icons/check";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Timer from "lucide-react/dist/esm/icons/timer";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { OptimizedProductImage } from '@/components/OptimizedProductImage';
 import { trackImageZoom } from '@/hooks/useMenuAnalytics';
@@ -378,7 +390,6 @@ function ProductCard({
     </Card>
   );
 }
-
 
 const SecureMenuView = () => {
   const { token } = useParams();

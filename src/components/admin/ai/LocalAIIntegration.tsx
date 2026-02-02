@@ -16,14 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Brain,
-  Sparkles,
-  Loader2,
-  MessageSquare,
-  FileText,
-  Zap,
-} from 'lucide-react';
+import Brain from "lucide-react/dist/esm/icons/brain";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Zap from "lucide-react/dist/esm/icons/zap";
 import { useToast } from '@/hooks/use-toast';
 
 // Demo Mode: Simulated AI processing

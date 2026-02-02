@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Link2, ExternalLink, Loader2 } from 'lucide-react';
+import Link2 from "lucide-react/dist/esm/icons/link-2";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import type { LucideIcon } from 'lucide-react';
 
 export interface RelatedEntityItem {

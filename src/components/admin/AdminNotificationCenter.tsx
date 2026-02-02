@@ -1,6 +1,10 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
-import { Bell, CheckCircle, AlertTriangle, Info, X } from 'lucide-react';
+import Bell from "lucide-react/dist/esm/icons/bell";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Info from "lucide-react/dist/esm/icons/info";
+import X from "lucide-react/dist/esm/icons/x";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {

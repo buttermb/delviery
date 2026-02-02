@@ -5,7 +5,13 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Navigation, Layers, Route, Eye, EyeOff, TrendingUp } from 'lucide-react';
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
+import Layers from "lucide-react/dist/esm/icons/layers";
+import Route from "lucide-react/dist/esm/icons/route";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import { supabase } from '@/integrations/supabase/client';
 import { formatStatus } from '@/utils/stringHelpers';
 import { getStatusColorInline, themeColors } from '@/lib/utils/colorConversion';
@@ -51,7 +57,6 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showCouriers, setShowCouriers] = useState(true);
   const [mapStyle, setMapStyle] = useState<'streets' | 'satellite' | 'dark'>('streets');
-
 
   const getStatusColor = (status: string) => {
     return getStatusColorInline(status);

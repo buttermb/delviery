@@ -6,7 +6,7 @@
  */
 
 import { Badge } from '@/components/ui/badge';
-import { FileStack } from 'lucide-react';
+import FileStack from "lucide-react/dist/esm/icons/file-stack";
 import { cn } from '@/lib/utils';
 
 interface MenuSourceBadgeProps {

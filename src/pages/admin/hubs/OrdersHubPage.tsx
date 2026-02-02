@@ -11,16 +11,14 @@
 import Papa from 'papaparse';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    Package,
-    Store,
-    Clock,
-    Radio,
-    Plus,
-    History,
-    Workflow,
-    FileText,
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import Store from "lucide-react/dist/esm/icons/store";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Radio from "lucide-react/dist/esm/icons/radio";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import History from "lucide-react/dist/esm/icons/history";
+import Workflow from "lucide-react/dist/esm/icons/workflow";
+import FileText from "lucide-react/dist/esm/icons/file-text";
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { lazy, Suspense, useMemo, useCallback, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -222,7 +220,6 @@ export default function OrdersHubPage() {
                         </TabsList>
                     </div>
                 </div>
-
 
                 {/* Wholesale Orders Tab */}
                 <TabsContent value="wholesale" className="m-0">

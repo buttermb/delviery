@@ -2,17 +2,15 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Upload, 
-  Loader2, 
-  Columns, 
-  Eye, 
-  Download, 
-  CheckCircle2,
-  ArrowLeft,
-  ArrowRight,
-  HelpCircle,
-} from 'lucide-react';
+import Upload from "lucide-react/dist/esm/icons/upload";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Columns from "lucide-react/dist/esm/icons/columns";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Download from "lucide-react/dist/esm/icons/download";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
 import type { MigrationStep } from '@/types/migration';
 import { useMigration } from '@/hooks/useMigration';
 import { UploadStep } from './UploadStep';
@@ -201,7 +199,4 @@ export function MigrationWizard() {
     </div>
   );
 }
-
-
-
 

@@ -19,15 +19,13 @@ import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
-import {
-  Package,
-  Clock,
-  ChevronRight,
-  Wifi,
-  WifiOff,
-  User,
-  CheckCircle,
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Wifi from "lucide-react/dist/esm/icons/wifi";
+import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
+import User from "lucide-react/dist/esm/icons/user";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 
 interface PickupOrderItem {
   id: string;

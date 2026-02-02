@@ -1,6 +1,10 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Calculator, TrendingUp, DollarSign, Clock, Target } from 'lucide-react';
+import Calculator from "lucide-react/dist/esm/icons/calculator";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Target from "lucide-react/dist/esm/icons/target";
 import { CountUpNumber } from './CountUpNumber';
 
 export function ROICalculator() {

@@ -9,20 +9,18 @@
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    PlayCircle,
-    BookOpen,
-    Headphones,
-    MessageSquareText,
-    CheckCircle2,
-    Video,
-    HelpCircle,
-    Mail,
-    MessageSquare,
-    Bug,
-    Lightbulb,
-    ExternalLink,
-} from 'lucide-react';
+import PlayCircle from "lucide-react/dist/esm/icons/play-circle";
+import BookOpen from "lucide-react/dist/esm/icons/book-open";
+import Headphones from "lucide-react/dist/esm/icons/headphones";
+import MessageSquareText from "lucide-react/dist/esm/icons/message-square-text";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Video from "lucide-react/dist/esm/icons/video";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Bug from "lucide-react/dist/esm/icons/bug";
+import Lightbulb from "lucide-react/dist/esm/icons/lightbulb";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
 import { lazy, Suspense, useCallback, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

@@ -11,20 +11,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Settings,
-  Shield,
-  Activity,
-  Database,
-  AlertTriangle,
-  CheckCircle,
-  Zap,
-  Users,
-  Server,
-  HardDrive,
-  Cpu,
-  Gauge
-} from "lucide-react";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import Database from "lucide-react/dist/esm/icons/database";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Users from "lucide-react/dist/esm/icons/users";
+import Server from "lucide-react/dist/esm/icons/server";
+import HardDrive from "lucide-react/dist/esm/icons/hard-drive";
+import Cpu from "lucide-react/dist/esm/icons/cpu";
+import Gauge from "lucide-react/dist/esm/icons/gauge";
 import { Progress } from "@/components/ui/progress";
 
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";

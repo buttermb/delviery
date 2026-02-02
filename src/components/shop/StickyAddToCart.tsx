@@ -6,7 +6,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Minus, Plus, Check, Heart } from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Check from "lucide-react/dist/esm/icons/check";
+import Heart from "lucide-react/dist/esm/icons/heart";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 
@@ -144,6 +148,4 @@ export function StickyAddToCart({
 }
 
 export default StickyAddToCart;
-
-
 

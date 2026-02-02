@@ -7,16 +7,14 @@
  */
 
 import { useState } from 'react';
-import {
-  Plus,
-  Minus,
-  RotateCcw,
-  Gift,
-  Coins,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-} from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import Gift from "lucide-react/dist/esm/icons/gift";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import {

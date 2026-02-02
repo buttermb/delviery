@@ -6,18 +6,16 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Phone,
-  Mail,
-  MessageSquare,
-  User,
-  Building2,
-  MapPin,
-  Calendar,
-  DollarSign,
-  ShoppingBag,
-  Clock,
-} from 'lucide-react';
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import User from "lucide-react/dist/esm/icons/user";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';

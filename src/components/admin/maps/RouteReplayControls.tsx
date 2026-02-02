@@ -3,18 +3,16 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Play, 
-  Pause, 
-  RotateCcw, 
-  SkipBack, 
-  SkipForward,
-  Gauge,
-  Clock,
-  MapPin,
-  Battery,
-  Navigation
-} from 'lucide-react';
+import Play from "lucide-react/dist/esm/icons/play";
+import Pause from "lucide-react/dist/esm/icons/pause";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import SkipBack from "lucide-react/dist/esm/icons/skip-back";
+import SkipForward from "lucide-react/dist/esm/icons/skip-forward";
+import Gauge from "lucide-react/dist/esm/icons/gauge";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Battery from "lucide-react/dist/esm/icons/battery";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
 import { LocationPoint } from '@/hooks/useRunnerLocationHistory';
 import { formatDistanceToNow } from 'date-fns';
 

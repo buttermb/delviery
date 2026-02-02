@@ -1,6 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Download, Eye, ShoppingBag } from "lucide-react";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Download from "lucide-react/dist/esm/icons/download";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
 import { cn } from "@/lib/utils";
 
 export type SuccessStateType = "order_placed" | "menu_created" | "payment_successful" | "generic";

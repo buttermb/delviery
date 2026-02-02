@@ -5,7 +5,10 @@
  */
 
 import { useMemo } from 'react';
-import { ShoppingBag, Wifi, WifiOff, Loader2 } from 'lucide-react';
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import Wifi from "lucide-react/dist/esm/icons/wifi";
+import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';

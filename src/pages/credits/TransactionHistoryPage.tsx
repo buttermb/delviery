@@ -8,21 +8,19 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ArrowLeft,
-  Calendar,
-  ChevronDown,
-  ChevronUp,
-  CreditCard,
-  Gift,
-  Coins,
-  RotateCcw,
-  Settings,
-  TrendingDown,
-  RefreshCw,
-  Loader2,
-  Receipt,
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Gift from "lucide-react/dist/esm/icons/gift";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

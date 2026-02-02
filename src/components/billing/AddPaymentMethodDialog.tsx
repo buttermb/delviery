@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, CreditCard } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
 import { logger } from "@/lib/logger";
 
 interface AddPaymentMethodDialogProps {

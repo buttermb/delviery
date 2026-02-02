@@ -4,7 +4,12 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight } from 'lucide-react';
+import X from "lucide-react/dist/esm/icons/x";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNavigate, useParams } from 'react-router-dom';

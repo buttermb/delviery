@@ -10,21 +10,19 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import {
-  Shield,
-  Key,
-  Smartphone,
-  Monitor,
-  Globe,
-  Clock,
-  LogOut,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  Eye,
-  EyeOff,
-  Loader2,
-} from 'lucide-react';
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Key from "lucide-react/dist/esm/icons/key";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Monitor from "lucide-react/dist/esm/icons/monitor";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import LogOut from "lucide-react/dist/esm/icons/log-out";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';

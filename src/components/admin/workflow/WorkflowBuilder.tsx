@@ -15,16 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Zap,
-  Play,
-  Pause,
-  Trash2,
-  Plus,
-  Settings,
-  ArrowRight,
-  Circle,
-} from 'lucide-react';
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Play from "lucide-react/dist/esm/icons/play";
+import Pause from "lucide-react/dist/esm/icons/pause";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Circle from "lucide-react/dist/esm/icons/circle";
 import { useToast } from '@/hooks/use-toast';
 
 interface WorkflowNode {

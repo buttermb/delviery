@@ -4,7 +4,9 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Newspaper, Download, Mail } from "lucide-react";
+import Newspaper from "lucide-react/dist/esm/icons/newspaper";
+import Download from "lucide-react/dist/esm/icons/download";
+import Mail from "lucide-react/dist/esm/icons/mail";
 import { Link } from "react-router-dom";
 
 export default function Press() {

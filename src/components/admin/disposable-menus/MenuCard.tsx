@@ -1,12 +1,26 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Eye, Users, ShoppingCart, Flame, Copy, ExternalLink,
-  Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus,
-  MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store, Calendar,
-  Monitor
-} from 'lucide-react';
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Users from "lucide-react/dist/esm/icons/users";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Flame from "lucide-react/dist/esm/icons/flame";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import Share2 from "lucide-react/dist/esm/icons/share-2";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import QrCode from "lucide-react/dist/esm/icons/qr-code";
+import CopyPlus from "lucide-react/dist/esm/icons/copy-plus";
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Store from "lucide-react/dist/esm/icons/store";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Monitor from "lucide-react/dist/esm/icons/monitor";
 import { useState } from 'react';
 import {
   DropdownMenu,

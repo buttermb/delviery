@@ -3,7 +3,8 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, X } from "lucide-react";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import X from "lucide-react/dist/esm/icons/x";
 
 interface ProductFormData {
   price?: number | string;

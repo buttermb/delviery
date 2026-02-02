@@ -4,17 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import {
-  DollarSign,
-  Wallet,
-  ArrowUpCircle,
-  ArrowDownCircle,
-  RefreshCw,
-  Clock,
-  AlertCircle,
-  LockOpen,
-  Lock,
-} from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Wallet from "lucide-react/dist/esm/icons/wallet";
+import ArrowUpCircle from "lucide-react/dist/esm/icons/arrow-up-circle";
+import ArrowDownCircle from "lucide-react/dist/esm/icons/arrow-down-circle";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import LockOpen from "lucide-react/dist/esm/icons/lock-open";
+import Lock from "lucide-react/dist/esm/icons/lock";
 import { useCashDrawer, type CashDrawerEvent, type CashDrawerEventType } from '@/hooks/useCashDrawer';
 import { CashCountDialog } from './CashCountDialog';
 import { CashDrawerEventDialog } from './CashDrawerEventDialog';

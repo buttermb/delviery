@@ -8,15 +8,13 @@
 
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Crown,
-  Calendar,
-  AlertTriangle,
-  PauseCircle,
-  XCircle,
-  CreditCard,
-  RefreshCw,
-} from 'lucide-react';
+import Crown from "lucide-react/dist/esm/icons/crown";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import PauseCircle from "lucide-react/dist/esm/icons/pause-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

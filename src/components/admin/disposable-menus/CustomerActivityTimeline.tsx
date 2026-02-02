@@ -1,16 +1,14 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  Eye, 
-  ShoppingCart, 
-  AlertTriangle, 
-  Lock, 
-  MapPin,
-  Clock,
-  CheckCircle,
-  XCircle
-} from 'lucide-react';
+import Eye from "lucide-react/dist/esm/icons/eye";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
 import { format, formatDistanceToNow } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';

@@ -1,7 +1,12 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Users, DollarSign, Truck, BarChart3, Settings } from "lucide-react";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Settings from "lucide-react/dist/esm/icons/settings";
 
 export function QuickActionsMenu() {
   const navigate = useNavigate();

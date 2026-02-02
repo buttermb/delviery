@@ -1,7 +1,8 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { TwoFactorVerification } from "@/components/auth/TwoFactorVerification";
 import { toast } from "@/hooks/use-toast";
-import { Shield, Lock } from "lucide-react";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Lock from "lucide-react/dist/esm/icons/lock";
 import { logger } from "@/lib/logger";
 
 type AuthPortal = "tenant-admin" | "super-admin" | "customer";

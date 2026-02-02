@@ -9,7 +9,12 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plug, Plus, Edit, ArrowLeft, Webhook, Loader2 } from 'lucide-react';
+import Plug from "lucide-react/dist/esm/icons/plug";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Webhook from "lucide-react/dist/esm/icons/webhook";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { IntegrationWebhooks } from '@/components/integrations/IntegrationWebhooks';
 import { handleError } from '@/utils/errorHandling/handlers';
 

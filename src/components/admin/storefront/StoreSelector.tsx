@@ -11,14 +11,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { 
-  Store, 
-  ChevronDown, 
-  Check, 
-  Plus, 
-  LayoutGrid,
-  ExternalLink 
-} from 'lucide-react';
+import Store from "lucide-react/dist/esm/icons/store";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import Check from "lucide-react/dist/esm/icons/check";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
 import { cn } from '@/lib/utils';
 
 interface MarketplaceStore {

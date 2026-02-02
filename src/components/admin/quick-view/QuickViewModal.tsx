@@ -11,7 +11,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ExternalLink } from 'lucide-react';
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
 import { cn } from '@/lib/utils';
 
 interface QuickViewModalProps {

@@ -6,7 +6,13 @@ import { logger } from '@/lib/logger';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { Scan, Package, MapPin, CheckCircle2, XCircle, AlertCircle, Flashlight } from 'lucide-react';
+import Scan from "lucide-react/dist/esm/icons/scan";
+import Package from "lucide-react/dist/esm/icons/package";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Flashlight from "lucide-react/dist/esm/icons/flashlight";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

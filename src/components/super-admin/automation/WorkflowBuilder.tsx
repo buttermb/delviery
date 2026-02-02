@@ -19,7 +19,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Workflow, Save, Play, Plus, Trash2 } from 'lucide-react';
+import Workflow from "lucide-react/dist/esm/icons/workflow";
+import Save from "lucide-react/dist/esm/icons/save";
+import Play from "lucide-react/dist/esm/icons/play";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import { useToast } from '@/hooks/use-toast';
 
 interface WorkflowAction {

@@ -1,7 +1,8 @@
 import { logger } from '@/lib/logger';
 import { Command } from 'cmdk';
 import { useState, useEffect } from 'react';
-import { Search, Loader2 } from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';

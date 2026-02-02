@@ -3,7 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Camera, CameraOff, Keyboard } from 'lucide-react';
+import Camera from "lucide-react/dist/esm/icons/camera";
+import CameraOff from "lucide-react/dist/esm/icons/camera-off";
+import Keyboard from "lucide-react/dist/esm/icons/keyboard";
 import { useToast } from '@/hooks/use-toast';
 
 interface BarcodeScannerProps {

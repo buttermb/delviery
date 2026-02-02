@@ -1,7 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, TrendingUp, Package, Users, Clock } from "lucide-react";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { format } from "date-fns";
 import { getStatusColor } from "@/lib/utils/statusColors";
 

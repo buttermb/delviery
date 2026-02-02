@@ -13,21 +13,19 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  DollarSign,
-  Building2,
-  TrendingDown,
-  TrendingUp,
-  Heart,
-  UserPlus,
-  Megaphone,
-  FileText,
-  Settings,
-  Mail,
-  CreditCard,
-  Ban,
-  Download,
-} from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Heart from "lucide-react/dist/esm/icons/heart";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import Megaphone from "lucide-react/dist/esm/icons/megaphone";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Ban from "lucide-react/dist/esm/icons/ban";
+import Download from "lucide-react/dist/esm/icons/download";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { calculateHealthScore } from '@/lib/tenant';
 import { MetricCard } from '@/components/super-admin/dashboard/MetricCard';

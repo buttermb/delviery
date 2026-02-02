@@ -10,13 +10,11 @@
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    Settings,
-    CreditCard,
-    Plug,
-    Shield,
-    Headphones,
-} from 'lucide-react';
+import Settings from "lucide-react/dist/esm/icons/settings";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Plug from "lucide-react/dist/esm/icons/plug";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Headphones from "lucide-react/dist/esm/icons/headphones";
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';

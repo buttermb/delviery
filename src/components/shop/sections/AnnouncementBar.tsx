@@ -7,7 +7,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, Sparkles } from 'lucide-react';
+import X from "lucide-react/dist/esm/icons/x";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 import { useBanners } from '@/hooks/useBanners';
 import { useStorefrontDeals, formatDiscount } from '@/hooks/useStorefrontDeals';
 

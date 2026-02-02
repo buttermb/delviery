@@ -2,7 +2,12 @@ import React, { useState, useCallback, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Upload, X, File, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import Upload from "lucide-react/dist/esm/icons/upload";
+import X from "lucide-react/dist/esm/icons/x";
+import File from "lucide-react/dist/esm/icons/file";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import {
   compressImage,
   isCompressibleImage,

@@ -10,10 +10,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Plus, Shield, AlertTriangle, Flame, TrendingUp, 
-  Users, Eye, ShoppingCart, Clock, ExternalLink
-} from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Flame from "lucide-react/dist/esm/icons/flame";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Users from "lucide-react/dist/esm/icons/users";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { MenuCard } from './MenuCard';

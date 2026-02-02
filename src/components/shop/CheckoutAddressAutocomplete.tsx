@@ -8,7 +8,11 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { MapPin, Loader2, Clock, ChevronDown, Check } from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import Check from "lucide-react/dist/esm/icons/check";
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 

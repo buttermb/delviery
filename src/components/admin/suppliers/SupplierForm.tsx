@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { queryKeys } from "@/lib/queryKeys";
 import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
 import type { Database } from "@/integrations/supabase/types";

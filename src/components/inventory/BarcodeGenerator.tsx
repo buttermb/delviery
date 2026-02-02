@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState } from 'react';
 import JsBarcode from 'jsbarcode';
-import { AlertCircle } from 'lucide-react';
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 
 interface BarcodeGeneratorProps {
   value: string;

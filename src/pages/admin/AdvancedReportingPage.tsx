@@ -7,15 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import {
-  BarChart3,
-  Plus,
-  Loader2,
-  Calendar,
-  FileText,
-  LayoutDashboard,
-  Settings,
-} from "lucide-react";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import Settings from "lucide-react/dist/esm/icons/settings";
 import { ReportBuilder } from "@/components/admin/reporting/ReportBuilder";
 import { ReportList } from "@/components/admin/reporting/ReportList";
 import { ScheduledReports } from "@/components/admin/reporting/ScheduledReports";

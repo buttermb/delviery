@@ -1,9 +1,13 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  Navigation, Phone, MessageSquare, MapPin, 
-  Clock, Fuel, Coffee, AlertCircle 
-} from 'lucide-react';
+import Navigation from "lucide-react/dist/esm/icons/navigation";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Fuel from "lucide-react/dist/esm/icons/fuel";
+import Coffee from "lucide-react/dist/esm/icons/coffee";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { motion } from 'framer-motion';
 
 interface QuickActionsMenuProps {

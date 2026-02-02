@@ -6,7 +6,9 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Construction, ArrowLeft, Bell } from 'lucide-react';
+import Construction from "lucide-react/dist/esm/icons/construction";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Bell from "lucide-react/dist/esm/icons/bell";
 import { useToast } from '@/hooks/use-toast';
 
 interface ComingSoonPageProps {

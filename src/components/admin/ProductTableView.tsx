@@ -3,10 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { 
-  GripVertical, Edit, Copy, Trash2, Eye, EyeOff, 
-  Check, X, DollarSign, Package, Image as ImageIcon 
-} from "lucide-react";
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import Check from "lucide-react/dist/esm/icons/check";
+import X from "lucide-react/dist/esm/icons/x";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Package from "lucide-react/dist/esm/icons/package";
+import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
 import {
   DropdownMenu,
   DropdownMenuContent,

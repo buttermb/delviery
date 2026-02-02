@@ -8,13 +8,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { 
-  ArrowRight,
-  Check,
-  X,
-  Columns,
-  RefreshCw,
-} from 'lucide-react';
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Check from "lucide-react/dist/esm/icons/check";
+import X from "lucide-react/dist/esm/icons/x";
+import Columns from "lucide-react/dist/esm/icons/columns";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import type { ColumnMappingItem, TargetField } from '@/types/migration';
 
 interface DetectedColumns {

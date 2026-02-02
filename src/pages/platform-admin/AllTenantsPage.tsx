@@ -12,7 +12,9 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShieldAlert, LogIn } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ShieldAlert from "lucide-react/dist/esm/icons/shield-alert";
+import LogIn from "lucide-react/dist/esm/icons/log-in";
 import { PageHeader } from '@/components/shared/PageHeader';
 import { usePlatformAdmin } from '@/hooks/usePlatformAdmin';
 import { useNavigate } from 'react-router-dom';

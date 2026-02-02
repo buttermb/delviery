@@ -7,18 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Package,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Search,
-  Plus,
-  Truck,
-  ClipboardList,
-  AlertTriangle,
-  MapPin
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Search from "lucide-react/dist/esm/icons/search";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import ClipboardList from "lucide-react/dist/esm/icons/clipboard-list";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
 import {
   Dialog,
   DialogContent,
@@ -76,7 +74,7 @@ export default function ReceivingPage() {
       if (!tenantId) return [];
 
       try {
-        let query = supabase
+        const query = supabase
           .from('receiving_records')
           .select(`
             *,

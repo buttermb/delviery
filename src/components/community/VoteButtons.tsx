@@ -4,7 +4,8 @@
  */
 
 import { Button } from '@/components/ui/button';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import ArrowUp from "lucide-react/dist/esm/icons/arrow-up";
+import ArrowDown from "lucide-react/dist/esm/icons/arrow-down";
 import { useVote, useUserVote } from '@/hooks/useVotes';
 import { cn } from '@/lib/utils';
 

@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { CreateOrderForm } from "@/components/crm/CreateOrderForm";
 import { useCreateCRMOrder } from "@/hooks/crm/useCreateCRMOrder";

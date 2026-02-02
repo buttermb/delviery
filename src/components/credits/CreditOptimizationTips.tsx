@@ -7,19 +7,17 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Lightbulb,
-  TrendingDown,
-  Clock,
-  Users,
-  FileText,
-  MessageSquare,
-  Package,
-  ChevronRight,
-  Sparkles,
-  X,
-  CheckCircle2,
-} from 'lucide-react';
+import Lightbulb from "lucide-react/dist/esm/icons/lightbulb";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Users from "lucide-react/dist/esm/icons/users";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Package from "lucide-react/dist/esm/icons/package";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import X from "lucide-react/dist/esm/icons/x";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -395,10 +393,4 @@ export function CreditOptimizationTips({
     </Card>
   );
 }
-
-
-
-
-
-
 

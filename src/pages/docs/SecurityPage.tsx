@@ -2,7 +2,11 @@ import { SEOHead } from "@/components/SEOHead";
 import { DocsLayout } from "@/components/docs/DocsLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CodeBlock } from "@/components/docs/CodeBlock";
-import { Shield, Lock, Eye, AlertTriangle, FileCheck } from "lucide-react";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import FileCheck from "lucide-react/dist/esm/icons/file-check";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function SecurityPage() {

@@ -8,21 +8,19 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BusinessTier } from '@/lib/presets/businessTiers';
 import { businessTierToSubscriptionTier } from '@/lib/tierMapping';
-import {
-  CreditCard,
-  CheckCircle2,
-  ExternalLink,
-  TrendingUp,
-  AlertCircle,
-  Star,
-  Diamond,
-  Zap,
-  Loader2,
-  Settings,
-  ArrowLeft,
-  Coins,
-  Sparkles,
-} from "lucide-react";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Star from "lucide-react/dist/esm/icons/star";
+import Diamond from "lucide-react/dist/esm/icons/diamond";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";

@@ -11,10 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Truck, MapPin, Clock, CheckCircle2, XCircle,
-  Navigation, Phone, User, Package
-} from 'lucide-react';
+import Truck from "lucide-react/dist/esm/icons/truck";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import User from "lucide-react/dist/esm/icons/user";
+import Package from "lucide-react/dist/esm/icons/package";
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

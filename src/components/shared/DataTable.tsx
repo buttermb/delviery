@@ -6,7 +6,10 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye } from 'lucide-react';
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Search from "lucide-react/dist/esm/icons/search";
+import Download from "lucide-react/dist/esm/icons/download";
+import Filter from "lucide-react/dist/esm/icons/filter";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,11 +39,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Search,
-  Download,
-  Filter,
-} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VirtualizedTable } from './VirtualizedTable';
 

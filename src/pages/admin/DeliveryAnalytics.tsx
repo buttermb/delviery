@@ -3,7 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Truck, Clock, Package, TrendingUp } from 'lucide-react';
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Package from "lucide-react/dist/esm/icons/package";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
 export default function DeliveryAnalytics() {

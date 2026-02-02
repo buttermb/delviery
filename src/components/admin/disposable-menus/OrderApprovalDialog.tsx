@@ -14,18 +14,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  CheckCircle,
-  XCircle,
-  User,
-  Phone,
-  MapPin,
-  Calendar,
-  DollarSign,
-  Package,
-  AlertCircle,
-  Truck
-} from 'lucide-react';
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import User from "lucide-react/dist/esm/icons/user";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Package from "lucide-react/dist/esm/icons/package";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Truck from "lucide-react/dist/esm/icons/truck";
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';

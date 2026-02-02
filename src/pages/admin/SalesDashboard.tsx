@@ -8,7 +8,11 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
-import { DollarSign, TrendingUp, ShoppingCart, Activity, BarChart3 } from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
 import { motion } from 'framer-motion';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { Button } from '@/components/ui/button';

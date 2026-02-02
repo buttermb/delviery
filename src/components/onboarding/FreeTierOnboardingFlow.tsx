@@ -7,18 +7,16 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-    Sparkles,
-    ArrowRight,
-    ArrowLeft,
-    X,
-    Rocket,
-    Coins,
-    AlertTriangle,
-    Crown,
-    PartyPopper,
-    CheckCircle2
-} from 'lucide-react';
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import X from "lucide-react/dist/esm/icons/x";
+import Rocket from "lucide-react/dist/esm/icons/rocket";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Crown from "lucide-react/dist/esm/icons/crown";
+import PartyPopper from "lucide-react/dist/esm/icons/party-popper";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';

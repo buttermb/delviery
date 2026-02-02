@@ -5,14 +5,12 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import {
-  Package,
-  DollarSign,
-  Layers,
-  Tag,
-  AlertTriangle,
-  Leaf,
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Layers from "lucide-react/dist/esm/icons/layers";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Leaf from "lucide-react/dist/esm/icons/leaf";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 import { QuickViewModal } from './QuickViewModal';

@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Check, ChevronsUpDown, Plus } from "lucide-react";
+import Check from "lucide-react/dist/esm/icons/check";
+import ChevronsUpDown from "lucide-react/dist/esm/icons/chevrons-up-down";
+import Plus from "lucide-react/dist/esm/icons/plus";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {

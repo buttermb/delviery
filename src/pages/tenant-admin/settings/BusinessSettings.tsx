@@ -33,20 +33,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import {
-  Building2,
-  MapPin,
-  Phone,
-  Globe,
-  Clock,
-  Image as ImageIcon,
-  Palette,
-  Upload,
-  Database,
-  Trash2,
-  Loader2,
-  History,
-} from 'lucide-react';
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
+import Palette from "lucide-react/dist/esm/icons/palette";
+import Upload from "lucide-react/dist/esm/icons/upload";
+import Database from "lucide-react/dist/esm/icons/database";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import History from "lucide-react/dist/esm/icons/history";
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';

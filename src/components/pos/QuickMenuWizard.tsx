@@ -6,7 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
 import { QRCodeCanvas } from 'qrcode.react';
-import { Loader2, Copy, Check, Share2 } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Check from "lucide-react/dist/esm/icons/check";
+import Share2 from "lucide-react/dist/esm/icons/share-2";
 import { toast } from '@/hooks/use-toast';
 import type { POSCartItem } from '@/types/pos';
 

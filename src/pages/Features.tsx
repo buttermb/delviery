@@ -1,6 +1,12 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ArrowRight, Smartphone, Package, ShoppingCart, Users, BarChart3 } from "lucide-react";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Package from "lucide-react/dist/esm/icons/package";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Users from "lucide-react/dist/esm/icons/users";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";

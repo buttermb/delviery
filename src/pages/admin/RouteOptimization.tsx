@@ -4,7 +4,10 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Route, Clock, Package } from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Route from "lucide-react/dist/esm/icons/route";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Package from "lucide-react/dist/esm/icons/package";
 import { useWholesaleDeliveries } from '@/hooks/useWholesaleData';
 
 export default function RouteOptimization() {

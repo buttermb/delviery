@@ -12,17 +12,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import {
-  Users,
-  UserCheck,
-  UserX,
-  MapPin,
-  Truck,
-  Star,
-  ChevronRight,
-  RefreshCw,
-  Clock,
-} from 'lucide-react';
+import Users from "lucide-react/dist/esm/icons/users";
+import UserCheck from "lucide-react/dist/esm/icons/user-check";
+import UserX from "lucide-react/dist/esm/icons/user-x";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Star from "lucide-react/dist/esm/icons/star";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { cn } from '@/lib/utils';
 import { queryKeys } from '@/lib/queryKeys';
 

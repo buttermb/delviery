@@ -15,7 +15,9 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { MapPin, TrendingUp, AlertTriangle } from "lucide-react";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { handleError } from "@/utils/errorHandling/handlers";
 
 export default function RiskFactorManagement() {

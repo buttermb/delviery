@@ -14,17 +14,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-  Bell,
-  Package,
-  CreditCard,
-  AlertCircle,
-  UserPlus,
-  TrendingUp,
-  ExternalLink,
-  X,
-  CheckCheck,
-} from 'lucide-react';
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Package from "lucide-react/dist/esm/icons/package";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import X from "lucide-react/dist/esm/icons/x";
+import CheckCheck from "lucide-react/dist/esm/icons/check-check";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { formatSmartDate } from '@/lib/utils/formatDate';

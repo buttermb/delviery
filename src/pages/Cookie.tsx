@@ -3,7 +3,9 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Cookie as CookieIcon, Info, CheckCircle } from "lucide-react";
+import Cookie as CookieIcon from "lucide-react/dist/esm/icons/cookie as cookie-icon";
+import Info from "lucide-react/dist/esm/icons/info";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 
 export default function Cookie() {
   const cookieTypes = [

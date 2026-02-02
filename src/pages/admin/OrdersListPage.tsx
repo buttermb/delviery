@@ -28,23 +28,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Package,
-  Eye,
-  MoreHorizontal,
-  Printer,
-  FileText,
-  XCircle,
-  Trash2,
-  Clock,
-  CheckCircle,
-  TrendingUp,
-  RefreshCw,
-  Store,
-  Monitor,
-  Utensils,
-  Zap,
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Store from "lucide-react/dist/esm/icons/store";
+import Monitor from "lucide-react/dist/esm/icons/monitor";
+import Utensils from "lucide-react/dist/esm/icons/utensils";
+import Zap from "lucide-react/dist/esm/icons/zap";
 
 // Order interface
 interface Order {

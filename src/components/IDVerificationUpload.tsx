@@ -7,7 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Shield, Upload, CheckCircle, AlertCircle } from "lucide-react";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Upload from "lucide-react/dist/esm/icons/upload";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { useAuth } from "@/contexts/AuthContext";
 import { validateFile, generateSecureStoragePath, FILE_SIZE_LIMITS, formatFileSize } from "@/lib/fileValidation";
 

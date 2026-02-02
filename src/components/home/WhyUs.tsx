@@ -4,7 +4,10 @@
  */
 
 import { motion } from 'framer-motion';
-import { Clock, Shield, Lock, Star } from 'lucide-react';
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import Star from "lucide-react/dist/esm/icons/star";
 
 const features = [
   {

@@ -11,10 +11,20 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import {
-  Monitor, Tablet, Smartphone, X, Shield, Lock, MapPin, Clock,
-  Package, Search, User, Plus, ZoomIn, Loader2
-} from 'lucide-react';
+import Monitor from "lucide-react/dist/esm/icons/monitor";
+import Tablet from "lucide-react/dist/esm/icons/tablet";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import X from "lucide-react/dist/esm/icons/x";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Package from "lucide-react/dist/esm/icons/package";
+import Search from "lucide-react/dist/esm/icons/search";
+import User from "lucide-react/dist/esm/icons/user";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import ZoomIn from "lucide-react/dist/esm/icons/zoom-in";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow, format } from 'date-fns';
 import { jsonToString, extractSecuritySetting, jsonToBooleanSafe } from '@/utils/menuTypeHelpers';

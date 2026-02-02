@@ -4,10 +4,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  DollarSign, TrendingUp, Calendar, Download, Loader2,
-  CheckCircle2, Clock, Percent, Users
-} from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Download from "lucide-react/dist/esm/icons/download";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Percent from "lucide-react/dist/esm/icons/percent";
+import Users from "lucide-react/dist/esm/icons/users";
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';

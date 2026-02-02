@@ -4,7 +4,10 @@ import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Send, User, Shield } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Send from "lucide-react/dist/esm/icons/send";
+import User from "lucide-react/dist/esm/icons/user";
+import Shield from "lucide-react/dist/esm/icons/shield";
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 

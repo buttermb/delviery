@@ -1,6 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Plus, Loader2 } from "lucide-react";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 export function ScheduledReports() {
   return (

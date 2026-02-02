@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-import { Clock } from 'lucide-react';
+import Clock from "lucide-react/dist/esm/icons/clock";
 
 interface HeatmapData {
   hour: number;

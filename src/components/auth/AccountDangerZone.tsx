@@ -16,7 +16,10 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Loader2, Trash2, AlertTriangle, ShieldAlert } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import ShieldAlert from "lucide-react/dist/esm/icons/shield-alert";
 import { haptics } from '@/utils/haptics';
 
 const CONFIRMATION_TEXT = 'DELETE';

@@ -1,7 +1,11 @@
 import { useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, DollarSign, Package, Clock, Eye } from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Package from "lucide-react/dist/esm/icons/package";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Eye from "lucide-react/dist/esm/icons/eye";
 import { format } from 'date-fns';
 import { StatusDropdown, MENU_ORDER_STATUSES } from '@/components/admin/StatusDropdown';
 import { QuickMessageButton } from '@/components/admin/QuickMessageButton';

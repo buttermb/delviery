@@ -8,13 +8,11 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  AlertTriangle,
-  Package,
-  ArrowRight,
-  ShoppingCart,
-  Loader2,
-} from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Package from "lucide-react/dist/esm/icons/package";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLowStockAlerts, LowStockProduct } from '@/hooks/useLowStockAlerts';
 import { usePurchaseOrders } from '@/hooks/usePurchaseOrders';

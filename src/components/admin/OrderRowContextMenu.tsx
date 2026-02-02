@@ -14,24 +14,22 @@ import {
   ContextMenuTrigger,
   ContextMenuShortcut,
 } from '@/components/ui/context-menu';
-import {
-  Eye,
-  Edit,
-  Copy,
-  FileText,
-  Send,
-  Printer,
-  Truck,
-  Ban,
-  RefreshCw,
-  CheckCircle,
-  Clock,
-  Package,
-  ChevronRight,
-  Zap,
-  PauseCircle,
-  PlayCircle,
-} from 'lucide-react';
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Send from "lucide-react/dist/esm/icons/send";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Ban from "lucide-react/dist/esm/icons/ban";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Package from "lucide-react/dist/esm/icons/package";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import PauseCircle from "lucide-react/dist/esm/icons/pause-circle";
+import PlayCircle from "lucide-react/dist/esm/icons/play-circle";
 import { cn } from '@/lib/utils';
 
 export type OrderContextAction =

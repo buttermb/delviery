@@ -4,7 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Package, Plus, Sparkles, ArrowRight } from "lucide-react";
+import Package from "lucide-react/dist/esm/icons/package";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 

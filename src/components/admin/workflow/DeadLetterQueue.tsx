@@ -23,16 +23,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { 
-  AlertCircle,
-  RefreshCw,
-  CheckCircle,
-  XCircle,
-  Trash2,
-  Eye,
-  Clock,
-  AlertTriangle,
-} from 'lucide-react';
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { useDeadLetterQueue } from '@/hooks/useDeadLetterQueue';
 import { formatDistanceToNow } from 'date-fns';
 

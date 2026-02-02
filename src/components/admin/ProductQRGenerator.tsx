@@ -24,7 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Download, Copy, Share2, CheckCircle2, Printer, QrCode, Loader2, ExternalLink } from 'lucide-react';
+import Download from "lucide-react/dist/esm/icons/download";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Share2 from "lucide-react/dist/esm/icons/share-2";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import QrCode from "lucide-react/dist/esm/icons/qr-code";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';

@@ -9,14 +9,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  AlertTriangle,
-  Package,
-  Users,
-  Smartphone,
-  ArrowRight,
-  CheckCircle2,
-} from "lucide-react";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import { useTenantAdminAuth, Tenant } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { UpgradePrompt } from "@/components/shared/UpgradePrompt";

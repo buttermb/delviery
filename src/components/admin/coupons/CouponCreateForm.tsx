@@ -23,7 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, RefreshCw } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { queryKeys } from "@/lib/queryKeys";
 import type { Database } from "@/integrations/supabase/types";
 

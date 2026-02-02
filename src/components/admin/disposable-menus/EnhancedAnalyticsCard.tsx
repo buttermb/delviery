@@ -1,6 +1,8 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Activity, TrendingUp, TrendingDown } from 'lucide-react';
+import Activity from "lucide-react/dist/esm/icons/activity";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
 import { motion } from 'framer-motion';
 
 interface AnalyticsStat {

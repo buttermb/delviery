@@ -19,7 +19,12 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Plus, Warehouse, MapPin, Package, DollarSign, AlertTriangle } from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Warehouse from "lucide-react/dist/esm/icons/warehouse";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Package from "lucide-react/dist/esm/icons/package";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

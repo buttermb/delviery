@@ -8,7 +8,9 @@
 
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { AlertTriangle, Flag, CheckCircle2 } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Flag from "lucide-react/dist/esm/icons/flag";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 
 export type OrderPriority = 'high' | 'normal' | 'low';
 

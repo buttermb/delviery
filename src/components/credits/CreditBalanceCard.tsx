@@ -25,7 +25,9 @@ import { useCredits } from '@/contexts/CreditContext';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { LOW_CREDIT_WARNING_THRESHOLD, CRITICAL_CREDIT_THRESHOLD } from '@/lib/credits';
-import { Coins, Plus, AlertTriangle } from 'lucide-react';
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 
 export interface CreditBalanceCardProps {
   className?: string;

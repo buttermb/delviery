@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 
 interface LowCreditWarningProps {
   open: boolean;
@@ -35,5 +35,4 @@ export function LowCreditWarning({ open, onOpenChange, onBuyCredits, currentBala
     </Dialog>
   );
 }
-
 

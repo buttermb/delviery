@@ -9,7 +9,11 @@
  */
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { X, Plus, Tag, Check, Loader2 } from 'lucide-react';
+import X from "lucide-react/dist/esm/icons/x";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Check from "lucide-react/dist/esm/icons/check";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {

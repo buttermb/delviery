@@ -7,20 +7,18 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import {
-  Coins,
-  Users,
-  TrendingUp,
-  TrendingDown,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Crown,
-  ArrowRight,
-  DollarSign,
-  Activity,
-  RefreshCw,
-} from 'lucide-react';
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Users from "lucide-react/dist/esm/icons/users";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Crown from "lucide-react/dist/esm/icons/crown";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -421,10 +419,4 @@ function TenantRow({ tenant }: { tenant: TenantCreditInfo }) {
     </Link>
   );
 }
-
-
-
-
-
-
 

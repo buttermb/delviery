@@ -5,7 +5,9 @@
 
 import { ReactNode, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Check, AlertCircle } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Check from "lucide-react/dist/esm/icons/check";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { cn } from '@/lib/utils';
 import { haptics } from '@/utils/haptics';
 

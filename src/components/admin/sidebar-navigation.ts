@@ -1,81 +1,79 @@
 import type { LucideIcon } from 'lucide-react';
-import {
-  LayoutDashboard,
-  Package,
-  Users,
-  ShoppingCart,
-  Warehouse,
-  MapPin,
-  DollarSign,
-  UsersRound,
-  BarChart3,
-  FileText,
-  Settings,
-  Zap,
-  Truck,
-  Building2,
-  Car,
-  Receipt,
-  TrendingUp,
-  UserCog,
-  Shield,
-  ScrollText,
-  PieChart,
-  LineChart,
-  Activity,
-  Map,
-  FileSpreadsheet,
-  Database,
-  Tags,
-  Image,
-  Boxes,
-  AlertTriangle,
-  ArrowLeftRight,
-  Layers,
-  ClipboardList,
-  CreditCard,
-  Calculator,
-  Wallet,
-  Landmark,
-  UserPlus,
-  Lock,
-  History,
-  FileCheck,
-  Target,
-  Rocket,
-  Route,
-  Navigation,
-  Code,
-  Webhook,
-  Puzzle,
-  Palette,
-  Globe,
-  Printer,
-  MessageSquare,
-  TrendingDown,
-  BarChart2,
-  Store,
-  Clock,
-  Search,
-  Bell,
-  PackageOpen,
-  BarChart4,
-  UserCheck,
-  Flame,
-  Brain,
-  Star,
-  Barcode,
-  Headphones,
-  HelpCircle,
-  Award,
-  Tv,
-  Command,
-  CalendarDays,
-  Key,
-  Briefcase,
-  Send,
-  Timer
-} from 'lucide-react';
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Warehouse from "lucide-react/dist/esm/icons/warehouse";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import UsersRound from "lucide-react/dist/esm/icons/users-round";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Car from "lucide-react/dist/esm/icons/car";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import UserCog from "lucide-react/dist/esm/icons/user-cog";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import ScrollText from "lucide-react/dist/esm/icons/scroll-text";
+import PieChart from "lucide-react/dist/esm/icons/pie-chart";
+import LineChart from "lucide-react/dist/esm/icons/line-chart";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import Map from "lucide-react/dist/esm/icons/map";
+import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
+import Database from "lucide-react/dist/esm/icons/database";
+import Tags from "lucide-react/dist/esm/icons/tags";
+import Image from "lucide-react/dist/esm/icons/image";
+import Boxes from "lucide-react/dist/esm/icons/boxes";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import ArrowLeftRight from "lucide-react/dist/esm/icons/arrow-left-right";
+import Layers from "lucide-react/dist/esm/icons/layers";
+import ClipboardList from "lucide-react/dist/esm/icons/clipboard-list";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Calculator from "lucide-react/dist/esm/icons/calculator";
+import Wallet from "lucide-react/dist/esm/icons/wallet";
+import Landmark from "lucide-react/dist/esm/icons/landmark";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import History from "lucide-react/dist/esm/icons/history";
+import FileCheck from "lucide-react/dist/esm/icons/file-check";
+import Target from "lucide-react/dist/esm/icons/target";
+import Rocket from "lucide-react/dist/esm/icons/rocket";
+import Route from "lucide-react/dist/esm/icons/route";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
+import Code from "lucide-react/dist/esm/icons/code";
+import Webhook from "lucide-react/dist/esm/icons/webhook";
+import Puzzle from "lucide-react/dist/esm/icons/puzzle";
+import Palette from "lucide-react/dist/esm/icons/palette";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import BarChart2 from "lucide-react/dist/esm/icons/bar-chart-2";
+import Store from "lucide-react/dist/esm/icons/store";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Search from "lucide-react/dist/esm/icons/search";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import PackageOpen from "lucide-react/dist/esm/icons/package-open";
+import BarChart4 from "lucide-react/dist/esm/icons/bar-chart-4";
+import UserCheck from "lucide-react/dist/esm/icons/user-check";
+import Flame from "lucide-react/dist/esm/icons/flame";
+import Brain from "lucide-react/dist/esm/icons/brain";
+import Star from "lucide-react/dist/esm/icons/star";
+import Barcode from "lucide-react/dist/esm/icons/barcode";
+import Headphones from "lucide-react/dist/esm/icons/headphones";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
+import Award from "lucide-react/dist/esm/icons/award";
+import Tv from "lucide-react/dist/esm/icons/tv";
+import Command from "lucide-react/dist/esm/icons/command";
+import CalendarDays from "lucide-react/dist/esm/icons/calendar-days";
+import Key from "lucide-react/dist/esm/icons/key";
+import Briefcase from "lucide-react/dist/esm/icons/briefcase";
+import Send from "lucide-react/dist/esm/icons/send";
+import Timer from "lucide-react/dist/esm/icons/timer";
 
 export interface NavItem {
   title: string;

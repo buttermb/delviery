@@ -4,7 +4,11 @@ import { logger } from '@/lib/logger';
  * Third-party integration definitions
  */
 
-import { MapPin, CreditCard, MessageSquare, Mail, Zap } from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Zap from "lucide-react/dist/esm/icons/zap";
 import type { IntegrationConfig } from '@/types/sidebar';
 
 /**

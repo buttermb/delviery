@@ -6,15 +6,13 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Store, 
-  ExternalLink, 
-  Settings, 
-  Trash2, 
-  ShoppingCart,
-  DollarSign,
-  MoreVertical
-} from 'lucide-react';
+import Store from "lucide-react/dist/esm/icons/store";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
 import {
   DropdownMenu,
   DropdownMenuContent,

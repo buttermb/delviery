@@ -2,7 +2,10 @@ import { logger } from '@/lib/logger';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Home, ArrowLeft, Search, HelpCircle } from 'lucide-react';
+import Home from "lucide-react/dist/esm/icons/home";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Search from "lucide-react/dist/esm/icons/search";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
 import bugFinder from '@/utils/bugFinder';
 import { useEffect } from 'react';
 

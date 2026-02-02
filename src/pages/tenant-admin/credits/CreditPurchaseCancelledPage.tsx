@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { XCircle } from 'lucide-react';
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
 import { useTenantNavigation } from '@/hooks/useTenantNavigation';
 import { useCredits } from '@/contexts/CreditContext';
 

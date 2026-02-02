@@ -4,12 +4,10 @@
  */
 
 import { Badge } from '@/components/ui/badge';
-import {
-    CheckCircle2,
-    AlertTriangle,
-    XCircle,
-    AlertOctagon
-} from 'lucide-react';
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import AlertOctagon from "lucide-react/dist/esm/icons/alert-octagon";
 import {
     Tooltip,
     TooltipContent,

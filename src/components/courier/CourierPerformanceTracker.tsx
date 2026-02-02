@@ -8,7 +8,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Target, TrendingUp, Award, Flame } from 'lucide-react';
+import Trophy from "lucide-react/dist/esm/icons/trophy";
+import Target from "lucide-react/dist/esm/icons/target";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Award from "lucide-react/dist/esm/icons/award";
+import Flame from "lucide-react/dist/esm/icons/flame";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
 

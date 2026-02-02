@@ -1,23 +1,21 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  Send,
-  Paperclip,
-  MessageSquare,
-  Bot,
-  User,
-  Clock,
-  Search,
-  MoreVertical,
-  Zap,
-  X,
-  ImageIcon,
-  FileText,
-  Download,
-  Check,
-  CheckCheck,
-  Loader2
-} from 'lucide-react';
+import Send from "lucide-react/dist/esm/icons/send";
+import Paperclip from "lucide-react/dist/esm/icons/paperclip";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Bot from "lucide-react/dist/esm/icons/bot";
+import User from "lucide-react/dist/esm/icons/user";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Search from "lucide-react/dist/esm/icons/search";
+import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import X from "lucide-react/dist/esm/icons/x";
+import ImageIcon from "lucide-react/dist/esm/icons/image-icon";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Download from "lucide-react/dist/esm/icons/download";
+import Check from "lucide-react/dist/esm/icons/check";
+import CheckCheck from "lucide-react/dist/esm/icons/check-check";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

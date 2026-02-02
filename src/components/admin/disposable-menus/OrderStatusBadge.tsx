@@ -1,6 +1,11 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Package, CheckCircle, XCircle, Truck, Loader2 } from 'lucide-react';
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Package from "lucide-react/dist/esm/icons/package";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { getStatusColor } from '@/lib/utils/statusColors';
 import { cn } from '@/lib/utils';
 

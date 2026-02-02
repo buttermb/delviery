@@ -1,10 +1,28 @@
 import { useState, useMemo, Suspense, lazy, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import {
-  Plus, Search, Settings, LayoutGrid, ShoppingBag, Eye, Users, DollarSign,
-  RefreshCw, Filter, TrendingUp, Flame, Clock, Shield, ChevronRight,
-  Zap, Target, AlertCircle, CheckCircle, BarChart3, Copy, ExternalLink, Calendar
-} from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Search from "lucide-react/dist/esm/icons/search";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Users from "lucide-react/dist/esm/icons/users";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Flame from "lucide-react/dist/esm/icons/flame";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Target from "lucide-react/dist/esm/icons/target";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -814,5 +832,4 @@ export function SmartDashboard() {
     </div>
   );
 }
-
 

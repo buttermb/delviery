@@ -8,14 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Check,
-  ChevronDown,
-  ChevronRight,
-  Search,
-  FolderTree,
-  AlertCircle,
-} from 'lucide-react';
+import Check from "lucide-react/dist/esm/icons/check";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Search from "lucide-react/dist/esm/icons/search";
+import FolderTree from "lucide-react/dist/esm/icons/folder-tree";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { cn } from '@/lib/utils';
 import { useCategories, useCategoryTree, useFlattenedCategories, type Category, type CategoryTreeNode } from '@/hooks/useCategories';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

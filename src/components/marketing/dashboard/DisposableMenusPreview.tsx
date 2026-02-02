@@ -1,5 +1,12 @@
 import { motion } from 'framer-motion';
-import { Shield, Eye, QrCode, Clock, TrendingUp, Lock, Copy, AlertCircle } from 'lucide-react';
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import QrCode from "lucide-react/dist/esm/icons/qr-code";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 

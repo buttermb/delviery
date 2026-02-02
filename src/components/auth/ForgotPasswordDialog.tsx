@@ -10,7 +10,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, Mail, Clock } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { toast } from "@/hooks/use-toast";
 import { requestSuperAdminPasswordReset, requestTenantAdminPasswordReset, requestCustomerPasswordReset } from "@/utils/passwordReset";
 import { useCsrfToken } from "@/hooks/useCsrfToken";

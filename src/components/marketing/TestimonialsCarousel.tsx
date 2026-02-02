@@ -4,7 +4,10 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import Star from "lucide-react/dist/esm/icons/star";
+import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Quote from "lucide-react/dist/esm/icons/quote";
 import { Button } from "@/components/ui/button";
 
 interface Testimonial {

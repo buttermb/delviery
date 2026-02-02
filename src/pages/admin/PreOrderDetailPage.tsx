@@ -7,15 +7,13 @@ import { useRelatedPreOrderInvoices } from "@/hooks/useRelatedEntities";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-    ArrowLeft,
-    ArrowRight,
-    Trash2,
-    Clock,
-    CheckCircle,
-    XCircle,
-    Receipt
-} from "lucide-react";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
 import { formatCurrency } from "@/utils/formatters";
 import { format } from "date-fns";
 import { toast } from "sonner";

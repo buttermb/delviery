@@ -7,12 +7,24 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Eye, Users, ShoppingCart, DollarSign,
-  Lock, Shield, MapPin, Clock, QrCode,
-  Copy, Share2, ExternalLink, Flame, MessageSquare,
-  ChevronLeft, ChevronRight, Check, Zap
-} from 'lucide-react';
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Users from "lucide-react/dist/esm/icons/users";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import QrCode from "lucide-react/dist/esm/icons/qr-code";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Share2 from "lucide-react/dist/esm/icons/share-2";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import Flame from "lucide-react/dist/esm/icons/flame";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Check from "lucide-react/dist/esm/icons/check";
+import Zap from "lucide-react/dist/esm/icons/zap";
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
 interface MockMenu {

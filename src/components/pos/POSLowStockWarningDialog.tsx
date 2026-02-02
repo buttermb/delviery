@@ -5,7 +5,10 @@
  * below their low stock threshold. Shows severity levels and restock actions.
  */
 
-import { AlertTriangle, Ban, Package, ExternalLink } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Ban from "lucide-react/dist/esm/icons/ban";
+import Package from "lucide-react/dist/esm/icons/package";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
 import {
   Dialog,
   DialogContent,

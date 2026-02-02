@@ -9,21 +9,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { logger } from "@/lib/logger";
-import {
-    ShoppingBag,
-    DollarSign,
-    Users,
-    TrendingUp,
-    ExternalLink,
-    Settings,
-    Store,
-    Copy,
-    Package,
-    Tag,
-    Coins,
-    AlertTriangle,
-    FolderTree
-} from "lucide-react";
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Users from "lucide-react/dist/esm/icons/users";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Store from "lucide-react/dist/esm/icons/store";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Package from "lucide-react/dist/esm/icons/package";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import FolderTree from "lucide-react/dist/esm/icons/folder-tree";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils/formatCurrency";

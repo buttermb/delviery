@@ -4,7 +4,10 @@ import Map, { Marker, Source, Layer } from 'react-map-gl/mapbox';
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Navigation as NavigationIcon, Phone, MapPin, Clock } from 'lucide-react';
+import Navigation as NavigationIcon from "lucide-react/dist/esm/icons/navigation as navigation-icon";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { Badge } from '@/components/ui/badge';
 import { loadMapbox } from '@/lib/mapbox-loader';
 

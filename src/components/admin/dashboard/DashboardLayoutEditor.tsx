@@ -19,16 +19,14 @@ import {
     DropdownMenuTrigger,
     DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
-import {
-    Settings2,
-    LayoutGrid,
-    TrendingUp,
-    Package,
-    RotateCcw,
-    Eye,
-    EyeOff,
-    GripVertical,
-} from 'lucide-react';
+import Settings2 from "lucide-react/dist/esm/icons/settings-2";
+import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Package from "lucide-react/dist/esm/icons/package";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
 import { cn } from '@/lib/utils';
 
 interface DashboardLayoutEditorProps {

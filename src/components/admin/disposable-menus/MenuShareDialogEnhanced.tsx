@@ -14,7 +14,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, ExternalLink, MessageCircle, Mail, QrCode, Download, Loader2, CheckCircle2, Users, DollarSign, MessageSquare } from 'lucide-react';
+import Copy from "lucide-react/dist/esm/icons/copy";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import MessageCircle from "lucide-react/dist/esm/icons/message-circle";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import QrCode from "lucide-react/dist/esm/icons/qr-code";
+import Download from "lucide-react/dist/esm/icons/download";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Users from "lucide-react/dist/esm/icons/users";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { formatMenuUrl } from '@/utils/menuHelpers';
 import { generateQRCodeDataURL, downloadQRCodePNG } from '@/lib/utils/qrCode';
@@ -551,7 +561,6 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
                 </>
               )}
             </Button>
-
 
           </TabsContent>
 

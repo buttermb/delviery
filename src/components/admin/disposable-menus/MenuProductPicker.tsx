@@ -35,13 +35,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
-import {
-  Search,
-  GripVertical,
-  X,
-  Package,
-  Check,
-} from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
+import X from "lucide-react/dist/esm/icons/x";
+import Package from "lucide-react/dist/esm/icons/package";
+import Check from "lucide-react/dist/esm/icons/check";
 
 interface Product {
   id: string;

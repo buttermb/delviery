@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { Component, ReactNode } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { Button } from '@/components/ui/button';
 
 interface Props {

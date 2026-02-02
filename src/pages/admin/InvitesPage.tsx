@@ -31,7 +31,12 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Mail, Plus, Search, Trash2, RefreshCw } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Search from "lucide-react/dist/esm/icons/search";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { format } from "date-fns";
 import { useInvites, useCreateInvite, useArchiveInvite } from "@/hooks/crm/useInvites";
 import { toast } from "sonner";

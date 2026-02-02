@@ -11,7 +11,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { DollarSign, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import ArrowDownCircle from "lucide-react/dist/esm/icons/arrow-down-circle";
+import ArrowUpCircle from "lucide-react/dist/esm/icons/arrow-up-circle";
 
 interface CashDrawerEventDialogProps {
   open: boolean;

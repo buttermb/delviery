@@ -18,10 +18,21 @@ import { useTenantLimits } from '@/hooks/useTenantLimits';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCreditGatedAction } from '@/hooks/useCredits';
 import { MenuTemplates, type MenuTemplate } from '@/components/admin/disposable-menus/MenuTemplates';
-import {
-  Eye, CheckCircle2, Shield, Search, X, Loader2, Sparkles,
-  MessageSquare, DollarSign, MapPin, Users, Palette, Percent, Plus, Settings2
-} from 'lucide-react';
+import Eye from "lucide-react/dist/esm/icons/eye";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Search from "lucide-react/dist/esm/icons/search";
+import X from "lucide-react/dist/esm/icons/x";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Users from "lucide-react/dist/esm/icons/users";
+import Palette from "lucide-react/dist/esm/icons/palette";
+import Percent from "lucide-react/dist/esm/icons/percent";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Settings2 from "lucide-react/dist/esm/icons/settings-2";
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 

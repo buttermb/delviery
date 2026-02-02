@@ -5,7 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertTriangle, TrendingDown, CheckCircle, PackagePlus, X, RefreshCw, CheckCheck } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import PackagePlus from "lucide-react/dist/esm/icons/package-plus";
+import X from "lucide-react/dist/esm/icons/x";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import CheckCheck from "lucide-react/dist/esm/icons/check-check";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';

@@ -14,13 +14,11 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import {
-    AlertTriangle,
-    Wand2,
-    Settings2,
-    CheckCircle2,
-    XCircle,
-} from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Wand2 from "lucide-react/dist/esm/icons/wand-2";
+import Settings2 from "lucide-react/dist/esm/icons/settings-2";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
 
 type SwitchDirection = 'simple-to-advanced' | 'advanced-to-simple';
 

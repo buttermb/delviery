@@ -18,14 +18,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import {
-    ShoppingCart,
-    Plus,
-    Minus,
-    ExternalLink,
-    Package,
-    X,
-} from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import Package from "lucide-react/dist/esm/icons/package";
+import X from "lucide-react/dist/esm/icons/x";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
 

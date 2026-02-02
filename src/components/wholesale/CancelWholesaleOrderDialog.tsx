@@ -17,7 +17,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 interface WholesaleOrder {

@@ -6,7 +6,9 @@
  * - Average Order Value
  */
 
-import { DollarSign, TrendingUp, ShoppingCart } from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { KPICard, KPICardSkeleton } from './KPICard';

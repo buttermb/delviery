@@ -8,23 +8,21 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
-import {
-  Search,
-  Filter,
-  MoreHorizontal,
-  Users,
-  Coins,
-  Crown,
-  AlertTriangle,
-  XCircle,
-  CheckCircle,
-  RefreshCw,
-  Download,
-  Gift,
-  Eye,
-  Edit,
-  UserCog,
-} from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import Users from "lucide-react/dist/esm/icons/users";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Crown from "lucide-react/dist/esm/icons/crown";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Download from "lucide-react/dist/esm/icons/download";
+import Gift from "lucide-react/dist/esm/icons/gift";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import UserCog from "lucide-react/dist/esm/icons/user-cog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -494,10 +492,4 @@ export default function TenantCreditsPage() {
     </div>
   );
 }
-
-
-
-
-
-
 

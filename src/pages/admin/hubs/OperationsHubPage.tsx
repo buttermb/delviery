@@ -15,19 +15,17 @@
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    Building2,
-    FileText,
-    ArrowLeftRight,
-    Users,
-    UserCog,
-    ScrollText,
-    Shield,
-    Calendar,
-    Headphones,
-    MapPin,
-    Truck,
-} from 'lucide-react';
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import ArrowLeftRight from "lucide-react/dist/esm/icons/arrow-left-right";
+import Users from "lucide-react/dist/esm/icons/users";
+import UserCog from "lucide-react/dist/esm/icons/user-cog";
+import ScrollText from "lucide-react/dist/esm/icons/scroll-text";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Headphones from "lucide-react/dist/esm/icons/headphones";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Truck from "lucide-react/dist/esm/icons/truck";
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';

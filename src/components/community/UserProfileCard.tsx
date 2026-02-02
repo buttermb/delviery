@@ -6,7 +6,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, MessageSquare, FileText } from 'lucide-react';
+import Trophy from "lucide-react/dist/esm/icons/trophy";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import FileText from "lucide-react/dist/esm/icons/file-text";
 import type { ForumUserProfile, UserReputation } from '@/types/forum';
 
 interface UserProfileCardProps {

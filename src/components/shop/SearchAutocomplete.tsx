@@ -11,7 +11,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, X, Package, TrendingUp, Clock, ArrowRight } from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import X from "lucide-react/dist/esm/icons/x";
+import Package from "lucide-react/dist/esm/icons/package";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -319,6 +324,4 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
 }
 
 export default SearchAutocomplete;
-
-
 

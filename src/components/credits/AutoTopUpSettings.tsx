@@ -7,16 +7,14 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Zap,
-  CreditCard,
-  Settings,
-  Shield,
-  AlertCircle,
-  Check,
-  Loader2,
-  Info,
-} from 'lucide-react';
+import Zap from "lucide-react/dist/esm/icons/zap";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Check from "lucide-react/dist/esm/icons/check";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Info from "lucide-react/dist/esm/icons/info";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -359,10 +357,4 @@ export function AutoTopUpSettings({
     </Card>
   );
 }
-
-
-
-
-
-
 

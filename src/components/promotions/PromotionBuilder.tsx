@@ -19,7 +19,12 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { Plus, X, Tag, Gift, TrendingUp, Truck } from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import X from "lucide-react/dist/esm/icons/x";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Gift from "lucide-react/dist/esm/icons/gift";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Truck from "lucide-react/dist/esm/icons/truck";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 export type PromotionType =

@@ -15,20 +15,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import {
-    ShoppingCart,
-    ArrowLeft,
-    Edit,
-    CheckCircle,
-    XCircle,
-    Clock,
-    Package,
-    Truck,
-    FileText,
-    Send,
-    User,
-    MapPin
-} from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Send from "lucide-react/dist/esm/icons/send";
+import User from "lucide-react/dist/esm/icons/user";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
 import {
     Dialog,
     DialogContent,

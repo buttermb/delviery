@@ -5,7 +5,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import type { Role } from '@/lib/permissions/rolePermissions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ShieldAlert } from 'lucide-react';
+import ShieldAlert from "lucide-react/dist/esm/icons/shield-alert";
 
 interface RoleGuardProps {
   requiredRoles: Role[];

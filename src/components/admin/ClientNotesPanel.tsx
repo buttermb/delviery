@@ -5,7 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, AlertCircle, DollarSign, Package, Plus } from "lucide-react";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Package from "lucide-react/dist/esm/icons/package";
+import Plus from "lucide-react/dist/esm/icons/plus";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import {
   Select,

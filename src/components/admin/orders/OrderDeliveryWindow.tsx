@@ -7,13 +7,11 @@ import { format, isToday, isTomorrow, isPast, isFuture, differenceInHours } from
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import {
-  CalendarClock,
-  Clock,
-  AlertTriangle,
-  CheckCircle2,
-  Truck,
-} from 'lucide-react';
+import CalendarClock from "lucide-react/dist/esm/icons/calendar-clock";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Truck from "lucide-react/dist/esm/icons/truck";
 import { cn } from '@/lib/utils';
 
 interface TimeSlot {

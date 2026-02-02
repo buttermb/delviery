@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { TrendingUp, Package } from 'lucide-react';
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Package from "lucide-react/dist/esm/icons/package";
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { mockDashboardData } from '../mockDashboardData';

@@ -5,7 +5,8 @@
  */
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
 import { SidebarMenuItem } from './SidebarMenuItem';
 import { useSidebar } from './SidebarContext';

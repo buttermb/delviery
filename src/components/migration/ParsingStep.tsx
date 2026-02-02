@@ -1,13 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  Loader2, 
-  Sparkles,
-  FileSpreadsheet,
-  FileText,
-  Image,
-  AlertTriangle,
-} from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Image from "lucide-react/dist/esm/icons/image";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import type { InputFormat } from '@/types/migration';
 
 interface ParsingStepProps {

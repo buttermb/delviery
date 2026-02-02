@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, Copy } from "lucide-react";
+import Check from "lucide-react/dist/esm/icons/check";
+import Copy from "lucide-react/dist/esm/icons/copy";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 

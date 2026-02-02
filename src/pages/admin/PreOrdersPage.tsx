@@ -21,17 +21,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Plus,
-    Search,
-    MoreHorizontal,
-    ShoppingCart,
-    Filter,
-    ArrowRight,
-    Clock,
-    CheckCircle,
-    XCircle
-} from "lucide-react";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Search from "lucide-react/dist/esm/icons/search";
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
 import { formatCurrency } from "@/utils/formatters";
 import { format } from "date-fns";
 import { toast } from "sonner";

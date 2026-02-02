@@ -27,7 +27,9 @@ import { useLogActivity } from '@/hooks/crm/useActivityLog';
 import { useAccount } from '@/contexts/AccountContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { Plus, Loader2, AlertTriangle } from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 
 const formSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),

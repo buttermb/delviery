@@ -9,13 +9,15 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Search, TrendingUp, Sparkles } from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
 import { faqCategories, searchFAQs, getPopularFAQs, FAQ } from '@/lib/faq-data';
 import { FAQRating } from '@/components/faq/FAQRating';
 import { FAQRelated } from '@/components/faq/FAQRelated';
 import { FAQCategoryCard } from '@/components/faq/FAQCategoryCard';
 import * as Icons from 'lucide-react';
-import { LucideIcon } from 'lucide-react';
 
 export default function FAQPage() {
   const [searchQuery, setSearchQuery] = useState('');

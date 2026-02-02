@@ -4,7 +4,9 @@ import type mapboxgl from 'mapbox-gl';
 import { loadMapbox } from '@/lib/mapbox-loader';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Navigation, TrendingUp } from 'lucide-react';
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import { LocationPoint, RouteStatistics } from '@/hooks/useRunnerLocationHistory';
 import { RouteReplayControls } from './RouteReplayControls';
 

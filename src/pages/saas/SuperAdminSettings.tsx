@@ -13,18 +13,16 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import {
-  Settings,
-  Mail,
-  Shield,
-  Bell,
-  Globe,
-  Database,
-  Key,
-  AlertTriangle,
-  Save,
-  ArrowLeft,
-} from 'lucide-react';
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import Database from "lucide-react/dist/esm/icons/database";
+import Key from "lucide-react/dist/esm/icons/key";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Save from "lucide-react/dist/esm/icons/save";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { handleError } from '@/utils/errorHandling/handlers';

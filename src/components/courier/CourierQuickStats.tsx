@@ -1,5 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Package, DollarSign, TrendingUp, Clock } from "lucide-react";
+import Package from "lucide-react/dist/esm/icons/package";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface CourierQuickStatsProps {

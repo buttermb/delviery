@@ -19,7 +19,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Activity, RefreshCw } from 'lucide-react';
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';

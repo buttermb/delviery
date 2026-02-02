@@ -7,7 +7,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Megaphone } from 'lucide-react';
+import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Megaphone from "lucide-react/dist/esm/icons/megaphone";
 import { Button } from '@/components/ui/button';
 import { useBanners, Banner } from '@/hooks/useBanners';
 import { cn } from '@/lib/utils';

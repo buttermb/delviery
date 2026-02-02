@@ -36,7 +36,8 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { Loader2, UserPlus } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
 import { queryKeys } from '@/lib/queryKeys';
 import { encryptCustomerData, logPHIAccess, getPHIFields } from '@/lib/utils/customerEncryption';
 import { useEncryption } from '@/lib/hooks/useEncryption';

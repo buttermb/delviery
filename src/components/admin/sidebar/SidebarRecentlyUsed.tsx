@@ -12,7 +12,7 @@ import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { useParams, useLocation } from 'react-router-dom';
 import type { SidebarItem } from '@/types/sidebar';
-import { Clock } from 'lucide-react';
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { useMemo, memo } from 'react';
 
 export const SidebarRecentlyUsed = memo(function SidebarRecentlyUsed() {

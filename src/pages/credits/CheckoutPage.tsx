@@ -9,17 +9,15 @@
 import { useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import {
-  CreditCard,
-  Coins,
-  Loader2,
-  Tag,
-  ArrowLeft,
-  ShieldCheck,
-  Lock,
-  Check,
-  X,
-} from 'lucide-react';
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import Check from "lucide-react/dist/esm/icons/check";
+import X from "lucide-react/dist/esm/icons/x";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

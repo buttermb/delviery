@@ -8,17 +8,15 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
-import {
-    AlertCircle,
-    CheckCircle2,
-    Info,
-    AlertTriangle,
-    Type,
-    Palette,
-    Box,
-    Layers,
-    Component
-} from 'lucide-react';
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Info from "lucide-react/dist/esm/icons/info";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Type from "lucide-react/dist/esm/icons/type";
+import Palette from "lucide-react/dist/esm/icons/palette";
+import Box from "lucide-react/dist/esm/icons/box";
+import Layers from "lucide-react/dist/esm/icons/layers";
+import Component from "lucide-react/dist/esm/icons/component";
 
 export default function DesignSystemPage() {
     return (

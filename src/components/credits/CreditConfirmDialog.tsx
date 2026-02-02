@@ -6,7 +6,10 @@
  */
 
 import { useState } from 'react';
-import { Coins, AlertTriangle, Sparkles, ArrowRight } from 'lucide-react';
+import Coins from "lucide-react/dist/esm/icons/coins";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -330,10 +333,4 @@ export function useCreditConfirm({
     isOpen,
   };
 }
-
-
-
-
-
-
 

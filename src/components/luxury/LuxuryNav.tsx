@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Search, ShoppingCart, Menu } from 'lucide-react'
+import Search from "lucide-react/dist/esm/icons/search";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Menu from "lucide-react/dist/esm/icons/menu";
 import NYMLogo from '../NYMLogo'
 
 export default function LuxuryNav() {

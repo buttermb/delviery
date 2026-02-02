@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Save } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Save from "lucide-react/dist/esm/icons/save";
 
 export function EarningRulesConfig() {
   const { tenant } = useTenantAdminAuth();

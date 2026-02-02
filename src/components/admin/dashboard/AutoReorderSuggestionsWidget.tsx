@@ -9,13 +9,11 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  ShoppingCart,
-  Package,
-  ArrowRight,
-  TrendingDown,
-  Loader2,
-} from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Package from "lucide-react/dist/esm/icons/package";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';

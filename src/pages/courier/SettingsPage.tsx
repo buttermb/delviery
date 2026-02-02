@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
 import { useNavigate } from 'react-router-dom';
 import { useCourier } from '@/contexts/CourierContext';
 import { RoleIndicator } from '@/components/courier/RoleIndicator';

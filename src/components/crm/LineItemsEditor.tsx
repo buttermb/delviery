@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { Plus, Trash2, ChevronsUpDown, Check, AlertTriangle } from "lucide-react";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import ChevronsUpDown from "lucide-react/dist/esm/icons/chevrons-up-down";
+import Check from "lucide-react/dist/esm/icons/check";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

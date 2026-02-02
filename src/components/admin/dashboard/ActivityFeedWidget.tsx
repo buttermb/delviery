@@ -5,7 +5,11 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Activity, CheckCircle2, Package, User, Box } from 'lucide-react';
+import Activity from "lucide-react/dist/esm/icons/activity";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Package from "lucide-react/dist/esm/icons/package";
+import User from "lucide-react/dist/esm/icons/user";
+import Box from "lucide-react/dist/esm/icons/box";
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';

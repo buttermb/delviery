@@ -7,22 +7,20 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Gift,
-  Users,
-  Copy,
-  Check,
-  Share2,
-  TrendingUp,
-  Coins,
-  UserPlus,
-  ArrowRight,
-  RefreshCw,
-  Mail,
-  MessageSquare,
-  Loader2,
-  Sparkles,
-} from 'lucide-react';
+import Gift from "lucide-react/dist/esm/icons/gift";
+import Users from "lucide-react/dist/esm/icons/users";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Check from "lucide-react/dist/esm/icons/check";
+import Share2 from "lucide-react/dist/esm/icons/share-2";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -375,10 +373,4 @@ export function ReferralDashboard({
     </div>
   );
 }
-
-
-
-
-
-
 

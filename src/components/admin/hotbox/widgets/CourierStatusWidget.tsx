@@ -18,14 +18,12 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
-import {
-  Users,
-  UserCheck,
-  Truck,
-  Clock,
-  ChevronRight,
-  MapPin,
-} from 'lucide-react';
+import Users from "lucide-react/dist/esm/icons/users";
+import UserCheck from "lucide-react/dist/esm/icons/user-check";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
 
 interface Courier {
   id: string;

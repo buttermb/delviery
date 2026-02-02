@@ -11,7 +11,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, Sparkles, ArrowRight, X, PlayCircle, Coins, Zap, Info } from 'lucide-react';
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import X from "lucide-react/dist/esm/icons/x";
+import PlayCircle from "lucide-react/dist/esm/icons/play-circle";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Info from "lucide-react/dist/esm/icons/info";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTutorialContext } from '@/components/tutorial/TutorialProvider';
 import { useCredits } from '@/hooks/useCredits';

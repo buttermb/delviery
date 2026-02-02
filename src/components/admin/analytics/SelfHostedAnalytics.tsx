@@ -12,25 +12,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import {
-  BarChart,
-  TrendingUp,
-  TrendingDown,
-  Users,
-  Eye,
-  MousePointerClick,
-  Globe,
-  Calendar,
-  Download,
-  FileText,
-  FileSpreadsheet,
-  ShoppingCart,
-  DollarSign,
-  Package,
-  Layers,
-  AlertTriangle,
-  ArrowUpRight,
-} from 'lucide-react';
+import BarChart from "lucide-react/dist/esm/icons/bar-chart";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Users from "lucide-react/dist/esm/icons/users";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import MousePointerClick from "lucide-react/dist/esm/icons/mouse-pointer-click";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Download from "lucide-react/dist/esm/icons/download";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Package from "lucide-react/dist/esm/icons/package";
+import Layers from "lucide-react/dist/esm/icons/layers";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';

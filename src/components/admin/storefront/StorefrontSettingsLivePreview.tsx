@@ -6,7 +6,10 @@
 import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Monitor, Smartphone, Tablet, RotateCcw } from 'lucide-react';
+import Monitor from "lucide-react/dist/esm/icons/monitor";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Tablet from "lucide-react/dist/esm/icons/tablet";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 

@@ -4,7 +4,12 @@
  */
 
 import { useState } from 'react';
-import { AlertTriangle, ShieldCheck, ShieldX, Loader2, Copy, RefreshCw } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import ShieldX from "lucide-react/dist/esm/icons/shield-x";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import type { BreachCheckResult } from '@/lib/security/passwordBreach';

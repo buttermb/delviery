@@ -24,16 +24,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Users,
-  UserPlus,
-  Mail,
-  Shield,
-  MoreVertical,
-  Clock,
-  XCircle,
-  RefreshCw,
-} from 'lucide-react';
+import Users from "lucide-react/dist/esm/icons/users";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
@@ -252,7 +250,6 @@ export default function TeamSettings() {
       )
     }
   ];
-
 
   if (isLoading) {
     return <div className="p-8 text-center text-muted-foreground">Loading team...</div>;

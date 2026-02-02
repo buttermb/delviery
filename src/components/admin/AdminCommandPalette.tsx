@@ -19,24 +19,24 @@ import {
 } from '@/components/ui/command';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { useDataSearch, SearchResult } from '@/hooks/useDataSearch';
-import { Loader2, X, History } from 'lucide-react';
-import {
-    LayoutDashboard,
-    ShoppingCart,
-    Package,
-    Users,
-    Truck,
-    Settings,
-    Plus,
-    Menu,
-    DollarSign,
-    BarChart3,
-    Clock,
-    Flame,
-    CreditCard,
-    Bell,
-    Map,
-} from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import X from "lucide-react/dist/esm/icons/x";
+import History from "lucide-react/dist/esm/icons/history";
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Menu from "lucide-react/dist/esm/icons/menu";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Flame from "lucide-react/dist/esm/icons/flame";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Map from "lucide-react/dist/esm/icons/map";
 import { Button } from '@/components/ui/button';
 
 const RECENT_SEARCHES_KEY = 'admin_recent_searches';

@@ -12,16 +12,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Package,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  Search,
-  AlertTriangle,
-  CheckCircle,
-  TrendingUp,
-} from "lucide-react";
+import Package from "lucide-react/dist/esm/icons/package";
+import ArrowUpDown from "lucide-react/dist/esm/icons/arrow-up-down";
+import ArrowUp from "lucide-react/dist/esm/icons/arrow-up";
+import ArrowDown from "lucide-react/dist/esm/icons/arrow-down";
+import Search from "lucide-react/dist/esm/icons/search";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useDebounce } from "@/hooks/useDebounce";

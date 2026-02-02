@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type mapboxgl from 'mapbox-gl';
 import { loadMapbox } from '@/lib/mapbox-loader';
 import { Card } from '@/components/ui/card';
-import { Navigation } from 'lucide-react';
+import Navigation from "lucide-react/dist/esm/icons/navigation";
 import { supabase } from '@/integrations/supabase/client';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { themeColors } from '@/lib/utils/colorConversion';

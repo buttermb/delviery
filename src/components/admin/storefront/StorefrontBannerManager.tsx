@@ -21,18 +21,16 @@ import {
     DialogDescription,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import {
-    Plus,
-    Trash2,
-    Edit,
-    MoveUp,
-    MoveDown,
-    Image as ImageIcon,
-    Link as LinkIcon,
-    Eye,
-    EyeOff,
-    Loader2,
-} from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import MoveUp from "lucide-react/dist/esm/icons/move-up";
+import MoveDown from "lucide-react/dist/esm/icons/move-down";
+import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
+import Link as LinkIcon from "lucide-react/dist/esm/icons/link as link-icon";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 interface Banner {
     id: string;

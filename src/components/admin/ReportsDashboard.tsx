@@ -1,6 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, DollarSign, Package, Users, Truck } from "lucide-react";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import Truck from "lucide-react/dist/esm/icons/truck";
 import { useWholesaleClients, useWholesaleOrders, useWholesalePayments, useWholesaleInventory } from "@/hooks/useWholesaleData";
 import { format, startOfWeek, startOfMonth, subDays } from "date-fns";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";

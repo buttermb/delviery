@@ -6,7 +6,8 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import ArrowUp from "lucide-react/dist/esm/icons/arrow-up";
+import ArrowDown from "lucide-react/dist/esm/icons/arrow-down";
 import { LastUpdated } from '@/components/shared/LastUpdated';
 
 interface StatCardProps {

@@ -8,7 +8,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Award, DollarSign, Edit, Eye, Lock, MoreHorizontal, Trash } from "lucide-react";
+import Award from "lucide-react/dist/esm/icons/award";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import Trash from "lucide-react/dist/esm/icons/trash";
 import CopyButton from "@/components/CopyButton";
 
 interface Customer {

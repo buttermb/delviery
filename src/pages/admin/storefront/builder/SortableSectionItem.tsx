@@ -5,7 +5,11 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Copy, Trash2, Eye, EyeOff } from 'lucide-react';
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
 import { Button } from '@/components/ui/button';
 import { type SectionConfig } from './storefront-builder.config';
 

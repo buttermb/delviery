@@ -3,7 +3,11 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Book, Code2, FileText, Shield, Zap } from "lucide-react";
+import Book from "lucide-react/dist/esm/icons/book";
+import Code2 from "lucide-react/dist/esm/icons/code-2";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Zap from "lucide-react/dist/esm/icons/zap";
 import { Link } from "react-router-dom";
 
 export default function DocsPage() {

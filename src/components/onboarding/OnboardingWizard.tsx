@@ -11,7 +11,13 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, CheckCircle2, ArrowRight, Store, Truck, Users, Coins } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Store from "lucide-react/dist/esm/icons/store";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Users from "lucide-react/dist/esm/icons/users";
+import Coins from "lucide-react/dist/esm/icons/coins";
 import { logger } from "@/lib/logger";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useCredits } from "@/hooks/useCredits";

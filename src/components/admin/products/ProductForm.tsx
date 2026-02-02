@@ -14,7 +14,14 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
-import { Loader2, Package, DollarSign, Image as ImageIcon, FileText, Barcode, Layers, Scale } from "lucide-react";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Package from "lucide-react/dist/esm/icons/package";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Barcode from "lucide-react/dist/esm/icons/barcode";
+import Layers from "lucide-react/dist/esm/icons/layers";
+import Scale from "lucide-react/dist/esm/icons/scale";
 import { toast } from "sonner";
 import { ProductVariantsManager } from "@/components/admin/products/ProductVariantsManager";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";

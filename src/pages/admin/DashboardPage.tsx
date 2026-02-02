@@ -15,17 +15,15 @@ import { lazy, Suspense } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import {
-  ShoppingCart,
-  PackageX,
-  Package,
-  UserPlus,
-  Users,
-  Activity,
-  CheckCircle2,
-  AlertTriangle,
-  Warehouse,
-} from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import PackageX from "lucide-react/dist/esm/icons/package-x";
+import Package from "lucide-react/dist/esm/icons/package";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import Users from "lucide-react/dist/esm/icons/users";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Warehouse from "lucide-react/dist/esm/icons/warehouse";
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';

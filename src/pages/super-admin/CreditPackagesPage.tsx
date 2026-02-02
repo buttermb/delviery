@@ -6,20 +6,18 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Plus,
-  Edit,
-  MoreHorizontal,
-  RefreshCw,
-  Package,
-  DollarSign,
-  Coins,
-  CheckCircle,
-  XCircle,
-  GripVertical,
-  Star,
-  Sparkles,
-} from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Package from "lucide-react/dist/esm/icons/package";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
+import Star from "lucide-react/dist/esm/icons/star";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -483,10 +481,4 @@ function EditPackageDialog({
     </Dialog>
   );
 }
-
-
-
-
-
-
 

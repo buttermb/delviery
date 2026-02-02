@@ -1,6 +1,10 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, CheckCircle2, ShieldCheck, Truck, ShoppingCart } from 'lucide-react';
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import { ComplianceDemo } from './demos/ComplianceDemo';
 import { LiveMapDemo } from './demos/LiveMapDemo';
 import { LogisticsDemo } from './demos/LogisticsDemo';

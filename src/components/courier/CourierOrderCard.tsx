@@ -1,7 +1,10 @@
 import { memo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, DollarSign, Clock, Package } from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Package from "lucide-react/dist/esm/icons/package";
 import { formatStatus } from '@/utils/stringHelpers';
 
 interface Order {

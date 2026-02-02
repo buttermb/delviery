@@ -1,5 +1,8 @@
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Clock, AlertCircle, RotateCcw } from 'lucide-react';
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import { getStatusColor } from '@/lib/utils/statusColors';
 import { cn } from '@/lib/utils';
 

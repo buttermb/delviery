@@ -5,7 +5,12 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Minus, ShoppingCart, Star, Leaf } from 'lucide-react';
+import X from "lucide-react/dist/esm/icons/x";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Star from "lucide-react/dist/esm/icons/star";
+import Leaf from "lucide-react/dist/esm/icons/leaf";
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';

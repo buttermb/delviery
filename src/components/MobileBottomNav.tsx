@@ -1,4 +1,8 @@
-import { Home, Search, ShoppingCart, User, LucideIcon } from 'lucide-react';
+import Home from "lucide-react/dist/esm/icons/home";
+import Search from "lucide-react/dist/esm/icons/search";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import User from "lucide-react/dist/esm/icons/user";
+import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';

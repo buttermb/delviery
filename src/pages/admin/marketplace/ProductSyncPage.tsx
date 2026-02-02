@@ -14,15 +14,13 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table";
-import {
-    RefreshCcw,
-    ArrowRightLeft,
-    AlertCircle,
-    CheckCircle2,
-    Clock,
-    Search,
-    Filter
-} from "lucide-react";
+import RefreshCcw from "lucide-react/dist/esm/icons/refresh-ccw";
+import ArrowRightLeft from "lucide-react/dist/esm/icons/arrow-right-left";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Search from "lucide-react/dist/esm/icons/search";
+import Filter from "lucide-react/dist/esm/icons/filter";
 import { Input } from "@/components/ui/input";
 import { logger } from "@/lib/logger";
 import { queryKeys } from "@/lib/queryKeys";

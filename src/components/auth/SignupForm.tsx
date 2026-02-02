@@ -5,7 +5,8 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';

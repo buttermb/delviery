@@ -7,7 +7,12 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Trash2, Star, Monitor, Tablet, Smartphone } from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Star from "lucide-react/dist/esm/icons/star";
+import Monitor from "lucide-react/dist/esm/icons/monitor";
+import Tablet from "lucide-react/dist/esm/icons/tablet";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
 
 interface SectionConfig {
     id: string;

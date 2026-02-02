@@ -8,7 +8,7 @@
 import { ReactNode } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
 import { PageHeader as SharedPageHeader } from '@/components/shared/PageHeader';
-import { LucideIcon } from 'lucide-react';
+import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
 
 interface PageHeaderProps {
   title: string;

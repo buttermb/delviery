@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Keyboard } from 'lucide-react';
+import Keyboard from "lucide-react/dist/esm/icons/keyboard";
 
 export function KeyboardNavigationHelper() {
   const [showHelper, setShowHelper] = useState(false);

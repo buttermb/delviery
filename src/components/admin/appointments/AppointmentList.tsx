@@ -2,7 +2,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { Clock, Edit, Loader2 } from "lucide-react";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 interface Appointment {
   id: string;

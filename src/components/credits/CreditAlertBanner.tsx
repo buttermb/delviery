@@ -12,7 +12,10 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { AlertTriangle, X, Coins, TrendingDown } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import X from "lucide-react/dist/esm/icons/x";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useCredits } from '@/hooks/useCredits';

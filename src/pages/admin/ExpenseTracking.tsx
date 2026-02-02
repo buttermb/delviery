@@ -8,10 +8,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import {
-  DollarSign, Calendar, Tag, Plus, Loader2, Receipt,
-  TrendingDown, Filter, X
-} from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import X from "lucide-react/dist/esm/icons/x";
 import {
   Dialog,
   DialogContent,

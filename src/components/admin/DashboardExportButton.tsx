@@ -14,7 +14,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Download, FileImage, FileSpreadsheet, FileText } from 'lucide-react';
+import Download from "lucide-react/dist/esm/icons/download";
+import FileImage from "lucide-react/dist/esm/icons/file-image";
+import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
+import FileText from "lucide-react/dist/esm/icons/file-text";
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';

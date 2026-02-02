@@ -5,11 +5,19 @@
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import {
-    ArrowLeft, Monitor, Tablet, Smartphone,
-    Undo2, Redo2, ZoomIn, ZoomOut,
-    Save, Globe, GlobeLock, Eye, Store
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Monitor from "lucide-react/dist/esm/icons/monitor";
+import Tablet from "lucide-react/dist/esm/icons/tablet";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Undo2 from "lucide-react/dist/esm/icons/undo-2";
+import Redo2 from "lucide-react/dist/esm/icons/redo-2";
+import ZoomIn from "lucide-react/dist/esm/icons/zoom-in";
+import ZoomOut from "lucide-react/dist/esm/icons/zoom-out";
+import Save from "lucide-react/dist/esm/icons/save";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import GlobeLock from "lucide-react/dist/esm/icons/globe-lock";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Store from "lucide-react/dist/esm/icons/store";
 import { MarketplaceStore } from '@/types/marketplace-extended';
 
 interface BuilderHeaderProps {

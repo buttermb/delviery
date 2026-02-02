@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
-import { Shield, CheckCircle, Lock } from "lucide-react";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Lock from "lucide-react/dist/esm/icons/lock";
 
 const badges = [
   {

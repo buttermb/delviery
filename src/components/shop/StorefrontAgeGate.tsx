@@ -5,7 +5,7 @@ import { safeStorage } from '@/utils/safeStorage';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck } from 'lucide-react';
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
 import { useParams } from 'react-router-dom';
 import { logger } from '@/lib/logger';
 

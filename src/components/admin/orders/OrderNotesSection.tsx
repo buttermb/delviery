@@ -17,15 +17,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
-import {
-  FileText,
-  Lock,
-  MessageSquare,
-  Edit,
-  Save,
-  X,
-  User,
-} from 'lucide-react';
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Save from "lucide-react/dist/esm/icons/save";
+import X from "lucide-react/dist/esm/icons/x";
+import User from "lucide-react/dist/esm/icons/user";
 import { cn } from '@/lib/utils';
 
 export interface OrderNotesSectionProps {

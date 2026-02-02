@@ -4,7 +4,12 @@
  */
 
 import { useState } from 'react';
-import { MessageSquare, Send, X, Loader2, Phone, AlertCircle } from 'lucide-react';
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Send from "lucide-react/dist/esm/icons/send";
+import X from "lucide-react/dist/esm/icons/x";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { Button } from '@/components/ui/button';
 import {
   Popover,

@@ -1,6 +1,6 @@
 import { RouteOptimizer } from '@/components/ui/lazy-mapbox';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
 import { useNavigate } from 'react-router-dom';
 
 export default function RouteOptimizationPage() {

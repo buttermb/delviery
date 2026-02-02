@@ -15,20 +15,18 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/lib/logger';
-import {
-  ArrowLeft,
-  Search,
-  Users,
-  ShoppingCart,
-  DollarSign,
-  Mail,
-  Phone,
-  Calendar,
-  TrendingUp,
-  RefreshCw,
-  Link2,
-  CheckCircle2
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Search from "lucide-react/dist/esm/icons/search";
+import Users from "lucide-react/dist/esm/icons/users";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Link2 from "lucide-react/dist/esm/icons/link-2";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import { ExportButton } from '@/components/ui/ExportButton';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';

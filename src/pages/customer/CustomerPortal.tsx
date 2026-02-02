@@ -9,10 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import {
-  Package, FileText,
-  MapPin, Clock, ChevronRight, RefreshCw
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { SEOHead } from '@/components/SEOHead';
 import { useCustomerPortalOrders } from '@/hooks/useCustomerPortalOrders';
 import { format } from 'date-fns';

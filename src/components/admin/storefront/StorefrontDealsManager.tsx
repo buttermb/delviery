@@ -31,19 +31,17 @@ import {
 } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import {
-    Plus,
-    Trash2,
-    Edit,
-    Calendar,
-    Percent,
-    DollarSign,
-    Tag,
-    Clock,
-    CheckCircle,
-    XCircle,
-    Loader2,
-} from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Percent from "lucide-react/dist/esm/icons/percent";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 

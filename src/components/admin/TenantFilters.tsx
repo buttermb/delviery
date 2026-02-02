@@ -5,14 +5,12 @@
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-    AlertTriangle,
-    Clock,
-    CreditCard,
-    Sparkles,
-    TrendingUp,
-    X
-} from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import X from "lucide-react/dist/esm/icons/x";
 
 export type FilterType = 'all' | 'needs_attention' | 'onboarding' | 'trial_ending' | 'past_due' | 'high_value';
 

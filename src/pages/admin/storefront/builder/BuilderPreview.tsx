@@ -3,7 +3,8 @@
  * Center preview area with device-responsive scaling and section rendering
  */
 
-import { Layout, Sparkles } from 'lucide-react';
+import Layout from "lucide-react/dist/esm/icons/layout";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 import { Button } from '@/components/ui/button';
 import { MarketplaceStore } from '@/types/marketplace-extended';
 import { type SectionConfig, type ThemeConfig, SECTION_TYPES, type TemplateKey } from './storefront-builder.config';

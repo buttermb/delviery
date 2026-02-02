@@ -4,7 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, X, DollarSign, Scale, AlertCircle } from "lucide-react";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import X from "lucide-react/dist/esm/icons/x";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Scale from "lucide-react/dist/esm/icons/scale";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 
 interface ProductFormData {
   prices?: Record<string, number | string>;

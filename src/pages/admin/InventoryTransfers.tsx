@@ -16,7 +16,10 @@ import {
 } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Truck, Plus, Package, Loader2 } from 'lucide-react';
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Package from "lucide-react/dist/esm/icons/package";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";

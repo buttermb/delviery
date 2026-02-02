@@ -10,24 +10,22 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Cloud,
-  CloudRain,
-  CloudSnow,
-  CloudLightning,
-  CloudFog,
-  CloudSun,
-  Sun,
-  Moon,
-  Wind,
-  Droplets,
-  Thermometer,
-  AlertTriangle,
-  MapPin,
-  RefreshCw,
-  ChevronRight,
-  Eye,
-} from 'lucide-react';
+import Cloud from "lucide-react/dist/esm/icons/cloud";
+import CloudRain from "lucide-react/dist/esm/icons/cloud-rain";
+import CloudSnow from "lucide-react/dist/esm/icons/cloud-snow";
+import CloudLightning from "lucide-react/dist/esm/icons/cloud-lightning";
+import CloudFog from "lucide-react/dist/esm/icons/cloud-fog";
+import CloudSun from "lucide-react/dist/esm/icons/cloud-sun";
+import Sun from "lucide-react/dist/esm/icons/sun";
+import Moon from "lucide-react/dist/esm/icons/moon";
+import Wind from "lucide-react/dist/esm/icons/wind";
+import Droplets from "lucide-react/dist/esm/icons/droplets";
+import Thermometer from "lucide-react/dist/esm/icons/thermometer";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Eye from "lucide-react/dist/esm/icons/eye";
 import {
   useWeatherData,
   getSeverityVariant,

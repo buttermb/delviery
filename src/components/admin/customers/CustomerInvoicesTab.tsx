@@ -14,7 +14,13 @@ import { Separator } from '@/components/ui/separator';
 import { useCRMInvoices } from '@/hooks/useCRMInvoices';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
-import { FileText, Calendar, DollarSign, Mail, Eye, Plus, CheckCircle } from 'lucide-react';
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 import { format } from 'date-fns';
 
 interface CustomerInvoicesTabProps {

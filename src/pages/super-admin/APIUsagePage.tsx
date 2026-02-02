@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity, TrendingUp, Zap, Clock } from "lucide-react";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useMemo } from 'react';

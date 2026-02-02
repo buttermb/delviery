@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Check, X, Minus } from 'lucide-react';
+import Check from "lucide-react/dist/esm/icons/check";
+import X from "lucide-react/dist/esm/icons/x";
+import Minus from "lucide-react/dist/esm/icons/minus";
 
 interface Feature {
   name: string;

@@ -5,7 +5,8 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { LogOut, AlertTriangle } from 'lucide-react';
+import LogOut from "lucide-react/dist/esm/icons/log-out";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { useNavigate } from 'react-router-dom';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { supabase } from '@/integrations/supabase/client';

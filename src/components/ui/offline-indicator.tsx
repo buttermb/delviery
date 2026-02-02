@@ -12,17 +12,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import {
-  Wifi,
-  WifiOff,
-  Cloud,
-  CloudOff,
-  RefreshCw,
-  Trash2,
-  AlertCircle,
-  Check,
-  Loader2,
-} from 'lucide-react';
+import Wifi from "lucide-react/dist/esm/icons/wifi";
+import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
+import Cloud from "lucide-react/dist/esm/icons/cloud";
+import CloudOff from "lucide-react/dist/esm/icons/cloud-off";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Check from "lucide-react/dist/esm/icons/check";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 

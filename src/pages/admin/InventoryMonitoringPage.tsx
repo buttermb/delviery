@@ -2,7 +2,10 @@ import { InventoryAlertsDashboard } from '@/components/admin/inventory/Inventory
 import { QuickReceiving } from '@/components/admin/inventory/QuickReceiving';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, PackageCheck, TrendingDown, ArrowLeft } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import PackageCheck from "lucide-react/dist/esm/icons/package-check";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 

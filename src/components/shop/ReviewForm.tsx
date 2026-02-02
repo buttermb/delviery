@@ -21,7 +21,10 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Star, Loader2, CheckCircle, PenLine } from 'lucide-react';
+import Star from "lucide-react/dist/esm/icons/star";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import PenLine from "lucide-react/dist/esm/icons/pen-line";
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 
@@ -249,6 +252,4 @@ export function ReviewForm({
 }
 
 export default ReviewForm;
-
-
 

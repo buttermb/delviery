@@ -11,7 +11,10 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Archive, ArchiveRestore, Loader2, Check } from 'lucide-react';
+import Archive from "lucide-react/dist/esm/icons/archive";
+import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Check from "lucide-react/dist/esm/icons/check";
 import {
   Tooltip,
   TooltipContent,

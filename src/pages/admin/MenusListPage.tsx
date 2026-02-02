@@ -12,18 +12,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    Plus,
-    Search,
-    Eye,
-    Users,
-    ShoppingCart,
-    DollarSign,
-    Menu as MenuIcon,
-    LayoutGrid,
-    List,
-    Filter,
-} from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Search from "lucide-react/dist/esm/icons/search";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Users from "lucide-react/dist/esm/icons/users";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Menu as MenuIcon from "lucide-react/dist/esm/icons/menu as menu-icon";
+import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
+import List from "lucide-react/dist/esm/icons/list";
+import Filter from "lucide-react/dist/esm/icons/filter";
 import { formatCurrency } from '@/utils/formatters';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { Skeleton } from '@/components/ui/skeleton';

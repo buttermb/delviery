@@ -9,16 +9,14 @@
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    Users,
-    Briefcase,
-    Heart,
-    BarChart3,
-    FileText,
-    PieChart,
-    Headphones,
-    Star,
-} from 'lucide-react';
+import Users from "lucide-react/dist/esm/icons/users";
+import Briefcase from "lucide-react/dist/esm/icons/briefcase";
+import Heart from "lucide-react/dist/esm/icons/heart";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import PieChart from "lucide-react/dist/esm/icons/pie-chart";
+import Headphones from "lucide-react/dist/esm/icons/headphones";
+import Star from "lucide-react/dist/esm/icons/star";
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';

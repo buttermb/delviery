@@ -21,7 +21,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Filter, X, Save, Trash2 } from "lucide-react";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import X from "lucide-react/dist/esm/icons/x";
+import Save from "lucide-react/dist/esm/icons/save";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import { useSavedFilters, type ProductFilterConfig } from "@/hooks/useSavedFilters";
 import { toast } from "sonner";
 

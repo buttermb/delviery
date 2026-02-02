@@ -19,23 +19,21 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import {
-  DollarSign,
-  ShoppingCart,
-  Package,
-  Users,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  ChevronDown,
-  ChevronUp,
-  Plus,
-  Smartphone,
-  AlertTriangle,
-  RefreshCw,
-  Settings,
-  Activity,
-} from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Package from "lucide-react/dist/esm/icons/package";
+import Users from "lucide-react/dist/esm/icons/users";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Activity from "lucide-react/dist/esm/icons/activity";
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';

@@ -3,7 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, MapPin, Smartphone, Zap, CheckCircle, XCircle } from "lucide-react";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
 import { toast } from "sonner";
 
 interface GPSAnomaly {

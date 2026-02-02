@@ -6,18 +6,16 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { 
-  Mail, 
-  FileText, 
-  Package, 
-  Plus, 
-  ArrowLeft, 
-  Eye,
-  Printer,
-  Send,
-  ChartBar,
-  Box
-} from 'lucide-react';
+import Mail from "lucide-react/dist/esm/icons/mail";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Package from "lucide-react/dist/esm/icons/package";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import Send from "lucide-react/dist/esm/icons/send";
+import ChartBar from "lucide-react/dist/esm/icons/chart-bar";
+import Box from "lucide-react/dist/esm/icons/box";
 import { motion, AnimatePresence } from 'framer-motion';
 
 type ActionContext = 

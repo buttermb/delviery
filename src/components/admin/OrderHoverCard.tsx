@@ -9,7 +9,12 @@ import {
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, Package, CreditCard, User, MapPin, Clock } from 'lucide-react';
+import CalendarDays from "lucide-react/dist/esm/icons/calendar-days";
+import Package from "lucide-react/dist/esm/icons/package";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import User from "lucide-react/dist/esm/icons/user";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { getStatusColor } from '@/lib/utils/statusColors';

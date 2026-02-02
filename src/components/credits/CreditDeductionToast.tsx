@@ -6,7 +6,9 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { Coins, TrendingDown, Sparkles } from 'lucide-react';
+import Coins from "lucide-react/dist/esm/icons/coins";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 import { cn } from '@/lib/utils';
 import { CreditPurchaseModal } from './CreditPurchaseModal';
 
@@ -238,10 +240,4 @@ export function showCreditDeductionToast(
 ) {
   creditToastManager.show(amount, action, newBalance);
 }
-
-
-
-
-
-
 

@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, Clock, Leaf } from "lucide-react";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Leaf from "lucide-react/dist/esm/icons/leaf";
 import { useNavigate } from "react-router-dom";
 
 const Hero = () => {

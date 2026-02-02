@@ -1,5 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldCheck, Zap, Leaf, Lock, DollarSign, MapPin } from "lucide-react";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Leaf from "lucide-react/dist/esm/icons/leaf";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
 
 const features = [
   {

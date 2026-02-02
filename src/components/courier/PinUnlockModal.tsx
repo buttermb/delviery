@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Lock } from 'lucide-react';
+import Lock from "lucide-react/dist/esm/icons/lock";
 
 interface PinUnlockModalProps {
   open: boolean;

@@ -12,22 +12,20 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import {
-  Search,
-  Plus,
-  FileText,
-  Calendar,
-  DollarSign,
-  Package,
-  Edit,
-  Trash2,
-  Eye,
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Truck,
-} from "lucide-react";
+import Search from "lucide-react/dist/esm/icons/search";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Package from "lucide-react/dist/esm/icons/package";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Truck from "lucide-react/dist/esm/icons/truck";
 import {
   Table,
   TableBody,

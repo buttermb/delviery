@@ -4,11 +4,23 @@
  */
 
 import React from 'react';
-import {
-  LayoutDashboard, Package, FileText, Truck, Warehouse,
-  Menu, Users, DollarSign, BarChart3, Image, Tag,
-  Settings, Shield, Bell, Printer, Plug, HelpCircle
-} from 'lucide-react';
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
+import Package from "lucide-react/dist/esm/icons/package";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Warehouse from "lucide-react/dist/esm/icons/warehouse";
+import Menu from "lucide-react/dist/esm/icons/menu";
+import Users from "lucide-react/dist/esm/icons/users";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import Image from "lucide-react/dist/esm/icons/image";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import Plug from "lucide-react/dist/esm/icons/plug";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
 
 export interface NavItem {
   name: string;

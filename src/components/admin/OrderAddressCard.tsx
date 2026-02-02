@@ -8,16 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  MapPin,
-  Navigation,
-  ExternalLink,
-  Copy,
-  Check,
-  Building2,
-  Home,
-  Map as MapIcon
-} from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
+import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Check from "lucide-react/dist/esm/icons/check";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Home from "lucide-react/dist/esm/icons/home";
+import Map as MapIcon from "lucide-react/dist/esm/icons/map as map-icon";
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 

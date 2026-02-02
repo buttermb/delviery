@@ -9,7 +9,9 @@ import { Button } from '@/components/ui/button';
 import { useTenantLimits } from '@/hooks/useTenantLimits';
 import { useNavigate } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { TrendingUp, AlertCircle, CheckCircle } from 'lucide-react';
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 
 const RESOURCE_LABELS: Record<string, string> = {
   customers: 'Customers',

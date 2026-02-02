@@ -1,6 +1,8 @@
 import { logger } from '@/lib/logger';
 import { Component, ReactNode, ErrorInfo } from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Home from "lucide-react/dist/esm/icons/home";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { errorReporter } from '@/utils/errorReporting';

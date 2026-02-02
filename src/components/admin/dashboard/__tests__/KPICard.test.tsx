@@ -12,7 +12,7 @@ import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { KPICard, KPICardSkeleton } from '../KPICard';
-import { DollarSign } from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 
 describe('KPICard', () => {
   describe('Basic Rendering', () => {

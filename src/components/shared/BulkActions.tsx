@@ -5,7 +5,10 @@
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Download, Edit, MoreHorizontal } from 'lucide-react';
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Download from "lucide-react/dist/esm/icons/download";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -15,15 +15,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { BarcodeGenerator } from '@/components/inventory/BarcodeGenerator';
 import { QRCodeSVG } from 'qrcode.react';
-import {
-  Download,
-  Printer,
-  Barcode,
-  RefreshCw,
-  Copy,
-  Check,
-  AlertCircle
-} from 'lucide-react';
+import Download from "lucide-react/dist/esm/icons/download";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import Barcode from "lucide-react/dist/esm/icons/barcode";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Check from "lucide-react/dist/esm/icons/check";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import jsPDF from 'jspdf';
 
 // Barcode format types

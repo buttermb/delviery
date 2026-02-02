@@ -20,7 +20,12 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, Loader2, Save, ShoppingCart, FileText, Receipt } from "lucide-react";
+import CalendarIcon from "lucide-react/dist/esm/icons/calendar-icon";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Save from "lucide-react/dist/esm/icons/save";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ClientSelector } from "./ClientSelector";

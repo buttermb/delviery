@@ -13,20 +13,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { logger } from '@/lib/logger';
-import {
-  Package,
-  Search,
-  Truck,
-  CheckCircle2,
-  Clock,
-  Building2,
-  Calendar,
-  DollarSign,
-  ArrowRight,
-  FileText,
-  Loader2,
-  AlertCircle,
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import Search from "lucide-react/dist/esm/icons/search";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import {
   Table,
   TableBody,

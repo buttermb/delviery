@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { BarcodeScanner } from '@/components/mobile/BarcodeScanner';
-import { Scan, Plus, Minus, ShoppingCart } from 'lucide-react';
+import Scan from "lucide-react/dist/esm/icons/scan";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import { toast } from 'sonner';
 
 interface Product {

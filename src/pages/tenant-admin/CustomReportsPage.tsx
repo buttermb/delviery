@@ -7,7 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { ReportBuilder } from '@/components/reports/ReportBuilder';
-import { Plus, Play, Calendar, Mail, Trash2, FileText } from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Play from "lucide-react/dist/esm/icons/play";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import FileText from "lucide-react/dist/esm/icons/file-text";
 import { REPORT_TYPES } from '@/lib/constants/reportFields';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 

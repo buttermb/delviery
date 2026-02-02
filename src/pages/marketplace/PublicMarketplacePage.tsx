@@ -14,17 +14,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import {
-  Package,
-  Search,
-  Filter,
-  ShoppingCart,
-  Star,
-  Building2,
-  Lock,
-  ArrowRight,
-  LogIn
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import Search from "lucide-react/dist/esm/icons/search";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Star from "lucide-react/dist/esm/icons/star";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import LogIn from "lucide-react/dist/esm/icons/log-in";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import {
   Select,

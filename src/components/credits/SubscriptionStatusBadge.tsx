@@ -6,14 +6,12 @@
  */
 
 import { useMemo } from 'react';
-import {
-  Crown,
-  Coins,
-  Sparkles,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-} from 'lucide-react';
+import Crown from "lucide-react/dist/esm/icons/crown";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { Badge } from '@/components/ui/badge';
 import {
   Tooltip,
@@ -247,11 +245,4 @@ export function TierIndicator({ className }: { className?: string }) {
     </span>
   );
 }
-
-
-
-
-
-
-
 

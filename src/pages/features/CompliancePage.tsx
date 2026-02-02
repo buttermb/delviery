@@ -1,7 +1,17 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle2, ShieldCheck, FileText, Lock, AlertTriangle, Clock, RefreshCw, Database, Bell, BarChart3 } from "lucide-react";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Lock from "lucide-react/dist/esm/icons/lock";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Database from "lucide-react/dist/esm/icons/database";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { SEOHead } from "@/components/SEOHead";

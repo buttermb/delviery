@@ -42,16 +42,14 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
-import {
-  Settings2,
-  LayoutGrid,
-  TrendingUp,
-  Package,
-  RotateCcw,
-  GripVertical,
-  Eye,
-  EyeOff,
-} from 'lucide-react';
+import Settings2 from "lucide-react/dist/esm/icons/settings-2";
+import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Package from "lucide-react/dist/esm/icons/package";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
 import { cn } from '@/lib/utils';
 import {
   useDashboardLayout,

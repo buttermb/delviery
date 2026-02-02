@@ -2,19 +2,17 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import {
-  Upload,
-  X,
-  File,
-  FileImage,
-  FileText,
-  FileArchive,
-  FileAudio,
-  FileVideo,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-} from "lucide-react";
+import Upload from "lucide-react/dist/esm/icons/upload";
+import X from "lucide-react/dist/esm/icons/x";
+import File from "lucide-react/dist/esm/icons/file";
+import FileImage from "lucide-react/dist/esm/icons/file-image";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import FileArchive from "lucide-react/dist/esm/icons/file-archive";
+import FileAudio from "lucide-react/dist/esm/icons/file-audio";
+import FileVideo from "lucide-react/dist/esm/icons/file-video";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import {
   validateImageDimensions,
   formatDimensionConstraints,
@@ -619,5 +617,4 @@ export {
   DEFAULT_COMPRESSION_OPTIONS,
 } from "@/lib/utils/image-compression";
 export type { ImageCompressionOptions, CompressionStats } from "@/lib/utils/image-compression";
-
 

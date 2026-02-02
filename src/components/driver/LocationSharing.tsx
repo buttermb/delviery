@@ -11,7 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { MapPin, AlertCircle } from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { cn } from '@/lib/utils';
 
 interface LocationSharingProps {

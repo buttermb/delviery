@@ -5,7 +5,8 @@
  */
 
 import { Link, useParams } from 'react-router-dom';
-import { ChevronRight, Building2 } from 'lucide-react';
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
 import { cn } from '@/lib/utils';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 

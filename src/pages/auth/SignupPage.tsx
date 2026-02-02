@@ -27,21 +27,19 @@ import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from '@/hooks/useDebounce';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { cn } from '@/lib/utils';
-import {
-  Loader2,
-  ArrowRight,
-  ArrowLeft,
-  CheckCircle,
-  CheckCircle2,
-  AlertCircle,
-  Eye,
-  EyeOff,
-  Mail,
-  User,
-  Phone,
-  Building2,
-  Plus,
-} from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import User from "lucide-react/dist/esm/icons/user";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Plus from "lucide-react/dist/esm/icons/plus";
 import { AuthErrorAlert, getAuthErrorMessage } from '@/components/auth/AuthErrorAlert';
 
 // Step 1: Email & Password

@@ -2,7 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { ArrowLeft, FileText, Users, Loader2, Send } from "lucide-react";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Users from "lucide-react/dist/esm/icons/users";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Send from "lucide-react/dist/esm/icons/send";
 import { useRecallActions } from "@/hooks/useRecallActions";
 import { useState } from "react";
 

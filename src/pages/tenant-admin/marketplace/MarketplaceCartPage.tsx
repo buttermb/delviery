@@ -9,16 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import {
-    Trash2,
-    Minus,
-    Plus,
-    ShoppingCart,
-    CreditCard,
-    ArrowRight,
-    Store,
-    Loader2
-} from 'lucide-react';
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Store from "lucide-react/dist/esm/icons/store";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { PageHeader } from '@/components/shared/PageHeader';
 

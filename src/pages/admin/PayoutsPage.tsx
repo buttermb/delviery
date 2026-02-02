@@ -20,21 +20,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DollarSign,
-  Calendar,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  TrendingUp,
-  Wallet,
-  History,
-  CalendarDays,
-  ArrowUpRight,
-  Loader2,
-  Download,
-  Info
-} from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Wallet from "lucide-react/dist/esm/icons/wallet";
+import History from "lucide-react/dist/esm/icons/history";
+import CalendarDays from "lucide-react/dist/esm/icons/calendar-days";
+import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Download from "lucide-react/dist/esm/icons/download";
+import Info from "lucide-react/dist/esm/icons/info";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';

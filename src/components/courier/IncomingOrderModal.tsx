@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, Package, Navigation } from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Package from "lucide-react/dist/esm/icons/package";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 

@@ -2,7 +2,9 @@ import BarcodeScanner from 'react-qr-barcode-scanner';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { QrCode, X, CheckCircle } from 'lucide-react';
+import QrCode from "lucide-react/dist/esm/icons/qr-code";
+import X from "lucide-react/dist/esm/icons/x";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 import { toast } from 'sonner';
 
 interface OrderScannerProps {

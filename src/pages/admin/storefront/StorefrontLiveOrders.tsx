@@ -18,20 +18,18 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import {
-  RefreshCw,
-  Search,
-  Filter,
-  Package,
-  LayoutGrid,
-  List,
-  Volume2,
-  VolumeX,
-  Truck,
-  Store,
-  User,
-  Clock,
-} from 'lucide-react';
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Search from "lucide-react/dist/esm/icons/search";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import Package from "lucide-react/dist/esm/icons/package";
+import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
+import List from "lucide-react/dist/esm/icons/list";
+import Volume2 from "lucide-react/dist/esm/icons/volume-2";
+import VolumeX from "lucide-react/dist/esm/icons/volume-x";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Store from "lucide-react/dist/esm/icons/store";
+import User from "lucide-react/dist/esm/icons/user";
+import Clock from "lucide-react/dist/esm/icons/clock";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import {
   Select,

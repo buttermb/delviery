@@ -4,7 +4,13 @@
  */
 
 import { Link, useParams, useLocation } from 'react-router-dom';
-import { Home, Search, ShoppingCart, User, Heart, Moon, Sun } from 'lucide-react';
+import Home from "lucide-react/dist/esm/icons/home";
+import Search from "lucide-react/dist/esm/icons/search";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import User from "lucide-react/dist/esm/icons/user";
+import Heart from "lucide-react/dist/esm/icons/heart";
+import Moon from "lucide-react/dist/esm/icons/moon";
+import Sun from "lucide-react/dist/esm/icons/sun";
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';

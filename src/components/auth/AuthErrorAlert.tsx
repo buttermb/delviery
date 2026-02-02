@@ -4,7 +4,9 @@
  * Supports light (default) and dark variants to match different form themes.
  */
 
-import { AlertCircle, XCircle, AlertTriangle } from 'lucide-react';
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { cn } from '@/lib/utils';
 
 export type AuthErrorType = 'error' | 'warning' | 'credentials' | 'locked' | 'general';

@@ -1,6 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Clock, WifiOff, CreditCard } from "lucide-react";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
 import { cn } from "@/lib/utils";
 
 export type ErrorStateType = "payment_failed" | "session_expired" | "no_internet" | "generic";

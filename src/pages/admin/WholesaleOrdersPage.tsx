@@ -16,22 +16,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import {
-  Package,
-  TrendingUp,
-  Clock,
-  Truck,
-  CheckCircle2,
-  Plus,
-  Download,
-  AlertCircle,
-  RefreshCw,
-  DollarSign,
-  FileText,
-  XCircle,
-  ArrowRight,
-  Warehouse
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Download from "lucide-react/dist/esm/icons/download";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Warehouse from "lucide-react/dist/esm/icons/warehouse";
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useTablePreferences } from '@/hooks/useTablePreferences';

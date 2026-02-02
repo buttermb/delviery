@@ -10,7 +10,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, CreditCard, Maximize2, Minimize2, Share2, Receipt } from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Maximize2 from "lucide-react/dist/esm/icons/maximize-2";
+import Minimize2 from "lucide-react/dist/esm/icons/minimize-2";
+import Share2 from "lucide-react/dist/esm/icons/share-2";
+import Receipt from "lucide-react/dist/esm/icons/receipt";
 import { SEOHead } from '@/components/SEOHead';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';

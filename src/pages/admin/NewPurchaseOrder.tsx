@@ -13,18 +13,16 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/hooks/useTenantNavigation';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { toast } from 'sonner';
-import {
-    ArrowLeft,
-    ArrowRight,
-    CheckCircle2,
-    Package,
-    Plus,
-    Trash2,
-    Calendar,
-    Building2,
-    DollarSign,
-    ShoppingCart
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Package from "lucide-react/dist/esm/icons/package";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import { SmartVendorPicker } from '@/components/wholesale/SmartVendorPicker';
 import { Vendor } from '@/hooks/useVendors';
 import { format } from 'date-fns';

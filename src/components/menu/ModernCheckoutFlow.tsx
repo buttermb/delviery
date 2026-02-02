@@ -11,14 +11,46 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  ShoppingCart, User, MapPin, CreditCard, Check, ArrowRight, ArrowLeft,
-  Loader2, Package, Minus, Plus, Trash2, Phone, Mail, Home, 
-  Truck, Store, Wallet, Banknote, Shield, Clock, ChevronRight,
-  Sparkles, AlertCircle, CheckCircle, Bitcoin, Zap, Coins, Copy,
-  Navigation, Tag, ChevronDown, Edit2, Calendar, Share2, MessageCircle,
-  Gift, Locate, Building, Key
-} from 'lucide-react';
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import User from "lucide-react/dist/esm/icons/user";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import Check from "lucide-react/dist/esm/icons/check";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Package from "lucide-react/dist/esm/icons/package";
+import Minus from "lucide-react/dist/esm/icons/minus";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Home from "lucide-react/dist/esm/icons/home";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Store from "lucide-react/dist/esm/icons/store";
+import Wallet from "lucide-react/dist/esm/icons/wallet";
+import Banknote from "lucide-react/dist/esm/icons/banknote";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Bitcoin from "lucide-react/dist/esm/icons/bitcoin";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import Coins from "lucide-react/dist/esm/icons/coins";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
+import Tag from "lucide-react/dist/esm/icons/tag";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import Edit2 from "lucide-react/dist/esm/icons/edit-2";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import Share2 from "lucide-react/dist/esm/icons/share-2";
+import MessageCircle from "lucide-react/dist/esm/icons/message-circle";
+import Gift from "lucide-react/dist/esm/icons/gift";
+import Locate from "lucide-react/dist/esm/icons/locate";
+import Building from "lucide-react/dist/esm/icons/building";
+import Key from "lucide-react/dist/esm/icons/key";
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useMenuCartStore } from '@/stores/menuCartStore';

@@ -18,7 +18,8 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Loader2 } from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { logger } from '@/lib/logger';
 
 interface IssueFormData {

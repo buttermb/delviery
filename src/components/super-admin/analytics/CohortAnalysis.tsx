@@ -8,7 +8,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, TrendingUp, Calendar } from 'lucide-react';
+import Users from "lucide-react/dist/esm/icons/users";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
 import { format } from 'date-fns';
 
 interface CohortData {

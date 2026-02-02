@@ -17,21 +17,19 @@ import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import {
-  ArrowLeft,
-  Search,
-  Package,
-  Eye,
-  EyeOff,
-  DollarSign,
-  Save,
-  Filter,
-  CheckSquare,
-  Square,
-  RefreshCw,
-  ArrowUp,
-  ArrowDown
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Search from "lucide-react/dist/esm/icons/search";
+import Package from "lucide-react/dist/esm/icons/package";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Save from "lucide-react/dist/esm/icons/save";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import CheckSquare from "lucide-react/dist/esm/icons/check-square";
+import Square from "lucide-react/dist/esm/icons/square";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import ArrowUp from "lucide-react/dist/esm/icons/arrow-up";
+import ArrowDown from "lucide-react/dist/esm/icons/arrow-down";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { queryKeys } from '@/lib/queryKeys';
 import {
@@ -657,8 +655,4 @@ export default function StorefrontProducts() {
     </div >
   );
 }
-
-
-
-
 

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Keyboard } from "lucide-react";
+import Keyboard from "lucide-react/dist/esm/icons/keyboard";
 import { Badge } from "@/components/ui/badge";
 
 interface Shortcut {

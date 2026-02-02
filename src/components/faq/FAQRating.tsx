@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ThumbsUp, ThumbsDown } from 'lucide-react';
+import ThumbsUp from "lucide-react/dist/esm/icons/thumbs-up";
+import ThumbsDown from "lucide-react/dist/esm/icons/thumbs-down";
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 

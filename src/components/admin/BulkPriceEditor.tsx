@@ -15,7 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { DollarSign, Percent, TrendingUp, TrendingDown } from 'lucide-react';
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Percent from "lucide-react/dist/esm/icons/percent";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
 import type { Database } from '@/integrations/supabase/types';
 
 type Product = Database['public']['Tables']['products']['Row'];

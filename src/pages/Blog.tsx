@@ -5,7 +5,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BookOpen, Calendar, User, ArrowRight, Search } from "lucide-react";
+import BookOpen from "lucide-react/dist/esm/icons/book-open";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
+import User from "lucide-react/dist/esm/icons/user";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import Search from "lucide-react/dist/esm/icons/search";
 import { Link } from "react-router-dom";
 
 export default function Blog() {

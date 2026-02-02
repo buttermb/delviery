@@ -5,7 +5,14 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Package, TrendingUp, ArrowUpDown, Settings, AlertTriangle, CheckCircle, Warehouse, Layers } from "lucide-react";
+import Package from "lucide-react/dist/esm/icons/package";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import ArrowUpDown from "lucide-react/dist/esm/icons/arrow-up-down";
+import Settings from "lucide-react/dist/esm/icons/settings";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Warehouse from "lucide-react/dist/esm/icons/warehouse";
+import Layers from "lucide-react/dist/esm/icons/layers";
 import { StockAdjustmentDialog } from "@/components/admin/StockAdjustmentDialog";
 import { BulkInventoryModal } from "@/components/admin/BulkInventoryModal";
 import { InventoryMovementLog } from "@/components/admin/InventoryMovementLog";
@@ -17,7 +24,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { inventoryTutorial } from "@/lib/tutorials/tutorialConfig";
 import { formatCurrency, formatQuantity } from '@/lib/formatters';
-
 
 interface Product {
   id: string;

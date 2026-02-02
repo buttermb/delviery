@@ -8,20 +8,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import {
-  Search,
-  Plus,
-  RotateCcw,
-  Package,
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  XCircle,
-  Edit,
-  Trash2,
-  Eye,
-  Loader2,
-} from "lucide-react";
+import Search from "lucide-react/dist/esm/icons/search";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import Package from "lucide-react/dist/esm/icons/package";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import {
   Table,
   TableBody,

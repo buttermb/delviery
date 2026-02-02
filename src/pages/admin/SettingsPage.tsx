@@ -12,10 +12,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Settings, Shield, Bell, Printer, Plug, Save,
-  Building, Layout, Sliders, Users, CreditCard, ArrowLeft, Upload
-} from 'lucide-react';
+import Settings from "lucide-react/dist/esm/icons/settings";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Bell from "lucide-react/dist/esm/icons/bell";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import Plug from "lucide-react/dist/esm/icons/plug";
+import Save from "lucide-react/dist/esm/icons/save";
+import Building from "lucide-react/dist/esm/icons/building";
+import Layout from "lucide-react/dist/esm/icons/layout";
+import Sliders from "lucide-react/dist/esm/icons/sliders";
+import Users from "lucide-react/dist/esm/icons/users";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Upload from "lucide-react/dist/esm/icons/upload";
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
 import { OperationSizeSelector } from '@/components/admin/sidebar/OperationSizeSelector';
@@ -145,7 +154,6 @@ export default function SettingsPage() {
 
   // Determine if we should show loading skeletons
   const showSkeletons = accountLoading || !formsInitialized;
-
 
   // --- Submit Handlers ---
 
@@ -350,7 +358,6 @@ export default function SettingsPage() {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="container mx-auto p-2 sm:p-6 space-y-6">

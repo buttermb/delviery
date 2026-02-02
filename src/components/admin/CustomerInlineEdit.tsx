@@ -6,7 +6,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Check, X, Pencil, Loader2, Phone, Mail } from 'lucide-react';
+import Check from "lucide-react/dist/esm/icons/check";
+import X from "lucide-react/dist/esm/icons/x";
+import Pencil from "lucide-react/dist/esm/icons/pencil";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import Mail from "lucide-react/dist/esm/icons/mail";
 import { cn } from '@/lib/utils';
 
 type FieldType = 'text' | 'email' | 'phone';

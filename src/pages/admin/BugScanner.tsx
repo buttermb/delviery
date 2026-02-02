@@ -12,7 +12,14 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import bugFinder, { BugReport, BugScanResult } from '@/utils/bugFinder';
-import { AlertTriangle, RefreshCw, Download, Trash2, CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Download from "lucide-react/dist/esm/icons/download";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Info from "lucide-react/dist/esm/icons/info";
 import { toast } from 'sonner';
 
 export default function BugScanner() {

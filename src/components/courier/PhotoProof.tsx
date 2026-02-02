@@ -4,7 +4,10 @@ import { Camera, CameraType } from 'react-camera-pro';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Camera as CameraIcon, RotateCcw, CheckCircle, Upload } from 'lucide-react';
+import Camera as CameraIcon from "lucide-react/dist/esm/icons/camera as camera-icon";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Upload from "lucide-react/dist/esm/icons/upload";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 

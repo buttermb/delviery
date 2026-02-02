@@ -9,15 +9,13 @@
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    Key,
-    Webhook,
-    Workflow,
-    Database,
-    Plug,
-    Brain,
-    Wrench,
-} from 'lucide-react';
+import Key from "lucide-react/dist/esm/icons/key";
+import Webhook from "lucide-react/dist/esm/icons/webhook";
+import Workflow from "lucide-react/dist/esm/icons/workflow";
+import Database from "lucide-react/dist/esm/icons/database";
+import Plug from "lucide-react/dist/esm/icons/plug";
+import Brain from "lucide-react/dist/esm/icons/brain";
+import Wrench from "lucide-react/dist/esm/icons/wrench";
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';

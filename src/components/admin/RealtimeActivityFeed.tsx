@@ -1,7 +1,10 @@
 import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Activity, ShoppingCart, AlertTriangle, CheckCircle } from "lucide-react";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatActionType } from "@/utils/stringHelpers";
 import { isValidActivity } from "@/utils/typeGuards";

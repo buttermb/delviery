@@ -4,15 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Package,
-  FileText,
-  DollarSign,
-  TrendingUp,
-  Loader2,
-  Eye,
-  LogOut,
-} from "lucide-react";
+import Package from "lucide-react/dist/esm/icons/package";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import LogOut from "lucide-react/dist/esm/icons/log-out";
 import { useVendorAuth } from '@/contexts/VendorAuthContext';
 import type { Database } from '@/integrations/supabase/types';
 

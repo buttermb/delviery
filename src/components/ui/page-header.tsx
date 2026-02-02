@@ -9,7 +9,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { ChevronLeft, type LucideIcon } from "lucide-react";
+import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
+import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
 import { Link } from "react-router-dom";
 
 /**
@@ -372,5 +373,4 @@ function SubHeader({
 
 export { PageHeader, PageHeaderSkeleton, SubHeader };
 export type { PageHeaderProps, SubHeaderProps, BreadcrumbItemConfig, ActionConfig };
-
 

@@ -15,18 +15,16 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import {
-  Search,
-  ShoppingCart,
-  RefreshCw,
-  Download,
-  Package,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Truck,
-  Eye,
-} from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Download from "lucide-react/dist/esm/icons/download";
+import Package from "lucide-react/dist/esm/icons/package";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Eye from "lucide-react/dist/esm/icons/eye";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import {

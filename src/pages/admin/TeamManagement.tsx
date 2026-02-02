@@ -31,7 +31,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Users, Plus, MoreHorizontal, Shield, AlertTriangle, UserCheck, UserX, Loader2 } from 'lucide-react';
+import Users from "lucide-react/dist/esm/icons/users";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import Shield from "lucide-react/dist/esm/icons/shield";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import UserCheck from "lucide-react/dist/esm/icons/user-check";
+import UserX from "lucide-react/dist/esm/icons/user-x";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { toast } from 'sonner';
 import { SEOHead } from '@/components/SEOHead';
 import { PendingInvitations } from '@/components/admin/PendingInvitations';

@@ -7,7 +7,18 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Navigation, Phone, ChevronRight, Package, CheckCircle2, Truck, Activity, Signal, Route, Clock, Zap } from 'lucide-react';
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
+import Phone from "lucide-react/dist/esm/icons/phone";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import Package from "lucide-react/dist/esm/icons/package";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Activity from "lucide-react/dist/esm/icons/activity";
+import Signal from "lucide-react/dist/esm/icons/signal";
+import Route from "lucide-react/dist/esm/icons/route";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Zap from "lucide-react/dist/esm/icons/zap";
 import { useState, useEffect } from 'react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 

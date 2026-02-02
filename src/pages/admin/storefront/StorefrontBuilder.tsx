@@ -18,12 +18,36 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    Plus, GripVertical, Trash2, Save, ArrowLeft, Layout,
-    Monitor, Smartphone, Tablet, Copy, Eye, EyeOff, Undo2, Redo2,
-    FileText, Image, MessageSquare, HelpCircle, Mail, Sparkles, X, ZoomIn, ZoomOut,
-    Code, Globe, GlobeLock, AlertCircle, Store, Settings2, Wand2
-} from 'lucide-react';
+import Plus from "lucide-react/dist/esm/icons/plus";
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Save from "lucide-react/dist/esm/icons/save";
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Layout from "lucide-react/dist/esm/icons/layout";
+import Monitor from "lucide-react/dist/esm/icons/monitor";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import Tablet from "lucide-react/dist/esm/icons/tablet";
+import Copy from "lucide-react/dist/esm/icons/copy";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import Undo2 from "lucide-react/dist/esm/icons/undo-2";
+import Redo2 from "lucide-react/dist/esm/icons/redo-2";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import Image from "lucide-react/dist/esm/icons/image";
+import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import X from "lucide-react/dist/esm/icons/x";
+import ZoomIn from "lucide-react/dist/esm/icons/zoom-in";
+import ZoomOut from "lucide-react/dist/esm/icons/zoom-out";
+import Code from "lucide-react/dist/esm/icons/code";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import GlobeLock from "lucide-react/dist/esm/icons/globe-lock";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Store from "lucide-react/dist/esm/icons/store";
+import Settings2 from "lucide-react/dist/esm/icons/settings-2";
+import Wand2 from "lucide-react/dist/esm/icons/wand-2";
 import { useToast } from '@/hooks/use-toast';
 import { EasyModeEditor } from '@/components/admin/storefront/EasyModeEditor';
 import { ModeSwitchWarningDialog } from '@/components/admin/storefront/ModeSwitchWarningDialog';

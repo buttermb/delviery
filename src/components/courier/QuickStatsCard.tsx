@@ -1,5 +1,8 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Package, DollarSign, Clock, TrendingUp } from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import { motion } from 'framer-motion';
 
 interface QuickStatsCardProps {

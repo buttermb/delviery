@@ -8,16 +8,14 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Bell,
-  AlertTriangle,
-  Package,
-  Clock,
-  FileWarning,
-  X,
-  CheckCheck,
-  ArrowRight,
-} from 'lucide-react';
+import Bell from "lucide-react/dist/esm/icons/bell";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Package from "lucide-react/dist/esm/icons/package";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import FileWarning from "lucide-react/dist/esm/icons/file-warning";
+import X from "lucide-react/dist/esm/icons/x";
+import CheckCheck from "lucide-react/dist/esm/icons/check-check";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

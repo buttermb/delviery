@@ -23,7 +23,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { User, Mail, Camera, Trash2, CheckCircle, Layout } from 'lucide-react';
+import User from "lucide-react/dist/esm/icons/user";
+import Mail from "lucide-react/dist/esm/icons/mail";
+import Camera from "lucide-react/dist/esm/icons/camera";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Layout from "lucide-react/dist/esm/icons/layout";
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';

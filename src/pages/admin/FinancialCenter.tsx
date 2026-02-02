@@ -1,7 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, TrendingDown, AlertCircle, ArrowUpRight, ArrowDownRight, Loader2, Calendar } from "lucide-react";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
+import ArrowDownRight from "lucide-react/dist/esm/icons/arrow-down-right";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Calendar from "lucide-react/dist/esm/icons/calendar";
 import { useParams } from "react-router-dom";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useFinancialSnapshot, useCashFlow, useCreditOut, useMonthlyPerformance, useCreatePaymentSchedule, useCreateCollectionActivity } from "@/hooks/useFinancialData";
@@ -269,7 +276,6 @@ export default function FinancialCenter() {
           </Button>
         </div>
       </Card>
-
 
       {/* Monthly Performance - Real-time from Completed Orders */}
       <Card className="p-6">

@@ -15,17 +15,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Store, 
-  Search, 
-  Filter,
-  MapPin,
-  Star,
-  Truck,
-  Clock,
-  ArrowRight,
-  ShoppingBag
-} from 'lucide-react';
+import Store from "lucide-react/dist/esm/icons/store";
+import Search from "lucide-react/dist/esm/icons/search";
+import Filter from "lucide-react/dist/esm/icons/filter";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import Star from "lucide-react/dist/esm/icons/star";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
 import {
   Select,
   SelectContent,

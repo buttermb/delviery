@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Search, ShoppingBag, Menu, X, User } from 'lucide-react';
+import Search from "lucide-react/dist/esm/icons/search";
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import Menu from "lucide-react/dist/esm/icons/menu";
+import X from "lucide-react/dist/esm/icons/x";
+import User from "lucide-react/dist/esm/icons/user";
 import { useShop } from '@/pages/shop/ShopLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';

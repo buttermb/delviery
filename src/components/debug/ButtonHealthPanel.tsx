@@ -10,16 +10,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Download,
-  Trash2,
-  RefreshCw,
-  Activity,
-} from 'lucide-react';
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import Download from "lucide-react/dist/esm/icons/download";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Activity from "lucide-react/dist/esm/icons/activity";
 import { buttonMonitor } from '@/lib/utils/buttonMonitor';
 
 export function ButtonHealthPanel() {

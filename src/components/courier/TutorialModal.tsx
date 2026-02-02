@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Package, MapPin, DollarSign, CheckCircle, Navigation, AlertCircle, Download } from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import Navigation from "lucide-react/dist/esm/icons/navigation";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Download from "lucide-react/dist/esm/icons/download";
 
 interface TutorialModalProps {
   open: boolean;

@@ -4,7 +4,7 @@
  */
 
 import { cn } from '@/lib/utils';
-import { Loader2 } from 'lucide-react';
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';

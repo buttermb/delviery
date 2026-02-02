@@ -34,7 +34,15 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, Plus, Edit, Trash2, Users, Check, X, Loader2, AlertTriangle } from 'lucide-react';
+import Shield from "lucide-react/dist/esm/icons/shield";
+import Plus from "lucide-react/dist/esm/icons/plus";
+import Edit from "lucide-react/dist/esm/icons/edit";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Users from "lucide-react/dist/esm/icons/users";
+import Check from "lucide-react/dist/esm/icons/check";
+import X from "lucide-react/dist/esm/icons/x";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { handleError } from '@/utils/errorHandling/handlers';
 import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';

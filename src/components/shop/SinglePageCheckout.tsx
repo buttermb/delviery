@@ -25,17 +25,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { StockWarning } from '@/components/shop/StockWarning';
-import {
-  ArrowLeft,
-  Package,
-  Truck,
-  CreditCard,
-  ShoppingCart,
-  Loader2,
-  AlertTriangle,
-  Check,
-  X,
-} from 'lucide-react';
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import Package from "lucide-react/dist/esm/icons/package";
+import Truck from "lucide-react/dist/esm/icons/truck";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Check from "lucide-react/dist/esm/icons/check";
+import X from "lucide-react/dist/esm/icons/x";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

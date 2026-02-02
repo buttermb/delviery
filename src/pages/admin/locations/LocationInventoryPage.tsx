@@ -20,14 +20,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Package,
-  Search,
-  MapPin,
-  AlertTriangle,
-  ArrowUpDown,
-  RefreshCw,
-} from 'lucide-react';
+import Package from "lucide-react/dist/esm/icons/package";
+import Search from "lucide-react/dist/esm/icons/search";
+import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import ArrowUpDown from "lucide-react/dist/esm/icons/arrow-up-down";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { useLocationInventory } from '@/hooks/useLocationInventory';
 import { useLocations, useLocationOptions } from '@/hooks/useLocations';
 import { Skeleton } from '@/components/ui/skeleton';
