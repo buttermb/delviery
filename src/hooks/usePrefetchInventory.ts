@@ -165,11 +165,12 @@ export function usePrefetchInventory({
             queryClient.prefetchQuery({
               queryKey: queryKeys.inventory.lowStockAlerts(tenantId),
               queryFn: async () => {
-                const { data, error } = await supabase
+                // Use (supabase as any) to bypass deep type instantiation issues
+                const { data, error } = await (supabase as any)
                   .from('products')
                   .select('id, name, stock_quantity, low_stock_threshold')
                   .eq('tenant_id', tenantId)
-                  .lt('stock_quantity', supabase.rpc('COALESCE', { column: 'low_stock_threshold', default: 10 }))
+                  .lt('stock_quantity', 10)
                   .order('stock_quantity', { ascending: true });
 
                 if (error) throw error;
@@ -198,7 +199,8 @@ export function usePrefetchInventory({
             queryClient.prefetchQuery({
               queryKey: queryKeys.inventory.history({ limit: 25 }),
               queryFn: async () => {
-                const { data, error } = await supabase
+                // Use (supabase as any) to bypass deep type instantiation issues
+                const { data, error } = await (supabase as any)
                   .from('inventory_history')
                   .select(`
                     *,

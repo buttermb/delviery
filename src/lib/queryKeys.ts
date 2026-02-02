@@ -125,6 +125,12 @@ export const queryKeys = {
      */
     offline: (tenantId?: string) => [...queryKeys.orders.all, 'offline', tenantId] as const,
     /**
+     * @description Query key for live orders by tenant
+     * @param tenantId - Optional tenant ID
+     * @example queryKeys.orders.live('tenant-123')
+     */
+    live: (tenantId?: string) => [...queryKeys.orders.all, 'live', tenantId] as const,
+    /**
      * @description Query key for order status history
      * @param orderId - Order ID
      * @example queryKeys.orders.statusHistory('order-123')
@@ -775,12 +781,26 @@ export const queryKeys = {
     revenueGoal: (tenantId?: string) =>
       [...queryKeys.finance.all, 'revenue-goal', { tenantId }] as const,
     /**
-     * @description Query key for financial snapshot by date range
-     * @param dateRange - Optional date range
-     * @example queryKeys.finance.snapshot('7d')
+     * @description Query key for cash flow data
+     * @param tenantId - Optional tenant ID
+     * @example queryKeys.finance.cashFlow('tenant-123')
      */
-    snapshot: (dateRange?: string) =>
-      [...queryKeys.finance.all, 'snapshot', { dateRange }] as const,
+    cashFlow: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'cash-flow', { tenantId }] as const,
+    /**
+     * @description Query key for credit out data
+     * @param tenantId - Optional tenant ID
+     * @example queryKeys.finance.creditOut('tenant-123')
+     */
+    creditOut: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'credit-out', { tenantId }] as const,
+    /**
+     * @description Query key for monthly performance data
+     * @param tenantId - Optional tenant ID
+     * @example queryKeys.finance.monthlyPerformance('tenant-123')
+     */
+    monthlyPerformance: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'monthly-performance', { tenantId }] as const,
   },
 
   /**
@@ -2047,5 +2067,53 @@ export const queryKeys = {
      */
     byTenant: (tenantId: string) =>
       [...queryKeys.orderAuditLog.all, 'tenant', tenantId] as const,
+  },
+
+  /**
+   * Recurring Orders query keys
+   * @description Query keys for recurring order schedules
+   */
+  recurringOrders: {
+    /** @description Base key for all recurring orders queries */
+    all: ['recurring-orders'] as const,
+    /** @description Parent key for all recurring orders list queries */
+    lists: () => [...queryKeys.recurringOrders.all, 'list'] as const,
+    /**
+     * @description Query key for recurring orders list by tenant
+     * @param tenantId - Optional tenant ID
+     * @example queryKeys.recurringOrders.list('tenant-123')
+     */
+    list: (tenantId?: string) =>
+      [...queryKeys.recurringOrders.lists(), { tenantId }] as const,
+    /**
+     * @description Query key for a specific recurring order
+     * @param id - Recurring order ID
+     * @example queryKeys.recurringOrders.detail('ro-123')
+     */
+    detail: (id: string) =>
+      [...queryKeys.recurringOrders.all, 'detail', id] as const,
+  },
+
+  /**
+   * Weather query keys
+   * @description Query keys for weather data
+   */
+  weather: {
+    /** @description Base key for all weather queries */
+    all: ['weather'] as const,
+    /**
+     * @description Query key for current weather by location
+     * @param location - Optional location string
+     * @example queryKeys.weather.current('40.7128,-74.0060')
+     */
+    current: (location?: string) =>
+      [...queryKeys.weather.all, 'current', { location }] as const,
+    /**
+     * @description Query key for weather forecast
+     * @param location - Optional location string
+     * @example queryKeys.weather.forecast('40.7128,-74.0060')
+     */
+    forecast: (location?: string) =>
+      [...queryKeys.weather.all, 'forecast', { location }] as const,
   },
 } as const;

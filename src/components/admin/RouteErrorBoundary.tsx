@@ -62,10 +62,7 @@ export class RouteErrorBoundary extends Component<Props, State> {
     const { routePath } = this.props;
 
     // Report error to error reporter
-    errorReporter.report(error, 'RouteErrorBoundary', {
-      routePath,
-      componentStack: errorInfo.componentStack,
-    });
+    errorReporter.report(error, `RouteErrorBoundary:${routePath}`);
 
     // Detect chunk/module loading errors specifically
     const isChunkError = error.message?.includes('chunk') ||
