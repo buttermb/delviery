@@ -4,8 +4,9 @@
  * Part of the Products Hub functionality.
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -49,7 +50,6 @@ import {
   LayoutGrid,
   List,
   Filter,
-  Loader2,
   MoreVertical,
   Edit,
   Trash2,
@@ -83,6 +83,9 @@ export function ProductsListPage() {
 
   // Selection state
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+
+  // Virtual scrolling ref for grid view
+  const gridParentRef = useRef<HTMLDivElement>(null);
 
   // Fetch products
   const {
@@ -245,6 +248,27 @@ export function ProductsListPage() {
       setSelectedProducts(filteredProducts.map((p) => p.id));
     }
   }, [selectedProducts.length, filteredProducts]);
+
+  // Virtual scrolling for grid view
+  // Calculate items per row dynamically based on viewport
+  const getColumnsPerRow = () => {
+    if (typeof window === 'undefined') return 4;
+    const width = window.innerWidth;
+    if (width < 768) return 1; // mobile
+    if (width < 1024) return 2; // tablet
+    if (width < 1280) return 3; // desktop
+    return 4; // xl
+  };
+
+  const columnsPerRow = getColumnsPerRow();
+  const gridRowCount = Math.ceil(filteredProducts.length / columnsPerRow);
+
+  const gridVirtualizer = useVirtualizer({
+    count: gridRowCount,
+    getScrollElement: () => gridParentRef.current,
+    estimateSize: () => 400, // Estimated height of each row (card height + gap)
+    overscan: 2, // Render 2 extra rows above/below viewport
+  });
 
   // Table columns
   const columns: ResponsiveColumn<Product>[] = [
@@ -624,25 +648,61 @@ export function ProductsListPage() {
         <CardContent className="p-0 sm:p-6">
           {filteredProducts.length > 0 ? (
             viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 sm:p-0">
-                {filteredProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={{
-                      id: product.id,
-                      name: product.name,
-                      category: product.category || undefined,
-                      image_url: product.image_url || undefined,
-                      sku: product.sku || undefined,
-                      available_quantity: product.available_quantity || 0,
-                      low_stock_alert: product.low_stock_alert || 10,
-                      wholesale_price: product.wholesale_price || 0,
-                      cost_per_unit: product.cost_per_unit || 0,
-                    }}
-                    onEdit={() => handleEdit(product.id)}
-                    onDelete={() => handleDelete(product.id)}
-                  />
-                ))}
+              <div
+                ref={gridParentRef}
+                className="overflow-auto p-4 sm:p-0"
+                style={{ height: '600px' }}
+              >
+                <div
+                  style={{
+                    height: `${gridVirtualizer.getTotalSize()}px`,
+                    width: '100%',
+                    position: 'relative',
+                  }}
+                >
+                  {gridVirtualizer.getVirtualItems().map((virtualRow) => {
+                    const startIndex = virtualRow.index * columnsPerRow;
+                    const rowProducts = filteredProducts.slice(
+                      startIndex,
+                      startIndex + columnsPerRow
+                    );
+
+                    return (
+                      <div
+                        key={virtualRow.key}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: `${virtualRow.size}px`,
+                          transform: `translateY(${virtualRow.start}px)`,
+                        }}
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                          {rowProducts.map((product) => (
+                            <ProductCard
+                              key={product.id}
+                              product={{
+                                id: product.id,
+                                name: product.name,
+                                category: product.category || undefined,
+                                image_url: product.image_url || undefined,
+                                sku: product.sku || undefined,
+                                available_quantity: product.available_quantity || 0,
+                                low_stock_alert: product.low_stock_alert || 10,
+                                wholesale_price: product.wholesale_price || 0,
+                                cost_per_unit: product.cost_per_unit || 0,
+                              }}
+                              onEdit={() => handleEdit(product.id)}
+                              onDelete={() => handleDelete(product.id)}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             ) : (
               <div className="-mx-4 sm:mx-0">
@@ -652,6 +712,10 @@ export function ProductsListPage() {
                   keyExtractor={(item) => item.id}
                   isLoading={false}
                   mobileRenderer={renderMobileProduct}
+                  virtualize={true}
+                  virtualizeHeight={600}
+                  virtualizeRowHeight={73}
+                  virtualizeThreshold={10}
                 />
               </div>
             )
