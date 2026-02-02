@@ -51,13 +51,14 @@ describe('Customers Table Composite Index (tenant_id, created_at DESC)', () => {
   });
 
   test('should verify migration file format', () => {
-    const migrationFileName = '20260202132250_add_customers_tenant_created_at_index.sql';
+    const migrationFileName = '20260202133047_add_customers_tenant_created_at_composite_index.sql';
 
     // Verify timestamp format (YYYYMMDDHHMMSS)
     expect(migrationFileName).toMatch(/^\d{14}_/);
 
     // Verify descriptive name
-    expect(migrationFileName).toContain('add_customers_tenant_created_at_index');
+    expect(migrationFileName).toContain('add_customers_tenant_created_at');
+    expect(migrationFileName).toContain('composite_index');
 
     // Verify .sql extension
     expect(migrationFileName).toMatch(/\.sql$/);
