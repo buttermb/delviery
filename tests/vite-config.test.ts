@@ -84,6 +84,87 @@ describe('Vite Config - Vendor Forms Chunk', () => {
 });
 
 /**
+ * Test suite for vite.config.ts vendor-maps chunk configuration
+ *
+ * Verifies that the build configuration properly splits leaflet,
+ * react-leaflet, and mapbox-gl into a separate 'vendor-maps' chunk
+ * for optimal code splitting and caching.
+ */
+describe('Vite Config - Vendor Maps Chunk', () => {
+  const viteConfigPath = path.resolve(__dirname, '..', 'vite.config.ts');
+  let viteConfigContent: string;
+
+  it('should have vite.config.ts file', () => {
+    expect(() => {
+      viteConfigContent = readFileSync(viteConfigPath, 'utf-8');
+    }).not.toThrow();
+    expect(viteConfigContent).toBeDefined();
+  });
+
+  it('should have manualChunks configuration', () => {
+    viteConfigContent = readFileSync(viteConfigPath, 'utf-8');
+    expect(viteConfigContent).toContain('manualChunks');
+  });
+
+  it('should split mapbox into vendor-maps chunk', () => {
+    viteConfigContent = readFileSync(viteConfigPath, 'utf-8');
+    expect(viteConfigContent).toContain('mapbox');
+    expect(viteConfigContent).toContain("return 'vendor-maps'");
+  });
+
+  it('should split leaflet into vendor-maps chunk', () => {
+    viteConfigContent = readFileSync(viteConfigPath, 'utf-8');
+    expect(viteConfigContent).toContain('leaflet');
+  });
+
+  it('should split react-leaflet into vendor-maps chunk', () => {
+    viteConfigContent = readFileSync(viteConfigPath, 'utf-8');
+    expect(viteConfigContent).toContain('react-leaflet');
+  });
+
+  it('should have all map libraries in the same conditional check', () => {
+    viteConfigContent = readFileSync(viteConfigPath, 'utf-8');
+
+    // Extract the vendor-maps chunk logic
+    const vendorMapsRegex = /if\s*\(id\.includes\('mapbox'\)\s*\|\|\s*id\.includes\('leaflet'\)\s*\|\|\s*id\.includes\('react-leaflet'\)\)\s*\{\s*return\s*'vendor-maps';/;
+
+    expect(viteConfigContent).toMatch(vendorMapsRegex);
+  });
+
+  it('should have vendor-maps chunk defined in the correct location (within manualChunks)', () => {
+    viteConfigContent = readFileSync(viteConfigPath, 'utf-8');
+
+    // Check that vendor-maps is inside manualChunks function
+    const manualChunksStart = viteConfigContent.indexOf('manualChunks:');
+    const vendorMapsLocation = viteConfigContent.indexOf("return 'vendor-maps'");
+
+    expect(manualChunksStart).toBeGreaterThan(-1);
+    expect(vendorMapsLocation).toBeGreaterThan(manualChunksStart);
+  });
+
+  it('should have proper chunk splitting order (React checked before map packages)', () => {
+    viteConfigContent = readFileSync(viteConfigPath, 'utf-8');
+
+    const reactChunkIndex = viteConfigContent.indexOf("return 'vendor';");
+    const vendorMapsIndex = viteConfigContent.indexOf("return 'vendor-maps';");
+
+    // vendor-maps should come after main vendor (React) check
+    expect(reactChunkIndex).toBeGreaterThan(-1);
+    expect(vendorMapsIndex).toBeGreaterThan(reactChunkIndex);
+  });
+
+  it('should have rollupOptions configured', () => {
+    viteConfigContent = readFileSync(viteConfigPath, 'utf-8');
+    expect(viteConfigContent).toContain('rollupOptions');
+  });
+
+  it('should have proper build target configuration', () => {
+    viteConfigContent = readFileSync(viteConfigPath, 'utf-8');
+    expect(viteConfigContent).toContain("target: 'es2020'");
+  });
+});
+
+/**
  * Integration test for verifying the actual chunk output
  * This test provides guidance on manual verification steps
  */
@@ -100,6 +181,32 @@ describe('Vendor Forms Chunk - Integration Guide', () => {
        - zod
        - @hookform/resolvers
     4. Check chunk size is reasonable (typically 50-150kb before compression)
+    `;
+
+    expect(instructions).toBeDefined();
+    // This test always passes - it's for documentation
+    expect(true).toBe(true);
+  });
+});
+
+/**
+ * Integration test for verifying the vendor-maps chunk output
+ * This test provides guidance on manual verification steps
+ */
+describe('Vendor Maps Chunk - Integration Guide', () => {
+  it('should provide instructions for manual verification', () => {
+    const instructions = `
+    To verify vendor-maps chunk is properly generated:
+
+    1. Run: npm run build
+    2. Check dist/assets/ directory for files containing:
+       - vendor-maps-[hash].js
+    3. Verify the chunk contains:
+       - mapbox-gl
+       - leaflet
+       - react-leaflet
+    4. Check chunk size is reasonable (typically 200-400kb before compression)
+    5. Verify map libraries are not included in the main vendor chunk
     `;
 
     expect(instructions).toBeDefined();
