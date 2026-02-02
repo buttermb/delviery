@@ -33,6 +33,9 @@ import { KPICard, KPICardSkeleton } from '@/components/admin/dashboard/KPICard';
 // Lazy load RevenueWidget for better performance
 const RevenueWidget = lazy(() => import('@/components/admin/dashboard/RevenueWidget').then(module => ({ default: module.RevenueWidget })));
 
+// Lazy load ActivityWidget for better performance
+const ActivityWidget = lazy(() => import('@/components/admin/dashboard/ActivityFeedWidget').then(module => ({ default: module.ActivityWidget })));
+
 // Fallback component for RevenueWidget while loading
 function RevenueWidgetFallback() {
   return (
@@ -44,6 +47,29 @@ function RevenueWidgetFallback() {
         ))}
       </div>
     </div>
+  );
+}
+
+// Fallback component for ActivityWidget while loading
+function ActivityWidgetFallback() {
+  return (
+    <Card className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <Skeleton className="h-6 w-32" />
+        <Skeleton className="h-5 w-12" />
+      </div>
+      <div className="space-y-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex items-start gap-3 p-2">
+            <Skeleton className="h-4 w-4 mt-0.5 rounded-full" />
+            <div className="flex-1 space-y-1">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/3" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }
 
@@ -228,6 +254,11 @@ export function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Activity Feed Section - Lazy Loaded */}
+      <Suspense fallback={<ActivityWidgetFallback />}>
+        <ActivityWidget />
+      </Suspense>
     </div>
   );
 }

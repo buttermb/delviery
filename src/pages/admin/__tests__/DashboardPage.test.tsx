@@ -2,6 +2,7 @@
  * DashboardPage Component Tests
  * Tests:
  * - Lazy loading of RevenueWidget with Suspense
+ * - Lazy loading of ActivityWidget with Suspense
  * - Loading states and fallback UI
  * - Dashboard stats rendering
  * - Error handling
@@ -45,6 +46,12 @@ vi.mock('@/components/admin/HubBreadcrumbs', () => ({
 // Mock RevenueWidget to test lazy loading
 vi.mock('@/components/admin/dashboard/RevenueWidget', () => ({
   RevenueWidget: () => <div data-testid="revenue-widget">Revenue Widget</div>,
+}));
+
+// Mock ActivityWidget to test lazy loading
+vi.mock('@/components/admin/dashboard/ActivityFeedWidget', () => ({
+  ActivityWidget: () => <div data-testid="activity-widget">Activity Widget</div>,
+  ActivityFeedWidget: () => <div data-testid="activity-feed-widget">Activity Feed Widget</div>,
 }));
 
 vi.mock('@/components/admin/dashboard/KPICard', () => ({
@@ -122,6 +129,38 @@ describe('DashboardPage', () => {
       // Wait for RevenueWidget to load
       await waitFor(() => {
         expect(screen.getByTestId('revenue-widget')).toBeInTheDocument();
+      });
+    });
+
+    it('should lazy load and render ActivityWidget after suspense', async () => {
+      vi.mocked(useDashboardStats).mockReturnValue({
+        data: {
+          revenueToday: 1000,
+          revenueMTD: 5000,
+          avgOrderValue: 50,
+          revenueGrowthPercent: 10,
+          pendingOrders: 5,
+          totalOrdersToday: 20,
+          completedOrdersToday: 15,
+          totalOrdersMTD: 100,
+          totalCustomers: 50,
+          newCustomers: 10,
+          activeSessions: 5,
+          totalProducts: 100,
+          lowStockItems: 5,
+          outOfStockItems: 2,
+          totalInventoryValue: 10000,
+        },
+        isLoading: false,
+        error: null,
+        dataUpdatedAt: Date.now(),
+      } as any);
+
+      renderDashboardPage();
+
+      // Wait for ActivityWidget to load
+      await waitFor(() => {
+        expect(screen.getByTestId('activity-widget')).toBeInTheDocument();
       });
     });
   });
@@ -238,6 +277,38 @@ describe('DashboardPage', () => {
       // RevenueWidget should load asynchronously via Suspense
       await waitFor(() => {
         expect(screen.getByTestId('revenue-widget')).toBeInTheDocument();
+      }, { timeout: 3000 });
+    });
+
+    it('should code-split ActivityWidget through lazy loading', async () => {
+      vi.mocked(useDashboardStats).mockReturnValue({
+        data: {
+          revenueToday: 1000,
+          revenueMTD: 5000,
+          avgOrderValue: 50,
+          revenueGrowthPercent: 10,
+          pendingOrders: 5,
+          totalOrdersToday: 20,
+          completedOrdersToday: 15,
+          totalOrdersMTD: 100,
+          totalCustomers: 50,
+          newCustomers: 10,
+          activeSessions: 5,
+          totalProducts: 100,
+          lowStockItems: 5,
+          outOfStockItems: 2,
+          totalInventoryValue: 10000,
+        },
+        isLoading: false,
+        error: null,
+        dataUpdatedAt: Date.now(),
+      } as any);
+
+      renderDashboardPage();
+
+      // ActivityWidget should load asynchronously via Suspense
+      await waitFor(() => {
+        expect(screen.getByTestId('activity-widget')).toBeInTheDocument();
       }, { timeout: 3000 });
     });
   });
