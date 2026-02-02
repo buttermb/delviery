@@ -33,7 +33,7 @@ import CopyButton from "@/components/CopyButton";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useExport } from "@/hooks/useExport";
-import { ExportOptionsDialog, type ExportField } from "@/components/admin/ExportOptionsDialog";
+import type { ExportField } from "@/components/admin/ExportOptionsDialog";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { formatSmartDate } from "@/lib/utils/formatDate";
@@ -48,10 +48,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 
-// Lazy load OrderMergeDialog for better performance
+// Lazy load dialogs for better performance
 const OrderMergeDialog = lazy(() =>
   import('@/components/admin/orders/OrderMergeButton').then(module => ({
     default: module.OrderMergeDialog
+  }))
+);
+
+const ExportOptionsDialog = lazy(() =>
+  import('@/components/admin/ExportOptionsDialog').then(module => ({
+    default: module.ExportOptionsDialog
   }))
 );
 
@@ -1064,15 +1070,17 @@ export default function Orders() {
         description="This action cannot be undone."
       />
 
-      <ExportOptionsDialog
-        open={exportDialogOpen}
-        onOpenChange={setExportDialogOpen}
-        onExport={handleExportWithOptions}
-        fields={orderExportFields}
-        title="Export Orders"
-        description="Choose which related data to include in the CSV export."
-        itemCount={filteredOrders.length}
-      />
+      <Suspense fallback={null}>
+        <ExportOptionsDialog
+          open={exportDialogOpen}
+          onOpenChange={setExportDialogOpen}
+          onExport={handleExportWithOptions}
+          fields={orderExportFields}
+          title="Export Orders"
+          description="Choose which related data to include in the CSV export."
+          itemCount={filteredOrders.length}
+        />
+      </Suspense>
 
       <OrderCloneToB2BDialog
         order={orderToClone}
