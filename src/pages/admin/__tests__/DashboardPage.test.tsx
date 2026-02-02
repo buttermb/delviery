@@ -3,6 +3,7 @@
  * Tests:
  * - Lazy loading of RevenueWidget with Suspense
  * - Lazy loading of ActivityWidget with Suspense
+ * - Lazy loading of AlertsWidget with Suspense
  * - Loading states and fallback UI
  * - Dashboard stats rendering
  * - Error handling
@@ -52,6 +53,11 @@ vi.mock('@/components/admin/dashboard/RevenueWidget', () => ({
 vi.mock('@/components/admin/dashboard/ActivityFeedWidget', () => ({
   ActivityWidget: () => <div data-testid="activity-widget">Activity Widget</div>,
   ActivityFeedWidget: () => <div data-testid="activity-feed-widget">Activity Feed Widget</div>,
+}));
+
+// Mock AlertsWidget to test lazy loading
+vi.mock('@/components/admin/dashboard/AlertsWidget', () => ({
+  AlertsWidget: () => <div data-testid="alerts-widget">Alerts Widget</div>,
 }));
 
 vi.mock('@/components/admin/dashboard/KPICard', () => ({
@@ -161,6 +167,38 @@ describe('DashboardPage', () => {
       // Wait for ActivityWidget to load
       await waitFor(() => {
         expect(screen.getByTestId('activity-widget')).toBeInTheDocument();
+      });
+    });
+
+    it('should lazy load and render AlertsWidget after suspense', async () => {
+      vi.mocked(useDashboardStats).mockReturnValue({
+        data: {
+          revenueToday: 1000,
+          revenueMTD: 5000,
+          avgOrderValue: 50,
+          revenueGrowthPercent: 10,
+          pendingOrders: 5,
+          totalOrdersToday: 20,
+          completedOrdersToday: 15,
+          totalOrdersMTD: 100,
+          totalCustomers: 50,
+          newCustomers: 10,
+          activeSessions: 5,
+          totalProducts: 100,
+          lowStockItems: 5,
+          outOfStockItems: 2,
+          totalInventoryValue: 10000,
+        },
+        isLoading: false,
+        error: null,
+        dataUpdatedAt: Date.now(),
+      } as any);
+
+      renderDashboardPage();
+
+      // Wait for AlertsWidget to load
+      await waitFor(() => {
+        expect(screen.getByTestId('alerts-widget')).toBeInTheDocument();
       });
     });
   });
@@ -309,6 +347,38 @@ describe('DashboardPage', () => {
       // ActivityWidget should load asynchronously via Suspense
       await waitFor(() => {
         expect(screen.getByTestId('activity-widget')).toBeInTheDocument();
+      }, { timeout: 3000 });
+    });
+
+    it('should code-split AlertsWidget through lazy loading', async () => {
+      vi.mocked(useDashboardStats).mockReturnValue({
+        data: {
+          revenueToday: 1000,
+          revenueMTD: 5000,
+          avgOrderValue: 50,
+          revenueGrowthPercent: 10,
+          pendingOrders: 5,
+          totalOrdersToday: 20,
+          completedOrdersToday: 15,
+          totalOrdersMTD: 100,
+          totalCustomers: 50,
+          newCustomers: 10,
+          activeSessions: 5,
+          totalProducts: 100,
+          lowStockItems: 5,
+          outOfStockItems: 2,
+          totalInventoryValue: 10000,
+        },
+        isLoading: false,
+        error: null,
+        dataUpdatedAt: Date.now(),
+      } as any);
+
+      renderDashboardPage();
+
+      // AlertsWidget should load asynchronously via Suspense
+      await waitFor(() => {
+        expect(screen.getByTestId('alerts-widget')).toBeInTheDocument();
       }, { timeout: 3000 });
     });
   });

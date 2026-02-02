@@ -5,6 +5,8 @@
  * - Orders: Pending, today, completed, MTD totals
  * - Customers: Total, new (last 30 days), active sessions
  * - Inventory: Total products, low stock, out of stock, inventory value
+ * - Alerts: Recent inventory alerts and notifications (lazy loaded)
+ * - Activity: Recent activity feed (lazy loaded)
  *
  * Uses TanStack Query with 30s auto-refresh for real-time data.
  */
@@ -36,6 +38,9 @@ const RevenueWidget = lazy(() => import('@/components/admin/dashboard/RevenueWid
 // Lazy load ActivityWidget for better performance
 const ActivityWidget = lazy(() => import('@/components/admin/dashboard/ActivityFeedWidget').then(module => ({ default: module.ActivityWidget })));
 
+// Lazy load AlertsWidget for better performance
+const AlertsWidget = lazy(() => import('@/components/admin/dashboard/AlertsWidget').then(module => ({ default: module.AlertsWidget })));
+
 // Fallback component for RevenueWidget while loading
 function RevenueWidgetFallback() {
   return (
@@ -66,6 +71,35 @@ function ActivityWidgetFallback() {
               <Skeleton className="h-4 w-3/4" />
               <Skeleton className="h-3 w-1/3" />
             </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+// Fallback component for AlertsWidget while loading
+function AlertsWidgetFallback() {
+  return (
+    <Card className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <Skeleton className="h-6 w-32" />
+        <Skeleton className="h-5 w-12" />
+      </div>
+      <div className="space-y-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex items-center justify-between p-3 border rounded-lg"
+          >
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-8 w-8 rounded-full" />
+              <div className="space-y-1">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            <Skeleton className="h-6 w-6 rounded" />
           </div>
         ))}
       </div>
@@ -254,6 +288,11 @@ export function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Alerts Section - Lazy Loaded */}
+      <Suspense fallback={<AlertsWidgetFallback />}>
+        <AlertsWidget />
+      </Suspense>
 
       {/* Activity Feed Section - Lazy Loaded */}
       <Suspense fallback={<ActivityWidgetFallback />}>
