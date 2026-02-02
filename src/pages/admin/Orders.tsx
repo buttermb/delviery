@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { logOrderQuery, logRLSFailure } from '@/lib/debug/logger';
 import { logSelectQuery } from '@/lib/debug/queryLogger';
-import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -9,9 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, Building2, Copy, Merge } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Truck, CheckCircle, WifiOff, Building2, Copy, Merge } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
 import { ordersTutorial } from '@/lib/tutorials/tutorialConfig';
@@ -21,7 +20,6 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, Dr
 import { triggerHaptic } from '@/lib/utils/mobile';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { LastUpdated } from "@/components/shared/LastUpdated";
 import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
 import { OrderBulkStatusConfirmDialog } from "@/components/admin/orders/OrderBulkStatusConfirmDialog";
@@ -90,7 +88,6 @@ export default function Orders() {
   const { tenant } = useTenantAdminAuth();
   const { preferences, savePreferences } = useTablePreferences("orders-table");
   const queryClient = useQueryClient();
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useAdminKeyboardShortcuts({
     onSearch: () => {
@@ -140,7 +137,7 @@ export default function Orders() {
   const OrderSourceBadge = ({ source }: { source?: string }) => (
     <Badge variant="outline" className="text-xs">{source || 'admin'}</Badge>
   );
-  const OrderSMSButton = (_props: any) => null;
+  const OrderSMSButton = () => null;
 
   // Bulk status update hook
   const bulkStatusUpdate = useOrderBulkStatusUpdate({
@@ -505,9 +502,9 @@ export default function Orders() {
           created_at: order.created_at,
           ...(includeCustomerName && { customer_name: order.user?.full_name || '' }),
           ...(includeCustomerEmail && { customer_email: order.user?.email || '' }),
-          item_product_name: (item as any).product_name || '',
-          item_quantity: (item as any).quantity || 0,
-          item_price: (item as any).price || 0,
+          item_product_name: item.product_name || '',
+          item_quantity: item.quantity || 0,
+          item_price: item.price || 0,
         }));
       });
       exportCSV(flatRows, { filename: `orders-export-${new Date().toISOString().split('T')[0]}.csv` });
