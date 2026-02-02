@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { logOrderQuery, logRLSFailure } from '@/lib/debug/logger';
 import { logSelectQuery } from '@/lib/debug/queryLogger';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -347,30 +347,30 @@ export default function Orders() {
   }, [filteredOrders, selectedOrders]);
 
   // Handlers
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     await refetch();
     triggerHaptic('light');
-  };
+  }, [refetch]);
 
-  const handleSelectAll = (checked: boolean) => {
+  const handleSelectAll = useCallback((checked: boolean) => {
     if (checked) {
       setSelectedOrders(filteredOrders.map(o => o.id));
     } else {
       setSelectedOrders([]);
     }
-  };
+  }, [filteredOrders]);
 
-  const handleSelectOrder = (orderId: string, checked: boolean) => {
+  const handleSelectOrder = useCallback((orderId: string, checked: boolean) => {
     setSelectedOrders(prev =>
       checked ? [...prev, orderId] : prev.filter(id => id !== orderId)
     );
-  };
+  }, []);
 
-  const handleStatusChange = (orderId: string, newStatus: string) => {
+  const handleStatusChange = useCallback((orderId: string, newStatus: string) => {
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
-  };
+  }, [updateStatusMutation]);
 
-  const handleBulkStatusChange = async (status: string) => {
+  const handleBulkStatusChange = useCallback(async (status: string) => {
     if (!tenant?.id) {
       toast.error("No tenant context available");
       return;
@@ -414,9 +414,9 @@ export default function Orders() {
       toast.error("Failed to update orders");
     }
     setBulkStatusConfirm({ open: true, targetStatus: status });
-  };
+  }, [tenant?.id, orders, queryClient, statusFilter, selectedOrders]);
 
-  const handleConfirmBulkStatusUpdate = async () => {
+  const handleConfirmBulkStatusUpdate = useCallback(async () => {
     if (!tenant?.id) return;
 
     setBulkStatusConfirm({ open: false, targetStatus: '' });
@@ -426,32 +426,32 @@ export default function Orders() {
       selectedOrders.map(id => ({ id, order_number: id })),
       bulkStatusConfirm.targetStatus
     );
-  };
+  }, [tenant?.id, bulkStatusUpdate, selectedOrders, bulkStatusConfirm.targetStatus]);
 
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     setSearchQuery('');
     setStatusFilter('all');
     setDateRange({ from: undefined, to: undefined });
-  };
+  }, []);
 
   const hasActiveFilters = searchQuery || statusFilter !== 'all' || dateRange.from || dateRange.to;
 
-  const handleDelete = (id: string) => {
+  const handleDelete = useCallback((id: string) => {
     setDeleteConfirmation({ open: true, type: 'single', id });
-  };
+  }, []);
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = useCallback(() => {
     setDeleteConfirmation({ open: true, type: 'bulk' });
-  };
+  }, []);
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = useCallback(() => {
     if (deleteConfirmation.type === 'single' && deleteConfirmation.id) {
       deleteMutation.mutate([deleteConfirmation.id]);
     } else if (deleteConfirmation.type === 'bulk') {
       deleteMutation.mutate(selectedOrders);
     }
     setDeleteConfirmation({ ...deleteConfirmation, open: false });
-  };
+  }, [deleteConfirmation, deleteMutation, selectedOrders]);
 
   const orderExportFields: ExportField[] = [
     {
@@ -473,7 +473,7 @@ export default function Orders() {
     },
   ];
 
-  const handleExportWithOptions = (selectedFields: string[]) => {
+  const handleExportWithOptions = useCallback((selectedFields: string[]) => {
     const includeCustomerName = selectedFields.includes('customer_name');
     const includeCustomerEmail = selectedFields.includes('customer_email');
     const includeLineItems = selectedFields.includes('line_items');
@@ -514,9 +514,9 @@ export default function Orders() {
     }
 
     setExportDialogOpen(false);
-  };
+  }, [filteredOrders, exportCSV]);
 
-  const handlePrintOrder = (order: Order) => {
+  const handlePrintOrder = useCallback((order: Order) => {
     // Open print dialog with order details
     const printWindow = window.open('', '_blank');
     if (printWindow) {
@@ -545,14 +545,14 @@ export default function Orders() {
       printWindow.print();
     }
     triggerHaptic('light');
-  };
+  }, []);
 
-  const handleGenerateInvoice = (order: Order) => {
+  const handleGenerateInvoice = useCallback((order: Order) => {
     toast.success(`Invoice generated for order #${order.order_number || order.id.slice(0, 8)}`);
     triggerHaptic('light');
-  };
+  }, []);
 
-  const handleCancelOrder = async (order: Order) => {
+  const handleCancelOrder = useCallback(async (order: Order) => {
     if (!tenant?.id) return;
 
     try {
@@ -571,15 +571,15 @@ export default function Orders() {
       logger.error('Error cancelling order', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
       toast.error("Failed to cancel order");
     }
-  };
+  }, [tenant?.id, queryClient]);
 
-  const handleCloneToB2B = (order: Order) => {
+  const handleCloneToB2B = useCallback((order: Order) => {
     setOrderToClone(order);
     setCloneToB2BDialogOpen(true);
     triggerHaptic('light');
-  };
+  }, []);
 
-  const handleOrderClick = (order: Order) => {
+  const handleOrderClick = useCallback((order: Order) => {
     if (window.innerWidth < 768) {
       setSelectedOrder(order);
       setIsDrawerOpen(true);
@@ -587,7 +587,7 @@ export default function Orders() {
     } else {
       navigate(`orders/${order.id}`);
     }
-  };
+  }, [navigate]);
 
   // Helper
   const getStatusBadge = (status: string) => {
