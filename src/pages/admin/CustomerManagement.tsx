@@ -253,6 +253,16 @@ export default function CustomerManagement() {
     }
   }, []);
 
+  const filteredCustomers = customers.filter((customer) => {
+    const fullName = `${customer.first_name} ${customer.last_name}`.toLowerCase();
+    const search = searchTerm.toLowerCase();
+    return (
+      fullName.includes(search) ||
+      customer.email?.toLowerCase().includes(search) ||
+      customer.phone?.includes(search)
+    );
+  });
+
   const handleExport = useCallback(() => {
     const csv = [
       ["Name", "Email", "Phone", "Type", "Total Spent", "Loyalty Points", "Status"],
@@ -275,16 +285,6 @@ export default function CustomerManagement() {
     a.click();
     toast.success("Customer data exported");
   }, [filteredCustomers]);
-
-  const filteredCustomers = customers.filter((customer) => {
-    const fullName = `${customer.first_name} ${customer.last_name}`.toLowerCase();
-    const search = searchTerm.toLowerCase();
-    return (
-      fullName.includes(search) ||
-      customer.email?.toLowerCase().includes(search) ||
-      customer.phone?.includes(search)
-    );
-  });
 
   // Use standardized pagination
   const {
