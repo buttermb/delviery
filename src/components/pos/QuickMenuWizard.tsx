@@ -8,12 +8,12 @@ import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
 import { QRCodeCanvas } from 'qrcode.react';
 import { Loader2, Copy, Check, Share2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { CartItem } from '@/pages/admin/PointOfSale';
+import type { POSCartItem } from '@/types/pos';
 
 interface QuickMenuWizardProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    cartItems: CartItem[];
+    cartItems: POSCartItem[];
     tenantId: string;
 }
 
