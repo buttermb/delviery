@@ -27,8 +27,8 @@ describe('Vite Config Manual Chunks', () => {
       if (id.includes('@radix-ui')) {
         return 'vendor-ui';
       }
-      // Split chart libraries
-      if (id.includes('recharts') || id.includes('@tremor') || id.includes('d3-')) {
+      // Split chart libraries (recharts, d3, tremor)
+      if (id.includes('recharts') || id.includes('@tremor') || id.includes('d3-') || id.includes('victory-vendor')) {
         return 'vendor-charts';
       }
       return 'vendor';
@@ -129,6 +129,11 @@ describe('Vite Config Manual Chunks', () => {
 
     it('should put d3-color in vendor-charts chunk', () => {
       const id = 'node_modules/d3-color/index.js';
+      expect(getChunkName(id)).toBe('vendor-charts');
+    });
+
+    it('should put victory-vendor in vendor-charts chunk', () => {
+      const id = 'node_modules/victory-vendor/index.js';
       expect(getChunkName(id)).toBe('vendor-charts');
     });
   });

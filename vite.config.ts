@@ -237,8 +237,8 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('@radix-ui')) {
               return 'vendor-ui';
             }
-            // Split chart libraries
-            if (id.includes('recharts') || id.includes('@tremor') || id.includes('d3-')) {
+            // Split chart libraries (recharts, d3, tremor)
+            if (id.includes('recharts') || id.includes('@tremor') || id.includes('d3-') || id.includes('victory-vendor')) {
               return 'vendor-charts';
             }
             return 'vendor';
