@@ -201,17 +201,17 @@ tasks:
     completed: true
   - title: Import only used Lucide icons instead of entire library across all files
     parallel_group: 10
-    completed: false
+    completed: true
   - title: Replace lodash with lodash-es for better tree shaking
     parallel_group: 11
-    completed: false
+    completed: true
   - title: Create migration add composite index on orders tenant_id status for
       filtered queries
     parallel_group: 11
-    completed: false
+    completed: true
   - title: Create migration add composite index on orders tenant_id created_at DESC
     parallel_group: 11
-    completed: false
+    completed: true
   - title: Create migration add composite index on products tenant_id is_active
     parallel_group: 11
     completed: false
