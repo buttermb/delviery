@@ -16,8 +16,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle,
-  Filter, Download, Upload, Phone, Mail, Lock, Eye, Trash
+  Filter, Download, Upload, Phone, Mail, Lock, Eye, Trash, MoreHorizontal, Edit
 } from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
@@ -26,16 +32,14 @@ import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
 import { useEncryption } from "@/lib/hooks/useEncryption";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { SwipeableItem } from "@/components/mobile/SwipeableItem";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { triggerHaptic } from "@/lib/utils/mobile";
 import { cn } from "@/lib/utils";
 import { CustomerImportDialog } from "@/components/admin/CustomerImportDialog";
 import { VirtualList } from "@/components/ui/virtual-list";
-import { useSwipeBack, useLongPress } from "@/hooks/useGestures";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
-import CustomerRow from "@/components/admin/customers/CustomerRow";
 
 interface Customer {
   id: string;
@@ -71,7 +75,7 @@ export default function CustomerManagement() {
   const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const { tenant, admin, loading: accountLoading } = useTenantAdminAuth();
+  const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,15 +89,7 @@ export default function CustomerManagement() {
   const [selectedCustomerForDrawer, setSelectedCustomerForDrawer] = useState<Customer | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
-  useEffect(() => {
-    if (tenant && !accountLoading) {
-      loadCustomers();
-    } else if (!accountLoading && !tenant) {
-      setLoading(false);
-    }
-  }, [tenant, accountLoading, filterType, filterStatus]);
-
-  const loadCustomers = async () => {
+  const loadCustomers = useCallback(async () => {
     if (!tenant) return;
 
     try {
@@ -117,8 +113,8 @@ export default function CustomerManagement() {
       if (error) throw error;
 
       // Decrypt customer data if encryption is ready and encrypted fields exist
-      let decryptedCustomers: any[] = data || [];
-      if (encryptionIsReady && data && data.length > 0 && ((data[0] as any).phone_encrypted || (data[0] as any).email_encrypted)) {
+      let decryptedCustomers: Customer[] = data || [];
+      if (encryptionIsReady && data && data.length > 0 && ((data[0] as Record<string, unknown>).phone_encrypted || (data[0] as Record<string, unknown>).email_encrypted)) {
         try {
           decryptedCustomers = data.map((customer: Record<string, unknown>) => {
             try {
@@ -182,7 +178,15 @@ export default function CustomerManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenant, encryptionIsReady, filterType, filterStatus, decryptObject]);
+
+  useEffect(() => {
+    if (tenant && !accountLoading) {
+      loadCustomers();
+    } else if (!accountLoading && !tenant) {
+      setLoading(false);
+    }
+  }, [tenant, accountLoading, filterType, filterStatus, loadCustomers]);
 
   const handleDeleteClick = useCallback((customerId: string, customerName: string) => {
     triggerHaptic('medium');
@@ -288,7 +292,6 @@ export default function CustomerManagement() {
 
   // Use standardized pagination
   const {
-    paginatedItems: paginatedCustomers,
     currentPage,
     pageSize,
     totalPages,
@@ -496,64 +499,164 @@ export default function CustomerManagement() {
         </CardContent>
       </Card>
 
-      {/* Customer Table (Desktop) */}
+      {/* Customer Table (Desktop) - Virtual Scrolling */}
       <Card className="hidden md:block border-none shadow-md">
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-muted/50 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    <input
-                      type="checkbox"
-                      className="rounded"
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedCustomers(paginatedCustomers.map(c => c.id));
-                        } else {
-                          setSelectedCustomers([]);
-                        }
-                      }}
-                    />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Customer
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Total Spent
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Points
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Last Order
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-background divide-y divide-border">
-                {paginatedCustomers.map((customer) => (
-                  <CustomerRow
-                    key={customer.id}
-                    customer={customer}
-                    isSelected={selectedCustomers.includes(customer.id)}
-                    tenantSlug={tenant?.slug}
-                    onSelectChange={handleSelectChange}
-                    onDeleteClick={handleDeleteClick}
+          {filteredCustomers.length === 0 ? (
+            <EnhancedEmptyState
+              icon={Users}
+              title={searchTerm ? "No Customers Found" : "No Customers Yet"}
+              description={searchTerm ? "No customers match your search." : "Add your first customer to get started."}
+              primaryAction={!searchTerm ? {
+                label: "Add Your First Customer",
+                onClick: () => navigateToAdmin('customers/new'),
+                icon: Plus
+              } : undefined}
+            />
+          ) : (
+            <div className="overflow-hidden">
+              {/* Header with select all checkbox */}
+              <div className="flex bg-muted/50 border-b sticky top-0 z-10">
+                <div className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: '60px' }}>
+                  <input
+                    type="checkbox"
+                    className="rounded"
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedCustomers(filteredCustomers.map(c => c.id));
+                      } else {
+                        setSelectedCustomers([]);
+                      }
+                    }}
                   />
-                ))}
-              </tbody>
-            </table>
+                </div>
+                <div className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider flex-1">
+                  Customer
+                </div>
+                <div className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: '140px' }}>
+                  Type
+                </div>
+                <div className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: '120px' }}>
+                  Total Spent
+                </div>
+                <div className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: '100px' }}>
+                  Points
+                </div>
+                <div className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: '140px' }}>
+                  Last Order
+                </div>
+                <div className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: '120px' }}>
+                  Status
+                </div>
+                <div className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: '100px' }}>
+                  Actions
+                </div>
+              </div>
 
-            {filteredCustomers.length === 0 && (
+              {/* Virtual scrolling list */}
+              <VirtualList
+                items={filteredCustomers}
+                itemHeight={73}
+                containerHeight={600}
+                overscan={5}
+                keyExtractor={(customer) => customer.id}
+                renderItem={(customer) => (
+                  <div className="flex items-center border-b hover:bg-muted/50 transition-colors h-full">
+                    <div className="px-6 py-4" style={{ width: '60px' }}>
+                      <input
+                        type="checkbox"
+                        className="rounded"
+                        checked={selectedCustomers.includes(customer.id)}
+                        onChange={(e) => handleSelectChange(customer.id, e.target.checked)}
+                      />
+                    </div>
+                    <div className="px-6 py-4 flex-1">
+                      <div className="flex items-center">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
+                          {customer.first_name?.[0]}{customer.last_name?.[0]}
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium">
+                            {customer.first_name} {customer.last_name}
+                          </div>
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
+                            {customer._encryptedIndicator ? (
+                              <span className="flex items-center gap-1 text-amber-600" title="Contact info encrypted - sign in to view">
+                                <Lock className="w-3 h-3" />
+                                <span className="italic">Encrypted</span>
+                              </span>
+                            ) : (
+                              customer.email || customer.phone || 'No contact'
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="px-6 py-4" style={{ width: '140px' }}>
+                      <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
+                        {customer.customer_type === 'medical' ? '🏥 Medical' : 'Recreational'}
+                      </Badge>
+                    </div>
+                    <div className="px-6 py-4 text-sm font-semibold" style={{ width: '120px' }}>
+                      ${customer.total_spent?.toFixed(2) || '0.00'}
+                    </div>
+                    <div className="px-6 py-4 text-sm" style={{ width: '100px' }}>
+                      <span className="flex items-center gap-1">
+                        <Award className="w-4 h-4 text-yellow-600" />
+                        {customer.loyalty_points || 0}
+                      </span>
+                    </div>
+                    <div className="px-6 py-4 text-sm text-muted-foreground" style={{ width: '140px' }}>
+                      {customer.last_purchase_at
+                        ? new Date(customer.last_purchase_at).toLocaleDateString()
+                        : 'Never'}
+                    </div>
+                    <div className="px-6 py-4" style={{ width: '120px' }}>
+                      {getCustomerStatus(customer)}
+                    </div>
+                    <div className="px-6 py-4 text-right" style={{ width: '100px' }}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${customer.id}`)}>
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customer-management/${customer.id}/edit`)}>
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${customer.id}`)}>
+                            <DollarSign className="w-4 h-4 mr-2" />
+                            New Order
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onClick={() => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)}
+                          >
+                            <Trash className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                )}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Mobile Swipeable List View - Virtual Scrolling */}
+      <Card className="md:hidden border-none shadow-sm">
+        <CardContent className="p-0">
+          {filteredCustomers.length === 0 ? (
+            <div className="p-4">
               <EnhancedEmptyState
                 icon={Users}
                 title={searchTerm ? "No Customers Found" : "No Customers Yet"}
@@ -564,90 +667,81 @@ export default function CustomerManagement() {
                   icon: Plus
                 } : undefined}
               />
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Mobile Swipeable List View */}
-      <div className="md:hidden space-y-3">
-        {filteredCustomers.length === 0 ? (
-          <EnhancedEmptyState
-            icon={Users}
-            title={searchTerm ? "No Customers Found" : "No Customers Yet"}
-            description={searchTerm ? "No customers match your search." : "Add your first customer to get started."}
-            primaryAction={!searchTerm ? {
-              label: "Add Your First Customer",
-              onClick: () => navigateToAdmin('customers/new'),
-              icon: Plus
-            } : undefined}
-          />
-        ) : (
-          <AnimatePresence>
-            {filteredCustomers.map((customer) => (
-              <SwipeableItem
-                key={customer.id}
-                leftAction={{
-                  icon: <Trash className="h-5 w-5" />,
-                  color: 'bg-red-500',
-                  label: 'Delete',
-                  onClick: () => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)
-                }}
-                rightAction={{
-                  icon: <Eye className="h-5 w-5" />,
-                  color: 'bg-blue-500',
-                  label: 'View',
-                  onClick: () => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${customer.id}`)
-                }}
-              >
-                <div
-                  className="p-4 bg-card rounded-lg border shadow-sm active:scale-[0.98] transition-transform"
-                  onClick={() => {
-                    triggerHaptic('light');
-                    setSelectedCustomerForDrawer(customer);
-                  }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
-                        {customer.first_name?.[0]}{customer.last_name?.[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-base truncate">
-                          {customer.first_name} {customer.last_name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {customer._encryptedIndicator ? (
-                            <span className="flex items-center gap-1 text-amber-600">
-                              <Lock className="w-3 h-3" />
-                              <span className="italic">Encrypted</span>
-                            </span>
-                          ) : (
-                            customer.email || customer.phone || 'No contact'
-                          )}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
-                            {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
-                          </Badge>
-                          {getCustomerStatus(customer)}
+            </div>
+          ) : (
+            <VirtualList
+              items={filteredCustomers}
+              itemHeight={120}
+              containerHeight={600}
+              overscan={3}
+              keyExtractor={(customer) => customer.id}
+              className="p-3"
+              renderItem={(customer) => (
+                <div className="mb-3">
+                  <SwipeableItem
+                    leftAction={{
+                      icon: <Trash className="h-5 w-5" />,
+                      color: 'bg-red-500',
+                      label: 'Delete',
+                      onClick: () => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)
+                    }}
+                    rightAction={{
+                      icon: <Eye className="h-5 w-5" />,
+                      color: 'bg-blue-500',
+                      label: 'View',
+                      onClick: () => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${customer.id}`)
+                    }}
+                  >
+                    <div
+                      className="p-4 bg-card rounded-lg border shadow-sm active:scale-[0.98] transition-transform"
+                      onClick={() => {
+                        triggerHaptic('light');
+                        setSelectedCustomerForDrawer(customer);
+                      }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
+                            {customer.first_name?.[0]}{customer.last_name?.[0]}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-base truncate">
+                              {customer.first_name} {customer.last_name}
+                            </h3>
+                            <p className="text-sm text-muted-foreground truncate">
+                              {customer._encryptedIndicator ? (
+                                <span className="flex items-center gap-1 text-amber-600">
+                                  <Lock className="w-3 h-3" />
+                                  <span className="italic">Encrypted</span>
+                                </span>
+                              ) : (
+                                customer.email || customer.phone || 'No contact'
+                              )}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
+                                {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
+                              </Badge>
+                              {getCustomerStatus(customer)}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <div className="font-bold">${customer.total_spent?.toFixed(0) || '0'}</div>
+                          <div className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Award className="w-3 h-3 text-yellow-600" />
+                            {customer.loyalty_points || 0}
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <div className="font-bold">${customer.total_spent?.toFixed(0) || '0'}</div>
-                      <div className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Award className="w-3 h-3 text-yellow-600" />
-                        {customer.loyalty_points || 0}
-                      </div>
-                    </div>
-                  </div>
+                  </SwipeableItem>
                 </div>
-              </SwipeableItem>
-            ))}
-          </AnimatePresence>
-        )}
-      </div>
+              )}
+            />
+          )}
+        </CardContent>
+      </Card>
 
       {/* Pagination */}
       {filteredCustomers.length > 0 && (
