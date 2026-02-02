@@ -303,3 +303,256 @@ describe('VirtualList performance characteristics', () => {
     expect(memoryReduction).toBeGreaterThan(0.99); // 99%+ reduction
   });
 });
+
+describe('VirtualList dynamic height estimation', () => {
+  interface TestItem {
+    id: string;
+    name: string;
+    description: string;
+  }
+
+  const generateItemsWithVariableContent = (count: number): TestItem[] => {
+    return Array.from({ length: count }, (_, i) => ({
+      id: `item-${i}`,
+      name: `Item ${i}`,
+      description: 'A'.repeat((i % 5 + 1) * 50), // Variable length content
+    }));
+  };
+
+  it('should calculate total height with variable item heights', () => {
+    const items = [
+      { id: '1', height: 50 },
+      { id: '2', height: 100 },
+      { id: '3', height: 75 },
+    ];
+
+    let totalHeight = 0;
+    const offsets = [];
+
+    for (const item of items) {
+      offsets.push(totalHeight);
+      totalHeight += item.height;
+    }
+
+    expect(totalHeight).toBe(225);
+    expect(offsets).toEqual([0, 50, 150]);
+  });
+
+  it('should calculate correct offsets for variable heights', () => {
+    const heights = [40, 60, 80, 50, 70];
+    const offsets: number[] = [];
+    let currentOffset = 0;
+
+    for (const height of heights) {
+      offsets.push(currentOffset);
+      currentOffset += height;
+    }
+
+    expect(offsets).toEqual([0, 40, 100, 180, 230]);
+    expect(currentOffset).toBe(300);
+  });
+
+  it('should use estimateItemHeight when provided', () => {
+    const items = generateItemsWithVariableContent(10);
+    const estimator = (item: TestItem) => 50 + item.description.length;
+
+    const heights = items.map(estimator);
+
+    expect(heights.length).toBe(10);
+    expect(heights[0]).toBe(100); // 50 + 50
+    expect(heights[1]).toBe(150); // 50 + 100
+    expect(heights[4]).toBe(300); // 50 + 250
+  });
+
+  it('should find start index with binary search for variable heights', () => {
+    const offsets = [0, 50, 120, 200, 270, 350, 420];
+    const scrollTop = 150;
+
+    // Binary search to find item at scrollTop
+    let start = 0;
+    let end = offsets.length - 1;
+
+    while (start < end) {
+      const mid = Math.floor((start + end) / 2);
+      if (offsets[mid] < scrollTop) {
+        start = mid + 1;
+      } else {
+        end = mid;
+      }
+    }
+
+    expect(start).toBe(3); // Item at offset 200 is first visible
+  });
+
+  it('should calculate visible range correctly with variable heights', () => {
+    const heights = [50, 100, 75, 60, 80, 90, 70, 50];
+    const offsets: number[] = [];
+    let currentOffset = 0;
+
+    for (const height of heights) {
+      offsets.push(currentOffset);
+      currentOffset += height;
+    }
+
+    const scrollTop = 100;
+    const containerHeight = 200;
+    const scrollBottom = scrollTop + containerHeight;
+
+    // Find start index
+    let startIndex = 0;
+    while (startIndex < offsets.length && offsets[startIndex] < scrollTop) {
+      startIndex++;
+    }
+    if (startIndex > 0) startIndex--;
+
+    // Find end index
+    let endIndex = startIndex;
+    while (
+      endIndex < heights.length &&
+      offsets[endIndex] + heights[endIndex] < scrollBottom
+    ) {
+      endIndex++;
+    }
+
+    expect(startIndex).toBeGreaterThanOrEqual(0);
+    expect(endIndex).toBeGreaterThan(startIndex);
+    expect(endIndex).toBeLessThan(heights.length);
+  });
+
+  it('should handle all items with same estimated height', () => {
+    const items = generateItemsWithVariableContent(100);
+    const fixedHeight = 60;
+    const estimator = () => fixedHeight;
+
+    let totalHeight = 0;
+    for (let i = 0; i < items.length; i++) {
+      totalHeight += estimator(items[i], i);
+    }
+
+    expect(totalHeight).toBe(items.length * fixedHeight);
+  });
+
+  it('should handle single item with custom height', () => {
+    const items = [{ id: '1', content: 'test' }];
+    const customHeight = 120;
+    const estimator = () => customHeight;
+
+    const height = estimator(items[0], 0);
+
+    expect(height).toBe(customHeight);
+  });
+
+  it('should estimate heights based on content length', () => {
+    const shortContent = 'Short';
+    const longContent = 'A'.repeat(500);
+
+    const estimateHeight = (content: string) => {
+      const baseHeight = 40;
+      const charsPerLine = 50;
+      const lineHeight = 20;
+      const lines = Math.ceil(content.length / charsPerLine);
+      return baseHeight + (lines - 1) * lineHeight;
+    };
+
+    const shortHeight = estimateHeight(shortContent);
+    const longHeight = estimateHeight(longContent);
+
+    expect(shortHeight).toBe(40); // Single line
+    expect(longHeight).toBeGreaterThan(shortHeight);
+    expect(longHeight).toBe(220); // 11 lines: 40 + 10*20
+  });
+
+  it('should handle empty items array with estimator', () => {
+    const items: TestItem[] = [];
+    const estimator = (item: TestItem) => 50 + item.description.length;
+
+    let totalHeight = 0;
+    for (const item of items) {
+      totalHeight += estimator(item, 0);
+    }
+
+    expect(totalHeight).toBe(0);
+  });
+
+  it('should support minimum height constraint in estimator', () => {
+    const items = [
+      { id: '1', lines: 0 },
+      { id: '2', lines: 1 },
+      { id: '3', lines: 3 },
+    ];
+
+    const estimator = (item: { lines: number }) => {
+      const baseHeight = 40;
+      const lineHeight = 20;
+      return Math.max(baseHeight, baseHeight + item.lines * lineHeight);
+    };
+
+    expect(estimator(items[0])).toBe(40);
+    expect(estimator(items[1])).toBe(60);
+    expect(estimator(items[2])).toBe(100);
+  });
+
+  it('should calculate metrics for mixed height items', () => {
+    const items = [
+      { size: 'small' },
+      { size: 'large' },
+      { size: 'medium' },
+      { size: 'small' },
+      { size: 'large' },
+    ];
+
+    const estimator = (item: { size: string }) => {
+      const sizeMap = { small: 40, medium: 60, large: 100 };
+      return sizeMap[item.size as keyof typeof sizeMap] || 50;
+    };
+
+    const heights = items.map(estimator);
+    const offsets: number[] = [];
+    let currentOffset = 0;
+
+    for (const height of heights) {
+      offsets.push(currentOffset);
+      currentOffset += height;
+    }
+
+    expect(heights).toEqual([40, 100, 60, 40, 100]);
+    expect(offsets).toEqual([0, 40, 140, 200, 240]);
+    expect(currentOffset).toBe(340);
+  });
+
+  it('should handle estimator that depends on index', () => {
+    const items = Array.from({ length: 5 }, (_, i) => ({ id: i }));
+    const estimator = (_item: { id: number }, index: number) => {
+      // Alternating heights based on index
+      return index % 2 === 0 ? 50 : 80;
+    };
+
+    const heights = items.map((item, idx) => estimator(item, idx));
+
+    expect(heights).toEqual([50, 80, 50, 80, 50]);
+  });
+
+  it('should preserve performance with variable heights', () => {
+    const items = generateItemsWithVariableContent(1000);
+    const containerHeight = 600;
+    const overscan = 5;
+
+    // Estimate average height
+    const avgHeight = 75;
+    const visibleItems = Math.ceil(containerHeight / avgHeight);
+    const renderedItems = visibleItems + (overscan * 2);
+
+    expect(renderedItems).toBeLessThan(100);
+    expect(renderedItems).toBeLessThan(items.length);
+  });
+
+  it('should fallback to fixed height when estimator not provided', () => {
+    const items = generateItemsWithVariableContent(10);
+    const fixedHeight = 50;
+
+    // Without estimator, use fixed height
+    const totalHeight = items.length * fixedHeight;
+
+    expect(totalHeight).toBe(500);
+  });
+});

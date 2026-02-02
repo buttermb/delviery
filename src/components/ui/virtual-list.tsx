@@ -9,8 +9,10 @@ import { cn } from '@/lib/utils';
 export interface VirtualListProps<T> {
   /** Array of items to render */
   items: T[];
-  /** Height of each item in pixels */
-  itemHeight: number;
+  /** Height of each item in pixels (used when estimateItemHeight is not provided) */
+  itemHeight?: number;
+  /** Function to estimate height for each item (enables dynamic heights) */
+  estimateItemHeight?: (item: T, index: number) => number;
   /** Height of the container */
   containerHeight?: number;
   /** Number of items to render outside visible area */
@@ -35,7 +37,8 @@ export interface VirtualListProps<T> {
 
 export function VirtualList<T>({
   items,
-  itemHeight,
+  itemHeight = 50,
+  estimateItemHeight,
   containerHeight = 600,
   overscan = 5,
   renderItem,
@@ -51,13 +54,59 @@ export function VirtualList<T>({
   const [scrollTop, setScrollTop] = useState(0);
   const hasCalledEndReached = useRef(false);
 
-  // Calculate visible range
-  const totalHeight = items.length * itemHeight;
-  const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
-  const endIndex = Math.min(
-    items.length - 1,
-    Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
-  );
+  // Memoize item heights and offsets for variable height support
+  const itemMetrics = useMemo(() => {
+    const heights: number[] = [];
+    const offsets: number[] = [];
+    let currentOffset = 0;
+
+    for (let i = 0; i < items.length; i++) {
+      const height = estimateItemHeight ? estimateItemHeight(items[i], i) : itemHeight;
+      heights.push(height);
+      offsets.push(currentOffset);
+      currentOffset += height;
+    }
+
+    return { heights, offsets, totalHeight: currentOffset };
+  }, [items, itemHeight, estimateItemHeight]);
+
+  // Calculate visible range with support for variable heights
+  const { startIndex, endIndex } = useMemo(() => {
+    if (!estimateItemHeight) {
+      // Fast path for fixed heights
+      const start = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
+      const end = Math.min(
+        items.length - 1,
+        Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
+      );
+      return { startIndex: start, endIndex: end };
+    }
+
+    // Binary search for start index with variable heights
+    let start = 0;
+    let end = items.length - 1;
+    while (start < end) {
+      const mid = Math.floor((start + end) / 2);
+      if (itemMetrics.offsets[mid] < scrollTop) {
+        start = mid + 1;
+      } else {
+        end = mid;
+      }
+    }
+    start = Math.max(0, start - overscan);
+
+    // Find end index
+    let endIdx = start;
+    const scrollBottom = scrollTop + containerHeight;
+    while (endIdx < items.length && itemMetrics.offsets[endIdx] < scrollBottom) {
+      endIdx++;
+    }
+    endIdx = Math.min(items.length - 1, endIdx + overscan);
+
+    return { startIndex: start, endIndex: endIdx };
+  }, [scrollTop, containerHeight, overscan, items.length, itemHeight, estimateItemHeight, itemMetrics]);
+
+  const totalHeight = estimateItemHeight ? itemMetrics.totalHeight : items.length * itemHeight;
 
   // Handle scroll
   const handleScroll = useCallback(() => {
@@ -93,15 +142,19 @@ export function VirtualList<T>({
     for (let i = startIndex; i <= endIndex && i < items.length; i++) {
       const item = items[i];
       const key = keyExtractor ? keyExtractor(item, i) : i;
+      const height = estimateItemHeight ? itemMetrics.heights[i] : itemHeight;
+      const offsetTop = estimateItemHeight ? itemMetrics.offsets[i] : i * itemHeight;
+
       result.push({
         item,
         index: i,
         key,
-        offsetTop: i * itemHeight,
+        offsetTop,
+        height,
       });
     }
     return result;
-  }, [items, startIndex, endIndex, itemHeight, keyExtractor]);
+  }, [items, startIndex, endIndex, itemHeight, keyExtractor, estimateItemHeight, itemMetrics]);
 
   if (items.length === 0 && ListEmptyComponent) {
     return (
@@ -130,7 +183,7 @@ export function VirtualList<T>({
           width: '100%',
         }}
       >
-        {visibleItems.map(({ item, index, key, offsetTop }) => (
+        {visibleItems.map(({ item, index, key, offsetTop, height }) => (
           <div
             key={key}
             style={{
@@ -138,7 +191,7 @@ export function VirtualList<T>({
               top: offsetTop,
               left: 0,
               right: 0,
-              height: itemHeight,
+              height,
             }}
           >
             {renderItem(item, index)}
