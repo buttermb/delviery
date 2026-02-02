@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as RechartsPrimitive from "recharts";
+import * as RechartsPrimitive from "./lazy-recharts";
 
 import { cn } from "@/lib/utils";
 import { sanitizeColor } from "@/lib/utils/sanitize";
