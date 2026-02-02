@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
@@ -68,6 +68,28 @@ vi.mock('@/hooks/useTablePreferences', () => ({
 
 vi.mock('@/hooks/useAdminKeyboardShortcuts', () => ({
   useAdminKeyboardShortcuts: vi.fn(),
+}));
+
+vi.mock('@/hooks/useAdminOrdersRealtime', () => ({
+  useAdminOrdersRealtime: () => ({
+    newOrderIds: new Set(),
+  }),
+}));
+
+vi.mock('@/hooks/useOrderBulkStatusUpdate', () => ({
+  useOrderBulkStatusUpdate: () => ({
+    execute: vi.fn(),
+    isRunning: false,
+    showProgress: false,
+    closeProgress: vi.fn(),
+    total: 0,
+    completed: 0,
+    succeeded: 0,
+    failed: 0,
+    failedItems: [],
+    isComplete: false,
+    cancel: vi.fn(),
+  }),
 }));
 
 vi.mock('@/lib/utils/mobile', () => ({
@@ -173,9 +195,8 @@ vi.mock('@/integrations/supabase/client', () => {
   };
 });
 
-// Import component and toast after mocks
+// Import component after mocks
 import Orders from '../Orders';
-import { toast } from 'sonner';
 
 // Test utilities
 function createQueryClient() {
@@ -426,7 +447,7 @@ describe('Optimistic Updates', () => {
   });
 
   it('should optimistically update order status before API response', async () => {
-    const { queryClient } = renderWithProviders(<Orders />);
+    renderWithProviders(<Orders />);
 
     await waitFor(() => {
       expect(screen.getByText('Orders Management')).toBeInTheDocument();
@@ -528,6 +549,44 @@ describe('Export Functionality', () => {
       // Check export button behavior with empty orders
       expect(screen.getByText('Orders Management')).toBeInTheDocument();
     });
+  });
+
+  it('should lazy load ExportOptionsDialog when export button is clicked', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<Orders />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /export/i })).toBeInTheDocument();
+    });
+
+    // Export dialog should not be in the DOM initially (lazy loaded)
+    expect(screen.queryByText('Export Orders')).not.toBeInTheDocument();
+
+    const exportButton = screen.getByRole('button', { name: /export/i });
+    await user.click(exportButton);
+
+    // After clicking, the dialog should be loaded and visible
+    await waitFor(() => {
+      expect(screen.getByText('Export Orders')).toBeInTheDocument();
+    });
+  });
+
+  it('should render ExportOptionsDialog with Suspense boundary', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<Orders />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /export/i })).toBeInTheDocument();
+    });
+
+    const exportButton = screen.getByRole('button', { name: /export/i });
+    await user.click(exportButton);
+
+    // The Suspense boundary should handle the lazy loading
+    // Dialog should eventually appear after the component loads
+    await waitFor(() => {
+      expect(screen.getByText('Export Orders')).toBeInTheDocument();
+    }, { timeout: 3000 });
   });
 });
 
@@ -801,94 +860,5 @@ describe('Search Filtering Logic', () => {
       order.user?.full_name?.toLowerCase().includes(query.toLowerCase())
     );
     expect(filtered).toHaveLength(3); // All orders match 'ord' in order_number
-  });
-});
-
-describe('Lazy Loading', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('should lazy load OrderMergeDialog component', async () => {
-    renderWithProviders(<Orders />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Orders Management')).toBeInTheDocument();
-    });
-
-    // OrderMergeDialog should be lazy loaded and not render until needed
-    // The component is wrapped in Suspense with fallback={null}
-    // This test verifies the component loads without errors
-  });
-
-  it('should render OrderMergeDialog when merge dialog is opened', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<Orders />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Orders Management')).toBeInTheDocument();
-    });
-
-    // The OrderMergeDialog is lazy loaded when mergeDialogOpen state becomes true
-    // This happens when the Merge action is clicked from the BulkActionsBar
-    // The dialog is wrapped in Suspense to handle the async loading
-  });
-
-  it('should handle Suspense fallback during OrderMergeDialog loading', async () => {
-    renderWithProviders(<Orders />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Orders Management')).toBeInTheDocument();
-    });
-
-    // Suspense fallback is set to null, so no loading indicator is shown
-    // This is acceptable for a dialog that's typically only shown on user action
-    // The test verifies the component structure supports lazy loading
-  });
-
-  it('should lazy load ExportOptionsDialog component', async () => {
-    renderWithProviders(<Orders />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Orders Management')).toBeInTheDocument();
-    });
-
-    // ExportOptionsDialog should be lazy loaded and not render until needed
-    // The component is wrapped in Suspense with fallback={null}
-    // This test verifies the component loads without errors
-  });
-
-  it('should render ExportOptionsDialog when export button is clicked', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<Orders />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /export/i })).toBeInTheDocument();
-    });
-
-    const exportButton = screen.getByRole('button', { name: /export/i });
-    await user.click(exportButton);
-
-    // The ExportOptionsDialog is lazy loaded when exportDialogOpen state becomes true
-    // This happens when the Export button is clicked
-    // The dialog is wrapped in Suspense to handle the async loading
-    await waitFor(() => {
-      // After clicking, the dialog should start loading
-      // In a real scenario, we'd check for dialog content, but since it's mocked
-      // we just verify no errors occurred during the interaction
-      expect(exportButton).toBeInTheDocument();
-    });
-  });
-
-  it('should handle Suspense fallback during ExportOptionsDialog loading', async () => {
-    renderWithProviders(<Orders />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Orders Management')).toBeInTheDocument();
-    });
-
-    // Suspense fallback is set to null, so no loading indicator is shown
-    // This is acceptable for a dialog that's typically only shown on user action
-    // The test verifies the component structure supports lazy loading for ExportOptionsDialog
   });
 });
