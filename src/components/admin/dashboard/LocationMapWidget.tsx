@@ -8,7 +8,7 @@ import { MapPin, Warehouse, Truck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
-import { LeafletMapWidget } from './LeafletMapWidget';
+import { LeafletMapWidget } from '@/components/ui/lazy-leaflet';
 
 // Deterministic hash for stable coordinates based on string
 const getDeterministicOffset = (str: string) => {

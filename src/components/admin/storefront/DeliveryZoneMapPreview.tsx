@@ -18,7 +18,7 @@ interface DeliveryZone {
   min_order?: number;
 }
 
-interface DeliveryZoneMapPreviewProps {
+export interface DeliveryZoneMapPreviewProps {
   zones: DeliveryZone[];
   defaultCenter?: [number, number];
   height?: number;

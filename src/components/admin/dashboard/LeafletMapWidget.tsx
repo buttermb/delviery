@@ -9,7 +9,7 @@ import { MapPin } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-interface LeafletMapWidgetProps {
+export interface LeafletMapWidgetProps {
   locations?: Array<{
     name: string;
     lat: number;
