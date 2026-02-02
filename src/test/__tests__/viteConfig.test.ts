@@ -20,8 +20,9 @@ describe('Vite Config Manual Chunks', () => {
       if (id.includes('framer-motion')) {
         return 'vendor-motion';
       }
-      if (id.includes('mapbox') || id.includes('leaflet')) {
-        return 'vendor-maps';
+      // Split map libraries (mapbox, leaflet, react-leaflet)
+      if (id.includes('mapbox') || id.includes('leaflet') || id.includes('react-leaflet')) {
+        return 'vendor-map';
       }
       // Split Radix UI components into separate chunk
       if (id.includes('@radix-ui')) {
@@ -75,15 +76,35 @@ describe('Vite Config Manual Chunks', () => {
     });
   });
 
-  describe('Maps chunks', () => {
-    it('should put mapbox in vendor-maps chunk', () => {
+  describe('Map chunks', () => {
+    it('should put mapbox in vendor-map chunk', () => {
       const id = 'node_modules/mapbox-gl/index.js';
-      expect(getChunkName(id)).toBe('vendor-maps');
+      expect(getChunkName(id)).toBe('vendor-map');
     });
 
-    it('should put leaflet in vendor-maps chunk', () => {
+    it('should put leaflet in vendor-map chunk', () => {
       const id = 'node_modules/leaflet/index.js';
-      expect(getChunkName(id)).toBe('vendor-maps');
+      expect(getChunkName(id)).toBe('vendor-map');
+    });
+
+    it('should put react-leaflet in vendor-map chunk', () => {
+      const id = 'node_modules/react-leaflet/index.js';
+      expect(getChunkName(id)).toBe('vendor-map');
+    });
+
+    it('should put @react-leaflet packages in vendor-map chunk', () => {
+      const id = 'node_modules/@react-leaflet/core/index.js';
+      expect(getChunkName(id)).toBe('vendor-map');
+    });
+
+    it('should put mapbox-gl with different path in vendor-map chunk', () => {
+      const id = '/path/to/project/node_modules/mapbox-gl/dist/mapbox-gl.js';
+      expect(getChunkName(id)).toBe('vendor-map');
+    });
+
+    it('should put nested leaflet paths in vendor-map chunk', () => {
+      const id = 'node_modules/leaflet/dist/leaflet-src.js';
+      expect(getChunkName(id)).toBe('vendor-map');
     });
   });
 
