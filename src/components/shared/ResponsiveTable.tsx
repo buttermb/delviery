@@ -10,7 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EnhancedEmptyState, EnhancedEmptyStateProps } from "@/components/shared/EnhancedEmptyState";
-import { VirtualizedTable } from "@/components/shared/VirtualizedTable";
+import { VirtualizedTableTanstack } from "@/components/shared/VirtualizedTableTanstack";
 
 export interface ResponsiveColumn<T> {
     header: string | React.ReactNode;
@@ -46,13 +46,11 @@ const MemoizedTableRow = memo(function MemoizedTableRow<T>({
     item,
     columns,
     onRowClick,
-    itemKey,
     rowClassName,
 }: {
     item: T;
     columns: ResponsiveColumn<T>[];
     onRowClick?: (item: T) => void;
-    itemKey: string;
     rowClassName?: string;
 }) {
     return (
@@ -78,7 +76,6 @@ const MemoizedTableRow = memo(function MemoizedTableRow<T>({
     item: T;
     columns: ResponsiveColumn<T>[];
     onRowClick?: (item: T) => void;
-    itemKey: string;
     rowClassName?: string;
 }) => React.ReactElement;
 
@@ -161,13 +158,13 @@ export function ResponsiveTable<T>({
             {/* Desktop View - Virtualized for large datasets, standard table for small */}
             <div className={cn(mobileRenderer ? "hidden sm:block" : "block")}>
                 {shouldVirtualize ? (
-                    <VirtualizedTable
+                    <VirtualizedTableTanstack
                         columns={virtualizedColumns}
                         data={data}
                         height={virtualizeHeight}
                         rowHeight={virtualizeRowHeight}
                         onRowClick={handleVirtualRowClick ? (row: T) => handleVirtualRowClick(row) : undefined}
-                        getRowId={(row: T, index: number) => keyExtractor(row)}
+                        getRowId={(row: T) => keyExtractor(row)}
                     />
                 ) : (
                     <div className="rounded-md border dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
@@ -188,7 +185,6 @@ export function ResponsiveTable<T>({
                                         item={item}
                                         columns={columns}
                                         onRowClick={onRowClick}
-                                        itemKey={keyExtractor(item)}
                                         rowClassName={rowClassName?.(item)}
                                     />
                                 ))}
