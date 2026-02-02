@@ -241,6 +241,10 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('recharts') || id.includes('@tremor') || id.includes('d3-') || id.includes('victory-vendor')) {
               return 'vendor-charts';
             }
+            // Split PDF libraries (react-pdf, jspdf, html2canvas)
+            if (id.includes('react-pdf') || id.includes('jspdf') || id.includes('html2canvas')) {
+              return 'vendor-pdf';
+            }
             return 'vendor';
           }
         },

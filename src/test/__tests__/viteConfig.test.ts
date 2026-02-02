@@ -31,6 +31,10 @@ describe('Vite Config Manual Chunks', () => {
       if (id.includes('recharts') || id.includes('@tremor') || id.includes('d3-') || id.includes('victory-vendor')) {
         return 'vendor-charts';
       }
+      // Split PDF libraries (react-pdf, jspdf, html2canvas)
+      if (id.includes('react-pdf') || id.includes('jspdf') || id.includes('html2canvas')) {
+        return 'vendor-pdf';
+      }
       return 'vendor';
     }
     return undefined;
@@ -135,6 +139,28 @@ describe('Vite Config Manual Chunks', () => {
     it('should put victory-vendor in vendor-charts chunk', () => {
       const id = 'node_modules/victory-vendor/index.js';
       expect(getChunkName(id)).toBe('vendor-charts');
+    });
+  });
+
+  describe('PDF chunks', () => {
+    it('should put @react-pdf/renderer in vendor-pdf chunk', () => {
+      const id = 'node_modules/@react-pdf/renderer/index.js';
+      expect(getChunkName(id)).toBe('vendor-pdf');
+    });
+
+    it('should put jspdf in vendor-pdf chunk', () => {
+      const id = 'node_modules/jspdf/index.js';
+      expect(getChunkName(id)).toBe('vendor-pdf');
+    });
+
+    it('should put html2canvas in vendor-pdf chunk', () => {
+      const id = 'node_modules/html2canvas/index.js';
+      expect(getChunkName(id)).toBe('vendor-pdf');
+    });
+
+    it('should put @react-pdf sub-packages in vendor-pdf chunk', () => {
+      const id = 'node_modules/@react-pdf/pdfkit/index.js';
+      expect(getChunkName(id)).toBe('vendor-pdf');
     });
   });
 
