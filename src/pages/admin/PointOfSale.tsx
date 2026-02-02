@@ -27,20 +27,9 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 
-export interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  stock_quantity: number;
-  thc_percent: number | null;
-  image_url: string | null;
-}
+import type { POSCartItem, POSProduct } from '@/types/pos';
 
-export interface CartItem extends Product {
-  quantity: number;
-  subtotal: number;
-}
+export type { POSProduct as Product, POSCartItem as CartItem };
 
 interface Customer {
   id: string;
@@ -57,9 +46,9 @@ export default function PointOfSale() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const { checkLimit, recordAction, limitsApply } = useFreeTierLimits();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [products, setProducts] = useState<POSProduct[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<POSProduct[]>([]);
+  const [cart, setCart] = useState<POSCartItem[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -124,11 +113,11 @@ export default function PointOfSale() {
       if (error) throw error;
 
       // Map to our Product interface with proper type checking
-      const mappedProducts: Product[] = (data || []).map((p) => ({
+       const mappedProducts: POSProduct[] = (data || []).map((p) => ({
         id: p.id,
         name: p.name || '',
         price: typeof p.price === 'number' ? p.price : 0,
-        category: p.category || null,
+         category: typeof p.category === 'string' ? p.category : '',
         stock_quantity: typeof p.stock_quantity === 'number' ? p.stock_quantity : 0,
         thc_percent: typeof p.thc_percent === 'number' ? p.thc_percent : null,
         image_url: p.image_url || null
@@ -154,11 +143,11 @@ export default function PointOfSale() {
       if (error) throw error;
 
       // Map to our Customer interface with proper type checking
-      const mappedCustomers: Customer[] = (data || []).map((c) => ({
+       const mappedCustomers: Customer[] = (data || []).map((c) => ({
         id: c.id,
         first_name: c.first_name || '',
         last_name: c.last_name || '',
-        customer_type: c.customer_type || null,
+         customer_type: typeof c.customer_type === 'string' ? c.customer_type : '',
         loyalty_points: typeof c.loyalty_points === 'number' ? c.loyalty_points : 0
       }));
 
@@ -184,7 +173,7 @@ export default function PointOfSale() {
     setFilteredProducts(filtered);
   };
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: POSProduct) => {
     const existingItem = cart.find(item => item.id === product.id);
 
     if (existingItem) {

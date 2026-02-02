@@ -7,7 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useDashboardStats } from '../useDashboardStats';
-import type { ReactNode } from 'react';
+import { createElement, type ReactNode } from 'react';
 
 // Mock dependencies
 vi.mock('@/integrations/supabase/client', () => ({
@@ -59,11 +59,11 @@ describe('useDashboardStats', () => {
   });
 
   const wrapper = ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    createElement(QueryClientProvider, { client: queryClient }, children)
   );
 
   it('should use 60 second refetch interval', async () => {
-    const { result } = renderHook(() => useDashboardStats(), { wrapper });
+    renderHook(() => useDashboardStats(), { wrapper });
 
     // Access the query from the cache to check its options
     await waitFor(() => {
@@ -79,7 +79,7 @@ describe('useDashboardStats', () => {
   });
 
   it('should use 60 second stale time', async () => {
-    const { result } = renderHook(() => useDashboardStats(), { wrapper });
+    renderHook(() => useDashboardStats(), { wrapper });
 
     await waitFor(() => {
       const queries = queryClient.getQueryCache().getAll();
@@ -93,13 +93,13 @@ describe('useDashboardStats', () => {
     });
   });
 
-  it('should return default stats when tenant is not available', () => {
+  it('should return default stats when tenant is not available', async () => {
     const { useTenantAdminAuth } = require('@/contexts/TenantAdminAuthContext');
     useTenantAdminAuth.mockReturnValueOnce({ tenant: null });
 
     const { result } = renderHook(() => useDashboardStats(), { wrapper });
 
-    waitFor(() => {
+    await waitFor(() => {
       expect(result.current.data).toEqual({
         pendingOrders: 0,
         totalOrdersToday: 0,
@@ -120,7 +120,7 @@ describe('useDashboardStats', () => {
     });
   });
 
-  it('should be enabled only when tenant ID is present', () => {
+  it('should be enabled only when tenant ID is present', async () => {
     const { result: resultWithTenant } = renderHook(() => useDashboardStats(), { wrapper });
     expect(resultWithTenant.current.isLoading || resultWithTenant.current.isSuccess).toBe(true);
 
@@ -136,12 +136,12 @@ describe('useDashboardStats', () => {
     });
 
     const wrapper2 = ({ children }: { children: ReactNode }) => (
-      <QueryClientProvider client={queryClient2}>{children}</QueryClientProvider>
+      createElement(QueryClientProvider, { client: queryClient2 }, children)
     );
 
     const { result: resultWithoutTenant } = renderHook(() => useDashboardStats(), { wrapper: wrapper2 });
 
-    waitFor(() => {
+    await waitFor(() => {
       expect(resultWithoutTenant.current.isLoading).toBe(false);
     });
   });
