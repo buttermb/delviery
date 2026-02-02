@@ -35,6 +35,10 @@ describe('Vite Config Manual Chunks', () => {
       if (id.includes('react-pdf') || id.includes('jspdf') || id.includes('html2canvas')) {
         return 'vendor-pdf';
       }
+      // Split form libraries (react-hook-form, zod, @hookform/resolvers)
+      if (id.includes('react-hook-form') || id.includes('zod') || id.includes('@hookform/resolvers')) {
+        return 'vendor-forms';
+      }
       return 'vendor';
     }
     return undefined;
@@ -161,6 +165,48 @@ describe('Vite Config Manual Chunks', () => {
     it('should put @react-pdf sub-packages in vendor-pdf chunk', () => {
       const id = 'node_modules/@react-pdf/pdfkit/index.js';
       expect(getChunkName(id)).toBe('vendor-pdf');
+    });
+  });
+
+  describe('Form chunks', () => {
+    it('should put react-hook-form in vendor-forms chunk', () => {
+      const id = 'node_modules/react-hook-form/dist/index.esm.js';
+      expect(getChunkName(id)).toBe('vendor-forms');
+    });
+
+    it('should put react-hook-form with different path in vendor-forms chunk', () => {
+      const id = '/path/to/project/node_modules/react-hook-form/dist/index.js';
+      expect(getChunkName(id)).toBe('vendor-forms');
+    });
+
+    it('should put zod in vendor-forms chunk', () => {
+      const id = 'node_modules/zod/lib/index.mjs';
+      expect(getChunkName(id)).toBe('vendor-forms');
+    });
+
+    it('should put zod with different path in vendor-forms chunk', () => {
+      const id = '/path/to/project/node_modules/zod/lib/index.js';
+      expect(getChunkName(id)).toBe('vendor-forms');
+    });
+
+    it('should put @hookform/resolvers in vendor-forms chunk', () => {
+      const id = 'node_modules/@hookform/resolvers/zod/dist/zod.js';
+      expect(getChunkName(id)).toBe('vendor-forms');
+    });
+
+    it('should put @hookform/resolvers with different path in vendor-forms chunk', () => {
+      const id = '/path/to/project/node_modules/@hookform/resolvers/dist/index.js';
+      expect(getChunkName(id)).toBe('vendor-forms');
+    });
+
+    it('should put nested react-hook-form paths in vendor-forms chunk', () => {
+      const id = 'node_modules/react-hook-form/dist/utils/createFormControl.js';
+      expect(getChunkName(id)).toBe('vendor-forms');
+    });
+
+    it('should put nested zod paths in vendor-forms chunk', () => {
+      const id = 'node_modules/zod/lib/helpers/util.js';
+      expect(getChunkName(id)).toBe('vendor-forms');
     });
   });
 
