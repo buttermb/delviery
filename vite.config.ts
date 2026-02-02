@@ -230,7 +230,7 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('framer-motion')) {
               return 'vendor-motion';
             }
-            if (id.includes('mapbox') || id.includes('leaflet')) {
+            if (id.includes('mapbox') || id.includes('leaflet') || id.includes('react-leaflet')) {
               return 'vendor-maps';
             }
             // Split Radix UI components into separate chunk

@@ -19,7 +19,7 @@ describe('Vite Config - Manual Chunks', () => {
       if (id.includes('framer-motion')) {
         return 'vendor-motion';
       }
-      if (id.includes('mapbox') || id.includes('leaflet')) {
+      if (id.includes('mapbox') || id.includes('leaflet') || id.includes('react-leaflet')) {
         return 'vendor-maps';
       }
       // Split Radix UI components into separate chunk
@@ -91,6 +91,16 @@ describe('Vite Config - Manual Chunks', () => {
       expect(getChunkName(id)).toBe('vendor-maps');
     });
 
+    it('should place leaflet in vendor-maps chunk', () => {
+      const id = '/project/node_modules/leaflet/dist/leaflet.js';
+      expect(getChunkName(id)).toBe('vendor-maps');
+    });
+
+    it('should place react-leaflet in vendor-maps chunk', () => {
+      const id = '/project/node_modules/react-leaflet/lib/index.js';
+      expect(getChunkName(id)).toBe('vendor-maps');
+    });
+
     it('should place @radix-ui in vendor-ui chunk', () => {
       const id = '/project/node_modules/@radix-ui/react-dialog/dist/index.js';
       expect(getChunkName(id)).toBe('vendor-ui');
@@ -114,6 +124,43 @@ describe('Vite Config - Manual Chunks', () => {
     it('should not chunk application code', () => {
       const id = '/project/src/components/MyComponent.tsx';
       expect(getChunkName(id)).toBeUndefined();
+    });
+  });
+
+  describe('vendor-maps chunk', () => {
+    it('should place mapbox-gl in vendor-maps chunk', () => {
+      const id = '/project/node_modules/mapbox-gl/dist/mapbox-gl.js';
+      expect(getChunkName(id)).toBe('vendor-maps');
+    });
+
+    it('should place leaflet in vendor-maps chunk', () => {
+      const id = '/project/node_modules/leaflet/dist/leaflet-src.js';
+      expect(getChunkName(id)).toBe('vendor-maps');
+    });
+
+    it('should place react-leaflet in vendor-maps chunk', () => {
+      const id = '/project/node_modules/react-leaflet/lib/index.js';
+      expect(getChunkName(id)).toBe('vendor-maps');
+    });
+
+    it('should handle nested paths for mapbox', () => {
+      const id = '/project/node_modules/mapbox-gl/src/ui/map.js';
+      expect(getChunkName(id)).toBe('vendor-maps');
+    });
+
+    it('should handle nested paths for leaflet', () => {
+      const id = '/project/node_modules/leaflet/src/core/Browser.js';
+      expect(getChunkName(id)).toBe('vendor-maps');
+    });
+
+    it('should handle nested paths for react-leaflet', () => {
+      const id = '/project/node_modules/react-leaflet/lib/MapContainer.js';
+      expect(getChunkName(id)).toBe('vendor-maps');
+    });
+
+    it('should place @mapbox packages in vendor-maps chunk', () => {
+      const id = '/project/node_modules/@mapbox/mapbox-gl-directions/dist/index.js';
+      expect(getChunkName(id)).toBe('vendor-maps');
     });
   });
 
