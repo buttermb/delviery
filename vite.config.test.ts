@@ -23,8 +23,9 @@ const manualChunks = (id: string): string | undefined => {
     if (id.includes('framer-motion')) {
       return 'vendor-motion';
     }
-    if (id.includes('mapbox') || id.includes('leaflet')) {
-      return 'vendor-maps';
+    // Split map libraries (mapbox, leaflet, react-leaflet)
+    if (id.includes('mapbox') || id.includes('leaflet') || id.includes('react-leaflet')) {
+      return 'vendor-map';
     }
     // Split Radix UI components into separate chunk
     if (id.includes('@radix-ui')) {
@@ -150,6 +151,76 @@ describe('Vite Config - Vendor Forms Chunk', () => {
   });
 });
 
+describe('Vite Config - Vendor Map Chunk', () => {
+  describe('map library chunking', () => {
+    it('should assign mapbox-gl to vendor-map chunk', () => {
+      const id = '/project/node_modules/mapbox-gl/dist/mapbox-gl.js';
+      expect(manualChunks(id)).toBe('vendor-map');
+    });
+
+    it('should assign leaflet to vendor-map chunk', () => {
+      const id = '/project/node_modules/leaflet/dist/leaflet.js';
+      expect(manualChunks(id)).toBe('vendor-map');
+    });
+
+    it('should assign react-leaflet to vendor-map chunk', () => {
+      const id = '/project/node_modules/react-leaflet/lib/index.js';
+      expect(manualChunks(id)).toBe('vendor-map');
+    });
+
+    it('should handle @mapbox scoped packages', () => {
+      const id = '/project/node_modules/@mapbox/mapbox-gl-geocoder/index.js';
+      expect(manualChunks(id)).toBe('vendor-map');
+    });
+
+    it('should handle nested paths for leaflet', () => {
+      const id = '/project/node_modules/leaflet/src/layer/Layer.js';
+      expect(manualChunks(id)).toBe('vendor-map');
+    });
+
+    it('should handle nested paths for react-leaflet', () => {
+      const id = '/project/node_modules/react-leaflet/lib/MapContainer.js';
+      expect(manualChunks(id)).toBe('vendor-map');
+    });
+
+    it('should handle Windows-style paths for map libraries', () => {
+      const mapboxId = 'C:\\project\\node_modules\\mapbox-gl\\dist\\mapbox-gl.js';
+      const leafletId = 'C:\\project\\node_modules\\leaflet\\dist\\leaflet.js';
+      const reactLeafletId = 'C:\\project\\node_modules\\react-leaflet\\lib\\index.js';
+
+      expect(manualChunks(mapboxId)).toBe('vendor-map');
+      expect(manualChunks(leafletId)).toBe('vendor-map');
+      expect(manualChunks(reactLeafletId)).toBe('vendor-map');
+    });
+  });
+
+  describe('map library grouping', () => {
+    it('should group all map libraries in the same chunk', () => {
+      const mapboxId = '/project/node_modules/mapbox-gl/dist/mapbox-gl.js';
+      const leafletId = '/project/node_modules/leaflet/dist/leaflet.js';
+      const reactLeafletId = '/project/node_modules/react-leaflet/lib/index.js';
+
+      const mapboxChunk = manualChunks(mapboxId);
+      const leafletChunk = manualChunks(leafletId);
+      const reactLeafletChunk = manualChunks(reactLeafletId);
+
+      expect(mapboxChunk).toBe('vendor-map');
+      expect(leafletChunk).toBe('vendor-map');
+      expect(reactLeafletChunk).toBe('vendor-map');
+
+      // All should be in the same chunk
+      expect(mapboxChunk).toBe(leafletChunk);
+      expect(leafletChunk).toBe(reactLeafletChunk);
+    });
+
+    it('should not assign other libraries to vendor-map', () => {
+      expect(manualChunks('/project/node_modules/react/index.js')).not.toBe('vendor-map');
+      expect(manualChunks('/project/node_modules/@tanstack/react-query/index.js')).not.toBe('vendor-map');
+      expect(manualChunks('/project/node_modules/framer-motion/index.js')).not.toBe('vendor-map');
+    });
+  });
+});
+
 describe('Vite Config - Other Vendor Chunks', () => {
   it('should correctly separate vendor-query chunk', () => {
     expect(manualChunks('/project/node_modules/@tanstack/react-query/index.js')).toBe('vendor-query');
@@ -157,11 +228,6 @@ describe('Vite Config - Other Vendor Chunks', () => {
 
   it('should correctly separate vendor-motion chunk', () => {
     expect(manualChunks('/project/node_modules/framer-motion/index.js')).toBe('vendor-motion');
-  });
-
-  it('should correctly separate vendor-maps chunk', () => {
-    expect(manualChunks('/project/node_modules/mapbox-gl/index.js')).toBe('vendor-maps');
-    expect(manualChunks('/project/node_modules/leaflet/index.js')).toBe('vendor-maps');
   });
 
   it('should correctly separate vendor-ui chunk', () => {
