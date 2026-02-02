@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { logOrderQuery, logRLSFailure } from '@/lib/debug/logger';
 import { logSelectQuery } from '@/lib/debug/queryLogger';
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -47,6 +47,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+
+// Lazy load OrderMergeDialog for better performance
+const OrderMergeDialog = lazy(() =>
+  import('@/components/admin/orders/OrderMergeButton').then(module => ({
+    default: module.OrderMergeDialog
+  }))
+);
 
 interface Order {
   id: string;
@@ -128,7 +135,6 @@ export default function Orders() {
     <Badge variant="outline" className="text-xs">{source || 'admin'}</Badge>
   );
   const OrderSMSButton = (_props: any) => null;
-  const OrderMergeDialog = (_props: any) => null;
 
   // Bulk status update hook
   const bulkStatusUpdate = useOrderBulkStatusUpdate({
@@ -1015,12 +1021,14 @@ export default function Orders() {
       />
 
       {/* Order Merge Dialog */}
-      <OrderMergeDialog
-        selectedOrders={selectedOrdersData}
-        open={mergeDialogOpen}
-        onOpenChange={setMergeDialogOpen}
-        onSuccess={() => setSelectedOrders([])}
-      />
+      <Suspense fallback={null}>
+        <OrderMergeDialog
+          selectedOrders={selectedOrdersData}
+          open={mergeDialogOpen}
+          onOpenChange={setMergeDialogOpen}
+          onSuccess={() => setSelectedOrders([])}
+        />
+      </Suspense>
 
       {/* Bulk Status Update Confirmation */}
       <OrderBulkStatusConfirmDialog
