@@ -3,8 +3,7 @@
  * Edit prices for multiple products at once
  */
 
-import { useState, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState, useMemo, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SafeModal, useFormDirtyState } from '@/components/ui/safe-modal';
@@ -59,9 +58,9 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
     priceField,
   });
 
-  const calculateNewPrice = (oldPrice: number | null): number => {
+  const calculateNewPrice = useCallback((oldPrice: number | null): number => {
     if (!oldPrice || !adjustmentValue) return oldPrice || 0;
-    
+
     const value = parseFloat(adjustmentValue);
     if (isNaN(value)) return oldPrice;
 
@@ -77,9 +76,9 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
       default:
         return oldPrice;
     }
-  };
+  }, [adjustmentType, adjustmentValue]);
 
-  const previewUpdates = (): PriceUpdate[] => {
+  const previewUpdates = useCallback((): PriceUpdate[] => {
     return products.map(product => {
       const update: PriceUpdate = {
         id: product.id,
@@ -99,11 +98,11 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
 
       return update;
     });
-  };
+  }, [products, priceField, calculateNewPrice]);
 
   const handleApply = async () => {
     if (!adjustmentValue) return;
-    
+
     setIsApplying(true);
     try {
       const updates = previewUpdates();
@@ -115,7 +114,8 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
     }
   };
 
-  const updates = previewUpdates();
+  // Memoize price updates to avoid recalculation on every render
+  const updates = useMemo(() => previewUpdates(), [previewUpdates]);
   const isValid = adjustmentValue && !isNaN(parseFloat(adjustmentValue));
 
   return (

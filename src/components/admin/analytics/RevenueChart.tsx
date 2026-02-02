@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,6 +65,18 @@ function groupByGranularity(
 export function RevenueChart({ storeId, dateRange, className }: RevenueChartProps) {
   const [granularity, setGranularity] = useState<Granularity>('daily');
 
+  // Memoize Y-axis tick formatter
+  const yAxisFormatter = useMemo(
+    () => (v: number) => `$${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`,
+    []
+  );
+
+  // Memoize tooltip formatter to prevent recreation on every render
+  const tooltipFormatter = useMemo(
+    () => (value: number) => [`$${value.toLocaleString()}`, 'Revenue'],
+    []
+  );
+
   const { data: revenueData, isLoading, error } = useQuery({
     queryKey: queryKeys.analytics.revenue({ storeId, from: dateRange.from?.toISOString(), to: dateRange.to?.toISOString(), granularity }),
     queryFn: async (): Promise<{ data: RevenueDataPoint[]; totalRevenue: number }> => {
@@ -126,13 +138,16 @@ export function RevenueChart({ storeId, dateRange, className }: RevenueChartProp
     );
   }
 
+  // Format revenue for display (memoized via component render optimization)
+  const formattedTotalRevenue = `$${revenueData.totalRevenue.toLocaleString()}`;
+
   return (
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
           <CardTitle>Revenue</CardTitle>
           <CardDescription>
-            Total: <span className="text-2xl font-bold text-foreground">${revenueData.totalRevenue.toLocaleString()}</span>
+            Total: <span className="text-2xl font-bold text-foreground">{formattedTotalRevenue}</span>
           </CardDescription>
         </div>
         <Select value={granularity} onValueChange={(v) => setGranularity(v as Granularity)}>
@@ -158,14 +173,14 @@ export function RevenueChart({ storeId, dateRange, className }: RevenueChartProp
                 axisLine={false}
               />
               <YAxis
-                tickFormatter={(v: number) => `$${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
+                tickFormatter={yAxisFormatter}
                 tick={{ fontSize: 12 }}
                 tickLine={false}
                 axisLine={false}
                 width={60}
               />
               <Tooltip
-                formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+                formatter={tooltipFormatter}
                 contentStyle={{
                   backgroundColor: 'hsl(var(--card))',
                   borderColor: 'hsl(var(--border))',
