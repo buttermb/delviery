@@ -12,7 +12,7 @@ import { format } from "date-fns";
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
 import { OrderProgressBar } from "@/components/customer/OrderProgressBar";
-import { OrderTrackingMap } from "@/components/customer/OrderTrackingMap";
+import { OrderTrackingMap } from "@/components/ui/lazy-mapbox";
 import { toast } from "@/hooks/use-toast";
 
 type OrderStatus = "pending" | "confirmed" | "preparing" | "ready_for_pickup" | "out_for_delivery" | "delivered" | "cancelled";

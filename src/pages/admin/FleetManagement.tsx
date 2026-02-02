@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Truck, MapPin, Phone, MessageSquare, Star, Clock, DollarSign, Navigation, AlertCircle } from "lucide-react";
 import { DeliveryStatusDialog } from "@/components/admin/DeliveryStatusDialog";
 import { AssignDeliveryToRunnerDialog } from "@/components/admin/AssignDeliveryToRunnerDialog";
-import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
+import { LiveDeliveryMap } from "@/components/ui/lazy-mapbox";
 import { RouteOptimizationPreview } from "@/components/admin/RouteOptimizationPreview";
 import { AddRunnerDialog } from "@/components/admin/AddRunnerDialog";
 import { toast } from "@/hooks/use-toast";

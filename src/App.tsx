@@ -85,6 +85,9 @@ function SuspenseProgressFallback() {
   return <LoadingFallback />;
 }
 
+// Lazy-loaded Mapbox components for better code splitting
+import { LiveMap } from "@/components/ui/lazy-mapbox";
+
 // Eager load critical pages
 import NotFoundPage from "./pages/NotFoundPage";
 const ButtonMonitorPage = lazy(() => import("./pages/debug/ButtonMonitorPage"));
@@ -208,7 +211,7 @@ const FrontedInventory = lazy(() => import("./pages/admin/FrontedInventory"));
 const FrontedInventoryDetails = lazy(() => import("./pages/admin/FrontedInventoryDetails"));
 const CustomerInvoices = lazy(() => import("./pages/admin/CustomerInvoices"));
 const RunnerLocationTracking = lazy(() => import("./pages/admin/RunnerLocationTracking"));
-const LiveMap = lazy(() => import("./pages/admin/LiveMap"));
+// LiveMap is now lazy loaded via lazy-mapbox utility for better code splitting
 const PointOfSale = lazy(() => import("./pages/admin/PointOfSale"));
 const LocationsManagement = lazy(() => import("./pages/admin/LocationsManagement"));
 

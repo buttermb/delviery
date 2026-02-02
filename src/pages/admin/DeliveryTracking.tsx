@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, MapPin, Clock, Phone, Truck, Package } from "lucide-react";
-import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
+import { LiveDeliveryMap } from "@/components/ui/lazy-mapbox";
 import { SEOHead } from "@/components/SEOHead";
 
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";

@@ -1,4 +1,4 @@
-import { RouteOptimizer } from '@/components/admin/routing/RouteOptimizer';
+import { RouteOptimizer } from '@/components/ui/lazy-mapbox';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
