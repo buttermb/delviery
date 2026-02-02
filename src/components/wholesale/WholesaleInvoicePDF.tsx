@@ -3,7 +3,7 @@
  * Generates professional PDF invoices for wholesale orders
  */
 
-import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@/components/ui/lazy-react-pdf';
 import { Button } from '@/components/ui/button';
 import { FileText, Loader2 } from 'lucide-react';
 
