@@ -245,6 +245,10 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('react-pdf') || id.includes('jspdf') || id.includes('html2canvas')) {
               return 'vendor-pdf';
             }
+            // Split form libraries (react-hook-form, zod, @hookform/resolvers)
+            if (id.includes('react-hook-form') || id.includes('zod') || id.includes('@hookform/resolvers')) {
+              return 'vendor-forms';
+            }
             return 'vendor';
           }
         },
