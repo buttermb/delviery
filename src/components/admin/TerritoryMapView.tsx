@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import type mapboxgl from "mapbox-gl";
+import { loadMapbox } from "@/lib/mapbox-loader";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useWholesaleClients } from "@/hooks/useWholesaleData";
@@ -21,35 +21,46 @@ export function TerritoryMapView() {
     if (!mapContainer.current || map.current) return;
     if (!MAPBOX_TOKEN || MAPBOX_TOKEN === '') return;
 
-    try {
-      mapboxgl.accessToken = MAPBOX_TOKEN;
+    const initMap = async () => {
+      try {
+        const mapboxgl = await loadMapbox();
 
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: "mapbox://styles/mapbox/streets-v12",
-        center: [-73.9808, 40.7648], // NYC center
-        zoom: 10,
-        pitch: 45,
-      });
+        if (!mapContainer.current) return;
 
-      map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
+        mapboxgl.accessToken = MAPBOX_TOKEN;
 
-      map.current.on("load", () => {
-        setMapLoaded(true);
-      });
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: "mapbox://styles/mapbox/streets-v12",
+          center: [-73.9808, 40.7648], // NYC center
+          zoom: 10,
+          pitch: 45,
+        });
 
-      // Cleanup
-      return () => {
-        map.current?.remove();
-      };
-    } catch (error) {
-      logger.error("Mapbox initialization error", error as Error, { component: 'TerritoryMapView' });
-    }
+        map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
+
+        map.current.on("load", () => {
+          setMapLoaded(true);
+        });
+
+        // Cleanup
+        return () => {
+          map.current?.remove();
+        };
+      } catch (error) {
+        logger.error("Mapbox initialization error", error as Error, { component: 'TerritoryMapView' });
+      }
+    };
+
+    initMap();
   }, []);
 
   // Add client markers when map loads
   useEffect(() => {
     if (!map.current || !mapLoaded || clients.length === 0) return;
+
+    const addMarkers = async () => {
+      const mapboxgl = await loadMapbox();
 
     // Remove existing markers
     const existingMarkers = document.querySelectorAll('.client-marker');
@@ -110,50 +121,59 @@ export function TerritoryMapView() {
         </div>
       `);
 
-      // Add marker to map
-      new mapboxgl.Marker(el)
-        .setLngLat([lng, lat])
-        .setPopup(popup)
-        .addTo(map.current!);
-    });
+        // Add marker to map
+        new mapboxgl.Marker(el)
+          .setLngLat([lng, lat])
+          .setPopup(popup)
+          .addTo(map.current!);
+      });
+    };
+
+    addMarkers();
   }, [mapLoaded, clients]);
 
   // Add warehouse markers
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
 
-    const warehouses = [
-      { name: "Warehouse A", location: [-73.9442, 40.6782], address: "Brooklyn" },
-      { name: "Warehouse B", location: [-73.8648, 40.8448], address: "Queens" },
-    ];
+    const addWarehouseMarkers = async () => {
+      const mapboxgl = await loadMapbox();
 
-    warehouses.forEach((warehouse) => {
-      const el = document.createElement("div");
-      el.className = "warehouse-marker";
-      el.style.width = "40px";
-      el.style.height = "40px";
-      el.style.backgroundColor = themeColors.marketingSecondary();
-      el.style.border = "3px solid white";
-      el.style.borderRadius = "8px";
-      el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
-      el.style.cursor = "pointer";
-      el.style.display = "flex";
-      el.style.alignItems = "center";
-      el.style.justifyContent = "center";
-      el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M3 7v10h18V7L12 2 3 7zm15 8H6V9h12v6z"/></svg>`;
+      const warehouses = [
+        { name: "Warehouse A", location: [-73.9442, 40.6782], address: "Brooklyn" },
+        { name: "Warehouse B", location: [-73.8648, 40.8448], address: "Queens" },
+      ];
 
-      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-        <div style="padding: 8px;">
-          <h3 style="font-weight: 600; margin-bottom: 4px;">${warehouse.name}</h3>
-          <p style="font-size: 12px; color: #666;">${warehouse.address}</p>
-        </div>
-      `);
+      warehouses.forEach((warehouse) => {
+        const el = document.createElement("div");
+        el.className = "warehouse-marker";
+        el.style.width = "40px";
+        el.style.height = "40px";
+        el.style.backgroundColor = themeColors.marketingSecondary();
+        el.style.border = "3px solid white";
+        el.style.borderRadius = "8px";
+        el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
+        el.style.cursor = "pointer";
+        el.style.display = "flex";
+        el.style.alignItems = "center";
+        el.style.justifyContent = "center";
+        el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M3 7v10h18V7L12 2 3 7zm15 8H6V9h12v6z"/></svg>`;
 
-      new mapboxgl.Marker(el)
-        .setLngLat(warehouse.location as [number, number])
-        .setPopup(popup)
-        .addTo(map.current!);
-    });
+        const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+          <div style="padding: 8px;">
+            <h3 style="font-weight: 600; margin-bottom: 4px;">${warehouse.name}</h3>
+            <p style="font-size: 12px; color: #666;">${warehouse.address}</p>
+          </div>
+        `);
+
+        new mapboxgl.Marker(el)
+          .setLngLat(warehouse.location as [number, number])
+          .setPopup(popup)
+          .addTo(map.current!);
+      });
+    };
+
+    addWarehouseMarkers();
   }, [mapLoaded]);
 
   if (!MAPBOX_TOKEN || MAPBOX_TOKEN === '') {

@@ -1,19 +1,18 @@
 import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState, useMemo } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import type mapboxgl from "mapbox-gl";
+import { loadMapbox } from "@/lib/mapbox-loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useWholesaleDeliveries } from "@/hooks/useWholesaleData";
-import { 
-  Navigation, Clock, Package, AlertCircle, Phone, 
-  Truck, MapPin, Zap, ChevronRight, RefreshCw,
-  Timer, Route, User
+import {
+  Navigation, Package, AlertCircle,
+  Truck, MapPin, ChevronRight, RefreshCw,
+  Timer, User
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateETA } from "@/lib/utils/eta-calculation";
-import { themeColors } from "@/lib/utils/colorConversion";
 import { useMapboxToken } from "@/hooks/useMapboxToken";
 import { showErrorToast } from "@/utils/toastHelpers";
 import { cn } from "@/lib/utils";
@@ -76,66 +75,74 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
     if (!mapContainer.current || map.current) return;
     if (!MAPBOX_TOKEN || MAPBOX_TOKEN === '') return;
 
-    try {
-      mapboxgl.accessToken = MAPBOX_TOKEN;
+    const initMap = async () => {
+      try {
+        const mapboxgl = await loadMapbox();
 
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: "mapbox://styles/mapbox/dark-v11",
-        center: [-73.9808, 40.7648],
-        zoom: 11,
-        pitch: 45,
-        bearing: -17.6,
-        antialias: true,
-      });
+        if (!mapContainer.current) return;
 
-      map.current.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "top-right");
+        mapboxgl.accessToken = MAPBOX_TOKEN;
 
-      map.current.on("load", () => {
-        setMapLoaded(true);
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: "mapbox://styles/mapbox/dark-v11",
+          center: [-73.9808, 40.7648],
+          zoom: 11,
+          pitch: 45,
+          bearing: -17.6,
+          antialias: true,
+        });
 
-        // Add 3D buildings
-        if (map.current) {
-          const layers = map.current.getStyle().layers;
-          const labelLayerId = layers?.find(
-            (layer) => layer.type === 'symbol' && layer.layout?.['text-field']
-          )?.id;
+        map.current.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "top-right");
 
-          map.current.addLayer(
-            {
-              id: '3d-buildings',
-              source: 'composite',
-              'source-layer': 'building',
-              filter: ['==', 'extrude', 'true'],
-              type: 'fill-extrusion',
-              minzoom: 15,
-              paint: {
-                'fill-extrusion-color': '#1a1a2e',
-                'fill-extrusion-height': ['get', 'height'],
-                'fill-extrusion-base': ['get', 'min_height'],
-                'fill-extrusion-opacity': 0.6,
+        map.current.on("load", () => {
+          setMapLoaded(true);
+
+          // Add 3D buildings
+          if (map.current) {
+            const layers = map.current.getStyle().layers;
+            const labelLayerId = layers?.find(
+              (layer) => layer.type === 'symbol' && layer.layout?.['text-field']
+            )?.id;
+
+            map.current.addLayer(
+              {
+                id: '3d-buildings',
+                source: 'composite',
+                'source-layer': 'building',
+                filter: ['==', 'extrude', 'true'],
+                type: 'fill-extrusion',
+                minzoom: 15,
+                paint: {
+                  'fill-extrusion-color': '#1a1a2e',
+                  'fill-extrusion-height': ['get', 'height'],
+                  'fill-extrusion-base': ['get', 'min_height'],
+                  'fill-extrusion-opacity': 0.6,
+                },
               },
-            },
-            labelLayerId
-          );
+              labelLayerId
+            );
 
-          // Add atmosphere
-          map.current.setFog({
-            color: 'rgb(20, 20, 30)',
-            'high-color': 'rgb(36, 36, 50)',
-            'horizon-blend': 0.02,
-            'space-color': 'rgb(11, 11, 25)',
-            'star-intensity': 0.6
-          });
-        }
-      });
+            // Add atmosphere
+            map.current.setFog({
+              color: 'rgb(20, 20, 30)',
+              'high-color': 'rgb(36, 36, 50)',
+              'horizon-blend': 0.02,
+              'space-color': 'rgb(11, 11, 25)',
+              'star-intensity': 0.6
+            });
+          }
+        });
 
-      return () => {
-        map.current?.remove();
-      };
-    } catch (error) {
-      logger.error("Mapbox error", error as Error, { component: 'LiveDeliveryMap' });
-    }
+        return () => {
+          map.current?.remove();
+        };
+      } catch (error) {
+        logger.error("Mapbox error", error as Error, { component: 'LiveDeliveryMap' });
+      }
+    };
+
+    initMap();
   }, [MAPBOX_TOKEN]);
 
   // Setup real-time updates for deliveries
@@ -199,7 +206,8 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
 
-    const updateMarkers = () => {
+    const updateMarkers = async () => {
+      const mapboxgl = await loadMapbox();
       // Remove markers for deliveries that are no longer active
       const activeIds = new Set(activeDeliveries.map(d => d.id));
       markers.current.forEach((markerPair, id) => {
@@ -224,11 +232,9 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
       activeDeliveries.forEach((delivery, deliveryIndex) => {
         // Get runner location - use mock data if not available
         let runnerLocation = delivery.current_location as { lat: number; lng: number } | undefined;
-        let isEstimatedLocation = false;
 
         // If no location, use deterministic fallback based on delivery index (no random values)
         if (!runnerLocation || typeof runnerLocation.lat !== 'number') {
-          isEstimatedLocation = true;
           // Deterministic offset based on delivery index for consistent positioning
           const baseOffset = 0.01 * (deliveryIndex + 1);
           runnerLocation = {
@@ -238,7 +244,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
         }
 
         const runnerName = delivery.runner?.full_name || 'Runner';
-        // @ts-ignore - delivery_address may exist on order or be accessed differently
+        // @ts-expect-error - delivery_address may exist on order or be accessed differently
         const clientName = (delivery as any).delivery_address?.split(',')[0] || (delivery.order as any)?.delivery_address?.split(',')[0] || 'Client';
         const orderNumber = delivery.order?.order_number || 'N/A';
 
@@ -270,15 +276,12 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
           `;
 
           // Calculate ETA for this delivery
-          let etaResult: { formatted: string; eta: Date } | null = null;
-
           if (runnerLocation && typeof runnerLocation.lat === 'number') {
             calculateETA(
               [runnerLocation.lng, runnerLocation.lat],
               [destLng, destLat]
             ).then(result => {
               if (result) {
-                etaResult = result;
                 etasRef.current.set(delivery.id, result);
                 // Update popup with real ETA
                 const updatedPopup = new mapboxgl.Popup({ 

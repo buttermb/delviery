@@ -16,8 +16,8 @@ import {
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import type mapboxgl from 'mapbox-gl';
+import { loadMapbox } from '@/lib/mapbox-loader';
 import { cn } from '@/lib/utils';
 import { AddCourierDialog } from '@/components/admin/AddCourierDialog';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
@@ -201,27 +201,32 @@ export default function LiveMap() {
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken || map.current) return;
 
-    try {
-      mapboxgl.accessToken = mapboxToken;
+    const initMap = async () => {
+      try {
+        const mapboxgl = await loadMapbox();
 
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: mapStyles[mapStyle],
-        center: [-73.935242, 40.730610], // NYC center
-        zoom: 12,
-        pitch: 45,
-        bearing: -17.6,
-        antialias: true,
-      });
+        if (!mapContainer.current) return;
 
-      // Add controls
-      map.current.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
-      map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
-      map.current.addControl(new mapboxgl.GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: true,
-        showUserHeading: true
-      }), 'top-right');
+        mapboxgl.accessToken = mapboxToken;
+
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: mapStyles[mapStyle],
+          center: [-73.935242, 40.730610], // NYC center
+          zoom: 12,
+          pitch: 45,
+          bearing: -17.6,
+          antialias: true,
+        });
+
+        // Add controls
+        map.current.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
+        map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+        map.current.addControl(new mapboxgl.GeolocateControl({
+          positionOptions: { enableHighAccuracy: true },
+          trackUserLocation: true,
+          showUserHeading: true
+        }), 'top-right');
 
       map.current.on('load', () => {
         setMapLoaded(true);
@@ -282,19 +287,21 @@ export default function LiveMap() {
         }
       });
 
-      map.current.on('error', (e) => {
-        logger.error('Mapbox error', e.error, { component: 'LiveMap' });
-      });
+        map.current.on('error', (e) => {
+          logger.error('Mapbox error', e.error, { component: 'LiveMap' });
+        });
 
-    } catch (err) {
-      logger.error('Failed to initialize map', err, { component: 'LiveMap' });
-      setError('Failed to initialize map');
-    }
-
-    return () => {
-      map.current?.remove();
-      map.current = null;
+        return () => {
+          map.current?.remove();
+          map.current = null;
+        };
+      } catch (err) {
+        logger.error('Failed to initialize map', err, { component: 'LiveMap' });
+        setError('Failed to initialize map');
+      }
     };
+
+    initMap();
   }, [mapboxToken]);
 
   // Change map style
@@ -456,12 +463,13 @@ export default function LiveMap() {
   };
 
   // Center map on all active couriers
-  const centerOnActivity = useCallback(() => {
+  const centerOnActivity = useCallback(async () => {
     if (!map.current || couriers.length === 0) {
       toast.info('No active couriers to center on');
       return;
     }
 
+    const mapboxgl = await loadMapbox();
     const bounds = new mapboxgl.LngLatBounds();
     couriers.forEach((courier) => {
       if (courier.current_lat && courier.current_lng) {
@@ -496,6 +504,9 @@ export default function LiveMap() {
   // Update markers when couriers change
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
+
+    const updateCourierMarkers = async () => {
+      const mapboxgl = await loadMapbox();
 
     // Remove markers that no longer exist
     Object.keys(markers.current).forEach((courierId) => {
@@ -573,26 +584,32 @@ export default function LiveMap() {
           .addTo(map.current!);
 
         markers.current[courier.id] = marker;
-      }
-    });
-
-    // Fit bounds to show all couriers
-    if (couriers.length > 0 && !selectedCourier && !selectedOrder) {
-      const bounds = new mapboxgl.LngLatBounds();
-      couriers.forEach((courier) => {
-        if (courier.current_lat && courier.current_lng) {
-          bounds.extend([courier.current_lng, courier.current_lat]);
         }
       });
-      if (!bounds.isEmpty()) {
-        map.current.fitBounds(bounds, { padding: 100, maxZoom: 15 });
+
+      // Fit bounds to show all couriers
+      if (couriers.length > 0 && !selectedCourier && !selectedOrder) {
+        const bounds = new mapboxgl.LngLatBounds();
+        couriers.forEach((courier) => {
+          if (courier.current_lat && courier.current_lng) {
+            bounds.extend([courier.current_lng, courier.current_lat]);
+          }
+        });
+        if (!bounds.isEmpty()) {
+          map.current!.fitBounds(bounds, { padding: 100, maxZoom: 15 });
+        }
       }
-    }
+    };
+
+    updateCourierMarkers();
   }, [couriers, mapLoaded, selectedCourier, selectedOrder]);
 
   // Update order markers and routes when orders change
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
+
+    const updateOrderMarkers = async () => {
+      const mapboxgl = await loadMapbox();
 
     // Remove order markers that no longer exist
     Object.keys(orderMarkers.current).forEach((orderId) => {
@@ -744,18 +761,21 @@ export default function LiveMap() {
       }
     });
 
-    // Remove routes for orders that no longer have assigned couriers or routes disabled
-    if (!showRoutes) {
-      routeLayers.current.forEach((routeId) => {
-        if (map.current!.getLayer(routeId)) {
-          map.current!.removeLayer(routeId);
-        }
-        if (map.current!.getSource(routeId)) {
-          map.current!.removeSource(routeId);
-        }
-      });
-      routeLayers.current.clear();
-    }
+      // Remove routes for orders that no longer have assigned couriers or routes disabled
+      if (!showRoutes) {
+        routeLayers.current.forEach((routeId) => {
+          if (map.current!.getLayer(routeId)) {
+            map.current!.removeLayer(routeId);
+          }
+          if (map.current!.getSource(routeId)) {
+            map.current!.removeSource(routeId);
+          }
+        });
+        routeLayers.current.clear();
+      }
+    };
+
+    updateOrderMarkers();
   }, [activeOrders, couriers, mapLoaded, showRoutes, getOrderStatusColor, getOrderStatusLabel]);
 
   // Toggle heatmap

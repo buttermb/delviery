@@ -49,6 +49,16 @@ vi.mock('mapbox-gl', () => ({
 // Mock mapbox-gl CSS
 vi.mock('mapbox-gl/dist/mapbox-gl.css', () => ({}));
 
+// Mock the mapbox-loader
+vi.mock('@/lib/mapbox-loader', () => ({
+  loadMapbox: vi.fn(async () => {
+    const mapboxgl = await import('mapbox-gl');
+    return mapboxgl.default;
+  }),
+  isMapboxLoaded: vi.fn(() => false),
+  resetMapboxLoader: vi.fn(),
+}));
+
 // Mock the actual component modules
 vi.mock('@/pages/admin/LiveMap', () => ({
   default: () => (

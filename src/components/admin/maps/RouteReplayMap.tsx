@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import type mapboxgl from 'mapbox-gl';
+import { loadMapbox } from '@/lib/mapbox-loader';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Navigation, TrendingUp } from 'lucide-react';
@@ -37,36 +37,47 @@ export function RouteReplayMap({
     if (!mapContainer.current || map.current) return;
     if (!MAPBOX_TOKEN || MAPBOX_TOKEN === '') return;
 
-    try {
-      mapboxgl.accessToken = MAPBOX_TOKEN;
+    const initMap = async () => {
+      try {
+        const mapboxgl = await loadMapbox();
 
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/streets-v12',
-        center: [-73.9808, 40.7648],
-        zoom: 12,
-      });
+        if (!mapContainer.current) return;
 
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        mapboxgl.accessToken = MAPBOX_TOKEN;
 
-      map.current.on('load', () => {
-        setMapLoaded(true);
-      });
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: 'mapbox://styles/mapbox/streets-v12',
+          center: [-73.9808, 40.7648],
+          zoom: 12,
+        });
 
-      return () => {
-        map.current?.remove();
-      };
-    } catch (error) {
-      // Mapbox errors are handled silently - map just won't render
-      if (import.meta.env.DEV) {
-        logger.error('Mapbox error', error, { component: 'RouteReplayMap' });
+        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+        map.current.on('load', () => {
+          setMapLoaded(true);
+        });
+
+        return () => {
+          map.current?.remove();
+        };
+      } catch (error) {
+        // Mapbox errors are handled silently - map just won't render
+        if (import.meta.env.DEV) {
+          logger.error('Mapbox error', error, { component: 'RouteReplayMap' });
+        }
       }
-    }
+    };
+
+    initMap();
   }, []);
 
   // Draw full route and update marker
   useEffect(() => {
     if (!map.current || !mapLoaded || locations.length === 0) return;
+
+    const drawRoute = async () => {
+      const mapboxgl = await loadMapbox();
 
     // Clear existing route layers
     if (map.current.getLayer('route-line')) {
@@ -141,11 +152,13 @@ export function RouteReplayMap({
       },
     });
 
-    // Fit bounds to show full route
-    const bounds = new mapboxgl.LngLatBounds();
-    routeCoordinates.forEach(coord => bounds.extend(coord as [number, number]));
-    map.current.fitBounds(bounds, { padding: 50, maxZoom: 15 });
+      // Fit bounds to show full route
+      const bounds = new mapboxgl.LngLatBounds();
+      routeCoordinates.forEach(coord => bounds.extend(coord as [number, number]));
+      map.current.fitBounds(bounds, { padding: 50, maxZoom: 15 });
+    };
 
+    drawRoute();
   }, [mapLoaded, locations]);
 
   // Update runner marker position
@@ -155,59 +168,65 @@ export function RouteReplayMap({
     const currentLocation = locations[currentIndex];
     if (!currentLocation) return;
 
-    // Remove existing marker
-    if (runnerMarker.current) {
-      runnerMarker.current.remove();
-    }
+    const updateMarker = async () => {
+      const mapboxgl = await loadMapbox();
 
-    // Create runner marker
-    const el = document.createElement('div');
-    el.className = 'runner-marker';
-    el.style.width = '40px';
-    el.style.height = '40px';
-    el.style.backgroundColor = '#3b82f6';
-    el.style.border = '3px solid white';
-    el.style.borderRadius = '50%';
-    el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.4)';
-    el.style.display = 'flex';
-    el.style.alignItems = 'center';
-    el.style.justifyContent = 'center';
-    el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4z"/></svg>`;
+      // Remove existing marker
+      if (runnerMarker.current) {
+        runnerMarker.current.remove();
+      }
 
-    const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-      <div style="padding: 8px;">
-        <h3 style="font-weight: 600; margin-bottom: 4px;">🚗 ${runnerName}</h3>
-        <p style="font-size: 12px; color: #666;">
-          ${new Date(currentLocation.recorded_at).toLocaleTimeString()}
-        </p>
-        ${currentLocation.speed ? `
-          <p style="font-size: 12px; margin-top: 4px;">
-            Speed: <strong>${currentLocation.speed.toFixed(1)} km/h</strong>
+      // Create runner marker
+      const el = document.createElement('div');
+      el.className = 'runner-marker';
+      el.style.width = '40px';
+      el.style.height = '40px';
+      el.style.backgroundColor = '#3b82f6';
+      el.style.border = '3px solid white';
+      el.style.borderRadius = '50%';
+      el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.4)';
+      el.style.display = 'flex';
+      el.style.alignItems = 'center';
+      el.style.justifyContent = 'center';
+      el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4z"/></svg>`;
+
+      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+        <div style="padding: 8px;">
+          <h3 style="font-weight: 600; margin-bottom: 4px;">🚗 ${runnerName}</h3>
+          <p style="font-size: 12px; color: #666;">
+            ${new Date(currentLocation.recorded_at).toLocaleTimeString()}
           </p>
-        ` : ''}
-      </div>
-    `);
+          ${currentLocation.speed ? `
+            <p style="font-size: 12px; margin-top: 4px;">
+              Speed: <strong>${currentLocation.speed.toFixed(1)} km/h</strong>
+            </p>
+          ` : ''}
+        </div>
+      `);
 
-    runnerMarker.current = new mapboxgl.Marker(el)
-      .setLngLat([currentLocation.longitude, currentLocation.latitude])
-      .setPopup(popup)
-      .addTo(map.current!);
+      runnerMarker.current = new mapboxgl.Marker(el)
+        .setLngLat([currentLocation.longitude, currentLocation.latitude])
+        .setPopup(popup)
+        .addTo(map.current!);
 
-    // Update traveled route
-    if (map.current.getSource('route-traveled')) {
-      const traveledCoordinates = locations
-        .slice(0, currentIndex + 1)
-        .map(loc => [loc.longitude, loc.latitude]);
-      
-      (map.current.getSource('route-traveled') as mapboxgl.GeoJSONSource).setData({
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'LineString',
-          coordinates: traveledCoordinates.length > 1 ? traveledCoordinates : locations.slice(0, 2).map(loc => [loc.longitude, loc.latitude]),
-        },
-      });
-    }
+      // Update traveled route
+      if (map.current.getSource('route-traveled')) {
+        const traveledCoordinates = locations
+          .slice(0, currentIndex + 1)
+          .map(loc => [loc.longitude, loc.latitude]);
+
+        (map.current.getSource('route-traveled') as mapboxgl.GeoJSONSource).setData({
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: traveledCoordinates.length > 1 ? traveledCoordinates : locations.slice(0, 2).map(loc => [loc.longitude, loc.latitude]),
+          },
+        });
+      }
+    };
+
+    updateMarker();
 
   }, [currentIndex, locations, mapLoaded, runnerName]);
 
