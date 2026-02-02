@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Truck, CheckCircle, WifiOff, Building2, Copy, Merge } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Truck, CheckCircle, WifiOff, Building2, Copy, Merge, Loader2 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
@@ -1067,7 +1067,16 @@ export default function Orders() {
         description="This action cannot be undone."
       />
 
-      <Suspense fallback={null}>
+      <Suspense fallback={
+        exportDialogOpen ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Loading export options...</p>
+            </div>
+          </div>
+        ) : null
+      }>
         <ExportOptionsDialog
           open={exportDialogOpen}
           onOpenChange={setExportDialogOpen}
