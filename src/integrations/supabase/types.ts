@@ -13717,6 +13717,7 @@ export type Database = {
           payment_method: string
           reference_number: string | null
           status: string
+          tenant_id: string | null
         }
         Insert: {
           amount: number
@@ -13728,6 +13729,7 @@ export type Database = {
           payment_method?: string
           reference_number?: string | null
           status?: string
+          tenant_id?: string | null
         }
         Update: {
           amount?: number
@@ -13739,6 +13741,7 @@ export type Database = {
           payment_method?: string
           reference_number?: string | null
           status?: string
+          tenant_id?: string | null
         }
         Relationships: [
           {
@@ -13746,6 +13749,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "wholesale_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wholesale_payments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
