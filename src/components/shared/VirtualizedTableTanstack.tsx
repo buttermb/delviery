@@ -27,6 +27,12 @@ interface VirtualizedTableTanstackProps<T> {
   getRowId?: (row: T, index: number) => string | number;
   onRowClick?: (row: T, index: number) => void;
   overscanCount?: number;
+  /** Enable dynamic row height estimation based on content */
+  enableDynamicHeight?: boolean;
+  /** Custom function to estimate row height based on data */
+  estimateRowHeight?: (row: T, index: number) => number;
+  /** Measure actual row heights after rendering for precise scrolling */
+  measureElement?: boolean;
 }
 
 /** Memoized row component to prevent unnecessary re-renders */
@@ -93,15 +99,33 @@ function VirtualizedTableTanstackInner<T>({
   emptyMessage = 'No data available',
   onRowClick,
   overscanCount = 5,
+  enableDynamicHeight = false,
+  estimateRowHeight,
+  measureElement = false,
 }: VirtualizedTableTanstackProps<T>) {
   const parentRef = useRef<HTMLDivElement>(null);
 
-  // Create virtualizer instance
+  // Calculate estimated size for each row
+  const getEstimatedSize = React.useCallback(
+    (index: number): number => {
+      if (estimateRowHeight && data[index]) {
+        return estimateRowHeight(data[index], index);
+      }
+      return rowHeight;
+    },
+    [estimateRowHeight, data, rowHeight]
+  );
+
+  // Create virtualizer instance with dynamic or static height estimation
   const rowVirtualizer = useVirtualizer({
     count: data.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => rowHeight,
+    estimateSize: enableDynamicHeight ? getEstimatedSize : () => rowHeight,
     overscan: overscanCount,
+    // Enable measuring actual DOM elements for precise heights when needed
+    measureElement: enableDynamicHeight && measureElement
+      ? (element) => element?.getBoundingClientRect().height
+      : undefined,
   });
 
   if (data.length === 0) {
@@ -154,6 +178,12 @@ function VirtualizedTableTanstackInner<T>({
             return (
               <div
                 key={virtualItem.key}
+                data-index={virtualItem.index}
+                ref={(node) => {
+                  if (enableDynamicHeight && measureElement && node) {
+                    rowVirtualizer.measureElement(node);
+                  }
+                }}
                 style={{
                   position: 'absolute',
                   top: 0,

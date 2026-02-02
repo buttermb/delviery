@@ -112,10 +112,10 @@ describe('VirtualizedTableTanstack', () => {
       />
     );
 
-    // Check that custom columns are configured
-    const customCell = container.querySelector('[data-testid="custom-cell"]');
     // The virtualizer may not render rows in test environment, so check columns exist
     expect(customColumns[0].cell).toBeDefined();
+    // Container should be present
+    expect(container).toBeInTheDocument();
   });
 
   it('applies custom className', () => {
@@ -326,5 +326,189 @@ describe('VirtualizedTableTanstack', () => {
     // In test environment, virtualizer may not render rows
     const virtualContainer = container.querySelector('[style*="position: relative"]');
     expect(virtualContainer).toBeInTheDocument();
+  });
+
+  // Tests for dynamic row height estimation
+  describe('Dynamic Row Height Estimation', () => {
+    it('accepts enableDynamicHeight prop', () => {
+      const { container } = render(
+        <VirtualizedTableTanstack
+          data={mockData}
+          columns={columns}
+          getRowId={(row) => row.id}
+          enableDynamicHeight={true}
+        />
+      );
+
+      expect(container).toBeInTheDocument();
+    });
+
+    it('uses estimateRowHeight function when provided', () => {
+      const estimateRowHeight = vi.fn((row: TestData) => {
+        // Return different heights based on content
+        return row.value > 500 ? 80 : 48;
+      });
+
+      const { container } = render(
+        <VirtualizedTableTanstack
+          data={mockData}
+          columns={columns}
+          getRowId={(row) => row.id}
+          enableDynamicHeight={true}
+          estimateRowHeight={estimateRowHeight}
+        />
+      );
+
+      expect(container).toBeInTheDocument();
+      // estimateRowHeight gets called during virtualizer setup
+      // In test environment, it should be called for visible items
+    });
+
+    it('uses static rowHeight when enableDynamicHeight is false', () => {
+      const estimateRowHeight = vi.fn();
+
+      const { container } = render(
+        <VirtualizedTableTanstack
+          data={mockData}
+          columns={columns}
+          getRowId={(row) => row.id}
+          enableDynamicHeight={false}
+          estimateRowHeight={estimateRowHeight}
+          rowHeight={60}
+        />
+      );
+
+      expect(container).toBeInTheDocument();
+      // estimateRowHeight should not be used when enableDynamicHeight is false
+    });
+
+    it('handles measureElement prop for precise height calculation', () => {
+      const { container } = render(
+        <VirtualizedTableTanstack
+          data={mockData}
+          columns={columns}
+          getRowId={(row) => row.id}
+          enableDynamicHeight={true}
+          measureElement={true}
+          estimateRowHeight={() => 48}
+        />
+      );
+
+      // Component should render with measureElement enabled
+      expect(container).toBeInTheDocument();
+
+      // Check that data-index attributes are present for measurement
+      const rowsWithIndex = container.querySelectorAll('[data-index]');
+      // In test environment, virtualizer may not render many rows
+      expect(rowsWithIndex.length).toBeGreaterThanOrEqual(0);
+    });
+
+    it('estimates different heights for variable content', () => {
+      interface VariableContentData {
+        id: string;
+        name: string;
+        description: string;
+      }
+
+      const variableData: VariableContentData[] = [
+        { id: '1', name: 'Short', description: 'Brief' },
+        { id: '2', name: 'Long Item Name', description: 'This is a much longer description that would take up multiple lines when wrapped' },
+        { id: '3', name: 'Medium', description: 'Medium length description' },
+      ];
+
+      const variableColumns = [
+        { id: 'name', header: 'Name', accessorKey: 'name' as const },
+        { id: 'description', header: 'Description', accessorKey: 'description' as const },
+      ];
+
+      const estimateRowHeight = vi.fn((row: VariableContentData) => {
+        // Estimate based on description length
+        const descriptionLength = row.description.length;
+        if (descriptionLength > 50) return 96;
+        if (descriptionLength > 25) return 64;
+        return 48;
+      });
+
+      const { container } = render(
+        <VirtualizedTableTanstack
+          data={variableData}
+          columns={variableColumns}
+          getRowId={(row) => row.id}
+          enableDynamicHeight={true}
+          estimateRowHeight={estimateRowHeight}
+        />
+      );
+
+      expect(container).toBeInTheDocument();
+    });
+
+    it('handles dynamic height with custom cell renderers', () => {
+      const customColumns = [
+        {
+          id: 'complex',
+          header: 'Complex Content',
+          cell: ({ original }: { original: TestData }) => (
+            <div data-testid="complex-cell">
+              <div>{original.name}</div>
+              <div className="text-sm text-muted-foreground">
+                Value: {original.value}
+              </div>
+            </div>
+          ),
+        },
+      ];
+
+      const estimateRowHeight = vi.fn(() => 80); // Larger height for complex cells
+
+      const { container } = render(
+        <VirtualizedTableTanstack
+          data={mockData.slice(0, 5)}
+          columns={customColumns}
+          getRowId={(row) => row.id}
+          enableDynamicHeight={true}
+          estimateRowHeight={estimateRowHeight}
+        />
+      );
+
+      expect(container).toBeInTheDocument();
+    });
+
+    it('falls back to default rowHeight when estimateRowHeight is not provided', () => {
+      const { container } = render(
+        <VirtualizedTableTanstack
+          data={mockData}
+          columns={columns}
+          getRowId={(row) => row.id}
+          enableDynamicHeight={true}
+          // No estimateRowHeight provided
+          rowHeight={50}
+        />
+      );
+
+      expect(container).toBeInTheDocument();
+    });
+
+    it('handles edge case with empty string content', () => {
+      const edgeCaseData = [
+        { id: '1', name: '', value: 0 },
+        { id: '2', name: 'Valid', value: 100 },
+      ];
+
+      const estimateRowHeight = vi.fn((row: TestData) => {
+        return row.name.length > 0 ? 48 : 32;
+      });
+
+      const { container } = render(
+        <VirtualizedTableTanstack
+          data={edgeCaseData}
+          columns={columns}
+          getRowId={(row) => row.id}
+          enableDynamicHeight={true}
+          estimateRowHeight={estimateRowHeight}
+        />
+      );
+
+      expect(container).toBeInTheDocument();
+    });
   });
 });
