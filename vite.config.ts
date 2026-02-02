@@ -218,12 +218,12 @@ export default defineConfig(({ mode }) => ({
         assetFileNames: 'assets/asset-[hash].[ext]',
         // Ensure React is not split into separate chunks
         manualChunks: (id) => {
-          // Exclude React from chunking - keep it in vendor
-          if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
-            return 'vendor';
-          }
           // Large deps into separate chunks
           if (id.includes('node_modules')) {
+            // Exclude React from chunking - keep it in vendor (must check before other packages)
+            if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/scheduler/')) {
+              return 'vendor';
+            }
             if (id.includes('@tanstack')) {
               return 'vendor-query';
             }
@@ -238,7 +238,7 @@ export default defineConfig(({ mode }) => ({
               return 'vendor-ui';
             }
             // Split chart libraries
-            if (id.includes('recharts') || id.includes('@tremor')) {
+            if (id.includes('recharts') || id.includes('@tremor') || id.includes('d3-')) {
               return 'vendor-charts';
             }
             return 'vendor';
