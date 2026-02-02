@@ -15,7 +15,7 @@ describe('Orders Tenant Created At Index Migration', () => {
   try {
     const migrationPath = join(process.cwd(), 'supabase', 'migrations', '20260202085153_add_orders_tenant_created_at_index.sql');
     migrationContent = readFileSync(migrationPath, 'utf-8');
-  } catch (error) {
+  } catch {
     migrationContent = '';
   }
 
