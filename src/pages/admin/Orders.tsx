@@ -1067,26 +1067,26 @@ export default function Orders() {
         description="This action cannot be undone."
       />
 
-      <Suspense fallback={
-        exportDialogOpen ? (
+      {exportDialogOpen && (
+        <Suspense fallback={
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-2">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">Loading export options...</p>
             </div>
           </div>
-        ) : null
-      }>
-        <ExportOptionsDialog
-          open={exportDialogOpen}
-          onOpenChange={setExportDialogOpen}
-          onExport={handleExportWithOptions}
-          fields={orderExportFields}
-          title="Export Orders"
-          description="Choose which related data to include in the CSV export."
-          itemCount={filteredOrders.length}
-        />
-      </Suspense>
+        }>
+          <ExportOptionsDialog
+            open={exportDialogOpen}
+            onOpenChange={setExportDialogOpen}
+            onExport={handleExportWithOptions}
+            fields={orderExportFields}
+            title="Export Orders"
+            description="Choose which related data to include in the CSV export."
+            itemCount={filteredOrders.length}
+          />
+        </Suspense>
+      )}
 
       <OrderCloneToB2BDialog
         order={orderToClone}

@@ -202,7 +202,7 @@ describe('Orders Page - Lazy Loading', () => {
       const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
         try {
           return <>{children}</>;
-        } catch (error) {
+        } catch {
           return <div data-testid="error-state">Failed to load export dialog</div>;
         }
       };
@@ -274,6 +274,54 @@ describe('Orders Page - Lazy Loading', () => {
 
       // Now the lazy loader should be invoked
       expect(componentLoaded).toBe(true);
+    });
+
+    it('should only render Suspense wrapper when exportDialogOpen is true', () => {
+      const LazyExportDialog = lazy(() => {
+        return Promise.resolve({
+          default: () => <div data-testid="export-dialog">Export Dialog</div>,
+        });
+      });
+
+      const TestComponent = ({ exportDialogOpen }: { exportDialogOpen: boolean }) => (
+        <div>
+          <div data-testid="main-content">Orders Page Content</div>
+          {exportDialogOpen && (
+            <Suspense fallback={<div data-testid="suspense-fallback">Loading...</div>}>
+              <LazyExportDialog />
+            </Suspense>
+          )}
+        </div>
+      );
+
+      const { rerender } = render(
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <TestComponent exportDialogOpen={false} />
+          </BrowserRouter>
+        </QueryClientProvider>
+      );
+
+      // When dialog is closed, Suspense should not be rendered
+      expect(screen.getByTestId('main-content')).toBeInTheDocument();
+      expect(screen.queryByTestId('suspense-fallback')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('export-dialog')).not.toBeInTheDocument();
+
+      // Open the dialog
+      rerender(
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <TestComponent exportDialogOpen={true} />
+          </BrowserRouter>
+        </QueryClientProvider>
+      );
+
+      // Now Suspense fallback should appear
+      expect(screen.getByTestId('main-content')).toBeInTheDocument();
+      // The fallback or loaded component should be present
+      expect(
+        screen.queryByTestId('suspense-fallback') || screen.queryByTestId('export-dialog')
+      ).toBeTruthy();
     });
 
     it('should cache lazy loaded component after first load', async () => {
