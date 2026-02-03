@@ -16,7 +16,7 @@ import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import Target from "lucide-react/dist/esm/icons/target";
 import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
 import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
+import type { LucideIcon } from "lucide-react";
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/useIsMobile';
 

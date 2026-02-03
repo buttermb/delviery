@@ -248,7 +248,6 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
         }
 
         const runnerName = delivery.runner?.full_name || 'Runner';
-        // @ts-expect-error - delivery_address may exist on order or be accessed differently
         const clientName = (delivery as any).delivery_address?.split(',')[0] || (delivery.order as any)?.delivery_address?.split(',')[0] || 'Client';
         const orderNumber = delivery.order?.order_number || 'N/A';
 

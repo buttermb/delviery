@@ -16,7 +16,7 @@ import Smartphone from "lucide-react/dist/esm/icons/smartphone";
 import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import Mail from "lucide-react/dist/esm/icons/mail";
 import Link2 from "lucide-react/dist/esm/icons/link-2";
-import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
+import type { LucideIcon } from "lucide-react";
 
 export function IntegrationEcosystem() {
   // Common, easy-to-integrate tools

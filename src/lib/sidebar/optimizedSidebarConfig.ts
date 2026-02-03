@@ -67,7 +67,7 @@ import Presentation from "lucide-react/dist/esm/icons/presentation";
 import Calculator from "lucide-react/dist/esm/icons/calculator";
 import UserPlus from "lucide-react/dist/esm/icons/user-plus";
 import Wrench from "lucide-react/dist/esm/icons/wrench";
-import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
+import type { LucideIcon } from "lucide-react";
 
 export type SubscriptionTier = 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
 

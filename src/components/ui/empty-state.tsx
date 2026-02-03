@@ -9,7 +9,7 @@ import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import Inbox from "lucide-react/dist/esm/icons/inbox";
 import FolderOpen from "lucide-react/dist/esm/icons/folder-open";
 import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
+import type { LucideIcon } from "lucide-react";
 
 /**
  * Predefined illustrations for common empty states

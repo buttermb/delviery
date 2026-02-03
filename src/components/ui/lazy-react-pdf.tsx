@@ -20,14 +20,14 @@ function withSuspense<P extends object>(
   );
 }
 
-// Lazy load PDF document components
+// Lazy load PDF document components - using 'any' cast for lazy-loaded class components
 export const Document = withSuspense(
   lazy(() =>
     import('@react-pdf/renderer').then((module) => ({
       default: module.Document,
     }))
   )
-) as typeof ReactPDF.Document;
+) as any;
 
 export const Page = withSuspense(
   lazy(() =>
@@ -35,7 +35,7 @@ export const Page = withSuspense(
       default: module.Page,
     }))
   )
-) as typeof ReactPDF.Page;
+) as any;
 
 export const View = withSuspense(
   lazy(() =>
@@ -43,7 +43,7 @@ export const View = withSuspense(
       default: module.View,
     }))
   )
-) as typeof ReactPDF.View;
+) as any;
 
 export const Text = withSuspense(
   lazy(() =>
@@ -51,7 +51,7 @@ export const Text = withSuspense(
       default: module.Text,
     }))
   )
-) as typeof ReactPDF.Text;
+) as any;
 
 export const Image = withSuspense(
   lazy(() =>
@@ -59,7 +59,7 @@ export const Image = withSuspense(
       default: module.Image,
     }))
   )
-) as typeof ReactPDF.Image;
+) as any;
 
 export const Link = withSuspense(
   lazy(() =>
@@ -67,7 +67,7 @@ export const Link = withSuspense(
       default: module.Link,
     }))
   )
-) as typeof ReactPDF.Link;
+) as any;
 
 // Lazy load interactive components
 export const PDFDownloadLink = withSuspense(
@@ -76,7 +76,7 @@ export const PDFDownloadLink = withSuspense(
       default: module.PDFDownloadLink,
     }))
   )
-) as typeof ReactPDF.PDFDownloadLink;
+) as any;
 
 export const PDFViewer = withSuspense(
   lazy(() =>
@@ -84,7 +84,7 @@ export const PDFViewer = withSuspense(
       default: module.PDFViewer,
     }))
   )
-) as typeof ReactPDF.PDFViewer;
+) as any;
 
 export const BlobProvider = withSuspense(
   lazy(() =>
@@ -92,7 +92,7 @@ export const BlobProvider = withSuspense(
       default: module.BlobProvider,
     }))
   )
-) as typeof ReactPDF.BlobProvider;
+) as any;
 
 // Lazy load style utilities - these don't need Suspense as they're utilities
 export const StyleSheet = {
@@ -113,6 +113,5 @@ export type {
   PDFDownloadLinkProps,
   PDFViewerProps,
   BlobProviderProps,
-  Style,
   Styles,
 } from '@react-pdf/renderer';

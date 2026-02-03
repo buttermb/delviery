@@ -44,7 +44,7 @@ import Payment from "lucide-react/dist/esm/icons/credit-card";
 import Bell from "lucide-react/dist/esm/icons/bell";
 import Mail from "lucide-react/dist/esm/icons/mail";
 import Phone from "lucide-react/dist/esm/icons/phone";
-import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
+import type { LucideIcon } from "lucide-react";
 import React from 'react';
 
 // Icon size variants

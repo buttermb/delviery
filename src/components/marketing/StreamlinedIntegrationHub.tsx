@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
+import type { LucideIcon } from "lucide-react";
 
 interface Integration {
   name: string;
