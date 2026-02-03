@@ -10,7 +10,7 @@ import Package from "lucide-react/dist/esm/icons/package";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import FileText from "lucide-react/dist/esm/icons/file-text";
 import Shield from "lucide-react/dist/esm/icons/shield";
-import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
+import ImageIcon from "lucide-react/dist/esm/icons/image";
 import ClipboardCheck from "lucide-react/dist/esm/icons/clipboard-check";
 import { toast } from "sonner";
 import { sanitizeFormInput, sanitizeTextareaInput, sanitizeSkuInput } from "@/lib/utils/sanitize";

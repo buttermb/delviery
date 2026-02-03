@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import Check from "lucide-react/dist/esm/icons/check";
 import X from "lucide-react/dist/esm/icons/x";
 import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import Infinity as InfinityIcon from "lucide-react/dist/esm/icons/infinity as infinity-icon";
+import InfinityIcon from "lucide-react/dist/esm/icons/infinity";
 import Zap from "lucide-react/dist/esm/icons/zap";
 import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import Crown from "lucide-react/dist/esm/icons/crown";

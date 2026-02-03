@@ -16,7 +16,7 @@ import Search from "lucide-react/dist/esm/icons/search";
 import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
 import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import X from "lucide-react/dist/esm/icons/x";
-import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
+import type { LucideIcon } from "lucide-react";
 
 export type SettingsSection =
   | 'account'

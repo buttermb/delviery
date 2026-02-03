@@ -15,7 +15,7 @@ import Package from "lucide-react/dist/esm/icons/package";
 import Gift from "lucide-react/dist/esm/icons/gift";
 import Tag from "lucide-react/dist/esm/icons/tag";
 import User from "lucide-react/dist/esm/icons/user";
-import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
+import type { LucideIcon } from "lucide-react";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';

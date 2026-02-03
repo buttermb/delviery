@@ -13,7 +13,7 @@ import Check from "lucide-react/dist/esm/icons/check";
 import X from "lucide-react/dist/esm/icons/x";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import Package from "lucide-react/dist/esm/icons/package";
-import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
+import ImageIcon from "lucide-react/dist/esm/icons/image";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -3,7 +3,7 @@
  * Centralized types for the Hotbox Dashboard system
  */
 
-import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
+import type { LucideIcon } from "lucide-react";
 
 // ==========================================
 // Metric Types

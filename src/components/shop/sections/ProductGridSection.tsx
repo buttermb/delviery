@@ -11,7 +11,7 @@ import Wind from "lucide-react/dist/esm/icons/wind";
 import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
 import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
+import type { LucideIcon } from "lucide-react";
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useShopCart } from "@/hooks/useShopCart";

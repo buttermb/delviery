@@ -5,7 +5,7 @@
  * This file is maintained for backward compatibility only.
  */
 
-import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
+import type { LucideIcon } from "lucide-react";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 
 interface EmptyStateProps {

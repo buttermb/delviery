@@ -26,7 +26,7 @@ import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import Boxes from "lucide-react/dist/esm/icons/boxes";
 import Edit from "lucide-react/dist/esm/icons/edit";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
+import ImageIcon from "lucide-react/dist/esm/icons/image";
 import Beaker from "lucide-react/dist/esm/icons/beaker";
 import Tag from "lucide-react/dist/esm/icons/tag";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";

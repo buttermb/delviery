@@ -39,7 +39,7 @@ import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import Plus from "lucide-react/dist/esm/icons/plus";
 import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import FileText from "lucide-react/dist/esm/icons/file-text";
-import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
+import ImageIcon from "lucide-react/dist/esm/icons/image";
 import Lock from "lucide-react/dist/esm/icons/lock";
 import { encryptLabResults } from '@/lib/encryption/sensitive-fields';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

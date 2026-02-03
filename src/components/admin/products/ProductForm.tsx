@@ -17,7 +17,7 @@ import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import Package from "lucide-react/dist/esm/icons/package";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
+import ImageIcon from "lucide-react/dist/esm/icons/image";
 import FileText from "lucide-react/dist/esm/icons/file-text";
 import Barcode from "lucide-react/dist/esm/icons/barcode";
 import Layers from "lucide-react/dist/esm/icons/layers";

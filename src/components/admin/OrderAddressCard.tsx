@@ -15,7 +15,7 @@ import Copy from "lucide-react/dist/esm/icons/copy";
 import Check from "lucide-react/dist/esm/icons/check";
 import Building2 from "lucide-react/dist/esm/icons/building-2";
 import Home from "lucide-react/dist/esm/icons/home";
-import Map as MapIcon from "lucide-react/dist/esm/icons/map as map-icon";
+import MapIcon from "lucide-react/dist/esm/icons/map";
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 

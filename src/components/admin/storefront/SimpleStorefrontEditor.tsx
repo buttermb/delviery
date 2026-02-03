@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import Palette from "lucide-react/dist/esm/icons/palette";
-import ImageIcon from "lucide-react/dist/esm/icons/image-icon";
+import ImageIcon from "lucide-react/dist/esm/icons/image";
 import Layout from "lucide-react/dist/esm/icons/layout";
 import Box from "lucide-react/dist/esm/icons/box";
 import Sparkles from "lucide-react/dist/esm/icons/sparkles";

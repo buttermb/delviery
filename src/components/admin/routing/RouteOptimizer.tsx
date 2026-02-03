@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
-import Route as RouteIcon from "lucide-react/dist/esm/icons/route as route-icon";
+import RouteIcon from "lucide-react/dist/esm/icons/route";
 import Navigation from "lucide-react/dist/esm/icons/navigation";
 import MapPin from "lucide-react/dist/esm/icons/map-pin";
 import Clock from "lucide-react/dist/esm/icons/clock";

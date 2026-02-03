@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import Upload from "lucide-react/dist/esm/icons/upload";
 import X from "lucide-react/dist/esm/icons/x";
-import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
+import ImageIcon from "lucide-react/dist/esm/icons/image";
 import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import Star from "lucide-react/dist/esm/icons/star";

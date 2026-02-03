@@ -1,5 +1,5 @@
 import { Card } from '@/components/ui/card';
-import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
+import type { LucideIcon } from "lucide-react";
 import { motion } from 'framer-motion';
 
 interface MenuStatsCardProps {

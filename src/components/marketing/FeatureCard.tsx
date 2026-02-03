@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
+import type { LucideIcon } from "lucide-react";
 import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import { AnimatedIcon } from "./AnimatedIcon";
 

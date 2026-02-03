@@ -10,7 +10,7 @@ import Search from "lucide-react/dist/esm/icons/search";
 import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
 import Zap from "lucide-react/dist/esm/icons/zap";
 import X from "lucide-react/dist/esm/icons/x";
-import ImageIcon from "lucide-react/dist/esm/icons/image-icon";
+import ImageIcon from "lucide-react/dist/esm/icons/image";
 import FileText from "lucide-react/dist/esm/icons/file-text";
 import Download from "lucide-react/dist/esm/icons/download";
 import Check from "lucide-react/dist/esm/icons/check";

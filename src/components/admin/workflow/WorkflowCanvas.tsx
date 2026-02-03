@@ -34,7 +34,7 @@ import Settings from "lucide-react/dist/esm/icons/settings";
 import Zap from "lucide-react/dist/esm/icons/zap";
 import Database from "lucide-react/dist/esm/icons/database";
 import Send from "lucide-react/dist/esm/icons/send";
-import Webhook as WebhookIcon from "lucide-react/dist/esm/icons/webhook as webhook-icon";
+import WebhookIcon from "lucide-react/dist/esm/icons/webhook";
 import Clock from "lucide-react/dist/esm/icons/clock";
 import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import Blocks from "lucide-react/dist/esm/icons/blocks";

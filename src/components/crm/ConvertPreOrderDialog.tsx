@@ -27,7 +27,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import CalendarIcon from "lucide-react/dist/esm/icons/calendar-icon";
+import CalendarIcon from "lucide-react/dist/esm/icons/calendar";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import { format, addDays } from "date-fns";

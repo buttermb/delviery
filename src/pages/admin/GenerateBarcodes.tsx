@@ -29,7 +29,7 @@ import Layers from "lucide-react/dist/esm/icons/layers";
 import FileText from "lucide-react/dist/esm/icons/file-text";
 import Settings from "lucide-react/dist/esm/icons/settings";
 import Eye from "lucide-react/dist/esm/icons/eye";
-import Grid3x3 from "lucide-react/dist/esm/icons/grid-3x-3";
+import Grid3x3 from "lucide-react/dist/esm/icons/grid-3x3";
 import { useToast } from '@/hooks/use-toast';
 import {
   generateBarcodeDataURL,

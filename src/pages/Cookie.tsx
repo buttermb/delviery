@@ -3,7 +3,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Cookie as CookieIcon from "lucide-react/dist/esm/icons/cookie as cookie-icon";
+import CookieIcon from "lucide-react/dist/esm/icons/cookie";
 import Info from "lucide-react/dist/esm/icons/info";
 import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 

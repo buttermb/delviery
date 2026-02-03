@@ -12,7 +12,7 @@ import {
 import Search from "lucide-react/dist/esm/icons/search";
 import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
+import type { LucideIcon } from "lucide-react";
 import { faqCategories, searchFAQs, getPopularFAQs, FAQ } from '@/lib/faq-data';
 import { FAQRating } from '@/components/faq/FAQRating';
 import { FAQRelated } from '@/components/faq/FAQRelated';

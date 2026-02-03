@@ -10,7 +10,7 @@ import Package from "lucide-react/dist/esm/icons/package";
 import Truck from "lucide-react/dist/esm/icons/truck";
 import Ban from "lucide-react/dist/esm/icons/ban";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
+import type { LucideIcon } from "lucide-react";
 
 export interface StatusBadgeProps extends Omit<BadgeProps, 'variant'> {
   /** The status value to display */

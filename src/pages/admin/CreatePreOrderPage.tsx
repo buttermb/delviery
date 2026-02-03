@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import CalendarIcon from "lucide-react/dist/esm/icons/calendar-icon";
+import CalendarIcon from "lucide-react/dist/esm/icons/calendar";
 import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import Save from "lucide-react/dist/esm/icons/save";

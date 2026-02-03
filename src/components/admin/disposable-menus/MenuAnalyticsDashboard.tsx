@@ -6,7 +6,7 @@ import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import Flame from "lucide-react/dist/esm/icons/flame";
 import Clock from "lucide-react/dist/esm/icons/clock";
 import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import PieChart as PieChartIcon from "lucide-react/dist/esm/icons/pie-chart as pie-chart-icon";
+import PieChartIcon from "lucide-react/dist/esm/icons/pie-chart";
 import Activity from "lucide-react/dist/esm/icons/activity";
 import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import Zap from "lucide-react/dist/esm/icons/zap";

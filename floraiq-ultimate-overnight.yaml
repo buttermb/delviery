@@ -214,31 +214,31 @@ tasks:
     completed: true
   - title: Create migration add composite index on products tenant_id is_active
     parallel_group: 11
-    completed: false
+    completed: true
   - title: Create migration add composite index on wholesale_orders tenant_id status
     parallel_group: 11
-    completed: false
+    completed: true
   - title: Create migration add composite index on customers tenant_id created_at DESC
     parallel_group: 12
-    completed: false
+    completed: true
   - title: Create migration add composite index on invoices tenant_id status
     parallel_group: 12
-    completed: false
+    completed: true
   - title: Create migration add composite index on menu_orders tenant_id status
     parallel_group: 12
-    completed: false
+    completed: true
   - title: Create migration add partial index on products WHERE stock_quantity less
       than 10
     parallel_group: 12
-    completed: false
+    completed: true
   - title: Create migration add get_dashboard_stats RPC function with tenant_id
       date_range params
     parallel_group: 12
-    completed: false
+    completed: true
   - title: Create migration add get_inventory_summary RPC function with tenant_id
       param
     parallel_group: 12
-    completed: false
+    completed: true
   - title: Create migration add get_pending_orders_count RPC function
     parallel_group: 13
     completed: false

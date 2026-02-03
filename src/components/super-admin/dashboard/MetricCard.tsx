@@ -3,7 +3,7 @@
  * Reusable metric card with trend indicator and optional sparkline
  */
 
-import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
+import type { LucideIcon } from "lucide-react";
 import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/select';
 import Search from "lucide-react/dist/esm/icons/search";
 import Package from "lucide-react/dist/esm/icons/package";
-import Grid3X3 from "lucide-react/dist/esm/icons/grid-3-x3";
+import Grid3X3 from "lucide-react/dist/esm/icons/grid-3x3";
 import List from "lucide-react/dist/esm/icons/list";
 import X from "lucide-react/dist/esm/icons/x";
 import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";

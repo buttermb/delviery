@@ -18,7 +18,7 @@ import Eye from "lucide-react/dist/esm/icons/eye";
 import Users from "lucide-react/dist/esm/icons/users";
 import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Menu as MenuIcon from "lucide-react/dist/esm/icons/menu as menu-icon";
+import MenuIcon from "lucide-react/dist/esm/icons/menu";
 import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
 import List from "lucide-react/dist/esm/icons/list";
 import Filter from "lucide-react/dist/esm/icons/filter";

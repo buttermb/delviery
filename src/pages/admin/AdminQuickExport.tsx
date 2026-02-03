@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useToast } from '@/hooks/use-toast';
 import Download from "lucide-react/dist/esm/icons/download";
 import FileText from "lucide-react/dist/esm/icons/file-text";
-import Calendar as CalendarIcon from "lucide-react/dist/esm/icons/calendar as calendar-icon";
+import CalendarIcon from "lucide-react/dist/esm/icons/calendar";
 import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';

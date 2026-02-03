@@ -40,7 +40,7 @@ import Layers from "lucide-react/dist/esm/icons/layers";
 import Tag from "lucide-react/dist/esm/icons/tag";
 import Percent from "lucide-react/dist/esm/icons/percent";
 import Receipt from "lucide-react/dist/esm/icons/receipt";
-import CreditCard as Payment from "lucide-react/dist/esm/icons/credit-card as payment";
+import Payment from "lucide-react/dist/esm/icons/credit-card";
 import Bell from "lucide-react/dist/esm/icons/bell";
 import Mail from "lucide-react/dist/esm/icons/mail";
 import Phone from "lucide-react/dist/esm/icons/phone";

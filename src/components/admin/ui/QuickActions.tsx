@@ -3,7 +3,7 @@
  * Floating action buttons for hub pages
  */
 
-import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
+import type { LucideIcon } from "lucide-react";
 import Plus from "lucide-react/dist/esm/icons/plus";
 import { Button } from '@/components/ui/button';
 import {

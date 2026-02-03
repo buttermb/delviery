@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import CalendarIcon from "lucide-react/dist/esm/icons/calendar-icon";
+import CalendarIcon from "lucide-react/dist/esm/icons/calendar";
 import { format } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';

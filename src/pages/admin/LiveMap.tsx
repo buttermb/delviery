@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import MapPin from "lucide-react/dist/esm/icons/map-pin";
 import Truck from "lucide-react/dist/esm/icons/truck";
 import Layers from "lucide-react/dist/esm/icons/layers";
-import Map as MapIcon from "lucide-react/dist/esm/icons/map as map-icon";
+import MapIcon from "lucide-react/dist/esm/icons/map";
 import Search from "lucide-react/dist/esm/icons/search";
 import Phone from "lucide-react/dist/esm/icons/phone";
 import Navigation from "lucide-react/dist/esm/icons/navigation";

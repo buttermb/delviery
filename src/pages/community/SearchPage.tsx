@@ -12,7 +12,7 @@ import { PostSkeleton } from '@/components/community/PostSkeleton';
 import { EmptyState } from '@/components/community/EmptyState';
 import { Button } from '@/components/ui/button';
 import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Search as SearchIcon from "lucide-react/dist/esm/icons/search as search-icon";
+import SearchIcon from "lucide-react/dist/esm/icons/search";
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 

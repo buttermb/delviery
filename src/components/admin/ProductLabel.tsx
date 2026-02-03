@@ -25,7 +25,7 @@ import Download from "lucide-react/dist/esm/icons/download";
 import Printer from "lucide-react/dist/esm/icons/printer";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import QrCode from "lucide-react/dist/esm/icons/qr-code";
-import Barcode as BarcodeIcon from "lucide-react/dist/esm/icons/barcode as barcode-icon";
+import BarcodeIcon from "lucide-react/dist/esm/icons/barcode";
 import { downloadProductLabel, generateProductLabelPDF, type ProductLabelData, type LabelSize } from '@/lib/utils/labelGenerator';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';

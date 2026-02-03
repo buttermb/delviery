@@ -36,7 +36,7 @@ import Upload from "lucide-react/dist/esm/icons/upload";
 import X from "lucide-react/dist/esm/icons/x";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import FileText from "lucide-react/dist/esm/icons/file-text";
-import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
+import ImageIcon from "lucide-react/dist/esm/icons/image";
 import { compressImage, isCompressibleImage, COMPRESSION_PRESETS } from '@/lib/utils/image-compression';
 
 const US_STATES = [

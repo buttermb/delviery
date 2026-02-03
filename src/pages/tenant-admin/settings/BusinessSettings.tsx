@@ -38,7 +38,7 @@ import MapPin from "lucide-react/dist/esm/icons/map-pin";
 import Phone from "lucide-react/dist/esm/icons/phone";
 import Globe from "lucide-react/dist/esm/icons/globe";
 import Clock from "lucide-react/dist/esm/icons/clock";
-import Image as ImageIcon from "lucide-react/dist/esm/icons/image as image-icon";
+import ImageIcon from "lucide-react/dist/esm/icons/image";
 import Palette from "lucide-react/dist/esm/icons/palette";
 import Upload from "lucide-react/dist/esm/icons/upload";
 import Database from "lucide-react/dist/esm/icons/database";
