@@ -1,5 +1,4 @@
 import { lazy, ComponentType, Suspense, ReactNode } from 'react';
-import type * as RechartsTypes from 'recharts';
 
 // Skeleton loader for charts
 const ChartSkeleton = () => (
@@ -18,6 +17,9 @@ function withSuspense<P extends object>(
   );
 }
 
+// All lazy-loaded recharts components use 'any' cast to avoid complex generic type issues
+// with React.lazy() and class component type inference
+
 // Lazy load chart containers
 export const ResponsiveContainer = withSuspense(
   lazy(() =>
@@ -25,7 +27,7 @@ export const ResponsiveContainer = withSuspense(
       default: module.ResponsiveContainer,
     }))
   )
-) as typeof RechartsTypes.ResponsiveContainer;
+) as any;
 
 // Lazy load chart types
 export const BarChart = withSuspense(
@@ -34,7 +36,7 @@ export const BarChart = withSuspense(
       default: module.BarChart,
     }))
   )
-) as typeof RechartsTypes.BarChart;
+) as any;
 
 export const LineChart = withSuspense(
   lazy(() =>
@@ -42,7 +44,7 @@ export const LineChart = withSuspense(
       default: module.LineChart,
     }))
   )
-) as typeof RechartsTypes.LineChart;
+) as any;
 
 export const PieChart = withSuspense(
   lazy(() =>
@@ -50,7 +52,7 @@ export const PieChart = withSuspense(
       default: module.PieChart,
     }))
   )
-) as typeof RechartsTypes.PieChart;
+) as any;
 
 export const AreaChart = withSuspense(
   lazy(() =>
@@ -58,7 +60,7 @@ export const AreaChart = withSuspense(
       default: module.AreaChart,
     }))
   )
-) as typeof RechartsTypes.AreaChart;
+) as any;
 
 export const ComposedChart = withSuspense(
   lazy(() =>
@@ -66,7 +68,7 @@ export const ComposedChart = withSuspense(
       default: module.ComposedChart,
     }))
   )
-) as typeof RechartsTypes.ComposedChart;
+) as any;
 
 export const RadarChart = withSuspense(
   lazy(() =>
@@ -74,7 +76,7 @@ export const RadarChart = withSuspense(
       default: module.RadarChart,
     }))
   )
-) as typeof RechartsTypes.RadarChart;
+) as any;
 
 export const ScatterChart = withSuspense(
   lazy(() =>
@@ -82,7 +84,7 @@ export const ScatterChart = withSuspense(
       default: module.ScatterChart,
     }))
   )
-) as typeof RechartsTypes.ScatterChart;
+) as any;
 
 export const FunnelChart = withSuspense(
   lazy(() =>
@@ -90,7 +92,7 @@ export const FunnelChart = withSuspense(
       default: module.FunnelChart,
     }))
   )
-) as typeof RechartsTypes.FunnelChart;
+) as any;
 
 export const RadialBarChart = withSuspense(
   lazy(() =>
@@ -98,7 +100,7 @@ export const RadialBarChart = withSuspense(
       default: module.RadialBarChart,
     }))
   )
-) as typeof RechartsTypes.RadialBarChart;
+) as any;
 
 export const Treemap = withSuspense(
   lazy(() =>
@@ -106,7 +108,7 @@ export const Treemap = withSuspense(
       default: module.Treemap,
     }))
   )
-) as typeof RechartsTypes.Treemap;
+) as any;
 
 export const Sankey = withSuspense(
   lazy(() =>
@@ -114,7 +116,7 @@ export const Sankey = withSuspense(
       default: module.Sankey,
     }))
   )
-) as typeof RechartsTypes.Sankey;
+) as any;
 
 // Lazy load chart components
 export const Bar = withSuspense(
@@ -123,7 +125,7 @@ export const Bar = withSuspense(
       default: module.Bar,
     }))
   )
-) as typeof RechartsTypes.Bar;
+) as any;
 
 export const Line = withSuspense(
   lazy(() =>
@@ -131,7 +133,7 @@ export const Line = withSuspense(
       default: module.Line,
     }))
   )
-) as typeof RechartsTypes.Line;
+) as any;
 
 export const Area = withSuspense(
   lazy(() =>
@@ -139,7 +141,7 @@ export const Area = withSuspense(
       default: module.Area,
     }))
   )
-) as typeof RechartsTypes.Area;
+) as any;
 
 export const Pie = withSuspense(
   lazy(() =>
@@ -147,7 +149,7 @@ export const Pie = withSuspense(
       default: module.Pie,
     }))
   )
-) as typeof RechartsTypes.Pie;
+) as any;
 
 export const Radar = withSuspense(
   lazy(() =>
@@ -155,7 +157,7 @@ export const Radar = withSuspense(
       default: module.Radar,
     }))
   )
-) as typeof RechartsTypes.Radar;
+) as any;
 
 export const Scatter = withSuspense(
   lazy(() =>
@@ -163,7 +165,7 @@ export const Scatter = withSuspense(
       default: module.Scatter,
     }))
   )
-) as typeof RechartsTypes.Scatter;
+) as any;
 
 export const Funnel = withSuspense(
   lazy(() =>
@@ -171,7 +173,7 @@ export const Funnel = withSuspense(
       default: module.Funnel,
     }))
   )
-) as typeof RechartsTypes.Funnel;
+) as any;
 
 export const RadialBar = withSuspense(
   lazy(() =>
@@ -179,7 +181,7 @@ export const RadialBar = withSuspense(
       default: module.RadialBar,
     }))
   )
-) as typeof RechartsTypes.RadialBar;
+) as any;
 
 // Lazy load axes
 export const XAxis = withSuspense(
@@ -188,7 +190,7 @@ export const XAxis = withSuspense(
       default: module.XAxis,
     }))
   )
-) as typeof RechartsTypes.XAxis;
+) as any;
 
 export const YAxis = withSuspense(
   lazy(() =>
@@ -196,7 +198,7 @@ export const YAxis = withSuspense(
       default: module.YAxis,
     }))
   )
-) as typeof RechartsTypes.YAxis;
+) as any;
 
 export const ZAxis = withSuspense(
   lazy(() =>
@@ -204,7 +206,7 @@ export const ZAxis = withSuspense(
       default: module.ZAxis,
     }))
   )
-) as typeof RechartsTypes.ZAxis;
+) as any;
 
 // Lazy load grid and other components
 export const CartesianGrid = withSuspense(
@@ -213,7 +215,7 @@ export const CartesianGrid = withSuspense(
       default: module.CartesianGrid,
     }))
   )
-) as typeof RechartsTypes.CartesianGrid;
+) as any;
 
 export const PolarGrid = withSuspense(
   lazy(() =>
@@ -221,7 +223,7 @@ export const PolarGrid = withSuspense(
       default: module.PolarGrid,
     }))
   )
-) as typeof RechartsTypes.PolarGrid;
+) as any;
 
 export const PolarAngleAxis = withSuspense(
   lazy(() =>
@@ -229,7 +231,7 @@ export const PolarAngleAxis = withSuspense(
       default: module.PolarAngleAxis,
     }))
   )
-) as typeof RechartsTypes.PolarAngleAxis;
+) as any;
 
 export const PolarRadiusAxis = withSuspense(
   lazy(() =>
@@ -237,7 +239,7 @@ export const PolarRadiusAxis = withSuspense(
       default: module.PolarRadiusAxis,
     }))
   )
-) as typeof RechartsTypes.PolarRadiusAxis;
+) as any;
 
 export const Tooltip = withSuspense(
   lazy(() =>
@@ -245,7 +247,7 @@ export const Tooltip = withSuspense(
       default: module.Tooltip,
     }))
   )
-) as typeof RechartsTypes.Tooltip;
+) as any;
 
 export const Legend = withSuspense(
   lazy(() =>
@@ -253,7 +255,7 @@ export const Legend = withSuspense(
       default: module.Legend,
     }))
   )
-) as typeof RechartsTypes.Legend;
+) as any;
 
 export const Cell = withSuspense(
   lazy(() =>
@@ -261,7 +263,7 @@ export const Cell = withSuspense(
       default: module.Cell,
     }))
   )
-) as typeof RechartsTypes.Cell;
+) as any;
 
 export const Label = withSuspense(
   lazy(() =>
@@ -269,7 +271,7 @@ export const Label = withSuspense(
       default: module.Label,
     }))
   )
-) as typeof RechartsTypes.Label;
+) as any;
 
 export const LabelList = withSuspense(
   lazy(() =>
@@ -277,7 +279,7 @@ export const LabelList = withSuspense(
       default: module.LabelList,
     }))
   )
-) as typeof RechartsTypes.LabelList;
+) as any;
 
 export const ReferenceLine = withSuspense(
   lazy(() =>
@@ -285,7 +287,7 @@ export const ReferenceLine = withSuspense(
       default: module.ReferenceLine,
     }))
   )
-) as typeof RechartsTypes.ReferenceLine;
+) as any;
 
 export const ReferenceArea = withSuspense(
   lazy(() =>
@@ -293,7 +295,7 @@ export const ReferenceArea = withSuspense(
       default: module.ReferenceArea,
     }))
   )
-) as typeof RechartsTypes.ReferenceArea;
+) as any;
 
 export const ReferenceDot = withSuspense(
   lazy(() =>
@@ -301,7 +303,7 @@ export const ReferenceDot = withSuspense(
       default: module.ReferenceDot,
     }))
   )
-) as typeof RechartsTypes.ReferenceDot;
+) as any;
 
 export const Brush = withSuspense(
   lazy(() =>
@@ -309,7 +311,7 @@ export const Brush = withSuspense(
       default: module.Brush,
     }))
   )
-) as typeof RechartsTypes.Brush;
+) as any;
 
 export const ErrorBar = withSuspense(
   lazy(() =>
@@ -317,16 +319,11 @@ export const ErrorBar = withSuspense(
       default: module.ErrorBar,
     }))
   )
-) as typeof RechartsTypes.ErrorBar;
+) as any;
 
-// Re-export types for convenience
+// Re-export types for convenience - only export types that exist in recharts
 export type {
   ResponsiveContainerProps,
-  BarChartProps,
-  LineChartProps,
-  PieChartProps,
-  AreaChartProps,
-  ComposedChartProps,
   XAxisProps,
   YAxisProps,
   TooltipProps,

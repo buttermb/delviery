@@ -140,7 +140,7 @@ export default function CustomerManagement() {
                 last_name: nameParts.slice(1).join(' ') || customer.last_name || '',
                 email: decrypted.email || customer.email || null,
                 phone: decrypted.phone || customer.phone || null,
-              };
+              } as Customer;
             } catch (decryptError) {
               // Decryption failed - check if data looks encrypted (key mismatch)
               logger.warn('Failed to decrypt customer, checking for encryption key mismatch', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'CustomerManagement' });
@@ -155,7 +155,7 @@ export default function CustomerManagement() {
                 email: hasEncryptedData && looksLikeEncryptedData(emailValue) ? null : emailValue,
                 phone: hasEncryptedData && looksLikeEncryptedData(phoneValue) ? null : phoneValue,
                 _encryptedIndicator: hasEncryptedData,
-              };
+              } as Customer;
             }
           });
         } catch (error) {
@@ -175,9 +175,9 @@ export default function CustomerManagement() {
               email: looksLikeEncryptedData(emailValue) ? null : emailValue,
               phone: looksLikeEncryptedData(phoneValue) ? null : phoneValue,
               _encryptedIndicator: true,
-            };
+            } as Customer;
           }
-          return customer;
+          return customer as unknown as Customer;
         });
       }
 

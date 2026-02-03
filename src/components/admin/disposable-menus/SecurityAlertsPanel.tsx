@@ -13,7 +13,7 @@ import MapPin from "lucide-react/dist/esm/icons/map-pin";
 import Clock from "lucide-react/dist/esm/icons/clock";
 import User from "lucide-react/dist/esm/icons/user";
 import Eye from "lucide-react/dist/esm/icons/eye";
-import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
+import type { LucideIcon } from "lucide-react";
 
 const severityConfig = {
   critical: {

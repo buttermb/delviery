@@ -156,7 +156,8 @@ export default function Orders() {
   const OrderSourceBadge = ({ source }: { source?: string }) => (
     <Badge variant="outline" className="text-xs">{source || 'admin'}</Badge>
   );
-  const OrderSMSButton = () => null;
+  // OrderSMSButton stub - accepts props but renders nothing when actual component isn't available
+  const OrderSMSButton = (_props: Record<string, unknown>) => null;
 
   // Bulk status update hook
   const bulkStatusUpdate = useOrderBulkStatusUpdate({

@@ -34,7 +34,7 @@ import PieChart from "lucide-react/dist/esm/icons/pie-chart";
 import Building2 from "lucide-react/dist/esm/icons/building-2";
 import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 import Eye from "lucide-react/dist/esm/icons/eye";
-import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
+import type { LucideIcon } from "lucide-react";
 
 export interface NavItem {
   name: string;
