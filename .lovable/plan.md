@@ -1,145 +1,123 @@
 
+# Fix Remotion Loading Errors
 
-# Fix All Build Errors Plan
+## Problem Analysis
 
-## Summary
-The production build is failing due to **34+ TypeScript errors** across multiple files. The root causes are:
-1. **Invalid Lucide icon type imports** - 12 files using incorrect import path
-2. **Unused `@ts-expect-error` directives** - 2 files with stale suppressions  
-3. **Type casting issues in lazy-loaded components** - React PDF and Recharts wrappers
-4. **Missing type export** - `Style` vs `Styles` in react-pdf
+The marketing page is crashing because **Remotion packages were never installed**. The code was written but the dependencies are missing from `package.json`.
 
----
+### Current Errors:
+- "Failed to fetch dynamically imported module: .../RemotionTestimonials.tsx"
+- "Failed to fetch dynamically imported module: .../VideoShowcaseRemotion.tsx"
+- 20+ TypeScript errors: "Cannot find module 'remotion'"
 
-## Error Categories
+### Root Cause:
+These files import from `remotion` and `@remotion/player`:
+- `src/remotion/Root.tsx`
+- `src/remotion/compositions/*` (all files)
+- `src/remotion/utils/animations.ts`
+- `src/components/remotion/RemotionPlayer.tsx`
+- `src/components/marketing/RemotionTestimonials.tsx`
+- `src/components/marketing/VideoShowcaseRemotion.tsx`
 
-### Category 1: Invalid LucideIcon Type Import (7 files)
-**Problem**: Files are importing `type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon"` which is an invalid path.
-
-**Fix**: Change to `import type { LucideIcon } from "lucide-react"`
-
-| File | Line |
-|------|------|
-| `src/components/ui/empty-state.tsx` | 12 |
-| `src/components/marketing/AnimatedHowItWorks.tsx` | 8 |
-| `src/components/marketing/EnhancedIntegrationHub.tsx` | 2 |
-| `src/components/marketing/IntegrationEcosystem.tsx` | 19 |
-| `src/components/marketing/ProblemSolutionSection.tsx` | 19 |
-| `src/components/marketing/StreamlinedIntegrationHub.tsx` | 2 |
-| `src/components/admin/disposable-menus/SecurityAlertsPanel.tsx` | 16 |
-
-### Category 2: Unused @ts-expect-error Directives (2 files)
-**Problem**: The errors these directives were suppressing have been fixed, making them unnecessary.
-
-**Fix**: Remove the unused directives
-
-| File | Line |
-|------|------|
-| `src/components/admin/LiveDeliveryMap.tsx` | 251 |
-| `src/components/admin/dashboard/ActivityFeedWidget.tsx` | 92 |
-
-### Category 3: Lazy Component Type Casting (2 files)
-**Problem**: Lazy-loaded components using `as typeof` casts cause type mismatches between function components and class components.
-
-**Fix**: Replace unsafe casts with proper `ComponentType` typing
-
-| File | Components |
-|------|------------|
-| `src/components/ui/lazy-react-pdf.tsx` | Document, Page, View, Text, Image, Link, PDFDownloadLink, PDFViewer, BlobProvider |
-| `src/components/ui/lazy-recharts.tsx` | Treemap, Sankey, Bar, Line, Area, Pie, Radar, Scatter, Funnel |
-
-### Category 4: Missing Type Export (1 file)
-**Problem**: `@react-pdf/renderer` exports `Styles` not `Style`
-
-**Fix**: Change `Style` to `Styles` in type re-exports
-
-| File | Line |
-|------|------|
-| `src/components/ui/lazy-react-pdf.tsx` | 116 |
+But `package.json` does NOT include `remotion` or `@remotion/player`.
 
 ---
 
-## Implementation Steps
+## Solution Options
 
-### Step 1: Fix LucideIcon Imports (7 files)
-Replace invalid import paths in all affected files:
-```typescript
-// Before (invalid)
-import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
+### Option A: Install Remotion (Full Fix)
+Add the missing packages and fix type errors.
 
-// After (correct)
-import type { LucideIcon } from "lucide-react";
+**Packages to add:**
+```json
+"remotion": "^4.0.220",
+"@remotion/player": "^4.0.220"
 ```
 
-### Step 2: Remove Stale @ts-expect-error Directives (2 files)
-Remove the unused suppression comments that are now causing errors because the underlying issues were resolved.
+**Also fix:** TypeScript errors in `VideoShowcaseLegacy.tsx` (lines 256, 265, 271, 272) where `unknown` types need explicit typing.
 
-### Step 3: Fix Lazy Component Type Casting
+**Pros:** Enables all the premium Remotion video features
+**Cons:** Adds ~2MB to bundle, requires testing
 
-**lazy-react-pdf.tsx**: Change approach from `as typeof X` to using `any` cast since these are dynamically loaded:
-```typescript
-export const Document = withSuspense(
-  lazy(() =>
-    import('@react-pdf/renderer').then((module) => ({
-      default: module.Document,
-    }))
-  )
-) as any;
-```
+### Option B: Remove Remotion Components (Quick Fix)
+Replace Remotion imports with existing Framer Motion-based alternatives.
 
-**lazy-recharts.tsx**: Same pattern for chart components.
+**Changes:**
+1. Update `MarketingHome.tsx` to use non-Remotion components:
+   - Replace `VideoShowcaseRemotion` with `VideoShowcaseLegacy`
+   - Replace `RemotionTestimonials` with existing `TestimonialsCarousel`
+   - Remove `RemotionHowItWorks` and `RemotionSecurityExplainer` lazy imports
+2. Delete unused Remotion files (optional cleanup)
 
-### Step 4: Fix Type Export
-```typescript
-// Before
-export type { Style, ... } from '@react-pdf/renderer';
-
-// After  
-export type { Styles, ... } from '@react-pdf/renderer';
-```
+**Pros:** Quick fix, no new dependencies
+**Cons:** Loses premium video features
 
 ---
 
-## Files Modified
+## Recommended Approach: Option B (Quick Fix)
 
-| File | Changes |
-|------|---------|
-| `src/components/ui/empty-state.tsx` | Fix LucideIcon import |
-| `src/components/marketing/AnimatedHowItWorks.tsx` | Fix LucideIcon import |
-| `src/components/marketing/EnhancedIntegrationHub.tsx` | Fix LucideIcon import |
-| `src/components/marketing/IntegrationEcosystem.tsx` | Fix LucideIcon import |
-| `src/components/marketing/ProblemSolutionSection.tsx` | Fix LucideIcon import |
-| `src/components/marketing/StreamlinedIntegrationHub.tsx` | Fix LucideIcon import |
-| `src/components/admin/disposable-menus/SecurityAlertsPanel.tsx` | Fix LucideIcon import |
-| `src/components/admin/LiveDeliveryMap.tsx` | Remove unused @ts-expect-error |
-| `src/components/admin/dashboard/ActivityFeedWidget.tsx` | Remove unused @ts-expect-error |
-| `src/components/ui/lazy-react-pdf.tsx` | Fix type casts + Style→Styles |
-| `src/components/ui/lazy-recharts.tsx` | Fix type casts |
+Since Remotion adds significant bundle size and requires additional configuration, the faster path is to revert to the working Framer Motion components.
 
----
+### Files to Modify
 
-## Technical Details
+| File | Change |
+|------|--------|
+| `src/pages/MarketingHome.tsx` | Replace Remotion component imports with legacy alternatives |
+| `src/components/marketing/VideoShowcaseLegacy.tsx` | Fix TypeScript errors on lines 254-272 |
 
-### Why the LucideIcon import was wrong
-The path `lucide-react/dist/esm/icons/type lucide-icon` doesn't exist - it was likely an auto-complete error. The correct export is a named type from the main package:
+### Technical Changes
+
+**1. MarketingHome.tsx**
+Replace these lazy imports:
 ```typescript
-import type { LucideIcon } from "lucide-react";
+// REMOVE these
+const VideoShowcaseRemotion = lazy(() => import("@/components/marketing/VideoShowcaseRemotion")...);
+const RemotionHowItWorks = lazy(() => import("@/components/marketing/RemotionHowItWorks")...);
+const RemotionSecurityExplainer = lazy(() => import("@/components/marketing/RemotionSecurityExplainer")...);
+const RemotionTestimonials = lazy(() => import("@/components/marketing/RemotionTestimonials")...);
+
+// ADD these instead
+const VideoShowcase = lazy(() => import("@/components/marketing/VideoShowcaseLegacy")...);
+const TestimonialsCarousel = lazy(() => import("@/components/marketing/TestimonialsCarousel")...);
 ```
 
-### Why lazy component casts fail
-When using `React.lazy()`, the returned component is a `LazyExoticComponent<ComponentType<Props>>`, not the original class/function type. Casting to `typeof OriginalComponent` causes a type mismatch. Using `any` is acceptable here because:
-1. The runtime behavior is correct
-2. Consumer code still gets proper props checking from the wrapper's generic
+And update JSX to use `<VideoShowcase />` and `<TestimonialsCarousel />` instead.
 
-### Database Status ✅
-The `wholesale_payments.tenant_id` column was successfully added in the previous fix. No further database changes needed.
+**2. VideoShowcaseLegacy.tsx (lines 254-272)**
+Add proper typing for the card object:
+```typescript
+// Line 254: Define card type
+interface OrderCard {
+  id: number;
+  customer: string;
+  items: number;
+  total: string;
+  time: string;
+  color: string;
+}
+
+// Line 254-256: Use typed array
+.map((card: OrderCard) => (
+  <motion.div
+    key={card.id}  // Now properly typed as number
+```
 
 ---
 
 ## Expected Outcome
-After implementing these fixes:
-- ✅ All 34+ TypeScript errors resolved
-- ✅ Production build succeeds
-- ✅ Publishing unblocked
-- ✅ No functional changes to components
 
+After implementation:
+- Marketing page loads without errors
+- Video showcase displays with Framer Motion animations
+- Testimonials carousel works with existing component
+- No Remotion dependencies needed
+- Build passes with 0 TypeScript errors
+
+---
+
+## Future Consideration
+
+If you want Remotion features later, you can:
+1. Install `remotion` and `@remotion/player` packages
+2. Re-enable the Remotion components in MarketingHome.tsx
+3. The compositions are already built and ready to use
