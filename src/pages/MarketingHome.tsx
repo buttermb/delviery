@@ -25,8 +25,6 @@ import { StickyMobileCTA } from "@/components/marketing/StickyMobileCTA";
 import { TrustedBy } from "@/components/marketing/TrustedBy";
 import { lazy, Suspense, useEffect } from "react";
 import { analytics } from "@/utils/analytics";
-import { preloadProductDemo } from "@/remotion/preload";
-
 // Lazy load heavy components
 const ProblemSolutionSection = lazy(() => import("@/components/marketing/ProblemSolutionSection").then(m => ({ default: m.ProblemSolutionSection })));
 const ComparisonSection = lazy(() => import("@/components/marketing/ComparisonSection").then(m => ({ default: m.ComparisonSection })));
@@ -35,10 +33,9 @@ const ROICalculator = lazy(() => import("@/components/marketing/ROICalculator").
 const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingChatButton").then(m => ({ default: m.FloatingChatButton })));
 const PlatformCapabilities = lazy(() => import("@/components/marketing/PlatformCapabilities").then(m => ({ default: m.PlatformCapabilities })));
 const EnhancedDashboardPreview = lazy(() => import("@/components/marketing/EnhancedDashboardPreview").then(m => ({ default: m.EnhancedDashboardPreview })));
-const VideoShowcaseRemotion = lazy(() => import("@/components/marketing/VideoShowcaseRemotion").then(m => ({ default: m.VideoShowcaseRemotion })));
-const RemotionHowItWorks = lazy(() => import("@/components/marketing/RemotionHowItWorks").then(m => ({ default: m.RemotionHowItWorks })));
-const RemotionSecurityExplainer = lazy(() => import("@/components/marketing/RemotionSecurityExplainer").then(m => ({ default: m.RemotionSecurityExplainer })));
-const RemotionTestimonials = lazy(() => import("@/components/marketing/RemotionTestimonials").then(m => ({ default: m.RemotionTestimonials })));
+const VideoShowcase = lazy(() => import("@/components/marketing/VideoShowcaseLegacy").then(m => ({ default: m.VideoShowcaseLegacy })));
+const TestimonialsCarousel = lazy(() => import("@/components/marketing/TestimonialsCarousel").then(m => ({ default: m.TestimonialsCarousel })));
+const AnimatedHowItWorks = lazy(() => import("@/components/marketing/AnimatedHowItWorks").then(m => ({ default: m.AnimatedHowItWorks })));
 
 // Loading fallback component
 const SectionLoader = () => (
@@ -58,9 +55,6 @@ export default function MarketingHome() {
       page: 'home',
       referrer: document.referrer,
     });
-
-    // Prefetch Remotion ProductDemo when video showcase section enters viewport
-    preloadProductDemo();
   }, []);
 
   return (
@@ -109,31 +103,29 @@ export default function MarketingHome() {
         {/* STATS SECTION */}
         <StatsSection />
 
-        {/* SECTION 4.5: HOW IT WORKS (Remotion) */}
+        {/* SECTION 4.5: HOW IT WORKS */}
         <MarketingErrorBoundary section="HowItWorks">
           <Suspense fallback={<SectionLoader />}>
-            <RemotionHowItWorks />
+            <AnimatedHowItWorks />
           </Suspense>
         </MarketingErrorBoundary>
 
-        {/* SECTION 4.6: SECURITY EXPLAINER (Remotion) */}
-        <MarketingErrorBoundary section="SecurityExplainer">
-          <Suspense fallback={<SectionLoader />}>
-            <RemotionSecurityExplainer />
-          </Suspense>
-        </MarketingErrorBoundary>
-
-        {/* SECTION 5: TESTIMONIALS (Remotion) */}
+        {/* SECTION 5: TESTIMONIALS */}
         <MarketingErrorBoundary section="Testimonials">
           <Suspense fallback={<SectionLoader />}>
-            <RemotionTestimonials />
+            <TestimonialsCarousel />
+          </Suspense>
+        </MarketingErrorBoundary>
+        <MarketingErrorBoundary section="Testimonials">
+          <Suspense fallback={<SectionLoader />}>
+            <TestimonialsCarousel />
           </Suspense>
         </MarketingErrorBoundary>
 
-        {/* SECTION 5.5: VIDEO SHOWCASE (Remotion) */}
+        {/* SECTION 5.5: VIDEO SHOWCASE */}
         <MarketingErrorBoundary section="VideoShowcase">
           <Suspense fallback={<SectionLoader />}>
-            <VideoShowcaseRemotion />
+            <VideoShowcase />
           </Suspense>
         </MarketingErrorBoundary>
 
