@@ -18,8 +18,6 @@ import { SectionSkeleton } from "@/components/marketing/SkeletonLoader";
 import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigationHelper";
 import { LiveChatWidget } from "@/components/LiveChatWidget";
 import { MarketingErrorBoundary } from "@/components/marketing/MarketingErrorBoundary";
-import { TestimonialsCarousel } from "@/components/marketing/TestimonialsCarousel";
-import { VideoShowcase } from "@/components/marketing/VideoShowcase";
 import { ForceLightMode } from "@/components/marketing/ForceLightMode";
 
 import { StatsSection } from "@/components/marketing/StatsSection";
@@ -27,6 +25,7 @@ import { StickyMobileCTA } from "@/components/marketing/StickyMobileCTA";
 import { TrustedBy } from "@/components/marketing/TrustedBy";
 import { lazy, Suspense, useEffect } from "react";
 import { analytics } from "@/utils/analytics";
+import { preloadProductDemo } from "@/remotion/preload";
 
 // Lazy load heavy components
 const ProblemSolutionSection = lazy(() => import("@/components/marketing/ProblemSolutionSection").then(m => ({ default: m.ProblemSolutionSection })));
@@ -36,6 +35,10 @@ const ROICalculator = lazy(() => import("@/components/marketing/ROICalculator").
 const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingChatButton").then(m => ({ default: m.FloatingChatButton })));
 const PlatformCapabilities = lazy(() => import("@/components/marketing/PlatformCapabilities").then(m => ({ default: m.PlatformCapabilities })));
 const EnhancedDashboardPreview = lazy(() => import("@/components/marketing/EnhancedDashboardPreview").then(m => ({ default: m.EnhancedDashboardPreview })));
+const VideoShowcaseRemotion = lazy(() => import("@/components/marketing/VideoShowcaseRemotion").then(m => ({ default: m.VideoShowcaseRemotion })));
+const RemotionHowItWorks = lazy(() => import("@/components/marketing/RemotionHowItWorks").then(m => ({ default: m.RemotionHowItWorks })));
+const RemotionSecurityExplainer = lazy(() => import("@/components/marketing/RemotionSecurityExplainer").then(m => ({ default: m.RemotionSecurityExplainer })));
+const RemotionTestimonials = lazy(() => import("@/components/marketing/RemotionTestimonials").then(m => ({ default: m.RemotionTestimonials })));
 
 // Loading fallback component
 const SectionLoader = () => (
@@ -43,7 +46,7 @@ const SectionLoader = () => (
 );
 
 export default function MarketingHome() {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   // Scroll to top on mount and track page view
   useEffect(() => {
@@ -55,6 +58,9 @@ export default function MarketingHome() {
       page: 'home',
       referrer: document.referrer,
     });
+
+    // Prefetch Remotion ProductDemo when video showcase section enters viewport
+    preloadProductDemo();
   }, []);
 
   return (
@@ -103,14 +109,32 @@ export default function MarketingHome() {
         {/* STATS SECTION */}
         <StatsSection />
 
-        {/* SECTION 5: TESTIMONIALS CAROUSEL */}
-        <MarketingErrorBoundary section="Testimonials">
-          <TestimonialsCarousel />
+        {/* SECTION 4.5: HOW IT WORKS (Remotion) */}
+        <MarketingErrorBoundary section="HowItWorks">
+          <Suspense fallback={<SectionLoader />}>
+            <RemotionHowItWorks />
+          </Suspense>
         </MarketingErrorBoundary>
 
-        {/* SECTION 5.5: VIDEO SHOWCASE */}
+        {/* SECTION 4.6: SECURITY EXPLAINER (Remotion) */}
+        <MarketingErrorBoundary section="SecurityExplainer">
+          <Suspense fallback={<SectionLoader />}>
+            <RemotionSecurityExplainer />
+          </Suspense>
+        </MarketingErrorBoundary>
+
+        {/* SECTION 5: TESTIMONIALS (Remotion) */}
+        <MarketingErrorBoundary section="Testimonials">
+          <Suspense fallback={<SectionLoader />}>
+            <RemotionTestimonials />
+          </Suspense>
+        </MarketingErrorBoundary>
+
+        {/* SECTION 5.5: VIDEO SHOWCASE (Remotion) */}
         <MarketingErrorBoundary section="VideoShowcase">
-          <VideoShowcase />
+          <Suspense fallback={<SectionLoader />}>
+            <VideoShowcaseRemotion />
+          </Suspense>
         </MarketingErrorBoundary>
 
         {/* SECTION 6: PRODUCT SHOWCASE - INTERACTIVE DASHBOARD */}

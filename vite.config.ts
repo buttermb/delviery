@@ -181,7 +181,7 @@ export default defineConfig(({ mode }) => ({
     dedupe: ['react', 'react-dom', 'react/jsx-runtime'], // Force single React instance
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
+    include: ['react', 'react-dom', 'react-router-dom', 'remotion', '@remotion/player'],
     exclude: [],
     esbuildOptions: {
       target: 'es2020',
@@ -229,6 +229,9 @@ export default defineConfig(({ mode }) => ({
             }
             if (id.includes('framer-motion')) {
               return 'vendor-motion';
+            }
+            if (id.includes('remotion') || id.includes('@remotion')) {
+              return 'vendor-remotion';
             }
             // Split map libraries (mapbox, leaflet, react-leaflet)
             if (id.includes('mapbox') || id.includes('leaflet') || id.includes('react-leaflet')) {
