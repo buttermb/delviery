@@ -1,106 +1,81 @@
-/**
- * Reusable chrome frame with header bar and sidebar placeholder.
- */
-
-import type { ReactNode } from 'react';
-import { COLORS } from '@/remotion/config';
+import React from 'react';
+import { COLORS } from '../../../config';
+import { useSlideIn } from '../../../utils/animations';
 
 interface DashboardMockupProps {
-  children: ReactNode;
+  children: React.ReactNode;
   title?: string;
+  delay?: number;
 }
 
-export function DashboardMockup({ children, title = 'FloraIQ' }: DashboardMockupProps) {
+export function DashboardMockup({ children, title = 'FloraIQ Dashboard', delay = 0 }: DashboardMockupProps) {
+  const style = useSlideIn(delay, 'up', 'smooth');
+
   return (
     <div
       style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        backgroundColor: COLORS.bgSubtle,
+        ...style,
+        width: 1680,
+        height: 900,
         borderRadius: 16,
         overflow: 'hidden',
+        boxShadow: '0 25px 80px rgba(0,0,0,0.3)',
         border: `1px solid ${COLORS.border}`,
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: `${style.transform} translate(-50%, -50%)`,
       }}
     >
-      {/* Header bar */}
+      {/* Browser chrome */}
       <div
         style={{
-          height: 48,
-          backgroundColor: 'white',
+          height: 44,
+          background: COLORS.surface,
           borderBottom: `1px solid ${COLORS.border}`,
           display: 'flex',
           alignItems: 'center',
-          padding: '0 20px',
-          gap: 12,
+          padding: '0 16px',
+          gap: 8,
+          flexShrink: 0,
         }}
       >
-        {/* Traffic light dots */}
         <div style={{ display: 'flex', gap: 6 }}>
-          <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#f87171' }} />
-          <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#fbbf24' }} />
-          <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#34d399' }} />
+          <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ef4444' }} />
+          <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#f59e0b' }} />
+          <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#22c55e' }} />
         </div>
-        {/* Title */}
         <div
           style={{
             flex: 1,
+            height: 28,
+            borderRadius: 6,
+            background: COLORS.background,
+            border: `1px solid ${COLORS.border}`,
             display: 'flex',
+            alignItems: 'center',
             justifyContent: 'center',
+            fontSize: 13,
+            color: COLORS.textLight,
+            fontFamily: 'Inter, sans-serif',
           }}
         >
-          <div
-            style={{
-              backgroundColor: COLORS.bgSubtle,
-              border: `1px solid ${COLORS.border}`,
-              borderRadius: 6,
-              padding: '4px 16px',
-              fontSize: 12,
-              color: COLORS.textLight,
-              fontFamily: 'monospace',
-            }}
-          >
-            {title}
-          </div>
+          floraiqcrm.com/{title.toLowerCase().replace(/\s+/g, '-')}
         </div>
-        <div style={{ width: 52 }} />
       </div>
 
       {/* Content area */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {/* Sidebar */}
-        <div
-          style={{
-            width: 56,
-            backgroundColor: 'white',
-            borderRight: `1px solid ${COLORS.border}`,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            padding: '16px 0',
-            gap: 16,
-          }}
-        >
-          {[COLORS.primary, COLORS.textLight, COLORS.textLight, COLORS.textLight].map(
-            (color, i) => (
-              <div
-                key={i}
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 8,
-                  backgroundColor: i === 0 ? `${color}15` : 'transparent',
-                  border: i === 0 ? `1px solid ${color}30` : 'none',
-                }}
-              />
-            ),
-          )}
-        </div>
-
-        {/* Main content */}
-        <div style={{ flex: 1, overflow: 'hidden' }}>{children}</div>
+      <div
+        style={{
+          flex: 1,
+          background: COLORS.backgroundAlt,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {children}
       </div>
     </div>
   );

@@ -1,63 +1,76 @@
-/**
- * ProductDemo — 30-second composition orchestrating 5 scenes with transition overlaps.
- * Total: 900 frames at 30fps.
- */
-
+import React from 'react';
 import { Sequence, useCurrentFrame } from 'remotion';
-import { SCENE_DURATIONS } from '@/remotion/config';
-import { DashboardScene } from '@/remotion/compositions/ProductDemo/scenes/DashboardScene';
-import { OrdersScene } from '@/remotion/compositions/ProductDemo/scenes/OrdersScene';
-import { InventoryScene } from '@/remotion/compositions/ProductDemo/scenes/InventoryScene';
-import { FleetScene } from '@/remotion/compositions/ProductDemo/scenes/FleetScene';
-import { MenusScene } from '@/remotion/compositions/ProductDemo/scenes/MenusScene';
-import { TransitionOverlay } from '@/remotion/compositions/ProductDemo/components/TransitionOverlay';
-
-const SCENE = SCENE_DURATIONS.productDemoScene; // 180 frames = 6s each
-const OVERLAP = 15; // transition overlap in frames
-
-/**
- * Wrapper for TransitionOverlay that reads the parent composition's frame
- * and passes it as the startFrame context.
- */
-function TransitionAt({ at }: { at: number }) {
-  const frame = useCurrentFrame();
-  if (frame < at || frame > at + OVERLAP) return null;
-  return <TransitionOverlay startFrame={at} />;
-}
+import { SCENE_DURATIONS } from '../../config';
+import { DashboardScene } from './scenes/DashboardScene';
+import { OrdersScene } from './scenes/OrdersScene';
+import { InventoryScene } from './scenes/InventoryScene';
+import { FleetScene } from './scenes/FleetScene';
+import { MenusScene } from './scenes/MenusScene';
+import { TransitionOverlay } from './components/TransitionOverlay';
 
 export function ProductDemo() {
+  const frame = useCurrentFrame();
+
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative', backgroundColor: '#f8fafc' }}>
-      {/* Scene 1: Dashboard (0–180) */}
-      <Sequence from={0} durationInFrames={SCENE}>
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        backgroundColor: '#0f172a',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Scene 1: Dashboard Overview (0-180) */}
+      <Sequence from={0} durationInFrames={SCENE_DURATIONS.dashboard}>
         <DashboardScene />
+        <TransitionOverlay startFrame={165} direction="diagonal" />
       </Sequence>
 
-      {/* Scene 2: Orders (180–360) */}
-      <Sequence from={SCENE} durationInFrames={SCENE}>
+      {/* Scene 2: Order Pipeline (180-360) */}
+      <Sequence from={180} durationInFrames={SCENE_DURATIONS.orders}>
         <OrdersScene />
+        <TransitionOverlay startFrame={165} direction="right" />
       </Sequence>
 
-      {/* Scene 3: Inventory (360–540) */}
-      <Sequence from={SCENE * 2} durationInFrames={SCENE}>
+      {/* Scene 3: Inventory Intelligence (360-540) */}
+      <Sequence from={360} durationInFrames={SCENE_DURATIONS.inventory}>
         <InventoryScene />
+        <TransitionOverlay startFrame={165} direction="diagonal" />
       </Sequence>
 
-      {/* Scene 4: Fleet (540–720) */}
-      <Sequence from={SCENE * 3} durationInFrames={SCENE}>
+      {/* Scene 4: Fleet Tracking (540-720) */}
+      <Sequence from={540} durationInFrames={SCENE_DURATIONS.fleet}>
         <FleetScene />
+        <TransitionOverlay startFrame={165} direction="left" />
       </Sequence>
 
-      {/* Scene 5: Menus (720–900) */}
-      <Sequence from={SCENE * 4} durationInFrames={SCENE}>
+      {/* Scene 5: Secure Menus + CTA (720-900) */}
+      <Sequence from={720} durationInFrames={SCENE_DURATIONS.menus}>
         <MenusScene />
       </Sequence>
 
-      {/* Transition overlays — rendered at composition level for correct z-index */}
-      <TransitionAt at={SCENE - OVERLAP} />
-      <TransitionAt at={SCENE * 2 - OVERLAP} />
-      <TransitionAt at={SCENE * 3 - OVERLAP} />
-      <TransitionAt at={SCENE * 4 - OVERLAP} />
+      {/* Global progress bar at bottom */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 3,
+          backgroundColor: 'rgba(255,255,255,0.05)',
+          zIndex: 9999,
+        }}
+      >
+        <div
+          style={{
+            height: '100%',
+            width: `${(frame / SCENE_DURATIONS.total) * 100}%`,
+            background: `linear-gradient(90deg, #10B981, #06B6D4)`,
+            borderRadius: '0 2px 2px 0',
+          }}
+        />
+      </div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 /**
  * Reusable Remotion Player wrapper with:
  * - Reduced motion fallback (static first frame)
- * - Mobile resolution scaling (960×540 on <768px)
+ * - Mobile resolution scaling (960x540 on <768px)
  * - Suspense boundary
  */
 

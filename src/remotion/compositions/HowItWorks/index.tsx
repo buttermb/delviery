@@ -21,21 +21,21 @@ const STEPS: StepData[] = [
     description: 'Create your free account in 60 seconds',
     time: '1 min',
     details: ['No credit card required', 'Instant access', '14-day free trial'],
-    emoji: '👤',
+    emoji: '\uD83D\uDC64',
   },
   {
     title: 'Import Data',
     description: 'Import your products & customers',
     time: '5 min',
     details: ['CSV/Excel import', 'Manual entry option', 'Bulk product upload'],
-    emoji: '📤',
+    emoji: '\uD83D\uDCE4',
   },
   {
     title: 'Go Live',
     description: 'Start taking orders and managing your business',
     time: '10 min',
     details: ['Create your first menu', 'Invite customers', 'Start receiving orders'],
-    emoji: '🚀',
+    emoji: '\uD83D\uDE80',
   },
 ];
 
@@ -160,7 +160,7 @@ function StepCard({ step, index }: { step: StepData; index: number }) {
                   fontWeight: 800,
                 }}
               >
-                ✓
+                &#10003;
               </div>
               <span style={{ fontSize: 13, color: COLORS.text }}>{detail}</span>
             </div>
@@ -197,7 +197,7 @@ function ConnectingArrow({ delay }: { delay: number }) {
         paddingTop: 40,
       }}
     >
-      →
+      &rarr;
     </div>
   );
 }

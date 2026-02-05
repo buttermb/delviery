@@ -1,170 +1,229 @@
-/**
- * Scene 2: Orders — Kanban pipeline with cards flowing between columns.
- * Frames 0–180 within its Sequence (6 seconds at 30fps)
- */
+import React from 'react';
+import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
+import { COLORS, SPRING_PRESETS } from '../../../config';
+import { DashboardMockup } from '../components/DashboardMockup';
+import { OrderCard } from '../components/OrderCard';
+import { FeatureCallout } from '../components/FeatureCallout';
+import { useSlideIn } from '../../../utils/animations';
 
-import { useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
-import { COLORS, SPRING_PRESETS } from '@/remotion/config';
-import { DashboardMockup } from '@/remotion/compositions/ProductDemo/components/DashboardMockup';
-import { FeatureCallout } from '@/remotion/compositions/ProductDemo/components/FeatureCallout';
-
-const COLUMNS = ['New', 'Prep', 'Quality', 'Ready'];
-const COLUMN_COLORS = [COLORS.blue500, COLORS.amber500, COLORS.purple500, COLORS.primary];
-
-interface OrderCard {
-  id: number;
-  customer: string;
-  items: number;
-  total: string;
-}
-
-const INITIAL_CARDS: Record<string, OrderCard[]> = {
-  New: [
-    { id: 4930, customer: 'Green Leaf', items: 12, total: '$1.2k' },
-    { id: 4931, customer: 'High Tide', items: 5, total: '$420' },
-  ],
-  Prep: [
-    { id: 4928, customer: 'Urban Well', items: 8, total: '$850' },
-  ],
-  Quality: [
-    { id: 4926, customer: 'Coastal Co', items: 24, total: '$2.1k' },
-  ],
-  Ready: [
-    { id: 4925, customer: 'Med Leaf', items: 6, total: '$540' },
-  ],
-};
+const COLUMNS = [
+  {
+    title: 'Pending',
+    color: '#f59e0b',
+    orders: [
+      { id: '4821', customer: 'Green Valley Dispensary', amount: '$2,480', status: 'pending' as const },
+      { id: '4820', customer: 'Sunset Wellness', amount: '$1,890', status: 'pending' as const },
+    ],
+  },
+  {
+    title: 'Processing',
+    color: '#3b82f6',
+    orders: [
+      { id: '4819', customer: 'Peak Cannabis Co', amount: '$3,200', status: 'processing' as const },
+      { id: '4817', customer: 'Mountain Meds', amount: '$1,650', status: 'processing' as const },
+    ],
+  },
+  {
+    title: 'Shipped',
+    color: '#8b5cf6',
+    orders: [
+      { id: '4815', customer: 'Urban Leaf', amount: '$4,100', status: 'shipped' as const },
+    ],
+  },
+  {
+    title: 'Delivered',
+    color: '#10B981',
+    orders: [
+      { id: '4812', customer: 'Coastal Herbs', amount: '$2,750', status: 'delivered' as const },
+      { id: '4810', customer: 'Valley Green', amount: '$1,920', status: 'delivered' as const },
+    ],
+  },
+];
 
 export function OrdersScene() {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Determine which column each card is in based on frame
-  // Card 4930 moves: New (0-60) → Prep (60-120) → Quality (120-180)
-  const getCardColumn = (cardId: number): string => {
-    if (cardId === 4930) {
-      if (frame < 60) return 'New';
-      if (frame < 120) return 'Prep';
-      return 'Quality';
-    }
-    if (cardId === 4928) {
-      if (frame < 90) return 'Prep';
-      return 'Quality';
-    }
-    if (cardId === 4926) {
-      if (frame < 70) return 'Quality';
-      return 'Ready';
-    }
-    // Static cards
-    for (const [col, cards] of Object.entries(INITIAL_CARDS)) {
-      if (cards.some((c) => c.id === cardId)) return col;
-    }
-    return 'New';
-  };
+  const titleStyle = useSlideIn(5, 'up', 'smooth');
 
-  const allCards = Object.values(INITIAL_CARDS).flat();
-
-  const getCardsForColumn = (col: string): OrderCard[] =>
-    allCards.filter((card) => getCardColumn(card.id) === col);
+  // Toast notification animation
+  const toastDelay = 90;
+  const toastProgress = spring({
+    frame: frame - toastDelay,
+    fps,
+    config: SPRING_PRESETS.bouncy,
+  });
 
   return (
-    <DashboardMockup title="floraiq.com/admin/orders">
-      <div style={{ padding: 24, display: 'flex', flexDirection: 'column', height: '100%' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 18, fontWeight: 800, color: COLORS.text }}>Order Management</span>
-            <div
-              style={{
-                fontSize: 10,
-                padding: '3px 10px',
-                backgroundColor: `${COLORS.primary}15`,
-                color: COLORS.primary,
-                borderRadius: 20,
-                fontWeight: 700,
-                border: `1px solid ${COLORS.primary}30`,
-              }}
-            >
-              Live Pipeline
-            </div>
-          </div>
-        </div>
-
-        {/* Kanban columns */}
-        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-          {COLUMNS.map((col, colIdx) => {
-            const colOpacity = interpolate(frame, [colIdx * 5, colIdx * 5 + 10], [0, 1], {
-              extrapolateRight: 'clamp',
-              extrapolateLeft: 'clamp',
-            });
-
-            const cards = getCardsForColumn(col);
-
-            return (
-              <div
-                key={col}
-                style={{
-                  backgroundColor: 'white',
-                  borderRadius: 12,
-                  border: `1px solid ${COLORS.border}`,
-                  padding: 12,
-                  opacity: colOpacity,
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '0 4px' }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: COLUMN_COLORS[colIdx] }} />
-                  <span style={{ fontSize: 12, fontWeight: 700, color: COLORS.text }}>{col}</span>
-                  <span
-                    style={{
-                      marginLeft: 'auto',
-                      fontSize: 10,
-                      backgroundColor: COLORS.bgSubtle,
-                      padding: '2px 6px',
-                      borderRadius: 4,
-                      color: COLORS.textLight,
-                      fontFamily: 'monospace',
-                    }}
-                  >
-                    {cards.length}
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
-                  {cards.map((card) => {
-                    const cardScale = spring({ frame: frame - 5, fps, config: SPRING_PRESETS.snappy, durationInFrames: 15 });
-
-                    return (
-                      <div
-                        key={card.id}
-                        style={{
-                          backgroundColor: COLORS.bgSubtle,
-                          borderRadius: 10,
-                          border: `1px solid ${COLORS.border}`,
-                          padding: 12,
-                          transform: `scale(${cardScale})`,
-                        }}
-                      >
-                        <div style={{ fontSize: 10, color: COLORS.textLight, fontFamily: 'monospace', marginBottom: 6 }}>
-                          #{card.id}
-                        </div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.text, marginBottom: 2 }}>
-                          {card.customer}
-                        </div>
-                        <div style={{ fontSize: 10, color: COLORS.textLight }}>
-                          {card.items} Items &bull; {card.total}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
+    <div style={{ width: '100%', height: '100%', position: 'relative', background: '#0f172a' }}>
+      {/* Scene title */}
+      <div
+        style={{
+          ...titleStyle,
+          position: 'absolute',
+          top: 40,
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          zIndex: 20,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 18,
+            fontWeight: 600,
+            color: COLORS.accent,
+            fontFamily: 'Inter, sans-serif',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            marginBottom: 4,
+          }}
+        >
+          Order Pipeline
         </div>
       </div>
 
-      <FeatureCallout text="Automated Kanban Pipeline" x={300} y={80} delay={20} />
-    </DashboardMockup>
+      <DashboardMockup title="orders" delay={8}>
+        <div style={{ padding: 28 }}>
+          {/* Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: COLORS.text, fontFamily: 'Inter, sans-serif' }}>
+                Orders Pipeline
+              </div>
+              <div style={{ fontSize: 14, color: COLORS.textLight, fontFamily: 'Inter, sans-serif', marginTop: 4 }}>
+                7 active orders &middot; $17,990 total value
+              </div>
+            </div>
+            <div
+              style={{
+                background: COLORS.primary,
+                color: '#fff',
+                padding: '10px 20px',
+                borderRadius: 8,
+                fontSize: 14,
+                fontWeight: 600,
+                fontFamily: 'Inter, sans-serif',
+              }}
+            >
+              + New Order
+            </div>
+          </div>
+
+          {/* Kanban board */}
+          <div style={{ display: 'flex', gap: 16 }}>
+            {COLUMNS.map((col, colIdx) => {
+              const colDelay = 15 + colIdx * 8;
+              const colProgress = spring({
+                frame: frame - colDelay,
+                fps,
+                config: SPRING_PRESETS.smooth,
+              });
+
+              return (
+                <div
+                  key={colIdx}
+                  style={{
+                    flex: 1,
+                    opacity: colProgress,
+                    transform: `translateY(${interpolate(colProgress, [0, 1], [30, 0])}px)`,
+                  }}
+                >
+                  {/* Column header */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      marginBottom: 12,
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      background: `${col.color}10`,
+                    }}
+                  >
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: col.color }} />
+                    <span
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: COLORS.text,
+                        fontFamily: 'Inter, sans-serif',
+                      }}
+                    >
+                      {col.title}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        color: COLORS.textMuted,
+                        fontFamily: 'Inter, sans-serif',
+                        marginLeft: 'auto',
+                      }}
+                    >
+                      {col.orders.length}
+                    </span>
+                  </div>
+
+                  {/* Cards */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {col.orders.map((order, orderIdx) => (
+                      <OrderCard
+                        key={order.id}
+                        orderId={order.id}
+                        customer={order.customer}
+                        amount={order.amount}
+                        status={order.status}
+                        delay={colDelay + 10 + orderIdx * 6}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </DashboardMockup>
+
+      {/* Toast notification */}
+      {frame >= toastDelay && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 120,
+            right: 140,
+            opacity: toastProgress,
+            transform: `translateX(${interpolate(toastProgress, [0, 1], [40, 0])}px)`,
+            background: COLORS.background,
+            borderRadius: 12,
+            padding: '14px 20px',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+            border: `1px solid ${COLORS.primary}40`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            zIndex: 30,
+          }}
+        >
+          <div style={{ width: 32, height: 32, borderRadius: '50%', background: `${COLORS.primary}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ fontSize: 16 }}>&#10003;</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.text, fontFamily: 'Inter, sans-serif' }}>
+              Order #4821 confirmed
+            </div>
+            <div style={{ fontSize: 11, color: COLORS.textLight, fontFamily: 'Inter, sans-serif' }}>
+              Moved to Processing
+            </div>
+          </div>
+        </div>
+      )}
+
+      <FeatureCallout
+        label="Drag & Drop Order Management"
+        delay={55}
+        position={{ bottom: 60, left: 120 }}
+        variant="accent"
+      />
+    </div>
   );
 }

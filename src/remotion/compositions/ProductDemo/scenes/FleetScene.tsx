@@ -1,236 +1,243 @@
-/**
- * Scene 4: Fleet — Map with driver dot tracing a route path.
- * Frames 0–180 within its Sequence (6 seconds at 30fps)
- */
+import React from 'react';
+import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
+import { COLORS, SPRING_PRESETS } from '../../../config';
+import { DashboardMockup } from '../components/DashboardMockup';
+import { MapBackground } from '../components/MapBackground';
+import { FeatureCallout } from '../components/FeatureCallout';
+import { useSlideIn } from '../../../utils/animations';
 
-import { useCurrentFrame, interpolate } from 'remotion';
-import { COLORS } from '@/remotion/config';
-import { FeatureCallout } from '@/remotion/compositions/ProductDemo/components/FeatureCallout';
+const DRIVERS = [
+  { name: 'Marcus J.', status: 'En Route', stops: '3/5', eta: '22 min', color: COLORS.primary },
+  { name: 'Sarah K.', status: 'Delivering', stops: '1/4', eta: '8 min', color: COLORS.accent },
+  { name: 'James W.', status: 'En Route', stops: '4/6', eta: '45 min', color: COLORS.purple },
+];
 
 export function FleetScene() {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
 
-  // Route progress (driver moving along path)
-  const routeProgress = interpolate(frame, [10, 140], [0, 1], {
-    extrapolateRight: 'clamp',
-    extrapolateLeft: 'clamp',
+  const titleStyle = useSlideIn(5, 'up', 'smooth');
+
+  // Route rerouting animation
+  const rerouteDelay = 100;
+  const rerouteProgress = spring({
+    frame: frame - rerouteDelay,
+    fps,
+    config: SPRING_PRESETS.bouncy,
   });
 
-  // Rerouting event: shows between frames 70–110
-  const isRerouting = frame >= 70 && frame < 110;
-
-  // After reroute, show optimized path
-  const showOptimized = frame >= 110;
-
-  // Alert opacity
-  const alertOpacity = interpolate(
-    frame,
-    [70, 75, 105, 110],
-    [0, 1, 1, 0],
-    { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' },
-  );
-
-  // Driver card position interpolation
-  const driverTop = interpolate(
-    frame,
-    [10, 80, 120, 160],
-    [75, 55, 35, 22],
-    { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' },
-  );
-  const driverLeft = interpolate(
-    frame,
-    [10, 80, 120, 160],
-    [12, 40, 55, 65],
-    { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' },
-  );
-
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative', backgroundColor: '#f1f5f9', overflow: 'hidden' }}>
-      {/* Grid map background */}
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.3 }}>
-        <defs>
-          <pattern id="grid-pattern" width="100" height="50" patternUnits="userSpaceOnUse">
-            <line x1="0" y1="0" x2="0" y2="50" stroke="#cbd5e1" strokeWidth="1.5" />
-            <line x1="100" y1="0" x2="100" y2="50" stroke="#cbd5e1" strokeWidth="1.5" />
-            <line x1="0" y1="25" x2="100" y2="25" stroke="#e2e8f0" strokeWidth="1" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#grid-pattern)" />
-        {/* Park area */}
-        <rect x="0" y="0" width="40%" height="45%" fill="#dcfce7" />
-        <text x="5%" y="40%" fill="#059669" fontSize="18" fontWeight="bold" opacity="0.5">
-          CENTRAL PARK
-        </text>
-      </svg>
-
-      {/* Street labels */}
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontSize: 12, fontFamily: 'monospace', color: COLORS.textLight, fontWeight: 700, opacity: 0.4 }}>
-        <span style={{ position: 'absolute', top: '50%', left: '20%' }}>W 42nd St</span>
-        <span style={{ position: 'absolute', top: '60%', left: '50%' }}>5th Ave</span>
-        <span style={{ position: 'absolute', top: '80%', right: '20%' }}>Broadway</span>
-      </div>
-
-      {/* Routes SVG */}
-      <svg
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
-        viewBox="0 0 800 450"
-        preserveAspectRatio="none"
-      >
-        {/* Original route (fades during reroute) */}
-        <path
-          d="M100,450 L100,250 L400,250 L400,100 L600,100"
-          fill="none"
-          stroke={COLORS.blue500}
-          strokeWidth="4"
-          opacity={showOptimized ? 0 : 0.5}
-          strokeDasharray="800"
-          strokeDashoffset={800 - 800 * routeProgress}
-        />
-
-        {/* Traffic block indicator */}
-        {isRerouting && (
-          <path
-            d="M200,250 L350,250"
-            fill="none"
-            stroke={COLORS.red500}
-            strokeWidth="6"
-            strokeDasharray="200"
-            strokeDashoffset={interpolate(frame, [70, 85], [200, 0], {
-              extrapolateRight: 'clamp',
-              extrapolateLeft: 'clamp',
-            })}
-          />
-        )}
-
-        {/* Optimized route */}
-        {showOptimized && (
-          <path
-            d="M100,450 L100,350 L500,350 L500,100 L600,100"
-            fill="none"
-            stroke={COLORS.primary}
-            strokeWidth="4"
-            strokeDasharray="900"
-            strokeDashoffset={interpolate(frame, [110, 150], [900, 0], {
-              extrapolateRight: 'clamp',
-              extrapolateLeft: 'clamp',
-            })}
-          />
-        )}
-      </svg>
-
-      {/* Destination pulse */}
-      <div style={{ position: 'absolute', top: '22%', right: '25%', pointerEvents: 'none' }}>
-        <div
-          style={{
-            width: 16,
-            height: 16,
-            borderRadius: '50%',
-            backgroundColor: COLORS.primary,
-            border: '3px solid white',
-            boxShadow: `0 0 ${12 + 8 * Math.sin(frame * 0.15)}px ${COLORS.primary}60`,
-          }}
-        />
-      </div>
-
-      {/* Driver card */}
+    <div style={{ width: '100%', height: '100%', position: 'relative', background: '#0f172a' }}>
       <div
         style={{
+          ...titleStyle,
           position: 'absolute',
-          top: `${driverTop}%`,
-          left: `${driverLeft}%`,
-          backgroundColor: 'white',
-          border: `1px solid ${COLORS.border}`,
-          borderRadius: 10,
-          padding: 12,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-          width: 180,
+          top: 40,
+          left: 0,
+          right: 0,
+          textAlign: 'center',
           zIndex: 20,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <div
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              backgroundColor: isRerouting ? COLORS.red500 : showOptimized ? COLORS.primary : COLORS.blue500,
-            }}
-          />
-          <span style={{ fontSize: 12, fontWeight: 800, color: COLORS.text }}>Mike R.</span>
-          <span
-            style={{
-              marginLeft: 'auto',
-              fontSize: 10,
-              backgroundColor: COLORS.bgSubtle,
-              padding: '1px 6px',
-              borderRadius: 4,
-              color: COLORS.textLight,
-              fontFamily: 'monospace',
-            }}
-          >
-            D-1
-          </span>
-        </div>
-        <div style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 8, fontSize: 10, fontFamily: 'monospace' }}>
-          {isRerouting ? (
-            <span style={{ color: COLORS.red500 }}>TRAFFIC on 42nd ST</span>
-          ) : showOptimized ? (
-            <span style={{ color: COLORS.primary, fontWeight: 700 }}>REROUTED VIA 34th</span>
-          ) : (
-            <span style={{ color: COLORS.blue500 }}>Heading North</span>
-          )}
+        <div
+          style={{
+            fontSize: 18,
+            fontWeight: 600,
+            color: COLORS.accent,
+            fontFamily: 'Inter, sans-serif',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Fleet Tracking
         </div>
       </div>
 
-      {/* Traffic alert overlay */}
-      {alertOpacity > 0 && (
+      <DashboardMockup title="fleet" delay={8}>
+        <div style={{ display: 'flex', height: '100%' }}>
+          {/* Left panel - Driver list */}
+          <div
+            style={{
+              width: 340,
+              borderRight: `1px solid ${COLORS.border}`,
+              padding: 20,
+              background: COLORS.background,
+              overflow: 'hidden',
+            }}
+          >
+            <div style={{ fontSize: 17, fontWeight: 800, color: COLORS.text, fontFamily: 'Inter, sans-serif', marginBottom: 4 }}>
+              Active Drivers
+            </div>
+            <div style={{ fontSize: 13, color: COLORS.textLight, fontFamily: 'Inter, sans-serif', marginBottom: 20 }}>
+              3 drivers on the road
+            </div>
+
+            {DRIVERS.map((driver, i) => {
+              const driverDelay = 20 + i * 10;
+              const progress = spring({ frame: frame - driverDelay, fps, config: SPRING_PRESETS.snappy });
+
+              return (
+                <div
+                  key={i}
+                  style={{
+                    opacity: progress,
+                    transform: `translateX(${interpolate(progress, [0, 1], [-30, 0])}px)`,
+                    padding: '14px 16px',
+                    borderRadius: 10,
+                    border: `1px solid ${COLORS.border}`,
+                    marginBottom: 10,
+                    background: COLORS.backgroundAlt,
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: '50%',
+                          background: `${driver.color}20`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: 15,
+                          fontWeight: 700,
+                          color: driver.color,
+                          fontFamily: 'Inter, sans-serif',
+                        }}
+                      >
+                        {driver.name.charAt(0)}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.text, fontFamily: 'Inter, sans-serif' }}>{driver.name}</div>
+                        <div style={{ fontSize: 12, color: driver.color, fontWeight: 600, fontFamily: 'Inter, sans-serif' }}>{driver.status}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: 12, color: COLORS.textLight, fontFamily: 'Inter, sans-serif' }}>
+                      Stops: <span style={{ fontWeight: 700, color: COLORS.text }}>{driver.stops}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: COLORS.textLight, fontFamily: 'Inter, sans-serif' }}>
+                      ETA: <span style={{ fontWeight: 700, color: COLORS.text }}>{driver.eta}</span>
+                    </div>
+                  </div>
+
+                  {/* Mini progress bar */}
+                  <div style={{ height: 4, borderRadius: 2, background: COLORS.surface, marginTop: 10 }}>
+                    <div
+                      style={{
+                        height: '100%',
+                        borderRadius: 2,
+                        background: driver.color,
+                        width: `${(parseInt(driver.stops) / parseInt(driver.stops.split('/')[1])) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Right panel - Map */}
+          <div style={{ flex: 1, position: 'relative' }}>
+            <MapBackground delay={10} />
+
+            {/* Vehicle markers with pulse */}
+            {[
+              { x: 350, y: 280, label: 'Marcus', color: COLORS.primary },
+              { x: 650, y: 180, label: 'Sarah', color: COLORS.accent },
+              { x: 500, y: 400, label: 'James', color: COLORS.purple },
+            ].map((vehicle, i) => {
+              const vDelay = 40 + i * 8;
+              const vProgress = spring({ frame: frame - vDelay, fps, config: SPRING_PRESETS.bouncy });
+              const pulseScale = 1 + Math.sin((frame - vDelay) * 0.1) * 0.15;
+
+              return (
+                <div
+                  key={i}
+                  style={{
+                    position: 'absolute',
+                    left: vehicle.x,
+                    top: vehicle.y,
+                    opacity: vProgress,
+                    transform: `translate(-50%, -50%) scale(${interpolate(vProgress, [0, 1], [0, 1])})`,
+                    zIndex: 10,
+                  }}
+                >
+                  {/* Pulse ring */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: -12,
+                      borderRadius: '50%',
+                      background: `${vehicle.color}15`,
+                      transform: `scale(${pulseScale})`,
+                    }}
+                  />
+                  {/* Marker */}
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: '50%',
+                      background: vehicle.color,
+                      border: '3px solid #fff',
+                      boxShadow: `0 2px 8px ${vehicle.color}60`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: '#fff',
+                      fontFamily: 'Inter, sans-serif',
+                    }}
+                  >
+                    {vehicle.label.charAt(0)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </DashboardMockup>
+
+      {/* Reroute notification */}
+      {frame >= rerouteDelay && (
         <div
           style={{
             position: 'absolute',
-            top: 60,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: '#fef2f2',
-            border: `1px solid ${COLORS.red500}30`,
-            color: COLORS.red500,
-            padding: '8px 20px',
-            borderRadius: 10,
-            fontSize: 12,
-            fontWeight: 700,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-            zIndex: 40,
-            opacity: alertOpacity,
+            top: 130,
+            right: 130,
+            opacity: rerouteProgress,
+            transform: `translateY(${interpolate(rerouteProgress, [0, 1], [-15, 0])}px)`,
+            background: `linear-gradient(135deg, #1e293b, #0f172a)`,
+            borderRadius: 14,
+            padding: '14px 20px',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
+            border: `1px solid ${COLORS.accent}40`,
+            zIndex: 30,
+            maxWidth: 280,
           }}
         >
-          AVOID DELAY (+12m)
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <div style={{ fontSize: 14 }}>&#128679;</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', fontFamily: 'Inter, sans-serif' }}>
+              Traffic Alert
+            </div>
+          </div>
+          <div style={{ fontSize: 12, color: '#94a3b8', fontFamily: 'Inter, sans-serif', lineHeight: 1.5 }}>
+            Route optimized for Marcus. Saved <span style={{ color: COLORS.primary, fontWeight: 700 }}>12 minutes</span> via alternate route.
+          </div>
         </div>
       )}
 
-      {/* HUD */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 16,
-          left: 16,
-          backgroundColor: 'white',
-          border: `1px solid ${COLORS.border}`,
-          borderRadius: 10,
-          padding: '10px 16px',
-          fontSize: 12,
-          color: COLORS.text,
-          fontFamily: 'monospace',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-          opacity: interpolate(frame, [0, 10], [0, 1], {
-            extrapolateRight: 'clamp',
-            extrapolateLeft: 'clamp',
-          }),
-        }}
-      >
-        <div style={{ fontWeight: 800, marginBottom: 2 }}>FLEET TRACKER</div>
-        <div style={{ color: COLORS.textLight }}>Real-time GPS Optimization</div>
-      </div>
-
-      <FeatureCallout text="AI Route Optimization" x={1400} y={80} delay={40} />
+      <FeatureCallout
+        label="Real-Time GPS + Smart Routing"
+        delay={55}
+        position={{ bottom: 60, left: 120 }}
+        variant="accent"
+      />
     </div>
   );
 }

@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import {
+  ArrowRight,
+  CheckCircle,
+  HelpCircle,
+  AlertCircle,
+  AlertTriangle,
+} from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";

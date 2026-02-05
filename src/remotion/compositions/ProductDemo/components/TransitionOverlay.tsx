@@ -1,66 +1,39 @@
-/**
- * Color wipe transition overlay between scenes.
- */
-
-import { useCurrentFrame, interpolate } from 'remotion';
-import { COLORS } from '@/remotion/config';
+import React from 'react';
+import { useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
+import { COLORS } from '../../../config';
 
 interface TransitionOverlayProps {
-  /** Frame at which the transition begins */
   startFrame: number;
-  /** How many frames the transition lasts */
-  duration?: number;
-  color?: string;
+  direction?: 'left' | 'right' | 'diagonal';
 }
 
-export function TransitionOverlay({
-  startFrame,
-  duration = 15,
-  color = COLORS.primary,
-}: TransitionOverlayProps) {
+export function TransitionOverlay({ startFrame, direction = 'right' }: TransitionOverlayProps) {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
 
-  // Wipe in: 0 → 100% width
-  const wipeIn = interpolate(
-    frame,
-    [startFrame, startFrame + duration / 2],
-    [0, 100],
-    { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' },
-  );
+  if (frame < startFrame) return null;
 
-  // Wipe out: shift left 0 → 100%
-  const wipeOut = interpolate(
-    frame,
-    [startFrame + duration / 2, startFrame + duration],
-    [0, 100],
-    { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' },
-  );
+  const progress = spring({
+    frame: frame - startFrame,
+    fps,
+    config: { damping: 30, mass: 1, stiffness: 80 },
+  });
 
-  const isActive = frame >= startFrame && frame <= startFrame + duration;
-
-  if (!isActive) return null;
+  const clipPaths: Record<string, string> = {
+    left: `inset(0 ${interpolate(progress, [0, 1], [100, 0])}% 0 0)`,
+    right: `inset(0 0 0 ${interpolate(progress, [0, 1], [100, 0])}%)`,
+    diagonal: `polygon(${interpolate(progress, [0, 1], [100, 0])}% 0%, 100% 0%, 100% 100%, ${interpolate(progress, [0, 1], [120, 0])}% 100%)`,
+  };
 
   return (
     <div
       style={{
         position: 'absolute',
         inset: 0,
+        background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.accent})`,
+        clipPath: clipPaths[direction],
         zIndex: 100,
-        overflow: 'hidden',
-        pointerEvents: 'none',
       }}
-    >
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: `${wipeOut}%`,
-          width: `${wipeIn}%`,
-          backgroundColor: color,
-          opacity: 0.95,
-        }}
-      />
-    </div>
+    />
   );
 }

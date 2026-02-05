@@ -139,7 +139,7 @@ export function TestimonialCard({
                   transform: `scale(${starScale})`,
                 }}
               >
-                ⭐
+                &#11088;
               </div>
             );
           })}
