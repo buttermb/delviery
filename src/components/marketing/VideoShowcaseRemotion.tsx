@@ -1,18 +1,17 @@
 /**
- * VideoShowcaseRemotion — Wraps the Remotion ProductDemo player
+ * VideoShowcaseRemotion — 30-second FloraIQ promo video
  * with section heading and feature pills.
+ *
+ * Uses pre-rendered MP4 from public/videos/floraiq-promo.mp4
+ * (render with: npx remotion render src/remotion/render-entry.tsx FloraIQPromo public/videos/floraiq-promo.mp4)
  */
-
-import { RemotionPlayer } from '@/components/remotion/RemotionPlayer';
-import { ProductDemo } from '@/remotion/compositions/ProductDemo/index';
-import { SCENE_DURATIONS } from '@/remotion/config';
 
 const FEATURE_PILLS = [
   'Dashboard Analytics',
   'Order Pipeline',
-  'Inventory AI',
-  'Fleet GPS',
+  'Inventory Sync',
   'Encrypted Menus',
+  'Payment Processing',
 ];
 
 export function VideoShowcaseRemotion() {
@@ -29,28 +28,27 @@ export function VideoShowcaseRemotion() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
-            Live Platform Demo
+            30-Second Walkthrough
           </div>
           <h2 className="text-4xl md:text-6xl font-bold mb-4 text-[hsl(var(--marketing-text))] tracking-tight">
-            Enterprise{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))]">
-              Grade
-            </span>
+            See the platform in action
           </h2>
           <p className="text-lg text-[hsl(var(--marketing-text-light))] max-w-2xl mx-auto font-light">
-            Watch a 30-second cinematic walkthrough of the full platform.
+            Watch how a menu gets created, shared, ordered from, and destroyed — all in 30 seconds.
           </p>
         </div>
 
-        {/* Remotion Player */}
-        <div className="max-w-[1200px] mx-auto rounded-3xl border border-slate-200 shadow-2xl overflow-hidden bg-white">
-          <RemotionPlayer
-            component={ProductDemo as React.ComponentType<Record<string, unknown>>}
-            durationInFrames={SCENE_DURATIONS.productDemo}
+        {/* Promo Video */}
+        <div className="max-w-[1200px] mx-auto rounded-3xl border border-slate-200 shadow-2xl overflow-hidden bg-black">
+          <video
             controls
-            loop
-            clickToPlay
-          />
+            playsInline
+            preload="metadata"
+            poster="/videos/floraiq-promo-poster.jpg"
+            className="w-full aspect-video"
+          >
+            <source src="/videos/floraiq-promo.mp4" type="video/mp4" />
+          </video>
         </div>
 
         {/* Feature Pills */}

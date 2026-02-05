@@ -16,6 +16,8 @@ import { InventoryDemo } from '@/remotion/compositions/features/InventoryDemo';
 import { OrderManagementDemo } from '@/remotion/compositions/features/OrderManagementDemo';
 import { CustomerPortalDemo } from '@/remotion/compositions/features/CustomerPortalDemo';
 import { AnalyticsDemo } from '@/remotion/compositions/features/AnalyticsDemo';
+import { FloraIQPromo } from '@/remotion/compositions/FloraIQPromo';
+import { FloraIQHeroLoop } from '@/remotion/compositions/FloraIQHeroLoop';
 
 export function RemotionRoot() {
   return (
@@ -113,6 +115,22 @@ export function RemotionRoot() {
         id="AnalyticsDemo"
         component={AnalyticsDemo}
         durationInFrames={SCENE_DURATIONS.featureDemo}
+        fps={REMOTION_CONFIG.fps}
+        width={REMOTION_CONFIG.width}
+        height={REMOTION_CONFIG.height}
+      />
+      <Composition
+        id="FloraIQPromo"
+        component={FloraIQPromo}
+        durationInFrames={SCENE_DURATIONS.floraIQPromo}
+        fps={REMOTION_CONFIG.fps}
+        width={REMOTION_CONFIG.width}
+        height={REMOTION_CONFIG.height}
+      />
+      <Composition
+        id="FloraIQHeroLoop"
+        component={FloraIQHeroLoop}
+        durationInFrames={SCENE_DURATIONS.floraIQHeroLoop}
         fps={REMOTION_CONFIG.fps}
         width={REMOTION_CONFIG.width}
         height={REMOTION_CONFIG.height}

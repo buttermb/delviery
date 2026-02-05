@@ -100,17 +100,12 @@ export function RemotionTestimonials() {
       <div className="container mx-auto px-4 relative z-10">
         {/* Section header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[hsl(var(--marketing-primary))]/10 border border-[hsl(var(--marketing-primary))]/20 text-[hsl(var(--marketing-primary))] text-sm font-medium mb-6">
-            <Star className="w-4 h-4 fill-current" />
-            <span>Trusted by 1,200+ Cannabis Businesses</span>
-          </div>
-
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
-            Loved by Industry Leaders
+            What operators are saying
           </h2>
 
           <p className="text-xl text-[hsl(var(--marketing-text-light))] max-w-2xl mx-auto">
-            See why top cannabis distributors choose FloraIQ
+            See why cannabis distributors choose FloraIQ
           </p>
         </div>
 
@@ -185,31 +180,6 @@ export function RemotionTestimonials() {
           >
             <ChevronRight className="w-5 h-5" aria-hidden="true" />
           </Button>
-        </div>
-
-        {/* Trust indicators */}
-        <div className="flex flex-wrap justify-center gap-8 mt-12 text-[hsl(var(--marketing-text-light))]">
-          <div className="flex items-center gap-2">
-            <div className="flex -space-x-2">
-              {['MJ', 'SC', 'DR', 'JW'].map((initials, i) => (
-                <div
-                  key={i}
-                  className="w-7 h-7 rounded-full bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] flex items-center justify-center text-white text-xs font-bold border-2 border-[hsl(var(--marketing-bg))]"
-                >
-                  {initials}
-                </div>
-              ))}
-            </div>
-            <span className="text-sm">Join 1,200+ customers</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 text-yellow-500 fill-current" />
-              ))}
-            </div>
-            <span className="text-sm">4.9/5 rating</span>
-          </div>
         </div>
       </div>
     </section>

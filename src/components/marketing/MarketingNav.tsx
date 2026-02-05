@@ -39,16 +39,10 @@ export function MarketingNav() {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
           <Link to="/features" className="text-sm text-[hsl(var(--marketing-text-light))] hover:text-[hsl(var(--marketing-text))] transition-colors">
-            Features
+            Product
           </Link>
           <Link to="/pricing" className="text-sm text-[hsl(var(--marketing-text-light))] hover:text-[hsl(var(--marketing-text))] transition-colors">
             Pricing
-          </Link>
-          <Link to="/about" className="text-sm text-[hsl(var(--marketing-text-light))] hover:text-[hsl(var(--marketing-text))] transition-colors">
-            About
-          </Link>
-          <Link to="/contact" className="text-sm text-[hsl(var(--marketing-text-light))] hover:text-[hsl(var(--marketing-text))] transition-colors">
-            Contact
           </Link>
         </div>
 
@@ -92,7 +86,7 @@ export function MarketingNav() {
               className="block py-3 px-4 text-base font-medium rounded-lg hover:bg-[hsl(var(--marketing-bg-subtle))] text-[hsl(var(--marketing-text))]"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Features
+              Product
             </Link>
             <Link
               to="/pricing"
@@ -100,20 +94,6 @@ export function MarketingNav() {
               onClick={() => setMobileMenuOpen(false)}
             >
               Pricing
-            </Link>
-            <Link
-              to="/about"
-              className="block py-3 px-4 text-base font-medium rounded-lg hover:bg-[hsl(var(--marketing-bg-subtle))] text-[hsl(var(--marketing-text))]"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              About
-            </Link>
-            <Link
-              to="/contact"
-              className="block py-3 px-4 text-base font-medium rounded-lg hover:bg-[hsl(var(--marketing-bg-subtle))] text-[hsl(var(--marketing-text))]"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Contact
             </Link>
             <div className="pt-4 mt-4 border-t border-[hsl(var(--marketing-border))] space-y-3">
               <Link to="/login" className="block" onClick={() => setMobileMenuOpen(false)}>

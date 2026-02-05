@@ -37,14 +37,14 @@ export function StickyMobileCTA() {
                                 </div>
                                 <div className="flex flex-col min-w-0">
                                     <span className="text-xs font-medium text-[hsl(var(--marketing-text-light))]">
-                                        Limited Time Offer
+                                        Free forever plan
                                     </span>
                                     <span className="text-sm font-bold text-[hsl(var(--marketing-text))] truncate">
-                                        14-day free trial • No credit card
+                                        No credit card required
                                     </span>
                                 </div>
                             </div>
-                            <Link to="/signup" className="flex-shrink-0">
+                            <Link to="/signup?plan=free&flow=menu" className="flex-shrink-0">
                                 <Button
                                     size="lg"
                                     className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)] min-h-[56px] px-6 touch-manipulation active:scale-95 transition-transform"

@@ -11,27 +11,15 @@ const FOOTER_SECTIONS = [
   {
     title: "PRODUCT",
     links: [
-      { label: "Inventory Management", href: "/features" },
-      { label: "Order Fulfillment", href: "/features" },
-      { label: "Delivery Logistics", href: "/features" },
-      { label: "Mobile App", href: "/features" },
+      { label: "Features", href: "/features" },
+      { label: "Pricing", href: "/pricing" },
       { label: "Integrations", href: "/integrations" },
-    ]
-  },
-  {
-    title: "SOLUTIONS",
-    links: [
-      { label: "For Distributors", href: "/demo" },
-      { label: "For Brands", href: "/demo" },
-      { label: "Client CRM", href: "/features" },
-      { label: "Compliance", href: "/security" },
     ]
   },
   {
     title: "COMPANY",
     links: [
-      { label: "About Us", href: "/about" },
-      { label: "Careers", href: "/careers" },
+      { label: "About", href: "/about" },
       { label: "Contact", href: "/contact" },
       { label: "Blog", href: "/blog" },
     ]
@@ -40,9 +28,8 @@ const FOOTER_SECTIONS = [
     title: "SUPPORT",
     links: [
       { label: "Help Center", href: "/support" },
-      { label: "API Documentation", href: "/docs" },
-      { label: "System Status", href: "/status" },
-      { label: "Login", href: "/login" },
+      { label: "API Docs", href: "/docs" },
+      { label: "Status", href: "/status" },
     ]
   }
 ];
@@ -52,7 +39,7 @@ export function MarketingFooter() {
     <footer className="bg-slate-50 border-t border-slate-200 text-slate-600 pt-20 pb-12 font-sans">
       <div className="container mx-auto px-4">
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
           {/* Logo Column */}
           <div className="lg:col-span-2">
             <div className="mb-6">
@@ -61,11 +48,6 @@ export function MarketingFooter() {
             <p className="text-slate-500 text-lg mb-6 max-w-sm leading-relaxed">
               The operating system for modern cannabis distribution. Secure, compliant, and built for scale.
             </p>
-            <div className="flex gap-4" role="list" aria-label="Social media links">
-              <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="Follow us on X (Twitter)" className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-[hsl(var(--marketing-primary))] hover:text-white hover:border-[hsl(var(--marketing-primary))] transition-all font-bold duration-300 shadow-sm">X</a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="Follow us on LinkedIn" className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-[hsl(var(--marketing-primary))] hover:text-white hover:border-[hsl(var(--marketing-primary))] transition-all font-bold duration-300 shadow-sm">Li</a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram" className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-[hsl(var(--marketing-primary))] hover:text-white hover:border-[hsl(var(--marketing-primary))] transition-all font-bold duration-300 shadow-sm">Ig</a>
-            </div>
           </div>
 
           {/* Links Columns (Desktop) */}

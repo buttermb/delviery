@@ -13,7 +13,7 @@ interface CTASectionProps {
     text: string;
     link: string;
   };
-  variant?: "default" | "minimal";
+  variant?: "default" | "minimal" | "dark";
 }
 
 export function CTASection({
@@ -23,16 +23,21 @@ export function CTASection({
   secondaryCta,
   variant = "default",
 }: CTASectionProps) {
+  const isDark = variant === "dark";
+
   return (
-    <section className="container mx-auto px-4 py-20">
-      <div className={`relative max-w-3xl mx-auto text-center p-12 rounded-xl ${variant === "minimal"
-          ? "bg-[hsl(var(--marketing-bg-subtle))]"
-          : "bg-[hsl(var(--marketing-bg))] border border-[hsl(var(--marketing-border))]"
-        }`}>
-        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+    <section className={isDark ? "bg-slate-900 py-20" : "container mx-auto px-4 py-20"}>
+      <div className={`relative max-w-3xl mx-auto text-center p-12 rounded-xl ${
+        isDark
+          ? ""
+          : variant === "minimal"
+            ? "bg-[hsl(var(--marketing-bg-subtle))]"
+            : "bg-[hsl(var(--marketing-bg))] border border-[hsl(var(--marketing-border))]"
+      }`}>
+        <h2 className={`text-3xl md:text-4xl font-bold mb-4 ${isDark ? "text-white" : "text-[hsl(var(--marketing-text))]"}`}>
           {title}
         </h2>
-        <p className="text-lg mb-8 text-[hsl(var(--marketing-text-light))] max-w-xl mx-auto">
+        <p className={`text-lg mb-8 max-w-xl mx-auto ${isDark ? "text-slate-300" : "text-[hsl(var(--marketing-text-light))]"}`}>
           {description}
         </p>
 
@@ -40,7 +45,11 @@ export function CTASection({
           <Link to={primaryCta.link}>
             <Button
               size="lg"
-              className="h-12 px-8 font-semibold bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white rounded-lg"
+              className={`h-12 px-8 font-semibold rounded-lg ${
+                isDark
+                  ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                  : "bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white"
+              }`}
             >
               {primaryCta.text.replace(' →', '')}
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -52,7 +61,11 @@ export function CTASection({
               <Button
                 size="lg"
                 variant="outline"
-                className="h-12 px-8 border-[hsl(var(--marketing-border))] text-[hsl(var(--marketing-text))] hover:bg-[hsl(var(--marketing-bg-subtle))] rounded-lg"
+                className={`h-12 px-8 rounded-lg ${
+                  isDark
+                    ? "border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white"
+                    : "border-[hsl(var(--marketing-border))] text-[hsl(var(--marketing-text))] hover:bg-[hsl(var(--marketing-bg-subtle))]"
+                }`}
               >
                 {secondaryCta.text}
               </Button>
@@ -60,7 +73,7 @@ export function CTASection({
           )}
         </div>
 
-        <p className="text-sm text-[hsl(var(--marketing-text-light))] mt-6">
+        <p className={`text-sm mt-6 ${isDark ? "text-slate-400" : "text-[hsl(var(--marketing-text-light))]"}`}>
           No credit card required. Cancel anytime.
         </p>
       </div>

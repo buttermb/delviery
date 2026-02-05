@@ -32,6 +32,10 @@ export const SCENE_DURATIONS = {
   testimonialCard: 240,
   /** Feature demo = 300 frames = 10s */
   featureDemo: 300,
+  /** FloraIQ Promo = 900 frames = 30s */
+  floraIQPromo: 900,
+  /** FloraIQ Hero Loop = 300 frames = 10s */
+  floraIQHeroLoop: 300,
 } as const;
 
 /** Reusable spring presets */

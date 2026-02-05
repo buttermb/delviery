@@ -153,25 +153,11 @@ function DashboardUltra() {
   )
 }
 
-interface OrderCard {
-  id: number;
-  customer: string;
-  items: number;
-  total: string;
-  time: string;
-  color: string;
-}
-
 /* 2. ORDERS ULTRA */
 function OrdersUltra() {
   const reduceAnimations = useShouldReduceAnimations();
   const [notification, setNotification] = useState<{ title: string; msg: string } | null>(null);
-  const [columns, setColumns] = useState<{
-    new: OrderCard[];
-    prep: OrderCard[];
-    quality: OrderCard[];
-    ready: OrderCard[];
-  }>({
+  const [columns, setColumns] = useState({
     new: [
       { id: 4930, customer: "Green Leaf", items: 12, total: "$1.2k", time: "2m", color: "from-blue-100 to-indigo-100" },
       { id: 4931, customer: "High Tide", items: 5, total: "$420", time: "15m", color: "from-emerald-100 to-teal-100" },
@@ -184,7 +170,7 @@ function OrdersUltra() {
     ],
     ready: [
       { id: 4925, customer: "Med Leaf", items: 6, total: "$540", time: "1h", color: "from-emerald-100 to-teal-100" }
-    ]
+    ] as unknown[]
   });
 
   useEffect(() => {
@@ -265,7 +251,7 @@ function OrdersUltra() {
             </div>
             <div className="flex-1 space-y-3 relative overflow-hidden">
               <AnimatePresence mode="popLayout">
-                {(i === 0 ? columns.new : i === 1 ? columns.prep : i === 2 ? columns.quality : columns.ready).map((card: OrderCard) => (
+                {(i === 0 ? columns.new : i === 1 ? columns.prep : i === 2 ? columns.quality : columns.ready).map((card: Record<string, unknown>) => (
                   <motion.div
                     key={card.id}
                     layoutId={`card-${card.id}`}
