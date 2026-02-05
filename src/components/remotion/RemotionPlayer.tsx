@@ -65,7 +65,6 @@ export function RemotionPlayer({
           style={{
             width: '100%',
             height: '100%',
-            borderRadius: '0.75rem',
           }}
           initialFrame={reduceAnimations ? 0 : undefined}
         />

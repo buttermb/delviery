@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
@@ -31,7 +31,6 @@ const ComparisonSection = lazy(() => import("@/components/marketing/ComparisonSe
 const IntegrationEcosystem = lazy(() => import("@/components/marketing/IntegrationEcosystem").then(m => ({ default: m.IntegrationEcosystem })));
 const ROICalculator = lazy(() => import("@/components/marketing/ROICalculator").then(m => ({ default: m.ROICalculator })));
 const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingChatButton").then(m => ({ default: m.FloatingChatButton })));
-const PlatformCapabilities = lazy(() => import("@/components/marketing/PlatformCapabilities").then(m => ({ default: m.PlatformCapabilities })));
 const EnhancedDashboardPreview = lazy(() => import("@/components/marketing/EnhancedDashboardPreview").then(m => ({ default: m.EnhancedDashboardPreview })));
 const VideoShowcase = lazy(() => import("@/components/marketing/VideoShowcaseRemotion").then(m => ({ default: m.VideoShowcaseRemotion })));
 const TestimonialsCarousel = lazy(() => import("@/components/marketing/RemotionTestimonials").then(m => ({ default: m.RemotionTestimonials })));
@@ -43,8 +42,6 @@ const SectionLoader = () => (
 );
 
 export default function MarketingHome() {
-  const _navigate = useNavigate();
-
   // Scroll to top on mount and track page view
   useEffect(() => {
     // Scroll to top when component mounts
