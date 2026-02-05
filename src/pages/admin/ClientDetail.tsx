@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useParams } from "react-router-dom";
-import { useTenantNavigate } from "@/hooks/useTenantNavigate";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -24,10 +24,12 @@ import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { formatCurrency } from '@/lib/formatters';
+import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
+import { BackButton } from '@/components/shared/BackButton';
 
 export default function ClientDetail() {
   const { id, tenantSlug } = useParams<{ id: string; tenantSlug: string }>();
-  const navigate = useTenantNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [smsDialogOpen, setSmsDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -50,7 +52,7 @@ export default function ClientDetail() {
     onSuccess: () => {
       showSuccessToast("Client Removed", `${client?.business_name} has been removed`);
       queryClient.invalidateQueries({ queryKey: ['wholesale-clients'] });
-      navigate('wholesale-clients');
+      navigateToAdmin('wholesale-clients');
     },
     onError: (error) => {
       logger.error("Failed to remove client", error, { component: "ClientDetail", clientId: id });
@@ -117,7 +119,7 @@ export default function ClientDetail() {
       <div className="space-y-6 p-6">
         <div className="text-center">
           <h2 className="text-2xl font-bold">Client Not Found</h2>
-      <Button onClick={() => navigate("wholesale-clients")} className="mt-4">
+      <Button onClick={() => navigateToAdmin("wholesale-clients")} className="mt-4">
             Back to Clients
           </Button>
         </div>
@@ -170,14 +172,15 @@ export default function ClientDetail() {
     return types[type] || type;
   };
 
+  const handleBack = () => navigateToAdmin("wholesale-clients");
+
   return (
+    <SwipeBackWrapper onBack={handleBack}>
     <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("wholesale-clients")}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+          <BackButton onClick={handleBack} iconOnly />
           <div>
             <h1 className="text-3xl font-bold text-foreground">{displayClient.business_name}</h1>
             <div className="flex items-center gap-3 mt-1">
@@ -464,14 +467,14 @@ export default function ClientDetail() {
       <div className="flex flex-wrap gap-2">
         <Button
           className="bg-emerald-500 hover:bg-emerald-600"
-          onClick={() => navigate("wholesale-orders/new", { state: { clientId: id, clientName: displayClient.business_name } })}
+          onClick={() => navigateToAdmin("wholesale-orders/new", { state: { clientId: id, clientName: displayClient.business_name } })}
         >
           <Package className="h-4 w-4 mr-2" />
           New Order
         </Button>
         <Button
           className="bg-amber-600 hover:bg-amber-700"
-          onClick={() => navigate("dispatch-inventory", { state: { clientId: id } })}
+          onClick={() => navigateToAdmin("dispatch-inventory", { state: { clientId: id } })}
         >
           <Truck className="h-4 w-4 mr-2" />
           Front Inventory
@@ -585,5 +588,6 @@ export default function ClientDetail() {
         </DialogContent>
       </Dialog>
     </div>
+    </SwipeBackWrapper>
   );
 }

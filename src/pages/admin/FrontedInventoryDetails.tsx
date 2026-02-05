@@ -24,6 +24,8 @@ import {
 import { format } from "date-fns";
 
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { SwipeBackWrapper } from "@/components/mobile/SwipeBackWrapper";
+import { BackButton } from "@/components/shared/BackButton";
 import { handleError } from "@/utils/errorHandling/handlers";
 
 export default function FrontedInventoryDetails() {
