@@ -1,82 +1,55 @@
-/**
- * Remotion configuration — shared constants for all compositions.
- */
-
 export const REMOTION_CONFIG = {
   fps: 30,
   width: 1920,
   height: 1080,
-} as const;
+};
 
-/** Mobile resolution used when viewport < 768px */
-export const MOBILE_RESOLUTION = {
-  width: 960,
-  height: 540,
-} as const;
-
-/** Scene durations (in frames at 30fps) */
 export const SCENE_DURATIONS = {
-  // ProductDemo scenes (6s each)
-  dashboard: 180,
-  orders: 180,
-  inventory: 180,
-  fleet: 180,
-  menus: 180,
-  total: 900,
-  // Composition totals
-  productDemo: 900,
-  productDemoScene: 180,
-  heroBackground: 120,
-  howItWorks: 600,
-  securityExplainer: 450,
-  roiAnimation: 360,
-  testimonialCard: 240,
-  featureDemo: 300,
-  floraIQPromo: 900,
-  floraIQHeroLoop: 300,
-} as const;
+  dashboard: 180,    // 6 seconds
+  orders: 180,       // 6 seconds
+  inventory: 180,    // 6 seconds
+  fleet: 180,        // 6 seconds
+  menus: 180,        // 6 seconds
+  total: 900,        // 30 seconds
+};
 
-export const SCENE_OFFSETS = {
-  dashboard: 0,
-  orders: 180,
-  inventory: 360,
-  fleet: 540,
-  menus: 720,
-} as const;
-
-/** Reusable spring presets */
 export const SPRING_PRESETS = {
   snappy: { damping: 20, mass: 0.8, stiffness: 200 },
   smooth: { damping: 30, mass: 1, stiffness: 120 },
   bouncy: { damping: 12, mass: 0.5, stiffness: 250 },
-  gentle: { damping: 25, mass: 1.2, stiffness: 100 },
-} as const;
-
-/** Color palette (matches marketing CSS variables) */
+};
+export const MOBILE_RESOLUTION = {
+  width: 1080,
+  height: 1920,
+};
 export const COLORS = {
-  primary: '#10B981',
-  primaryDark: '#059669',
-  primaryLight: '#34D399',
-  secondary: '#059669',
-  accent: '#06B6D4',
-  text: '#0f172a',
-  textLight: '#64748b',
-  textMuted: '#94a3b8',
-  bg: '#ffffff',
-  background: '#ffffff',
-  bgSubtle: '#f8fafc',
-  backgroundAlt: '#f8fafc',
-  surface: '#f1f5f9',
+  // Premium Layout Colors
+  primary: '#2E1679', // Deep Indigo (Marketing Primary)
+  secondary: '#4c32a0', // Lighter Indigo
+  accent: '#F3A73D', // Gold (Marketing Accent)
+  background: '#FFFFFF',
+
+  // Text
+  text: '#1e293b', // Slate 800
+  textLight: '#64748b', // Slate 500
+
+  // UI Elements
   border: '#e2e8f0',
-  borderLight: '#f1f5f9',
-  emerald50: '#ecfdf5',
-  blue500: '#3b82f6',
-  amber500: '#f59e0b',
-  purple500: '#a855f7',
-  red500: '#ef4444',
-  danger: '#ef4444',
-  warning: '#f59e0b',
-  warningLight: '#fef3c7',
-  success: '#10B981',
-  purple: '#8b5cf6',
-} as const;
+  bgSubtle: '#f8fafc',
+
+  // Functional Colors
+  success: '#10B981', // Emerald 500
+  warning: '#F59E0B',
+  error: '#EF4444',
+  info: '#3B82F6',
+
+  // Shadows (CSS values represented as strings for use in style objects)
+  shadowElegant: '0 20px 60px -10px rgba(46, 22, 121, 0.15)',
+  shadowGlass: '0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5)',
+};
+
+export const GRADIENTS = {
+  primary: 'linear-gradient(135deg, #2E1679 0%, #2E1679CC 50%, #F3A73D 100%)',
+  subtle: 'linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)',
+  glass: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+};

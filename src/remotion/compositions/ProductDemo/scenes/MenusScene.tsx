@@ -1,281 +1,153 @@
-import React from 'react';
-import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
-import { COLORS, SPRING_PRESETS } from '../../../config';
-import { PhoneMockup } from '../components/PhoneMockup';
-import { FeatureCallout } from '../components/FeatureCallout';
-import { useSlideIn, useTypewriter } from '../../../utils/animations';
-
-const MENU_ITEMS = [
-  { name: 'Blue Dream', type: 'Flower', thc: '21%', price: '$45/3.5g' },
-  { name: 'OG Kush', type: 'Flower', thc: '24%', price: '$50/3.5g' },
-  { name: 'Sour Diesel Cart', type: 'Vape', thc: '89%', price: '$40' },
-  { name: 'Indica Gummies', type: 'Edible', thc: '10mg', price: '$25' },
-];
+import { spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import { interpolate } from 'remotion';
+import { TransitionOverlay } from '../components/TransitionOverlay';
+import { Lock, ShieldCheck, ArrowRight, Smartphone } from 'lucide-react';
 
 export function MenusScene() {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const titleStyle = useSlideIn(5, 'up', 'smooth');
-
-  // Passphrase typing animation
-  const passphrase = useTypewriter('green-valley-2024', 40, 0.6);
-
-  // Lock -> unlock transition
-  const unlockDelay = 70;
-  const unlockProgress = spring({
-    frame: frame - unlockDelay,
-    fps,
-    config: SPRING_PRESETS.bouncy,
-  });
-
-  // CTA animation
-  const ctaDelay = 120;
-  const ctaProgress = spring({
-    frame: frame - ctaDelay,
-    fps,
-    config: SPRING_PRESETS.smooth,
-  });
+  const phoneRotate = interpolate(frame, [0, 60], [0, 360], { extrapolateRight: 'clamp' });
+  const lockOpacity = interpolate(frame, [0, 50], [1, 1]);
+  const decryptOpacity = interpolate(frame, [60, 90], [0, 1]);
+  const menuOpacity = interpolate(frame, [90, 120], [0, 1]);
+  const ctaScale = spring({ frame: frame - 150, fps, config: { damping: 12 } });
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative', background: '#0f172a' }}>
+    <div className="flex-1 h-full bg-slate-900 flex flex-col items-center justify-center relative overflow-hidden">
+      {/* Background Grid - Dark Premium */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#1e1b4b] to-[#0f172a]" />
       <div
+        className="absolute inset-0 opacity-[0.05]"
         style={{
-          ...titleStyle,
-          position: 'absolute',
-          top: 40,
-          left: 0,
-          right: 0,
-          textAlign: 'center',
-          zIndex: 20,
+          backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
+          backgroundSize: '60px 60px'
         }}
-      >
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 600,
-            color: COLORS.primary,
-            fontFamily: 'Inter, sans-serif',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-          }}
-        >
-          Secure Menus
-        </div>
-      </div>
+      />
+      {/* Glow */}
+      <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-indigo-500/10 blur-[120px] rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
 
-      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', gap: 80, alignItems: 'center' }}>
-        {/* Phone with passphrase entry */}
-        <div style={{ position: 'relative' }}>
-          <PhoneMockup delay={10}>
-            {frame < unlockDelay ? (
-              // Locked state - passphrase entry
-              <div style={{ padding: '40px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                {/* Lock icon */}
-                <div
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 16,
-                    background: `linear-gradient(135deg, ${COLORS.primary}20, ${COLORS.accent}20)`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: 20,
-                    fontSize: 28,
-                  }}
-                >
-                  &#128274;
-                </div>
-                <div style={{ fontSize: 17, fontWeight: 800, color: COLORS.text, fontFamily: 'Inter, sans-serif', marginBottom: 6 }}>
-                  Encrypted Menu
-                </div>
-                <div style={{ fontSize: 12, color: COLORS.textLight, fontFamily: 'Inter, sans-serif', marginBottom: 24, textAlign: 'center' }}>
-                  Enter passphrase to view catalog
-                </div>
+      {/* Floating Phone Mockup */}
+      <div className="relative z-10 transform scale-110">
+        <div className="w-[300px] h-[600px] bg-[#0f172a] rounded-[3rem] border-[8px] border-slate-800 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] relative overflow-hidden ring-1 ring-white/10">
+          {/* Dynamic Island */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 h-7 w-24 bg-black rounded-b-2xl z-20" />
 
-                {/* Passphrase input */}
-                <div
-                  style={{
-                    width: '100%',
-                    height: 44,
-                    borderRadius: 10,
-                    border: `2px solid ${COLORS.primary}`,
-                    padding: '0 14px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    background: COLORS.backgroundAlt,
-                    marginBottom: 16,
-                  }}
-                >
-                  <span style={{ fontSize: 14, color: COLORS.text, fontFamily: 'monospace', fontWeight: 600 }}>
-                    {passphrase}
-                    <span style={{ opacity: Math.sin(frame * 0.15) > 0 ? 1 : 0, color: COLORS.primary }}>|</span>
-                  </span>
-                </div>
+          {/* Screen Content Switcher */}
+          <div className="w-full h-full bg-slate-50 relative font-sans">
 
-                <div
-                  style={{
-                    width: '100%',
-                    height: 44,
-                    borderRadius: 10,
-                    background: COLORS.primary,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 14,
-                    fontWeight: 700,
-                    color: '#fff',
-                    fontFamily: 'Inter, sans-serif',
-                  }}
-                >
-                  Access Menu
-                </div>
-
-                <div style={{ marginTop: 20, display: 'flex', gap: 16 }}>
-                  {['Auto-burn', 'Fingerprint ID', 'No screenshots'].map((feature, i) => (
-                    <div key={i} style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: 'Inter, sans-serif', display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <div style={{ width: 4, height: 4, borderRadius: '50%', background: COLORS.primary }} />
-                      {feature}
-                    </div>
-                  ))}
+            {/* Phase 1: Lock Screen - Premium Dark */}
+            {frame < 80 && (
+              <div className="absolute inset-0 bg-[#0f172a] flex flex-col items-center justify-center text-white p-6 bg-[url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center">
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+                <div className="relative z-10 flex flex-col items-center">
+                  <div className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-8 border border-white/20 shadow-lg">
+                    <Lock className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="text-xl font-medium mb-8 tracking-wide">Enter Passcode</div>
+                  <div className="flex gap-6">
+                    {[0, 1, 2, 3].map(i => (
+                      <div
+                        key={i}
+                        className={`w-3 h-3 rounded-full border border-white/50 transition-all duration-300 ${frame > 20 + i * 10 ? 'bg-white border-white scale-125' : 'bg-transparent'}`}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
-            ) : (
-              // Unlocked state - menu view
-              <div style={{ padding: '20px 14px', opacity: unlockProgress }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            )}
+
+            {/* Phase 2: Decrypting */}
+            {frame >= 80 && frame < 110 && (
+              <div className="absolute inset-0 bg-[#2E1679] flex flex-col items-center justify-center text-white">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-indigo-500 blur-xl opacity-50 animate-pulse" />
+                  <ShieldCheck className="w-20 h-20 mb-6 relative z-10" />
+                </div>
+                <div className="font-mono text-xs tracking-[0.2em] font-bold text-indigo-200">AUTHENTICATING SECURE TOKEN...</div>
+              </div>
+            )}
+
+            {/* Phase 3: Menu (Success) */}
+            {frame >= 110 && (
+              <div className="absolute inset-0 bg-[#F8FAFC] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-500">
+                {/* Header */}
+                <div className="pt-14 pb-4 px-6 bg-white border-b border-slate-100 flex justify-between items-end shadow-sm">
                   <div>
-                    <div style={{ fontSize: 15, fontWeight: 800, color: COLORS.text, fontFamily: 'Inter, sans-serif' }}>
-                      Green Valley Menu
-                    </div>
-                    <div style={{ fontSize: 11, color: COLORS.primary, fontWeight: 600, fontFamily: 'Inter, sans-serif' }}>
-                      &#128274; Encrypted &middot; Expires in 24h
-                    </div>
+                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Wholesale Menu</div>
+                    <div className="font-bold text-2xl text-slate-900 leading-tight">Secret Selection</div>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <div className="text-[10px] font-bold text-slate-400">EXPIRES IN</div>
+                    <div className="text-xs font-mono font-bold text-rose-500 bg-rose-50 px-2 py-0.5 rounded">09:59</div>
                   </div>
                 </div>
 
-                {MENU_ITEMS.map((item, i) => {
-                  const itemDelay = unlockDelay + 5 + i * 6;
-                  const itemProgress = spring({ frame: frame - itemDelay, fps, config: SPRING_PRESETS.snappy });
-
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        opacity: itemProgress,
-                        transform: `translateY(${interpolate(itemProgress, [0, 1], [10, 0])}px)`,
-                        padding: '10px 12px',
-                        borderRadius: 8,
-                        border: `1px solid ${COLORS.border}`,
-                        marginBottom: 8,
-                        background: COLORS.backgroundAlt,
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.text, fontFamily: 'Inter, sans-serif' }}>{item.name}</div>
-                          <div style={{ fontSize: 11, color: COLORS.textLight, fontFamily: 'Inter, sans-serif' }}>
-                            {item.type} &middot; THC {item.thc}
-                          </div>
-                        </div>
-                        <div style={{ fontSize: 14, fontWeight: 800, color: COLORS.primary, fontFamily: 'Inter, sans-serif' }}>
-                          {item.price}
+                {/* Product Scroll */}
+                <div className="flex-1 p-4 grid grid-cols-2 gap-3 overflow-hidden align-content-start">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-2 animate-in slide-in-from-bottom-4 fade-in duration-700" style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'both' }}>
+                      <div className="aspect-[4/3] bg-slate-100 rounded-lg relative overflow-hidden">
+                        {/* Gradient Placeholder for Product Image */}
+                        <div className={`absolute inset-0 bg-gradient-to-br ${i % 2 === 0 ? 'from-emerald-100 to-emerald-50' : 'from-indigo-100 to-indigo-50'}`} />
+                      </div>
+                      <div>
+                        <div className="h-3 w-3/4 bg-slate-200 rounded-full mb-1.5" />
+                        <div className="h-3 w-1/2 bg-slate-100 rounded-full" />
+                      </div>
+                      <div className="mt-auto flex justify-between items-center pt-1">
+                        <div className="font-bold text-sm text-slate-900">$45</div>
+                        <div className="w-6 h-6 rounded-full bg-slate-900 flex items-center justify-center text-white">
+                          <ArrowRight className="w-3 h-3" />
                         </div>
                       </div>
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
+
+                {/* Bottom Blur Fade */}
+                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#F8FAFC] to-transparent pointer-events-none" />
+
+                {/* Floating Cart Button */}
+                <div className="absolute bottom-6 left-6 right-6">
+                  <div className="w-full py-4 bg-[#2E1679] text-white rounded-2xl font-bold shadow-xl shadow-indigo-900/20 flex items-center justify-center gap-2">
+                    Start Order
+                  </div>
+                </div>
               </div>
             )}
-          </PhoneMockup>
-        </div>
 
-        {/* CTA panel */}
-        <div
-          style={{
-            opacity: ctaProgress,
-            transform: `translateX(${interpolate(ctaProgress, [0, 1], [40, 0])}px)`,
-            maxWidth: 480,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 48,
-              fontWeight: 900,
-              color: '#fff',
-              fontFamily: 'Inter, sans-serif',
-              lineHeight: 1.1,
-              letterSpacing: '-0.03em',
-              marginBottom: 16,
-            }}
-          >
-            Secure menus
-            <br />
-            <span style={{ color: COLORS.primary }}>that disappear.</span>
-          </div>
-          <div
-            style={{
-              fontSize: 18,
-              color: '#94a3b8',
-              fontFamily: 'Inter, sans-serif',
-              lineHeight: 1.5,
-              marginBottom: 32,
-            }}
-          >
-            OPSEC-grade encrypted catalogs with auto-burn,
-            device fingerprinting, and expiring links.
-          </div>
-
-          <div style={{ display: 'flex', gap: 12 }}>
-            <div
-              style={{
-                background: COLORS.primary,
-                color: '#fff',
-                padding: '14px 32px',
-                borderRadius: 12,
-                fontSize: 16,
-                fontWeight: 700,
-                fontFamily: 'Inter, sans-serif',
-                boxShadow: `0 4px 20px ${COLORS.primary}40`,
-              }}
-            >
-              Start Free &rarr;
-            </div>
-            <div
-              style={{
-                background: 'rgba(255,255,255,0.1)',
-                color: '#fff',
-                padding: '14px 32px',
-                borderRadius: 12,
-                fontSize: 16,
-                fontWeight: 600,
-                fontFamily: 'Inter, sans-serif',
-                border: '1px solid rgba(255,255,255,0.15)',
-              }}
-            >
-              Watch Demo
-            </div>
-          </div>
-
-          <div
-            style={{
-              marginTop: 24,
-              fontSize: 13,
-              color: '#64748b',
-              fontFamily: 'Inter, sans-serif',
-            }}
-          >
-            No credit card required &middot; Free forever plan available
           </div>
         </div>
       </div>
 
-      <FeatureCallout
-        label="OPSEC-Grade Encryption"
-        delay={50}
-        position={{ bottom: 60, right: 120 }}
-      />
+      {/* Final CTA - Premium Branding */}
+      {frame > 140 && (
+        <div
+          style={{ transform: `scale(${ctaScale})` }}
+          className="absolute inset-0 z-50 flex flex-col items-center justify-center text-white"
+        >
+          {/* Glass Overlay of background */}
+          <div className="absolute inset-0 bg-[#2E1679]/90 backdrop-blur-xl" />
+
+          <div className="relative z-10 flex flex-col items-center">
+            <h1 className="text-7xl font-black mb-2 tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-white/70 drop-shadow-sm">FloraIQ</h1>
+            <p className="text-2xl text-indigo-200 mb-10 font-light tracking-wide">Wholesale Reimagined</p>
+
+            <div className="group relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
+              <div className="relative bg-white text-[#2E1679] px-10 py-5 rounded-full text-2xl font-bold flex items-center gap-3 shadow-2xl">
+                floraiq.com
+                <ArrowRight className="w-6 h-6 text-amber-500" />
+              </div>
+            </div>
+
+            <div className="mt-8 text-sm text-indigo-200/80 font-medium tracking-wide uppercase">Try Free Forever • No Credit Card</div>
+          </div>
+        </div>
+      )}
+
+      <TransitionOverlay startFrame={175} />
     </div>
   );
 }

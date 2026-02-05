@@ -1,243 +1,158 @@
-import React from 'react';
-import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
-import { COLORS, SPRING_PRESETS } from '../../../config';
+import { spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import { interpolate } from 'remotion';
 import { DashboardMockup } from '../components/DashboardMockup';
-import { MapBackground } from '../components/MapBackground';
 import { FeatureCallout } from '../components/FeatureCallout';
-import { useSlideIn } from '../../../utils/animations';
-
-const DRIVERS = [
-  { name: 'Marcus J.', status: 'En Route', stops: '3/5', eta: '22 min', color: COLORS.primary },
-  { name: 'Sarah K.', status: 'Delivering', stops: '1/4', eta: '8 min', color: COLORS.accent },
-  { name: 'James W.', status: 'En Route', stops: '4/6', eta: '45 min', color: COLORS.purple },
-];
+import { TransitionOverlay } from '../components/TransitionOverlay';
+import { Truck, MapPin, Navigation } from 'lucide-react';
 
 export function FleetScene() {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const titleStyle = useSlideIn(5, 'up', 'smooth');
+  // Route drawing
+  const pathLength = interpolate(frame, [30, 90], [0, 1], { extrapolateRight: 'clamp' });
+  const rerouteLength = interpolate(frame, [120, 150], [0, 1], { extrapolateRight: 'clamp' });
 
-  // Route rerouting animation
-  const rerouteDelay = 100;
-  const rerouteProgress = spring({
-    frame: frame - rerouteDelay,
-    fps,
-    config: SPRING_PRESETS.bouncy,
-  });
+  // Driver Pos
+  const driverProgress = interpolate(frame, [30, 90], [0, 0.6], { extrapolateRight: 'clamp' });
+
+  const alertY = spring({ frame: frame - 90, fps, from: -100, to: 24, config: { damping: 15 } });
+  const alertOpacity = interpolate(frame, [90, 100, 170, 180], [0, 1, 1, 0]);
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative', background: '#0f172a' }}>
-      <div
-        style={{
-          ...titleStyle,
-          position: 'absolute',
-          top: 40,
-          left: 0,
-          right: 0,
-          textAlign: 'center',
-          zIndex: 20,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 600,
-            color: COLORS.accent,
-            fontFamily: 'Inter, sans-serif',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-          }}
-        >
-          Fleet Tracking
-        </div>
-      </div>
+    <div style={{ flex: 1, height: '100%', backgroundColor: 'white' }}>
+      <DashboardMockup title="floraiq.com/admin/fleet">
+        <div className="relative w-full h-full rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 shadow-inner group">
+          {/* Map Grid Background - Architectural */}
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: 'linear-gradient(#2E1679 1px, transparent 1px), linear-gradient(90deg, #2E1679 1px, transparent 1px)',
+              backgroundSize: '40px 40px'
+            }}
+          />
+          {/* Vignette Map Effect */}
+          <div className="absolute inset-0 bg-gradient-to-t from-white/80 to-transparent pointer-events-none" />
 
-      <DashboardMockup title="fleet" delay={8}>
-        <div style={{ display: 'flex', height: '100%' }}>
-          {/* Left panel - Driver list */}
+          {/* Map UI Elements - Floating Premium Card */}
+          <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md p-5 rounded-2xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.1)] border border-slate-100 z-10 w-64">
+            <div className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              Live Fleet Status
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100 text-indigo-600">
+                <Truck className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="font-bold text-slate-800 text-lg">4 Active</div>
+                <div className="text-sm text-emerald-600 font-medium flex items-center gap-1">
+                  <Navigation className="w-3 h-3" /> 98% On Time
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Map Content Container */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <svg width="800" height="400" className="opacity-90">
+              {/* Primary Route Phantom */}
+              <path
+                d="M 100 200 Q 300 200 400 100 T 700 150"
+                fill="none"
+                stroke="#e2e8f0"
+                strokeWidth="8"
+                strokeLinecap="round"
+              />
+              {/* Active Route */}
+              <path
+                d="M 100 200 Q 300 200 400 100 T 700 150"
+                fill="none"
+                stroke="#3b82f6" // Keep Blue for route, readable
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeDasharray="8 8"
+                className="animate-[dash_1s_linear_infinite]"
+              />
+
+              {/* Traffic Blockage (Animated) */}
+              {frame > 90 && (
+                <g>
+                  <circle cx="400" cy="100" r="20" fill="rgba(239, 68, 68, 0.1)" className="animate-ping" />
+                  <circle cx="400" cy="100" r="12" fill="#ef4444" className="animate-pulse" />
+                  <path transform="translate(394, 94) scale(0.5)" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" fill="white" />
+                </g>
+              )}
+
+              {/* Reroute (Green) */}
+              {frame > 110 && (
+                <path
+                  d="M 300 180 Q 400 250 550 180 T 700 150"
+                  fill="none"
+                  stroke="#10b981"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  pathLength={rerouteLength}
+                  strokeDasharray="4 4"
+                />
+              )}
+            </svg>
+
+            {/* Driver Marker */}
+            <div
+              className="absolute"
+              style={{
+                left: '40%',
+                top: '40%',
+                transform: `translate(${driverProgress * 200}px, ${frame > 120 ? 50 : 0}px)`,
+                transition: 'transform 1s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                zIndex: 20
+              }}
+            >
+              <div className="relative group/pin">
+                <div className="bg-slate-900 text-white pl-2 pr-4 py-2 rounded-full shadow-2xl flex items-center gap-3 text-sm font-bold whitespace-nowrap border-2 border-white cursor-pointer hover:scale-105 transition-transform">
+                  <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center border border-indigo-400">
+                    <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
+                  </div>
+                  Driver #4
+                </div>
+                {/* Pin Tail */}
+                <div className="absolute left-6 h-4 w-[2px] bg-slate-900 bottom-[-14px]" />
+                <div className="absolute left-4 bottom-[-18px] w-4 h-1 bg-black/20 blur-[2px] rounded-full" />
+              </div>
+            </div>
+          </div>
+
+          {/* Traffic Alert Banner - Premium Glass */}
           <div
             style={{
-              width: 340,
-              borderRight: `1px solid ${COLORS.border}`,
-              padding: 20,
-              background: COLORS.background,
-              overflow: 'hidden',
+              position: 'absolute',
+              top: alertY,
+              right: 24,
+              opacity: alertOpacity,
+              backdropFilter: 'blur(12px)',
+              boxShadow: '0 20px 40px -10px rgba(220, 38, 38, 0.3)'
             }}
+            className="bg-white/90 pr-6 pl-4 py-3 rounded-xl border border-rose-100 flex items-center gap-4 z-30 max-w-sm"
           >
-            <div style={{ fontSize: 17, fontWeight: 800, color: COLORS.text, fontFamily: 'Inter, sans-serif', marginBottom: 4 }}>
-              Active Drivers
+            <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
+              <AlertCircle className="w-5 h-5 text-rose-500" />
             </div>
-            <div style={{ fontSize: 13, color: COLORS.textLight, fontFamily: 'Inter, sans-serif', marginBottom: 20 }}>
-              3 drivers on the road
+            <div>
+              <div className="text-slate-800 font-bold text-sm">Traffic Alert Detected</div>
+              <div className="text-rose-500 text-xs font-semibold">Rerouting Driver #4 (+2m)</div>
             </div>
-
-            {DRIVERS.map((driver, i) => {
-              const driverDelay = 20 + i * 10;
-              const progress = spring({ frame: frame - driverDelay, fps, config: SPRING_PRESETS.snappy });
-
-              return (
-                <div
-                  key={i}
-                  style={{
-                    opacity: progress,
-                    transform: `translateX(${interpolate(progress, [0, 1], [-30, 0])}px)`,
-                    padding: '14px 16px',
-                    borderRadius: 10,
-                    border: `1px solid ${COLORS.border}`,
-                    marginBottom: 10,
-                    background: COLORS.backgroundAlt,
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div
-                        style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: '50%',
-                          background: `${driver.color}20`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: 15,
-                          fontWeight: 700,
-                          color: driver.color,
-                          fontFamily: 'Inter, sans-serif',
-                        }}
-                      >
-                        {driver.name.charAt(0)}
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.text, fontFamily: 'Inter, sans-serif' }}>{driver.name}</div>
-                        <div style={{ fontSize: 12, color: driver.color, fontWeight: 600, fontFamily: 'Inter, sans-serif' }}>{driver.status}</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <div style={{ fontSize: 12, color: COLORS.textLight, fontFamily: 'Inter, sans-serif' }}>
-                      Stops: <span style={{ fontWeight: 700, color: COLORS.text }}>{driver.stops}</span>
-                    </div>
-                    <div style={{ fontSize: 12, color: COLORS.textLight, fontFamily: 'Inter, sans-serif' }}>
-                      ETA: <span style={{ fontWeight: 700, color: COLORS.text }}>{driver.eta}</span>
-                    </div>
-                  </div>
-
-                  {/* Mini progress bar */}
-                  <div style={{ height: 4, borderRadius: 2, background: COLORS.surface, marginTop: 10 }}>
-                    <div
-                      style={{
-                        height: '100%',
-                        borderRadius: 2,
-                        background: driver.color,
-                        width: `${(parseInt(driver.stops) / parseInt(driver.stops.split('/')[1])) * 100}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
           </div>
 
-          {/* Right panel - Map */}
-          <div style={{ flex: 1, position: 'relative' }}>
-            <MapBackground delay={10} />
-
-            {/* Vehicle markers with pulse */}
-            {[
-              { x: 350, y: 280, label: 'Marcus', color: COLORS.primary },
-              { x: 650, y: 180, label: 'Sarah', color: COLORS.accent },
-              { x: 500, y: 400, label: 'James', color: COLORS.purple },
-            ].map((vehicle, i) => {
-              const vDelay = 40 + i * 8;
-              const vProgress = spring({ frame: frame - vDelay, fps, config: SPRING_PRESETS.bouncy });
-              const pulseScale = 1 + Math.sin((frame - vDelay) * 0.1) * 0.15;
-
-              return (
-                <div
-                  key={i}
-                  style={{
-                    position: 'absolute',
-                    left: vehicle.x,
-                    top: vehicle.y,
-                    opacity: vProgress,
-                    transform: `translate(-50%, -50%) scale(${interpolate(vProgress, [0, 1], [0, 1])})`,
-                    zIndex: 10,
-                  }}
-                >
-                  {/* Pulse ring */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      inset: -12,
-                      borderRadius: '50%',
-                      background: `${vehicle.color}15`,
-                      transform: `scale(${pulseScale})`,
-                    }}
-                  />
-                  {/* Marker */}
-                  <div
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: '50%',
-                      background: vehicle.color,
-                      border: '3px solid #fff',
-                      boxShadow: `0 2px 8px ${vehicle.color}60`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: '#fff',
-                      fontFamily: 'Inter, sans-serif',
-                    }}
-                  >
-                    {vehicle.label.charAt(0)}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
+
+        <FeatureCallout
+          text="Live GPS Optimization"
+          x={150} y={450}
+          delay={150}
+        />
       </DashboardMockup>
-
-      {/* Reroute notification */}
-      {frame >= rerouteDelay && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 130,
-            right: 130,
-            opacity: rerouteProgress,
-            transform: `translateY(${interpolate(rerouteProgress, [0, 1], [-15, 0])}px)`,
-            background: `linear-gradient(135deg, #1e293b, #0f172a)`,
-            borderRadius: 14,
-            padding: '14px 20px',
-            boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
-            border: `1px solid ${COLORS.accent}40`,
-            zIndex: 30,
-            maxWidth: 280,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-            <div style={{ fontSize: 14 }}>&#128679;</div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', fontFamily: 'Inter, sans-serif' }}>
-              Traffic Alert
-            </div>
-          </div>
-          <div style={{ fontSize: 12, color: '#94a3b8', fontFamily: 'Inter, sans-serif', lineHeight: 1.5 }}>
-            Route optimized for Marcus. Saved <span style={{ color: COLORS.primary, fontWeight: 700 }}>12 minutes</span> via alternate route.
-          </div>
-        </div>
-      )}
-
-      <FeatureCallout
-        label="Real-Time GPS + Smart Routing"
-        delay={55}
-        position={{ bottom: 60, left: 120 }}
-        variant="accent"
-      />
+      <TransitionOverlay startFrame={165} />
     </div>
   );
 }

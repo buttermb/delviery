@@ -1,234 +1,90 @@
-import React from 'react';
-import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
-import { COLORS, SPRING_PRESETS } from '../../../config';
+import { spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import { interpolate } from 'remotion';
 import { DashboardMockup } from '../components/DashboardMockup';
 import { StatCard } from '../components/StatCard';
-import { BarChart } from '../components/BarChart';
 import { FeatureCallout } from '../components/FeatureCallout';
-import { useSlideIn, useFadeIn } from '../../../utils/animations';
-
-const REVENUE_DATA = [
-  { label: 'Mon', value: 12400 },
-  { label: 'Tue', value: 18200 },
-  { label: 'Wed', value: 15800 },
-  { label: 'Thu', value: 22600 },
-  { label: 'Fri', value: 28400 },
-  { label: 'Sat', value: 32100 },
-  { label: 'Sun', value: 24800 },
-];
-
-const ACTIVITY_ITEMS = [
-  { text: 'New order #4821 received', time: '2m ago', color: COLORS.primary },
-  { text: 'Inventory alert: OG Kush low stock', time: '5m ago', color: COLORS.warning },
-  { text: 'Driver Marcus completed delivery', time: '8m ago', color: COLORS.accent },
-  { text: 'Customer Green Valley signed up', time: '12m ago', color: COLORS.purple },
-];
+import { TransitionOverlay } from '../components/TransitionOverlay';
 
 export function DashboardScene() {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const titleStyle = useSlideIn(5, 'up', 'smooth');
+  const STATS = [
+    { label: 'Total Revenue', value: '$24,592', trend: '+12.5%', color: 'purple', delay: 10 },
+    { label: 'Active Orders', value: '148', trend: '+4.2%', color: 'emerald', delay: 16 },
+    { label: 'Pending Delivery', value: '32', trend: '-1.1%', color: 'amber', delay: 22 },
+    { label: 'Avg Order Value', value: '$165.20', trend: '+8.4%', color: 'blue', delay: 28 },
+  ] as const;
+
+  const chartHeight = start => interpolate(frame, [start, start + 30], [0, 100], { extrapolateRight: 'clamp' });
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative', background: '#0f172a' }}>
-      {/* Scene title */}
-      <div
-        style={{
-          ...titleStyle,
-          position: 'absolute',
-          top: 40,
-          left: 0,
-          right: 0,
-          textAlign: 'center',
-          zIndex: 20,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 600,
-            color: COLORS.primary,
-            fontFamily: 'Inter, sans-serif',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            marginBottom: 4,
-          }}
-        >
-          Dashboard Overview
-        </div>
-      </div>
-
-      {/* Dashboard mockup */}
-      <DashboardMockup title="dashboard" delay={10}>
-        <div style={{ display: 'flex', height: '100%' }}>
-          {/* Sidebar */}
-          <div
-            style={{
-              width: 220,
-              background: COLORS.background,
-              borderRight: `1px solid ${COLORS.border}`,
-              padding: '20px 0',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-            }}
-          >
-            <div
-              style={{
-                padding: '8px 20px',
-                fontSize: 20,
-                fontWeight: 800,
-                color: COLORS.primary,
-                fontFamily: 'Inter, sans-serif',
-                letterSpacing: '-0.02em',
-                marginBottom: 16,
-              }}
-            >
-              FloraIQ
-            </div>
-            {['Dashboard', 'Orders', 'Inventory', 'Customers', 'Fleet', 'Menus'].map((item, i) => (
-              <div
+    <div style={{ flex: 1, height: '100%', backgroundColor: 'white' }}>
+      <DashboardMockup title="floraiq.com/admin/dashboard">
+        <div className="flex flex-col gap-8 h-full">
+          <div className="grid grid-cols-4 gap-6">
+            {STATS.map((stat, i) => (
+              <StatCard
                 key={i}
-                style={{
-                  padding: '10px 20px',
-                  fontSize: 14,
-                  fontFamily: 'Inter, sans-serif',
-                  color: i === 0 ? COLORS.primary : COLORS.textLight,
-                  fontWeight: i === 0 ? 600 : 400,
-                  background: i === 0 ? `${COLORS.primary}10` : 'transparent',
-                  borderRight: i === 0 ? `2px solid ${COLORS.primary}` : 'none',
-                }}
-              >
-                {item}
-              </div>
+                {...stat}
+              />
             ))}
           </div>
 
-          {/* Main content */}
-          <div style={{ flex: 1, padding: 28, overflow: 'hidden' }}>
-            {/* Stats row */}
-            <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
-              <StatCard label="Revenue (MTD)" value={148200} prefix="$" trend={12.4} delay={20} />
-              <StatCard label="Active Orders" value={47} trend={8.2} delay={25} />
-              <StatCard label="Customers" value={312} trend={15.1} delay={30} />
-              <StatCard label="Avg. Order Value" value={894} prefix="$" trend={3.7} delay={35} />
+          <div
+            className="flex-1 bg-white rounded-2xl border flex flex-col relative overflow-hidden"
+            style={{
+              borderColor: 'rgba(226, 232, 240, 0.8)',
+              boxShadow: '0 20px 60px -10px rgba(46, 22, 121, 0.05)' // Subtle Indigo shadow
+            }}
+          >
+            <div className="flex justify-between items-center p-6 border-b border-indigo-50/50">
+              <div className="flex flex-col">
+                <div className="text-xl font-bold text-slate-800">Revenue Overview</div>
+                <div className="text-sm text-slate-400">Monthly Recurring Revenue via Subscriptions</div>
+              </div>
+              <div className="flex gap-2">
+                <div className="px-4 py-1.5 rounded-full text-slate-500 text-xs font-medium hover:bg-slate-50 cursor-pointer transition-colors">Weekly</div>
+                <div className="px-4 py-1.5 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-100 shadow-sm">Monthly</div>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 20 }}>
-              {/* Revenue chart */}
-              <div
-                style={{
-                  flex: 1,
-                  background: COLORS.background,
-                  borderRadius: 12,
-                  border: `1px solid ${COLORS.border}`,
-                  padding: 20,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 700,
-                    color: COLORS.text,
-                    fontFamily: 'Inter, sans-serif',
-                    marginBottom: 20,
-                  }}
-                >
-                  Weekly Revenue
+            {/* Animated Chart */}
+            <div className="flex items-end justify-between flex-1 px-8 pb-0 pt-8 gap-4">
+              {[45, 60, 35, 78, 52, 65, 85, 48, 56, 72, 90, 65, 88].map((val, i) => (
+                <div key={i} className="w-full bg-slate-50 rounded-t-lg relative group h-full overflow-hidden">
+                  <div
+                    className="absolute bottom-0 left-0 right-0 rounded-t-lg opacity-90"
+                    style={{
+                      height: `${chartHeight(40 + (i * 3)) * (val / 100)}%`,
+                      background: 'linear-gradient(180deg, #F3A73D 0%, #2E1679 120%)', // Gold to Indigo
+                      transition: 'height 0.2s',
+                    }}
+                  />
+                  {/* Glass highlight on bar */}
+                  <div className="absolute top-0 left-0 w-full h-[1px] bg-white/50" />
                 </div>
-                <BarChart data={REVENUE_DATA} delay={40} height={200} width={520} />
-              </div>
+              ))}
+            </div>
 
-              {/* Activity feed */}
-              <div
-                style={{
-                  width: 320,
-                  background: COLORS.background,
-                  borderRadius: 12,
-                  border: `1px solid ${COLORS.border}`,
-                  padding: 20,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 700,
-                    color: COLORS.text,
-                    fontFamily: 'Inter, sans-serif',
-                    marginBottom: 16,
-                  }}
-                >
-                  Recent Activity
-                </div>
-                {ACTIVITY_ITEMS.map((item, i) => {
-                  const itemDelay = 50 + i * 8;
-                  const progress = spring({
-                    frame: frame - itemDelay,
-                    fps,
-                    config: SPRING_PRESETS.snappy,
-                  });
-
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        opacity: progress,
-                        transform: `translateX(${interpolate(progress, [0, 1], [20, 0])}px)`,
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: 10,
-                        padding: '10px 0',
-                        borderBottom: i < ACTIVITY_ITEMS.length - 1 ? `1px solid ${COLORS.borderLight}` : 'none',
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: '50%',
-                          background: item.color,
-                          marginTop: 5,
-                          flexShrink: 0,
-                        }}
-                      />
-                      <div>
-                        <div
-                          style={{
-                            fontSize: 13,
-                            color: COLORS.text,
-                            fontFamily: 'Inter, sans-serif',
-                            fontWeight: 500,
-                          }}
-                        >
-                          {item.text}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 11,
-                            color: COLORS.textMuted,
-                            fontFamily: 'Inter, sans-serif',
-                            marginTop: 2,
-                          }}
-                        >
-                          {item.time}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+            {/* Chart X-Axis Labels */}
+            <div className="flex justify-between px-8 py-4 border-t border-slate-50 text-xs text-slate-400 font-medium">
+              <div>Jan 01</div>
+              <div>Jan 08</div>
+              <div>Jan 15</div>
+              <div>Jan 22</div>
+              <div>Jan 29</div>
             </div>
           </div>
         </div>
-      </DashboardMockup>
 
-      {/* Feature callout */}
-      <FeatureCallout
-        label="Real-Time Revenue Analytics"
-        delay={60}
-        position={{ bottom: 60, right: 120 }}
-      />
+        <FeatureCallout
+          text="Real-time Revenue Analytics"
+          x={240} y={160}
+          delay={120}
+        />
+      </DashboardMockup>
+      <TransitionOverlay startFrame={165} />
     </div>
   );
 }

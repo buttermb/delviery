@@ -11,15 +11,24 @@ import CreditCard from "lucide-react/dist/esm/icons/credit-card";
 import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
 import Zap from "lucide-react/dist/esm/icons/zap";
 import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import Sheet from "lucide-react/dist/esm/icons/sheet";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Mail from "lucide-react/dist/esm/icons/mail";
 import Link2 from "lucide-react/dist/esm/icons/link-2";
-import type { LucideIcon } from "lucide-react";
+import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
 
 export function IntegrationEcosystem() {
+  // Common, easy-to-integrate tools
   const integrations: { name: string; icon: LucideIcon }[] = [
     { name: "Stripe", icon: CreditCard },
     { name: "QuickBooks", icon: BarChart3 },
     { name: "Zapier", icon: Zap },
     { name: "Slack", icon: MessageSquare },
+    { name: "Google Sheets", icon: Sheet },
+    { name: "Twilio", icon: Smartphone },
+    { name: "Shopify", icon: ShoppingCart },
+    { name: "Mailchimp", icon: Mail },
     { name: "Webhook API", icon: Link2 },
   ];
 
@@ -59,7 +68,7 @@ export function IntegrationEcosystem() {
                 return (
                   <div
                     key={item.name}
-                    className="aspect-square bg-[hsl(var(--marketing-bg-subtle))] rounded-xl flex flex-col items-center justify-center p-4 border border-[hsl(var(--marketing-border))] hover:shadow-md hover:bg-white transition-shadow duration-200"
+                    className="aspect-square bg-[hsl(var(--marketing-bg-subtle))] rounded-xl flex flex-col items-center justify-center p-4 hover:scale-105 transition-all duration-300 cursor-pointer border border-[hsl(var(--marketing-border))] hover:shadow-lg hover:bg-white"
                     role="listitem"
                   >
                     <Icon className="w-8 h-8 mb-2 text-[hsl(var(--marketing-primary))]" aria-hidden="true" />

@@ -1,207 +1,132 @@
-import React from 'react';
-import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
-import { COLORS, SPRING_PRESETS } from '../../../config';
+import { spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import { interpolate } from 'remotion';
 import { DashboardMockup } from '../components/DashboardMockup';
 import { FeatureCallout } from '../components/FeatureCallout';
-import { useSlideIn, useCountUp } from '../../../utils/animations';
-
-const INVENTORY_ITEMS = [
-  { name: 'Blue Dream', category: 'Flower', stock: 84, unit: 'lbs', status: 'good', forecast: 'Stable' },
-  { name: 'OG Kush', category: 'Flower', stock: 12, unit: 'lbs', status: 'low', forecast: 'Reorder in 3 days' },
-  { name: 'Sour Diesel Cart', category: 'Vape', stock: 240, unit: 'units', status: 'good', forecast: 'High demand +18%' },
-  { name: 'Indica Gummies', category: 'Edible', stock: 156, unit: 'packs', status: 'good', forecast: 'Stable' },
-  { name: 'Jack Herer', category: 'Flower', stock: 8, unit: 'lbs', status: 'critical', forecast: 'Out in 24h' },
-  { name: 'Mango Haze Pre-Roll', category: 'Pre-Roll', stock: 320, unit: 'units', status: 'good', forecast: 'Trending up' },
-];
-
-const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  good: { bg: '#d1fae5', text: '#065f46', label: 'In Stock' },
-  low: { bg: '#fef3c7', text: '#92400e', label: 'Low Stock' },
-  critical: { bg: '#fee2e2', text: '#991b1b', label: 'Critical' },
-};
+import { TransitionOverlay } from '../components/TransitionOverlay';
+import { AlertTriangle, Check, TrendingUp } from 'lucide-react';
 
 export function InventoryScene() {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const titleStyle = useSlideIn(5, 'up', 'smooth');
+  const INVENTORY = [
+    { name: 'Blue Dream', stock: 142, status: 'Ideal', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
+    { name: 'OG Kush', stock: 85, status: 'Good', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
+    { name: 'Sour Diesel', stock: 12, status: 'Low Stock', color: 'text-amber-600 bg-amber-50 border-amber-100', warn: true },
+    { name: 'Gummies', stock: 340, status: 'Overstock', color: 'text-purple-600 bg-purple-50 border-purple-100' },
+    { name: 'Vape Pen', stock: 0, status: 'Out of Stock', color: 'text-rose-600 bg-rose-50 border-rose-100' },
+  ];
 
-  // AI alert animation
-  const alertDelay = 80;
-  const alertProgress = spring({
-    frame: frame - alertDelay,
-    fps,
-    config: SPRING_PRESETS.bouncy,
-  });
+  const rowOpacity = (i: number) => interpolate(frame, [i * 5, i * 5 + 10], [0, 1], { extrapolateRight: 'clamp' });
+  const warnPulse = spring({ frame: frame - 120, fps, config: { damping: 5 } }); // Bouncy warning
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative', background: '#0f172a' }}>
-      <div
-        style={{
-          ...titleStyle,
-          position: 'absolute',
-          top: 40,
-          left: 0,
-          right: 0,
-          textAlign: 'center',
-          zIndex: 20,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 600,
-            color: COLORS.primary,
-            fontFamily: 'Inter, sans-serif',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-          }}
-        >
-          Inventory Intelligence
-        </div>
-      </div>
-
-      <DashboardMockup title="inventory" delay={8}>
-        <div style={{ padding: 28 }}>
-          {/* Header row */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: COLORS.text, fontFamily: 'Inter, sans-serif' }}>
-                Inventory Management
+    <div style={{ flex: 1, height: '100%', backgroundColor: 'white' }}>
+      <DashboardMockup title="floraiq.com/admin/inventory">
+        <div className="flex gap-8 h-full">
+          {/* Table - Premium List View */}
+          <div className="flex-1 bg-white rounded-2xl border border-indigo-50 overflow-hidden shadow-sm flex flex-col">
+            <div className="p-6 border-b border-indigo-50/50 flex justify-between items-center bg-slate-50/50">
+              <div className="flex flex-col">
+                <div className="font-bold text-slate-800 text-lg">Inventory Status</div>
+                <div className="text-xs text-slate-400 font-medium">Synced with Metrc & POS</div>
               </div>
-              <div style={{ fontSize: 14, color: COLORS.textLight, fontFamily: 'Inter, sans-serif', marginTop: 4 }}>
-                820 SKUs tracked &middot; 2 items need attention
+              <div className="flex gap-2">
+                <div className="w-8 h-8 rounded-lg bg-white border border-indigo-50 flex items-center justify-center shadow-sm text-slate-400">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <div style={{ background: COLORS.surface, color: COLORS.text, padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 500, fontFamily: 'Inter, sans-serif', border: `1px solid ${COLORS.border}` }}>
-                Export CSV
-              </div>
-              <div style={{ background: COLORS.primary, color: '#fff', padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600, fontFamily: 'Inter, sans-serif' }}>
-                + Add Product
-              </div>
-            </div>
-          </div>
 
-          {/* Summary cards */}
-          <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
-            {[
-              { label: 'Total SKUs', value: 820, color: COLORS.primary },
-              { label: 'Low Stock Alerts', value: 2, color: COLORS.warning },
-              { label: 'Forecasted Demand', value: 94, suffix: '%', color: COLORS.accent },
-              { label: 'Inventory Value', value: 284, prefix: '$', suffix: 'k', color: COLORS.purple },
-            ].map((stat, i) => {
-              const cardDelay = 18 + i * 5;
-              const progress = spring({ frame: frame - cardDelay, fps, config: SPRING_PRESETS.snappy });
-              const count = useCountUp(stat.value, cardDelay + 5, 40);
-
-              return (
+            <div className="p-6 flex flex-col gap-3">
+              {INVENTORY.map((item, i) => (
                 <div
                   key={i}
-                  style={{
-                    opacity: progress,
-                    transform: `translateY(${interpolate(progress, [0, 1], [20, 0])}px)`,
-                    flex: 1,
-                    background: COLORS.background,
-                    borderRadius: 10,
-                    padding: '14px 16px',
-                    border: `1px solid ${COLORS.border}`,
-                  }}
+                  style={{ opacity: rowOpacity(i) }}
+                  className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-300 ${item.warn && frame > 120 ? 'border-amber-300 bg-amber-50 shadow-md transform scale-[1.02]' : 'border-slate-100 bg-white hover:border-indigo-100 hover:shadow-sm'}`}
                 >
-                  <div style={{ fontSize: 12, color: COLORS.textLight, fontFamily: 'Inter, sans-serif', fontWeight: 500 }}>{stat.label}</div>
-                  <div style={{ fontSize: 26, fontWeight: 800, color: stat.color, fontFamily: 'Inter, sans-serif', marginTop: 4 }}>
-                    {stat.prefix || ''}{count}{stat.suffix || ''}
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${item.warn ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500'}`}>
+                      <Package className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-slate-700">{item.name}</div>
+                      <div className="text-xs text-slate-400">SKU: 8392-A{i}</div>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
 
-          {/* Inventory table */}
-          <div style={{ background: COLORS.background, borderRadius: 12, border: `1px solid ${COLORS.border}`, overflow: 'hidden' }}>
-            {/* Table header */}
-            <div style={{ display: 'flex', padding: '12px 20px', borderBottom: `1px solid ${COLORS.border}`, background: COLORS.backgroundAlt }}>
-              {['Product', 'Category', 'Stock', 'Status', 'AI Forecast'].map((col, i) => (
-                <div key={i} style={{ flex: i === 0 ? 2 : 1, fontSize: 12, fontWeight: 700, color: COLORS.textMuted, fontFamily: 'Inter, sans-serif', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  {col}
+                  <div className="flex items-center gap-6">
+                    <div className="text-slate-600 font-mono font-medium">{item.stock} units</div>
+                    <div className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 border ${item.color}`}>
+                      {item.warn ? <AlertTriangle className="w-3 h-3" /> : <Check className="w-3 h-3" />}
+                      {item.status}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
+          </div>
 
-            {/* Table rows */}
-            {INVENTORY_ITEMS.map((item, i) => {
-              const rowDelay = 30 + i * 6;
-              const progress = spring({ frame: frame - rowDelay, fps, config: SPRING_PRESETS.snappy });
-              const statusStyle = STATUS_STYLES[item.status];
+          {/* Forecast Panel - Dark Premium Card */}
+          <div className="w-1/3 flex flex-col gap-6">
+            <div
+              className="rounded-2xl p-6 text-white flex-1 relative overflow-hidden flex flex-col shadow-2xl"
+              style={{
+                background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
+                opacity: interpolate(frame, [60, 80], [0, 1])
+              }}
+            >
+              {/* Background Glows */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/10 blur-[60px] rounded-full translate-y-1/2 -translate-x-1/2" />
 
-              return (
-                <div
-                  key={i}
-                  style={{
-                    display: 'flex',
-                    padding: '14px 20px',
-                    borderBottom: i < INVENTORY_ITEMS.length - 1 ? `1px solid ${COLORS.borderLight}` : 'none',
-                    alignItems: 'center',
-                    opacity: progress,
-                    transform: `translateX(${interpolate(progress, [0, 1], [-20, 0])}px)`,
-                    background: item.status === 'critical' ? '#fef2f210' : 'transparent',
-                  }}
-                >
-                  <div style={{ flex: 2, fontSize: 14, fontWeight: 600, color: COLORS.text, fontFamily: 'Inter, sans-serif' }}>{item.name}</div>
-                  <div style={{ flex: 1, fontSize: 13, color: COLORS.textLight, fontFamily: 'Inter, sans-serif' }}>{item.category}</div>
-                  <div style={{ flex: 1, fontSize: 14, fontWeight: 600, color: COLORS.text, fontFamily: 'Inter, sans-serif' }}>{item.stock} {item.unit}</div>
-                  <div style={{ flex: 1 }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: statusStyle.text, background: statusStyle.bg, padding: '3px 10px', borderRadius: 12, fontFamily: 'Inter, sans-serif' }}>
-                      {statusStyle.label}
-                    </span>
+              <div className="font-bold text-xl mb-1 flex items-center gap-3 relative z-10">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
+                  <TrendingUp className="w-5 h-5 text-emerald-400" />
+                </div>
+                AI Forecast
+              </div>
+              <p className="text-slate-400 text-sm mb-8 relative z-10 ml-1">Demand prediction for next 30 days</p>
+
+              <div className="flex items-end gap-1.5 h-40 mb-4 relative z-10">
+                {[30, 45, 38, 52, 48, 60, 75, 55, 68, 85, 95, 80, 70, 88].map((h, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 rounded-t-sm relative group bg-emerald-500/30 overflow-hidden"
+                    style={{
+                      height: `${interpolate(frame, [80 + i * 2, 100 + i * 2], [0, h])}%`,
+                    }}
+                  >
+                    <div className="absolute top-0 left-0 w-full h-1 bg-emerald-400/50" />
                   </div>
-                  <div style={{ flex: 1, fontSize: 13, color: item.status !== 'good' ? COLORS.warning : COLORS.textLight, fontFamily: 'Inter, sans-serif', fontWeight: item.status !== 'good' ? 600 : 400 }}>
-                    {item.forecast}
+                ))}
+              </div>
+
+              {frame > 150 && (
+                <div
+                  className="rounded-xl p-4 flex items-center gap-4 animate-pulse relative z-10 mt-auto border border-amber-500/30"
+                  style={{ background: 'rgba(245, 158, 11, 0.1)' }}
+                >
+                  <div className="p-2 bg-amber-500/20 rounded-lg">
+                    <AlertTriangle className="w-5 h-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-amber-400">Stockout Risk Detected</div>
+                    <div className="text-xs text-amber-200/70">Sour Diesel depleted in 3 days</div>
                   </div>
                 </div>
-              );
-            })}
+              )}
+            </div>
           </div>
         </div>
+
+        <FeatureCallout
+          text="AI-Powered Stock Predictions"
+          x={800} y={150}
+          delay={160}
+        />
       </DashboardMockup>
-
-      {/* AI Alert popup */}
-      {frame >= alertDelay && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 130,
-            right: 130,
-            opacity: alertProgress,
-            transform: `scale(${interpolate(alertProgress, [0, 1], [0.9, 1])}) translateY(${interpolate(alertProgress, [0, 1], [-10, 0])}px)`,
-            background: `linear-gradient(135deg, #1e293b, #0f172a)`,
-            borderRadius: 14,
-            padding: '16px 22px',
-            boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
-            border: `1px solid ${COLORS.primary}40`,
-            zIndex: 30,
-            maxWidth: 300,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <div style={{ width: 24, height: 24, borderRadius: 6, background: `${COLORS.primary}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13 }}>
-              &#9889;
-            </div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', fontFamily: 'Inter, sans-serif' }}>
-              AI Prediction
-            </div>
-          </div>
-          <div style={{ fontSize: 12, color: '#94a3b8', fontFamily: 'Inter, sans-serif', lineHeight: 1.5 }}>
-            OG Kush will be out of stock in <span style={{ color: COLORS.warning, fontWeight: 700 }}>3 days</span> based on current demand. Auto-reorder suggested.
-          </div>
-        </div>
-      )}
-
-      <FeatureCallout
-        label="AI-Powered Demand Forecasting"
-        delay={55}
-        position={{ bottom: 60, right: 120 }}
-      />
+      <TransitionOverlay startFrame={165} />
     </div>
   );
 }

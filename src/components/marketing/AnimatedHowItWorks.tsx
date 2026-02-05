@@ -5,7 +5,7 @@ import { AnimatedIcon } from './AnimatedIcon';
 import UserPlus from "lucide-react/dist/esm/icons/user-plus";
 import Upload from "lucide-react/dist/esm/icons/upload";
 import Rocket from "lucide-react/dist/esm/icons/rocket";
-import type { LucideIcon } from "lucide-react";
+import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
 
 interface Step {
   id: number;
