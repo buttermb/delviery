@@ -1,10 +1,11 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight,
   CheckCircle,
   HelpCircle,
   AlertCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -12,32 +13,21 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { CTASection } from "@/components/marketing/CTASection";
 import { ModernHero } from "@/components/marketing/ModernHero";
 import { DetailedFeatureSection } from "@/components/marketing/DetailedFeatureSection";
-import { ScrollProgressIndicator } from "@/components/marketing/ScrollProgressIndicator";
 import { SectionTransition } from "@/components/marketing/SectionTransition";
-import { ConfettiButton } from "@/components/marketing/ConfettiButton";
 import { SectionSkeleton } from "@/components/marketing/SkeletonLoader";
-import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigationHelper";
-import { LiveChatWidget } from "@/components/LiveChatWidget";
 import { MarketingErrorBoundary } from "@/components/marketing/MarketingErrorBoundary";
-import { TestimonialsCarousel } from "@/components/marketing/TestimonialsCarousel";
-import { VideoShowcase } from "@/components/marketing/VideoShowcase";
 import { ForceLightMode } from "@/components/marketing/ForceLightMode";
 
-import { StatsSection } from "@/components/marketing/StatsSection";
 import { StickyMobileCTA } from "@/components/marketing/StickyMobileCTA";
-import { TrustedBy } from "@/components/marketing/TrustedBy";
 import { lazy, Suspense, useEffect } from "react";
 import { analytics } from "@/utils/analytics";
-
 // Lazy load heavy components
-const ProblemSolutionSection = lazy(() => import("@/components/marketing/ProblemSolutionSection").then(m => ({ default: m.ProblemSolutionSection })));
 const ComparisonSection = lazy(() => import("@/components/marketing/ComparisonSection").then(m => ({ default: m.ComparisonSection })));
 const IntegrationEcosystem = lazy(() => import("@/components/marketing/IntegrationEcosystem").then(m => ({ default: m.IntegrationEcosystem })));
 const ROICalculator = lazy(() => import("@/components/marketing/ROICalculator").then(m => ({ default: m.ROICalculator })));
-const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingChatButton").then(m => ({ default: m.FloatingChatButton })));
-const PlatformCapabilities = lazy(() => import("@/components/marketing/PlatformCapabilities").then(m => ({ default: m.PlatformCapabilities })));
-const EnhancedDashboardPreview = lazy(() => import("@/components/marketing/EnhancedDashboardPreview").then(m => ({ default: m.EnhancedDashboardPreview })));
-
+const VideoShowcase = lazy(() => import("@/components/marketing/VideoShowcaseRemotion").then(m => ({ default: m.VideoShowcaseRemotion })));
+const TestimonialsCarousel = lazy(() => import("@/components/marketing/RemotionTestimonials").then(m => ({ default: m.RemotionTestimonials })));
+const AnimatedHowItWorks = lazy(() => import("@/components/marketing/RemotionHowItWorks").then(m => ({ default: m.RemotionHowItWorks })));
 
 // Loading fallback component
 const SectionLoader = () => (
@@ -45,8 +35,6 @@ const SectionLoader = () => (
 );
 
 export default function MarketingHome() {
-  const navigate = useNavigate();
-
   // Scroll to top on mount and track page view
   useEffect(() => {
     // Scroll to top when component mounts
@@ -61,11 +49,11 @@ export default function MarketingHome() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-dvh bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] font-sans overflow-x-hidden">
+      <div id="main-content" className="min-h-dvh bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] font-sans">
 
         <SEOHead
-          title="FloraIQ - Secure Disposable Menus for Cannabis Operators"
-          description="Create encrypted, disposable menus in 30 seconds. Auto-burn on screenshot, device fingerprinting, OPSEC-grade security. No demo required."
+          title="FloraIQ - Wholesale Menus That Disappear After Your Buyers Order"
+          description="Create encrypted, disposable catalogs. Accept orders. Sync inventory. All from one dashboard — free to start."
           structuredData={{
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
@@ -79,94 +67,36 @@ export default function MarketingHome() {
           }}
         />
 
-        <ScrollProgressIndicator />
         <MarketingNav />
 
         {/* SECTION 1: MODERN HERO */}
         <ModernHero />
 
-        {/* TRUSTED BY SECTION */}
-        <TrustedBy />
-
-        {/* SECTION 2: PROBLEM/SOLUTION */}
-        <MarketingErrorBoundary section="ProblemSolution">
-          <SectionTransition variant="fade" delay={0}>
-            <section>
-              <Suspense fallback={<SectionLoader />}>
-                <ProblemSolutionSection />
-              </Suspense>
-            </section>
-          </SectionTransition>
-        </MarketingErrorBoundary>
-
-        {/* SECTION 3: DETAILED FEATURES */}
+        {/* SECTION 2: WORKFLOW BLOCKS */}
         <DetailedFeatureSection />
 
-        {/* STATS SECTION */}
-        <StatsSection />
+        {/* SECTION 3: HOW IT WORKS */}
+        <MarketingErrorBoundary section="HowItWorks">
+          <Suspense fallback={<SectionLoader />}>
+            <AnimatedHowItWorks />
+          </Suspense>
+        </MarketingErrorBoundary>
 
-
-
-
-        {/* SECTION 5: TESTIMONIALS CAROUSEL */}
+        {/* SECTION 4: TESTIMONIALS */}
         <MarketingErrorBoundary section="Testimonials">
-          <TestimonialsCarousel />
+          <Suspense fallback={<SectionLoader />}>
+            <TestimonialsCarousel />
+          </Suspense>
         </MarketingErrorBoundary>
 
-        {/* SECTION 5.5: VIDEO SHOWCASE */}
+        {/* SECTION 5: VIDEO SHOWCASE */}
         <MarketingErrorBoundary section="VideoShowcase">
-          <VideoShowcase />
+          <Suspense fallback={<SectionLoader />}>
+            <VideoShowcase />
+          </Suspense>
         </MarketingErrorBoundary>
 
-        {/* SECTION 6: PRODUCT SHOWCASE - INTERACTIVE DASHBOARD */}
-        <section className="py-12 md:py-16 relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-[hsl(var(--marketing-bg))] to-[hsl(var(--marketing-bg-subtle))]/50 pointer-events-none" />
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="max-w-7xl mx-auto">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
-                  See FloraIQ in Action
-                </h2>
-                <p className="text-xl text-[hsl(var(--marketing-text-light))] mb-8">
-                  Explore our interactive dashboard - click around and see all the features
-                </p>
-              </div>
-
-              {/* Full Interactive Dashboard */}
-              <MarketingErrorBoundary section="DashboardPreview">
-                <Suspense fallback={<SectionLoader />}>
-                  <EnhancedDashboardPreview />
-                </Suspense>
-              </MarketingErrorBoundary>
-
-              {/* Feature Highlights */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 max-w-4xl mx-auto">
-                {[
-                  "Create secure catalog in 2 clicks",
-                  "Track deliveries in real-time",
-                  "Manage orders from one dashboard",
-                  "Customer portal for self-service"
-                ].map((feature, i) => (
-                  <div key={i} className="flex items-start gap-3 p-4 rounded-lg bg-[hsl(var(--marketing-bg-subtle))] border border-[hsl(var(--marketing-border))]">
-                    <CheckCircle className="h-5 w-5 text-[hsl(var(--marketing-primary))] flex-shrink-0 mt-1" />
-                    <span className="text-sm text-[hsl(var(--marketing-text))]">{feature}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="text-center mt-8">
-                <Link to="/demo">
-                  <Button size="lg" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white h-12 px-8 rounded-xl">
-                    Request Live Demo
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 7: INTEGRATION */}
+        {/* SECTION 6: INTEGRATION */}
         <MarketingErrorBoundary section="IntegrationEcosystem">
           <SectionTransition variant="fade" delay={0}>
             <section>
@@ -177,7 +107,7 @@ export default function MarketingHome() {
           </SectionTransition>
         </MarketingErrorBoundary>
 
-        {/* SECTION 8: COMPARISON */}
+        {/* SECTION 7: COMPARISON */}
         <MarketingErrorBoundary section="Comparison">
           <SectionTransition variant="fade" delay={0}>
             <section>
@@ -188,8 +118,7 @@ export default function MarketingHome() {
           </SectionTransition>
         </MarketingErrorBoundary>
 
-
-        {/* SECTION 9: PRICING PREVIEW */}
+        {/* SECTION 8: PRICING */}
         <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg))]">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
@@ -201,10 +130,9 @@ export default function MarketingHome() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
-              {/* FREE TIER - With Premium Glow Animation */}
-              <div className="p-6 rounded-3xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 relative overflow-hidden transition-all hover:-translate-y-2 hover:shadow-[0_10px_30px_-10px_rgba(16,185,129,0.2)]">
-
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {/* FREE TIER */}
+              <div className="p-6 rounded-3xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 relative overflow-hidden">
                 <div className="absolute top-0 right-0 px-4 py-1.5 bg-emerald-500 text-white text-[10px] font-bold rounded-bl-2xl shadow-sm">
                   NO CC REQUIRED
                 </div>
@@ -231,7 +159,7 @@ export default function MarketingHome() {
                     ))}
                   </ul>
                   <Link to="/signup?plan=free">
-                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-12 rounded-xl shadow-sm transition-all hover:scale-[1.02]">
+                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-12 rounded-xl shadow-sm">
                       Start Free Now
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
@@ -239,93 +167,69 @@ export default function MarketingHome() {
                 </div>
               </div>
 
-              {[
-                {
-                  id: "starter",
-                  name: "STARTER",
-                  price: "$79",
-                  period: "/mo",
-                  description: "Unlimited for small teams",
-                  features: ["Unlimited usage", "Unlimited menus", "2 locations", "3 team members", "Email support"],
-                  cta: "Start 14-Day Trial"
-                },
-                {
-                  id: "professional",
-                  name: "PROFESSIONAL",
-                  price: "$150",
-                  period: "/mo",
-                  popular: true,
-                  description: "Most popular choice",
-                  features: ["55 Total Features", "500 customers", "5 locations", "Advanced CRM", "Priority support"],
-                  cta: "Start 14-Day Trial"
-                },
-                {
-                  id: "enterprise",
-                  name: "ENTERPRISE",
-                  price: "$499",
-                  period: "/mo",
-                  description: "For large-scale operations",
-                  features: ["All 87 Features", "Unlimited everything", "Fleet management", "API & webhooks", "White-label"],
-                  cta: "Contact Sales"
-                },
-              ].map((plan, index) => (
-                <div
-                  key={index}
-                  className={`p-6 md:p-8 rounded-3xl border transition-all duration-200 hover:scale-[1.02] hover:-translate-y-1 relative overflow-hidden ${plan.popular
-                    ? "border-[hsl(var(--marketing-primary))] bg-gradient-to-b from-[hsl(var(--marketing-primary))]/10 to-[hsl(var(--marketing-bg-subtle))] shadow-[0_0_40px_rgba(16,185,129,0.15)] md:scale-105"
-                    : "border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg-subtle))]"
-                    }`}
-                >
-                  {plan.popular && (
-                    <>
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-[hsl(var(--marketing-primary))]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                      <div className="text-center mb-6">
-                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[hsl(var(--marketing-primary))] text-white text-xs font-bold shadow-lg">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                          MOST POPULAR
-                        </span>
-                      </div>
-                    </>
-                  )}
-                  <h3 className="text-lg font-bold mb-1 text-center text-[hsl(var(--marketing-text-light))] tracking-wide">{plan.name}</h3>
-                  <div className="text-center mb-2">
-                    <span className="text-5xl font-bold text-[hsl(var(--marketing-text))]">{plan.price}</span>
-                    <span className="text-lg text-[hsl(var(--marketing-text-light))]">{plan.period}</span>
-                  </div>
-                  <p className="text-sm text-center text-[hsl(var(--marketing-text-light))] mb-6">{plan.description}</p>
-                  <ul className="space-y-3 mb-8">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-center gap-3 text-sm text-[hsl(var(--marketing-text))]">
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${plan.popular ? 'bg-[hsl(var(--marketing-primary))]' : 'bg-[hsl(var(--marketing-primary))]/20'}`}>
-                          <CheckCircle className={`h-3 w-3 ${plan.popular ? 'text-white' : 'text-[hsl(var(--marketing-primary))]'}`} />
-                        </div>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link to={plan.id === "enterprise" ? "/contact?reason=enterprise" : `/signup?plan=${plan.id}`}>
-                    <ConfettiButton
-                      variant={plan.popular ? "default" : "outline"}
-                      size="lg"
-                      className={`w-full rounded-xl min-h-[52px] font-semibold touch-manipulation active:scale-[0.98] transition-transform ${plan.popular
-                        ? "bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white shadow-lg shadow-[hsl(var(--marketing-primary))]/25"
-                        : "border-[hsl(var(--marketing-border))] text-[hsl(var(--marketing-text))] hover:bg-[hsl(var(--marketing-bg))] hover:border-[hsl(var(--marketing-primary))]/50"
-                        }`}
-                      confettiConfig={{
-                        particleCount: plan.popular ? 150 : 100,
-                        colors: ['#10B981', '#34D399', '#059669'],
-                      }}
-                    >
-                      {plan.cta}
-                    </ConfettiButton>
-                  </Link>
-                  {plan.name !== "ENTERPRISE" && (
-                    <div className="text-[10px] text-center mt-2 text-[hsl(var(--marketing-text-light))] flex justify-center gap-1">
-                      ⚠️ Credit card required for trial
-                    </div>
-                  )}
+              {/* PRO TIER */}
+              <div className="p-6 md:p-8 rounded-3xl border border-[hsl(var(--marketing-primary))] bg-gradient-to-b from-[hsl(var(--marketing-primary))]/10 to-[hsl(var(--marketing-bg-subtle))] shadow-lg relative overflow-hidden">
+                <div className="text-center mb-6">
+                  <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[hsl(var(--marketing-primary))] text-white text-xs font-bold shadow-lg">
+                    MOST POPULAR
+                  </span>
                 </div>
-              ))}
+                <h3 className="text-lg font-bold mb-1 text-center text-[hsl(var(--marketing-text-light))] tracking-wide">PRO</h3>
+                <div className="text-center mb-2">
+                  <span className="text-5xl font-bold text-[hsl(var(--marketing-text))]">$149</span>
+                  <span className="text-lg text-[hsl(var(--marketing-text-light))]">/mo</span>
+                </div>
+                <p className="text-sm text-center text-[hsl(var(--marketing-text-light))] mb-6">For growing operations</p>
+                <ul className="space-y-3 mb-8">
+                  {["Unlimited menus & customers", "5 locations", "Advanced CRM", "Priority support", "Built-in payment processing"].map((feature, i) => (
+                    <li key={i} className="flex items-center gap-3 text-sm text-[hsl(var(--marketing-text))]">
+                      <div className="w-5 h-5 rounded-full bg-[hsl(var(--marketing-primary))] flex items-center justify-center flex-shrink-0">
+                        <CheckCircle className="h-3 w-3 text-white" />
+                      </div>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Link to="/signup?plan=professional">
+                  <Button
+                    size="lg"
+                    className="w-full rounded-xl min-h-[52px] font-semibold bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white shadow-lg shadow-[hsl(var(--marketing-primary))]/25"
+                  >
+                    Start 14-Day Trial
+                  </Button>
+                </Link>
+                <div className="text-[10px] text-center mt-2 text-[hsl(var(--marketing-text-light))] flex justify-center gap-1">
+                  <AlertTriangle className="w-3 h-3 inline-block mr-1" aria-hidden="true" /> Credit card required for trial
+                </div>
+              </div>
+
+              {/* ENTERPRISE TIER */}
+              <div className="p-6 md:p-8 rounded-3xl border border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg-subtle))] relative overflow-hidden">
+                <h3 className="text-lg font-bold mb-1 text-center text-[hsl(var(--marketing-text-light))] tracking-wide">ENTERPRISE</h3>
+                <div className="text-center mb-2">
+                  <span className="text-4xl font-bold text-[hsl(var(--marketing-text))]">Contact Sales</span>
+                </div>
+                <p className="text-sm text-center text-[hsl(var(--marketing-text-light))] mb-6">For large-scale operations</p>
+                <ul className="space-y-3 mb-8">
+                  {["Unlimited everything", "Fleet management", "API & webhooks", "White-label options", "Dedicated account manager"].map((feature, i) => (
+                    <li key={i} className="flex items-center gap-3 text-sm text-[hsl(var(--marketing-text))]">
+                      <div className="w-5 h-5 rounded-full bg-[hsl(var(--marketing-primary))]/20 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle className="h-3 w-3 text-[hsl(var(--marketing-primary))]" />
+                      </div>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Link to="/contact?reason=enterprise">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full rounded-xl min-h-[52px] font-semibold border-[hsl(var(--marketing-border))] text-[hsl(var(--marketing-text))] hover:bg-[hsl(var(--marketing-bg))] hover:border-[hsl(var(--marketing-primary))]/50"
+                  >
+                    Contact Sales
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             <div className="text-center mt-8">
@@ -352,16 +256,20 @@ export default function MarketingHome() {
                 </div>
               </div>
               <Link to="/pricing">
-                <Button variant="ghost" className="group text-[hsl(var(--marketing-text))] hover:text-[hsl(var(--marketing-primary))] hover:scale-105 active:scale-95 transition-transform">
+                <Button variant="ghost" className="group text-[hsl(var(--marketing-text))] hover:text-[hsl(var(--marketing-primary))]">
                   See Full Pricing Details
                   <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
             </div>
+          </div>
+        </section>
 
-            {/* ROI Calculator */}
+        {/* SECTION 9: ROI CALCULATOR */}
+        <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg))]">
+          <div className="container mx-auto px-4">
             <MarketingErrorBoundary section="ROICalculator">
-              <div className="max-w-2xl mx-auto mt-12">
+              <div className="max-w-2xl mx-auto">
                 <Suspense fallback={<SectionLoader />}>
                   <ROICalculator />
                 </Suspense>
@@ -372,34 +280,17 @@ export default function MarketingHome() {
 
         {/* SECTION 10: FINAL CTA */}
         <CTASection
-          title="Ready to Create Your First Secure Menu?"
-          description="Live in 60 seconds. No demo. No contract."
+          title="Ready to simplify your wholesale operation?"
+          description="Free to start. No credit card. No sales call."
           primaryCta={{
-            text: "Create Menu Free",
+            text: "Create Your First Menu",
             link: "/signup?plan=free&flow=menu",
           }}
-          secondaryCta={{
-            text: "Watch Demo",
-            link: "/demo",
-          }}
-          variant="default"
+          variant="dark"
         />
 
         {/* SECTION 11: FOOTER */}
         <MarketingFooter />
-
-        {/* Floating Chat Button */}
-        <MarketingErrorBoundary section="FloatingChat">
-          <Suspense fallback={null}>
-            <FloatingChatButton />
-          </Suspense>
-        </MarketingErrorBoundary>
-
-        {/* Keyboard Navigation Helper */}
-        <KeyboardNavigationHelper />
-
-        {/* Live Chat Widget */}
-        <LiveChatWidget />
 
         {/* Sticky Mobile CTA */}
         <StickyMobileCTA />
