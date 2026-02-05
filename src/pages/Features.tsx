@@ -40,7 +40,7 @@ interface FeatureData {
   demoComponent: ComponentType<Record<string, unknown>>;
 }
 
-export function Features() {
+export default function Features() {
   const features: FeatureData[] = [
     {
       icon: Smartphone,
