@@ -164,7 +164,7 @@ export function VideoShowcaseRemotion() {
                   loop
                   playsInline
                   preload={isVisible ? 'auto' : 'none'}
-                  poster="/videos/floraiq-poster.webp"
+                  poster="/videos/floraiq-poster.jpg"
                   onError={() => setHasError(true)}
                 >
                   {/* WebM first — smaller file, better compression */}

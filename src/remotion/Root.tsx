@@ -1,5 +1,5 @@
 import React from 'react';
-import { Composition } from 'remotion';
+import { Composition, registerRoot } from 'remotion';
 import { ProductDemo } from './compositions/ProductDemo';
 import { DashboardScene } from './compositions/ProductDemo/scenes/DashboardScene';
 import { OrdersScene } from './compositions/ProductDemo/scenes/OrdersScene';
@@ -69,3 +69,5 @@ export function RemotionRoot() {
     </>
   );
 }
+
+registerRoot(RemotionRoot);

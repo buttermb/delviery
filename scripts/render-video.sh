@@ -65,8 +65,8 @@ if command -v ffmpeg &> /dev/null; then
     -ss 00:00:01 \
     -vframes 1 \
     -q:v 2 \
-    "$OUT_DIR/floraiq-poster.webp"
-  echo "  Poster: $OUT_DIR/floraiq-poster.webp"
+    "$OUT_DIR/floraiq-poster.jpg"
+  echo "  Poster: $OUT_DIR/floraiq-poster.jpg"
 else
   echo "  ⚠ ffmpeg not found — skipping poster (install: brew install ffmpeg)"
 fi
