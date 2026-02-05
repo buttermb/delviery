@@ -33,9 +33,9 @@ const ROICalculator = lazy(() => import("@/components/marketing/ROICalculator").
 const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingChatButton").then(m => ({ default: m.FloatingChatButton })));
 const PlatformCapabilities = lazy(() => import("@/components/marketing/PlatformCapabilities").then(m => ({ default: m.PlatformCapabilities })));
 const EnhancedDashboardPreview = lazy(() => import("@/components/marketing/EnhancedDashboardPreview").then(m => ({ default: m.EnhancedDashboardPreview })));
-const VideoShowcase = lazy(() => import("@/components/marketing/VideoShowcaseLegacy").then(m => ({ default: m.VideoShowcaseLegacy })));
-const TestimonialsCarousel = lazy(() => import("@/components/marketing/TestimonialsCarousel").then(m => ({ default: m.TestimonialsCarousel })));
-const AnimatedHowItWorks = lazy(() => import("@/components/marketing/AnimatedHowItWorks").then(m => ({ default: m.AnimatedHowItWorks })));
+const VideoShowcase = lazy(() => import("@/components/marketing/VideoShowcaseRemotion").then(m => ({ default: m.VideoShowcaseRemotion })));
+const TestimonialsCarousel = lazy(() => import("@/components/marketing/RemotionTestimonials").then(m => ({ default: m.RemotionTestimonials })));
+const AnimatedHowItWorks = lazy(() => import("@/components/marketing/RemotionHowItWorks").then(m => ({ default: m.RemotionHowItWorks })));
 
 // Loading fallback component
 const SectionLoader = () => (
@@ -111,11 +111,6 @@ export default function MarketingHome() {
         </MarketingErrorBoundary>
 
         {/* SECTION 5: TESTIMONIALS */}
-        <MarketingErrorBoundary section="Testimonials">
-          <Suspense fallback={<SectionLoader />}>
-            <TestimonialsCarousel />
-          </Suspense>
-        </MarketingErrorBoundary>
         <MarketingErrorBoundary section="Testimonials">
           <Suspense fallback={<SectionLoader />}>
             <TestimonialsCarousel />
