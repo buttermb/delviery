@@ -23,6 +23,7 @@ import { SearchInput } from '@/components/shared/SearchInput';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { CourierAvailabilityPanel } from '@/components/admin/fulfillment/CourierAvailabilityPanel';
+import { AssignToFleetDialog } from '@/components/admin/fulfillment/AssignToFleetDialog';
 
 interface Delivery {
   id: string;

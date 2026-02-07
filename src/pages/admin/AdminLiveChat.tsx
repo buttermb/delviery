@@ -205,7 +205,7 @@ const AdminLiveChat = function AdminLiveChat() {
 
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('chat_sessions')
         .select('*')
         .eq('status', 'active')
@@ -416,7 +416,7 @@ const AdminLiveChat = function AdminLiveChat() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      await supabase
+      await (supabase as any)
         .from('chat_messages')
         .update({ read_at: new Date().toISOString() })
         .eq('session_id', sessionId)

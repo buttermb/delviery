@@ -93,7 +93,7 @@ export default function RunnerLocationTracking() {
         .limit(20);
 
       if (error) throw error;
-      return (data || []) as DeliveryWithETA[];
+      return (data || []) as unknown as DeliveryWithETA[];
     },
     enabled: !!selectedRunnerId,
     refetchInterval: 30000, // Refresh every 30 seconds

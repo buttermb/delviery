@@ -34,7 +34,7 @@ export function StockAlerts() {
       if (!tenantId) return [];
 
       // Query the stock_alerts table for active alerts
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('stock_alerts')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -57,7 +57,7 @@ export function StockAlerts() {
 
   // Fallback function to calculate alerts from products table
   async function fetchAlertsFromProducts(tid: string): Promise<StockAlert[]> {
-    const { data: products, error: prodError } = await supabase
+    const { data: products, error: prodError } = await (supabase as any)
       .from('products')
       .select('id, name, stock_quantity, available_quantity, low_stock_alert, updated_at, created_at')
       .eq('tenant_id', tid);
@@ -97,14 +97,18 @@ export function StockAlerts() {
   // Mutation to acknowledge an alert
   const acknowledgeMutation = useMutation({
     mutationFn: async (alertId: string) => {
-      const { data, error } = await supabase.rpc('acknowledge_stock_alert', {
+      const rpcClient = supabase as unknown as {
+        rpc: (fn: string, params: Record<string, unknown>) => Promise<{ data: unknown; error: { code?: string; message?: string } | null }>;
+      };
+
+      const { data, error } = await rpcClient.rpc('acknowledge_stock_alert', {
         p_alert_id: alertId,
       });
 
       if (error) {
         // Fallback: try direct update if RPC doesn't exist
         if (error.code === '42883') {
-          const { error: updateError } = await supabase
+          const { error: updateError } = await (supabase as any)
             .from('stock_alerts')
             .update({
               status: 'acknowledged',

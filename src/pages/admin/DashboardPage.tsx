@@ -34,7 +34,7 @@ import { KPICard, KPICardSkeleton } from '@/components/admin/dashboard/KPICard';
 const RevenueWidget = lazy(() => import('@/components/admin/dashboard/RevenueWidget').then(module => ({ default: module.RevenueWidget })));
 
 // Lazy load ActivityWidget for better performance
-const ActivityWidget = lazy(() => import('@/components/admin/dashboard/ActivityFeedWidget').then(module => ({ default: module.ActivityWidget })));
+const ActivityWidget = lazy(() => import('@/components/admin/dashboard/ActivityFeedWidget').then(module => ({ default: module.ActivityFeedWidget })));
 
 // Lazy load AlertsWidget for better performance
 const AlertsWidget = lazy(() => import('@/components/admin/dashboard/AlertsWidget').then(module => ({ default: module.AlertsWidget })));

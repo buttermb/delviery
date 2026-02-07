@@ -421,8 +421,7 @@ export const useWholesalePayments = () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
       // Use JOIN to fetch client data in a single query (eliminates N+1 pattern)
-      // @ts-expect-error - Supabase type instantiation depth issue
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("wholesale_payments")
         .select("id, client_id, amount, payment_method, payment_date, reference_number, notes, status, created_at, client:wholesale_clients(business_name)")
         .eq("tenant_id", tenant.id)

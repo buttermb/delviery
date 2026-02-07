@@ -11,7 +11,7 @@ export interface VendorWithStats {
     contact_email: string | null;
     contact_phone: string | null;
     address: string | null;
-    website: string | null;
+    website?: string | null;
     license_number: string | null;
     notes: string | null;
     status: string | null;
@@ -38,7 +38,7 @@ export function useVendorsWithStats() {
     const { tenant } = useTenantAdminAuth();
 
     return useQuery({
-        queryKey: queryKeys.vendors.list({ tenantId: tenant?.id, withStats: true }),
+        queryKey: ['vendors', 'list', tenant?.id, { withStats: true }],
         queryFn: async () => {
             if (!tenant?.id) return [];
 
@@ -106,7 +106,7 @@ export function useVendorsWithStats() {
                     total_orders: stats.totalOrders,
                     total_spent: stats.totalSpent,
                     last_order_date: stats.lastOrderDate,
-                } as VendorWithStats;
+                } as unknown as VendorWithStats;
             });
         },
         enabled: !!tenant?.id,

@@ -128,8 +128,8 @@ export default function ReturnsManagementPage() {
   const deleteMutation = useMutation({
     mutationFn: async ({ id, raNumber }: { id: string; raNumber: string }) => {
       if (!tenant?.id) throw new Error('No tenant');
-      const { error } = await supabase
-        .from("returns" as unknown as 'returns')
+      const { error } = await (supabase as any)
+        .from("returns")
         .delete()
         .eq("id", id)
         .eq("tenant_id", tenant.id);

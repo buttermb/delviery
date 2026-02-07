@@ -172,7 +172,7 @@ export default function Couriers() {
               </Badge>
             )}
             {hasLocation && (
-              <MapPin className="h-3 w-3 text-green-600" title="GPS location available" />
+              <span title="GPS location available"><MapPin className="h-3 w-3 text-green-600" /></span>
             )}
           </div>
         );
@@ -364,7 +364,7 @@ export default function Couriers() {
                                 </Badge>
                               )}
                               {hasLocation && (
-                                <MapPin className="h-3 w-3 text-green-600" title="GPS location available" />
+                                <span title="GPS location available"><MapPin className="h-3 w-3 text-green-600" /></span>
                               )}
                             </>
                           );
