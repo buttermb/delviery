@@ -8,13 +8,16 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
   BarChart,
   TrendingUp,
+  TrendingDown,
   Users,
   Eye,
   MousePointerClick,
@@ -23,6 +26,12 @@ import {
   Download,
   FileText,
   FileSpreadsheet,
+  ShoppingCart,
+  DollarSign,
+  Package,
+  Layers,
+  AlertTriangle,
+  ArrowUpRight,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -662,75 +671,10 @@ export function SelfHostedAnalytics() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const [isExporting, setIsExporting] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
 
-  // Fetch analytics data (stored in Supabase - no external service needed!)
-  const { data: analytics, isLoading } = useQuery<AnalyticsData | null>({
-    queryKey: ['analytics', tenantId],
-    queryFn: async (): Promise<AnalyticsData | null> => {
-      if (!tenantId) return null;
-
-      // Get last 30 days of analytics
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-
-      const { data: events } = await supabase
-        .from('wholesale_orders')
-        .select('created_at, client_id')
-        .eq('tenant_id', tenantId)
-        .gte('created_at', thirtyDaysAgo);
-
-      if (!events) return null;
-
-      interface EventRow {
-        created_at: string;
-        client_id: string;
-      }
-
-      // Calculate metrics
-      const uniqueVisitors = new Set((events as EventRow[]).map((e) => e.client_id)).size;
-      const totalViews = events.length;
-      
-      // Group by date
-      const dailyMap = new Map<string, { views: number; visitors: Set<string> }>();
-      (events as EventRow[]).forEach((event) => {
-        const date = new Date(event.created_at).toISOString().split('T')[0];
-        if (!dailyMap.has(date)) {
-          dailyMap.set(date, { views: 0, visitors: new Set() });
-        }
-        const day = dailyMap.get(date)!;
-        day.views += 1;
-        day.visitors.add(event.client_id);
-      });
-
-      const dailyStats = Array.from(dailyMap.entries())
-        .map(([date, stats]) => ({
-          date,
-          views: stats.views,
-          visitors: stats.visitors.size,
-        }))
-        .sort((a, b) => a.date.localeCompare(b.date));
-
-      return {
-        totalViews,
-        uniqueVisitors,
-        pageViews: totalViews,
-        avgSessionDuration: 0, // Calculate from session data
-        bounceRate: 0, // Calculate from session data
-        topPages: [
-          { path: '/dashboard', views: Math.floor(totalViews * 0.4) },
-          { path: '/orders', views: Math.floor(totalViews * 0.3) },
-          { path: '/customers', views: Math.floor(totalViews * 0.2) },
-          { path: '/inventory', views: Math.floor(totalViews * 0.1) },
-        ],
-        topReferrers: [
-          { source: 'Direct', visits: Math.floor(uniqueVisitors * 0.5) },
-          { source: 'Email', visits: Math.floor(uniqueVisitors * 0.3) },
-          { source: 'SMS', visits: Math.floor(uniqueVisitors * 0.2) },
-        ],
-        dailyStats,
-      };
-    },
-    enabled: !!tenantId,
-  });
+  // Use the unified analytics data hook
+  const { data: analytics, isLoading, error } = useAnalyticsData();
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -754,6 +698,8 @@ export function SelfHostedAnalytics() {
 
   // Export handler
   const handleExport = (format: 'csv' | 'pdf') => {
+    if (!analytics) return;
+    
     setIsExporting(true);
     try {
       const thirtyDaysAgo = new Date();
@@ -766,38 +712,38 @@ export function SelfHostedAnalytics() {
           end: new Date(),
         },
         metrics: [
-          { label: 'Total Views', value: formatNumberForReport(analytics.totalViews), change: 12.5 },
-          { label: 'Unique Visitors', value: formatNumberForReport(analytics.uniqueVisitors), change: 8.2 },
-          { label: 'Page Views', value: formatNumberForReport(analytics.pageViews), change: 5.1 },
-          { label: 'Avg Session', value: `${analytics.avgSessionDuration || 0}m` },
+          { label: 'Total Revenue', value: `$${formatNumberForReport(analytics.orders.totalRevenue)}`, change: 12.5 },
+          { label: 'Total Orders', value: formatNumberForReport(analytics.orders.totalOrders), change: 8.2 },
+          { label: 'Total Customers', value: formatNumberForReport(analytics.customers.totalCustomers), change: 5.1 },
+          { label: 'Active Products', value: formatNumberForReport(analytics.inventory.activeProducts) },
         ],
         charts: [
           {
-            title: 'Daily Views',
-            data: analytics.dailyStats.map((stat) => ({
+            title: 'Daily Orders',
+            data: analytics.orders.dailyOrders.map((stat) => ({
               label: stat.date,
-              value: stat.views,
-              visitors: stat.visitors,
+              value: stat.count,
+              revenue: stat.revenue,
             })),
           },
         ],
         tables: [
           {
-            title: 'Top Pages',
-            headers: ['Page', 'Views', 'Percentage'],
-            rows: analytics.topPages.map((page) => [
-              page.path,
-              page.views,
-              `${((page.views / analytics.totalViews) * 100).toFixed(1)}%`,
+            title: 'Top Products',
+            headers: ['Product', 'Stock', 'Alert Level'],
+            rows: analytics.inventory.topProducts.map((product) => [
+              product.name,
+              product.stockQuantity,
+              product.lowStockAlert,
             ]),
           },
           {
-            title: 'Traffic Sources',
-            headers: ['Source', 'Visits', 'Percentage'],
-            rows: analytics.topReferrers.map((ref) => [
-              ref.source,
-              ref.visits,
-              `${((ref.visits / analytics.uniqueVisitors) * 100).toFixed(1)}%`,
+            title: 'Top Customers',
+            headers: ['Customer', 'Orders', 'Total Spent'],
+            rows: analytics.customers.topCustomers.map((customer) => [
+              customer.name,
+              customer.orderCount,
+              `$${customer.totalSpent.toLocaleString()}`,
             ]),
           },
         ],
