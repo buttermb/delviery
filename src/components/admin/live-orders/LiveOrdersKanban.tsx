@@ -21,6 +21,7 @@ import {
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { AssignToFleetDialog } from '@/components/admin/AssignToFleetDialog';
+import { OrderLink } from '@/components/admin/cross-links';
 
 // Types
 export interface LiveOrder {
@@ -136,7 +137,9 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
                     <div className="flex justify-between items-start">
                         <div>
                             <div className="flex items-center gap-2">
-                                <span className="font-bold text-sm">#{order.order_number}</span>
+                                <span className="font-bold text-sm">
+                                    <OrderLink orderId={order.id} orderNumber={`#${order.order_number}`} />
+                                </span>
                                 {order.source === 'menu' && (
                                     <Badge variant="secondary" className="text-[10px] h-5 px-1">Menu</Badge>
                                 )}

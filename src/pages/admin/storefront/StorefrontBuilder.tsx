@@ -946,18 +946,142 @@ export function StorefrontBuilder({
                                 <TabsTrigger value="templates" className="text-xs px-2">Templates</TabsTrigger>
                             </TabsList>
 
-                {/* Center Preview */}
-                <BuilderPreview
-                    store={builder.store}
-                    layoutConfig={builder.layoutConfig}
-                    themeConfig={builder.themeConfig}
-                    devicePreview={builder.devicePreview}
-                    previewZoom={builder.previewZoom}
-                    selectedSectionId={builder.selectedSectionId}
-                    onSelectSection={builder.handleSelectSection}
-                    onApplyTemplate={builder.applyTemplate}
-                    setActiveTab={builder.setActiveTab}
-                />
+                            {/* Sections Tab */}
+                            <TabsContent value="sections" className="flex-1 overflow-hidden m-0">
+                                <ScrollArea className="h-full">
+                                    <div className="p-3 space-y-3">
+                                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Add Section</p>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {(Object.entries(SECTION_TYPES) as [keyof typeof SECTION_TYPES, typeof SECTION_TYPES[keyof typeof SECTION_TYPES]][]).map(([key, { label, icon: Icon }]) => (
+                                                <Button
+                                                    key={key}
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="flex flex-col items-center gap-1 h-auto py-3 text-xs"
+                                                    onClick={() => addSection(key)}
+                                                >
+                                                    <Icon className="w-4 h-4" />
+                                                    <span className="truncate w-full text-center">{label}</span>
+                                                </Button>
+                                            ))}
+                                        </div>
+                                        <Separator />
+                                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Layer Order</p>
+                                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                            <SortableContext items={layoutConfig.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                                                <div className="space-y-1">
+                                                    {layoutConfig.map((section) => (
+                                                        <SortableSectionItem
+                                                            key={section.id}
+                                                            section={section}
+                                                            isSelected={selectedSectionId === section.id}
+                                                            onSelect={() => handleSelectSection(section.id)}
+                                                            onRemove={(e) => requestRemoveSection(section.id, e)}
+                                                            onDuplicate={(e) => duplicateSection(section.id, e)}
+                                                            onToggleVisibility={(e) => toggleVisibility(section.id, e)}
+                                                            sectionLabel={SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.label || section.type}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </SortableContext>
+                                        </DndContext>
+                                        {layoutConfig.length === 0 && (
+                                            <p className="text-xs text-muted-foreground text-center py-4">
+                                                No sections yet. Add one above or pick a template.
+                                            </p>
+                                        )}
+                                    </div>
+                                </ScrollArea>
+                            </TabsContent>
+
+                            {/* Theme Tab */}
+                            <TabsContent value="theme" className="flex-1 overflow-hidden m-0">
+                                <ScrollArea className="h-full">
+                                    <div className="p-3 space-y-3">
+                                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Theme Presets</p>
+                                        <ThemePresetStrip
+                                            selectedThemeId={selectedThemeId}
+                                            onSelectTheme={handleThemeSelect}
+                                        />
+                                        <Separator />
+                                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Custom Colors</p>
+                                        <div className="space-y-2">
+                                            <div className="space-y-1">
+                                                <Label className="text-xs">Primary</Label>
+                                                <div className="flex gap-2 items-center">
+                                                    <Input type="color" className="w-8 h-8 p-0 border-0 cursor-pointer rounded" value={themeConfig.colors?.primary || '#000000'} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, primary: e.target.value } }))} />
+                                                    <Input className="flex-1 h-8 text-xs" value={themeConfig.colors?.primary || ''} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, primary: e.target.value } }))} />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label className="text-xs">Accent</Label>
+                                                <div className="flex gap-2 items-center">
+                                                    <Input type="color" className="w-8 h-8 p-0 border-0 cursor-pointer rounded" value={themeConfig.colors?.accent || '#3b82f6'} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, accent: e.target.value } }))} />
+                                                    <Input className="flex-1 h-8 text-xs" value={themeConfig.colors?.accent || ''} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, accent: e.target.value } }))} />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label className="text-xs">Background</Label>
+                                                <div className="flex gap-2 items-center">
+                                                    <Input type="color" className="w-8 h-8 p-0 border-0 cursor-pointer rounded" value={themeConfig.colors?.background || '#ffffff'} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, background: e.target.value } }))} />
+                                                    <Input className="flex-1 h-8 text-xs" value={themeConfig.colors?.background || ''} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, background: e.target.value } }))} />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label className="text-xs">Text</Label>
+                                                <div className="flex gap-2 items-center">
+                                                    <Input type="color" className="w-8 h-8 p-0 border-0 cursor-pointer rounded" value={themeConfig.colors?.text || '#000000'} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, text: e.target.value } }))} />
+                                                    <Input className="flex-1 h-8 text-xs" value={themeConfig.colors?.text || ''} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, text: e.target.value } }))} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <Separator />
+                                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Typography</p>
+                                        <div className="space-y-1">
+                                            <Label className="text-xs">Font Family</Label>
+                                            <Select value={themeConfig.typography?.fontFamily || 'Inter'} onValueChange={(v) => setThemeConfig(prev => ({ ...prev, typography: { ...prev.typography, fontFamily: v } }))}>
+                                                <SelectTrigger className="h-8 text-xs">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Inter">Inter</SelectItem>
+                                                    <SelectItem value="Playfair Display">Playfair Display</SelectItem>
+                                                    <SelectItem value="Montserrat">Montserrat</SelectItem>
+                                                    <SelectItem value="Roboto">Roboto</SelectItem>
+                                                    <SelectItem value="Poppins">Poppins</SelectItem>
+                                                    <SelectItem value="DM Sans">DM Sans</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </ScrollArea>
+                            </TabsContent>
+
+                            {/* Templates Tab */}
+                            <TabsContent value="templates" className="flex-1 overflow-hidden m-0">
+                                <ScrollArea className="h-full">
+                                    <div className="p-3 space-y-2">
+                                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Quick Start Templates</p>
+                                        {Object.entries(TEMPLATES).map(([key, template]) => (
+                                            <Card
+                                                key={key}
+                                                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                                onClick={() => applyTemplate(key as keyof typeof TEMPLATES)}
+                                            >
+                                                <CardContent className="p-3">
+                                                    <p className="text-sm font-medium">{template.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{template.description}</p>
+                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                        {template.sections.length} sections: {template.sections.join(', ')}
+                                                    </p>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                </ScrollArea>
+                            </TabsContent>
+                        </Tabs>
+                    </div>
 
                 {/* Center: Live Preview - uses transform scaling */}
                 <div className="flex-1 bg-muted flex items-start justify-center p-4 overflow-auto relative min-w-0 min-h-0">
@@ -1042,6 +1166,7 @@ export function StorefrontBuilder({
                     </div>
                 )}
             </div>
+            )}
 
             {/* Create Store Dialog */}
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -1230,5 +1355,3 @@ function sectionDefaults(type: string) {
     return { content: {}, styles: {} };
 }
 
-// Default export for compatibility
-export default StorefrontBuilder;

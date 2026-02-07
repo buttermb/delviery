@@ -258,7 +258,7 @@ export function MultiChannelOrderList() {
         if (order.channel === 'wholesale') {
             navigate(`/${tenantSlug}/admin/wholesale-orders/${order.id}`);
         } else if (order.channel === 'pos') {
-            navigate(`/${tenantSlug}/admin/pos/history?transaction=${order.id}`);
+            navigate(`/${tenantSlug}/admin/pos-system?tab=history&transaction=${order.id}`);
         } else {
             navigate(`/${tenantSlug}/admin/orders/${order.id}`);
         }

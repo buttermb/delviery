@@ -10,6 +10,8 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { logger } from '@/lib/logger';
 import { playNotificationSound } from '@/utils/notificationSound';
+import { invalidateOnEvent } from '@/lib/invalidation';
+import { queryKeys } from '@/lib/queryKeys';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface NewOrderEvent {
@@ -96,7 +98,25 @@ export function useAdminOrdersRealtime({
     showBrowserNotification(event);
 
     // Invalidate queries to refetch orders
-    queryClient.invalidateQueries({ queryKey: ['orders'] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+
+    // Cross-panel invalidation: new order affects orders, dashboard, inventory, activity feed
+    if (tenant?.id) {
+      invalidateOnEvent(queryClient, 'ORDER_CREATED', tenant.id);
+      // Dashboard and activity feed should update
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.activityFeed.all });
+
+      // If storefront order, fire additional storefront event
+      if (event.source === 'storefront') {
+        invalidateOnEvent(queryClient, 'STOREFRONT_ORDER', tenant.id);
+      }
+
+      // If POS order, fire POS event
+      if (event.source === 'pos') {
+        invalidateOnEvent(queryClient, 'POS_SALE_COMPLETED', tenant.id);
+      }
+    }
 
     // Call external handler
     onNewOrder?.(event);
@@ -106,7 +126,7 @@ export function useAdminOrdersRealtime({
       source: event.source,
       component: 'useAdminOrdersRealtime',
     });
-  }, [addHighlightedOrder, showBrowserNotification, queryClient, onNewOrder]);
+  }, [addHighlightedOrder, showBrowserNotification, queryClient, onNewOrder, tenant?.id]);
 
   useEffect(() => {
     if (!enabled || !tenant?.id) return;
@@ -169,7 +189,7 @@ export function useAdminOrdersRealtime({
             });
 
             // Also invalidate unified orders queries
-            queryClient.invalidateQueries({ queryKey: ['unified-orders'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
           }
         )
         .subscribe((status) => {
@@ -217,8 +237,8 @@ export function useAdminOrdersRealtime({
               });
 
               // Also invalidate storefront-specific queries
-              queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
-              queryClient.invalidateQueries({ queryKey: ['storefront-orders'] });
+              queryClient.invalidateQueries({ queryKey: queryKeys.storefront.all });
+              queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
             }
           )
           .subscribe((status) => {

@@ -13,7 +13,7 @@ import { usePasswordBreachCheck } from "@/hooks/usePasswordBreachCheck";
 import { PasswordBreachWarning } from "@/components/auth/PasswordBreachWarning";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
 
-export default function PasswordResetPage() {
+export function PasswordResetPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
@@ -354,5 +354,3 @@ export default function PasswordResetPage() {
   );
 }
 
-// Default export for lazy loading compatibility
-export default PasswordResetPage;

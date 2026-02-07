@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
+import { invalidateOnEvent } from '@/lib/invalidation';
+import { queryKeys } from '@/lib/queryKeys';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface UseStorefrontOrderAlertsOptions {
@@ -89,11 +91,22 @@ export function useStorefrontOrderAlerts({
                             duration: 10000, // 10 seconds
                         });
 
-                        // Invalidate relevant queries
+                        // Cross-panel invalidation: storefront order affects admin orders, dashboard, inventory
+                        if (tenant?.id) {
+                            invalidateOnEvent(queryClient, 'ORDER_CREATED', tenant.id);
+                            invalidateOnEvent(queryClient, 'STOREFRONT_ORDER', tenant.id);
+                        }
+
+                        // Also invalidate storefront-specific queries
                         queryClient.invalidateQueries({ queryKey: ['storefront-orders'] });
                         queryClient.invalidateQueries({ queryKey: ['realtime-sales'] });
                         queryClient.invalidateQueries({ queryKey: ['multi-channel-orders'] });
                         queryClient.invalidateQueries({ queryKey: ['storefront-performance'] });
+
+                        // Admin orders panel should see this immediately
+                        queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+                        queryClient.invalidateQueries({ queryKey: ['unified-orders'] });
+                        queryClient.invalidateQueries({ queryKey: queryKeys.activityFeed.all });
 
                         logger.info('New storefront order received', {
                             orderId: order.id,

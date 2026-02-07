@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface Vendor {
     id: string;
@@ -18,7 +19,7 @@ export function useVendors() {
     const { tenant } = useTenantAdminAuth();
 
     return useQuery({
-        queryKey: ['vendors', tenant?.id],
+        queryKey: queryKeys.vendors.list(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
             const { data, error } = await supabase
@@ -68,7 +69,7 @@ export function useCreateVendor() {
             return data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['vendors'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all });
             toast.success('Vendor created successfully');
         },
         onError: (error: Error) => {

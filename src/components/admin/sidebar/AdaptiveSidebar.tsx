@@ -174,7 +174,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   }, [navigate, tenantSlug]);
 
   const handleNavigateToPOS = useCallback(() => {
-    navigate(`/${tenantSlug}/admin/pos`);
+    navigate(`/${tenantSlug}/admin/pos-system`);
   }, [navigate, tenantSlug]);
 
   const handleNavigateToSettingsSidebar = useCallback(() => {

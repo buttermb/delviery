@@ -34,7 +34,7 @@ interface Product {
   price_per_lb?: number | null;
 }
 
-export default function InventoryManagement() {
+export function InventoryManagement() {
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const [products, setProducts] = useState<Product[]>([]);
@@ -60,7 +60,7 @@ export default function InventoryManagement() {
 
         if (error) throw error;
         // Map data to include warehouse_location as empty string for compatibility
-        setProducts(((data || []) as any[]).map(p => ({ ...p, warehouse_location: '' })) as Product[]);
+        setProducts(((data || []) as Array<Record<string, unknown>>).map(p => ({ ...p, warehouse_location: '' })) as Product[]);
       } catch (error) {
         logger.error('Error loading inventory', error, { component: 'InventoryManagement' });
         toast.error("Failed to load inventory");

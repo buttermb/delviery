@@ -23,6 +23,8 @@ interface HubBreadcrumbsProps {
 
 // Hub name to display name mapping
 const HUB_DISPLAY_NAMES: Record<string, string> = {
+    dashboard: 'Dashboard',
+    'dashboard-hub': 'Dashboard',
     'inventory-hub': 'Inventory',
     'customer-hub': 'Customers',
     'finance-hub': 'Finance',

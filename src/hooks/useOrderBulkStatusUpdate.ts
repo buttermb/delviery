@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { triggerHaptic } from '@/lib/utils/mobile';
+import { invalidateOnEvent } from '@/lib/invalidation';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface FailedItem {
   id: string;
@@ -152,9 +154,29 @@ export function useOrderBulkStatusUpdate({ tenantId, onSuccess }: UseOrderBulkSt
 
     // Handle results
     if (succeededCount > 0) {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+
+      // Cross-panel invalidation for bulk status change
+      if (tenantId) {
+        invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', tenantId);
+
+        // Status-specific invalidation
+        if (targetStatus === 'cancelled') {
+          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
+        }
+        if (targetStatus === 'delivered' || targetStatus === 'completed') {
+          queryClient.invalidateQueries({ queryKey: queryKeys.fulfillment.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
+        }
+        if (targetStatus === 'confirmed') {
+          queryClient.invalidateQueries({ queryKey: queryKeys.fulfillment.queue(tenantId) });
+        }
+      }
 
       if (failedCount === 0) {
         toast.success(`Updated ${succeededCount} order${succeededCount !== 1 ? 's' : ''} to ${targetStatus}`);

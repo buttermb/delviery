@@ -29,6 +29,7 @@ import { BulkOperationProgress } from "@/components/ui/bulk-operation-progress";
 import { useOrderBulkStatusUpdate } from "@/hooks/useOrderBulkStatusUpdate";
 import { Checkbox } from "@/components/ui/checkbox";
 import CopyButton from "@/components/CopyButton";
+import { CustomerLink } from "@/components/admin/cross-links";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useExport } from "@/hooks/useExport";
@@ -636,7 +637,10 @@ export default function Orders() {
       cell: (order) => (
         <div className="flex flex-col">
           <span className="font-medium">
-            {order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown Customer'}
+            <CustomerLink
+              customerId={order.user_id}
+              customerName={order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown Customer'}
+            />
           </span>
           {order.user?.email && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -921,7 +925,10 @@ export default function Orders() {
                         {getSourceBadge(order.order_source)}
                       </div>
                       <p className="text-sm font-medium">
-                        {order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown Customer'}
+                        <CustomerLink
+                          customerId={order.user_id}
+                          customerName={order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown Customer'}
+                        />
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {formatSmartDate(order.created_at)} • {order.delivery_method}
@@ -1062,7 +1069,12 @@ export default function Orders() {
               {/* Customer Info */}
               <div className="border-t pt-3">
                 <h4 className="text-sm font-medium mb-2">Customer</h4>
-                <p className="text-sm">{selectedOrder.user?.full_name || selectedOrder.user?.email || selectedOrder.user?.phone || 'Unknown'}</p>
+                <p className="text-sm">
+                  <CustomerLink
+                    customerId={selectedOrder.user_id}
+                    customerName={selectedOrder.user?.full_name || selectedOrder.user?.email || selectedOrder.user?.phone || 'Unknown'}
+                  />
+                </p>
                 {selectedOrder.user?.phone && (
                   <p className="text-xs text-muted-foreground">{selectedOrder.user.phone}</p>
                 )}

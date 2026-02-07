@@ -5,16 +5,18 @@ import { toast } from 'sonner';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { invalidateOnEvent } from '@/lib/invalidation';
+import { queryKeys } from '@/lib/queryKeys';
 
 /**
  * Query key factory for CRM clients
+ * Uses centralized queryKeys.crm.clients for cross-panel consistency
  */
 export const crmClientKeys = {
-    all: ['crm-clients'] as const,
-    lists: () => [...crmClientKeys.all, 'list'] as const,
-    list: (filters: string) => [...crmClientKeys.lists(), { filters }] as const,
-    details: () => [...crmClientKeys.all, 'detail'] as const,
-    detail: (id: string) => [...crmClientKeys.details(), id] as const,
+    all: queryKeys.crm.clients.all(),
+    lists: () => queryKeys.crm.clients.lists(),
+    list: (filters: string) => queryKeys.crm.clients.list(filters),
+    details: () => [...queryKeys.crm.clients.all(), 'detail'] as const,
+    detail: (id: string) => queryKeys.crm.clients.detail(id),
 };
 
 /**

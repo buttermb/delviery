@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useVerification } from '@/contexts/VerificationContext';
+import { queryKeys } from '@/lib/queryKeys';
+import { invalidateOnEvent } from '@/lib/invalidation';
 
 export function useRealtimeShifts(tenantId: string | undefined) {
   const { loading } = useTenantAdminAuth();
@@ -36,11 +38,14 @@ export function useRealtimeShifts(tenantId: string | undefined) {
           filter: `tenant_id=eq.${tenantId}`,
         },
         () => {
-          // Invalidate all shift-related queries
-          queryClient.invalidateQueries({ queryKey: ['active-shift', tenantId] });
-          queryClient.invalidateQueries({ queryKey: ['recent-shifts', tenantId] });
-          queryClient.invalidateQueries({ queryKey: ['closed-shifts', tenantId] });
-          queryClient.invalidateQueries({ queryKey: ['pos-shifts-summary', tenantId] });
+          // Use centralized invalidation for shift events
+          if (tenantId) {
+            invalidateOnEvent(queryClient, 'SHIFT_STARTED', tenantId);
+          }
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.all() });
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.active(tenantId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.recent(tenantId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.summary(tenantId) });
         }
       )
       .subscribe((status) => {
@@ -48,14 +53,12 @@ export function useRealtimeShifts(tenantId: string | undefined) {
           logger.debug('Realtime subscription active', { component: 'useRealtimeShifts' });
         } else if (status === 'CHANNEL_ERROR') {
           logger.warn('Realtime subscription error', { status, component: 'useRealtimeShifts' });
-          // Invalidate queries to trigger refetch
-          queryClient.invalidateQueries({ queryKey: ['active-shift', tenantId] });
-          queryClient.invalidateQueries({ queryKey: ['recent-shifts', tenantId] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.active(tenantId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.recent(tenantId) });
         } else if (status === 'TIMED_OUT') {
           logger.warn('Realtime subscription timed out', { status, component: 'useRealtimeShifts' });
-          // Invalidate queries to trigger refetch
-          queryClient.invalidateQueries({ queryKey: ['active-shift', tenantId] });
-          queryClient.invalidateQueries({ queryKey: ['recent-shifts', tenantId] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.active(tenantId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.recent(tenantId) });
         }
       });
 
@@ -102,10 +105,13 @@ export function useRealtimeTransactions(tenantId: string | undefined, shiftId?: 
           filter,
         },
         () => {
-          // Invalidate transaction-related queries
-          queryClient.invalidateQueries({ queryKey: ['pos-analytics', tenantId] });
-          queryClient.invalidateQueries({ queryKey: ['shift-transactions', shiftId] });
-          queryClient.invalidateQueries({ queryKey: ['active-shift', tenantId] });
+          // Use centralized POS query keys for transaction invalidation
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.transactions(tenantId) });
+          if (shiftId) {
+            queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.transactions(shiftId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.detail(shiftId) });
+          }
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.active(tenantId) });
         }
       )
       .subscribe((status) => {
@@ -113,14 +119,16 @@ export function useRealtimeTransactions(tenantId: string | undefined, shiftId?: 
           logger.debug('Realtime subscription active', { component: 'useRealtimeTransactions' });
         } else if (status === 'CHANNEL_ERROR') {
           logger.warn('Realtime subscription error', { status, component: 'useRealtimeTransactions' });
-          // Invalidate queries to trigger refetch
-          queryClient.invalidateQueries({ queryKey: ['pos-analytics', tenantId] });
-          queryClient.invalidateQueries({ queryKey: ['shift-transactions', shiftId] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.transactions(tenantId) });
+          if (shiftId) {
+            queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.transactions(shiftId) });
+          }
         } else if (status === 'TIMED_OUT') {
           logger.warn('Realtime subscription timed out', { status, component: 'useRealtimeTransactions' });
-          // Invalidate queries to trigger refetch
-          queryClient.invalidateQueries({ queryKey: ['pos-analytics', tenantId] });
-          queryClient.invalidateQueries({ queryKey: ['shift-transactions', shiftId] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.transactions(tenantId) });
+          if (shiftId) {
+            queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.transactions(shiftId) });
+          }
         }
       });
 
@@ -162,23 +170,27 @@ export function useRealtimeCashDrawer(shiftId: string | undefined) {
           filter: `shift_id=eq.${shiftId}`,
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['cash-drawer-events', shiftId] });
-          queryClient.invalidateQueries({ queryKey: ['active-shift'] });
+          if (shiftId) {
+            queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.detail(shiftId) });
+          }
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.all() });
         }
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          logger.debug('[useRealtimeCashDrawer] Realtime subscription active');
+          logger.debug('Realtime subscription active', { component: 'useRealtimeCashDrawer' });
         } else if (status === 'CHANNEL_ERROR') {
-          logger.error('[useRealtimeCashDrawer] Realtime subscription error');
-          // Invalidate queries to trigger refetch
-          queryClient.invalidateQueries({ queryKey: ['cash-drawer-events', shiftId] });
-          queryClient.invalidateQueries({ queryKey: ['active-shift'] });
+          logger.warn('Realtime subscription error', { status, component: 'useRealtimeCashDrawer' });
+          if (shiftId) {
+            queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.detail(shiftId) });
+          }
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.all() });
         } else if (status === 'TIMED_OUT') {
-          logger.error('[useRealtimeCashDrawer] Realtime subscription timed out');
-          // Invalidate queries to trigger refetch
-          queryClient.invalidateQueries({ queryKey: ['cash-drawer-events', shiftId] });
-          queryClient.invalidateQueries({ queryKey: ['active-shift'] });
+          logger.warn('Realtime subscription timed out', { status, component: 'useRealtimeCashDrawer' });
+          if (shiftId) {
+            queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.detail(shiftId) });
+          }
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.all() });
         }
       });
 

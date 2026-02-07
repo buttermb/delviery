@@ -28,7 +28,7 @@ export function StreetTierTips() {
             emoji: '💰',
             title: 'Make your first sale',
             description: 'Use the POS system for walk-in customers',
-            action: '/admin/pos',
+            action: '/admin/pos-system',
             actionLabel: 'Open POS',
         },
     ];

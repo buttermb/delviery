@@ -406,7 +406,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
                 // Check for MFA requirement on initialization
                 const factors = session.user?.factors || [];
-                const hasVerifiedTotp = factors.some((f: any) => f.factor_type === 'totp' && f.status === 'verified');
+                const hasVerifiedTotp = factors.some((f: { factor_type: string; status: string }) => f.factor_type === 'totp' && f.status === 'verified');
 
                 if (hasVerifiedTotp) {
                   const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -1169,8 +1169,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       await supabase.auth.refreshSession();
 
       logger.info("MFA verification successful");
-    } catch (error: any) {
-      logger.error("MFA verification failed", error);
+    } catch (error: unknown) {
+      logger.error("MFA verification failed", error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   };
@@ -1219,7 +1219,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         // Extract retry-after header if present
         const retryAfter = response.headers.get("Retry-After");
         if (retryAfter) {
-          (error as any).retryAfter = retryAfter;
+          (error as AuthError & { retryAfter?: string }).retryAfter = retryAfter;
         }
 
         authFlowLogger.failFlow(flowId, error, category);
@@ -1265,7 +1265,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
       // Check for MFA
       const factors = data.session?.user?.factors || [];
-      const hasVerifiedTotp = factors.some((f: any) => f.factor_type === 'totp' && f.status === 'verified');
+      const hasVerifiedTotp = factors.some((f: { factor_type: string; status: string }) => f.factor_type === 'totp' && f.status === 'verified');
 
       if (hasVerifiedTotp) {
         logger.info("MFA required for user");
@@ -1331,7 +1331,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         errorMessage = 'Access denied. Your account may be suspended. Please contact support.';
         errorCode = 'ACCESS_DENIED';
       } else if ('status' in errorObj && errorObj.status === 429) {
-        const retryAfter = (errorObj as any).retryAfter;
+        const retryAfter = (errorObj as AuthError & { retryAfter?: string }).retryAfter;
         errorMessage = 'Account locked due to too many attempts.';
         if (retryAfter) {
           const seconds = parseInt(retryAfter, 10);

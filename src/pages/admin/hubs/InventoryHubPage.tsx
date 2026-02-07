@@ -32,7 +32,7 @@ import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 const ProductManagement = lazy(() => import('@/pages/admin/ProductManagement'));
 const DisposableMenus = lazy(() => import('@/pages/admin/DisposableMenus'));
 const InventoryDashboard = lazy(() => import('@/pages/admin/InventoryDashboard'));
-const InventoryManagement = lazy(() => import('@/pages/admin/InventoryManagement'));
+const InventoryManagement = lazy(() => import('@/pages/admin/InventoryManagement').then(m => ({ default: m.InventoryManagement })));
 const InventoryMonitoringPage = lazy(() => import('@/pages/admin/InventoryMonitoringPage'));
 const FrontedInventory = lazy(() => import('@/pages/admin/FrontedInventory'));
 const DispatchInventory = lazy(() => import('@/pages/admin/DispatchInventory'));

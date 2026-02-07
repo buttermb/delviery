@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useClient } from '@/hooks/crm/useClients';
 import { useClientInvoices } from '@/hooks/crm/useInvoices';
+import { InvoiceLink } from '@/components/admin/cross-links';
 import { useClientPreOrders } from '@/hooks/crm/usePreOrders';
 import { NotesPanel } from '@/components/crm/NotesPanel';
 import { MessagesThread } from '@/components/crm/MessagesThread';
@@ -177,7 +178,12 @@ export default function ClientDetailPage() {
                                                         <Receipt className="h-5 w-5 text-primary" />
                                                     </div>
                                                     <div>
-                                                        <div className="font-medium">{invoice.invoice_number}</div>
+                                                        <div className="font-medium">
+                                                            <InvoiceLink
+                                                                invoiceId={invoice.id}
+                                                                invoiceNumber={invoice.invoice_number}
+                                                            />
+                                                        </div>
                                                         <div className="text-sm text-muted-foreground">
                                                             {format(new Date(invoice.invoice_date), 'MMM d, yyyy')}
                                                         </div>

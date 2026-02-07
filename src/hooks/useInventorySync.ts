@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { useToast } from '@/hooks/use-toast';
 import { queryKeys } from '@/lib/queryKeys';
+import { invalidateOnEvent } from '@/lib/invalidation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 interface UseInventorySyncProps {
@@ -14,6 +15,7 @@ interface UseInventorySyncProps {
 export function useInventorySync({ tenantId, enabled = true }: UseInventorySyncProps) {
     const [lastSynced, setLastSynced] = useState<Date | null>(null);
     const { toast } = useToast();
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         if (!enabled || !tenantId) return;
@@ -32,15 +34,32 @@ export function useInventorySync({ tenantId, enabled = true }: UseInventorySyncP
                     logger.info('Inventory update received:', payload);
                     setLastSynced(new Date());
 
-                    // Optional: Show toast for significant updates or low stock
                     const newStock = payload.new.stock_quantity;
                     const oldStock = payload.old.stock_quantity;
 
+                    // Stock actually changed - fire cross-panel invalidation
+                    if (newStock !== oldStock) {
+                        const productId = typeof payload.new.id === 'string' ? payload.new.id : undefined;
+                        invalidateOnEvent(queryClient, 'INVENTORY_ADJUSTED', tenantId, {
+                            productId,
+                        });
+                    }
+
+                    // Show toast for out-of-stock events
                     if (newStock === 0 && oldStock > 0) {
                         toast({
                             title: "Product Out of Stock",
                             description: `${payload.new.name} is now out of stock.`,
                             variant: "destructive"
+                        });
+                    }
+
+                    // Show toast for low stock threshold crossing
+                    const threshold = payload.new.low_stock_alert ?? 10;
+                    if (newStock > 0 && newStock <= threshold && oldStock > threshold) {
+                        toast({
+                            title: "Low Stock Warning",
+                            description: `${payload.new.name} is running low (${newStock} remaining).`,
                         });
                     }
                 }
@@ -50,7 +69,7 @@ export function useInventorySync({ tenantId, enabled = true }: UseInventorySyncP
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [tenantId, enabled, toast]);
+    }, [tenantId, enabled, toast, queryClient]);
 
     return {
         lastSynced,
@@ -203,6 +222,15 @@ export function useConfirmOrderInventory() {
             queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
             queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
 
+            // Cross-panel invalidation: inventory change cascades to products, storefront, POS, dashboard
+            if (tenant?.id) {
+                for (const item of items) {
+                    invalidateOnEvent(queryClient, 'INVENTORY_ADJUSTED', tenant.id, {
+                        productId: item.product_id,
+                    });
+                }
+            }
+
             toast({
                 title: "Inventory Updated",
                 description: `Stock decremented for ${items.length} product${items.length > 1 ? 's' : ''}.`,
@@ -325,6 +353,15 @@ export function useCancelOrderInventory() {
             // Invalidate to ensure caches stay fresh after optimistic update
             queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
             queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+
+            // Cross-panel invalidation: inventory restoration cascades to products, storefront, POS, dashboard
+            if (tenant?.id) {
+                for (const item of items) {
+                    invalidateOnEvent(queryClient, 'INVENTORY_ADJUSTED', tenant.id, {
+                        productId: item.product_id,
+                    });
+                }
+            }
 
             toast({
                 title: "Inventory Restored",

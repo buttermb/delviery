@@ -89,7 +89,7 @@ vi.mock('@/components/shared/ResponsiveTable', () => ({
 }));
 
 // Import after mocks
-import InventoryManagement from '../InventoryManagement';
+import { InventoryManagement } from '../InventoryManagement';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';

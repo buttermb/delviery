@@ -53,12 +53,48 @@ export async function apiFetch(
       },
     });
 
-    // Handle auth errors
-    if (response.status === 401 || response.status === 403) {
+    // Handle auth errors - attempt token refresh on 401
+    if (response.status === 401) {
+      // Try to refresh the token before emitting auth error
+      try {
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        if (refreshData.session?.access_token) {
+          // Update stored token
+          const userType = getCurrentUserType();
+          if (userType === "tenant_admin") {
+            safeStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN, refreshData.session.access_token);
+            if (refreshData.session.refresh_token) {
+              safeStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_REFRESH_TOKEN, refreshData.session.refresh_token);
+            }
+          }
+          // Retry the request with the new token
+          const retryHeaders: Record<string, string> = { ...headers as Record<string, string> };
+          retryHeaders["Authorization"] = `Bearer ${refreshData.session.access_token}`;
+          const retryResponse = await safeFetch(url, {
+            ...restOptions,
+            headers: {
+              "Content-Type": "application/json",
+              ...retryHeaders,
+            },
+          });
+          if (retryResponse.ok) {
+            return retryResponse;
+          }
+        }
+      } catch {
+        // Refresh failed, fall through to emit auth error
+      }
       const error = await response.json().catch(() => ({ message: "Unauthorized" }));
       emitAuthError({
         message: error.error || error.message || "Authentication failed",
-        code: response.status === 401 ? "UNAUTHORIZED" : "FORBIDDEN",
+        code: "UNAUTHORIZED",
+      });
+    } else if (response.status === 403) {
+      const error = await response.json().catch(() => ({ message: "Forbidden" }));
+      emitAuthError({
+        message: error.error || error.message || "Access denied",
+        code: "FORBIDDEN",
       });
     }
 
@@ -81,9 +117,9 @@ export async function apiFetch(
  */
 export async function edgeFunctionRequest(
   functionName: string,
-  body?: any,
+  body?: unknown,
   options: FetchOptions = {}
-): Promise<any> {
+): Promise<unknown> {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const url = `${supabaseUrl}/functions/v1/${functionName}`;
 

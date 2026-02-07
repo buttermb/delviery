@@ -397,6 +397,121 @@ export function getThemeById(id: string): ThemePreset | undefined {
 }
 
 /**
+ * Custom theme interface for user-defined themes
+ * Includes CSS variables, typography, spacing, effects, and raw custom CSS
+ */
+export interface CustomTheme {
+    /** Color palette */
+    colors: {
+        background: string;
+        text: string;
+        primary: string;
+        accent: string;
+        muted: string;
+        border: string;
+    };
+    /** Typography settings */
+    typography: {
+        headingFont: string;
+        bodyFont: string;
+        baseFontSize: string;
+    };
+    /** Spacing and border radius */
+    spacing: {
+        borderRadius: string;
+        sectionSpacing: string;
+    };
+    /** Visual effects */
+    effects: {
+        cardShadow: string;
+        backdropBlur: string;
+    };
+    /** Raw custom CSS string to inject */
+    customCSS: string;
+}
+
+/** Default custom theme values */
+export const DEFAULT_CUSTOM_THEME: CustomTheme = {
+    colors: {
+        background: '#ffffff',
+        text: '#0f172a',
+        primary: '#22c55e',
+        accent: '#3b82f6',
+        muted: '#f1f5f9',
+        border: '#e2e8f0',
+    },
+    typography: {
+        headingFont: 'Inter',
+        bodyFont: 'Inter',
+        baseFontSize: '16px',
+    },
+    spacing: {
+        borderRadius: '8px',
+        sectionSpacing: '4rem',
+    },
+    effects: {
+        cardShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        backdropBlur: '0px',
+    },
+    customCSS: '',
+};
+
+/** Available font options for theme editor */
+export const FONT_OPTIONS = [
+    { label: 'Inter', value: 'Inter' },
+    { label: 'Playfair Display', value: 'Playfair Display' },
+    { label: 'Montserrat', value: 'Montserrat' },
+    { label: 'Roboto', value: 'Roboto' },
+    { label: 'Poppins', value: 'Poppins' },
+    { label: 'DM Sans', value: 'DM Sans' },
+    { label: 'Outfit', value: 'Outfit' },
+    { label: 'Cormorant Garamond', value: 'Cormorant Garamond' },
+] as const;
+
+/**
+ * Convert a CustomTheme to CSS variables string for injection
+ */
+export function customThemeToCSS(theme: CustomTheme): string {
+    return `
+    :root {
+      --storefront-bg: ${theme.colors.background};
+      --storefront-text: ${theme.colors.text};
+      --storefront-primary: ${theme.colors.primary};
+      --storefront-accent: ${theme.colors.accent};
+      --storefront-card-bg: ${theme.colors.muted};
+      --storefront-border: ${theme.colors.border};
+      --storefront-radius: ${theme.spacing.borderRadius};
+      --storefront-shadow: ${theme.effects.cardShadow};
+      --storefront-font-heading: ${theme.typography.headingFont};
+      --storefront-font-body: ${theme.typography.bodyFont};
+    }
+    ${theme.customCSS}
+  `;
+}
+
+/**
+ * Convert a CustomTheme to a ThemePreset-compatible config object
+ */
+export function customThemeToConfig(theme: CustomTheme): Record<string, unknown> {
+    return {
+        colors: {
+            primary: theme.colors.primary,
+            accent: theme.colors.accent,
+            background: theme.colors.background,
+            text: theme.colors.text,
+        },
+        typography: {
+            fontFamily: theme.typography.bodyFont,
+            headingFamily: theme.typography.headingFont,
+        },
+        layout: {
+            borderRadius: theme.spacing.borderRadius,
+        },
+        customCSS: theme.customCSS,
+    };
+}
+
+/**
  * Apply theme to storefront config
  */
 export function applyThemeToConfig(

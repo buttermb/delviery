@@ -56,7 +56,7 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
+export function LoginPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -135,11 +135,12 @@ export default function LoginPage() {
         title: 'Reset Email Sent',
         description: 'Check your inbox for password reset instructions.',
       });
-    } catch (error: any) {
-      logger.error('Password reset error', error);
+    } catch (error: unknown) {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      logger.error('Password reset error', errorObj);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to send reset email. Please try again.',
+        description: errorObj.message || 'Failed to send reset email. Please try again.',
         variant: 'destructive',
       });
     } finally {

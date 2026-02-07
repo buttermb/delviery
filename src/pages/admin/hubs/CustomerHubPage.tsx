@@ -24,7 +24,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
 // Lazy load tab content for performance
-const CustomerManagement = lazy(() => import('@/pages/admin/CustomerManagement'));
+const CustomerManagement = lazy(() => import('@/pages/admin/CustomerManagement').then(m => ({ default: m.CustomerManagement })));
 const WholesaleClients = lazy(() => import('@/pages/admin/WholesaleClients'));
 const CustomerCRMPage = lazy(() => import('@/pages/admin/CustomerCRMPage'));
 const CustomerInsightsPage = lazy(() => import('@/pages/tenant-admin/CustomerInsightsPage'));

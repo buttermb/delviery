@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { useEncryption } from '@/lib/hooks/useEncryption';
+import { OrderLink, ProductLink } from '@/components/admin/cross-links';
 import { decryptCustomerData, logPHIAccess, getPHIFields } from '@/lib/utils/customerEncryption';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -459,7 +460,9 @@ export default function CustomerDetails() {
                         <div key={order.id} className="border rounded-lg p-4">
                           <div className="flex items-start justify-between mb-3">
                             <div>
-                              <p className="font-medium">Order #{order.id.slice(0, 8)}</p>
+                              <p className="font-medium">
+                                <OrderLink orderId={order.id} orderNumber={`Order #${order.id.slice(0, 8)}`} />
+                              </p>
                               <p className="text-sm text-muted-foreground">
                                 {format(new Date(order.created_at), 'MMM d, yyyy h:mm a')}
                               </p>
@@ -473,10 +476,16 @@ export default function CustomerDetails() {
                           </div>
                           <Separator className="my-3" />
                           <div className="space-y-2">
-                            {order.order_items?.map((item: any) => (
-                              <div key={item.id} className="flex justify-between text-sm">
-                                <span>{item.products?.name} x{item.quantity}</span>
-                                <span>${item.subtotal?.toFixed(2)}</span>
+                            {order.order_items?.map((item: Record<string, unknown>) => (
+                              <div key={item.id as string} className="flex justify-between text-sm">
+                                <span>
+                                  <ProductLink
+                                    productId={(item.product_id as string) || (item.products as Record<string, unknown>)?.id as string}
+                                    productName={((item.products as Record<string, unknown>)?.name as string) || 'Unknown Product'}
+                                  />
+                                  {' '}x{item.quantity as number}
+                                </span>
+                                <span>${(item.subtotal as number)?.toFixed(2)}</span>
                               </div>
                             ))}
                           </div>

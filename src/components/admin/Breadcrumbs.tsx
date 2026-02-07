@@ -134,6 +134,47 @@ const SEGMENT_LABELS: Record<string, string> = {
   locations: 'Locations',
   'locations-management': 'Locations',
 
+  // Hub pages (additional)
+  'dashboard-hub': 'Dashboard',
+
+  // Command & operations
+  'command-center': 'Command Center',
+  'tv-dashboard': 'TV Dashboard',
+
+  // Team & roles
+  'staff-management': 'Staff Management',
+  'team-members': 'Team Members',
+  'team-management': 'Team Management',
+  'role-management': 'Role Management',
+  'vendor-management': 'Vendor Management',
+
+  // Analytics & reporting
+  'sales-dashboard': 'Sales Dashboard',
+  'analytics-dashboard': 'Analytics Dashboard',
+  'strategic-dashboard': 'Strategic Dashboard',
+  'revenue-reports': 'Revenue Reports',
+  'risk-management': 'Risk Management',
+
+  // Inventory & stock
+  'stock-alerts': 'Stock Alerts',
+  'wholesale-pricing-tiers': 'Wholesale Pricing',
+
+  // POS
+  'pos-shifts': 'POS Shifts',
+  'z-reports': 'Z Reports',
+
+  // Finance & invoices
+  'advanced-invoice': 'Advanced Invoice',
+  'invoice-management': 'Invoices',
+
+  // Integrations & tools
+  'workflow-automation': 'Workflow Automation',
+  'route-optimizer': 'Route Optimizer',
+  'bulk-operations': 'Bulk Operations',
+  'gps-tracking': 'GPS Tracking',
+  'system-settings': 'System Settings',
+  'button-tester': 'Button Tester',
+
   // Storefront sub-pages
   builder: 'Builder',
   'gift-cards': 'Gift Cards',

@@ -2,6 +2,7 @@ import { logger } from '@/lib/logger';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { queryKeys } from '@/lib/queryKeys';
 
 export const useGenerateProductImage = () => {
   const queryClient = useQueryClient();
@@ -70,7 +71,7 @@ export const useGenerateProductImage = () => {
       return { publicUrl };
     },
     onMutate: async ({ productId }) => {
-      await queryClient.cancelQueries({ queryKey: ['products'] });
+      await queryClient.cancelQueries({ queryKey: queryKeys.products.all });
       const previousProducts = queryClient.getQueryData(['products']);
       return { previousProducts, productId };
     },
@@ -86,7 +87,7 @@ export const useGenerateProductImage = () => {
       toast.success('Product image generated successfully');
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
       queryClient.invalidateQueries({ queryKey: ['products-for-wholesale'] });
     },
   });
@@ -192,7 +193,7 @@ export const useBulkGenerateImages = () => {
       return results;
     },
     onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ['products'] });
+      await queryClient.cancelQueries({ queryKey: queryKeys.products.all });
       const previousProducts = queryClient.getQueryData(['products']);
       return { previousProducts };
     },
@@ -209,7 +210,7 @@ export const useBulkGenerateImages = () => {
       toast.success(`Generated ${successCount}/${results.length} images successfully`);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
       queryClient.invalidateQueries({ queryKey: ['products-for-wholesale'] });
     },
   });

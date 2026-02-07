@@ -25,7 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
 const FinancialCenter = lazy(() => import('@/pages/admin/FinancialCenterReal'));
-const InvoicesPage = lazy(() => import('@/pages/admin/InvoicesPage'));
+const InvoicesPage = lazy(() => import('@/pages/admin/InvoicesPage').then(m => ({ default: m.InvoicesPage })));
 const ExpenseTracking = lazy(() => import('@/pages/admin/ExpenseTracking'));
 const RevenueReportsPage = lazy(() => import('@/pages/tenant-admin/RevenueReportsPage'));
 const PayoutsPage = lazy(() => import('@/pages/admin/PayoutsPage'));

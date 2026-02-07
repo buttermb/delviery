@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { InvoiceLink } from '@/components/admin/cross-links';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -609,7 +610,10 @@ export default function CustomerInvoices() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-lg font-semibold">
-                      Invoice #{invoice.invoice_number}
+                      <InvoiceLink
+                        invoiceId={invoice.id}
+                        invoiceNumber={`Invoice #${invoice.invoice_number}`}
+                      />
                     </h3>
                     <Badge className={getStatusColor(invoice.status)}>
                       {invoice.status}

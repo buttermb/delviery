@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { CustomerLink } from '@/components/admin/cross-links';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -466,7 +467,12 @@ export default function WholesaleOrdersPage() {
             const order = item as WholesaleOrder;
             return (
               <div>
-                <p className="font-medium">{order.client?.business_name || 'Unknown Client'}</p>
+                <p className="font-medium">
+                  <CustomerLink
+                    customerId={order.client_id}
+                    customerName={order.client?.business_name || 'Unknown Client'}
+                  />
+                </p>
                 <p className="text-xs text-muted-foreground">{order.client?.contact_name}</p>
               </div>
             );
@@ -645,7 +651,12 @@ export default function WholesaleOrdersPage() {
           <div className="flex justify-between items-start">
             <div>
               <div className="font-medium">{order.order_number}</div>
-              <div className="text-sm text-muted-foreground">{order.client?.business_name}</div>
+              <div className="text-sm text-muted-foreground">
+                <CustomerLink
+                  customerId={order.client_id}
+                  customerName={order.client?.business_name || 'Unknown Client'}
+                />
+              </div>
             </div>
             <Badge variant="outline" className={statusConfig.color}>
               {statusConfig.label}

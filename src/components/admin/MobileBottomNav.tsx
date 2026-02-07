@@ -45,13 +45,12 @@ export function MobileBottomNav() {
     },
     {
       title: 'Orders',
-      href: '/admin/wholesale-orders',
+      href: '/admin/orders',
       icon: ShoppingCart,
-      badge: 3 // Mock usage for now, replace with store/query later
     },
     {
       title: 'Customers',
-      href: '/admin/big-plug-clients',
+      href: '/admin/customer-hub',
       icon: Users
     },
     {

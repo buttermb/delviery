@@ -44,6 +44,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { CashDrawerPanel } from '@/components/pos/CashDrawerPanel';
 import { useRealtimeShifts, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
+import { usePOSSale } from '@/hooks/usePOSSale';
 
 interface Product {
   id: string;
@@ -233,7 +234,7 @@ function CashRegisterContent() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         // Map first_name/last_name to name for Customer interface
-        return ((data || []) as any[]).map(c => ({
+        return ((data || []) as Array<{ id: string; first_name: string | null; last_name: string | null; email: string | null; phone: string | null }>).map(c => ({
           id: c.id,
           name: [c.first_name, c.last_name].filter(Boolean).join(' ') || c.email || 'Unknown',
           email: c.email,
@@ -254,7 +255,22 @@ function CashRegisterContent() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await (supabase as any)
+        // pos_transactions table may not be in generated types yet
+        const client = supabase as unknown as {
+          from: (table: string) => {
+            select: (cols: string) => {
+              eq: (col: string, val: string) => {
+                order: (col: string, opts: { ascending: boolean }) => {
+                  limit: (n: number) => Promise<{
+                    data: POSTransaction[] | null;
+                    error: { code?: string; message?: string } | null;
+                  }>;
+                };
+              };
+            };
+          };
+        };
+        const { data, error } = await client
           .from('pos_transactions')
           .select('*')
           .eq('tenant_id', tenantId)
@@ -384,7 +400,13 @@ function CashRegisterContent() {
       }));
 
       // Use atomic RPC - prevents race conditions on inventory
-      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('create_pos_transaction_atomic', {
+      const rpcClient = supabase as unknown as {
+        rpc: (fn: string, params: Record<string, unknown>) => Promise<{
+          data: POSTransactionResult | null;
+          error: { code?: string; message?: string } | null;
+        }>;
+      };
+      const { data: rpcResult, error: rpcError } = await rpcClient.rpc('create_pos_transaction_atomic', {
         p_tenant_id: tenantId,
         p_items: items,
         p_payment_method: paymentMethod,
@@ -455,8 +477,13 @@ function CashRegisterContent() {
       if (tenantId) {
         invalidateOnEvent(queryClient, 'POS_SALE_COMPLETED', tenantId, {
           customerId: selectedCustomer?.id || undefined,
+          shiftId: activeShift?.id || undefined,
         });
       }
+
+      // Invalidate stock alerts and activity feed after sale
+      queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.activityFeed.all });
 
       // Also invalidate POS-specific queries
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.transactions(tenantId) });

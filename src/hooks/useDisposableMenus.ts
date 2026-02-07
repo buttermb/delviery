@@ -3,10 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { invalidateOnEvent } from '@/lib/invalidation';
+import { queryKeys } from '@/lib/queryKeys';
 
 export const useDisposableMenus = (tenantId?: string) => {
   return useQuery({
-    queryKey: ['disposable-menus', tenantId],
+    queryKey: queryKeys.menus.list({ tenantId }),
     queryFn: async () => {
       // Optimized query - select specific columns, use count for orders
       let query = (supabase as any)
@@ -118,7 +119,7 @@ export const useCreateDisposableMenu = () => {
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['disposable-menus'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
       showSuccessToast(
         'Menu Created & Encrypted',
         `AES-256 encrypted menu created successfully${data?.encrypted ? ' 🔐' : ''}`
@@ -171,7 +172,7 @@ export const useBurnMenu = () => {
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['disposable-menus'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
 
       if (data.regenerated_menu_id && data.customers_to_notify?.length > 0) {
         showSuccessToast(

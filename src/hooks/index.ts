@@ -48,7 +48,7 @@ export {
   focusElement,
 } from './useKeyboardNavigation';
 
-
-
-
+// Order Lifecycle Hooks
+export { usePOSSale } from './usePOSSale';
+export { useProcessRefund } from './useProcessRefund';
 

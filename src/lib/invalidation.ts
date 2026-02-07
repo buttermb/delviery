@@ -36,6 +36,7 @@ export type InvalidationEvent =
   | 'REFUND_PROCESSED'
   | 'MENU_PUBLISHED'
   | 'MENU_UPDATED'
+  | 'MENU_BURNED'
   | 'DRIVER_ASSIGNED'
   | 'DELIVERY_STATUS_CHANGED'
   | 'INVOICE_CREATED'
@@ -44,7 +45,8 @@ export type InvalidationEvent =
   | 'WHOLESALE_ORDER_UPDATED'
   | 'COURIER_STATUS_CHANGED'
   | 'SHIFT_STARTED'
-  | 'SHIFT_ENDED';
+  | 'SHIFT_ENDED'
+  | 'STOREFRONT_ORDER';
 
 // Metadata that can be passed with events for targeted invalidation
 export interface InvalidationMetadata {
@@ -92,10 +94,13 @@ export function invalidateOnEvent(
       queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
 
+      // Customers
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
+
       // Fulfillment
       queryClient.invalidateQueries({ queryKey: queryKeys.deliveries.all });
 
-      // Customer (if provided)
+      // Customer detail (if provided)
       if (metadata?.customerId) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.customers.detail(metadata.customerId),
@@ -132,13 +137,17 @@ export function invalidateOnEvent(
       queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
 
       // Fulfillment
+      queryClient.invalidateQueries({ queryKey: queryKeys.fulfillment.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.deliveries.all });
       queryClient.invalidateQueries({ queryKey: ['fulfillment-queue'] });
 
       // Analytics
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
 
-      // Customer
+      // Customers
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
+
+      // Customer detail (if provided)
       if (metadata?.customerId) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.customers.detail(metadata.customerId),
@@ -165,11 +174,16 @@ export function invalidateOnEvent(
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
       queryClient.invalidateQueries({ queryKey: ['low-stock-alerts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
 
       // Finance
+      queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.payments.all });
       queryClient.invalidateQueries({ queryKey: ['finance-summary'] });
       queryClient.invalidateQueries({ queryKey: ['revenue-today'] });
+
+      // Customers
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
 
       // Dashboard
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
@@ -212,6 +226,7 @@ export function invalidateOnEvent(
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
       queryClient.invalidateQueries({ queryKey: ['low-stock-alerts'] });
       queryClient.invalidateQueries({ queryKey: ['inventory-valuation'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
 
       // Products
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
@@ -221,6 +236,7 @@ export function invalidateOnEvent(
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
 
       // Storefront (availability)
+      queryClient.invalidateQueries({ queryKey: queryKeys.storefront.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
 
@@ -228,7 +244,7 @@ export function invalidateOnEvent(
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.products(tenantId) });
 
       // Analytics
-      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.products() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
 
       // Specific product
       if (metadata?.productId) {
@@ -262,7 +278,9 @@ export function invalidateOnEvent(
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.storefront.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.products(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
     },
 
@@ -270,8 +288,10 @@ export function invalidateOnEvent(
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.storefront.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.products(tenantId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
 
       if (metadata?.productId) {
         queryClient.invalidateQueries({
@@ -325,6 +345,7 @@ export function invalidateOnEvent(
 
     PAYMENT_RECEIVED: () => {
       // Finance
+      queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.payments.all });
       queryClient.invalidateQueries({ queryKey: ['finance-summary'] });
       queryClient.invalidateQueries({ queryKey: ['revenue-today'] });
@@ -332,6 +353,9 @@ export function invalidateOnEvent(
 
       // Orders
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+
+      // Customers
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
 
       // CRM
       queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
@@ -342,9 +366,9 @@ export function invalidateOnEvent(
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
 
       // Analytics
-      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.revenue() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
 
-      // Customer balance
+      // Customer detail (if provided)
       if (metadata?.customerId) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.customers.detail(metadata.customerId),
@@ -357,6 +381,7 @@ export function invalidateOnEvent(
 
     REFUND_PROCESSED: () => {
       // Finance - negative revenue
+      queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.payments.all });
       queryClient.invalidateQueries({ queryKey: ['finance-summary'] });
       queryClient.invalidateQueries({ queryKey: ['revenue-today'] });
@@ -368,6 +393,7 @@ export function invalidateOnEvent(
       // Inventory - stock returned
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
 
       // Customer
       queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
@@ -402,11 +428,51 @@ export function invalidateOnEvent(
       }
     },
 
+    MENU_BURNED: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
+
+      if (metadata?.menuId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.menus.detail(metadata.menuId),
+        });
+      }
+    },
+
+    STOREFRONT_ORDER: () => {
+      // Storefront
+      queryClient.invalidateQueries({ queryKey: queryKeys.storefront.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.storefront.liveOrders(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.storefrontSettings.all });
+
+      // Orders
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+      queryClient.invalidateQueries({ queryKey: ['live-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['pending-orders'] });
+
+      // Inventory - stock decremented
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
+
+      // Dashboard
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
+
+      // Analytics
+      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
+    },
+
     // ============================================================================
     // DELIVERY & FULFILLMENT EVENTS
     // ============================================================================
 
     DRIVER_ASSIGNED: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.fulfillment.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.deliveries.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
       queryClient.invalidateQueries({ queryKey: ['live-orders'] });
@@ -434,9 +500,16 @@ export function invalidateOnEvent(
     // ============================================================================
 
     INVOICE_CREATED: () => {
+      // Finance
+      queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
       queryClient.invalidateQueries({ queryKey: queryKeys.collections.all });
       queryClient.invalidateQueries({ queryKey: ['accounts-receivable'] });
+
+      // Customers
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
+
+      // Dashboard
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
       queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
 
@@ -513,6 +586,9 @@ export function invalidateOnEvent(
       queryClient.invalidateQueries({ queryKey: ['finance-summary'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
     },
+
+    // (MENU_BURNED and STOREFRONT_ORDER handlers are defined above in the
+    //  MENU & STOREFRONT EVENTS section to avoid duplicate property keys)
   };
 
   try {
@@ -551,7 +627,9 @@ export function invalidateAllTenantData(
   queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
   queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
   queryClient.invalidateQueries({ queryKey: queryKeys.payments.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
   queryClient.invalidateQueries({ queryKey: queryKeys.deliveries.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.fulfillment.all });
   queryClient.invalidateQueries({ queryKey: queryKeys.couriers.all });
   queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
   queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
@@ -559,6 +637,9 @@ export function invalidateAllTenantData(
   queryClient.invalidateQueries({ queryKey: queryKeys.crm.all });
   queryClient.invalidateQueries({ queryKey: queryKeys.pos.all });
   queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.storefront.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all });
   queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
   queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
 }

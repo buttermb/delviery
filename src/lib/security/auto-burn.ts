@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
  *
  * Handles screenshot detection with menu burn triggers,
  * velocity checking for suspicious access patterns,
- * and suspicious activity logging.
+ * DevTools detection, and suspicious activity logging.
  */
 
 // ============================================
@@ -30,6 +30,21 @@ interface VelocityWindow {
   timestamps: number[];
 }
 
+export interface ScreenshotDetectionConfig {
+  burnOnPrintScreen: boolean;
+  burnOnSnippingTool: boolean;
+  logDevTools: boolean;
+  logVisibilityChange: boolean;
+  preventCopy: boolean;
+  preventPrint: boolean;
+}
+
+export interface AutoBurnResult {
+  burned: boolean;
+  reason: string;
+  burnType: 'soft' | 'hard';
+}
+
 // ============================================
 // In-Memory Velocity Store (Client-side)
 // ============================================
@@ -44,11 +59,11 @@ const MAX_REQUESTS_PER_WINDOW = 10;
  */
 const cleanVelocityStore = (key: string): number[] => {
   const now = Date.now();
-  const window = velocityStore.get(key);
-  if (!window) return [];
+  const velocityWindow = velocityStore.get(key);
+  if (!velocityWindow) return [];
 
-  const validTimestamps = window.timestamps.filter(
-    ts => now - ts < VELOCITY_WINDOW_MS
+  const validTimestamps = velocityWindow.timestamps.filter(
+    (ts) => now - ts < VELOCITY_WINDOW_MS
   );
   velocityStore.set(key, { timestamps: validTimestamps });
   return validTimestamps;
@@ -67,7 +82,7 @@ export const logSuspiciousActivity = async (
   metadata?: Record<string, unknown>
 ): Promise<void> => {
   try {
-    await (supabase as any).from('menu_security_events').insert({
+    const insertData = {
       menu_id: menuId,
       event_type: activityType,
       severity: getSeverityForActivity(activityType),
@@ -77,7 +92,15 @@ export const logSuspiciousActivity = async (
         timestamp: new Date().toISOString(),
         screen_resolution: `${screen.width}x${screen.height}`,
       },
-    });
+    };
+
+    // Use type assertion to handle dynamic table
+    const client = supabase as unknown as {
+      from: (table: string) => {
+        insert: (data: Record<string, unknown>) => Promise<{ error: unknown }>;
+      };
+    };
+    await client.from('menu_security_events').insert(insertData);
 
     logger.warn('Suspicious activity logged', {
       menuId,
@@ -106,6 +129,8 @@ const getSeverityForActivity = (
       return 'medium';
     case 'print_attempt':
       return 'medium';
+    case 'right_click_attempt':
+      return 'low';
     default:
       return 'low';
   }
@@ -122,12 +147,17 @@ export const burnMenu = async (
   menuId: string,
   reason: string,
   burnType: 'soft' | 'hard' = 'soft'
-): Promise<boolean> => {
+): Promise<AutoBurnResult> => {
   try {
     logger.warn('Initiating menu burn', { menuId, reason, burnType });
 
     // Log the burn event
-    await (supabase as any).from('menu_security_events').insert({
+    const client = supabase as unknown as {
+      from: (table: string) => {
+        insert: (data: Record<string, unknown>) => Promise<{ error: unknown }>;
+      };
+    };
+    await client.from('menu_security_events').insert({
       menu_id: menuId,
       event_type: 'auto_burn_triggered',
       severity: 'critical',
@@ -138,7 +168,7 @@ export const burnMenu = async (
       },
     });
 
-    // Update menu status to burned (use hard_burned or soft_burned)
+    // Update menu status to burned
     const statusValue = burnType === 'hard' ? 'hard_burned' : 'soft_burned';
     const { error } = await supabase
       .from('disposable_menus')
@@ -151,134 +181,190 @@ export const burnMenu = async (
 
     if (error) {
       logger.error('Failed to burn menu', error);
-      return false;
+      return { burned: false, reason: 'Database error', burnType };
     }
 
     logger.warn('Menu burned successfully', { menuId, reason });
-    return true;
+    return { burned: true, reason, burnType };
   } catch (error) {
     logger.error('Error during menu burn', error);
-    return false;
+    return { burned: false, reason: 'Exception during burn', burnType };
   }
 };
 
 // ============================================
-// Screenshot Detection
+// Screenshot Detection (Enhanced)
 // ============================================
 
 /**
  * Initialize screenshot detection with auto-burn capability
  *
  * Monitors for:
- * - Visibility changes (app switching for screenshots)
- * - PrintScreen key press
- * - DevTools opening (inspection/scraping)
- * - Clipboard copy attempts
- * - Print attempts
+ * - Visibility changes (app switching for screenshots) - logs activity
+ * - PrintScreen key press - BURNS menu
+ * - Snipping Tool / Mac screenshot shortcuts - BURNS menu
+ * - DevTools opening (inspection/scraping) - logs activity
+ * - Clipboard copy attempts - prevents and logs
+ * - Print attempts - prevents and logs
+ * - Right-click context menu - prevents
  */
 export const initScreenshotDetection = (
   menuId: string,
-  onDetect: () => void
+  onDetect: () => void,
+  config: ScreenshotDetectionConfig = {
+    burnOnPrintScreen: true,
+    burnOnSnippingTool: true,
+    logDevTools: true,
+    logVisibilityChange: true,
+    preventCopy: true,
+    preventPrint: true,
+  }
 ): (() => void) => {
   let devToolsOpen = false;
+  let devToolsCheckCount = 0;
   const cleanupFns: (() => void)[] = [];
 
   // Method 1: Visibility change (switching apps to screenshot)
-  const handleVisibilityChange = () => {
-    if (document.hidden) {
-      logSuspiciousActivity(menuId, 'visibility_hidden', {
-        source: 'screenshot_detection',
-      });
-    }
-  };
-  document.addEventListener('visibilitychange', handleVisibilityChange);
-  cleanupFns.push(() =>
-    document.removeEventListener('visibilitychange', handleVisibilityChange)
-  );
-
-  // Method 2: PrintScreen key detection
-  const handleKeyUp = (e: KeyboardEvent) => {
-    if (e.key === 'PrintScreen') {
-      onDetect();
-      burnMenu(menuId, 'screenshot_detected');
-      logSuspiciousActivity(menuId, 'print_screen_key', {
-        triggered_burn: true,
-      });
-    }
-
-    // Windows: Win + Shift + S (Snipping Tool)
-    if (e.key === 's' && e.shiftKey && (e.metaKey || e.ctrlKey)) {
-      onDetect();
-      logSuspiciousActivity(menuId, 'screenshot_detected', {
-        method: 'snipping_tool_shortcut',
-        triggered_burn: true,
-      });
-      burnMenu(menuId, 'screenshot_detected');
-    }
-
-    // Mac: Cmd + Shift + 3/4/5
-    if (e.metaKey && e.shiftKey && ['3', '4', '5'].includes(e.key)) {
-      onDetect();
-      logSuspiciousActivity(menuId, 'screenshot_detected', {
-        method: 'mac_screenshot_shortcut',
-        triggered_burn: true,
-      });
-      burnMenu(menuId, 'screenshot_detected');
-    }
-  };
-  document.addEventListener('keyup', handleKeyUp);
-  cleanupFns.push(() => document.removeEventListener('keyup', handleKeyUp));
-
-  // Method 3: DevTools detection
-  const threshold = 160;
-  const devToolsInterval = setInterval(() => {
-    const widthThreshold =
-      window.outerWidth - window.innerWidth > threshold;
-    const heightThreshold =
-      window.outerHeight - window.innerHeight > threshold;
-
-    if (widthThreshold || heightThreshold) {
-      if (!devToolsOpen) {
-        devToolsOpen = true;
-        logSuspiciousActivity(menuId, 'devtools_opened', {
-          outer_width: window.outerWidth,
-          inner_width: window.innerWidth,
-          outer_height: window.outerHeight,
-          inner_height: window.innerHeight,
+  if (config.logVisibilityChange) {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        logSuspiciousActivity(menuId, 'visibility_hidden', {
+          source: 'screenshot_detection',
         });
       }
-    } else {
-      devToolsOpen = false;
-    }
-  }, 1000);
-  cleanupFns.push(() => clearInterval(devToolsInterval));
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    cleanupFns.push(() =>
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    );
+  }
+
+  // Method 2: PrintScreen key detection - BURNS menu
+  if (config.burnOnPrintScreen) {
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'PrintScreen') {
+        onDetect();
+        burnMenu(menuId, 'screenshot_detected');
+        logSuspiciousActivity(menuId, 'print_screen_key', {
+          triggered_burn: true,
+        });
+      }
+
+      // Windows: Win + Shift + S (Snipping Tool)
+      if (
+        config.burnOnSnippingTool &&
+        e.key === 's' &&
+        e.shiftKey &&
+        (e.metaKey || e.ctrlKey)
+      ) {
+        onDetect();
+        logSuspiciousActivity(menuId, 'screenshot_detected', {
+          method: 'snipping_tool_shortcut',
+          triggered_burn: true,
+        });
+        burnMenu(menuId, 'screenshot_detected');
+      }
+
+      // Mac: Cmd + Shift + 3/4/5
+      if (
+        config.burnOnSnippingTool &&
+        e.metaKey &&
+        e.shiftKey &&
+        ['3', '4', '5'].includes(e.key)
+      ) {
+        onDetect();
+        logSuspiciousActivity(menuId, 'screenshot_detected', {
+          method: 'mac_screenshot_shortcut',
+          triggered_burn: true,
+        });
+        burnMenu(menuId, 'screenshot_detected');
+      }
+    };
+    document.addEventListener('keyup', handleKeyUp);
+    cleanupFns.push(() => document.removeEventListener('keyup', handleKeyUp));
+  }
+
+  // Method 3: DevTools detection - logs activity
+  if (config.logDevTools) {
+    const threshold = 160;
+    const devToolsInterval = setInterval(() => {
+      const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+      const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+
+      if (widthThreshold || heightThreshold) {
+        if (!devToolsOpen) {
+          devToolsOpen = true;
+          devToolsCheckCount++;
+          logSuspiciousActivity(menuId, 'devtools_opened', {
+            outer_width: window.outerWidth,
+            inner_width: window.innerWidth,
+            outer_height: window.outerHeight,
+            inner_height: window.innerHeight,
+            detection_count: devToolsCheckCount,
+          });
+
+          // After 3 devtools detections, burn the menu
+          if (devToolsCheckCount >= 3) {
+            onDetect();
+            burnMenu(menuId, 'repeated_devtools_usage', 'soft');
+          }
+        }
+      } else {
+        devToolsOpen = false;
+      }
+    }, 1000);
+    cleanupFns.push(() => clearInterval(devToolsInterval));
+  }
 
   // Method 4: Clipboard copy prevention
-  const handleCopy = (e: ClipboardEvent) => {
-    e.preventDefault();
-    logSuspiciousActivity(menuId, 'clipboard_copy_attempt');
-  };
-  document.addEventListener('copy', handleCopy);
-  cleanupFns.push(() => document.removeEventListener('copy', handleCopy));
+  if (config.preventCopy) {
+    const handleCopy = (e: ClipboardEvent) => {
+      e.preventDefault();
+      logSuspiciousActivity(menuId, 'clipboard_copy_attempt');
+    };
+    document.addEventListener('copy', handleCopy);
+    cleanupFns.push(() => document.removeEventListener('copy', handleCopy));
+  }
 
   // Method 5: Print detection
-  const handleBeforePrint = () => {
-    logSuspiciousActivity(menuId, 'print_attempt');
-    document.body.style.display = 'none';
+  if (config.preventPrint) {
+    const handleBeforePrint = () => {
+      logSuspiciousActivity(menuId, 'print_attempt');
+      document.body.style.display = 'none';
+    };
+    const handleAfterPrint = () => {
+      document.body.style.display = '';
+    };
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+    cleanupFns.push(() => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+    });
+  }
+
+  // Method 6: Right-click prevention
+  const handleContextMenu = (e: MouseEvent) => {
+    e.preventDefault();
+    logSuspiciousActivity(menuId, 'right_click_attempt');
   };
-  const handleAfterPrint = () => {
-    document.body.style.display = '';
+  document.addEventListener('contextmenu', handleContextMenu);
+  cleanupFns.push(() =>
+    document.removeEventListener('contextmenu', handleContextMenu)
+  );
+
+  // Method 7: Drag prevention (prevents drag-to-share)
+  const handleDragStart = (e: DragEvent) => {
+    e.preventDefault();
   };
-  window.addEventListener('beforeprint', handleBeforePrint);
-  window.addEventListener('afterprint', handleAfterPrint);
-  cleanupFns.push(() => {
-    window.removeEventListener('beforeprint', handleBeforePrint);
-    window.removeEventListener('afterprint', handleAfterPrint);
-  });
+  document.addEventListener('dragstart', handleDragStart);
+  cleanupFns.push(() =>
+    document.removeEventListener('dragstart', handleDragStart)
+  );
 
   // Return cleanup function
   return () => {
-    cleanupFns.forEach(fn => fn());
+    cleanupFns.forEach((fn) => fn());
   };
 };
 
@@ -289,6 +375,7 @@ export const initScreenshotDetection = (
 /**
  * Check if access velocity exceeds threshold
  * Used client-side to pre-check before making API calls
+ * Tracks requests per IP per minute (max 10), burns menu on exceed
  */
 export const checkVelocity = async (
   menuId: string,
@@ -330,9 +417,9 @@ export const checkVelocity = async (
  * Record a request timestamp for velocity tracking
  */
 const addRequest = (key: string, timestamp: number): void => {
-  const window = velocityStore.get(key) || { timestamps: [] };
-  window.timestamps.push(timestamp);
-  velocityStore.set(key, window);
+  const velocityWindow = velocityStore.get(key) || { timestamps: [] };
+  velocityWindow.timestamps.push(timestamp);
+  velocityStore.set(key, velocityWindow);
 };
 
 /**
@@ -343,9 +430,9 @@ export const getRecentRequests = (
   windowMs: number = VELOCITY_WINDOW_MS
 ): number[] => {
   const now = Date.now();
-  const window = velocityStore.get(key);
-  if (!window) return [];
-  return window.timestamps.filter(ts => now - ts < windowMs);
+  const velocityWindow = velocityStore.get(key);
+  if (!velocityWindow) return [];
+  return velocityWindow.timestamps.filter((ts) => now - ts < windowMs);
 };
 
 // ============================================
@@ -360,5 +447,23 @@ export const hashIp = async (ip: string): Promise<string> => {
   const data = encoder.encode(ip);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+};
+
+// ============================================
+// Velocity Store Management
+// ============================================
+
+/**
+ * Clear the entire velocity store (useful for testing)
+ */
+export const clearVelocityStore = (): void => {
+  velocityStore.clear();
+};
+
+/**
+ * Get the current size of the velocity store
+ */
+export const getVelocityStoreSize = (): number => {
+  return velocityStore.size;
 };

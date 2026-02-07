@@ -1,9 +1,11 @@
-import { useState, useMemo, Suspense, lazy, useEffect } from 'react';
+import { logger } from '@/lib/logger';
+import { useState, useMemo, Suspense, lazy, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Plus, Search, Settings, LayoutGrid, ShoppingBag, Eye, Users, DollarSign,
   RefreshCw, Filter, TrendingUp, Flame, Clock, Shield, ChevronRight,
-  Zap, Target, AlertCircle, CheckCircle, BarChart3, Copy, ExternalLink
+  Zap, Target, AlertCircle, CheckCircle, BarChart3, Copy, ExternalLink,
+  Download, Activity
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +30,111 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { ResponsiveGrid } from '@/components/shared/ResponsiveGrid';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { supabase } from '@/integrations/supabase/client';
+
+// ============================================
+// Analytics Types (exported)
+// ============================================
+
+export interface MenuAnalytics {
+  totalMenus: number;
+  activeMenus: number;
+  burnedMenus: number;
+  totalViews: number;
+  totalOrders: number;
+  conversionRate: number;
+  avgViewsPerMenu: number;
+  avgTimeToFirstView: number;
+  burnReasons: Record<string, number>;
+  viewsByHour: Array<{ hour: number; views: number }>;
+  topProducts: Array<{ id: string; name: string; orders: number; revenue: number }>;
+}
+
+export interface TopProduct {
+  id: string;
+  name: string;
+  orders: number;
+  revenue: number;
+}
+
+export interface BurnReasonEntry {
+  name: string;
+  value: number;
+}
+
+export interface ViewsByHourEntry {
+  hour: number;
+  views: number;
+}
+
+// ============================================
+// CSV Export Utility
+// ============================================
+
+function exportAnalyticsCsv(analytics: MenuAnalytics, filename: string): void {
+  const rows: string[][] = [
+    ['Metric', 'Value'],
+    ['Total Menus', String(analytics.totalMenus)],
+    ['Active Menus', String(analytics.activeMenus)],
+    ['Burned Menus', String(analytics.burnedMenus)],
+    ['Total Views', String(analytics.totalViews)],
+    ['Total Orders', String(analytics.totalOrders)],
+    ['Conversion Rate', `${analytics.conversionRate.toFixed(2)}%`],
+    ['Avg Views Per Menu', analytics.avgViewsPerMenu.toFixed(2)],
+    ['Avg Time To First View (min)', analytics.avgTimeToFirstView.toFixed(2)],
+    [],
+    ['Burn Reason', 'Count'],
+    ...Object.entries(analytics.burnReasons).map(([reason, count]) => [reason, String(count)]),
+    [],
+    ['Hour', 'Views'],
+    ...analytics.viewsByHour.map((h) => [String(h.hour), String(h.views)]),
+    [],
+    ['Product', 'Orders', 'Revenue'],
+    ...analytics.topProducts.map((p) => [p.name, String(p.orders), `$${p.revenue.toFixed(2)}`]),
+  ];
+
+  const csvContent = rows.map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `${filename}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+// ============================================
+// Real-time Viewer Count Hook
+// ============================================
+
+function useRealtimeViewerCount(tenantId: string | undefined): number {
+  const [viewerCount, setViewerCount] = useState(0);
+
+  useEffect(() => {
+    if (!tenantId) return;
+
+    // Subscribe to menu_access_logs inserts for this tenant
+    const channel = supabase
+      .channel(`realtime-viewers-${tenantId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'menu_access_logs',
+        },
+        () => {
+          setViewerCount((prev) => prev + 1);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tenantId]);
+
+  return viewerCount;
+}
 
 // Lazy load heavy components
 const SecurityAlertsPanel = lazy(() => import('./SecurityAlertsPanel').then(m => ({ default: m.SecurityAlertsPanel })));
@@ -37,8 +144,20 @@ const CustomerMessaging = lazy(() => import('./CustomerMessaging').then(m => ({ 
 const EncryptionMigrationTool = lazy(() => import('./EncryptionMigrationTool').then(m => ({ default: m.EncryptionMigrationTool })));
 const MenuAnalyticsDashboard = lazy(() => import('./MenuAnalyticsDashboard').then(m => ({ default: m.MenuAnalyticsDashboard })));
 
+// Order type for this component
+interface OrderData {
+  id: string;
+  status: string;
+  total_amount?: number | string | null;
+  contact_phone?: string | null;
+  created_at?: string | null;
+  order_data?: { items?: unknown[] } | null;
+  whitelist?: { customer_name?: string | null } | null;
+  menu?: { name?: string | null } | null;
+}
+
 // Enhanced Order Card with more details
-function OrderCard({ order, onStatusChange }: { order: any; onStatusChange?: (id: string, status: string) => void }) {
+function OrderCard({ order, onStatusChange }: { order: OrderData; onStatusChange?: (id: string, status: string) => void }) {
   const customerName = order.whitelist?.customer_name || order.contact_phone || 'Unknown';
   const menuName = order.menu?.name || 'Menu';
   const total = Number(order.total_amount || 0);
@@ -127,21 +246,21 @@ function OrdersTab() {
   const [listLimit, setListLimit] = useState(20);
 
   const ordersByStatus = useMemo(() => ({
-    pending: orders.filter((o: any) => o.status === 'pending'),
-    confirmed: orders.filter((o: any) => o.status === 'confirmed'),
-    completed: orders.filter((o: any) => o.status === 'completed' || o.status === 'delivered'),
-    rejected: orders.filter((o: any) => o.status === 'rejected'),
+    pending: orders.filter((o: OrderData) => o.status === 'pending'),
+    confirmed: orders.filter((o: OrderData) => o.status === 'confirmed'),
+    completed: orders.filter((o: OrderData) => o.status === 'completed' || o.status === 'delivered'),
+    rejected: orders.filter((o: OrderData) => o.status === 'rejected'),
   }), [orders]);
 
   const stats = useMemo(() => ({
     total: orders.length,
     pending: ordersByStatus.pending.length,
-    revenue: orders.reduce((sum: number, o: any) => sum + Number(o.total_amount || 0), 0),
+    revenue: orders.reduce((sum: number, o: OrderData) => sum + Number(o.total_amount || 0), 0),
     avgOrder: orders.length > 0
-      ? orders.reduce((sum: number, o: any) => sum + Number(o.total_amount || 0), 0) / orders.length
+      ? orders.reduce((sum: number, o: OrderData) => sum + Number(o.total_amount || 0), 0) / orders.length
       : 0,
-    todayOrders: orders.filter((o: any) => {
-      const orderDate = new Date(o.created_at);
+    todayOrders: orders.filter((o: OrderData) => {
+      const orderDate = new Date(o.created_at || '');
       const today = new Date();
       return orderDate.toDateString() === today.toDateString();
     }).length,
@@ -277,7 +396,7 @@ function OrdersTab() {
                   <p className="text-xs mt-1">Orders appear here when customers place new orders</p>
                 </div>
               ) : (
-                ordersByStatus.pending.map((order: any) => (
+                ordersByStatus.pending.map((order: OrderData) => (
                   <OrderCard
                     key={order.id}
                     order={order}
@@ -308,7 +427,7 @@ function OrdersTab() {
                   <p className="text-sm">No confirmed orders</p>
                 </div>
               ) : (
-                ordersByStatus.confirmed.map((order: any) => (
+                ordersByStatus.confirmed.map((order: OrderData) => (
                   <OrderCard key={order.id} order={order} />
                 ))
               )}
@@ -334,7 +453,7 @@ function OrdersTab() {
                 </div>
               ) : (
                 <>
-                  {ordersByStatus.completed.slice(0, 8).map((order: any) => (
+                  {ordersByStatus.completed.slice(0, 8).map((order: OrderData) => (
                     <OrderCard key={order.id} order={order} />
                   ))}
                   {ordersByStatus.completed.length > 8 && (
@@ -363,7 +482,7 @@ function OrdersTab() {
             ) : (
               <>
                 <div className="divide-y">
-                  {orders.slice(0, listLimit).map((order: any) => (
+                  {orders.slice(0, listLimit).map((order: OrderData) => (
                     <div key={order.id} className="p-4 hover:bg-muted/50 transition-colors cursor-pointer">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
@@ -493,6 +612,17 @@ function SetupTab() {
   );
 }
 
+// Menu type for the SmartDashboard
+interface MenuData {
+  id: string;
+  name?: string | null;
+  status: string;
+  view_count?: number | null;
+  total_revenue?: number | null;
+  order_count?: number | null;
+  [key: string]: unknown;
+}
+
 // SmartDashboard Component
 export function SmartDashboard() {
   const { tenant } = useTenantAdminAuth();
@@ -502,6 +632,7 @@ export function SmartDashboard() {
 
   const { data: menus = [], isLoading, refetch } = useDisposableMenus(tenant?.id);
   const { data: orders = [] } = useMenuOrders(undefined, tenant?.id);
+  const realtimeViewerCount = useRealtimeViewerCount(tenant?.id);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -518,12 +649,12 @@ export function SmartDashboard() {
 
   // Calculate quick stats
   const stats = useMemo(() => {
-    const activeMenus = menus.filter((m: any) => m.status === 'active');
-    const burnedMenus = menus.filter((m: any) => m.status === 'soft_burned' || m.status === 'hard_burned');
-    const totalViews = menus.reduce((sum: number, m: any) => sum + (m.view_count || 0), 0);
+    const activeMenus = menus.filter((m: MenuData) => m.status === 'active');
+    const burnedMenus = menus.filter((m: MenuData) => m.status === 'soft_burned' || m.status === 'hard_burned');
+    const totalViews = menus.reduce((sum: number, m: MenuData) => sum + (m.view_count || 0), 0);
     const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum: number, o: any) => sum + Number(o.total_amount || 0), 0);
-    const pendingOrders = orders.filter((o: any) => o.status === 'pending').length;
+    const totalRevenue = orders.reduce((sum: number, o: OrderData) => sum + Number(o.total_amount || 0), 0);
+    const pendingOrders = orders.filter((o: OrderData) => o.status === 'pending').length;
     const conversionRate = totalViews > 0 ? ((totalOrders / totalViews) * 100).toFixed(1) : '0';
 
     return {
@@ -539,7 +670,7 @@ export function SmartDashboard() {
 
   // Filter menus
   const filteredMenus = useMemo(() => {
-    return menus.filter((menu: any) => {
+    return menus.filter((menu: MenuData) => {
       const matchesSearch = !searchQuery ||
         menu.name?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === 'all' ||
@@ -549,14 +680,37 @@ export function SmartDashboard() {
     });
   }, [menus, searchQuery, statusFilter]);
 
+  // Build MenuAnalytics for CSV export
+  const analyticsForExport = useMemo((): MenuAnalytics => ({
+    totalMenus: menus.length,
+    activeMenus: stats.activeMenus,
+    burnedMenus: stats.burnedMenus,
+    totalViews: stats.totalViews,
+    totalOrders: stats.totalOrders,
+    conversionRate: parseFloat(stats.conversionRate),
+    avgViewsPerMenu: menus.length > 0 ? stats.totalViews / menus.length : 0,
+    avgTimeToFirstView: 0,
+    burnReasons: {},
+    viewsByHour: [],
+    topProducts: [],
+  }), [menus, stats]);
+
+  const handleExportCsv = useCallback(() => {
+    exportAnalyticsCsv(
+      analyticsForExport,
+      `menu-analytics-${new Date().toISOString().split('T')[0]}`
+    );
+    logger.info('Analytics CSV exported', { component: 'SmartDashboard' });
+  }, [analyticsForExport]);
+
   // Top performing menu
   const topMenu = useMemo(() => {
     if (menus.length === 0) return null;
-    return menus.reduce((top: any, current: any) => {
-      const currentRevenue = current.total_revenue || 0;
-      const topRevenue = top?.total_revenue || 0;
+    return menus.reduce((top: MenuData, current: MenuData) => {
+      const currentRevenue = Number(current.total_revenue || 0);
+      const topRevenue = Number(top?.total_revenue || 0);
       return currentRevenue > topRevenue ? current : top;
-    }, menus[0]);
+    }, menus[0] as MenuData);
   }, [menus]);
 
   return (
@@ -613,6 +767,20 @@ export function SmartDashboard() {
 
             {/* Actions */}
             <div className="flex items-center gap-2">
+              {realtimeViewerCount > 0 && (
+                <Badge variant="outline" className="animate-pulse border-green-500 text-green-600 gap-1">
+                  <Activity className="h-3 w-3" />
+                  {realtimeViewerCount} live
+                </Badge>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportCsv}
+                title="Export analytics to CSV"
+              >
+                <Download className="h-4 w-4" />
+              </Button>
               <PanicModeButton />
 
               {/* Desktop Create Button */}
@@ -747,8 +915,8 @@ export function SmartDashboard() {
             <ResponsiveGrid
               data={filteredMenus}
               isLoading={isLoading}
-              keyExtractor={(menu: any) => menu.id}
-              renderItem={(menu: any) => <MenuCard menu={menu} />}
+              keyExtractor={(menu: MenuData) => menu.id}
+              renderItem={(menu: MenuData) => <MenuCard menu={menu} />}
               columns={{ default: 1, md: 2, lg: 3 }}
               emptyState={{
                 icon: LayoutGrid,

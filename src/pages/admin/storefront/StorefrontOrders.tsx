@@ -8,6 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { CustomerLink, ProductLink } from '@/components/admin/cross-links';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -354,7 +355,12 @@ export default function StorefrontOrders() {
                     </TableCell>
                     <TableCell onClick={() => setSelectedOrder(order)}>
                       <div>
-                        <p className="font-medium">{order.customer_name || 'Guest'}</p>
+                        <p className="font-medium">
+                          <CustomerLink
+                            customerId={order.customer_id}
+                            customerName={order.customer_name || 'Guest'}
+                          />
+                        </p>
                         <p className="text-sm text-muted-foreground">{order.customer_email}</p>
                       </div>
                     </TableCell>
@@ -451,7 +457,12 @@ export default function StorefrontOrders() {
                 <div>
                   <h3 className="font-medium mb-3">Customer</h3>
                   <div className="space-y-2 text-sm">
-                    <p><span className="text-muted-foreground">Name:</span> {selectedOrder.customer_name || 'Guest'}</p>
+                    <p><span className="text-muted-foreground">Name:</span>{' '}
+                      <CustomerLink
+                        customerId={selectedOrder.customer_id}
+                        customerName={selectedOrder.customer_name || 'Guest'}
+                      />
+                    </p>
                     <p><span className="text-muted-foreground">Email:</span> {selectedOrder.customer_email}</p>
                     <p><span className="text-muted-foreground">Phone:</span> {selectedOrder.customer_phone}</p>
                   </div>
@@ -478,13 +489,18 @@ export default function StorefrontOrders() {
                 <div>
                   <h3 className="font-medium mb-3">Items</h3>
                   <div className="space-y-3">
-                    {selectedOrder.items.map((item: any, index: number) => (
+                    {selectedOrder.items.map((item: Record<string, unknown>, index: number) => (
                       <div key={index} className="flex justify-between text-sm">
                         <div>
-                          <p className="font-medium">{item.name}</p>
-                          <p className="text-muted-foreground">Qty: {item.quantity}</p>
+                          <p className="font-medium">
+                            <ProductLink
+                              productId={item.product_id as string}
+                              productName={(item.name as string) || 'Unknown Product'}
+                            />
+                          </p>
+                          <p className="text-muted-foreground">Qty: {item.quantity as number}</p>
                         </div>
-                        <p className="font-medium">{formatCurrency(item.price * item.quantity)}</p>
+                        <p className="font-medium">{formatCurrency((item.price as number) * (item.quantity as number))}</p>
                       </div>
                     ))}
                   </div>

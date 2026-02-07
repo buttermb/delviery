@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { useCustomerInvoices } from '@/hooks/useCustomerInvoices';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { InvoiceLink } from '@/components/admin/cross-links';
 import { FileText, Calendar, DollarSign, Mail, Eye, Plus, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -174,7 +175,12 @@ export function CustomerInvoicesTab({ customerId, onCreateInvoice }: CustomerInv
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold">Invoice #{invoice.invoice_number}</p>
+                      <p className="font-semibold">
+                        <InvoiceLink
+                          invoiceId={invoice.id}
+                          invoiceNumber={`Invoice #${invoice.invoice_number}`}
+                        />
+                      </p>
                       <Badge className={getStatusBadgeStyles(invoice.status)}>
                         {invoice.status?.toLowerCase() === 'paid' && <CheckCircle className="w-3 h-3 mr-1" />}
                         {getStatusLabel(invoice.status)}

@@ -5,7 +5,8 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 
 /**
- * Comprehensive Dashboard KPIs pulled from Orders, Inventory, and Revenue
+ * Comprehensive Dashboard KPIs pulled from Orders, Inventory, Revenue,
+ * Deliveries, Menus, and Customers -- with yesterday-comparison trends.
  */
 export interface DashboardStats {
   // Orders KPIs
@@ -23,13 +24,28 @@ export interface DashboardStats {
 
   // Revenue KPIs
   revenueToday: number;
+  revenueYesterday: number;
   revenueMTD: number;
   revenueGrowthPercent: number;
 
   // Customer KPIs
+  newCustomersToday: number;
+  newCustomersYesterday: number;
   newCustomers: number;
   totalCustomers: number;
   activeSessions: number;
+
+  // Delivery KPIs
+  activeDeliveries: number;
+  activeDeliveriesYesterday: number;
+
+  // Menu KPIs
+  activeMenus: number;
+
+  // Yesterday comparisons for trend indicators
+  pendingOrdersYesterday: number;
+  totalOrdersYesterday: number;
+  lowStockItemsYesterday: number;
 }
 
 export function useDashboardStats() {
@@ -40,28 +56,14 @@ export function useDashboardStats() {
     queryKey: queryKeys.dashboard.stats(tenantId),
     queryFn: async (): Promise<DashboardStats> => {
       if (!tenantId) {
-        return {
-          pendingOrders: 0,
-          totalOrdersToday: 0,
-          totalOrdersMTD: 0,
-          completedOrdersToday: 0,
-          avgOrderValue: 0,
-          totalProducts: 0,
-          lowStockItems: 0,
-          outOfStockItems: 0,
-          totalInventoryValue: 0,
-          revenueToday: 0,
-          revenueMTD: 0,
-          revenueGrowthPercent: 0,
-          newCustomers: 0,
-          totalCustomers: 0,
-          activeSessions: 0,
-        };
+        return getEmptyStats();
       }
 
       // Date calculations
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
@@ -74,18 +76,28 @@ export function useDashboardStats() {
         todayOrdersResult,
         mtdOrdersResult,
         completedTodayResult,
+        yesterdayOrdersResult,
 
         // Inventory queries
         productsResult,
 
-        // Revenue queries - MTD
+        // Revenue queries
         revenueMTDResult,
         revenueLastMonthResult,
+        revenueYesterdayResult,
 
         // Customer queries
-        newCustomersResult,
+        newCustomersTodayResult,
+        newCustomersYesterdayResult,
+        newCustomers30dResult,
         totalCustomersResult,
         activeSessionsResult,
+
+        // Delivery queries
+        activeDeliveriesResult,
+
+        // Menu queries
+        activeMenusResult,
       ] = await Promise.allSettled([
         // Pending orders: orders with status 'pending' or 'confirmed'
         supabase
@@ -118,6 +130,15 @@ export function useDashboardStats() {
           .gte('created_at', today.toISOString())
           .in('status', ['completed', 'delivered']),
 
+        // Yesterday's orders (for trend)
+        supabase
+          .from('orders')
+          .select('id, total_amount', { count: 'exact' })
+          .eq('tenant_id', tenantId)
+          .gte('created_at', yesterday.toISOString())
+          .lt('created_at', today.toISOString())
+          .not('status', 'in', '("cancelled","rejected","refunded")'),
+
         // All products with stock info
         supabase
           .from('products')
@@ -141,6 +162,30 @@ export function useDashboardStats() {
           .lt('created_at', endOfLastMonth.toISOString())
           .in('status', ['completed', 'delivered']),
 
+        // Revenue yesterday (for trend)
+        supabase
+          .from('orders')
+          .select('total_amount')
+          .eq('tenant_id', tenantId)
+          .gte('created_at', yesterday.toISOString())
+          .lt('created_at', today.toISOString())
+          .in('status', ['completed', 'delivered']),
+
+        // New customers today
+        supabase
+          .from('customers')
+          .select('id', { count: 'exact', head: true })
+          .eq('tenant_id', tenantId)
+          .gte('created_at', today.toISOString()),
+
+        // New customers yesterday (for trend)
+        supabase
+          .from('customers')
+          .select('id', { count: 'exact', head: true })
+          .eq('tenant_id', tenantId)
+          .gte('created_at', yesterday.toISOString())
+          .lt('created_at', today.toISOString()),
+
         // New customers in the last 30 days
         supabase
           .from('customers')
@@ -160,18 +205,37 @@ export function useDashboardStats() {
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenantId)
           .gte('last_seen_at', new Date(Date.now() - 15 * 60 * 1000).toISOString()),
+
+        // Active deliveries (in_transit)
+        supabase
+          .from('wholesale_deliveries')
+          .select('id', { count: 'exact', head: true })
+          .eq('tenant_id', tenantId)
+          .in('status', ['assigned', 'picked_up', 'in_transit']),
+
+        // Active menus (not burned)
+        supabase
+          .from('disposable_menus')
+          .select('id', { count: 'exact', head: true })
+          .eq('tenant_id', tenantId)
+          .eq('status', 'active'),
       ]);
 
-      // Extract pending orders count
-      let pendingOrders = 0;
-      if (pendingOrdersResult.status === 'fulfilled') {
-        const { count, error } = pendingOrdersResult.value;
-        if (!error) {
-          pendingOrders = count ?? 0;
-        } else {
-          logger.warn('Failed to fetch pending orders', error, { component: 'useDashboardStats' });
+      // Helper to extract count from result
+      const extractCount = (
+        result: PromiseSettledResult<{ count: number | null; error: { message: string } | null }>,
+        label: string
+      ): number => {
+        if (result.status === 'fulfilled') {
+          const { count, error } = result.value;
+          if (!error) return count ?? 0;
+          logger.warn(`Failed to fetch ${label}`, error, { component: 'useDashboardStats' });
         }
-      }
+        return 0;
+      };
+
+      // Extract pending orders
+      const pendingOrders = extractCount(pendingOrdersResult, 'pending orders');
 
       // Extract today orders and revenue
       let totalOrdersToday = 0;
@@ -191,27 +255,29 @@ export function useDashboardStats() {
         }
       }
 
-      // Extract MTD orders count
-      let totalOrdersMTD = 0;
-      if (mtdOrdersResult.status === 'fulfilled') {
-        const { count, error } = mtdOrdersResult.value;
+      // Extract yesterday orders and revenue
+      let totalOrdersYesterday = 0;
+      let revenueYesterday = 0;
+      if (yesterdayOrdersResult.status === 'fulfilled') {
+        const { data, count, error } = yesterdayOrdersResult.value;
         if (!error) {
-          totalOrdersMTD = count ?? 0;
+          totalOrdersYesterday = count ?? 0;
+          if (data) {
+            revenueYesterday = data.reduce(
+              (sum, order) => sum + (Number(order.total_amount) || 0),
+              0
+            );
+          }
         } else {
-          logger.warn('Failed to fetch MTD orders', error, { component: 'useDashboardStats' });
+          logger.warn('Failed to fetch yesterday orders', error, { component: 'useDashboardStats' });
         }
       }
 
+      // Extract MTD orders count
+      const totalOrdersMTD = extractCount(mtdOrdersResult, 'MTD orders');
+
       // Extract completed orders today
-      let completedOrdersToday = 0;
-      if (completedTodayResult.status === 'fulfilled') {
-        const { count, error } = completedTodayResult.value;
-        if (!error) {
-          completedOrdersToday = count ?? 0;
-        } else {
-          logger.warn('Failed to fetch completed orders today', error, { component: 'useDashboardStats' });
-        }
-      }
+      const completedOrdersToday = extractCount(completedTodayResult, 'completed orders today');
 
       // Extract inventory metrics
       let totalProducts = 0;
@@ -230,14 +296,11 @@ export function useDashboardStats() {
             const price = (item.price as number | null) ?? 0;
             const inStock = item.in_stock ?? true;
 
-            // Calculate inventory value
             totalInventoryValue += qty * price;
 
-            // Out of stock check
             if (qty <= 0 || !inStock) {
               outOfStockItems++;
             } else if (qty <= threshold) {
-              // Low stock check (but not out of stock)
               lowStockItems++;
             }
           });
@@ -274,6 +337,18 @@ export function useDashboardStats() {
         }
       }
 
+      // Extract revenue yesterday
+      let revYesterday = 0;
+      if (revenueYesterdayResult.status === 'fulfilled') {
+        const { data, error } = revenueYesterdayResult.value;
+        if (!error && data) {
+          revYesterday = data.reduce(
+            (sum, order) => sum + (Number(order.total_amount) || 0),
+            0
+          );
+        }
+      }
+
       // Calculate revenue growth percentage
       const revenueGrowthPercent = revenueLastMonth > 0
         ? ((revenueMTD - revenueLastMonth) / revenueLastMonth) * 100
@@ -282,67 +357,93 @@ export function useDashboardStats() {
       // Calculate average order value
       const avgOrderValue = totalOrdersMTD > 0 ? revenueMTD / totalOrdersMTD : 0;
 
-      // Extract new customers count
-      let newCustomers = 0;
-      if (newCustomersResult.status === 'fulfilled') {
-        const { count, error } = newCustomersResult.value;
-        if (!error) {
-          newCustomers = count ?? 0;
-        } else {
-          logger.warn('Failed to fetch new customers', error, { component: 'useDashboardStats' });
-        }
-      }
+      // Customer KPIs
+      const newCustomersToday = extractCount(newCustomersTodayResult, 'new customers today');
+      const newCustomersYesterday = extractCount(newCustomersYesterdayResult, 'new customers yesterday');
+      const newCustomers = extractCount(newCustomers30dResult, 'new customers 30d');
+      const totalCustomers = extractCount(totalCustomersResult, 'total customers');
 
-      // Extract total customers count
-      let totalCustomers = 0;
-      if (totalCustomersResult.status === 'fulfilled') {
-        const { count, error } = totalCustomersResult.value;
-        if (!error) {
-          totalCustomers = count ?? 0;
-        } else {
-          logger.warn('Failed to fetch total customers', error, { component: 'useDashboardStats' });
-        }
-      }
-
-      // Extract active sessions
+      // Active sessions (may fail if column does not exist)
       let activeSessions = 0;
       if (activeSessionsResult.status === 'fulfilled') {
         const { count, error } = activeSessionsResult.value;
         if (!error) {
           activeSessions = count ?? 0;
         } else {
-          // last_seen_at column may not exist, gracefully handle
           logger.warn('Failed to fetch active sessions', error, { component: 'useDashboardStats' });
         }
       }
 
+      // Active deliveries
+      const activeDeliveries = extractCount(activeDeliveriesResult, 'active deliveries');
+
+      // Active menus
+      const activeMenus = extractCount(activeMenusResult, 'active menus');
+
       return {
-        // Orders KPIs
         pendingOrders,
         totalOrdersToday,
         totalOrdersMTD,
         completedOrdersToday,
         avgOrderValue,
 
-        // Inventory KPIs
         totalProducts,
         lowStockItems,
         outOfStockItems,
         totalInventoryValue,
 
-        // Revenue KPIs
         revenueToday,
+        revenueYesterday: revYesterday,
         revenueMTD,
         revenueGrowthPercent,
 
-        // Customer KPIs
+        newCustomersToday,
+        newCustomersYesterday,
         newCustomers,
         totalCustomers,
         activeSessions,
+
+        activeDeliveries,
+        activeDeliveriesYesterday: 0, // Not tracked historically
+
+        activeMenus,
+
+        pendingOrdersYesterday: 0, // Pending is a current-state metric
+        totalOrdersYesterday,
+        lowStockItemsYesterday: 0, // Not tracked historically
       };
     },
     enabled: !!tenantId,
-    refetchInterval: 30_000, // 30 seconds
-    staleTime: 15_000, // Consider data stale after 15s
+    refetchInterval: 30_000,
+    staleTime: 30_000,
   });
+}
+
+function getEmptyStats(): DashboardStats {
+  return {
+    pendingOrders: 0,
+    totalOrdersToday: 0,
+    totalOrdersMTD: 0,
+    completedOrdersToday: 0,
+    avgOrderValue: 0,
+    totalProducts: 0,
+    lowStockItems: 0,
+    outOfStockItems: 0,
+    totalInventoryValue: 0,
+    revenueToday: 0,
+    revenueYesterday: 0,
+    revenueMTD: 0,
+    revenueGrowthPercent: 0,
+    newCustomersToday: 0,
+    newCustomersYesterday: 0,
+    newCustomers: 0,
+    totalCustomers: 0,
+    activeSessions: 0,
+    activeDeliveries: 0,
+    activeDeliveriesYesterday: 0,
+    activeMenus: 0,
+    pendingOrdersYesterday: 0,
+    totalOrdersYesterday: 0,
+    lowStockItemsYesterday: 0,
+  };
 }

@@ -8,6 +8,32 @@ import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
 import { invalidateOnEvent } from '@/lib/invalidation';
 
+// Type-safe client wrapper for crm_invoices (not yet in generated types)
+type SupabaseQueryResult<T> = Promise<{ data: T | null; error: { code?: string; message?: string } | null }>;
+type SupabaseListResult<T> = Promise<{ data: T[] | null; error: { code?: string; message?: string } | null }>;
+
+interface CrmInvoiceClient {
+  from: (table: 'crm_invoices') => {
+    select: (cols: string) => {
+      eq: (col: string, val: string) => {
+        eq: (col: string, val: string) => {
+          order: (col: string, opts: { ascending: boolean }) => SupabaseListResult<Record<string, unknown>>;
+        } & SupabaseListResult<Record<string, unknown>>;
+        order: (col: string, opts: { ascending: boolean }) => SupabaseListResult<Record<string, unknown>>;
+        maybeSingle: () => SupabaseQueryResult<Record<string, unknown>>;
+      };
+      maybeSingle: () => SupabaseQueryResult<Record<string, unknown>>;
+    };
+    insert: (data: Record<string, unknown>) => {
+      select: (cols: string) => {
+        maybeSingle: () => SupabaseQueryResult<Record<string, unknown>>;
+      };
+    };
+  };
+}
+
+const crmClient = supabase as unknown as CrmInvoiceClient;
+
 export const crmInvoiceKeys = {
     all: ['crm-invoices'] as const,
     lists: () => [...crmInvoiceKeys.all, 'list'] as const,
@@ -32,7 +58,7 @@ export function useInvoices() {
         queryKey: crmInvoiceKeys.lists(),
         queryFn: async () => {
             if (!accountId) return [];
-            const { data, error } = await (supabase as any)
+            const { data, error } = await crmClient
                 .from('crm_invoices')
                 .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                 .eq('account_id', accountId)
@@ -48,7 +74,7 @@ export function useInvoices() {
     const useInvoiceQuery = (id: string) => useQuery({
         queryKey: crmInvoiceKeys.detail(id),
         queryFn: async () => {
-            const { data, error } = await (supabase as any)
+            const { data, error } = await crmClient
                 .from('crm_invoices')
                 .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                 .eq('id', id)
@@ -155,7 +181,7 @@ export function useInvoices() {
                 const dueDate = new Date();
                 dueDate.setDate(dueDate.getDate() + 30);
 
-                const { data, error } = await (supabase as any)
+                const { data, error } = await crmClient
                     .from('crm_invoices')
                     .insert({
                         account_id: original.account_id,
@@ -198,7 +224,7 @@ export function useClientInvoices(clientId: string | undefined) {
         queryKey: crmInvoiceKeys.byClient(clientId || ''),
         queryFn: async () => {
             if (!clientId || !accountId) return [];
-            const { data, error } = await (supabase as any)
+            const { data, error } = await crmClient
                 .from('crm_invoices')
                 .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, line_items, paid_at, created_at, updated_at')
                 .eq('client_id', clientId)
@@ -220,7 +246,7 @@ export function useCreateInvoice() {
         mutationFn: async (values: InvoiceFormValues & { account_id?: string }) => {
             const finalAccountId = values.account_id || accountId;
             if (!finalAccountId) throw new Error('Account ID required');
-            const { data, error } = await (supabase as any).from('crm_invoices').insert({ ...values, account_id: finalAccountId, line_items: values.line_items as unknown as Json[] }).select('*, client:crm_clients(*)').maybeSingle();
+            const { data, error } = await crmClient.from('crm_invoices').insert({ ...values, account_id: finalAccountId, line_items: values.line_items as unknown as Json[] }).select('*, client:crm_clients(*)').maybeSingle();
             if (error) throw error;
             return normalizeInvoice(data as unknown as Record<string, unknown>);
         },

@@ -73,7 +73,7 @@ const looksLikeEncryptedData = (value: string | null): boolean => {
   return saltedPrefix || (base64Pattern.test(value) && value.length > 40);
 };
 
-export default function CustomerManagement() {
+export function CustomerManagement() {
   const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
@@ -123,8 +123,9 @@ export default function CustomerManagement() {
       if (error) throw error;
 
       // Decrypt customer data if encryption is ready and encrypted fields exist
-      let decryptedCustomers: any[] = data || [];
-      if (encryptionIsReady && data && data.length > 0 && ((data[0] as any).phone_encrypted || (data[0] as any).email_encrypted)) {
+      let decryptedCustomers: Record<string, unknown>[] = data || [];
+      const firstRecord = data?.[0] as Record<string, unknown> | undefined;
+      if (encryptionIsReady && data && data.length > 0 && (firstRecord?.phone_encrypted || firstRecord?.email_encrypted)) {
         try {
           decryptedCustomers = data.map((customer: Record<string, unknown>) => {
             try {

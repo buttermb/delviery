@@ -12,6 +12,45 @@ async function hashIp(ip: string): Promise<string> {
   return hashArray.map((b: number) => b.toString(16).padStart(2, '0')).join('');
 }
 
+/**
+ * In-memory velocity tracking (fallback when Redis is unavailable)
+ * Tracks requests per hashed IP per minute
+ */
+const inMemoryVelocity = new Map<string, number[]>();
+const IN_MEMORY_WINDOW_MS = 60000; // 1 minute
+const IN_MEMORY_MAX_REQUESTS = 10;
+
+function checkInMemoryVelocity(menuId: string, ipHash: string): { allowed: boolean; count: number } {
+  const key = `${menuId}:${ipHash}`;
+  const now = Date.now();
+  const existing = inMemoryVelocity.get(key) || [];
+
+  // Clean expired entries
+  const recent = existing.filter(ts => now - ts < IN_MEMORY_WINDOW_MS);
+
+  if (recent.length >= IN_MEMORY_MAX_REQUESTS) {
+    inMemoryVelocity.set(key, recent);
+    return { allowed: false, count: recent.length };
+  }
+
+  recent.push(now);
+  inMemoryVelocity.set(key, recent);
+  return { allowed: true, count: recent.length };
+}
+
+// Periodic cleanup of stale entries (every 5 minutes)
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, timestamps] of inMemoryVelocity.entries()) {
+    const recent = timestamps.filter(ts => now - ts < IN_MEMORY_WINDOW_MS);
+    if (recent.length === 0) {
+      inMemoryVelocity.delete(key);
+    } else {
+      inMemoryVelocity.set(key, recent);
+    }
+  }
+}, 300000);
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -27,7 +66,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Initialize velocity checker
+    // Initialize velocity checker (Redis-based)
     const redisHost = Deno.env.get('REDIS_HOST') || 'localhost';
     const redisPort = parseInt(Deno.env.get('REDIS_PORT') || '6379');
     const redisPassword = Deno.env.get('REDIS_PASSWORD');
@@ -55,6 +94,58 @@ serve(async (req) => {
           field: 'encrypted_url_token'
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // === VELOCITY CHECK (before DB lookup to protect against enumeration) ===
+    const clientIp = req.headers.get('x-forwarded-for') || ip_address || 'unknown';
+    const ipHash = await hashIp(clientIp);
+
+    // Try Redis-based velocity check first, fall back to in-memory
+    let velocityAllowed = true;
+    let velocityAction: string | undefined;
+
+    try {
+      const velocityCheck = await velocity.checkVelocity(encrypted_url_token, ipHash);
+      velocityAllowed = velocityCheck.allowed;
+      velocityAction = velocityCheck.action;
+
+      if (velocityAllowed) {
+        await velocity.recordAccess(encrypted_url_token, ipHash);
+      }
+    } catch (velocityError) {
+      // Redis unavailable - use in-memory fallback
+      console.warn('Redis velocity check failed, using in-memory fallback:', velocityError);
+      const memCheck = checkInMemoryVelocity(encrypted_url_token, ipHash);
+      velocityAllowed = memCheck.allowed;
+      if (!velocityAllowed) {
+        velocityAction = 'soft_burn';
+      }
+    }
+
+    if (!velocityAllowed) {
+      console.log('Velocity limit exceeded for token:', encrypted_url_token, 'IP hash:', ipHash);
+
+      // Log security event
+      await supabaseClient.from('menu_security_events').insert({
+        menu_id: encrypted_url_token, // Will be overridden if menu found
+        event_type: 'velocity_exceeded',
+        severity: 'high',
+        event_data: {
+          ip_hash: ipHash,
+          action: velocityAction,
+          timestamp: new Date().toISOString(),
+          user_agent,
+        },
+      });
+
+      return new Response(
+        JSON.stringify({
+          error: 'Too many requests',
+          access_granted: false,
+          violations: ['Rate limit exceeded - too many access attempts'],
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -121,44 +212,6 @@ serve(async (req) => {
     }
 
     console.log('Menu found:', menu.name);
-
-    // Velocity Check - prevent rapid access attempts
-    const clientIp = req.headers.get('x-forwarded-for') || ip_address || 'unknown';
-    const ipHash = await hashIp(clientIp);
-
-    try {
-      const velocityCheck = await velocity.checkVelocity(menu.id, ipHash);
-      if (!velocityCheck.allowed) {
-        console.log('Velocity limit exceeded for menu:', menu.id, 'IP hash:', ipHash);
-
-        // Log security event
-        await supabaseClient.from('menu_security_events').insert({
-          menu_id: menu.id,
-          event_type: 'velocity_exceeded',
-          severity: 'high',
-          event_data: {
-            ip_hash: ipHash,
-            action: velocityCheck.action,
-            timestamp: new Date().toISOString(),
-          },
-        });
-
-        return new Response(
-          JSON.stringify({
-            error: 'Too many requests',
-            access_granted: false,
-            violations: ['Rate limit exceeded - too many access attempts'],
-          }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Record the access for velocity tracking
-      await velocity.recordAccess(menu.id, ipHash);
-    } catch (velocityError) {
-      // If Redis is unavailable, log but continue (fail-open for availability)
-      console.warn('Velocity check failed (Redis unavailable):', velocityError);
-    }
 
     // Check menu status
     if (menu.status !== 'active') {
@@ -242,15 +295,15 @@ serve(async (req) => {
       console.log('No access code required for this menu');
     }
 
-    const violations = [];
+    const violations: string[] = [];
     const security_settings = menu.security_settings || {};
-    let whitelist_entry = null;
+    let whitelist_entry: Record<string, unknown> | null = null;
 
     // Check geofencing
     let geofence_pass = true;
     if (security_settings.geofencing?.enabled && location) {
       const zones = security_settings.geofencing.zones || [];
-      geofence_pass = zones.some((zone: any) => {
+      geofence_pass = zones.some((zone: { lat: number; lng: number; radius_miles: number }) => {
         const distance = calculateDistance(
           location.lat, location.lng,
           zone.lat, zone.lng
@@ -274,7 +327,6 @@ serve(async (req) => {
     if (security_settings.time_restrictions?.enabled) {
       const now = new Date();
       const currentHour = now.getHours();
-      const currentDay = now.getDay(); // 0 = Sunday
 
       const hours = security_settings.time_restrictions.hours || {};
       const startHour = parseInt(hours.start?.split(':')[0] || '0');
@@ -311,7 +363,7 @@ serve(async (req) => {
         if (!whitelist || whitelist.status === 'revoked' || whitelist.status === 'blocked') {
           violations.push('Access revoked or not invited');
         } else {
-          whitelist_entry = whitelist;
+          whitelist_entry = whitelist as Record<string, unknown>;
 
           // Check device locking
           if (security_settings.device_locking?.enabled && whitelist.device_fingerprint) {
@@ -366,8 +418,8 @@ serve(async (req) => {
 
     if (access_granted) {
       // Transform products: flatten the nested structure and include cannabis data
-      const products = (menu.disposable_menu_products || []).map((mp: any) => {
-        const product = mp.product || {};
+      const products = (menu.disposable_menu_products || []).map((mp: Record<string, unknown>) => {
+        const product = (mp.product || {}) as Record<string, unknown>;
         return {
           id: mp.product_id,
           name: product.product_name || 'Unknown Product',
@@ -391,7 +443,6 @@ serve(async (req) => {
       });
 
       console.log('Transformed products:', products.length, 'items');
-      console.log('Product details:', JSON.stringify(products));
 
       return new Response(
         JSON.stringify({
@@ -405,6 +456,8 @@ serve(async (req) => {
             whitelist_id: whitelist_entry?.id || null,
             min_order_quantity: menu.min_order_quantity,
             max_order_quantity: menu.max_order_quantity,
+            expiration_date: menu.expiration_date,
+            never_expires: menu.never_expires,
             appearance_settings: menu.appearance_settings || {
               show_product_images: true,
               show_availability: true
@@ -412,7 +465,7 @@ serve(async (req) => {
             security_settings: security_settings // Include security_settings so frontend can check menu_type
           },
           remaining_views: whitelist_entry
-            ? (security_settings.view_limits?.max_views_per_week || 999) - whitelist_entry.view_count
+            ? (security_settings.view_limits?.max_views_per_week || 999) - ((whitelist_entry.view_count as number) || 0)
             : null
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

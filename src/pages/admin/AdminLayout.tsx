@@ -11,12 +11,14 @@ import { MobileBottomNav } from "@/components/admin/MobileBottomNav";
 import { AccountSwitcher } from "@/components/admin/AccountSwitcher";
 import { Search, Keyboard } from "lucide-react";
 import { Breadcrumbs } from "@/components/admin/Breadcrumbs";
-import InstallPWA from "@/components/InstallPWA";
+import { InstallPWA } from "@/components/InstallPWA";
 import { Suspense } from "react";
 import { LoadingFallback } from "@/components/LoadingFallback";
 import { useEventNotifications } from "@/hooks/useEventNotifications";
+import { useEventToasts } from "@/hooks/useEventToasts";
 
 import { AdminNotificationCenter } from "@/components/admin/AdminNotificationCenter";
+import { initBrowserNotifications } from "@/utils/browserNotifications";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
@@ -41,6 +43,8 @@ import { useCredits } from "@/contexts/CreditContext";
 import { CreditPurchaseModal } from "@/components/credits/CreditPurchaseModal";
 import { CreditBalance } from '@/components/credits/CreditBalance';
 import { OfflineStatusIndicator } from '@/components/offline/OfflineStatus';
+import { useRealtimeSync } from '@/hooks/useRealtimeSync';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 /**
  * Admin Layout Component - v2.1.1
  * Provides the main layout structure for all admin pages
@@ -57,6 +61,15 @@ const AdminLayout = () => {
     setIsPurchaseModalOpen
   } = useCredits();
 
+  // Get tenant context for realtime sync
+  const { tenant } = useTenantAdminAuth();
+
+  // Enable real-time cross-panel data synchronization
+  useRealtimeSync({
+    tenantId: tenant?.id,
+    enabled: !!tenant?.id,
+  });
+
   // Enable keyboard shortcuts
   const { shortcutsVisible, setShortcutsVisible } = useAdminKeyboardShortcuts();
 
@@ -69,6 +82,14 @@ const AdminLayout = () => {
     playSound: true,
     showBrowserNotification: true,
   });
+
+  // Enable cross-panel toast notifications (separate from above)
+  useEventToasts({ enabled: !!tenant?.id });
+
+  // Initialize browser push notifications on first admin load
+  useEffect(() => {
+    initBrowserNotifications();
+  }, []);
 
   // Force module refresh
   const moduleVersion = "2.2.0";
@@ -264,4 +285,4 @@ const AdminLayout = () => {
   );
 };
 
-export default AdminLayout;
+export { AdminLayout };

@@ -53,6 +53,7 @@ export const SEOHead = ({
     updateProperty('og:image', image);
     updateProperty('og:url', url);
     updateProperty('og:type', type);
+    updateMeta('twitter:card', 'summary_large_image');
     updateMeta('twitter:title', title);
     updateMeta('twitter:description', description);
     updateMeta('twitter:image', image);

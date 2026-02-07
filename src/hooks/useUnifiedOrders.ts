@@ -12,6 +12,7 @@ import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
+import { invalidateOnEvent } from '@/lib/invalidation';
 
 // Types
 export type OrderType = 'retail' | 'wholesale' | 'menu' | 'pos' | 'all';
@@ -440,7 +441,7 @@ export function useUpdateOrderStatus() {
       logger.error('Failed to update order status', error, { component: 'useUpdateOrderStatus' });
       toast.error('Status update failed', { description: message });
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       toast.success(`Order status updated to ${data.status}`);
       // Cross-panel invalidation
       if (tenant?.id) {
@@ -448,6 +449,61 @@ export function useUpdateOrderStatus() {
           orderId: data.id,
           customerId: data.customer_id || undefined,
         });
+
+        // Status-specific targeted invalidation for optimal panel refresh
+        const status = variables.status;
+
+        // pending -> confirmed: invalidate orders, dashboard
+        if (status === 'confirmed') {
+          queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.fulfillment.queue(tenant.id) });
+        }
+
+        // confirmed -> preparing: invalidate fulfillment queue
+        if (status === 'processing') {
+          queryClient.invalidateQueries({ queryKey: queryKeys.fulfillment.queue(tenant.id) });
+        }
+
+        // preparing -> ready: invalidate fulfillment, dashboard
+        if (status === 'completed' || status === 'delivered') {
+          // Order complete - invalidate everything
+          queryClient.invalidateQueries({ queryKey: queryKeys.fulfillment.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.activityFeed.all });
+          // Update customer stats on order completion
+          if (data.customer_id) {
+            queryClient.invalidateQueries({
+              queryKey: queryKeys.customers.stats(data.customer_id),
+            });
+          }
+        }
+
+        // ANY -> cancelled: invalidate orders, inventory (stock return), finance, customers
+        if (status === 'cancelled') {
+          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.activityFeed.all });
+          if (data.customer_id) {
+            queryClient.invalidateQueries({
+              queryKey: queryKeys.customers.stats(data.customer_id),
+            });
+          }
+        }
+
+        // ANY -> refunded: similar to cancelled plus returns
+        if (status === 'refunded') {
+          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.payments.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.returns.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.activityFeed.all });
+        }
       }
     },
     onSettled: (_data, _error, variables) => {
@@ -562,12 +618,31 @@ export function useCancelOrder() {
     },
     onSuccess: (data) => {
       toast.success('Order cancelled successfully');
-      // Cross-panel invalidation - cancellation affects order lists, customer stats, inventory
+      // Cross-panel invalidation - cancellation affects order lists, customer stats, inventory, finance
       if (tenant?.id) {
-        invalidateOnEvent(queryClient, 'ORDER_DELETED', tenant.id, {
+        // Fire ORDER_STATUS_CHANGED (cancellation is a status change)
+        invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', tenant.id, {
           orderId: data.id,
           customerId: data.customer_id || undefined,
         });
+
+        // Cancellation-specific: return stock, reverse finance
+        queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.payments.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.activityFeed.all });
+
+        // Update customer stats if attached
+        if (data.customer_id) {
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.customers.stats(data.customer_id),
+          });
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.customers.detail(data.customer_id),
+          });
+        }
       }
     },
     onSettled: (_data, _error, variables) => {
@@ -588,7 +663,7 @@ export function useOrderStats(orderType: OrderType = 'all') {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ['unified-orders-stats', tenant?.id, orderType],
+    queryKey: [...queryKeys.orders.all, 'stats', tenant?.id, orderType],
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 

@@ -54,7 +54,7 @@ import { NotificationPreferences } from "./components/NotificationPreferences";
 import OfflineBanner from "./components/OfflineBanner";
 import { UpdateBanner } from "./components/mobile/UpdateBanner";
 import { ScrollToTop } from "./components/ScrollToTop";
-import InstallPWA from "./components/InstallPWA";
+import { InstallPWA } from "./components/InstallPWA";
 import { DeviceTracker } from "./components/DeviceTracker";
 import { initializeGlobalButtonMonitoring } from "./lib/utils/globalButtonInterceptor";
 import { useVersionCheck } from "./hooks/useVersionCheck";
@@ -156,13 +156,13 @@ const SuperAdminProtectedRouteNew = lazy(() => import("./components/auth/SuperAd
 const SuperAdminLayout = lazyWithRetry(() => import("./layouts/SuperAdminLayout").then(m => ({ default: m.SuperAdminLayout })));
 const SignUpPage = lazyWithRetry(() => import("./pages/saas/SignUpPage"));
 const SelectPlanPage = lazyWithRetry(() => import("./pages/saas/SelectPlanPage"));
-const SaasLoginPage = lazyWithRetry(() => import("./pages/saas/LoginPage"));
+const SaasLoginPage = lazyWithRetry(() => import("./pages/saas/LoginPage").then(m => ({ default: m.LoginPage })));
 const VerifyEmailPage = lazyWithRetry(() => import("./pages/saas/VerifyEmailPage"));
 import { EncodedUrlRedirect } from "./components/EncodedUrlRedirect";
 import { UrlEncodingFixer } from "./components/UrlEncodingFixer";
 const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePage"));
 const TenantAdminVerifyEmailPage = lazy(() => import("./pages/tenant-admin/VerifyEmailPage"));
-const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
+const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage").then(m => ({ default: m.PasswordResetPage })));
 const SignupSuccessPage = lazy(() => import("./pages/auth/SignupSuccessPage").then(m => ({ default: m.SignupSuccessPage })));
 const AccountSettingsPage = lazy(() => import("./pages/auth/AccountSettingsPage").then(m => ({ default: m.AccountSettingsPage })));
 const ChangePasswordPage = lazy(() => import("./pages/auth/ChangePasswordPage").then(m => ({ default: m.ChangePasswordPage })));
@@ -170,7 +170,7 @@ const ChangePasswordPage = lazy(() => import("./pages/auth/ChangePasswordPage").
 // Tenant Admin Pages
 const TenantAdminLoginPage = lazy(() => import("./pages/tenant-admin/LoginPage"));
 const TenantAdminProtectedRoute = lazy(() => import("./components/auth/TenantAdminProtectedRoute").then(m => ({ default: m.TenantAdminProtectedRoute })));
-const AdminLayout = lazyWithRetry(() => import("./pages/admin/AdminLayout"));
+const AdminLayout = lazyWithRetry(() => import("./pages/admin/AdminLayout").then(m => ({ default: m.AdminLayout })));
 const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/DashboardPage"));
 const HotboxPage = lazy(() => import("./pages/admin/HotboxPage"));
 const FinancialCommandCenterPage = lazy(() => import("./pages/admin/FinancialCommandCenter"));
@@ -228,7 +228,7 @@ const CouponManagementPage = lazy(() => import("./pages/admin/CouponManagementPa
 const QualityControlPage = lazy(() => import("./pages/admin/QualityControlPage"));
 const ClientsPage = lazy(() => import("./pages/admin/ClientsPage"));
 const ClientDetailPage = lazy(() => import("./pages/admin/ClientDetailPage"));
-const InvoicesPage = lazy(() => import("./pages/admin/InvoicesPage"));
+const InvoicesPage = lazy(() => import("./pages/admin/InvoicesPage").then(m => ({ default: m.InvoicesPage })));
 const CreateInvoicePage = lazy(() => import("./pages/admin/CreateInvoicePage"));
 const InvoiceDetailPage = lazy(() => import("./pages/admin/InvoiceDetailPage"));
 const CreatePreOrderPage = lazy(() => import("./pages/admin/CreatePreOrderPage"));
@@ -274,7 +274,7 @@ const WorkflowAutomationPage = lazy(() => import("./pages/admin/WorkflowAutomati
 // White-Label Storefront Pages (Admin)
 const StorefrontDashboard = lazy(() => import("./pages/admin/storefront/StorefrontDashboard"));
 const StorefrontSettings = lazy(() => import("@/pages/admin/storefront/StorefrontSettings"));
-const StorefrontBuilder = lazy(() => import("@/pages/admin/storefront/StorefrontBuilder"));
+const StorefrontBuilder = lazy(() => import("@/pages/admin/storefront/StorefrontBuilder").then(m => ({ default: m.StorefrontBuilder })));
 const StorefrontProducts = lazy(() => import("./pages/admin/storefront/StorefrontProducts"));
 const StorefrontOrders = lazy(() => import("./pages/admin/storefront/StorefrontOrders"));
 const StorefrontBundles = lazy(() => import("./pages/admin/storefront/StorefrontBundles"));
@@ -409,7 +409,7 @@ const ShoppingCartPage = lazy(() => import("./pages/customer/ShoppingCartPage"))
 const CheckoutPage = lazy(() => import("./pages/customer/CheckoutPage"));
 const OrderTrackingPage = lazy(() => import("./pages/customer/OrderTrackingPage"));
 const OrdersListPage = lazy(() => import("./pages/customer/OrdersListPage"));
-const SecureMenuAccess = lazy(() => import("./pages/customer/SecureMenuAccess"));
+const SecureMenuAccess = lazy(() => import("./pages/customer/SecureMenuAccess").then(m => ({ default: m.SecureMenuAccess })));
 const SecureMenuView = lazy(() => import("./pages/customer/SecureMenuView"));
 const WholesaleMarketplacePage = lazy(() => import("./pages/customer/WholesaleMarketplacePage"));
 const WholesaleCartPage = lazy(() => import("./pages/customer/WholesaleCartPage"));
@@ -839,6 +839,8 @@ const App = () => {
                                         {/* Legacy hub redirects - redirect old paths to new paths */}
                                         <Route path="orders-hub" element={<Navigate to="orders" replace />} />
                                         <Route path="pos-hub" element={<Navigate to="pos-system" replace />} />
+                                        <Route path="pos" element={<Navigate to="pos-system" replace />} />
+                                        <Route path="vendors" element={<Navigate to="vendor-management" replace />} />
 
                                         <Route path="analytics-hub" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsHubPage /></FeatureProtectedRoute>} />
                                         <Route path="analytics/comprehensive" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />

@@ -13,6 +13,7 @@ import { useAccount } from '@/contexts/AccountContext';
 import { formatWeight } from '@/lib/utils/formatWeight';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format, subDays } from 'date-fns';
+import { ProductLink } from '@/components/admin/cross-links';
 
 interface TopProduct {
   product_id: string;
@@ -169,7 +170,12 @@ export function TopProductsWidget() {
                   {index + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{product.product_name}</div>
+                  <div className="font-medium truncate">
+                    <ProductLink
+                      productId={product.product_id}
+                      productName={product.product_name}
+                    />
+                  </div>
                   <div className="text-xs text-muted-foreground flex items-center gap-2">
                     <span>{formatWeight(product.total_quantity)}</span>
                     <span>•</span>

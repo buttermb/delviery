@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
+import { OrderLink } from '@/components/admin/cross-links';
 
 export function RecentOrdersWidget() {
   const navigate = useNavigate();
@@ -122,7 +123,10 @@ export function RecentOrdersWidget() {
                 <div className={`w-2 h-2 rounded-full ${getStatusColor(order.status)}`} />
                 <div>
                   <div className="font-medium">
-                    #{order.order_number || order.id.slice(0, 8)}
+                    <OrderLink
+                      orderId={order.id}
+                      orderNumber={`#${order.order_number || order.id.slice(0, 8)}`}
+                    />
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {order.wholesale_clients?.business_name || 'Client'} • {format(new Date(order.created_at), 'MMM d, h:mm a')}

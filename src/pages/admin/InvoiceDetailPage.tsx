@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useTenant } from "@/contexts/TenantContext";
+import { CustomerLink } from "@/components/admin/cross-links";
 import { useInvoices } from "@/hooks/crm/useInvoices";
 import { RelatedEntitiesPanel } from "@/components/admin/RelatedEntitiesPanel";
 import { useRelatedInvoicePreOrders } from "@/hooks/useRelatedEntities";
@@ -293,7 +294,12 @@ export default function InvoiceDetailPage() {
                                     <div>
                                         <h2 className="text-lg font-semibold">Bill To:</h2>
                                         <div className="mt-2 text-sm">
-                                            <p className="font-medium text-foreground">{invoice.client?.name}</p>
+                                            <p className="font-medium text-foreground">
+                                                <CustomerLink
+                                                    customerId={invoice.client_id}
+                                                    customerName={invoice.client?.name || "Unknown Client"}
+                                                />
+                                            </p>
                                             {invoice.client?.email && <p>{invoice.client.email}</p>}
                                             {invoice.client?.phone && <p>{invoice.client.phone}</p>}
                                         </div>
@@ -375,15 +381,13 @@ export default function InvoiceDetailPage() {
                                 <div className="space-y-4">
                                     <div>
                                         <span className="text-xs text-muted-foreground">Client Name</span>
-                                        <p className="font-medium">{invoice.client?.name}</p>
+                                        <p className="font-medium">
+                                            <CustomerLink
+                                                customerId={invoice.client_id}
+                                                customerName={invoice.client?.name || "Unknown Client"}
+                                            />
+                                        </p>
                                     </div>
-                                    <Button
-                                        variant="outline"
-                                        className="w-full"
-                                        onClick={() => navigateToAdmin(`crm/clients/${invoice.client_id}`)}
-                                    >
-                                        View Client Profile
-                                    </Button>
                                 </div>
                             </CardContent>
                         </Card>

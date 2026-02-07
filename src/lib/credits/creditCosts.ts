@@ -1371,7 +1371,7 @@ export const FREE_ACTIONS = [
 /**
  * Check if an action is free
  */
-type FreeAction = typeof FREE_ACTIONS[number];
+export type FreeAction = typeof FREE_ACTIONS[number];
 
 export function isActionFree(actionKey: string): boolean {
   return FREE_ACTIONS.includes(actionKey as FreeAction) || getCreditCost(actionKey) === 0;

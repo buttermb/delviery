@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { logger } from "@/lib/logger";
 import jsPDF from "jspdf";
 import { useInvoices } from "@/hooks/crm/useInvoices";
+import { CustomerLink } from "@/components/admin/cross-links";
 import { useCRMSettings } from "@/hooks/crm/useCRMSettings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -785,7 +786,10 @@ export function InvoicesPage() {
                                         <div>
                                             <span className="font-semibold text-sm">{invoice.invoice_number}</span>
                                             <p className="text-sm text-foreground/90 font-medium">
-                                                {invoice.client?.name || "Unknown Client"}
+                                                <CustomerLink
+                                                    customerId={invoice.client_id}
+                                                    customerName={invoice.client?.name || "Unknown Client"}
+                                                />
                                             </p>
                                         </div>
                                         {getStatusBadge(invoice.status)}
@@ -937,7 +941,10 @@ export function InvoicesPage() {
                                             {invoice.invoice_number}
                                         </TableCell>
                                         <TableCell>
-                                            {invoice.client?.name || "Unknown Client"}
+                                            <CustomerLink
+                                                customerId={invoice.client_id}
+                                                customerName={invoice.client?.name || "Unknown Client"}
+                                            />
                                         </TableCell>
                                         <TableCell>
                                             {format(new Date(invoice.invoice_date), "MMM d, yyyy")}
@@ -1053,4 +1060,3 @@ export function InvoicesPage() {
     );
 }
 
-export default InvoicesPage;
