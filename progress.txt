@@ -1,4 +1,39 @@
-## Task: Complete Logout Cleanup
+## Task: Fix Session Persistence on Page Reload
+
+### What was done:
+
+1. Fixed `src/contexts/AuthContext.tsx`:
+   - Set up `onAuthStateChange` listener BEFORE calling `getSession()` to catch the `INITIAL_SESSION` event that Supabase fires when restoring a session from localStorage
+   - Added `initializedRef` to prevent duplicate loading state resolution
+   - The `getSession()` call now serves as a fallback only (for edge cases where `onAuthStateChange` doesn't fire)
+   - This eliminates the race condition where `loading=true` and `user=null` would cause downstream components to show unauthenticated UI
+
+2. Fixed `src/contexts/TenantAdminAuthContext.tsx`:
+   - Added synchronous localStorage hydration on initial render using `useState` initializers
+   - State is now pre-populated from localStorage immediately (no async gap)
+   - `isAuthenticated` starts as `true` if valid stored session data exists
+   - `loading` starts as `false` if stored session data exists (no loading spinner flash)
+   - Changed initialization effect dependency from `[location.pathname]` to `[]` (runs once)
+   - Added `authInitializedRef` to prevent wasteful re-initialization on route changes
+   - `clearAuthState()` resets `authInitializedRef` to allow re-initialization after logout
+   - Background verification still runs to validate the stored session, but UI renders immediately
+
+3. Fixed `src/lib/utils/sanitize.ts` (pre-existing build error):
+   - Added `sanitizeBasicHtml` export alias for `sanitizeHtml` (was referenced by HeroSection.tsx but not exported)
+
+### Acceptance Criteria Met:
+- [x] Page reload maintains logged-in state (synchronous hydration from localStorage)
+- [x] No flash of login screen for authenticated users (loading=false when stored session exists)
+- [x] Session persists across browser tabs (localStorage-based hydration + Supabase session sync)
+
+### Files Changed:
+- `src/contexts/AuthContext.tsx` (modified - proper session restoration order)
+- `src/contexts/TenantAdminAuthContext.tsx` (modified - synchronous hydration, single init)
+- `src/lib/utils/sanitize.ts` (modified - export alias fix)
+
+---
+
+## Task: Add Breadcrumb Navigation Between Panels
 
 ### What was done:
 

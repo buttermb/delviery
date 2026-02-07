@@ -56,36 +56,7 @@ export function sanitizeHtml(html: string): string {
   return sanitized;
 }
 
-const BASIC_ALLOWED_TAGS = new Set([
-  'b', 'i', 'em', 'strong', 'u', 'br', 'span', 'p',
-]);
-
 /**
- * Sanitize HTML allowing only basic formatting tags.
- * Strips all other tags and attributes.
+ * Alias for sanitizeHtml - sanitizes basic HTML for safe rendering.
  */
-export function sanitizeBasicHtml(html: string): string {
-  if (!html) return '';
-
-  // Remove script tags and their content
-  let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-
-  // Remove event handlers
-  sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '');
-  sanitized = sanitized.replace(/\s*on\w+\s*=\s*[^\s>]*/gi, '');
-
-  // Remove style tags and their content
-  sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
-
-  // Strip tags not in the basic allowlist
-  sanitized = sanitized.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/gi, (match, tag) => {
-    if (BASIC_ALLOWED_TAGS.has(tag.toLowerCase())) {
-      // Strip all attributes from allowed tags
-      const isClosing = match.startsWith('</');
-      return isClosing ? `</${tag.toLowerCase()}>` : `<${tag.toLowerCase()}>`;
-    }
-    return '';
-  });
-
-  return sanitized;
-}
+export const sanitizeBasicHtml = sanitizeHtml;
