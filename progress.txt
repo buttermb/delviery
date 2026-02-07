@@ -1,51 +1,63 @@
-## Task: Optimize Large Table Rendering (PERF-001)
+## Task: Refactor StorefrontBuilder for Modularity
 
 ### What was done:
-1. Rewrote `src/components/shared/VirtualizedTable.tsx` to use `react-window` (already installed):
-   - Replaced naive "render all rows to DOM" approach with true windowed rendering
-   - Uses react-window's `List` component with `rowComponent` pattern for efficient virtualization
-   - Only renders visible rows + overscan buffer (default 5) in the DOM
-   - Memoized row component (`React.memo`) prevents unnecessary re-renders
-   - Stable `rowProps` via `useMemo` ensures react-window doesn't re-render all rows on parent updates
-   - Supports 1000+ rows with smooth 60fps scrolling
-   - Maintains sticky header while rows scroll
-   - Proper TypeScript generics for type-safe column definitions
+Refactored the 1,251-line monolithic StorefrontBuilder component into 8 focused modules
+within a new `src/pages/admin/storefront/builder/` directory:
 
-2. Updated `src/components/shared/DataTable.tsx`:
-   - Cleaned up unused imports (ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, EyeOff)
-   - Auto-virtualization still triggers when data exceeds threshold (default: 100 items)
-   - Properly delegates to VirtualizedTable when virtualization is active
+1. **storefront-builder.config.ts** - Shared configuration (SECTION_TYPES, TEMPLATES,
+   sectionDefaults, SectionConfig/ThemeConfig types, DEFAULT_THEME constant)
 
-3. Enhanced `src/components/shared/ResponsiveTable.tsx` (used by 26+ admin pages):
-   - Added automatic virtualization support for large datasets (>100 items by default)
-   - New props: `virtualize`, `virtualizeThreshold`, `virtualizeHeight`, `virtualizeRowHeight`
-   - Desktop: Uses VirtualizedTable when dataset is large; standard table when small
-   - Mobile: Keeps existing card-based layout (pagination-friendly, no virtual scrolling on touch)
-   - Added `MemoizedTableRow` component to prevent unnecessary row re-renders for smaller tables
-   - Column format adapter converts ResponsiveColumn to VirtualizedTable format
+2. **useStorefrontBuilder.ts** - Custom hook encapsulating all state management:
+   - UI state (tabs, device preview, zoom, panel visibility)
+   - Builder state (layout config, theme config, section selection, undo/redo history)
+   - Store creation state (dialog, slug validation, credit-gated action)
+   - All mutations (create, save draft, publish, unpublish)
+   - Section actions (add, remove, duplicate, toggle visibility, reorder, update)
 
-4. Fixed pre-existing build error in `src/lib/utils/sanitize.ts`:
-   - Added missing `sanitizeBasicHtml` export (was referenced by HeroSection but not defined)
+3. **SortableSectionItem.tsx** - Extracted draggable section list item component
 
-### Performance Impact:
-- Tables with 1000+ rows now render ~10-20 DOM nodes instead of 1000+
-- Smooth scrolling at 60fps (react-window handles virtualization)
-- Memory usage stays constant regardless of dataset size (only visible rows are in DOM)
-- Mobile falls back to card layout (no virtualization issues on touch devices)
-- Auto-enables for datasets > 100 items, no code changes needed in consuming pages
+4. **BuilderHeader.tsx** - Top toolbar (back button, device preview toggles,
+   undo/redo, zoom controls, store status indicator, action buttons)
 
-### Acceptance Criteria Met:
-- [x] Tables with 1000+ rows render without lag (react-window virtualizes)
-- [x] Smooth scrolling at 60fps (only ~15 DOM rows rendered at any time)
-- [x] Memory usage stays reasonable with large datasets (constant DOM nodes)
-- [x] Mobile falls back to card layout (touch-friendly, no virtualization)
-- [x] Build passes with no TypeScript errors
+5. **BuilderLeftPanel.tsx** - Left sidebar with Sections/Theme/Templates tabs,
+   including DnD context for section reordering
+
+6. **BuilderPreview.tsx** - Center preview area with device-responsive scaling
+   and live section rendering
+
+7. **BuilderPropertyEditor.tsx** - Right sidebar property editor with
+   content/styles accordion panels
+
+8. **BuilderCreateStoreDialog.tsx** - Store creation dialog with slug
+   validation and credit cost display
+
+9. **index.ts** - Barrel export for all builder sub-modules
+
+The main `StorefrontBuilder.tsx` is now a ~145-line orchestrator that composes
+sub-components with shared state from useStorefrontBuilder hook.
+
+### Additional fix:
+- Added `sanitizeBasicHtml` export alias in `src/lib/utils/sanitize.ts` to fix
+  a pre-existing build error from HeroSection importing a non-existent export.
+
+### Verification:
+- [x] Build passes (npm run build - 6540 modules transformed, no errors)
+- [x] All 14 existing tests pass (StorefrontBuilder.test.tsx)
+- [x] Existing API preserved (named + default exports, lazy loading compatible)
+- [x] No behavioral changes - pure structural refactoring
 
 ### Files Changed:
-- `src/components/shared/VirtualizedTable.tsx` (rewritten - react-window integration)
-- `src/components/shared/DataTable.tsx` (cleaned up unused imports)
-- `src/components/shared/ResponsiveTable.tsx` (added virtualization support + memoized rows)
-- `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export - pre-existing build fix)
+- `src/pages/admin/storefront/StorefrontBuilder.tsx` (rewritten as orchestrator)
+- `src/pages/admin/storefront/builder/storefront-builder.config.ts` (new)
+- `src/pages/admin/storefront/builder/useStorefrontBuilder.ts` (new)
+- `src/pages/admin/storefront/builder/SortableSectionItem.tsx` (new)
+- `src/pages/admin/storefront/builder/BuilderHeader.tsx` (new)
+- `src/pages/admin/storefront/builder/BuilderLeftPanel.tsx` (new)
+- `src/pages/admin/storefront/builder/BuilderPreview.tsx` (new)
+- `src/pages/admin/storefront/builder/BuilderPropertyEditor.tsx` (new)
+- `src/pages/admin/storefront/builder/BuilderCreateStoreDialog.tsx` (new)
+- `src/pages/admin/storefront/builder/index.ts` (new)
+- `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export alias)
 
 ---
 

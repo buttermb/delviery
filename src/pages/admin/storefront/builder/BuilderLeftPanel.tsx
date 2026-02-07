@@ -3,8 +3,7 @@
  * Left sidebar with Sections, Theme, and Templates tabs
  */
 
-import Plus from "lucide-react/dist/esm/icons/plus";
-import FileText from "lucide-react/dist/esm/icons/file-text";
+import { Plus, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -192,31 +191,15 @@ export function BuilderLeftPanel({
                                         typography: { ...themeConfig.typography, fontFamily: value }
                                     })}
                                 >
-                                    <SelectTrigger
-                                        style={{
-                                            fontFamily: themeConfig.typography?.fontFamily
-                                                ? `"${themeConfig.typography.fontFamily}", sans-serif`
-                                                : 'Inter, sans-serif'
-                                        }}
-                                    >
+                                    <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Inter">
-                                            <span style={{ fontFamily: 'Inter, sans-serif' }}>Inter</span>
-                                        </SelectItem>
-                                        <SelectItem value="Space Grotesk">
-                                            <span style={{ fontFamily: '"Space Grotesk", sans-serif' }}>Space Grotesk</span>
-                                        </SelectItem>
-                                        <SelectItem value="DM Sans">
-                                            <span style={{ fontFamily: '"DM Sans", sans-serif' }}>DM Sans</span>
-                                        </SelectItem>
-                                        <SelectItem value="Playfair Display">
-                                            <span style={{ fontFamily: '"Playfair Display", serif' }}>Playfair Display</span>
-                                        </SelectItem>
-                                        <SelectItem value="Montserrat">
-                                            <span style={{ fontFamily: 'Montserrat, sans-serif' }}>Montserrat</span>
-                                        </SelectItem>
+                                        <SelectItem value="Inter">Inter</SelectItem>
+                                        <SelectItem value="Space Grotesk">Space Grotesk</SelectItem>
+                                        <SelectItem value="DM Sans">DM Sans</SelectItem>
+                                        <SelectItem value="Playfair Display">Playfair Display</SelectItem>
+                                        <SelectItem value="Montserrat">Montserrat</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
