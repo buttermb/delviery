@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -42,6 +43,8 @@ export const MenuShareDialog = ({
   menu,
   whitelistEntry
 }: MenuShareDialogProps) => {
+  const [copied, setCopied] = useState(false);
+  
   const menuUrl = formatMenuUrl(
     menu.encrypted_url_token,
     whitelistEntry?.unique_access_token

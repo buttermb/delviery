@@ -110,6 +110,7 @@ export function SignupPage() {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [signupError, setSignupError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [emailValidationStatus, setEmailValidationStatus] = useState<EmailValidationStatus>('idle');

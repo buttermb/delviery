@@ -53,6 +53,7 @@ export function CustomerForgotPasswordPage() {
   const [sent, setSent] = useState(false);
   const [tenant, setTenant] = useState<{ id: string; slug: string; name: string } | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+  const [formError, setFormError] = useState<string | null>(null);
   const [rateLimited, setRateLimited] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const { validateToken } = useCsrfToken();
@@ -118,7 +119,7 @@ export function CustomerForgotPasswordPage() {
           .maybeSingle();
 
         if (data && !error) {
-          setTenant(data);
+          setTenant({ id: data.id, slug: data.slug, name: data.business_name || data.slug });
         }
         setTenantLoading(false);
       } else {

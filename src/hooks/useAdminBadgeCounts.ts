@@ -71,7 +71,7 @@ export function useAdminBadgeCounts() {
         stockResult,
         messagesResult,
         shipmentsResult,
-        _alertsResult,
+        alertsResult,
       ] = await Promise.all([
         // Pending wholesale orders (count only, no data transfer)
         supabase
@@ -120,6 +120,7 @@ export function useAdminBadgeCounts() {
 
       const wholesaleCount = ordersResult.count || 0;
       const menuCount = menuOrdersResult.count || 0;
+      const alertsCount = alertsResult.count || 0;
 
       setCounts({
         pendingOrders: wholesaleCount + menuCount,
