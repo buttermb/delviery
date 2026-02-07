@@ -116,6 +116,9 @@ export const STORAGE_KEYS = {
 
   // Order Search
   ORDER_SEARCH_RECENT: 'order_search_recent',
+
+  // Dashboard Tour
+  DASHBOARD_TOUR_COMPLETED: 'dashboard_tour_completed',
 } as const;
 
 /**

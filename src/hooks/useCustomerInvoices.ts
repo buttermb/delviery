@@ -67,7 +67,7 @@ export function useCustomerInvoices() {
       queryFn: async () => {
         if (!tenant?.id) return [];
 
-        let query = supabase
+        let query = (supabase as any)
           .from('customer_invoices')
           .select(`
             *,
@@ -82,7 +82,7 @@ export function useCustomerInvoices() {
 
         const { data, error } = await query;
         if (error) throw error;
-        return (data || []) as CustomerInvoice[];
+        return (data || []) as unknown as CustomerInvoice[];
       },
       enabled: !!tenant?.id,
       staleTime: 30_000,
@@ -93,7 +93,7 @@ export function useCustomerInvoices() {
     useQuery({
       queryKey: queryKeys.customerInvoices.detail(id),
       queryFn: async () => {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('customer_invoices')
           .select(`
             *,
@@ -102,7 +102,7 @@ export function useCustomerInvoices() {
           .eq('id', id)
           .maybeSingle();
         if (error) throw error;
-        return data as CustomerInvoice | null;
+        return data as unknown as CustomerInvoice | null;
       },
       enabled: !!id,
       staleTime: 30_000,
@@ -114,37 +114,37 @@ export function useCustomerInvoices() {
       queryFn: async () => {
         if (!tenant?.id) return null;
 
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('customer_invoices')
-          .select('id, status, total, amount_paid, paid_at, created_at')
+          .select('id, status, total, paid_at, created_at')
           .eq('tenant_id', tenant.id);
 
         if (error) throw error;
 
-        const invoices = data || [];
+        const invoicesList = (data || []) as any[];
         const now = new Date();
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-        const totalRevenue = invoices
+        const totalRevenue = invoicesList
           .filter((i) => i.status === 'paid')
           .reduce((sum, i) => sum + (i.total || 0), 0);
 
-        const paidThisMonth = invoices
+        const paidThisMonth = invoicesList
           .filter((i) => i.status === 'paid' && i.paid_at && new Date(i.paid_at) >= monthStart)
           .reduce((sum, i) => sum + (i.total || 0), 0);
 
-        const paidThisMonthCount = invoices.filter(
+        const paidThisMonthCount = invoicesList.filter(
           (i) => i.status === 'paid' && i.paid_at && new Date(i.paid_at) >= monthStart
         ).length;
 
-        const outstandingAmount = invoices
+        const outstandingAmount = invoicesList
           .filter((i) => i.status === 'unpaid' || i.status === 'overdue')
-          .reduce((sum, i) => sum + ((i.total || 0) - (i.amount_paid || 0)), 0);
+          .reduce((sum, i) => sum + ((i.total || 0)), 0);
 
-        const overdueCount = invoices.filter((i) => i.status === 'overdue').length;
-        const unpaidCount = invoices.filter((i) => i.status === 'unpaid').length;
-        const draftCount = invoices.filter((i) => i.status === 'draft').length;
-        const paidCount = invoices.filter((i) => i.status === 'paid').length;
+        const overdueCount = invoicesList.filter((i) => i.status === 'overdue').length;
+        const unpaidCount = invoicesList.filter((i) => i.status === 'unpaid').length;
+        const draftCount = invoicesList.filter((i) => i.status === 'draft').length;
+        const paidCount = invoicesList.filter((i) => i.status === 'paid').length;
 
         return {
           totalRevenue,
@@ -155,7 +155,7 @@ export function useCustomerInvoices() {
           unpaidCount,
           draftCount,
           paidCount,
-          totalInvoices: invoices.length,
+          totalInvoices: invoicesList.length,
         };
       },
       enabled: !!tenant?.id,

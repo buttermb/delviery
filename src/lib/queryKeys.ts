@@ -242,6 +242,13 @@ export const queryKeys = {
       [...queryKeys.pos.all, 'transactions', { tenantId }] as const,
     session: (tenantId?: string) =>
       [...queryKeys.pos.all, 'session', tenantId] as const,
+    cashDrawer: {
+      all: () => [...queryKeys.pos.all, 'cash-drawer'] as const,
+      events: (shiftId?: string) =>
+        [...queryKeys.pos.cashDrawer.all(), 'events', shiftId] as const,
+      balance: (shiftId?: string) =>
+        [...queryKeys.pos.cashDrawer.all(), 'balance', shiftId] as const,
+    },
     shifts: {
       all: () => [...queryKeys.pos.all, 'shifts'] as const,
       active: (tenantId?: string) =>
@@ -654,6 +661,8 @@ export const queryKeys = {
       [...queryKeys.finance.all, 'invoices', tenantId, filters] as const,
     payments: (tenantId?: string, filters?: Record<string, unknown>) =>
       [...queryKeys.finance.all, 'payments', tenantId, filters] as const,
+    completedOrders: (tenantId?: string, dateRange?: string) =>
+      [...queryKeys.finance.all, 'completed-orders', tenantId, dateRange] as const,
   },
 
   // Fulfillment
@@ -682,6 +691,8 @@ export const queryKeys = {
       [...queryKeys.storefront.all, 'config', tenantId] as const,
     liveOrders: (tenantId?: string) =>
       [...queryKeys.storefront.all, 'live-orders', tenantId] as const,
+    banners: (storeId?: string) =>
+      [...queryKeys.storefront.all, 'banners', storeId] as const,
   },
 
   // Stock Alerts

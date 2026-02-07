@@ -53,14 +53,12 @@ export function useCouponUsageStats() {
 
       try {
         // Fetch all coupons for this tenant
-        const { data: coupons, error: couponsError } = await (supabase
+        const couponsResult = await (supabase as any)
           .from('coupon_codes')
-          .select('*') as unknown as {
-            data: Coupon[] | null;
-            error: { message: string } | null;
-            eq: (column: string, value: string) => unknown;
-          })
+          .select('*')
           .eq('tenant_id', tenant.id);
+        
+        const { data: coupons, error: couponsError } = couponsResult;
 
         if (couponsError) {
           logger.error('Failed to fetch coupons', couponsError, { component: 'useCouponUsageStats' });

@@ -147,9 +147,9 @@ export function useCompletedOrdersRevenue(dateRange: DateRangeType = 'today'): U
       const [ordersResult, wholesaleResult] = await Promise.all([
         // Regular orders
         (async () => {
-          let query = supabase
+          let query = (supabase as any)
             .from('orders')
-            .select('id, order_number, status, total_amount, subtotal, tax_amount, discount_amount, payment_status, payment_method, created_at, updated_at')
+            .select('id, order_number, status, total_amount, subtotal, payment_status, payment_method, created_at')
             .eq('tenant_id', tenantId)
             .order('created_at', { ascending: false });
 
@@ -165,7 +165,7 @@ export function useCompletedOrdersRevenue(dateRange: DateRangeType = 'today'): U
             logger.error('Failed to fetch orders for revenue', error, { component: 'useCompletedOrdersRevenue' });
             return [];
           }
-          return (data || []).map(o => ({
+          return ((data || []) as any[]).map(o => ({
             ...o,
             total_amount: Number(o.total_amount || 0),
             subtotal: Number(o.subtotal || 0),
@@ -177,9 +177,9 @@ export function useCompletedOrdersRevenue(dateRange: DateRangeType = 'today'): U
         })(),
         // Wholesale orders
         (async () => {
-          let query = supabase
+          let query = (supabase as any)
             .from('wholesale_orders')
-            .select('id, order_number, status, total_amount, payment_status, created_at, updated_at')
+            .select('id, order_number, status, total_amount, payment_status, created_at')
             .eq('tenant_id', tenantId)
             .order('created_at', { ascending: false });
 
@@ -195,7 +195,7 @@ export function useCompletedOrdersRevenue(dateRange: DateRangeType = 'today'): U
             logger.error('Failed to fetch wholesale orders for revenue', error, { component: 'useCompletedOrdersRevenue' });
             return [];
           }
-          return (data || []).map(o => ({
+          return ((data || []) as any[]).map(o => ({
             ...o,
             total_amount: Number(o.total_amount || 0),
             subtotal: Number(o.total_amount || 0),
