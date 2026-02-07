@@ -41,6 +41,25 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
 
+// Permission categories for UI organization
+const PERMISSION_CATEGORIES = {
+  orders: ['orders.view', 'orders.create', 'orders.edit', 'orders.delete'],
+  products: ['products.view', 'products.create', 'products.edit', 'products.delete'],
+  customers: ['customers.view', 'customers.create', 'customers.edit', 'customers.delete'],
+  inventory: ['inventory.view', 'inventory.adjust'],
+  reports: ['reports.view', 'reports.export'],
+  settings: ['settings.view', 'settings.edit'],
+  team: ['team.view', 'team.invite', 'team.manage'],
+};
+
+// Get human-readable permission label
+function getPermissionLabel(permission: string): string {
+  const parts = permission.split('.');
+  if (parts.length !== 2) return permission;
+  const action = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
+  return action;
+}
+
 interface Role {
   id: string;
   name: string;
@@ -78,7 +97,7 @@ export function RoleManagement() {
 
   // Fetch roles with their permissions
   const { data: roles = [], isLoading, error } = useQuery({
-    queryKey: queryKeys.roles.list(tenantId),
+    queryKey: ['roles', tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
 

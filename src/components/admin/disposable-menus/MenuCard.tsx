@@ -38,7 +38,7 @@ import type { Json } from '@/integrations/supabase/types';
 
 // Extended Menu type with computed/joined fields from queries
 // Simplified interface that accepts what the database actually returns
-interface Menu {
+export interface Menu {
   id: string;
   tenant_id: string;
   name: string;

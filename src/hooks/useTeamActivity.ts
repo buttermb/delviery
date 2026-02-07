@@ -57,7 +57,7 @@ export function useTeamActivity(options: UseTeamActivityOptions = {}) {
   const tenantId = tenant?.id;
   const { limit = 20, userId, category, enableRealtime = true } = options;
 
-  const queryKey = queryKeys.team.activity.list(tenantId, { limit, userId, category });
+  const queryKey = ['team', 'activity', tenantId, { limit, userId, category }] as const;
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey,

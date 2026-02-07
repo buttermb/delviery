@@ -16,7 +16,7 @@ export default function FinancialCenterReal() {
   const { navigateToAdmin } = useTenantNavigation();
   const { tenantSlug } = useTenantAdminAuth();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<unknown>(null);
+  const [selectedClient, setSelectedClient] = useState<{ id: string; business_name: string; outstanding_balance: number } | null>(null);
   const { data: orders = [], isLoading: ordersLoading } = useWholesaleOrders();
   const { data: clients = [], isLoading: clientsLoading } = useWholesaleClients();
   const { data: payments = [], isLoading: paymentsLoading } = useWholesalePayments();

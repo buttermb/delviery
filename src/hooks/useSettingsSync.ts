@@ -95,7 +95,7 @@ export function useSettingsSync(): UnifiedSettings & SettingsUpdateHandlers {
     notifications: globalSettings.notifications,
     theme,
     sidebar: sidebarPrefs,
-    payment: paymentSettings || null,
+    payment: (paymentSettings && typeof paymentSettings === 'object' && 'accept_cash' in paymentSettings) ? paymentSettings : null,
     storefront: storefrontSettings || null,
     isLoading,
     lastSynced: new Date(),
