@@ -55,8 +55,27 @@ export function sanitizeHtml(html: string): string {
 }
 
 /**
- * Sanitize basic HTML content - strips all dangerous tags/attributes
- * while preserving basic formatting (bold, italic, links, etc.)
- * Alias for sanitizeHtml for semantic clarity in component usage.
+ * Sanitize basic HTML - a stricter variant that only allows inline formatting.
+ * Suitable for headings, short descriptions, and single-line content.
  */
-export const sanitizeBasicHtml = sanitizeHtml;
+export function sanitizeBasicHtml(html: string): string {
+  if (!html) return '';
+
+  // Remove script tags and their content
+  let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
+  // Remove event handlers
+  sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '');
+  sanitized = sanitized.replace(/\s*on\w+\s*=\s*[^\s>]*/gi, '');
+
+  // Remove javascript: and data: URLs
+  sanitized = sanitized.replace(/href\s*=\s*["']javascript:[^"']*["']/gi, 'href="#"');
+  sanitized = sanitized.replace(/href\s*=\s*["']data:[^"']*["']/gi, 'href="#"');
+
+  // Remove style, iframe, object, embed, form elements
+  sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+  sanitized = sanitized.replace(/<(iframe|object|embed|form|input|textarea|button|script)\b[^>]*>.*?<\/\1>/gi, '');
+  sanitized = sanitized.replace(/<(iframe|object|embed|form|input|textarea|button|script)\b[^>]*\/?>/gi, '');
+
+  return sanitized;
+}
