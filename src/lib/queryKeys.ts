@@ -85,6 +85,19 @@ export const queryKeys = {
       [...queryKeys.inventory.all, 'history', filters] as const,
     transfers: (tenantId?: string) =>
       [...queryKeys.inventory.all, 'transfers', tenantId] as const,
+    byLocation: (locationId?: string) =>
+      [...queryKeys.inventory.all, 'by-location', locationId] as const,
+  },
+
+  // Locations
+  locations: {
+    all: ['locations'] as const,
+    lists: () => [...queryKeys.locations.all, 'list'] as const,
+    list: (tenantId?: string) =>
+      [...queryKeys.locations.lists(), { tenantId }] as const,
+    detail: (id: string) => [...queryKeys.locations.all, id] as const,
+    operations: (tenantId?: string) =>
+      [...queryKeys.locations.all, 'operations', tenantId] as const,
   },
 
   // Cart
@@ -330,6 +343,8 @@ export const queryKeys = {
     all: ['loyalty'] as const,
     rewards: () => [...queryKeys.loyalty.all, 'rewards'] as const,
     analytics: () => [...queryKeys.loyalty.all, 'analytics'] as const,
+    config: (tenantId?: string) => [...queryKeys.loyalty.all, 'config', tenantId] as const,
+    customer: (customerId?: string) => [...queryKeys.loyalty.all, 'customer', customerId] as const,
   },
 
   // Coupons
@@ -663,6 +678,14 @@ export const queryKeys = {
       [...queryKeys.finance.all, 'payments', tenantId, filters] as const,
     completedOrders: (tenantId?: string, dateRange?: string) =>
       [...queryKeys.finance.all, 'completed-orders', tenantId, dateRange] as const,
+    snapshot: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'snapshot', tenantId] as const,
+    cashFlow: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'cash-flow', tenantId] as const,
+    creditOut: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'credit-out', tenantId] as const,
+    monthlyPerformance: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'monthly-performance', tenantId] as const,
   },
 
   // Fulfillment

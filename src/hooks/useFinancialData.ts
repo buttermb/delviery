@@ -237,16 +237,10 @@ export const useCreateCollectionActivity = () => {
       if (error) throw error;
       return result;
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["collection-activities"] });
       queryClient.invalidateQueries({ queryKey: ["credit-out"] });
       showSuccessToast("Activity Logged", "Collection activity recorded successfully");
-      // Cross-panel invalidation - collection activity affects finance, CRM, dashboard
-      if (tenant?.id) {
-        invalidateOnEvent(queryClient, 'PAYMENT_RECEIVED', tenant.id, {
-          customerId: variables.client_id,
-        });
-      }
     },
     onError: (error) => {
       showErrorToast("Log Failed", error instanceof Error ? error.message : "Failed to log activity");
@@ -340,14 +334,14 @@ export const useExpenseSummary = () => {
       const monthEnd = endOfMonth(new Date());
 
       // Fetch all expenses for the tenant (using any to avoid type issues with optional table)
-      const expensesQuery: unknown = supabase
-        .from("expenses" as "wholesale_orders")
+      const expensesQuery = (supabase as any)
+        .from("expenses")
         .select("*")
         .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false })
         .limit(100);
 
-      const { data: expenses, error } = await (expensesQuery as ReturnType<typeof supabase.from>);
+      const { data: expenses, error } = await expensesQuery;
 
       // Handle table not existing gracefully
       if (error && (error as { code?: string }).code === '42P01') {
