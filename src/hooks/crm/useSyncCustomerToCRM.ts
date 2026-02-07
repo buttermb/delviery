@@ -45,7 +45,7 @@ export function useContactCRMLinks(contactId: string | undefined) {
     queryFn: async () => {
       if (!contactId || !tenant?.id) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('crm_customer_links')
         .select(`
           *,
@@ -80,7 +80,7 @@ export function useCRMClientContacts(clientId: string | undefined) {
     queryFn: async () => {
       if (!clientId || !accountId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('crm_customer_links')
         .select(`
           *,
@@ -113,7 +113,7 @@ export function useCustomerCRMTimeline(contactId: string | undefined, limit: num
     queryFn: async () => {
       if (!contactId) return [];
 
-      const { data, error } = await supabase.rpc('get_customer_crm_timeline', {
+      const { data, error } = await (supabase as any).rpc('get_customer_crm_timeline', {
         p_contact_id: contactId,
         p_limit: limit,
         p_offset: 0,
@@ -127,7 +127,7 @@ export function useCustomerCRMTimeline(contactId: string | undefined, limit: num
         throw error;
       }
 
-      return data as CustomerCRMTimelineEntry[];
+      return data as unknown as CustomerCRMTimelineEntry[];
     },
     enabled: !!contactId,
     staleTime: 30_000,
@@ -143,7 +143,7 @@ export function useLinkCustomerToCRM() {
 
   return useMutation({
     mutationFn: async (input: LinkCustomerToCRMInput) => {
-      const { data, error } = await supabase.rpc('link_customer_to_crm', {
+      const { data, error } = await (supabase as any).rpc('link_customer_to_crm', {
         p_contact_id: input.contact_id,
         p_crm_client_id: input.crm_client_id,
         p_account_id: accountId || undefined,
@@ -158,7 +158,7 @@ export function useLinkCustomerToCRM() {
         throw error;
       }
 
-      return data as CRMCustomerLink;
+      return data as unknown as CRMCustomerLink;
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
@@ -197,7 +197,7 @@ export function useUnlinkCustomerFromCRM() {
       contactId: string;
       crmClientId: string;
     }) => {
-      const { data, error } = await supabase.rpc('unlink_customer_from_crm', {
+      const { data, error } = await (supabase as any).rpc('unlink_customer_from_crm', {
         p_contact_id: contactId,
         p_crm_client_id: crmClientId,
       });
@@ -255,7 +255,7 @@ export function useToggleCRMSync() {
     }) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('crm_customer_links')
         .update({ sync_enabled: syncEnabled })
         .eq('id', linkId)
@@ -315,7 +315,7 @@ export function useLogCustomerCRMActivity() {
       referenceType?: string;
       metadata?: Record<string, unknown>;
     }) => {
-      const { data, error } = await supabase.rpc('log_customer_crm_activity', {
+      const { data, error } = await (supabase as any).rpc('log_customer_crm_activity', {
         p_contact_id: contactId,
         p_activity_type: activityType,
         p_description: description,

@@ -11,6 +11,11 @@ export const SCENE_DURATIONS = {
   fleet: 180,        // 6 seconds
   menus: 180,        // 6 seconds
   total: 900,        // 30 seconds
+  featureDemo: 300,  // 10 seconds
+  heroBackground: 600, // 20 seconds
+  howItWorks: 450,   // 15 seconds
+  securityExplainer: 360, // 12 seconds
+  testimonialCard: 240, // 8 seconds
 };
 
 export const SPRING_PRESETS = {

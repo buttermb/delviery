@@ -5,10 +5,10 @@
  * to prevent unnecessary recalculations when component re-renders
  */
 
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ProductCard } from '../ProductCard';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { vi } from 'vitest';
 
 // Mock dependencies
 vi.mock('@/hooks/useOptimizedImage', () => ({

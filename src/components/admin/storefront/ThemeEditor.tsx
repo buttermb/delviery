@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Palette, Type, Spacing, Sparkles, Code } from 'lucide-react';
+import { Palette, Type, MoveHorizontal, Sparkles, Code } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import {
     type CustomTheme,
