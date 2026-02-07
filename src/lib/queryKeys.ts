@@ -48,6 +48,8 @@ export const queryKeys = {
     offline: (tenantId?: string) => [...queryKeys.orders.all, 'offline', tenantId] as const,
     kanban: (tenantId?: string) => [...queryKeys.orders.all, 'kanban', tenantId] as const,
     pipeline: (tenantId?: string) => [...queryKeys.orders.all, 'pipeline', tenantId] as const,
+    statusHistory: (orderId: string) => [...queryKeys.orders.all, 'status-history', orderId] as const,
+    live: (tenantId?: string) => [...queryKeys.orders.all, 'live', tenantId] as const,
   },
 
   // Wholesale Orders
@@ -87,17 +89,23 @@ export const queryKeys = {
       [...queryKeys.inventory.all, 'transfers', tenantId] as const,
     byLocation: (locationId?: string) =>
       [...queryKeys.inventory.all, 'by-location', locationId] as const,
+    summary: (tenantId?: string) =>
+      [...queryKeys.inventory.all, 'summary', tenantId] as const,
+    locations: (tenantId?: string) =>
+      [...queryKeys.inventory.all, 'locations', tenantId] as const,
   },
 
   // Locations
   locations: {
     all: ['locations'] as const,
     lists: () => [...queryKeys.locations.all, 'list'] as const,
-    list: (tenantId?: string) =>
-      [...queryKeys.locations.lists(), { tenantId }] as const,
+    list: (tenantId?: string, filters?: Record<string, unknown>) =>
+      [...queryKeys.locations.lists(), { tenantId, ...filters }] as const,
     detail: (id: string) => [...queryKeys.locations.all, id] as const,
     operations: (tenantId?: string) =>
       [...queryKeys.locations.all, 'operations', tenantId] as const,
+    operationsSummary: (tenantId?: string) =>
+      [...queryKeys.locations.all, 'operations-summary', tenantId] as const,
   },
 
   // Cart
@@ -396,6 +404,21 @@ export const queryKeys = {
     documents: () => [...queryKeys.compliance.all, 'documents'] as const,
   },
 
+  // Team
+  team: {
+    all: ['team'] as const,
+    members: (tenantId?: string) => [...queryKeys.team.all, 'members', tenantId] as const,
+    invitations: (tenantId?: string) => [...queryKeys.team.all, 'invitations', tenantId] as const,
+    activity: (tenantId?: string) => [...queryKeys.team.all, 'activity', tenantId] as const,
+  },
+
+  // Weather
+  weather: {
+    all: ['weather'] as const,
+    current: (location?: string) => [...queryKeys.weather.all, 'current', location] as const,
+    forecast: (location?: string) => [...queryKeys.weather.all, 'forecast', location] as const,
+  },
+
   // Reporting
   reporting: {
     all: ['reporting'] as const,
@@ -686,6 +709,8 @@ export const queryKeys = {
       [...queryKeys.finance.all, 'credit-out', tenantId] as const,
     monthlyPerformance: (tenantId?: string) =>
       [...queryKeys.finance.all, 'monthly-performance', tenantId] as const,
+    revenueGoal: (tenantId?: string) =>
+      [...queryKeys.finance.all, 'revenue-goal', tenantId] as const,
   },
 
   // Fulfillment
@@ -705,6 +730,10 @@ export const queryKeys = {
     lists: () => [...queryKeys.vendors.all, 'list'] as const,
     list: (tenantId?: string) =>
       [...queryKeys.vendors.lists(), { tenantId }] as const,
+    detail: (vendorId: string) =>
+      [...queryKeys.vendors.all, vendorId] as const,
+    orders: (vendorId: string) =>
+      [...queryKeys.vendors.detail(vendorId), 'orders'] as const,
   },
 
   // Storefront
@@ -716,6 +745,8 @@ export const queryKeys = {
       [...queryKeys.storefront.all, 'live-orders', tenantId] as const,
     banners: (storeId?: string) =>
       [...queryKeys.storefront.all, 'banners', storeId] as const,
+    deals: (storeId?: string) =>
+      [...queryKeys.storefront.all, 'deals', storeId] as const,
   },
 
   // Stock Alerts
@@ -739,5 +770,50 @@ export const queryKeys = {
       [...queryKeys.customerInvoices.all, 'customer', customerId] as const,
     stats: (tenantId?: string) =>
       [...queryKeys.customerInvoices.all, 'stats', tenantId] as const,
+  },
+
+  // Order Audit Log
+  orderAuditLog: {
+    all: ['order-audit-log'] as const,
+    list: (filters?: Record<string, unknown>) =>
+      [...queryKeys.orderAuditLog.all, 'list', filters] as const,
+    byOrder: (orderId: string) =>
+      [...queryKeys.orderAuditLog.all, 'order', orderId] as const,
+  },
+
+  // Order Tags
+  orderTags: {
+    all: ['order-tags'] as const,
+    byOrder: (orderId: string) =>
+      [...queryKeys.orderTags.all, 'order', orderId] as const,
+    lists: () => [...queryKeys.orderTags.all, 'list'] as const,
+  },
+
+  // Recurring Orders
+  recurringOrders: {
+    all: ['recurring-orders'] as const,
+    lists: () => [...queryKeys.recurringOrders.all, 'list'] as const,
+    list: (tenantId?: string) =>
+      [...queryKeys.recurringOrders.lists(), { tenantId }] as const,
+    detail: (id: string) =>
+      [...queryKeys.recurringOrders.all, id] as const,
+  },
+
+  // Revenue Goal
+  revenueGoal: {
+    all: ['revenue-goal'] as const,
+    current: (tenantId?: string) =>
+      [...queryKeys.revenueGoal.all, 'current', tenantId] as const,
+    history: (tenantId?: string) =>
+      [...queryKeys.revenueGoal.all, 'history', tenantId] as const,
+  },
+
+  // Storefront Deals
+  storefrontDeals: {
+    all: ['storefront-deals'] as const,
+    list: (storeId?: string) =>
+      [...queryKeys.storefrontDeals.all, 'list', storeId] as const,
+    detail: (dealId: string) =>
+      [...queryKeys.storefrontDeals.all, dealId] as const,
   },
 } as const;
