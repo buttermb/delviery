@@ -1,157 +1,69 @@
-## Task: Add Input Sanitization for All Forms
+## Task: Complete Logout Cleanup
 
 ### What was done:
-1. Enhanced `src/lib/utils/sanitize.ts` with comprehensive form sanitization functions:
-   - `sanitizeFormInput()` - For plain text inputs (trims, removes HTML, encodes angle brackets, enforces max length)
-   - `sanitizeBasicHtml()` - For rendering simple rich text (allows only b/i/em/strong/u/br/span/p tags)
-   - `sanitizeEmail()` - Trims, lowercases, removes dangerous characters
-   - `sanitizeNumericInput()` - Only allows digits, decimal, minus
-   - `sanitizePhoneInput()` - Only allows phone-valid characters
-   - `sanitizeUrlInput()` - Blocks dangerous URL schemes (javascript:, data:, vbscript:)
-   - `sanitizeSlugInput()` - Only allows lowercase alphanumeric, hyphens, underscores
-   - `sanitizeTextareaInput()` - Like sanitizeFormInput but preserves newlines, normalizes excessive breaks
-   - `sanitizeCouponCode()` - Only uppercase alphanumeric, hyphens, underscores
-   - `sanitizeSkuInput()` - Uppercase alphanumeric and hyphens
-   - `sanitizePriceInput()` - Only digits and single decimal point
-   - `sanitizeFormData()` - Generic helper to sanitize all string fields in a form data object
 
-2. Applied sanitization to 17 form components at point of submission:
+1. Created `src/lib/auth/logoutCleanup.ts` - A centralized logout cleanup utility that:
+   - Clears TanStack Query cache (`queryClient.clear()`) to prevent stale data leaking between sessions
+   - Destroys client encryption session (keys from memory + session storage)
+   - Clears tier-specific localStorage keys (tokens, user data, tenant info)
+   - Clears shared session keys (`floraiq_user_id`, `lastTenantSlug`) from both localStorage and sessionStorage
+   - Provides `broadcastLogout()` helper for cross-tab synchronization
+   - Supports all 5 auth tiers: super_admin, tenant_admin, customer, vendor, base
 
-   **Admin Forms:**
-   - `AppointmentForm.tsx` - customer_id, notes
-   - `CouponCreateForm.tsx` - code, description
-   - `SupplierForm.tsx` - supplier_name, contact_person, email, phone, address, payment_terms
-   - `ProductForm.tsx` - name, sku, vendor_name, strain_name, batch_number, description, metrc_retail_id
-   - `TicketForm.tsx` - subject, description
-   - `RecallForm.tsx` - batch_number, product_name, reason
-   - `POCreateForm.tsx` - notes
-   - `RACreateForm.tsx` - product_name, notes
-   - `CustomIntegrationForm.tsx` - name, endpoint_url, description
+2. Updated `src/contexts/TenantAdminAuthContext.tsx`:
+   - Added `useQueryClient` hook and `performLogoutCleanup` import
+   - Replaced manual cleanup in `logout()` with centralized `performLogoutCleanup()`
+   - Updated cross-tab logout handler to also clear query cache via `performLogoutCleanup()`
+   - Replaced inline BroadcastChannel code with `broadcastLogout()` helper
 
-   **Admin Dialogs:**
-   - `CreateClientDialog.tsx` - business_name, contact_name, email, phone, address, notes
-   - `EditClientDialog.tsx` - business_name, contact_name, email, phone, address, notes
-   - `CreateTenantDialog.tsx` - business_name, owner_email, owner_name, phone
-   - `AddCourierDialog.tsx` - full_name, email, phone, license_number, vehicle fields
-   - `PaymentDialog.tsx` - reference_number, notes
-   - `CreateMenuDialog.tsx` - name, description, geofence_location, custom_message
+3. Updated `src/contexts/SuperAdminAuthContext.tsx`:
+   - Added `useQueryClient` hook and `performLogoutCleanup` import
+   - Replaced manual encryption destroy + storage cleanup with `performLogoutCleanup()`
+   - Fixed duplicate `safeStorage.removeItem('floraiq_user_id')` call
+   - Now properly clears query cache on logout
 
-   **Storefront Forms:**
-   - `SinglePageCheckout.tsx` - firstName, lastName, email, phone, street, apartment, city, state, zip, deliveryNotes
-   - `ReviewForm.tsx` - customer_name, customer_email, title, comment
-   - `ReviewSubmissionForm.tsx` - customer_name, title, content
-   - `EmailCaptureSection.tsx` - email
+4. Updated `src/contexts/CustomerAuthContext.tsx`:
+   - Added `useQueryClient` hook and `performLogoutCleanup` import
+   - Replaced manual encryption destroy + storage cleanup with `performLogoutCleanup()`
+   - Customer-specific keys (cart, checkout data, customer mode) now properly cleared
+   - Fixed duplicate `safeStorage.removeItem('floraiq_user_id')` call
 
-### Sanitization Strategy:
-- Sanitization is applied at the point of form submission (not onChange) to avoid interfering with user typing
-- Each field uses the appropriate sanitizer based on its data type (email, phone, URL, text, textarea, etc.)
-- All sanitizers enforce maximum length limits to prevent oversized input attacks
-- HTML tags are stripped from text inputs, dangerous URL schemes are blocked
-- XSS vectors (script injection, event handlers, javascript: URLs) are neutralized
+5. Updated `src/contexts/VendorAuthContext.tsx`:
+   - Added `useQueryClient` hook, `performLogoutCleanup` import
+   - Added try/catch error handling around `supabase.auth.signOut()`
+   - Added encryption session destruction (was completely missing)
+   - Added query cache clearing (was completely missing)
+   - Added storage cleanup (was completely missing)
+
+6. Updated `src/contexts/AuthContext.tsx`:
+   - Added `useQueryClient` hook and `performLogoutCleanup` import
+   - Replaced manual `clientEncryption.destroy()` + storage removal with `performLogoutCleanup()`
+   - Now properly clears query cache on sign out
+
+7. Fixed pre-existing build error in `src/lib/utils/sanitize.ts`:
+   - Added missing `sanitizeBasicHtml` export (used by HeroSection but was never defined)
+
+### Key Improvements:
+- **Query cache clearing**: All auth contexts now clear the TanStack Query cache on logout, preventing stale data from a previous session showing up when a different user logs in
+- **Consistent cleanup**: All 5 auth tiers use the same centralized cleanup logic
+- **VendorAuthContext hardened**: Was previously missing encryption destroy, storage cleanup, error handling, and query cache clearing
+- **Reduced duplication**: Removed duplicate storage removal calls and inline cleanup code
+- **Cross-tab logout**: BroadcastChannel logic extracted to reusable `broadcastLogout()` helper
 
 ### Acceptance Criteria Met:
-- [x] All form inputs are sanitized before being sent to database/API
-- [x] Different sanitization strategies for different input types (email, phone, text, textarea, URL, etc.)
-- [x] Protection against XSS, script injection, and HTML injection
-- [x] Maximum length enforcement on all inputs
+- [x] All auth contexts clear TanStack Query cache on logout
+- [x] Encryption sessions destroyed consistently across all tiers
+- [x] Storage keys cleaned up per tier (tokens, user data, tenant info)
+- [x] Shared session keys cleared (floraiq_user_id, lastTenantSlug)
+- [x] Cross-tab logout synchronization maintained
+- [x] VendorAuthContext brought to parity with other auth contexts
 - [x] Build passes with no TypeScript errors
-- [x] Existing form validation logic preserved (sanitization is additive)
 
 ### Files Changed:
-- `src/lib/utils/sanitize.ts` (rewritten - comprehensive sanitization utilities)
-- `src/components/admin/appointments/AppointmentForm.tsx` (sanitization added)
-- `src/components/admin/coupons/CouponCreateForm.tsx` (sanitization added)
-- `src/components/admin/suppliers/SupplierForm.tsx` (sanitization added)
-- `src/components/admin/products/ProductForm.tsx` (sanitization added)
-- `src/components/admin/support/TicketForm.tsx` (sanitization added)
-- `src/components/admin/recall/RecallForm.tsx` (sanitization added)
-- `src/components/admin/purchase-orders/POCreateForm.tsx` (sanitization added)
-- `src/components/admin/returns/RACreateForm.tsx` (sanitization added)
-- `src/components/admin/sidebar/CustomIntegrationForm.tsx` (sanitization added)
-- `src/components/admin/CreateClientDialog.tsx` (sanitization added)
-- `src/components/admin/EditClientDialog.tsx` (sanitization added)
-- `src/components/admin/CreateTenantDialog.tsx` (sanitization added)
-- `src/components/admin/AddCourierDialog.tsx` (sanitization added)
-- `src/components/admin/PaymentDialog.tsx` (sanitization added)
-- `src/components/admin/disposable-menus/CreateMenuDialog.tsx` (sanitization added)
-- `src/components/shop/SinglePageCheckout.tsx` (sanitization added)
-- `src/components/shop/ReviewForm.tsx` (sanitization added)
-- `src/components/reviews/ReviewSubmissionForm.tsx` (sanitization added)
-- `src/components/EmailCaptureSection.tsx` (sanitization added)
-
----
-
-## Task: Add Breadcrumb Navigation Between Panels
-
-### What was done:
-
-1. **Rewrote `src/pages/admin/storefront/StorefrontGiftCards.tsx`** - Complete admin page that:
-   - Uses `useTenantAdminAuth()` for proper tenant context (fixed from incorrect `useTenant()`)
-   - Fetches the `marketplace_stores` record by `tenant_id` to get the correct `store_id`
-   - Shows loading skeleton while store loads
-   - Composes the GiftCardTable, GiftCardBalanceCheck, and StorefrontGiftCardManager components
-   - Supports viewing transaction history for individual cards (ledger view)
-   - Responsive grid layout with table on left (3/4) and balance check on right (1/4)
-
-2. **Created `src/components/admin/storefront/GiftCardTable.tsx`** - Full data table with:
-   - Query for all gift cards from `marketplace_gift_cards` table filtered by `store_id`
-   - Search by code, email, or recipient name
-   - Status filter (All, Active, Disabled, Depleted)
-   - Checkbox-based bulk selection with select-all
-   - Bulk actions: Deactivate and Activate cards (with confirmation dialog)
-   - Columns: Code (with copy button), Recipient, Balance, Status, Created, Expires, Actions
-   - Pagination via `usePagination` hook with `StandardPagination` component
-   - Summary stats in card description (total cards, active, depleted, outstanding balance)
-   - Empty state with contextual messaging
-   - View transaction history button per card row
-
-3. **Created `src/components/admin/storefront/GiftCardLedger.tsx`** - Transaction history view:
-   - Queries `marketplace_gift_card_ledger` table for a specific card
-   - Shows all transactions: Issue, Use, Adjustment, Refund, Reload
-   - Color-coded amounts (green for credits, red for debits)
-   - Transaction type badges with distinct colors
-   - Directional icons (TrendingUp/TrendingDown)
-   - Balance-after column showing running balance
-   - Back navigation button to return to main table
-   - Card info in header (code, recipient, current/initial balance)
-
-4. **Created `src/components/admin/storefront/GiftCardBalanceCheck.tsx`** - Quick balance lookup:
-   - Input field for gift card code (auto-uppercased)
-   - Calls `validate_marketplace_gift_card` RPC for validation
-   - Shows balance and validity status with appropriate badges
-   - Error handling for invalid/disabled/depleted cards
-   - Enter key support for quick lookup
-
-5. **Rewrote `src/components/admin/storefront/StorefrontGiftCardManager.tsx`** - Issue dialog:
-   - Preset amount buttons ($25, $50, $100, $250) for quick selection
-   - Custom amount input with proper validation
-   - Recipient email and name fields
-   - Custom code input (auto-uppercased, font-mono)
-   - Internal notes field
-   - Loading state with spinner on submit button
-   - Uses `issue_marketplace_gift_card` RPC
-   - Proper error handling with logger and toast
-
-6. **Fixed pre-existing build error** in `src/lib/utils/sanitize.ts`:
-   - Added `sanitizeBasicHtml` export alias (was imported by HeroSection but not exported)
-
-### Acceptance Criteria Met:
-- [x] Can create gift cards with custom amounts (preset $25/$50/$100/$250 + custom)
-- [x] Can search and manage existing gift cards in table (search by code/email/name)
-- [x] Balance displays correctly (current balance with "of initial" when partially used)
-- [x] Gift card status updates (active/disabled/depleted with color-coded badges)
-- [x] Bulk actions (deactivate/activate multiple cards)
-- [x] Filter by status (all/active/disabled/depleted)
-- [x] Balance check functionality (quick code lookup via RPC)
-- [x] Redemption history view per card (full ledger with transaction types)
-
-### Files Changed:
-- `src/pages/admin/storefront/StorefrontGiftCards.tsx` (rewritten)
-- `src/components/admin/storefront/StorefrontGiftCardManager.tsx` (rewritten)
-- `src/components/admin/storefront/GiftCardTable.tsx` (new)
-- `src/components/admin/storefront/GiftCardLedger.tsx` (new)
-- `src/components/admin/storefront/GiftCardBalanceCheck.tsx` (new)
-- `src/lib/utils/sanitize.ts` (fix pre-existing missing export)
-
-### Build Status:
-- `npm run build` passes with no errors
+- `src/lib/auth/logoutCleanup.ts` (new)
+- `src/contexts/TenantAdminAuthContext.tsx` (modified)
+- `src/contexts/SuperAdminAuthContext.tsx` (modified)
+- `src/contexts/CustomerAuthContext.tsx` (modified)
+- `src/contexts/VendorAuthContext.tsx` (modified)
+- `src/contexts/AuthContext.tsx` (modified)
+- `src/lib/utils/sanitize.ts` (modified - pre-existing build fix)

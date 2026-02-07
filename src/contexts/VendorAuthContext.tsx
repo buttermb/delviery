@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
+import { performLogoutCleanup } from "@/lib/auth/logoutCleanup";
 
 interface VendorProfile {
     id: string;
@@ -21,6 +23,7 @@ interface VendorAuthContextType {
 const VendorAuthContext = createContext<VendorAuthContextType | undefined>(undefined);
 
 export const VendorAuthProvider = ({ children }: { children: ReactNode }) => {
+    const queryClient = useQueryClient();
     const [vendor, setVendor] = useState<VendorProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -99,9 +102,18 @@ export const VendorAuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const logout = async () => {
-        await supabase.auth.signOut();
-        setVendor(null);
-        setIsAuthenticated(false);
+        try {
+            await supabase.auth.signOut();
+        } catch (error) {
+            logger.error("Vendor logout error", error instanceof Error ? error : new Error(String(error)));
+        } finally {
+            // Clear local React state
+            setVendor(null);
+            setIsAuthenticated(false);
+
+            // Comprehensive cleanup: encryption, query cache, storage
+            performLogoutCleanup({ queryClient, tier: 'vendor' });
+        }
     };
 
     return (

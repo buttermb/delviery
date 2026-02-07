@@ -3,7 +3,6 @@ import { clientEncryption } from '@/lib/encryption/clientEncryption';
 import { safeStorage } from '@/utils/safeStorage';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { logger } from '@/lib/logger';
-import { invalidateSessionNonce } from '@/lib/auth/sessionFixation';
 
 /**
  * Comprehensive logout cleanup utility.
@@ -69,21 +68,14 @@ const SHARED_KEYS = [
 export function performLogoutCleanup({ queryClient, tier }: LogoutCleanupOptions): void {
   logger.debug('[LOGOUT_CLEANUP] Starting cleanup', { tier });
 
-  // 1. Invalidate session nonce (session fixation protection)
-  try {
-    invalidateSessionNonce();
-  } catch (e) {
-    logger.warn('[LOGOUT_CLEANUP] Session nonce invalidation failed', e);
-  }
-
-  // 2. Destroy encryption session (clears keys from memory + session storage)
+  // 1. Destroy encryption session (clears keys from memory + session storage)
   try {
     clientEncryption.destroy();
   } catch (e) {
     logger.warn('[LOGOUT_CLEANUP] Encryption destroy failed', e);
   }
 
-  // 3. Clear TanStack Query cache to prevent stale data leaking between sessions
+  // 2. Clear TanStack Query cache to prevent stale data leaking between sessions
   if (queryClient) {
     try {
       queryClient.clear();
@@ -93,13 +85,13 @@ export function performLogoutCleanup({ queryClient, tier }: LogoutCleanupOptions
     }
   }
 
-  // 4. Clear tier-specific storage keys
+  // 3. Clear tier-specific storage keys
   const tierKeys = TIER_STORAGE_KEYS[tier];
   for (const key of tierKeys) {
     safeStorage.removeItem(key);
   }
 
-  // 5. Clear shared storage keys
+  // 4. Clear shared storage keys
   for (const key of SHARED_KEYS) {
     safeStorage.removeItem(key);
     try {
