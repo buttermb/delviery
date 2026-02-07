@@ -363,25 +363,17 @@ export function useSidebarPreferences() {
     updatePreferencesMutation.mutate({ lastAccessedFeatures: newLastAccessed });
   };
 
-  // Loading guard
-  if (!admin?.userId) {
-    return {
-      preferences: DEFAULT_PREFERENCES,
-      isLoading: true,
-      updatePreferences: async () => { },
-      toggleFavorite: () => { },
-      toggleCollapsedSection: () => { },
-      trackFeatureAccess: () => { },
-    };
-  }
+  // Always return - handle missing user in the return values
+  // This ensures hooks are called in the same order every render
+  const hasUser = !!admin?.userId;
 
   return {
     preferences: preferences || DEFAULT_PREFERENCES,
-    isLoading: isLoading || !admin?.userId,
-    updatePreferences,
-    toggleFavorite: toggleFavoriteMutation.mutate,
-    toggleCollapsedSection: toggleCollapsedSectionMutation.mutate,
-    trackFeatureAccess,
+    isLoading: isLoading || !hasUser,
+    updatePreferences: hasUser ? updatePreferences : async () => { },
+    toggleFavorite: hasUser ? toggleFavoriteMutation.mutate : () => { },
+    toggleCollapsedSection: hasUser ? toggleCollapsedSectionMutation.mutate : () => { },
+    trackFeatureAccess: hasUser ? trackFeatureAccess : () => { },
   };
 }
 
