@@ -20,6 +20,7 @@ import { AccountLockedScreen } from "@/components/auth/AccountLockedScreen";
 import { Database } from "@/integrations/supabase/types";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { intendedDestinationUtils } from "@/hooks/useIntendedDestination";
+import { AuthErrorAlert, getAuthErrorType } from "@/components/auth/AuthErrorAlert";
 
 
 type Tenant = Database['public']['Tables']['tenants']['Row'];

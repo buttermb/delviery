@@ -149,13 +149,13 @@ function getWarningMessage(threshold: number, balance: number): { title: string;
   }
 }
 
-// Safe wrapper to get tenant without throwing
+// Safe wrapper to get tenant and session without throwing
 function useTenantSafe() {
   try {
-    const { tenant } = useTenantAdminAuth();
-    return tenant;
+    const { tenant, session } = useTenantAdminAuth();
+    return { tenant, session };
   } catch {
-    return null;
+    return { tenant: null, session: null };
   }
 }
 
@@ -174,7 +174,7 @@ async function fetchCreditsBalance(tenantId: string): Promise<CreditsBalanceResp
 }
 
 export function useCredits(): UseCreditsReturn {
-  const tenant = useTenantSafe();
+  const { tenant, session } = useTenantSafe();
   const queryClient = useQueryClient();
   const [showWarning, setShowWarning] = useState(false);
   // Track which warning thresholds have been shown to avoid duplicates
@@ -184,6 +184,8 @@ export function useCredits(): UseCreditsReturn {
   const [recentOperations, setRecentOperations] = useState<number[]>([]);
 
   const tenantId = tenant?.id;
+  // Only fetch credits when both tenant AND session exist (user is authenticated)
+  const isAuthenticated = !!session?.access_token;
 
   // Fetch credit balance from credits-balance edge function
   const {
@@ -194,7 +196,7 @@ export function useCredits(): UseCreditsReturn {
   } = useQuery({
     queryKey: queryKeys.credits.balance(tenantId),
     queryFn: () => fetchCreditsBalance(tenantId!),
-    enabled: !!tenantId,
+    enabled: !!tenantId && isAuthenticated,
     staleTime: STALE_TIME_MS,
     refetchInterval: REFETCH_INTERVAL_MS,
   });
