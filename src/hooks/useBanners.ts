@@ -20,7 +20,7 @@ export interface Banner {
 
 export function useBanners(storeId: string | undefined) {
     return useQuery({
-        queryKey: queryKeys.storefront.banners(storeId),
+        queryKey: ['storefront', 'banners', storeId] as const,
         queryFn: async (): Promise<Banner[]> => {
             if (!storeId) return [];
 

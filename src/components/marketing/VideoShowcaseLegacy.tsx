@@ -251,9 +251,9 @@ function OrdersUltra() {
             </div>
             <div className="flex-1 space-y-3 relative overflow-hidden">
               <AnimatePresence mode="popLayout">
-                {(i === 0 ? columns.new : i === 1 ? columns.prep : i === 2 ? columns.quality : columns.ready).map((card: Record<string, unknown>) => (
+                {(i === 0 ? columns.new : i === 1 ? columns.prep : i === 2 ? columns.quality : columns.ready).map((card: Record<string, unknown>, cardIdx: number) => (
                   <motion.div
-                    key={card.id}
+                    key={String(card.id) || cardIdx}
                     layoutId={`card-${card.id}`}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -262,14 +262,14 @@ function OrdersUltra() {
                     className="bg-slate-50 p-3 rounded-lg border border-slate-100 shadow-sm group hover:border-[hsl(var(--marketing-primary))]/30 hover:shadow-md transition-all"
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <span className="text-[10px] text-slate-400 font-mono">#{card.id}</span>
+                      <span className="text-[10px] text-slate-400 font-mono">#{String(card.id)}</span>
                       <MoreVertical className="w-3 h-3 text-slate-300" />
                     </div>
                     <div className="flex items-center gap-2 mb-2">
-                      <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${card.color || 'from-gray-100 to-slate-100'}`} />
+                      <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${String(card.color) || 'from-gray-100 to-slate-100'}`} />
                       <div className="min-w-0">
-                        <div className="text-xs font-bold text-slate-800 truncate">{card.customer}</div>
-                        <div className="text-[10px] text-slate-500">{card.items} Items • {card.total}</div>
+                        <div className="text-xs font-bold text-slate-800 truncate">{String(card.customer)}</div>
+                        <div className="text-[10px] text-slate-500">{String(card.items)} Items • {String(card.total)}</div>
                       </div>
                     </div>
                     {i === 3 && (

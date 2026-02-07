@@ -152,8 +152,8 @@ function getWarningMessage(threshold: number, balance: number): { title: string;
 // Safe wrapper to get tenant and session without throwing
 function useTenantSafe() {
   try {
-    const { tenant, session } = useTenantAdminAuth();
-    return { tenant, session };
+    const { tenant } = useTenantAdminAuth();
+    return { tenant, session: null };
   } catch {
     return { tenant: null, session: null };
   }

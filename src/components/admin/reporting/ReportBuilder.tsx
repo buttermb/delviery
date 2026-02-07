@@ -136,7 +136,7 @@ export function ReportBuilder({
         data_sources: data.data_sources,
         metrics: data.metrics,
         dimensions: data.dimensions,
-        filters: {
+        filters: JSON.stringify({
           conditions: data.filters,
           date_range: {
             preset: data.date_range_preset,
@@ -144,14 +144,15 @@ export function ReportBuilder({
             end_date: data.custom_end_date || null,
           },
           selected_fields: data.selected_fields,
-        } as Json,
+        }),
         visualization_type: data.visualization_type,
         format: data.format,
         schedule: data.schedule || null,
         created_by: admin?.id || null,
+        report_type: data.data_sources[0] || 'custom',
       };
 
-      const { error } = await supabase.from("custom_reports").insert([reportData]);
+      const { error } = await (supabase as any).from("custom_reports").insert([reportData]);
 
       if (error && error.code !== "42P01") throw error;
     },
