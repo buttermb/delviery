@@ -25,7 +25,10 @@ export function SidebarFavorites() {
   const { canAccess } = useFeatureAccess();
   const { searchQuery } = useSidebar();
 
-  // Get toggleFavorite mutation from SidebarContext
+  // Simple search query matching function
+  const matchesSearchQuery = (name: string, query: string): boolean => {
+    return name.toLowerCase().includes(query.toLowerCase());
+  };
   // This provides database sync with optimistic updates via useMutation
   const { toggleFavorite, trackFeatureAccess } = useSidebar();
 

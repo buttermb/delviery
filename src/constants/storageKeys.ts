@@ -113,6 +113,9 @@ export const STORAGE_KEYS = {
 
   // Session preferences
   REMEMBER_ME: 'remember_me',
+
+  // Order Search
+  ORDER_SEARCH_RECENT: 'order_search_recent',
 } as const;
 
 /**
