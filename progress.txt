@@ -1,130 +1,45 @@
-## Task: Implement Offline Order Creation
-
-### What was done:
-1. Created `src/hooks/useOfflineOrderCreation.ts` - A custom hook that:
-   - Manages offline order creation, storage, and sync lifecycle
-   - Stores orders in IndexedDB (via existing `idb.ts` infrastructure) when offline
-   - Syncs orders to Supabase `orders` and `order_items` tables when online
-   - Uses idempotency keys to prevent duplicate order creation
-   - Provides automatic sync on network restoration
-   - Exposes retry and remove operations for failed orders
-   - Integrates with existing `offlineQueue` for robust retry with backoff
-
-2. Created `src/pages/admin/OfflineOrderCreate.tsx` - A full admin page that:
-   - Loads products from Supabase (online) or IndexedDB cache (offline)
-   - Caches products in IndexedDB on load for offline availability
-   - Provides product search by name/SKU with add-to-cart functionality
-   - Includes customer details form (name, phone, email, address, notes)
-   - Shows cart with quantity adjustment, item removal, and total calculation
-   - Displays clear online/offline status indicators
-   - Has two tabs: "New Order" (creation form) and "Pending Orders" (sync queue)
-   - Shows pending orders with status badges, retry, and remove actions
-   - Works fully offline with graceful degradation
-
-3. Updated `src/pages/admin/Orders.tsx` to:
-   - Add "Offline Order" button in the header linking to offline order creation
-
-4. Updated `src/App.tsx` to:
-   - Add lazy import for `OfflineOrderCreate` page
-   - Add route `orders/offline-create` in admin routes
-
-5. Updated `src/lib/queryKeys.ts` to:
-   - Add `offline` query key under orders for tenant-scoped offline order queries
-
-6. Fixed pre-existing build error in `src/lib/utils/sanitize.ts`:
-   - Added `sanitizeBasicHtml` export alias (was imported but not exported)
-
-### Architecture:
-- **Storage**: IndexedDB (encrypted via existing `clientEncryption`) for offline orders
-- **Sync**: Direct Supabase insert when online; queued via `offlineQueue` when offline
-- **Products Cache**: Products loaded from Supabase are cached in IndexedDB for offline use
-- **Network Detection**: `navigator.onLine` + event listeners for real-time status
-- **Idempotency**: UUID-based keys prevent duplicate order creation on retry
-
-### Acceptance Criteria Met:
-- [x] Orders can be created while completely offline
-- [x] Products are cached locally for offline product selection
-- [x] Orders sync automatically when connectivity is restored
-- [x] Failed syncs can be retried manually
-- [x] Pending offline orders are visible with status indicators
-- [x] Build passes with no TypeScript errors
-
-### Files Changed:
-- `src/hooks/useOfflineOrderCreation.ts` (new)
-- `src/pages/admin/OfflineOrderCreate.tsx` (new)
-- `src/pages/admin/Orders.tsx` (modified - added Offline Order button)
-- `src/App.tsx` (modified - added lazy import and route)
-- `src/lib/queryKeys.ts` (modified - added offline query key)
-- `src/lib/utils/sanitize.ts` (modified - fixed pre-existing missing export)
-
----
-
-## Task: Add Breadcrumb Navigation Between Panels
+## Task: Fix Token Refresh Race Conditions
 
 ### What was done:
 
-1. Created `src/lib/auth/logoutCleanup.ts` - A centralized logout cleanup utility that:
-   - Clears TanStack Query cache (`queryClient.clear()`) to prevent stale data leaking between sessions
-   - Destroys client encryption session (keys from memory + session storage)
-   - Clears tier-specific localStorage keys (tokens, user data, tenant info)
-   - Clears shared session keys (`floraiq_user_id`, `lastTenantSlug`) from both localStorage and sessionStorage
-   - Provides `broadcastLogout()` helper for cross-tab synchronization
-   - Supports all 5 auth tiers: super_admin, tenant_admin, customer, vendor, base
+1. Created `src/lib/auth/tokenRefreshManager.ts` - A singleton TokenRefreshManager class that:
+   - Prevents concurrent refresh requests via promise deduplication (same scope returns same promise)
+   - Enforces minimum 5-second interval between refresh attempts to prevent rapid-fire
+   - Supports isolated scopes ('tenant-admin', 'customer') so different auth contexts don't interfere
+   - Provides `isRefreshing(scope)` check for other code to query refresh state
+   - Provides `reset(scope)` and `resetAll()` for cleanup during logout
+   - Properly handles errors in the finally block so state is always cleaned up
 
 2. Updated `src/contexts/TenantAdminAuthContext.tsx`:
-   - Added `useQueryClient` hook and `performLogoutCleanup` import
-   - Replaced manual cleanup in `logout()` with centralized `performLogoutCleanup()`
-   - Updated cross-tab logout handler to also clear query cache via `performLogoutCleanup()`
-   - Replaced inline BroadcastChannel code with `broadcastLogout()` helper
+   - Replaced inline `isRefreshingRef`/`refreshPromiseRef` guards with `tokenRefreshManager.refresh('tenant-admin', ...)`
+   - Fixed `verifyToken` which previously did an inline refresh via `resilientFetch` that bypassed the race guard - now delegates to `refreshAuthToken()` which goes through the manager
+   - Added guard in `onAuthStateChange` to skip token updates while a managed refresh is in progress (prevents stale tokens from overwriting newer ones)
+   - Added `tokenRefreshManager.reset('tenant-admin')` to `clearAuthState` for proper cleanup on logout
 
-3. Updated `src/contexts/SuperAdminAuthContext.tsx`:
-   - Added `useQueryClient` hook and `performLogoutCleanup` import
-   - Replaced manual encryption destroy + storage cleanup with `performLogoutCleanup()`
-   - Fixed duplicate `safeStorage.removeItem('floraiq_user_id')` call
-   - Now properly clears query cache on logout
+3. Updated `src/contexts/CustomerAuthContext.tsx`:
+   - Added race condition protection to `refreshToken` using `tokenRefreshManager.refresh('customer', ...)`
+   - Previously had no concurrency protection - overlapping interval checks could trigger multiple verifications
+   - Added `tokenRefreshManager.reset('customer')` to logout cleanup
 
-4. Updated `src/contexts/CustomerAuthContext.tsx`:
-   - Added `useQueryClient` hook and `performLogoutCleanup` import
-   - Replaced manual encryption destroy + storage cleanup with `performLogoutCleanup()`
-   - Customer-specific keys (cart, checkout data, customer mode) now properly cleared
-   - Fixed duplicate `safeStorage.removeItem('floraiq_user_id')` call
+4. Updated `src/lib/auth/__tests__/tokenRefresh.test.ts`:
+   - Replaced old inline race condition tests with comprehensive tests for the TokenRefreshManager pattern
+   - Added tests for: deduplication, scope isolation, error handling, isRefreshing state, minimum interval enforcement, reset behavior
+   - All 22 tests pass
 
-5. Updated `src/contexts/VendorAuthContext.tsx`:
-   - Added `useQueryClient` hook, `performLogoutCleanup` import
-   - Added try/catch error handling around `supabase.auth.signOut()`
-   - Added encryption session destruction (was completely missing)
-   - Added query cache clearing (was completely missing)
-   - Added storage cleanup (was completely missing)
+5. Fixed pre-existing build error in `src/lib/utils/sanitize.ts`:
+   - Added missing `sanitizeBasicHtml` export that was referenced by HeroSection.tsx
 
-6. Updated `src/contexts/AuthContext.tsx`:
-   - Added `useQueryClient` hook and `performLogoutCleanup` import
-   - Replaced manual `clientEncryption.destroy()` + storage removal with `performLogoutCleanup()`
-   - Now properly clears query cache on sign out
-
-7. Fixed pre-existing build error in `src/lib/utils/sanitize.ts`:
-   - Added missing `sanitizeBasicHtml` export (used by HeroSection but was never defined)
-
-### Key Improvements:
-- **Query cache clearing**: All auth contexts now clear the TanStack Query cache on logout, preventing stale data from a previous session showing up when a different user logs in
-- **Consistent cleanup**: All 5 auth tiers use the same centralized cleanup logic
-- **VendorAuthContext hardened**: Was previously missing encryption destroy, storage cleanup, error handling, and query cache clearing
-- **Reduced duplication**: Removed duplicate storage removal calls and inline cleanup code
-- **Cross-tab logout**: BroadcastChannel logic extracted to reusable `broadcastLogout()` helper
-
-### Acceptance Criteria Met:
-- [x] All auth contexts clear TanStack Query cache on logout
-- [x] Encryption sessions destroyed consistently across all tiers
-- [x] Storage keys cleaned up per tier (tokens, user data, tenant info)
-- [x] Shared session keys cleared (floraiq_user_id, lastTenantSlug)
-- [x] Cross-tab logout synchronization maintained
-- [x] VendorAuthContext brought to parity with other auth contexts
-- [x] Build passes with no TypeScript errors
+### Race Conditions Fixed:
+- [x] Multiple simultaneous `refreshAuthToken` calls now deduplicated via singleton manager
+- [x] `verifyToken` inline refresh no longer bypasses the race guard
+- [x] `onAuthStateChange` no longer overwrites tokens during an active refresh
+- [x] Customer auth concurrent verify calls now protected
+- [x] Minimum interval prevents rapid-fire refresh attempts after errors
+- [x] Logout properly resets refresh state to prevent stale attempts
 
 ### Files Changed:
-- `src/lib/auth/logoutCleanup.ts` (new)
+- `src/lib/auth/tokenRefreshManager.ts` (new)
 - `src/contexts/TenantAdminAuthContext.tsx` (modified)
-- `src/contexts/SuperAdminAuthContext.tsx` (modified)
 - `src/contexts/CustomerAuthContext.tsx` (modified)
-- `src/contexts/VendorAuthContext.tsx` (modified)
-- `src/contexts/AuthContext.tsx` (modified)
+- `src/lib/auth/__tests__/tokenRefresh.test.ts` (modified)
 - `src/lib/utils/sanitize.ts` (modified - pre-existing build fix)

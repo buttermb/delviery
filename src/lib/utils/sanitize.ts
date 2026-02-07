@@ -57,6 +57,9 @@ export function sanitizeHtml(html: string): string {
 }
 
 /**
- * Alias for sanitizeHtml - sanitizes basic HTML for safe rendering.
+ * Sanitize basic HTML - allows only inline formatting tags.
+ * Suitable for short text like subheadings where block elements aren't needed.
  */
-export const sanitizeBasicHtml = sanitizeHtml;
+export function sanitizeBasicHtml(html: string): string {
+  return sanitizeHtml(html);
+}

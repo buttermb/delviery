@@ -8,6 +8,7 @@ import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeStorage } from "@/utils/safeStorage";
 import { performLogoutCleanup } from "@/lib/auth/logoutCleanup";
 import { getTokenExpiration } from "@/lib/auth/jwt";
+import { tokenRefreshManager } from "@/lib/auth/tokenRefreshManager";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { resilientFetch, ErrorCategory, getErrorMessage, initConnectionMonitoring, onConnectionStatusChange, type ConnectionStatus } from "@/lib/utils/networkResilience";
 import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLogger";
@@ -366,6 +367,10 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       // Comprehensive cleanup: encryption, query cache, storage
       performLogoutCleanup({ queryClient, tier: 'customer' });
 
+      // Reset token refresh manager to prevent stale refresh attempts
+      tokenRefreshManager.reset('customer');
+
+      // Debug: Log logout complete
       logAuth('Customer logout completed', { source: 'CustomerAuthContext' });
     }
   };
@@ -374,7 +379,12 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     // For customers, tokens last 30 days, so refresh might not be needed
     // But we can verify the token is still valid
     if (!token) return;
-    await verifyToken(token);
+
+    // Use tokenRefreshManager to prevent concurrent verify/refresh calls
+    await tokenRefreshManager.refresh('customer', async () => {
+      await verifyToken(token);
+      return { success: true };
+    });
   };
 
   // Token expiration monitoring - check and verify token before expiry

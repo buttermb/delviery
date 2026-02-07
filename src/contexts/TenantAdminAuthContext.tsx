@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode, useRef, useC
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getTokenExpiration } from "@/lib/auth/jwt";
+import { tokenRefreshManager } from "@/lib/auth/tokenRefreshManager";
 
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
@@ -211,8 +212,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     safeStorage.removeItem('lastTenantSlug'); // Clear tenant slug cache
     safeStorage.removeItem(ACCESS_TOKEN_KEY);
     safeStorage.removeItem(REFRESH_TOKEN_KEY);
-    // Allow re-initialization after logout (e.g., switching tenants)
-    authInitializedRef.current = false;
+    // Reset token refresh manager to prevent stale refresh attempts
+    tokenRefreshManager.reset('tenant-admin');
   }, []);
   useEffect(() => {
     const unsubscribe = onConnectionStatusChange((status) => {
@@ -258,6 +259,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.access_token) {
+          // Skip token updates if a managed refresh is in progress to prevent
+          // stale tokens from onAuthStateChange overwriting newer tokens
+          if (tokenRefreshManager.isRefreshing('tenant-admin')) {
+            logger.debug('[AUTH] Skipping onAuthStateChange token update - refresh in progress');
+            return;
+          }
+
           // Update tokens when Supabase refreshes them
           const currentAccessToken = safeStorage.getItem(ACCESS_TOKEN_KEY);
           if (currentAccessToken !== session.access_token) {
@@ -797,39 +805,27 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     return () => clearInterval(interval);
   }, [isAuthenticated, token]);
 
-  // Track if a refresh is already in progress to prevent race conditions
-  const isRefreshingRef = useRef(false);
-  const refreshPromiseRef = useRef<Promise<boolean> | null>(null);
-
   const refreshAuthToken = async (): Promise<boolean> => {
-    // STEP 1: Get the current refresh token
-    const currentRefreshToken = refreshToken || safeStorage.getItem(REFRESH_TOKEN_KEY);
+    const result = await tokenRefreshManager.refresh('tenant-admin', async () => {
+      // STEP 1: Get the current refresh token
+      const currentRefreshToken = refreshToken || safeStorage.getItem(REFRESH_TOKEN_KEY);
 
-    // STEP 2: Validate refresh token exists and is not empty/invalid
-    if (!currentRefreshToken ||
-        currentRefreshToken === 'undefined' ||
-        currentRefreshToken === 'null' ||
-        currentRefreshToken.trim() === '' ||
-        currentRefreshToken.length < 10) {
-      logger.warn('[AUTH] Cannot refresh token - no valid refresh token available');
-      clearAuthState();
-      toast.error('Your session has expired. Please log in again.', { duration: 5000 });
-      return false;
-    }
+      // STEP 2: Validate refresh token exists and is not empty/invalid
+      if (!currentRefreshToken ||
+          currentRefreshToken === 'undefined' ||
+          currentRefreshToken === 'null' ||
+          currentRefreshToken.trim() === '' ||
+          currentRefreshToken.length < 10) {
+        logger.warn('[AUTH] Cannot refresh token - no valid refresh token available');
+        clearAuthState();
+        toast.error('Your session has expired. Please log in again.', { duration: 5000 });
+        return { success: false, error: 'No valid refresh token' };
+      }
 
-    // STEP 3: Check if refresh is already in progress (prevent race conditions)
-    if (isRefreshingRef.current && refreshPromiseRef.current) {
-      logger.debug('[AUTH] Refresh already in progress, waiting for result');
-      return refreshPromiseRef.current;
-    }
-
-    isRefreshingRef.current = true;
-
-    const doRefresh = async (): Promise<boolean> => {
       try {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
-        // STEP 4: Attempt to refresh the session via edge function
+        // STEP 3: Attempt to refresh the session via edge function
         const { response } = await resilientFetch(
           `${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`,
           {
@@ -848,7 +844,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         if (response.ok) {
           const data = await response.json();
 
-          // STEP 5: Update tokens on successful refresh
+          // STEP 4: Update tokens on successful refresh
           setAccessToken(data.access_token);
           setToken(data.access_token);
           setRefreshToken(data.refresh_token);
@@ -870,7 +866,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           setupRefreshTimer(data.access_token);
 
           logger.debug('[AUTH] Token refresh successful');
-          return true;
+          return {
+            success: true,
+            accessToken: data.access_token,
+            refreshToken: data.refresh_token,
+          };
         }
 
         // Handle specific error cases
@@ -896,7 +896,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
               setupRefreshTimer(supabaseRefreshData.session.access_token);
               logger.debug('[AUTH] Supabase native refresh successful');
-              return true;
+              return {
+                success: true,
+                accessToken: supabaseRefreshData.session.access_token,
+                refreshToken: supabaseRefreshData.session.refresh_token,
+              };
             }
           } catch (fallbackError) {
             logger.error('[AUTH] Supabase native refresh also failed', fallbackError);
@@ -905,21 +909,17 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           // All refresh attempts failed, clear auth state
           clearAuthState();
           toast.error('Your session has expired. Please log in again.', { duration: 5000 });
-          return false;
+          return { success: false, error: 'All refresh methods failed' };
         }
 
-        return false;
+        return { success: false, error: `Refresh failed with status ${response.status}` };
       } catch (error) {
         logger.error('[AUTH] Token refresh exception', error);
-        return false;
-      } finally {
-        isRefreshingRef.current = false;
-        refreshPromiseRef.current = null;
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
       }
-    };
+    });
 
-    refreshPromiseRef.current = doRefresh();
-    return refreshPromiseRef.current;
+    return result.success;
   };
 
   // Helper function to clear auth state
@@ -1015,89 +1015,19 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       }
 
       if (!response.ok) {
-        // If token verification fails with 401, try to refresh
+        // If token verification fails with 401, try to refresh using the centralized manager
         if (response.status === 401) {
-          logger.debug("Token verification failed with 401, attempting refresh");
+          logger.debug("Token verification failed with 401, attempting refresh via refreshAuthToken");
           const storedRefreshToken = safeStorage.getItem(REFRESH_TOKEN_KEY);
           if (storedRefreshToken) {
-            try {
-              const { response: refreshResponse } = await resilientFetch(
-                `${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({ refresh_token: storedRefreshToken }),
-                  timeout: 10000,
-                  retryConfig: {
-                    maxRetries: 1,
-                    initialDelay: 500,
-                  },
-                });
-
-              if (!refreshResponse.ok) {
-                // Refresh token is invalid - clear all state
-                if (refreshResponse.status === 401) {
-                  logger.warn("Refresh token invalid during verification - clearing state");
-                  safeStorage.removeItem(ADMIN_KEY);
-                  safeStorage.removeItem(TENANT_KEY);
-                  safeStorage.removeItem(ACCESS_TOKEN_KEY);
-                  safeStorage.removeItem(REFRESH_TOKEN_KEY);
-                  safeStorage.removeItem('lastTenantSlug');
-
-                  clearAuthState();
-                  setLoading(false);
-
-                  toast.error("Your session has expired. Please log in again.", {
-                    duration: 5000,
-                  });
-
-                  logger.warn('[AUTH] Refresh failed with 401 during verification - cleared credentials');
-                  return false;
-                }
-
-                throw new Error("Token refresh failed");
-              }
-
-              const refreshData = await refreshResponse.json();
-
-              // Sync refreshed tokens with Supabase client
-              await supabase.auth.setSession({
-                access_token: refreshData.access_token,
-                refresh_token: refreshData.refresh_token,
-              });
-
-              setAccessToken(refreshData.access_token);
-              setRefreshToken(refreshData.refresh_token);
-              setToken(refreshData.access_token);
-
-              safeStorage.setItem(ACCESS_TOKEN_KEY, refreshData.access_token);
-              safeStorage.setItem(REFRESH_TOKEN_KEY, refreshData.refresh_token);
-
-              // Setup proactive refresh timer with new token
-              setupRefreshTimer(refreshData.access_token);
-
+            const refreshSuccess = await refreshAuthToken();
+            if (refreshSuccess) {
               setLoading(false);
-              return true; // Successfully refreshed
-            } catch (refreshError) {
-              logger.error("Token refresh failed during verification", refreshError);
-
-              // Clear all auth state if refresh fails
-              safeStorage.removeItem(ACCESS_TOKEN_KEY);
-              safeStorage.removeItem(REFRESH_TOKEN_KEY);
-              safeStorage.removeItem(ADMIN_KEY);
-              safeStorage.removeItem(TENANT_KEY);
-              safeStorage.removeItem('lastTenantSlug');
-
-              clearAuthState();
-
-              toast.error("Your session has expired. Please log in again.", {
-                duration: 5000,
-              });
-
-              throw new Error("Token expired and refresh failed");
+              return true;
             }
+            // refreshAuthToken already handles clearing state and showing toast on failure
+            setLoading(false);
+            return false;
           }
         }
 
