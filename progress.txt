@@ -1,35 +1,61 @@
-## Task: Fix Session Persistence on Page Reload
+## Task: Implement Offline Order Creation
 
 ### What was done:
+1. Created `src/hooks/useOfflineOrderCreation.ts` - A custom hook that:
+   - Manages offline order creation, storage, and sync lifecycle
+   - Stores orders in IndexedDB (via existing `idb.ts` infrastructure) when offline
+   - Syncs orders to Supabase `orders` and `order_items` tables when online
+   - Uses idempotency keys to prevent duplicate order creation
+   - Provides automatic sync on network restoration
+   - Exposes retry and remove operations for failed orders
+   - Integrates with existing `offlineQueue` for robust retry with backoff
 
-1. Fixed `src/contexts/AuthContext.tsx`:
-   - Set up `onAuthStateChange` listener BEFORE calling `getSession()` to catch the `INITIAL_SESSION` event that Supabase fires when restoring a session from localStorage
-   - Added `initializedRef` to prevent duplicate loading state resolution
-   - The `getSession()` call now serves as a fallback only (for edge cases where `onAuthStateChange` doesn't fire)
-   - This eliminates the race condition where `loading=true` and `user=null` would cause downstream components to show unauthenticated UI
+2. Created `src/pages/admin/OfflineOrderCreate.tsx` - A full admin page that:
+   - Loads products from Supabase (online) or IndexedDB cache (offline)
+   - Caches products in IndexedDB on load for offline availability
+   - Provides product search by name/SKU with add-to-cart functionality
+   - Includes customer details form (name, phone, email, address, notes)
+   - Shows cart with quantity adjustment, item removal, and total calculation
+   - Displays clear online/offline status indicators
+   - Has two tabs: "New Order" (creation form) and "Pending Orders" (sync queue)
+   - Shows pending orders with status badges, retry, and remove actions
+   - Works fully offline with graceful degradation
 
-2. Fixed `src/contexts/TenantAdminAuthContext.tsx`:
-   - Added synchronous localStorage hydration on initial render using `useState` initializers
-   - State is now pre-populated from localStorage immediately (no async gap)
-   - `isAuthenticated` starts as `true` if valid stored session data exists
-   - `loading` starts as `false` if stored session data exists (no loading spinner flash)
-   - Changed initialization effect dependency from `[location.pathname]` to `[]` (runs once)
-   - Added `authInitializedRef` to prevent wasteful re-initialization on route changes
-   - `clearAuthState()` resets `authInitializedRef` to allow re-initialization after logout
-   - Background verification still runs to validate the stored session, but UI renders immediately
+3. Updated `src/pages/admin/Orders.tsx` to:
+   - Add "Offline Order" button in the header linking to offline order creation
 
-3. Fixed `src/lib/utils/sanitize.ts` (pre-existing build error):
-   - Added `sanitizeBasicHtml` export alias for `sanitizeHtml` (was referenced by HeroSection.tsx but not exported)
+4. Updated `src/App.tsx` to:
+   - Add lazy import for `OfflineOrderCreate` page
+   - Add route `orders/offline-create` in admin routes
+
+5. Updated `src/lib/queryKeys.ts` to:
+   - Add `offline` query key under orders for tenant-scoped offline order queries
+
+6. Fixed pre-existing build error in `src/lib/utils/sanitize.ts`:
+   - Added `sanitizeBasicHtml` export alias (was imported but not exported)
+
+### Architecture:
+- **Storage**: IndexedDB (encrypted via existing `clientEncryption`) for offline orders
+- **Sync**: Direct Supabase insert when online; queued via `offlineQueue` when offline
+- **Products Cache**: Products loaded from Supabase are cached in IndexedDB for offline use
+- **Network Detection**: `navigator.onLine` + event listeners for real-time status
+- **Idempotency**: UUID-based keys prevent duplicate order creation on retry
 
 ### Acceptance Criteria Met:
-- [x] Page reload maintains logged-in state (synchronous hydration from localStorage)
-- [x] No flash of login screen for authenticated users (loading=false when stored session exists)
-- [x] Session persists across browser tabs (localStorage-based hydration + Supabase session sync)
+- [x] Orders can be created while completely offline
+- [x] Products are cached locally for offline product selection
+- [x] Orders sync automatically when connectivity is restored
+- [x] Failed syncs can be retried manually
+- [x] Pending offline orders are visible with status indicators
+- [x] Build passes with no TypeScript errors
 
 ### Files Changed:
-- `src/contexts/AuthContext.tsx` (modified - proper session restoration order)
-- `src/contexts/TenantAdminAuthContext.tsx` (modified - synchronous hydration, single init)
-- `src/lib/utils/sanitize.ts` (modified - export alias fix)
+- `src/hooks/useOfflineOrderCreation.ts` (new)
+- `src/pages/admin/OfflineOrderCreate.tsx` (new)
+- `src/pages/admin/Orders.tsx` (modified - added Offline Order button)
+- `src/App.tsx` (modified - added lazy import and route)
+- `src/lib/queryKeys.ts` (modified - added offline query key)
+- `src/lib/utils/sanitize.ts` (modified - fixed pre-existing missing export)
 
 ---
 

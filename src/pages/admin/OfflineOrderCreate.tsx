@@ -15,20 +15,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
-import Wifi from "lucide-react/dist/esm/icons/wifi";
-import Package from "lucide-react/dist/esm/icons/package";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Minus from "lucide-react/dist/esm/icons/minus";
-import Search from "lucide-react/dist/esm/icons/search";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Cloud from "lucide-react/dist/esm/icons/cloud";
+import {
+  ArrowLeft,
+  WifiOff,
+  Wifi,
+  Package,
+  Plus,
+  Minus,
+  Search,
+  Loader2,
+  ShoppingCart,
+  Trash2,
+  RefreshCw,
+  AlertCircle,
+  CheckCircle2,
+  Cloud,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
@@ -79,7 +81,7 @@ export default function OfflineOrderCreate() {
     queryFn: async (): Promise<ProductForOrder[]> => {
       if (isOnline && tenant?.id) {
         // Fetch from Supabase and cache in IndexedDB
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('products')
           .select('id, name, price, sku')
           .eq('tenant_id', tenant.id)

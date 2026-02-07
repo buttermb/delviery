@@ -175,10 +175,11 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
           product_id: item.productId,
           product_name: item.productName,
           quantity: item.quantity,
-          price: item.unitPrice,
+          unit_price: item.unitPrice,
+          subtotal: item.quantity * item.unitPrice,
         }));
 
-        const { error: itemsError } = await (supabase as any)
+        const { error: itemsError } = await supabase
           .from('order_items')
           .insert(orderItems);
 

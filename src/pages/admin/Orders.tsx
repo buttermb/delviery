@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, WifiOff } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -600,6 +600,14 @@ export default function Orders() {
                 <Download className="mr-2 h-4 w-4" />
                 Export
               </Button>
+                <Button
+                  variant="outline"
+                  className="min-h-[48px] touch-manipulation"
+                  onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/orders/offline-create`)}
+                >
+                  <WifiOff className="mr-2 h-4 w-4" />
+                  Offline Order
+                </Button>
                 <Button
                   variant="default"
                   className="min-h-[48px] touch-manipulation shadow-lg shadow-primary/20"
