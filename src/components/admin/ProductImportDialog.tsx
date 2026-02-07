@@ -32,6 +32,7 @@ const SYSTEM_FIELDS = [
 export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductImportDialogProps) {
     const { tenant } = useTenantAdminAuth();
     const [step, setStep] = useState<ImportStep>('upload');
+    const [file, setFile] = useState<File | null>(null);
     const [fileHeaders, setFileHeaders] = useState<string[]>([]);
     const [rawRecords, setRawRecords] = useState<any[]>([]);
     const [mapping, setMapping] = useState<Record<string, string>>({});

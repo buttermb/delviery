@@ -236,7 +236,7 @@ export default function Orders() {
       // Merge regular orders with user info
       const regularOrdersWithUsers = (ordersData || []).map(order => ({
         ...order,
-        delivery_method: order.delivery_method || '',
+        delivery_method: (order as any).delivery_method || '',
         user: order.user_id ? profilesMap[order.user_id] : undefined
       })) as Order[];
 
@@ -406,10 +406,11 @@ export default function Orders() {
     setBulkStatusConfirm({ open: false, targetStatus: '' });
 
     // Execute the bulk status update
-    await bulkStatusUpdate.executeBulkUpdate(
-      selectedOrders.map(id => ({ id, status: bulkStatusConfirm.targetStatus })),
-      bulkStatusConfirm.targetStatus
-    );
+    const ordersToUpdate = selectedOrders.map(id => {
+      const order = orders?.find(o => o.id === id);
+      return { id, status: bulkStatusConfirm.targetStatus, order_number: order?.order_number || '' };
+    });
+    await bulkStatusUpdate.executeBulkUpdate(ordersToUpdate, bulkStatusConfirm.targetStatus);
   };
 
   const handleClearFilters = () => {

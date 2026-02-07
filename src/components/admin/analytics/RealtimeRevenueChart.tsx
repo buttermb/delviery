@@ -3,7 +3,7 @@
  * Uses Recharts for visualization and Supabase real-time for live updates
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ResponsiveContainer,

@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from "@/components/ui/skeleton";
 import { logger } from '@/lib/logger';
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 
 interface ConversionRateChartProps {
     storeId?: string;

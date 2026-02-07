@@ -43,6 +43,7 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
   const [menuType, setMenuType] = useState<'time_limited' | 'encrypted_link'>('time_limited');
   const [expiresIn, setExpiresIn] = useState('7');
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [productPrices, setProductPrices] = useState<Record<string, number>>({});
   const [accessType, setAccessType] = useState<'specific_customers' | 'public_link'>('specific_customers');
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
 
