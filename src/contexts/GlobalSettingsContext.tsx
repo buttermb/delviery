@@ -208,12 +208,17 @@ export function GlobalSettingsProvider({ children }: GlobalSettingsProviderProps
     }
   }, [isInitialized, account, tenant, features.hasStorefront]);
 
+  // Safely extract payment settings - handle potential query errors
+  const safePaymentSettings = paymentSettings && typeof paymentSettings === 'object' && 'accept_cash' in paymentSettings
+    ? paymentSettings as PaymentSettings
+    : null;
+
   const value: GlobalSettingsContextValue = {
     general,
     security,
     notifications,
     sidebar: sidebarPrefs,
-    payment: paymentSettings || null,
+    payment: safePaymentSettings,
     storefront: storefrontSettings || null,
     theme,
     isLoading,

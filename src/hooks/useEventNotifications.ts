@@ -69,21 +69,21 @@ export function useEventNotifications({
   onNewOrder,
   onStockAlert,
 }: EventNotificationOptions = {}) {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const { toast } = useToast();
   const channelsRef = useRef<RealtimeChannel[]>([]);
   const previousStockRef = useRef<Map<string, number>>(new Map());
 
   // Fetch user notification preferences
   const { data: preferences } = useQuery<NotificationPreferences | null>({
-    queryKey: ['notification-preferences', user?.id],
+    queryKey: ['notification-preferences', admin?.id],
     queryFn: async () => {
-      if (!user?.id) return null;
+      if (!admin?.id) return null;
 
       const { data, error } = await supabase
         .from('notification_preferences')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', admin.id)
         .maybeSingle();
 
       if (error) {
@@ -93,7 +93,7 @@ export function useEventNotifications({
 
       return data as NotificationPreferences | null;
     },
-    enabled: !!user?.id,
+    enabled: !!admin?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 

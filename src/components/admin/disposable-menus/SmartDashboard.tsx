@@ -612,7 +612,7 @@ function SetupTab() {
   );
 }
 
-// Menu type for the SmartDashboard
+// Menu type for the SmartDashboard - uses index signature to accept any DB fields
 interface MenuData {
   id: string;
   name?: string | null;
@@ -916,7 +916,7 @@ export function SmartDashboard() {
               data={filteredMenus}
               isLoading={isLoading}
               keyExtractor={(menu: MenuData) => menu.id}
-              renderItem={(menu: MenuData) => <MenuCard menu={menu} />}
+              renderItem={(menu: MenuData) => <MenuCard menu={menu as unknown as Parameters<typeof MenuCard>[0]['menu']} />}
               columns={{ default: 1, md: 2, lg: 3 }}
               emptyState={{
                 icon: LayoutGrid,
