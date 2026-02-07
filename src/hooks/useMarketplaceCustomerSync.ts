@@ -24,7 +24,7 @@ export function useMarketplaceCustomerSync(options?: UseMarketplaceCustomerSyncO
 
   const syncMutation = useMutation({
     mutationFn: async (storeId?: string) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .rpc('sync_all_marketplace_customers_to_hub', {
           p_store_id: storeId ?? null,
         });
@@ -38,11 +38,11 @@ export function useMarketplaceCustomerSync(options?: UseMarketplaceCustomerSyncO
 
       // The RPC returns an array with a single row
       const result = Array.isArray(data) ? data[0] : data;
-      return result as SyncResult;
+      return result as unknown as SyncResult;
     },
     onSuccess: (result) => {
       // Invalidate both marketplace customers and customers queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceCustomers.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.storefront.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
 
       if (result.synced_count > 0) {

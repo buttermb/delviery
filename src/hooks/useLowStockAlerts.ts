@@ -49,6 +49,24 @@ function severityToAlertLevel(severity: string): LowStockProduct['alertLevel'] {
   return 'warning';
 }
 
+interface StockAlertRow {
+  id: string;
+  product_id: string;
+  product_name: string;
+  current_quantity: number;
+  threshold: number;
+  severity: string;
+}
+
+interface ProductRow {
+  id: string;
+  name: string;
+  stock_quantity: number | null;
+  available_quantity: number | null;
+  low_stock_alert: number | null;
+  category: string;
+}
+
 export function useLowStockAlerts(): LowStockAlertsSummary {
   const { tenant } = useTenantAdminAuth();
 
@@ -58,7 +76,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
       if (!tenant?.id) return [];
 
       // First try to fetch from stock_alerts table
-      const { data: alerts, error: alertError } = await supabase
+      const { data: alerts, error: alertError } = await (supabase as any)
         .from('stock_alerts')
         .select('id, product_id, product_name, current_quantity, threshold, severity')
         .eq('tenant_id', tenant.id)
@@ -67,7 +85,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
 
       // If stock_alerts table exists and has data, use it
       if (!alertError && alerts && alerts.length > 0) {
-        return alerts.map((alert) => {
+        return (alerts as StockAlertRow[]).map((alert) => {
           const alertLevel = alert.current_quantity <= 0
             ? 'out_of_stock'
             : severityToAlertLevel(alert.severity);
@@ -90,7 +108,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
       }
 
       // Fallback: fetch from products table
-      const { data: products, error: fetchError } = await supabase
+      const { data: products, error: fetchError } = await (supabase as any)
         .from('products')
         .select('id, name, stock_quantity, available_quantity, low_stock_alert, category')
         .eq('tenant_id', tenant.id)
@@ -102,7 +120,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
       }
 
       // Filter and map results - include products where available quantity is at or below threshold
-      return (products || [])
+      return ((products || []) as ProductRow[])
         .filter((p) => {
           const available = p.available_quantity ?? p.stock_quantity ?? 0;
           const threshold = p.low_stock_alert ?? 10;

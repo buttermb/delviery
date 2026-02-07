@@ -119,6 +119,9 @@ export const STORAGE_KEYS = {
 
   // Dashboard Tour
   DASHBOARD_TOUR_COMPLETED: 'dashboard_tour_completed',
+
+  // Weather
+  WEATHER_LOCATION: 'weather_location',
 } as const;
 
 /**
