@@ -118,18 +118,9 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
     [currentPreset]
   );
 
-  // Guard against missing tenant slug
-  if (!tenantSlug) {
-    logger.error('AdaptiveSidebar rendered without tenantSlug', new Error('Missing tenantSlug'), { component: 'AdaptiveSidebar' });
-    return null;
-  }
-
-  // Show loading skeleton while navigation config is loading
-  if (isLoading) {
-    return <SidebarLoadingSkeleton collapsible={collapsible} />;
-  }
-
+  // All hooks must be called before any early returns to follow React's rules of hooks
   const isActive = useCallback((url: string) => {
+    if (!tenantSlug) return false;
     const fullPath = `/${tenantSlug}${url}`;
     return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
   }, [tenantSlug, location.pathname]);
@@ -142,7 +133,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
     setUpgradeFeatureId(featureId);
   }, []);
 
-  const handleItemClick = useCallback((itemId: string, featureId?: string) => {
+  const handleItemClick = useCallback((_itemId: string, featureId?: string) => {
     if (featureId) {
       trackFeatureClick(featureId);
     }
@@ -150,36 +141,47 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
 
   // Memoize navigation handlers to prevent unnecessary re-renders of child components
   const handleNavigateToDashboard = useCallback(() => {
-    navigate(`/${tenantSlug}/admin/dashboard`);
+    if (tenantSlug) navigate(`/${tenantSlug}/admin/dashboard`);
   }, [navigate, tenantSlug]);
 
   const handleNavigateToSettings = useCallback(() => {
-    navigate(`/${tenantSlug}/admin/settings`);
+    if (tenantSlug) navigate(`/${tenantSlug}/admin/settings`);
   }, [navigate, tenantSlug]);
 
   const handleNavigateToProfile = useCallback(() => {
-    navigate(`/${tenantSlug}/admin/profile`);
+    if (tenantSlug) navigate(`/${tenantSlug}/admin/profile`);
   }, [navigate, tenantSlug]);
 
   const handleNavigateToHelp = useCallback(() => {
-    navigate(`/${tenantSlug}/admin/help`);
+    if (tenantSlug) navigate(`/${tenantSlug}/admin/help`);
   }, [navigate, tenantSlug]);
 
   const handleNavigateToNewOrder = useCallback(() => {
-    navigate(`/${tenantSlug}/admin/orders/new`);
+    if (tenantSlug) navigate(`/${tenantSlug}/admin/orders/new`);
   }, [navigate, tenantSlug]);
 
   const handleNavigateToNewProduct = useCallback(() => {
-    navigate(`/${tenantSlug}/admin/inventory/products/new`);
+    if (tenantSlug) navigate(`/${tenantSlug}/admin/inventory/products/new`);
   }, [navigate, tenantSlug]);
 
   const handleNavigateToPOS = useCallback(() => {
-    navigate(`/${tenantSlug}/admin/pos-system`);
+    if (tenantSlug) navigate(`/${tenantSlug}/admin/pos-system`);
   }, [navigate, tenantSlug]);
 
   const handleNavigateToSettingsSidebar = useCallback(() => {
-    navigate(`/${tenantSlug}/admin/settings?tab=sidebar`);
+    if (tenantSlug) navigate(`/${tenantSlug}/admin/settings?tab=sidebar`);
   }, [navigate, tenantSlug]);
+
+  // Guard against missing tenant slug - AFTER all hooks are called
+  if (!tenantSlug) {
+    logger.error('AdaptiveSidebar rendered without tenantSlug', new Error('Missing tenantSlug'), { component: 'AdaptiveSidebar' });
+    return null;
+  }
+
+  // Show loading skeleton while navigation config is loading
+  if (isLoading) {
+    return <SidebarLoadingSkeleton collapsible={collapsible} />;
+  }
 
   return (
     <>
