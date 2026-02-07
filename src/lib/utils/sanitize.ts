@@ -55,6 +55,8 @@ export function sanitizeHtml(html: string): string {
 }
 
 /**
- * Alias for sanitizeHtml - sanitizes basic HTML content.
+ * Sanitize basic HTML content - strips all dangerous tags/attributes
+ * while preserving basic formatting (bold, italic, links, etc.)
+ * Alias for sanitizeHtml for semantic clarity in component usage.
  */
 export const sanitizeBasicHtml = sanitizeHtml;

@@ -17,7 +17,7 @@ export const useWholesaleClients = (options?: { includeArchived?: boolean }) => 
 
       let query = supabase
         .from('wholesale_clients')
-        .select('*')
+        .select('id, tenant_id, business_name, contact_name, phone, email, outstanding_balance, credit_limit, payment_terms, last_payment_date, status, deleted_at, created_at')
         .eq('tenant_id', tenant.id);
 
       // Only include active clients by default
@@ -30,7 +30,9 @@ export const useWholesaleClients = (options?: { includeArchived?: boolean }) => 
       if (error) throw error;
       return data || [];
     },
-    enabled: !!tenant?.id
+    enabled: !!tenant?.id,
+    staleTime: 30_000,
+    gcTime: 300_000,
   });
 };
 
@@ -45,17 +47,20 @@ export const useWholesaleOrders = () => {
       const { data, error } = await supabase
         .from("wholesale_orders")
         .select(`
-          *,
+          id, tenant_id, client_id, runner_id, order_number, status, total_amount, notes, created_at, updated_at,
           client:wholesale_clients(business_name, contact_name),
           runner:wholesale_runners(full_name, phone)
         `)
         .eq("tenant_id", tenant.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(100);
 
       if (error) throw error;
       return data || [];
     },
-    enabled: !!tenant?.id
+    enabled: !!tenant?.id,
+    staleTime: 15_000,
+    gcTime: 120_000,
   });
 };
 
@@ -229,14 +234,16 @@ export const useWholesaleRunners = () => {
 
       const { data, error } = await supabase
         .from("wholesale_runners")
-        .select("*")
+        .select("id, tenant_id, full_name, phone, vehicle_type, is_active, created_at")
         .eq("tenant_id", tenant.id)
         .order("full_name");
 
       if (error) throw error;
       return data || [];
     },
-    enabled: !!tenant?.id
+    enabled: !!tenant?.id,
+    staleTime: 60_000,
+    gcTime: 300_000,
   });
 };
 
@@ -324,33 +331,21 @@ export const useWholesalePayments = () => {
     queryFn: async (): Promise<WholesalePaymentWithClient[]> => {
       if (!tenant?.id) throw new Error('No tenant context');
 
+      // Use JOIN to fetch client data in a single query (eliminates N+1 pattern)
       // @ts-expect-error - Supabase type instantiation depth issue
-      const paymentsResult = await supabase
+      const { data, error } = await supabase
         .from("wholesale_payments")
-        .select("*")
+        .select("id, client_id, amount, payment_method, payment_date, reference_number, notes, status, created_at, client:wholesale_clients(business_name)")
         .eq("tenant_id", tenant.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(100);
 
-      if (paymentsResult.error) throw paymentsResult.error;
-      const payments = (paymentsResult.data || []) as WholesalePaymentWithClient[];
-      if (!payments.length) return [];
-
-      const clientIds: string[] = [...new Set(payments.map(p => p.client_id).filter(Boolean) as string[])];
-      
-      const clientsResult = await supabase
-        .from("wholesale_clients")
-        .select("id, business_name")
-        .in("id", clientIds);
-
-      const clients = (clientsResult.data || []) as Array<{ id: string; business_name: string }>;
-      const clientMap = new Map(clients.map(c => [c.id, c]));
-
-      return payments.map(p => ({
-        ...p,
-        client: clientMap.get(p.client_id) || null
-      }));
+      if (error) throw error;
+      return (data || []) as WholesalePaymentWithClient[];
     },
-    enabled: !!tenant?.id
+    enabled: !!tenant?.id,
+    staleTime: 30_000,
+    gcTime: 300_000,
   });
 };
 
@@ -365,17 +360,20 @@ export const useWholesaleDeliveries = () => {
       const { data, error } = await supabase
         .from("wholesale_deliveries")
         .select(`
-          *,
+          id, tenant_id, order_id, runner_id, status, pickup_location, delivery_location, notes, created_at, updated_at,
           order:wholesale_orders(order_number, total_amount),
           runner:wholesale_runners(full_name, phone, vehicle_type)
         `)
         .eq("tenant_id", tenant.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(100);
 
       if (error) throw error;
       return data || [];
     },
-    enabled: !!tenant?.id
+    enabled: !!tenant?.id,
+    staleTime: 15_000,
+    gcTime: 120_000,
   });
 };
 
@@ -389,7 +387,7 @@ export const useClientDetail = (clientId: string) => {
 
       const { data, error } = await supabase
         .from("wholesale_clients")
-        .select("*")
+        .select("id, tenant_id, business_name, contact_name, phone, email, address, outstanding_balance, credit_limit, payment_terms, last_payment_date, notes, status, deleted_at, created_at, updated_at")
         .eq("id", clientId)
         .eq("tenant_id", tenant.id)
         .maybeSingle();
@@ -397,7 +395,9 @@ export const useClientDetail = (clientId: string) => {
       if (error) throw error;
       return data;
     },
-    enabled: !!clientId && !!tenant?.id
+    enabled: !!clientId && !!tenant?.id,
+    staleTime: 30_000,
+    gcTime: 300_000,
   });
 };
 
@@ -411,7 +411,7 @@ export const useClientOrders = (clientId: string) => {
 
       const { data, error } = await supabase
         .from("wholesale_orders")
-        .select("*")
+        .select("id, order_number, status, total_amount, notes, created_at")
         .eq("client_id", clientId)
         .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false })
@@ -420,7 +420,9 @@ export const useClientOrders = (clientId: string) => {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!clientId && !!tenant?.id
+    enabled: !!clientId && !!tenant?.id,
+    staleTime: 15_000,
+    gcTime: 120_000,
   });
 };
 
@@ -435,7 +437,7 @@ export const useClientPayments = (clientId: string) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data, error } = await (supabase
         .from("wholesale_payments")
-        .select("*")
+        .select("id, client_id, amount, payment_method, payment_date, reference_number, notes, status, created_at")
         .eq("client_id", clientId)
         .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false })
@@ -444,6 +446,8 @@ export const useClientPayments = (clientId: string) => {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!clientId && !!tenant?.id
+    enabled: !!clientId && !!tenant?.id,
+    staleTime: 30_000,
+    gcTime: 300_000,
   });
 };
